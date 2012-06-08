@@ -10,13 +10,15 @@
 #
 
 # set environment variables
-davitpy=/davitpy
+DAVITPY=/davitpy
+export DAVITPY
 export PYTHONPATH=$DAVITPY
 
 #start ipython
 ipython -i 	\
 		-c "import numpy; \
 			import scipy; \
-			import matplotlib; \
+			import matplotlib as mplot; \
+			import pylab; \
 			import h5py; \
-			import sdtime"
+			import utils"
