@@ -7,6 +7,6 @@
 # June 2012
 def parseDate( *date ) :
 	
-	
+	print date
 	
 	return
