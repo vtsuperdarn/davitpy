@@ -1,4 +1,13 @@
 # !bin/davitpy
+# Launcher for the Python version of DaViT
+# Pre-requisites:
+#	- Python 2.7 or higher
+#	- ipython (includes numpy)
+#	- scipy
+#	- matplotlib
+#	- h5py
+#
+#
 
 # set environment variables
 export PYTHONPATH=$DAVITPY
