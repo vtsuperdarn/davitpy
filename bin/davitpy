@@ -9,9 +9,7 @@
 #
 #
 
-# set environment variables
-DAVITPY=/davitpy
-export DAVITPY
+# set environment variable
 export PYTHONPATH=$DAVITPY
 
 #start ipython
