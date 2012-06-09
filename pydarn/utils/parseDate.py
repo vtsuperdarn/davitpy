@@ -1,11 +1,15 @@
-# Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
-#
-# INPUT:
-# DATE: experiment date in YYYYMMDD
-#				or numpy.array([YYYY,MM,DD])
-#
-# Created by Sebastien
-# June 2012
+# UTILS
+"""
+*******************************
+** adate = parseDate( date )
+Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
+
+INPUT:
+DATE: experiment date in YYYYMMDD or numpy.array([YYYY,MM,DD])
+
+Created by Sebastien
+*******************************
+"""
 def parseDate( date ) :
 
 	from numpy import array
