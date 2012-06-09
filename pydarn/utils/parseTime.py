@@ -15,7 +15,7 @@ def parseTime( time ) :
 	from numpy import array
 	
 	# transform time into an array for testing
-	if type(time) != type(array([])): time = array([time])
+	if isinstance(time, ndarray): time = array([time])
 	
 	# parse time one way or another
 	if len(time) == 3:
