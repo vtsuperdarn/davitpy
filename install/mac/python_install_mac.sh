@@ -10,3 +10,4 @@ port install py${ver}-matplotlib
 port install py${ver}-scipy
 port install py${ver}-h5py
 port install py${ver}-tornado
+port install py${ver}-zmq
