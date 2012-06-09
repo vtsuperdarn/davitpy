@@ -13,10 +13,5 @@
 export PYTHONPATH=$DAVITPY
 
 #start ipython
-ipython -i 	\
-		-c "import numpy; \
-			import scipy; \
-			import matplotlib as mplot; \
-			import pylab; \
-			import h5py; \
-			import utils"
+ipython --ipython_dir=u'$DAVITPY/bin' \
+		
