@@ -11,4 +11,4 @@ This includes the following submodules:
 *******************************
 """
 
-from sdpy import utils
+from pydarn import utils
