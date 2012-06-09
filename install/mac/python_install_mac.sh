@@ -9,9 +9,3 @@ port install py${ver}-numpy
 port install py${ver}-matplotlib
 port install py${ver}-scipy
 port install py${ver}-h5py
-
-# Add ipython_dir to the environment variables
-if [ "" == "$IPYTHON_DIR" ]
-then
-        echo "export IPYTHON_DIR=~/.ipython" >> ~/.bash_profile
-fi

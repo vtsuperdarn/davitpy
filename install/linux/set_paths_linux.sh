@@ -1,6 +1,5 @@
 # Sets path and fundamental environment variables for DaViT-py
 
-# Add a DAVIPY environment variable
 tmp="`echo $(which davitpy)`"
 tmpdavitpy="`echo ${tmp%%davitpy/*}`"/davitpy
 if [ "" == "$DAVITPY" ]
