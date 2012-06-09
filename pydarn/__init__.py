@@ -1,13 +1,12 @@
 # Main DaViT-py module __init__.py
 """
 *******************************
-            UTILS
+            DARNpy
 *******************************
-This subpackage contains various utilities for DaViT-py
+Main DaViT-py module
 
-This includes the following functions:
-	parseDate
-	parseTime
+This includes the following submodules:
+	utils
 
 *******************************
 """
