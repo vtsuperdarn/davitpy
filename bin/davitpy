@@ -7,11 +7,10 @@
 #	- matplotlib
 #	- h5py
 #
-#
 
 # set environment variable
 export PYTHONPATH=$DAVITPY
+export IPYTHON_DIR=$DAVITPY/bin
 
 #start ipython
-ipython --ipython_dir=u'$DAVITPY/bin' \
-		
+ipython --profile=davitpy
