@@ -13,6 +13,8 @@ c.InteractiveShellApp.exec_lines = [
 	'import pylab',
 	'import h5py',
 	'import pydarn',
+	'import math as *',
+	'import string',
 	'%load_ext autoreload',
 	'%autoreload 2'
 ]
