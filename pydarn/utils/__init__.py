@@ -4,8 +4,9 @@
             UTILS
 *******************************
 This subpackage contains various utilities for DaViT-py
+DEV: functions/modules/classes with a * have not been developed yet
 
-This includes the following functions:
+This includes the following function(s):
 	parseDate
 	parseTime
 
