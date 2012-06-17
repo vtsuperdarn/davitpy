@@ -36,23 +36,23 @@ This includes the following defs:
 		calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)
 	calcHourAngleSunrise( lat, solarDec )
 		calculate the hour angle of the sun at sunrise for the latitude (in radians)
-	calcSolNoon( jd, longitude, timezone, dst )
-		calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)
 	calcAzEl( output, t, localtime, latitude, longitude, zone )
-		
-	calcSunriseSetUTC( rise, JD, latitude, longitude )
-		
-	getJD( day, month, year )
-		
-	calcSunriseSet( rise, JD, latitude, longitude, timezone, dst )
-		
-	calculate_sunset, date, latitude, longitude, timezone=timezone, dst=dst, risetime=risetime, settime=settime, solnoon=solnoon
-		
+		calculate sun azimuth and zenith angle
+	calcSolNoonUTC( jd, longitude )
+		calculate time of solar noon the given day at the given location on earth (in minutes since 0 UTC)
+	calcSolNoon( jd, longitude, timezone, dst )
+		calculate time of solar noon the given day at the given location on earth (in minutes)
+	calcSunRiseSetUTC( jd, latitude, longitude )
+		calculate sunrise/sunset the given day at the given location on earth (in minutes since 0 UTC)
+	calcSunRiseSet( jd, latitude, longitude, timezone, dst )
+		calculate sunrise/sunset the given day at the given location on earth (in minutes)
+	calcTerminator( jd )
+		calculate terminator position for a given julian date-time
 
 *******************************
 """
 import math
-import time
+from numpy import array	
 
 def calcTimeJulianCent( jd ):
 	# convert Julian Day to centuries since J2000.0.
@@ -85,9 +85,9 @@ def calcEccentricityEarthOrbit( t ):
 def calcSunEqOfCenter( t ):
 	# calculate the equation of center for the sun (in degrees)
 	mrad = math.radians(calcGeomMeanAnomalySun(t))
-	sinm = sin(mrad)
-	sin2m = sin(mrad+mrad)
-	sin3m = sin(mrad+mrad+mrad)
+	sinm = math.sin(mrad)
+	sin2m = math.sin(mrad+mrad)
+	sin3m = math.sin(mrad+mrad+mrad)
 	C = sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin2m * (0.019993 - 0.000101 * t) + sin3m * 0.000289
 	return C # in degrees
 
@@ -112,7 +112,7 @@ def calcSunRadVector( t ):
 	# calculate the distance to the sun in AU (in degrees)
 	v = calcSunTrueAnomaly(t)
 	e = calcEccentricityEarthOrbit(t)
-	R = (1.000001018 * (1. - e * e)) / ( 1. + e * cos( math.radians(v) ) )
+	R = (1.000001018 * (1. - e * e)) / ( 1. + e * math.cos( math.radians(v) ) )
 	return R # n AUs
 
 
@@ -120,7 +120,7 @@ def calcSunApparentLong( t ):
 	# calculate the apparent longitude of the sun (in degrees)
 	o = calcSunTrueLong(t)
 	omega = 125.04 - 1934.136 * t
-	SunLong = o - 0.00569 - 0.00478 * sin(math.radians(omega))
+	SunLong = o - 0.00569 - 0.00478 * math.sin(math.radians(omega))
 	return SunLong # in degrees
 
 
@@ -135,7 +135,7 @@ def calcObliquityCorrection( t ):
 	# calculate the corrected obliquity of the ecliptic (in degrees)
 	e0 = calcMeanObliquityOfEcliptic(t)
 	omega = 125.04 - 1934.136 * t
-	e = e0 + 0.00256 * cos(math.radians(omega))
+	e = e0 + 0.00256 * math.cos(math.radians(omega))
 	return e # in degrees
 
 
@@ -143,9 +143,9 @@ def calcSunRtAscension( t ):
 	# calculate the right ascension of the sun (in degrees)
 	e = calcObliquityCorrection(t)
 	SunLong = calcSunApparentLong(t)
-	tananum = ( cos(math.radians(e)) * sin(math.radians(SunLong)) )
-	tanadenom = cos(math.radians(SunLong))
-	alpha = math.degrees(atan(tananum, tanadenom))
+	tananum = ( math.cos(math.radians(e)) * math.sin(math.radians(SunLong)) )
+	tanadenom = math.cos(math.radians(SunLong))
+	alpha = math.degrees(amath.atan2(tananum, tanadenom))
 	return alpha # in degrees
 
 
@@ -153,8 +153,8 @@ def calcSunDeclination( t ):
 	# calculate the declination of the sun (in degrees)
 	e = calcObliquityCorrection(t)
 	SunLong = calcSunApparentLong(t)
-	sint = sin(math.radians(e)) * sin(math.radians(SunLong))
-	theta = math.degrees(asin(sint))
+	sint = math.sin(math.radians(e)) * math.sin(math.radians(SunLong))
+	theta = math.degrees(math.asin(sint))
 	return theta # in degrees
 
 
@@ -164,14 +164,14 @@ def calcEquationOfTime( t ):
 	l0 = calcGeomMeanLongSun(t)
 	e = calcEccentricityEarthOrbit(t)
 	m = calcGeomMeanAnomalySun(t)
-	y = tan(math.radians(epsilon/2.0))
+	y = math.tan(math.radians(epsilon/2.0))
 	y *= y
 
-	sin2l0 = sin(math.radians(2.0 * l0))
-	sinm   = sin(math.radians(m))
-	cos2l0 = cos(math.radians(2.0 * l0))
-	sin4l0 = sin(math.radians(4.0 * l0))
-	sin2m  = sin(math.radians(2.0 * m))
+	sin2l0 = math.sin(math.radians(2.0 * l0))
+	sinm   = math.sin(math.radians(m))
+	cos2l0 = math.cos(math.radians(2.0 * l0))
+	sin4l0 = math.sin(math.radians(4.0 * l0))
+	sin2m  = math.sin(math.radians(2.0 * m))
 
 	Etime = y * sin2l0 - 2.0 * e * sinm + 4.0 * e * y * sinm * cos2l0 - 0.5 * y * y * sin4l0 - 1.25 * e * e * sin2m
 	return math.degrees(Etime*4.0) # in minutes of time
@@ -181,26 +181,13 @@ def calcHourAngleSunrise( lat, solarDec ):
 	# calculate the hour angle of the sun at sunrise for the latitude (in radians)
 	latRad = math.radians(lat)
 	sdRad  = math.radians(solarDec)
-	HAarg = cos(math.radians(90.833)) / ( cos(latRad)*cos(sdRad) ) - tan(latRad) * tan(sdRad)
-	HA = acos(HAarg);
+	HAarg = math.cos(math.radians(90.833)) / ( math.cos(latRad)*math.cos(sdRad) ) - math.tan(latRad) * math.tan(sdRad)
+	HA = math.acos(HAarg);
 	return HA # in radians (for sunset, use -HA)
 
 
-def calcSolNoon( jd, longitude, timezone, dst ):
-	# calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)
-	tnoon = calcTimeJulianCent(jd - longitude/360.0)
-	eqTime = calcEquationOfTime(tnoon)
-	solNoonOffset = 720.0 - (longitude * 4.) - eqTime # in minutes
-	newt = calcTimeJulianCent(jd + solNoonOffset/1440.0)
-	eqTime = calcEquationOfTime(newt)
-	solNoonLocal = 720.0 - (longitude * 4.) - eqTime + (timezone*60.0) # in minutes
-	if dst: 
-		solNoonLocal += 60.0
-	return solNoonLocal
-
-
-def calcAzEl( output, t, localtime, latitude, longitude, zone ):
-	# 
+def calcAzEl( t, localtime, latitude, longitude, zone ):
+	# calculate sun azimuth and zenith angle
 	eqTime = calcEquationOfTime(t)
 	theta  = calcSunDeclination(t)
 
@@ -216,22 +203,22 @@ def calcAzEl( output, t, localtime, latitude, longitude, zone ):
 		hourAngle += 360.0
 
 	haRad = math.radians(hourAngle)
-	csz = sin(math.radians(latitude)) * sin(math.radians(theta)) + cos(math.radians(latitude)) * cos(math.radians(theta)) * cos(haRad)
+	csz = math.sin(math.radians(latitude)) * math.sin(math.radians(theta)) + math.cos(math.radians(latitude)) * math.cos(math.radians(theta)) * math.cos(haRad)
 	if csz > 1.0: 
 		csz = 1.0 
 	elif csz < -1.0: 
 		csz = -1.0
-	zenith = math.degrees(acos(csz))
-	azDenom = cos(math.radians(latitude)) * sin(math.radians(zenith))
+	zenith = math.degrees(amath.cos(csz))
+	azDenom = math.cos(math.radians(latitude)) * math.sin(math.radians(zenith))
 	if abs(azDenom) > 0.001: 
-		azRad = (( sin(math.radians(latitude)) * cos(math.radians(zenith)) ) - sin(math.radians(theta))) / azDenom
+		azRad = (( math.sin(math.radians(latitude)) * math.cos(math.radians(zenith)) ) - math.sin(math.radians(theta))) / azDenom
 		if abs(azRad) > 1.0: 
 			if azRad < 0.: 
 				azRad = -1.0 
 			else:
 				azRad = 1.0
 		
-		azimuth = 180.0 - math.degrees(acos(azRad))
+		azimuth = 180.0 - math.degrees(amath.cos(azRad))
 		if hourAngle > 0.0: 
 			azimuth = -azimuth
 	else:
@@ -248,7 +235,7 @@ def calcAzEl( output, t, localtime, latitude, longitude, zone ):
 	if exoatmElevation > 85.0: 
 		refractionCorrection = 0.0
 	else:
-		te = tan(math.radians(exoatmElevation))
+		te = math.tan(math.radians(exoatmElevation))
 		if exoatmElevation > 5.0: 
 			refractionCorrection = 58.1 / te - 0.07 / (te*te*te) + 0.000086 / (te*te*te*te*te) 
 		elif exoatmElevation > -0.575: 
@@ -258,80 +245,83 @@ def calcAzEl( output, t, localtime, latitude, longitude, zone ):
 		refractionCorrection = refractionCorrection / 3600.0
 
 	solarZen = zenith - refractionCorrection
-	output = solarZen
 	
-	return azimuth
+	return array([azimuth, solarZen])
 
 
-def calcSunriseSetUTC( rise, JD, latitude, longitude ):
-	# 
-	t = calcTimeJulianCent(JD)
+def calcSolNoonUTC( jd, longitude ):
+	# calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)
+	tnoon = calcTimeJulianCent(jd)
+	eqTime = calcEquationOfTime(tnoon)
+	solNoonUTC = 720.0 - (longitude * 4.) - eqTime # in minutes
+	return solNoonUTC
+
+
+def calcSolNoon( jd, longitude, timezone, dst ):
+	# calculate time of solar noon the given day at the given location on earth (in minute)
+	timeUTC    = calcSolNoonUTC(jd, longitude)
+	newTimeUTC = calcSolNoonUTC(jd + timeUTC/1440.0, longitude)
+	solNoonLocal = newTimeUTC + (timezone*60.0) # in minutes
+	if dst: 
+		solNoonLocal += 60.0
+	return solNoonLocal
+
+
+def calcSunRiseSetUTC( jd, latitude, longitude ):
+	# calculate sunrise/sunset the given day at the given location on earth (in minute since 0 UTC)
+	t = calcTimeJulianCent(jd)
 	eqTime = calcEquationOfTime(t)
 	solarDec = calcSunDeclination(t)
 	hourAngle = calcHourAngleSunrise(latitude, solarDec)
-	if ~rise: 
-		hourAngle = -hourAngle
+	# Rise time
 	delta = longitude + math.degrees(hourAngle)
-	timeUTC = 720. - (4.0 * delta) - eqTime # in minutes
-	return timeUTC
+	riseTimeUTC = 720. - (4.0 * delta) - eqTime # in minutes
+	# Set time
+	hourAngle = -hourAngle
+	delta = longitude + math.degrees(hourAngle)
+	setTimeUTC = 720. - (4.0 * delta) - eqTime # in minutes
+	return array([riseTimeUTC, setTimeUTC])
+
+
+def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
+	# calculate sunrise/sunset the given day at the given location on earth (in minutes)
+	timeUTC    = calcSunRiseSetUTC(jd, latitude, longitude)
+	rtimeUTC = timeUTC[0]
+	stimeUTC = timeUTC[1]
+	# calculate local sunrise time (in minutes)
+	newTimeUTC = calcSunRiseSetUTC(jd + rtimeUTC/1440.0, latitude, longitude)
+	rnewTimeUTC = newTimeUTC[0]
+	rtimeLocal = rnewTimeUTC + (timezone * 60.0)
+	rtimeLocal += 60.0 if dst else 0.0
+	if rtimeLocal < 0.0 or rtimeLocal >= 1440.0: 
+		jday = jd
+		increment = 1. if rtimeLocal < 0. else -1.
+		while rtimeLocal < 0.0 or rtimeLocal >= 1440.0:
+			rtimeLocal += increment * 1440.0
+			jday -= increment
+	# calculate local sunset time (in minutes)
+	newTimeUTC = calcSunRiseSetUTC(jd + stimeUTC/1440.0, latitude, longitude)
+	snewTimeUTC = newTimeUTC[1]
+	stimeLocal = snewTimeUTC + (timezone * 60.0)
+	stimeLocal += 60.0 if dst else 0.0
+	if stimeLocal < 0.0 or stimeLocal >= 1440.0: 
+		jday = jd
+		increment = 1. if stimeLocal < 0. else -1.
+		while stimeLocal < 0.0 or stimeLocal >= 1440.0:
+			stimeLocal += increment * 1440.0
+			jday -= increment
+	# return
+	return array([rtimeLocal, stimeLocal])
 
 
 def getJD( day, month, year ):
-	# 
+	# calculate julian date for given day, month and year
 	if month < 2: 
 		year -= 1
 		month += 12
-	
-	A = floor(year/100.)
-	B = 2. - A + floor(A/4.)
-	JD = floor(365.25*(year + 4716.)) + floor(30.6001*(month+1)) + day + B - 1524.5
-	return JD
 
-
-def calcSunriseSet( rise, JD, latitude, longitude, timezone, dst ):
-	# 
-	# rise = 1 for sunrise, 0 for sunset
-	timeUTC    = calcSunriseSetUTC(rise, JD, latitude, longitude)
-	newTimeUTC = calcSunriseSetUTC(rise, JD + timeUTC/1440.0, latitude, longitude)
-	timeLocal = newTimeUTC + (timezone * 60.0)
-	riseT = calcTimeJulianCent(JD + newTimeUTC/1440.0)
-	riseAz = calcAzEl(0, riseT, timeLocal, latitude, longitude, timezone)
-	timeLocal += 60.0 if dst else 0.0
-	if timeLocal >= 0.0 and timeLocal < 1440.0: 
-		return timeLocal 
-	else:
-		jday = JD
-		increment = 1. if timeLocal < 0. else -1.
-		while timeLocal < 0.0 or timeLocal >= 1440.0:
-			timeLocal += increment * 1440.0
-			jday -= increment
-		return timeLocal
-	
-	return
-		
-
-def calculate_sunset( date, latitude, longitude, timezone=0., dst=0):
-
-	if n_elements(timezone) == 0: 
-		timezone = 0.
-	tz = double(timezone)
-
-	dst = keyword_set(dst)
-
-	if n_elements(date) == 0: 
-		print 'Must give date.'
-		return
-
-	parse_date, date, year, month, day
-	jday = getJD(day, month, year)
-	# calculate local sunrise time
-	rise = calcSunriseSet(1, jday, latitude, longitude, tz, dst)
-	set = calcSunriseSet(0, jday, latitude, longitude, tz, dst)
-	noon = calcSolNoon(jday, longitude, tz, dst)
-
-	risetime = long(rise/60.)*100 + round(rise % 60L)
-	settime =  long(set/60.)*100 + round(set % 60L)
-	solnoon = long(noon/60.)*100 + round(noon % 60L)
-	
-	return
+	A = math.floor(year/100.)
+	B = 2. - A + math.floor(A/4.)
+	jd = math.floor(365.25*(year + 4716.)) + math.floor(30.6001*(month+1)) + day + B - 1524.5
+	return jd
 
