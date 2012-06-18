@@ -58,6 +58,7 @@ import math
 from numpy import array	
 from numpy import zeros	
 from numpy import linspace
+from numpy import argmin
 
 def calcTimeJulianCent( jd ):
 	# convert Julian Day to centuries since J2000.0.
@@ -321,13 +322,17 @@ def calcTerminator( jd, latitudes, longitudes ):
 	ut = ( jd - (int(jd - 0.5) + 0.5) )*1440.
 	npoints = 100
 	zen = zeros((npoints,npoints))
-	term = 90. + zeros((npoints,2))
 	lats = linspace(latitudes[0], latitudes[1], num=npoints)
 	lons = linspace(longitudes[0], longitudes[1], num=npoints)
 	for ilat in range(npoints):
 		for ilon in range(npoints):
 			az,el = calcAzEl(t, ut, lats[ilat], lons[ilon], 0.)
 			zen[ilat,ilon] = el
+	zmin = argmin(abs(90.-zen), axis=0)
+	inds = (zmin != 0) & (zmin != len(zmin)-1)
+	term = zeros((len(zmin[inds]),2))
+	term[:,0] = lats[zmin[inds]]
+	term[:,1] = lons[inds]
 	return lats, lons, zen, term
 
 
