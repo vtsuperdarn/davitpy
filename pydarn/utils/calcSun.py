@@ -46,13 +46,18 @@ This includes the following defs:
 		calculate sunrise/sunset the given day at the given location on earth (in minutes since 0 UTC)
 	calcSunRiseSet( jd, latitude, longitude, timezone, dst )
 		calculate sunrise/sunset the given day at the given location on earth (in minutes)
-	calcTerminator( jd )
-		calculate terminator position for a given julian date-time
+	calcTerminator( jd, latitudes, longitudes )
+		calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
+		note that for plotting only, basemap has a built-in terminator
 
+Source: http://www.esrl.noaa.gov/gmd/grad/solcalc/
+Translated to Python by Sebastien de Larquier
 *******************************
 """
 import math
 from numpy import array	
+from numpy import zeros	
+from numpy import linspace
 
 def calcTimeJulianCent( jd ):
 	# convert Julian Day to centuries since J2000.0.
@@ -208,7 +213,7 @@ def calcAzEl( t, localtime, latitude, longitude, zone ):
 		csz = 1.0 
 	elif csz < -1.0: 
 		csz = -1.0
-	zenith = math.degrees(amath.cos(csz))
+	zenith = math.degrees(math.acos(csz))
 	azDenom = math.cos(math.radians(latitude)) * math.sin(math.radians(zenith))
 	if abs(azDenom) > 0.001: 
 		azRad = (( math.sin(math.radians(latitude)) * math.cos(math.radians(zenith)) ) - math.sin(math.radians(theta))) / azDenom
@@ -218,7 +223,7 @@ def calcAzEl( t, localtime, latitude, longitude, zone ):
 			else:
 				azRad = 1.0
 		
-		azimuth = 180.0 - math.degrees(amath.cos(azRad))
+		azimuth = 180.0 - math.degrees(math.acos(azRad))
 		if hourAngle > 0.0: 
 			azimuth = -azimuth
 	else:
@@ -226,7 +231,6 @@ def calcAzEl( t, localtime, latitude, longitude, zone ):
 			azimuth = 180.0 
 		else:
 			azimuth = 0.0
-	endelse
 	if azimuth < 0.0: 
 		azimuth += 360.0
 	exoatmElevation = 90.0 - zenith
@@ -246,7 +250,7 @@ def calcAzEl( t, localtime, latitude, longitude, zone ):
 
 	solarZen = zenith - refractionCorrection
 	
-	return array([azimuth, solarZen])
+	return azimuth, solarZen
 
 
 def calcSolNoonUTC( jd, longitude ):
@@ -280,17 +284,14 @@ def calcSunRiseSetUTC( jd, latitude, longitude ):
 	hourAngle = -hourAngle
 	delta = longitude + math.degrees(hourAngle)
 	setTimeUTC = 720. - (4.0 * delta) - eqTime # in minutes
-	return array([riseTimeUTC, setTimeUTC])
+	return riseTimeUTC, setTimeUTC
 
 
 def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
 	# calculate sunrise/sunset the given day at the given location on earth (in minutes)
-	timeUTC    = calcSunRiseSetUTC(jd, latitude, longitude)
-	rtimeUTC = timeUTC[0]
-	stimeUTC = timeUTC[1]
+	rtimeUTC, stimeUTC = calcSunRiseSetUTC(jd, latitude, longitude)
 	# calculate local sunrise time (in minutes)
-	newTimeUTC = calcSunRiseSetUTC(jd + rtimeUTC/1440.0, latitude, longitude)
-	rnewTimeUTC = newTimeUTC[0]
+	rnewTimeUTC, snewTimeUTC = calcSunRiseSetUTC(jd + rtimeUTC/1440.0, latitude, longitude)
 	rtimeLocal = rnewTimeUTC + (timezone * 60.0)
 	rtimeLocal += 60.0 if dst else 0.0
 	if rtimeLocal < 0.0 or rtimeLocal >= 1440.0: 
@@ -300,8 +301,7 @@ def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
 			rtimeLocal += increment * 1440.0
 			jday -= increment
 	# calculate local sunset time (in minutes)
-	newTimeUTC = calcSunRiseSetUTC(jd + stimeUTC/1440.0, latitude, longitude)
-	snewTimeUTC = newTimeUTC[1]
+	rnewTimeUTC, snewTimeUTC = calcSunRiseSetUTC(jd + stimeUTC/1440.0, latitude, longitude)
 	stimeLocal = snewTimeUTC + (timezone * 60.0)
 	stimeLocal += 60.0 if dst else 0.0
 	if stimeLocal < 0.0 or stimeLocal >= 1440.0: 
@@ -311,17 +311,34 @@ def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
 			stimeLocal += increment * 1440.0
 			jday -= increment
 	# return
-	return array([rtimeLocal, stimeLocal])
+	return rtimeLocal, stimeLocal
 
 
-def getJD( day, month, year ):
+def calcTerminator( jd, latitudes, longitudes ):
+	# calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
+	# note that for plotting only, basemap has a built-in terminator
+	t = calcTimeJulianCent(jd)
+	ut = ( jd - (int(jd - 0.5) + 0.5) )*1440.
+	npoints = 100
+	zen = zeros((npoints,npoints))
+	term = 90. + zeros((npoints,2))
+	lats = linspace(latitudes[0], latitudes[1], num=npoints)
+	lons = linspace(longitudes[0], longitudes[1], num=npoints)
+	for ilat in range(npoints):
+		for ilon in range(npoints):
+			az,el = calcAzEl(t, ut, lats[ilat], lons[ilon], 0.)
+			zen[ilat,ilon] = el
+	return lats, lons, zen, term
+
+
+def getJD( date ):
 	# calculate julian date for given day, month and year
-	if month < 2: 
-		year -= 1
-		month += 12
+	if date.month < 2: 
+		date.year -= 1
+		date.month += 12
 
-	A = math.floor(year/100.)
+	A = math.floor(date.year/100.)
 	B = 2. - A + math.floor(A/4.)
-	jd = math.floor(365.25*(year + 4716.)) + math.floor(30.6001*(month+1)) + day + B - 1524.5
+	jd = math.floor(365.25*(date.year + 4716.)) + math.floor(30.6001*(date.month+1)) + date.day + B - 1524.5
+	jd = jd + date.hour/24.0 + date.minute/1440.0 + date.second/86400.0
 	return jd
-
