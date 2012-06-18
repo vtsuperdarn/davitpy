@@ -6,7 +6,10 @@
 This subpackage contains various utilities for DaViT-py
 DEV: functions/modules/classes with a * have not been developed yet
 
-This includes the following function(s):
+This includes the following modules:
+	calcSun
+
+This includes the following functions:
 	parseDate
 	parseTime
 
@@ -15,3 +18,4 @@ This includes the following function(s):
 
 from parseDate import parseDate
 from parseTime import parseTime
+import calcSun

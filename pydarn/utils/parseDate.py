@@ -15,7 +15,7 @@ def parseDate( date ) :
 	from numpy import array
 	
 	# transform date into an array for testing
-	if type(date) != type(array([])): date = array([date])
+	if isinstance(date, ndarray): date = array([date])
 	
 	# parse date one way or another
 	if len(date) == 3:
