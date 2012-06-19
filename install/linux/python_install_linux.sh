@@ -13,3 +13,4 @@ apt-get install python-mpltoolkits.basemap
 apt-get install python-h5py
 apt-get install python-tornado
 apt-get install python-zmq
+apt-get install python-imaging
