@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
-# Utils module __init__.py
+# kp module __init__.py
 """
 *******************************
-            UTILS
+            kp
 *******************************
-This subpackage contains various utilities for DaViT-py
+This subpackage contains various fucntions to read and write Kp index
 DEV: functions/modules/classes with a * have not been developed yet
 
 This includes the following modules:
-	calcSun
+	kpIo
 
 This includes the following functions:
-	parseDate
+	readKpAscii
 	parseTime
 
 *******************************
 """
 
-from parseDate import parseDate
-from parseTime import parseTime
-import calcSun
+from kpIo import readKpAscii
+from kpIo import parseKpAsciiLine
