@@ -17,5 +17,8 @@ This includes the following functions:
 *******************************
 """
 
-from kpIo import readKpAscii
-from kpIo import parseKpAsciiLine
+import kpIo
+from kpIo import *
+import kpDay
+from kpDay import *
+
