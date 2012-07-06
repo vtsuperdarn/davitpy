@@ -4,5 +4,7 @@ tmp="`echo $(which davitpy)`"
 tmpdavitpy="`echo ${tmp%%davitpy/*}`"/davitpy
 if [ "" == "$DAVITPY" ]
 then
-        echo "export DAVITPY="$tmpdavitpy >> ~/.bash_profile
+	echo "# DaViTpy environment variables" >> ~/.bashrc
+        echo "export DAVITPY='"${tmpdavitpy}"'" >> ~/.bashrc
+	echo "export PATH="${DAVITPY}"/bin:\${PATH}" >> ~/.bashrc
 fi
