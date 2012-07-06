@@ -5,7 +5,7 @@ from kpDay import *
 import h5py
 
 def kp2Hdf5():
-	
+	"""this is a function which will read a Kp ascii file and output an hdf5 file"""
 	allKp = readKpAscii()
 	
 	f= h5py.File('/davitpy/gmi/kp/kp_index.hdf5','w')
