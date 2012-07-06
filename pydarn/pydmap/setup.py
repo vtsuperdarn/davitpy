@@ -22,9 +22,14 @@ setup (name = "pydmap",
                                 sources=["pydmap.c"],
                                 include_dirs = [
                                      "/usr/local/include/pydarn",
+                                     "/rst/include/superdarn",
+                                     "/rst/include/analysis",
+                                     "/rst/include/base",
+                                     "/rst/include/general",
                                      ],
                                 library_dirs = [
-                                     "/usr/local/lib64/"],
-				libraries=["m","z","rtime","dmap", "rcnv"]),]
+                                     "/usr/local/lib64/",
+                                     "/rst/lib/"],
+				libraries=["m","z","rtime.1","dmap.1", "rcnv.1"]),]
        )
 

@@ -4,7 +4,7 @@ import os,datetime
 def main():
   import pydmap
   import time
-  test_file="/home/jspaleta/data/fitacf/2012/03.01/20120301.2201.00.mcm.a.fitacf"
+  test_file="/home/aj/Desktop/fitting_test/rawacf_test/test_data1.rawacf"
 # Format::
 #  d: datetime object
 #  f: matplotlib fractional day object 
