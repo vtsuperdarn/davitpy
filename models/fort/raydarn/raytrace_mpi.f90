@@ -26,6 +26,8 @@ program		rayDARN
 ! ***********************************************************************************
 ! ***********************************************************************************
 
+
+	use HDF5
 	use constants
 	use MPIutils
 	implicit none
@@ -40,13 +42,23 @@ program		rayDARN
 ! MPI
 	integer::		hfrays, hfranges, hfedens, hfionos		! File handles
 	integer::		type_vec, type_param					! New data types
-	integer::		slice, ipar								! Misc.
+	integer::		slice, ipar, info						! Misc.
+! HDF5
+	INTEGER        :: error, error_n! Error flags
+	INTEGER        :: fnamelen      ! File name length
+	INTEGER(HID_T) :: file_id       ! File identifier
+	INTEGER(HID_T) :: dset_id       ! Dataset identifier
+	INTEGER(HID_T) :: filespace     ! Dataspace identifier in file
+	INTEGER(HID_T) :: plist_id      ! Property list identifier
+	INTEGER(HSIZE_T), DIMENSION(2) :: dimsf = (/5,8/) ! Dataset dimensions.
+	INTEGER(HSIZE_T), DIMENSION(2) :: dimsfi
 
 
 
 	! Initialize MPI environment
 	CALL MPI_INIT(code)
 	time_init = MPI_WTIME ()
+	info = MPI_INFO_NULL
 	CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, code)
 	CALL MPI_COMM_RANK(MPI_COMM_WORLD ,rank, code)
 
@@ -55,6 +67,13 @@ program		rayDARN
 	CALL MPI_TYPE_SIZE(MPI_REAL, mpi_size_real, code)
 	CALL MPI_TYPE_SIZE(MPI_INTEGER, mpi_size_int, code)
 	CALL MPI_TYPE_SIZE(type_vec, mpi_size_vec, code)
+
+	! Initialize FORTRAN HDF5 interface
+	CALL h5open_f(error)
+
+	! Setup file access property list with parallel I/O access.
+	CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+	CALL h5pset_fapl_mpio_f(plist_id, MPI_COMM_WORLD, code, error)
 
 
 	! Read parameters
