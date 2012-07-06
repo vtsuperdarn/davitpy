@@ -1,0 +1,35 @@
+python wrapper over dmap library for python visualization.
+This wrapper uses the following RST libraries:
+  "rtime","dmap", "rcnv"
+
+This setup.py assumes rst libraries are located in /usr/local/lib64/  
+
+::Install instructions::
+1) edit setup.py to make sure the rst libraries are in the library path.
+
+2) Now run the build command
+python setup.py --build
+
+3) This will create temporary build directories under build subdirectory.
+For example on Fedora 16 the python module is built here:
+build/lib.linux-x86_64-2.7/pydmap.so
+
+Copy the pydmap.so file into this top level directory.
+
+::Test instructions::
+
+edit __init__.py to point to an example dmap based file.
+
+run python __init__.py
+This will run through a "slow" test read of all the records of the dmap file by both ways supported.
+
+::Further Information::
+This dmap wrapper exposes two ways to access dmap record information, using python's concept of a dictionary. 
+
+One way lets you specify a variable name as a key which will result in a time keyed dictionary for just that variable. 
+
+The second way lets you key a time key to access all the variables for a single time record in the dmap.
+
+The time keys can either be specified as datetime objects or as matplotlib style "fractional days" since Jan 1 1970.
+
+ 
