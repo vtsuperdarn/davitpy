@@ -8,19 +8,22 @@ def kp2Hdf5():
 	"""this is a function which will read a Kp ascii file and output an hdf5 file"""
 	allKp = readKpAscii()
 	
-	f= h5py.File('/davitpy/gmi/kp/kp_index.hdf5','w')
-	dt = h5py.special_dtype(vlen=str)
-	dset = f.create_dataset('kpIndex', (len(allKp),8), dtype=dt)
+	#rearrage the Kp data
+	dates = []
+	vals = []
 	for i in range(0,len(allKp)):
-		dset[i,:] = allKp[i].vals
-	print dset[...]
-	f.close
+		dates.append(allKp[i].date)
+		vals.append(allKp[i].vals)
+		
+	f = h5py.File('/davitpy/gmi/kp/kp_index.hdf5','w')
+	f.create_dataset('kpDates', data=dates)
+	f.create_dataset('kpVals',data=vals)
+	f.close()
 	
 def readKpAscii():
 	#open the Kp ascii file
 	filename = '/davitpy/gmi/kp/kp_index.ascii'
 	f = open(filename, 'r')
-	
 	allKp = []
 	
 	#read the first line
@@ -31,8 +34,7 @@ def readKpAscii():
 		myLine.replace( "\n", "" )
 		
 		#parse the date into a date object
-		d = date(int(myLine[0:4]),int(myLine[4:6]),int(myLine[6:8]))
-		
+		d = myLine[0:8]
 		#parse the Kp values into a list
 		kpVals = []
 		for i in range(0,8):
@@ -47,6 +49,7 @@ def readKpAscii():
 		#read the next line in the file
 		myLine = f.readline()
 		
+	#return the array of data
 	return allKp
 			
 

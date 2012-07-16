@@ -9,11 +9,6 @@ Created by AJ
 *******************************
 """
 
-#class kpDay:
-	#def __init__(self, date, vals):
-	#self.date = realpart
-	#self.vals = vals
-
 class kpDay:
 	def __init__(self, d, vals):
 		#the date of the Kp Indices
