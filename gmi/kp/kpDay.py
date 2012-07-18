@@ -12,6 +12,6 @@ Created by AJ
 class kpDay:
 	def __init__(self, d, vals):
 		#the date of the Kp Indices
-		self.date = d
+		self.day = d
 		#the actual Kp indices
 		self.vals = vals
