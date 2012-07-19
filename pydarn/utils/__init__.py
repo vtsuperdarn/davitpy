@@ -18,4 +18,5 @@ This includes the following functions:
 
 from parseDate import parseDate
 from parseTime import parseTime
+from timeUtils import *
 import calcSun
