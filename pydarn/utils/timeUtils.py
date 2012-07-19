@@ -69,7 +69,7 @@ def dateToYyyymmdd(myDate):
 		return dateStr
 	else:
 		print 'error, input must be type date'
-		return
+		sys.exit()
 	
 def yyyymmddToDate(dateStr):
 	"""
@@ -96,10 +96,10 @@ def yyyymmddToDate(dateStr):
 		#if there was a problem with the input
 		except:
 			print 'error in input '+dateStr 
-			return
+			sys.exit()
 	else:
 		print 'error, input must be a string'
-		return
+		sys.exit()
 		
 		
 		
