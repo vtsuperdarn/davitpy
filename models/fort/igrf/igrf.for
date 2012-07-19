@@ -694,7 +694,7 @@ C ---------------------------------------------------------------
         WRITE(FOUT,667) FSPEC
 !  667    FORMAT(A13)
 !  667    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/',A13)
- 667    FORMAT('/davit/lib/vt/fort/igrf/',A13)
+ 667    FORMAT('${DAVITPY}/models/fort/igrf/',A13)
         OPEN (IU, FILE=FOUT, STATUS='OLD', IOSTAT=IER, ERR=999)     
         READ (IU, *, IOSTAT=IER, ERR=999)                            
         READ (IU, *, IOSTAT=IER, ERR=999) NMAX, ERAD, XMYEAR 
