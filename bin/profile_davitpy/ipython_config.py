@@ -15,7 +15,8 @@ c.InteractiveShellApp.exec_lines = [
 	'import pydarn',
 	'from math import *',
 	'import string',
-	'from pydarn.io.dmap import *',
+	'import gmi',
+	'from datetime import date',
 	'%load_ext autoreload',
 	'%autoreload 2'
 ]

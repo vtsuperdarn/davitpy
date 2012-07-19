@@ -18,4 +18,5 @@ This includes the following object(s):
 
 *******************************
 """
-from dmap import readBin
+import fitData
+from fitData import *
