@@ -3,20 +3,15 @@
 """
 *******************************
 ** 
-Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
+A class to contain a day of Kp data
 
 Created by AJ
 *******************************
 """
 
-#class kpDay:
-	#def __init__(self, date, vals):
-	#self.date = realpart
-	#self.vals = vals
-
 class kpDay:
 	def __init__(self, d, vals):
 		#the date of the Kp Indices
-		self.date = d
+		self.day = d
 		#the actual Kp indices
 		self.vals = vals
