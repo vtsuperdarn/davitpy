@@ -10,7 +10,10 @@
 
 # set environment variable
 export PYTHONPATH=$DAVITPY
+# for ipython 0.12
 export IPYTHON_DIR=$DAVITPY/bin
+# for ipython 0.13 and later
+export IPYTHONDIR=$DAVITPY/bin
 
 #start ipython
 ipython --profile=davitpy

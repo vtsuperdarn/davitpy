@@ -12,10 +12,9 @@ c.InteractiveShellApp.exec_lines = [
 	'import matplotlib as mplot',
 	'import pylab',
 	'import h5py',
-	'import pydarn',
 	'from math import *',
 	'import string',
-	'from pydarn.io.dmap import *',
+	'from pydarn import *',
 	'%load_ext autoreload',
 	'%autoreload 2'
 ]
