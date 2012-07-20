@@ -1,16 +1,16 @@
 # UTILS
-"""
-*******************************
-** atime = parseTime( time )
-Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
-
-INPUT:
-TIME: experiment date in HHMM or HHMMSS or numpy.array([HH,MM]) or numpy.array([HH,MM,SS])
-
-Created by Sebastien
-*******************************
-"""
 def parseTime( time ) :
+    """
+    *******************************
+    ** atime = parseTime( time )
+    Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
+
+    INPUT:
+    TIME: experiment date in HHMM or HHMMSS or numpy.array([HH,MM]) or numpy.array([HH,MM,SS])
+
+    Created by Sebastien
+    *******************************
+    """
 
 	from numpy import array
 	
