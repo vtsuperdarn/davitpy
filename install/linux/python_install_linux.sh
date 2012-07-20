@@ -6,7 +6,12 @@ ver=2.7
 
 apt-get install python$ver
 apt-get install ipython
+apt-get install ipython-notebook
 apt-get install python-numpy
 apt-get install python-scipy
 apt-get install python-matplotlib
+apt-get install python-mpltoolkits.basemap
 apt-get install python-h5py
+apt-get install python-tornado
+apt-get install python-zmq
+apt-get install python-imaging

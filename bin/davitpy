@@ -7,18 +7,13 @@
 #	- matplotlib
 #	- h5py
 #
-#
 
-# set environment variables
-DAVITPY=/davitpy
-export DAVITPY
-export PYTHONPATH=$DAVITPY
+# set environment variable
+export PYTHONPATH=${DAVITPY}:${PYTHONPATH}
+# for ipython 0.12
+export IPYTHON_DIR=${DAVITPY}/bin
+# for ipython 0.13 and later
+export IPYTHONDIR=${DAVITPY}/bin
 
 #start ipython
-ipython -i 	\
-		-c "import numpy; \
-			import scipy; \
-			import matplotlib as mplot; \
-			import pylab; \
-			import h5py; \
-			import utils"
+ipython --profile=davitpy

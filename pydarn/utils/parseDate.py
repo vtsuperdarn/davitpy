@@ -1,17 +1,21 @@
-# Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
-#
-# INPUT:
-# DATE: experiment date in YYYYMMDD
-#				or numpy.array([YYYY,MM,DD])
-#
-# Created by Sebastien
-# June 2012
-def parseDate( date ) :
+# UTILS
 
+def parseDate( date ) :
+	"""
+	*******************************
+	** adate = parseDate( date )
+	Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
+
+	INPUT:
+	DATE: experiment date in YYYYMMDD or numpy.array([YYYY,MM,DD])
+
+	Created by Sebastien
+	*******************************
+	"""
 	from numpy import array
 	
 	# transform date into an array for testing
-	if type(date) != type(array([])): date = array([date])
+	if isinstance(date, ndarray): date = array([date])
 	
 	# parse date one way or another
 	if len(date) == 3:

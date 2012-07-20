@@ -1,17 +1,21 @@
-# Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
-#
-# INPUT:
-# TIME: experiment date in HHMM or HHMMSS 
-#				or numpy.array([HH,MM]) or numpy.array([HH,MM,SS])
-#
-# Created by Sebastien
-# June 2012
+# UTILS
+"""
+*******************************
+** atime = parseTime( time )
+Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
+
+INPUT:
+TIME: experiment date in HHMM or HHMMSS or numpy.array([HH,MM]) or numpy.array([HH,MM,SS])
+
+Created by Sebastien
+*******************************
+"""
 def parseTime( time ) :
 
 	from numpy import array
 	
 	# transform time into an array for testing
-	if type(time) != type(array([])): time = array([time])
+	if isinstance(time, ndarray): time = array([time])
 	
 	# parse time one way or another
 	if len(time) == 3:

@@ -1,3 +1,7 @@
 *~
 *.pyc
 .DS_store
+history.sqlite
+*.o
+*omni*
+*minute*
