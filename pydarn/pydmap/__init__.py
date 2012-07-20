@@ -1,5 +1,5 @@
 from pydmap import DMapFile, timespan, dt2ts, ts2dt
-import os,datetime 
+import os, datetime 
 
 def main():
   import pydmap

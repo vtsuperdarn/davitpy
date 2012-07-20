@@ -18,4 +18,7 @@ This includes the following object(s):
 
 *******************************
 """
-from dmap import readBin
+import radData
+from radData import *
+import radDataRead
+from radDataRead import *

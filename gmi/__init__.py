@@ -14,4 +14,4 @@ This includes the following submodules:
 *******************************
 """
 
-from gmi import kp
+import kp
