@@ -75,7 +75,7 @@ def radDataRead(dateStr,rad,times=[0,2400],fileType=0):
 	dfile = pydarn.pydmap.DMapFile(files=filelist,format='d')
 	
 	for filename in filelist:
-		system.os('rm '+filename)
+		os.system('rm '+filename)
 		
 	return dfile
 		
