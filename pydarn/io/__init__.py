@@ -18,5 +18,7 @@ This includes the following object(s):
 
 *******************************
 """
-import fitData
-from fitData import *
+import radData
+from radData import *
+import radDataRead
+from radDataRead import *

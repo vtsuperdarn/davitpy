@@ -18,6 +18,6 @@ This includes the following submodules:
 *******************************
 """
 
-from pydarn import utils
-from pydarn.io.dmap import *
-from pydarn import pydmap
+import utils
+import io
+import pydmap
