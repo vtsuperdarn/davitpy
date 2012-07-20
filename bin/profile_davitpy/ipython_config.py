@@ -14,7 +14,6 @@ c.InteractiveShellApp.exec_lines = [
 	'import h5py',
 	'from math import *',
 	'import string',
-	'import gmi',
 	'from datetime import date',
 	'%load_ext autoreload',
 	'%autoreload 2'

@@ -121,7 +121,7 @@ def kp2Hdf5():
 	dates = []
 	vals = []
 	for i in range(0,len(allKp)):
-		dates.append(pydarn.utils.timeUtils.dateToYyyymmdd(allKp[i].date))
+		dates.append(pydarn.utils.timeUtils.dateToYyyymmdd(allKp[i].day))
 		vals.append(allKp[i].vals)
 		
 	f = h5py.File(os.environ['DAVITPY']+'/gmi/kp/kp_index.hdf5','w')
@@ -131,7 +131,7 @@ def kp2Hdf5():
 	
 	
 	
-def readKpAscii(filename):
+def readKpAscii():
 	"""
 	*******************************
 	
