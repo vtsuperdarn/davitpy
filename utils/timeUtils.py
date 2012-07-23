@@ -1,30 +1,8 @@
-#COPYRIGHT:
-#Copyright (C) 2011 by Virginia Tech
-
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
-
-#The above copyright notice and this permission notice shall be included in
-#all copies or substantial portions of the Software.
-
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#THE SOFTWARE.
-
 # UTILS
 from datetime import date
 def dateToYyyymmdd(myDate):
 	"""
 	*******************************
-	
 	dateStr = dateToYyyymmdd(myDate)
 	
 	takes a python date object and returns a string in yyyymmdd format
@@ -74,7 +52,6 @@ def dateToYyyymmdd(myDate):
 def yyyymmddToDate(dateStr):
 	"""
 	*******************************
-	
 	myDate = yyyymmddToDate(dateStr)
 	
 	takes a string in yyyymmdd format and returns a python date object
@@ -102,4 +79,25 @@ def yyyymmddToDate(dateStr):
 		sys.exit()
 		
 		
+def timeYrsecToDate(yrsec, year):
+	"""
+	*******************************
+	myDate = timeYrsecToDate(yrsec, year)
+	
+	Converts time expressed in seconds from start of year to a python DATETIME object
+
+	INPUTS:
+		yrsec : seconds since start of year
+		year : year in YYYY 
+	OUTPUTS:
+		myDate : a python DATETIME object
 		
+	Written by Sebastien, Jul. 2012
+	*******************************
+	"""
+	from datetime import datetime
+	from datetime import timedelta
+	
+	myDate = datetime(year, 1, 1) + timedelta(seconds = yrsec)
+	
+	return myDate
