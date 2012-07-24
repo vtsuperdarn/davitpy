@@ -1,6 +1,5 @@
 # UTILS
 def parseTime( time ) :
-<<<<<<< HEAD:utils/parseTime.py
 	"""
 *******************************
 ** atime = parseTime( time )
