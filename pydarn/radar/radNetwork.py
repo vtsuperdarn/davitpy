@@ -85,7 +85,8 @@ Object string representation
 				status = 'planned'
 			else:
 				status = '{}'.format(self.info[iRad].status)
-			outstring += '\n\t\t[{:d}] {} ({})'.format(self.info[iRad].id, self.info[iRad].name, status)
+			hemi = 'South' if self.info[iRad].site[0].geolat < 0 else 'North'
+			outstring += '\n\t\t({}) - [{:d}][{}] {} ({})'.format(hemi, self.info[iRad].id, self.info[iRad].code[0], self.info[iRad].name, status)
 		return outstring
 		
 	def getRadarById(self, id):
