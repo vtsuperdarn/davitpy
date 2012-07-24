@@ -5,3 +5,4 @@ history.sqlite
 *.o
 *omni*
 *minute*
+*.swp

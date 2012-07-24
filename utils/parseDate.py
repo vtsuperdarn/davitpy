@@ -2,15 +2,15 @@
 
 def parseDate( date ) :
 	"""
-	*******************************
-	** adate = parseDate( date )
-	Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
+*******************************
+** adate = parseDate( date )
+Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
 
-	INPUT:
-	DATE: experiment date in YYYYMMDD or numpy.array([YYYY,MM,DD])
+INPUT:
+DATE: experiment date in YYYYMMDD or numpy.array([YYYY,MM,DD])
 
-	Created by Sebastien
-	*******************************
+Created by Sebastien
+*******************************
 	"""
 	
 	# transform date into an array for testing
