@@ -102,7 +102,7 @@ Get a specific radar from its ID
 Get a specific radar from its name
 		"""
 		for iRad in range( self.nradar ):
-			if self.info[iRad].name == name:
+			if self.info[iRad].name.lower() == name.lower():
 				return self.info[iRad]
 				break
 		
@@ -111,7 +111,7 @@ Get a specific radar from its name
 Get a specific radar from its 3-letter code
 		"""
 		for iRad in range( self.nradar ):
-			if self.info[iRad].code[0] == code:
+			if self.info[iRad].code[0].lower() == code.lower():
 				return self.info[iRad]
 				break
 			
