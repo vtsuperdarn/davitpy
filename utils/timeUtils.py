@@ -98,6 +98,9 @@ def timeYrsecToDate(yrsec, year):
 	from datetime import datetime
 	from datetime import timedelta
 	
+	if year >= 2038: 
+		print 'timeYrsecToDate: Year {:d} out of range: forcing 2038'.format(year)
+		year = 2038
 	myDate = datetime(year, 1, 1) + timedelta(seconds = yrsec)
 	
 	return myDate
