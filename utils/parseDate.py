@@ -14,7 +14,7 @@ Created by Sebastien
 	"""
 	
 	# transform date into an array for testing
-	if ~isinstance(date, list): date = [date]
+	if not isinstance(date, list): date = [date]
 	
 	# make sure we are getting integers
 	for id in range( len(date) ):

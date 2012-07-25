@@ -9,7 +9,7 @@ Created by Sebastien
 *******************************
 	"""
 	# transform time into an array for testing
-	if ~isinstance(time, list): time = [time]
+	if not isinstance(time, list): time = [time]
 	
 	# make sure we are getting integers
 	for it in range( len(time) ):
