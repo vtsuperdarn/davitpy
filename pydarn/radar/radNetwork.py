@@ -38,6 +38,7 @@ Creates NETWORK object
 			tRadar = radar()
 			tRadar.id = radarF['id'][irad]
 			tRadar.status = radarF['status'][irad]
+			tRadar.cnum = radarF['cnum'][irad]
 			tRadar.st_time = radarF['st_time'][irad]
 			tRadar.ed_time = radarF['ed_time'][irad]
 			tRadar.name = radarF['name'][irad]
@@ -46,6 +47,7 @@ Creates NETWORK object
 			tRadar.code = radarF['code'][irad]
 			# Then, load info from hdw.dat file
 			siteF = hdwRead(tRadar.hdwfname)
+			tsnum = 0
 			for isit in range( len(siteF['tval']) ):
 				tRadar.site[isit].tval = siteF['tval'][isit]
 				tRadar.site[isit].geolat = siteF['geolat'][isit]
@@ -62,6 +64,8 @@ Creates NETWORK object
 				tRadar.site[isit].maxatten = siteF['maxatten'][isit]
 				tRadar.site[isit].maxrange = siteF['maxrange'][isit]
 				tRadar.site[isit].maxbeam = siteF['maxbeam'][isit]
+				tsnum += 1
+			tradar.snum = tsnum
 			self.info.append(tRadar)
 			
 	def __len__(self):
@@ -286,6 +290,7 @@ Reads radar.dat file
 	radarF['operator'] = []
 	radarF['hdwfname'] = []
 	radarF['code'] = []
+	radarF['cnum'] = []
 	# Fill dictionary with each radar.dat lines
 	for ldat in data:
 		ldat = shlex.split(ldat)
@@ -299,6 +304,7 @@ Reads radar.dat file
 		radarF['operator'].append( ldat[5] )
 		radarF['hdwfname'].append( ldat[6] )
 		radarF['code'].append( ldat[7:] )
+		radarF['cnum'].append( len(ldat[7:]) )
 	
 	# Return			
 	return radarF
