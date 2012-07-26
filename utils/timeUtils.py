@@ -1,5 +1,4 @@
 # UTILS
-from datetime import date
 def dateToYyyymmdd(myDate):
 	"""
 	*******************************
@@ -15,7 +14,6 @@ def dateToYyyymmdd(myDate):
 	Written by AJ 20120718
 	*******************************
 	"""
-	
 	if isinstance(myDate,date):
 		dateStr = ''
 		#create year string
@@ -64,7 +62,7 @@ def yyyymmddToDate(dateStr):
 	Written by AJ 20120718
 	*******************************
 	"""
-	
+	from datetime import date
 	#check input type
 	if isinstance(dateStr,str):
 		#try to make the date object

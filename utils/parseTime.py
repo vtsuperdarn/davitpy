@@ -5,6 +5,9 @@ def parseTime( time ) :
 ** atime = parseTime( time )
 Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
 
+INPUT:
+TIME: time in HHMM or HHMMSS or [HH,MM] or [HH,MM,SS]
+
 Created by Sebastien
 *******************************
 	"""
