@@ -18,3 +18,7 @@ This includes the following object(s):
 
 *******************************
 """
+import radData
+from radData import *
+import radDataRead
+from radDataRead import *

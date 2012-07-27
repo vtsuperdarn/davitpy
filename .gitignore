@@ -3,3 +3,8 @@
 .DS_store
 history.sqlite
 *.o
+*omni*
+*minute*
+*.swp
+bin/profile_davitpy/security/kernel*
+*rootmodules*

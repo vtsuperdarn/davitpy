@@ -1,8 +1,26 @@
 # Sets path and fundamental environment variables for DaViT-py
 
-tmp="`echo $(which davitpy)`"
-tmpdavitpy="`echo ${tmp%%davitpy/*}`"/davitpy
-if [ "" == "$DAVITPY" ]
+# *********************************
+# Modify this part if needed
+# *********************************
+TMP_RST=/rst/VT_RST3
+TMP_DAVITPY=/davitpy
+
+# *********************************
+# You probably do not need to modify the following part
+# *********************************
+# Set path to DAVITPY
+if [ "" == "${DAVITPY}" ]
 then
-        echo "export DAVITPY="$tmpdavitpy >> ~/.bash_profile
+    echo "# DaViTpy environment variables:" >> ~/.bashrc
+	echo "export DAVITPY='"$TMP_DAVITPY"'" >> ~/.bashrc
+	echo "export PATH=\${DAVITPY}/bin:\${PATH}" >> ~/.bashrc
+	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
+fi
+# Set RSTPATH
+if [ "" == "${RSTPATH}" ]
+then
+    echo "# RST environment variables:" >> ~/.bashrc
+	echo "export RSTPATH='"${TMP_RST}"'" >> ~/.bashrc
+	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
 fi

@@ -20,7 +20,10 @@ export IPYTHON_DIR=${DAVITPY}/bin
 # for ipython 0.13 and later
 export IPYTHONDIR=${DAVITPY}/bin
 
+# set RST location
+export RSTPATH=/Users/sebastien/rst/VT_RST3
+
 ############################
 
 #start ipython
-ipython --profile=davitpy
+ipython notebook --pylab=inline --profile=davitpy

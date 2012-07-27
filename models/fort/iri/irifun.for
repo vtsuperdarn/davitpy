@@ -7292,7 +7292,7 @@ c predictions.
 c
         if(iflag.eq.0) then
       
-          open(unit=12,file='/davit/lib/vt/fort/igrf/ig_rz.dat',status='old')
+          open(unit=12,file='${DAVITPY}/models/fort/igrf/ig_rz.dat',status='old')
 c-web- special for web version
 c          open(unit=12,file=
 c     *'/usr/local/etc/httpd/cgi-bin/models/IRI/ig_rz.dat',
@@ -7437,7 +7437,7 @@ c--------------------------------------------------------------------
 
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
-        Open(13,FILe='/davit/lib/vt/fort/iri/apf107.dat',
+        Open(13,FILe='${DAVITPY}/models/fort/iri/apf107.dat',
 c -web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')
@@ -7546,7 +7546,7 @@ c--------------------------------------------------------------------
 
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
-        Open(13,FILe='/davit/lib/vt/fort/iri/apf107.dat',
+        Open(13,FILe='${DAVITPY}/models/fort/iri/apf107.dat',
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')
@@ -7678,7 +7678,7 @@ c--------------------------------------------------------------------
         IYBEG=1958
         if(iyyyy.lt.IYBEG) goto 21   ! APF107.DAT starts at Jan 1, 1958
 
-        Open(13,FILe='/davit/lib/vt/fort/iri/apf107.dat',
+        Open(13,FILe='${DAVITPY}/models/fort/iri/apf107.dat',
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')

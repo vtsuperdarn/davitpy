@@ -1,8 +1,10 @@
-1.  in a terminal, move to the folder where you want to install davitpy
-2.  type 'git clone git@github.com:vtsuperdarn/davitpy.git'
-3.  add the following liens to your ~/.bashrc
+HOW TO: install davit-py for development (SD-lab install)?
 
-		export DAVITPY="/davitpy"
+1.  	in a terminal, move to the parent folder where you want to install davitpy
+2.  	type 'git clone https://github.com/vtsuperdarn/davitpy.git'
+3.  	add the following lines to your ~/.bashrc
+
+		export DAVITPY="path_to_the_davitpy_directory"
 		export PATH=${DAVITPY}"/bin":${PATH}
 
 4.	open a new terminal, type 'davitpy', and enjoy

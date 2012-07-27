@@ -5,6 +5,7 @@
 ver=27
 
 port install python${ver}
+port install py${ver}-ipython
 port install py${ver}-numpy
 port install py${ver}-matplotlib
 port install py${ver}-matplotlib-basemap

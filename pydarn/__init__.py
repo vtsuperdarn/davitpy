@@ -18,4 +18,6 @@ This includes the following submodules:
 *******************************
 """
 
-from pydarn import utils
+#import utils
+#import pydmap
+import radar
