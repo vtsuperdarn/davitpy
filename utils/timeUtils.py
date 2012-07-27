@@ -1,11 +1,11 @@
 # UTILS
-from datetime import date
+from datetime import datetime
 def dateToYyyymmdd(myDate):
 	"""
 	*******************************
 	dateStr = dateToYyyymmdd(myDate)
 	
-	takes a python date object and returns a string in yyyymmdd format
+	takes a python datetime object and returns a string in yyyymmdd format
 
 	INPUTS:
 		myDate : a python date object
@@ -15,8 +15,9 @@ def dateToYyyymmdd(myDate):
 	Written by AJ 20120718
 	*******************************
 	"""
+	from datetime import datetime
 	
-	if isinstance(myDate,date):
+	if isinstance(myDate,datetime):
 		dateStr = ''
 		#create year string
 		yr = myDate.year
@@ -46,7 +47,7 @@ def dateToYyyymmdd(myDate):
 		#return everything together
 		return dateStr
 	else:
-		print 'error, input must be type date'
+		print 'error, input must be type datetime'
 		sys.exit()
 	
 def yyyymmddToDate(dateStr):
@@ -59,17 +60,19 @@ def yyyymmddToDate(dateStr):
 	INPUTS:
 		dateStr : a string in yyyymmdd format
 	OUTPUTS:
-		myDate : a python date object
+		myDate : a python datetime object
 		
 	Written by AJ 20120718
 	*******************************
 	"""
 	
+	from datetime import datetime
+	
 	#check input type
 	if isinstance(dateStr,str):
 		#try to make the date object
 		try:
-			return date(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]))
+			return datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]))
 		#if there was a problem with the input
 		except:
 			print 'error in input '+dateStr 
