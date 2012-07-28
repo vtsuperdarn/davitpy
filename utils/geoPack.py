@@ -280,4 +280,45 @@ OUTPUTS
 		print 'lspToLcar: {} is not a valid system. Try again!'.format(into)
 	
 	return xOut, yOut, zOut
+
+
+# *************************************************************
+def calcDistPnt(origLat, origLon, origAlt, dist=0., el=0., az=0., distLat=0., distLon=0., distAlt=0.):
+	""" dict = calcDistPnt(origLat, origLon, origAlt, dist=0., el=0., az=0., distLat=0., distLon=0., distAlt=0.)
+Calculate the coordinates of a distant point given a point of origin, distance, azimuth and elevation,
+or calculate the distance, azimuth and elevation between a point of origin and a distant point.
+Input/output is in geodetic coordinates, distances are in km and angles in degrees.
+
+INPUTS:
+	origLat: latitude of point of origin [degree]
+	origLon: longitude of point of origin [degree]
+	origAlt: altitude of point of origin [km]
+	dist, el, az: distance [km], azimuth [degree] and elevation [degree]. Must be set together.
+	distLat, distLon, distAlt: latitude [degree], longitude [degree] and altitide [km] of distant point. Must be set together.
+OUTPUTS
+	dict: a dictionary containing all the information about origin and distant points and their relative positions
+	"""
+	from math import radians, degrees, cos, sin, asin, acos, atan2, sqrt
+	
+	# If all the input parameters (keywords) are set to 0, show a warning, and default to fint distance/azimuth/elevation
+	if dist == 0. and el == 0. and az == 0.:
+		mode = 'findDistAzEl'
+		if distLat == 0. and distLon == 0. and distAlt == 0.:
+			print 'calcDistPnt: Warning: all the keywords are set to default. Calculating distance/azimuth/elevation to point (0.N, 0.E, 0. km)'
+		else:
+			print 'Calculating distance/azimuth/elevation to point ({:6.2f}N, {:6.2f}E, {:6.2f} km)'.format(distLat, distLon, distAlt)
+	elif distLat == 0. and distLon == 0. and distAlt == 0.:
+		print 'Calculating coordinates of distant point at {:6.2f} km, {:6.2f}'.format(dist,az)+unichr(176)+'E, {:6.2f}'.format(el)+unichr(176)+' elevation.'
+		mode = 'findDistPnt'
+	else:
+		print 'calcDistPnt: Too many keywords set at once. This function does not understand what you are asking. Do you?'
+		return
+	
+	if mode == 'findDistAzEl':
+		
+	elif mode == 'findDistPnt':
+		
+
+	
+		
 	
