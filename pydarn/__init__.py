@@ -18,6 +18,5 @@ This includes the following submodules:
 *******************************
 """
 
-#import utils
 #import pydmap
 import radar

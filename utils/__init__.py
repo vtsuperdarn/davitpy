@@ -21,3 +21,15 @@ from parseTime import parseTime
 from timeUtils import *
 from geoPack import *
 import calcSun
+
+
+# *************************************************************
+# Define a few general-use constants
+
+# Mean Earth radius [km]
+Re = 6371.0
+# Polar Earth radius [km]
+RePol = 6378.1370
+# Equatorial Earth radius [km]
+ReEqu = 6,356.7523
+

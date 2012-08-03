@@ -39,8 +39,8 @@ Creates NETWORK object
 			tRadar.id = radarF['id'][irad]
 			tRadar.status = radarF['status'][irad]
 			tRadar.cnum = radarF['cnum'][irad]
-			tRadar.st_time = radarF['st_time'][irad]
-			tRadar.ed_time = radarF['ed_time'][irad]
+			tRadar.stTime = radarF['stTime'][irad]
+			tRadar.edTime = radarF['edTime'][irad]
 			tRadar.name = radarF['name'][irad]
 			tRadar.operator = radarF['operator'][irad]
 			tRadar.hdwfname = radarF['hdwfname'][irad]
@@ -62,10 +62,10 @@ Creates NETWORK object
 				tRadar.site[isit].interfer = siteF['interfer'][isit]
 				tRadar.site[isit].recrise = siteF['recrise'][isit]
 				tRadar.site[isit].maxatten = siteF['maxatten'][isit]
-				tRadar.site[isit].maxrange = siteF['maxrange'][isit]
+				tRadar.site[isit].maxgate = siteF['maxgate'][isit]
 				tRadar.site[isit].maxbeam = siteF['maxbeam'][isit]
 				tsnum += 1
-			tradar.snum = tsnum
+			tRadar.snum = tsnum
 			self.info.append(tRadar)
 			
 	def __len__(self):
@@ -97,28 +97,51 @@ Object string representation
 		"""
 Get a specific radar from its ID
 		"""
-		for iRad in range( self.nradar ):
-			if self.info[iRad].id == id:
-				return self.info[iRad]
-				break
+		radar = self.getRadarBy(id, by='id')
+		return radar
 		
 	def getRadarByName(self, name):
 		"""
 Get a specific radar from its name
 		"""
-		for iRad in range( self.nradar ):
-			if self.info[iRad].name.lower() == name.lower():
-				return self.info[iRad]
-				break
+		radar = self.getRadarBy(name, by='name')
+		return radar
 		
 	def getRadarByCode(self, code):
 		"""
 Get a specific radar from its 3-letter code
 		"""
+		radar = self.getRadarBy(code, by='code')
+		return radar
+		
+	def getRadarBy(self, radN, by):
+		"""
+Get a specific radar from its name/code/id
+		"""
+		found = False
 		for iRad in range( self.nradar ):
-			if self.info[iRad].code[0].lower() == code.lower():
-				return self.info[iRad]
+			if by.lower() == 'code':
+				for ic in range(self.info[iRad].cnum):
+					if self.info[iRad].code[ic].lower() == radN.lower():
+						found = True
+						return self.info[iRad]
+						break
+			elif by.lower() == 'name':
+				if self.info[iRad].name.lower() == radN.lower():
+					found = True
+					return self.info[iRad]
+					break
+			elif by.lower() == 'id':
+				if self.info[iRad].id == radN:
+					found = True
+					return self.info[iRad]
+					break
+			else:
+				print 'getRadarBy: invalid method by {}'.format(by)
 				break
+		if not found:
+			print 'getRadarBy: could not find radar {}: {}'.format(by, radN)
+			return found
 			
 
 # *************************************************************
@@ -127,7 +150,7 @@ class radar(network):
 Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
 	"""
 	__maxSites = 32
-	#__slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator', 'hdwfname', 'st_time', 'ed_time', 'snum', 'site')
+	#__slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator', 'hdwfname', 'stTime', 'edTime', 'snum', 'site')
 	def __init__(self):
 		self.id = 0
 		self.status = 0
@@ -136,8 +159,8 @@ Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
 		self.name = ''
 		self.operator = ''
 		self.hdwfname = ''
-		self.st_time = 0.0
-		self.ed_time = 0.0
+		self.stTime = 0.0
+		self.edTime = 0.0
 		self.snum = 0
 		self.site = []
 		for isit in range(self.__maxSites):
@@ -161,8 +184,8 @@ Object string representation
 					\nname: {4} \
 					\noperator: {5} \
 					\nhdwfname: {6} \
-					\nst_time: {7} \
-					\ned_time: {8} \
+					\nstTime: {7} \
+					\nedTime: {8} \
 					\nsnum: {9:d} \
 					\nsite: {10:d} elements'.format(self.id, \
 										self.status, \
@@ -171,8 +194,8 @@ Object string representation
 										self.name, \
 										self.operator, \
 										self.hdwfname, \
-										self.st_time.date(), \
-										self.ed_time.date(), \
+										self.stTime.date(), \
+										self.edTime.date(), \
 										self.snum, \
 										len(self.site))
 		return outstring
@@ -181,16 +204,22 @@ Object string representation
 		"""
 Get a specific radar site at a given date
 		"""
+		found = False
 		for iSit in range( self.__maxSites ):
 			if self.site[iSit].tval == -1:
+				found = True
 				return self.site[iSit]
 				break
-			if self.site[iSit].tval >= date:
+			elif self.site[iSit].tval >= date:
+				found = True
 				if iSit > 0: 
 					return self.site[iSit-1]
 				else:
 					return self.site[iSit]
 				break
+		if not found:
+			print 'getSiteByDate: could not get SITE for date {}'.format(date)
+			return found
 		
 
 
@@ -199,7 +228,7 @@ class site(radar):
 	"""
 Reads hdw.dat for a given radar and fills a SITE structure
 	"""
-	#__slots__ = ('tval', 'geolat', 'geolon', 'alt', 'boresite', 'bmsep', 'vdir', 'atten', 'tdif', 'phidiff', 'interfer', 'recrise', 'maxatten', 'maxrange', 'maxbeam')
+	#__slots__ = ('tval', 'geolat', 'geolon', 'alt', 'boresite', 'bmsep', 'vdir', 'atten', 'tdif', 'phidiff', 'interfer', 'recrise', 'maxatten', 'maxgate', 'maxbeam')
 	def __init__(self):
 		self.tval = 0.0
 		self.geolat = 0.0
@@ -214,7 +243,7 @@ Reads hdw.dat for a given radar and fills a SITE structure
 		self.interfer = [0.0, 0.0, 0.0]
 		self.recrise = 0.0
 		self.maxatten = 0
-		self.maxrange = 0
+		self.maxgate = 0
 		self.maxbeam = 0
 			
 	def __len__(self):
@@ -240,7 +269,7 @@ Object string representation
 					\ninterfer: [{10:5.2f}, {11:5.2f}, {12:5.2f}] \
 					\nrecrise: {13:5.3f} \
 					\nmaxatten: {14:d} \
-					\nmaxrange: {15:d} \
+					\nmaxgate: {15:d} \
 					\nmaxbeam: {16:d}'.format(self.tval, \
 											self.geolat, \
 											self.geolon, \
@@ -254,7 +283,7 @@ Object string representation
 											self.interfer[0], self.interfer[1], self.interfer[2], \
 											self.recrise, \
 											self.maxatten, \
-											self.maxrange, \
+											self.maxgate, \
 											self.maxbeam)
 		return outstring
 		
@@ -284,8 +313,8 @@ Reads radar.dat file
 	radarF = {}
 	radarF['id'] = []
 	radarF['status'] = []
-	radarF['st_time'] = []
-	radarF['ed_time'] = []
+	radarF['stTime'] = []
+	radarF['edTime'] = []
 	radarF['name'] = []
 	radarF['operator'] = []
 	radarF['hdwfname'] = []
@@ -297,9 +326,9 @@ Reads radar.dat file
 		radarF['id'].append( int(ldat[0]) )
 		radarF['status'].append( int(ldat[1]) )
 		tmpDate = parseDate( int(ldat[2]) )
-		radarF['st_time'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
+		radarF['stTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
 		tmpDate = parseDate( int(ldat[3]) )
-		radarF['ed_time'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
+		radarF['edTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
 		radarF['name'].append( ldat[4] )
 		radarF['operator'].append( ldat[5] )
 		radarF['hdwfname'].append( ldat[6] )
@@ -344,7 +373,7 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 	siteF['interfer'] = []
 	siteF['recrise'] = []
 	siteF['maxatten'] = []
-	siteF['maxrange'] = []
+	siteF['maxgate'] = []
 	siteF['maxbeam'] = []
 	# Read line by line, ignoring comments
 	for ldat in data:
@@ -366,7 +395,7 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 		siteF['interfer'].append( [float(ldat[12]), float(ldat[13]), float(ldat[14])] )
 		siteF['recrise'].append( float(ldat[15]) )
 		siteF['maxatten'].append( int(ldat[16]) )
-		siteF['maxrange'].append( int(ldat[17]) )
+		siteF['maxgate'].append( int(ldat[17]) )
 		siteF['maxbeam'].append( int(ldat[18]) )
 		
 	# Return
