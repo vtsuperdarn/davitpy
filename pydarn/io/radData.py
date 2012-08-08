@@ -1,8 +1,78 @@
 class radData(dict):
+	"""
+	*******************************
+	CLASS pydarn.io.radData
+
+	a dictionary class containing a time sequence of
+	radar data in beam structures
+	
+	KEYS:
+		[datetime1, datetime2, ...]
+	VALUES:
+		[beam1, beam2, ...]
+		
+	EXAMPLES:
+	
+	DECLARATION: 
+		myData = prm.io.radData()
+		
+	ACCESS:
+		myData[datetime] = beam
+	
+	Written by AJ 20120808
+	*******************************
+	"""
+	
 	def __init__(self):
 		self._dict = {}
+		
+	def getTimes(self):
+		"""
+		*******************************
+		FUNCTION radData.getTimes():
+		
+		returns a sorted list of the datetime keys belonging
+		to a radData object
+		
+		BELONGS TO: class pydarn.io.radData
+
+		INPUTS:
+			NONE
+		OUTPUTS:
+			k: a sorted list of datetime keys for a radData obect
+			
+		Written by AJ 20120808
+		*******************************
+		"""
+	
+		k = self.keys()
+		k.sort()
+		return k
       
 class beam(dict):
+	"""
+	*******************************
+	CLASS pydarn.io.beam
+
+	a dictionary class containing a pydarn.io.prm class 
+	and either a pydarn.io.fit or pydarn.io.raw class
+	
+	KEYS:
+		['prm','fit','raw']
+	VALUES:
+		[prmData,fitData, rawData]
+	
+	EXAMPLES:
+	
+	DECLARATION: 
+		myBeam = pydarn.io.beam()
+		
+	ACCESS:
+		myBeam['prm'] = prmData
+	
+	Written by AJ 20120808
+	*******************************
+	"""
 	def __init__(self):
 		self._dict = {}
 		self['prm'] = prmData()
@@ -10,6 +80,28 @@ class beam(dict):
 		self['raw'] = rawData()
 
 class prmData(dict):
+	"""
+	*******************************
+	CLASS pydarn.io.prmData
+
+	a dictionary class containing radar operating parameter data
+	
+	KEYS:
+		['cp','tfreq', ...]
+	VALUES:
+		[CP ID, T Freq, ...]
+	
+	EXAMPLES:
+	
+	DECLARATION: 
+		myPrm = pydarn.io.prmData()
+		
+	ACCESS:
+		myPrm['tfreq'] = tfreq
+	
+	Written by AJ 20120808
+	*******************************
+	"""
 	def __init__(self):
 		self._dict = {}
 		self['radar.revision.major'] = -9999999
@@ -62,10 +154,85 @@ class prmData(dict):
 		
     
 class fitData(dict):
+	"""
+	*******************************
+	CLASS pydarn.io.fitData
+
+	a dictionary class containing fitted radar data
+	
+	EXAMPLES:
+	
+	DECLARATION: 
+		myFit = pydarn.io.fitData()
+		
+	ACCESS:
+		#number of range gates with scatter:
+		len(myFit['slist'])
+		#first range gate with scatter
+		r = myFit['slist'][0]
+		#velocity of range gate r
+		v = myFit['v'][0]
+	
+	Written by AJ 20120808
+	*******************************
+	"""
 	def __init__(self):
 		self._dict = {}
+		self['pwr0'] = -9999999
+		self['slist'] = -9999999
+		self['nlag'] = -9999999
+		self['qflg'] = -9999999
+		self['gflg'] = -9999999
+		self['p_l'] = -9999999
+		self['p_l_e'] = -9999999
+		self['p_s'] = -9999999
+		self['p_s_e'] = -9999999
+		self['v'] = -9999999
+		self['v_e'] = -9999999
+		self['w_l'] = -9999999
+		self['w_l_e'] = -9999999
+		self['sd_l'] = -9999999
+		self['sd_s'] = -9999999
+		self['sd_phi'] = -9999999
+		self['x_qflg'] = -9999999
+		self['x_gflg'] = -9999999
+		self['x_p_l'] = -9999999
+		self['x_p_l_e'] = -9999999
+		self['x_p_s'] = -9999999
+		self['x_p_s_e'] = -9999999
+		self['x_v'] = -9999999
+		self['x_v_e'] = -9999999
+		self['x_w_l'] = -9999999
+		self['x_w_l_e'] = -9999999
+		self['x_w_s'] = -9999999
+		self['x_w_s_e'] = -9999999
+		self['phi0'] = -9999999
+		self['phi0_e'] = -9999999
+		self['elv'] = -9999999
+		self['elv_low'] = -9999999
+		self['elv_high'] = -9999999
+		self['x_sd_l'] = -9999999
+		self['x_sd_s'] = -9999999
+		self['x_sd_phi'] = -9999999
+		
         
 class rawData(dict):
+	"""
+	*******************************
+	CLASS pydarn.io.rawData
+
+	a dictionary class containing raw radar data
+	
+	EXAMPLES:
+	
+	DECLARATION: 
+		myRaw = pydarn.io.rawData()
+		
+	ACCESS:
+	
+	Written by AJ 20120808
+	*******************************
+	"""
 	def __init__(self):
 		self._dict = {}
         
