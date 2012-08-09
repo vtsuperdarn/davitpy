@@ -22,3 +22,5 @@ This includes the following submodules:
 import pydmap
 import radar
 import io
+import dmapio
+from datetime import *

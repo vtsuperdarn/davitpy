@@ -75,9 +75,6 @@ class beam(dict):
 	"""
 	def __init__(self):
 		self._dict = {}
-		self['prm'] = prmData()
-		self['fit'] = fitData()
-		self['raw'] = rawData()
 
 class prmData(dict):
 	"""

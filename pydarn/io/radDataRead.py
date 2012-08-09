@@ -83,15 +83,21 @@ def dmapRead(dateStr,rad,times,fileType):
 				filename = string.replace(filename,'.bz2','')
 				
 			filelist.append(filename)
-	print filelist
-		
-	dfile = pydarn.pydmap.DMapFile(files=filelist,format='d')
+			
+	tempname = tmpDir+str(int(time.time()))
+	
+	print 'concatenating '+' '.join(filelist)+' > '+tempname
+	os.system('cat '+' '.join(filelist)+' > '+tempname)
+	
+	dfile = pydarn.dmapio.readDmap(tempname)
 	
 	for filename in filelist:
 		os.system('rm '+filename)
+		
+		
 	return dfile
 
-def radDataRead(dateStr,rad,times=[0,2400],fileType=0,vb=0,tgtBeam=-1):
+def radDataRead(dateStr,rad,times=[0,2400],fileType=0,vb=0,beam=-1):
 	"""
 	*******************************
 	
@@ -111,7 +117,7 @@ def radDataRead(dateStr,rad,times=[0,2400],fileType=0,vb=0,tgtBeam=-1):
 			default=0
 		[vb]: verbose output, 1=yes, 0=no
 			default = 0
-		[tgtBeam]: beam for which to read data, a value of -1 will
+		[beam]: beam for which to read data, a value of -1 will
 			read all beams (default)
 	OUTPUTS:
 		myData: a radData object
@@ -123,50 +129,50 @@ def radDataRead(dateStr,rad,times=[0,2400],fileType=0,vb=0,tgtBeam=-1):
 	#read the datamap file
 	dfile = dmapRead(dateStr,rad,times=times,fileType=fileType)
 	print 'done read'
+	return dfile
 	
-	#create radData object
-	myRadData = pydarn.io.radData()
+	##create radData object
+	#myRadData = pydarn.io.radData()
 	
-	#calculate start and end times
-	stime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
-	int(math.floor(times[0]/100.)),int((times[0]/100.-math.floor(times[0]/100.))*100))
-	if(times[1] == 2400):
-		etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8])+1,1,0,0)
-	else:
-		etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
-		int(math.floor(times[1]/100.)),int((times[1]/100.-math.floor(times[1]/100.))*100))
+	##calculate start and end times
+	#stime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
+	#int(math.floor(times[0]/100.)),int((times[0]/100.-math.floor(times[0]/100.))*100))
+	#if(times[1] == 2400):
+		#etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8])+1,1,0,0)
+	#else:
+		#etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
+		#int(math.floor(times[1]/100.)),int((times[1]/100.-math.floor(times[1]/100.))*100))
 		
-	#iterate through the available times from the file
-	for t in dfile.times:
-		#check that we are in the target time interval
-		if(t >= stime and t <= etime):
+	##iterate through the available times from the file
+	#for t in dfile.times:
+		##check that we are in the target time interval
+		#if(t >= stime and t <= etime):
 			
-			#verbose output
-			if(vb):
-				print t
+			##verbose output
+			#if(vb):
+				#print t
 				
-			#check the requested beam
-			if(tgtBeam != -1 and dfile[t]['bmnum'] != tgtBeam):
-				continue
+			##check the requested beam
+			#if(beam != -1 and dfile[t]['bmnum'] != beam):
+				#continue
 			
-			#create a beam object
-			myBeam = pydarn.io.beam()
+			##create a beam object
+			#myBeam = pydarn.io.beam()
 		
-			#parse the parameters
-			myPrmData = parseDmap(dfile[t],pydarn.io.prmData())
-			myBeam['prm'] = myPrmData
-			myBeam['prm']['time'] = t
+			##parse the parameters
+			#myPrmData = parseDmap(dfile[t],pydarn.io.prmData())
+			#myBeam['prm'] = myPrmData
+			#myBeam['prm']['time'] = t
 			
-			#parse the fit data
-			if(fileType < 3):
-				myFitData = parseDmap(dfile[t],pydarn.io.fitData())
-				myBeam['fit'] = myFitData
+			##parse the fit data
+			#if(fileType < 3):
+				#myFitData = parseDmap(dfile[t],pydarn.io.fitData())
+				#myBeam['fit'] = myFitData
 			
-			myRadData[t] = myBeam
-			myRadData.viewkeys()
-		
-	print 'done copy'
-	return myRadData
+			#myRadData[t] = myBeam
+			
+	#print 'done copy'
+	#return myRadData
 
 
 def parseDmap(rec,myData):
