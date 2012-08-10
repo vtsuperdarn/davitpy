@@ -7,14 +7,7 @@ c.TerminalIPythonApp.display_banner = True
 c.InteractiveShellApp.log_level = 20
 # c.InteractiveShellApp.extensions = []
 c.InteractiveShellApp.exec_lines = [
-	'import numpy',
-	'import scipy',
-	'import matplotlib as mplot',
-	'import pylab',
-	'import h5py',
 	'from math import *',
-	'import string',
-	'from datetime import date',
 	'%load_ext autoreload',
 	'%autoreload 2'
 ]

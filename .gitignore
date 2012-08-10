@@ -6,3 +6,5 @@ history.sqlite
 *omni*
 *minute*
 *.swp
+bin/profile_davitpy/security/kernel*
+*rootmodules*
