@@ -1,9 +1,9 @@
 from distutils.core import setup, Extension
 
-setup (name = "pydmap",
-       version = "0.1",
+setup (name = "dmapio",
+       version = "0.2",
        description = "python bindings for dmap files",
-       author = "Jef Spaleta",
+       author = "Jef Spaleta with edits by AJ",
        author_email = "jspaleta@gi.alaska.edu",
        url = "http://wwwfe",
        long_description =
@@ -18,8 +18,8 @@ setup (name = "pydmap",
         'Topic :: System :: Science'
   ],
 
-       ext_modules = [Extension("pydmap",
-                                sources=["pydmap.c"],
+       ext_modules = [Extension("dmapio",
+                                sources=["dmapio.c"],
                                 include_dirs = [
                                      "/usr/local/include/pydarn",
                                      "/rst/include/superdarn",
