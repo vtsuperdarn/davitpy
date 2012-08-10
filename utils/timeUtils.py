@@ -1,5 +1,5 @@
 # UTILS
-from datetime import datetime
+
 def dateToYyyymmdd(myDate):
 	"""
 	*******************************
@@ -107,3 +107,28 @@ def timeYrsecToDate(yrsec, year):
 	myDate = datetime(year, 1, 1) + timedelta(seconds = yrsec)
 	
 	return myDate
+
+def julToDatetime( ndarray ) :
+  """ 
+  ****************************
+  adate = julToDatetime( ndarray )
+  Convert a julian date to a datetime object.
+
+  INPUT: 
+  NDARRAY: single float64 or a numpy array of Julian Dates.
+
+  Created by Nathaniel Frissell 20120810
+  *******************************
+  """
+  import datetime
+  import dateutil.parser
+  import numpy
+  import spacepy.time as spt
+
+  t = spt.Ticktock(ndarray,'JD')
+
+  dt = list()
+  for iso in t.ISO: dt.append(dateutil.parser.parse(iso))
+
+  return dt
+
