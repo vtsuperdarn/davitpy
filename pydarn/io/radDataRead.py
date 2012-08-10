@@ -65,7 +65,6 @@ def dmapRead(dateStr,rad,times,fileType):
 		else:
 			hrStr = str(i)
 
-		print myDir+dateStr+'.'+hrStr+'*'
 		#iterate through all of the files which begin in this hour
 		for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
 			#copy the file from sd-data to a local temp directory
@@ -89,15 +88,17 @@ def dmapRead(dateStr,rad,times,fileType):
 	print 'concatenating '+' '.join(filelist)+' > '+tempname
 	os.system('cat '+' '.join(filelist)+' > '+tempname)
 	
-	dfile = pydarn.dmapio.readDmap(tempname)
-	
 	for filename in filelist:
 		os.system('rm '+filename)
+		
+	dfile = pydarn.dmapio.readDmap(tempname)
+	
+
 		
 		
 	return dfile
 
-def radDataRead(dateStr,rad,times=[0,2400],fileType=0,vb=0,beam=-1):
+def radDataRead(dateStr,rad,time=[0,2400],fileType=0,vb=0,beam=-1):
 	"""
 	*******************************
 	
@@ -127,55 +128,56 @@ def radDataRead(dateStr,rad,times=[0,2400],fileType=0,vb=0,beam=-1):
 	"""
 	
 	#read the datamap file
-	dfile = dmapRead(dateStr,rad,times=times,fileType=fileType)
+	dfile = dmapRead(dateStr,rad,times=time,fileType=fileType)
 	print 'done read'
-	return dfile
 	
-	##create radData object
-	#myRadData = pydarn.io.radData()
+	#create radData object
+	myRadData = pydarn.io.radData()
 	
-	##calculate start and end times
-	#stime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
-	#int(math.floor(times[0]/100.)),int((times[0]/100.-math.floor(times[0]/100.))*100))
-	#if(times[1] == 2400):
-		#etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8])+1,1,0,0)
-	#else:
-		#etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
-		#int(math.floor(times[1]/100.)),int((times[1]/100.-math.floor(times[1]/100.))*100))
+	#calculate start and end times
+	stime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
+	int(math.floor(time[0]/100.)),int((time[0]/100.-math.floor(time[0]/100.))*100))
+	if(time[1] == 2400):
+		etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8])+1,1,0,0)
+	else:
+		etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
+		int(math.floor(time[1]/100.)),int((time[1]/100.-math.floor(time[1]/100.))*100))
 		
-	##iterate through the available times from the file
-	#for t in dfile.times:
-		##check that we are in the target time interval
-		#if(t >= stime and t <= etime):
+	#iterate through the available times from the file
+	for epochT in dfile.keys():
+
+		dateT = datetime.datetime.utcfromtimestamp(epochT)
+		#check that we are in the target time interval
+		if(dateT >= stime and dateT <= etime):
 			
-			##verbose output
-			#if(vb):
-				#print t
+			#verbose output
+			if(vb):
+				print dateT
 				
-			##check the requested beam
-			#if(beam != -1 and dfile[t]['bmnum'] != beam):
-				#continue
+			#check the requested beam
+			if(beam != -1 and dfile[epochT]['bmnum'] != beam):
+				continue
 			
-			##create a beam object
-			#myBeam = pydarn.io.beam()
+			#create a beam object
+			myBeam = pydarn.io.beam()
 		
-			##parse the parameters
-			#myPrmData = parseDmap(dfile[t],pydarn.io.prmData())
-			#myBeam['prm'] = myPrmData
-			#myBeam['prm']['time'] = t
+			#parse the parameters
+			myPrmData = parseDmap(dfile[epochT],pydarn.io.prmData())
+			myBeam['prm'] = myPrmData
+			myBeam['prm']['time'] = dateT
 			
-			##parse the fit data
-			#if(fileType < 3):
-				#myFitData = parseDmap(dfile[t],pydarn.io.fitData())
-				#myBeam['fit'] = myFitData
+			#parse the fit data
+			if(fileType < 3):
+				myFitData = parseDmap(dfile[epochT],pydarn.io.fitData())
+				myBeam['fit'] = myFitData
 			
-			#myRadData[t] = myBeam
+			myRadData[dateT] = myBeam
 			
-	#print 'done copy'
-	#return myRadData
+	print 'done copy'
+	return myRadData
 
 
-def parseDmap(rec,myData):
+def parseDmap(myRec,myData):
 	"""
 	*******************************
 	
@@ -185,7 +187,7 @@ def parseDmap(rec,myData):
 	structure, eg fitData, prmData
 
 	INPUTS:
-		rec: the pydmapobject containing the data record
+		myRec: the pydmapobject containing the data record
 		myData: the structure to put the data into
 	OUTPUTS:
 		myData: a data object, e.g. prmData, fitData, rawData
@@ -193,10 +195,13 @@ def parseDmap(rec,myData):
 	Written by AJ 20120807
 	*******************************
 	"""
-	
+	from numpy import *
 	for k in myData.iterkeys():
-		if(rec.has_key(k)):
-			myData[k] = rec[k]
+		if(myRec.has_key(k)):
+			if(isinstance(myRec[k],list)):
+				myData[k] = array(myRec[k])
+			else:
+				myData[k] = myRec[k]
 	
 	return myData
 	
