@@ -60,7 +60,7 @@ OUTPUTS
 		lonOut = lon
 		Re = a / sqrt( 1. + e2 * sin( radians(lat) )**2 )
 	else:
-		print 'geodToGeoc: {} is not a valid system. Try again!'.format(into)
+		print 'geodToGeoc: {} is not a valid system.'.format(into)
 		return
 		
 	return latOut, lonOut, Re
@@ -120,8 +120,8 @@ OUTPUTS
 		kzGC = sin( radians(el) )
 		# Now rotate system about the x axis to align local vertical vector with Earth radial vector
 		kxGD = kxGC
-		kyGD = kyGC * cos( devH ) + kzGC * sin( devH )
-		kzGD = -kyGC * sin( devH ) + kzGC * cos( devH )
+		kyGD = kyGC * cos( -devH ) + kzGC * sin( -devH )
+		kzGD = -kyGC * sin( -devH ) + kzGC * cos( -devH )
 		# Finally calculate the new azimuth and elevation in the geocentric frame
 		azOut = degrees( atan2( kxGD, kyGD ) )
 		elOut = degrees( atan( kzGD / sqrt( kxGD**2 + kyGD**2 ) ) )
@@ -148,12 +148,12 @@ or to global spherical).
 INPUTS:
 	X: latitude [degree] or global cartesian X [km]
 	Y: longitude [degree] or global cartesian Y [km]
-	Z: altitude [km] or global cartesian Z [km]
+	Z: distance from center of the Earth [km] or global cartesian Z [km]
 	into: 'gcar' (global cartesian, default) or 'gsp' (global spherical) specifies the system to convert into
 OUTPUTS
 	X: global cartesian X [km] or latitude [degree]
 	Y: global cartesian Y [km] or longitude [degree]
-	Z: global cartesian Z [km] or altitude [km]
+	Z: global cartesian Z [km] or distance from center of the Earth [km]
 	"""
 	from math import radians, degrees, cos, sin, asin, atan2, sqrt
 	
