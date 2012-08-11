@@ -9,7 +9,8 @@ c.InteractiveShellApp.log_level = 20
 c.InteractiveShellApp.exec_lines = [
 	'from math import *',
 	'%load_ext autoreload',
-	'%autoreload 2'
+	'%autoreload 2',
+	'import pydarn'
 ]
 # c.InteractiveShellApp.exec_files = []
 c.InteractiveShell.autoindent = True
@@ -29,3 +30,5 @@ c.PrefilterManager.multi_line_specials = True
 c.AliasManager.user_aliases = [
  ('la', 'ls -al')
 ]
+
+

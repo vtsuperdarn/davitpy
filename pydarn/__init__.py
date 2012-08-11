@@ -19,7 +19,7 @@ This includes the following submodules:
 """
 
 #import utils
-import pydmap
+import dmapio
 import radar
 import io
 from datetime import *

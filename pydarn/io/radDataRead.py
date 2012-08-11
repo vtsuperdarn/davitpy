@@ -1,10 +1,10 @@
-import os,datetime,glob,math,shutil,string,time,pydarn
+import os,datetime,glob,math,shutil,string,time,pydarn,numpy
 
 def dmapRead(dateStr,rad,times,fileType):
 	"""
 	*******************************
 	
-	dmapRead():
+	dmapRead(dateStr,rad,times,fileType):
 	
 	parses a user's input arguments and then reads
 	the content of a data map file using the library
@@ -22,24 +22,11 @@ def dmapRead(dateStr,rad,times,fileType):
 	*******************************
 	"""
 	
-	import math,glob,os,shutil,string,time
-	import pydarn
-
 	#get the year of the file
 	yrStr = dateStr[0:4]
 	
-	#check for file extension
-	if(fileType == 0):
-		ext = 'fitex'
-	elif(fileType == 1):
-		ext = 'fitacf'
-	elif(fileType == 2):
-		ext = 'lmfit'
-	elif(fileType == 3):
-		ext = 'rawacf'
-	
 	#this needs to be changed when the network is working
-	myDir = '/sd-data/'+yrStr+'/'+ext+'/'+rad+'/'
+	myDir = '/sd-data/'+yrStr+'/'+fileType+'/'+rad+'/'
 	
 	#we need to get the start and end hours of the request
 	#becasue of how the files are named
@@ -53,11 +40,10 @@ def dmapRead(dateStr,rad,times,fileType):
 	d = os.path.dirname(tmpDir)
 	if not os.path.exists(d):
 		os.makedirs(d)
-	tmpName = tmpDir+str(int(time.time()))+'.'+ext
+	tmpName = tmpDir+str(int(time.time()))+'.'+fileType
 
 	#iterate through all of the hours in the request
 	#ie, iterate through all possible file names
-	
 	filelist=[]
 	for i in range(hr1,hr2+1):
 		if(i < 10):
@@ -83,7 +69,7 @@ def dmapRead(dateStr,rad,times,fileType):
 				
 			filelist.append(filename)
 			
-	tempname = tmpDir+str(int(time.time()))
+	tempname = tmpDir+str(int(time.time()))+'.'+fileType
 	
 	print 'concatenating '+' '.join(filelist)+' > '+tempname
 	os.system('cat '+' '.join(filelist)+' > '+tempname)
@@ -93,16 +79,15 @@ def dmapRead(dateStr,rad,times,fileType):
 		
 	dfile = pydarn.dmapio.readDmap(tempname)
 	
-
-		
+	#os.system('rm '+tempname)
 		
 	return dfile
 
-def radDataRead(dateStr,rad,time=[0,2400],fileType=0,vb=0,beam=-1):
+def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 	"""
 	*******************************
 	
-	radDataRead():
+	radDataRead(dateStr,rad,[time],[fileType],[vb],[beam]):
 	
 	reads radar data (fitacf or rawacf) for a given period
 
@@ -114,8 +99,8 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType=0,vb=0,beam=-1):
 			instead of [0029,0156]
 			note that an end time of 2400 will read to the end of the file
 			default = [0,2400]
-		[fileType]: 0 for fitex, 1 for fitacf, 2 for lmfit, 3 for rawacf
-			default=0
+		[fileType]: one of ['fitex','fitacf','lmfit','rawacf']
+			default = 'fitex'
 		[vb]: verbose output, 1=yes, 0=no
 			default = 0
 		[beam]: beam for which to read data, a value of -1 will
@@ -128,7 +113,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType=0,vb=0,beam=-1):
 	"""
 	
 	#read the datamap file
-	dfile = dmapRead(dateStr,rad,times=time,fileType=fileType)
+	dfile = dmapRead(dateStr,rad,time,fileType)
 	print 'done read'
 	
 	#create radData object
@@ -167,13 +152,21 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType=0,vb=0,beam=-1):
 			myBeam['prm']['time'] = dateT
 			
 			#parse the fit data
-			if(fileType < 3):
+			if(fileType == 'fitex' or fileType == 'fitacf' or fileType == 'lmfit'):
 				myFitData = parseDmap(dfile[epochT],pydarn.io.fitData())
 				myBeam['fit'] = myFitData
 			
+			#parse the raw data
+			if(fileType == 'rawacf'):
+				myRawData = parseDmap(dfile[epochT],pydarn.io.rawData())
+				myBeam['raw'] = myRawData
+				
 			myRadData[dateT] = myBeam
 			
 	print 'done copy'
+	
+	myRadData.times = myRadData.getTimes();
+	
 	return myRadData
 
 
@@ -181,7 +174,7 @@ def parseDmap(myRec,myData):
 	"""
 	*******************************
 	
-	parseDmap():
+	parseDmap(myRec,myData):
 	
 	parses radar data from a pydmapobject into the proper 
 	structure, eg fitData, prmData
@@ -195,11 +188,10 @@ def parseDmap(myRec,myData):
 	Written by AJ 20120807
 	*******************************
 	"""
-	from numpy import *
 	for k in myData.iterkeys():
 		if(myRec.has_key(k)):
 			if(isinstance(myRec[k],list)):
-				myData[k] = array(myRec[k])
+				myData[k] = numpy.array(myRec[k])
 			else:
 				myData[k] = myRec[k]
 	
