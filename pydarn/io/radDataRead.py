@@ -165,7 +165,8 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 			
 	print 'done copy'
 	
-	myRadData.times = myRadData.getTimes();
+	myRadData.times = myRadData.getTimes()
+	myRadData.nrecs = len(myRadData.times)
 	
 	return myRadData
 

@@ -28,6 +28,7 @@ class radData(dict):
 	def __init__(self):
 		self._dict = {}
 		self.times = []
+		self.nrecs = 0
 		
 	def getTimes(self):
 		"""
@@ -85,7 +86,7 @@ class radData(dict):
 				myData[k] = self[k]
 			
 		myData.times = myData.getTimes()
-		
+		myData.nrecs = len(myData.times)
 		return myData
       
 class beam(dict):

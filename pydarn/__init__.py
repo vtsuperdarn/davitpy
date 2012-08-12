@@ -22,4 +22,5 @@ This includes the following submodules:
 import dmapio
 import radar
 import io
+import plot
 from datetime import *
