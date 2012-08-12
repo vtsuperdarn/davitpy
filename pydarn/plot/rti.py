@@ -1,6 +1,10 @@
 import pydarn
 import numpy
+import matplotlib
 import matplotlib.pyplot as plot
+import calendar
+import datetime
+import utils
 
 def plotRti(dateStr,rad,beam,time=[0,2400],fileType='fitex'):
 	"""
@@ -43,11 +47,44 @@ def plotRti(dateStr,rad,beam,time=[0,2400],fileType='fitex'):
 	
 	rtiFig = plot.figure()
 	
-	rtiTitle(myData,rtiFig)
+	rtiTitle(myData,dateStr,beam)
+	
+	x=plotNoise(myData)
 	
 	rtiFig.show()
+	return x
+def rtiTitle(myData,dateStr,beam):
 	
-def rtiTitle(myData,myFig):
+	rname = 'Radar Name'
+	plot.figtext(.1,.95,rname+'  ('+myData.ftype+')',ha='left',weight=550)
+	
+	d = utils.yyyymmddToDate(dateStr)
+	plot.figtext(.5,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
+	weight=550,size='large',ha='center')
+	
+	plot.figtext(.9,.95,'Beam '+str(beam),weight=550,ha='right')
+	
+
+def plotNoise(myData,position=[.1,.88,.8,.06]):
+	
+	y=[]
+	
+	for i in range(0,myData.nrecs):
+		y.append(myData[myData.times[i]]['prm']['noise.sky'])
+	
+	ax = plot.axes(position)
+	ax.yaxis.set_tick_params(direction='out')
+	ax.xaxis.set_tick_params(labelsize=0)
 	
 	
-	plot.figtext(.5,.95,'this is a test',ha='center')
+	plot.plot_date(matplotlib.dates.date2num(myData.times), numpy.log10(y), fmt='ko-', \
+	tz=None, xdate=True, ydate=False,markersize=2)
+	
+	loc,lab = plot.xticks()
+	plot.xticks(loc,(' '))
+	#customize yticks
+	plot.yticks(numpy.arange(0,6,5),('10^0','10^5'),fontsize=9,weight=550)
+	plot.ylabel('N.Sky',fontsize=10,weight=550)
+	return ax
+	
+	

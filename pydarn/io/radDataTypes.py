@@ -29,6 +29,7 @@ class radData(dict):
 		self._dict = {}
 		self.times = []
 		self.nrecs = 0
+		self.ftype = 'no data'
 		
 	def getTimes(self):
 		"""
