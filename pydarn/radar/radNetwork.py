@@ -33,6 +33,8 @@ Creates NETWORK object
 		self.info = []
 		# First, load info from radar.dat file
 		radarF = radarRead()
+		if not radarF: 
+			print 'network(object): No radars found in radar.dat'
 		self.nradar = len(radarF['id'])
 		for irad in range( self.nradar ):
 			tRadar = radar()
@@ -47,6 +49,7 @@ Creates NETWORK object
 			tRadar.code = radarF['code'][irad]
 			# Then, load info from hdw.dat file
 			siteF = hdwRead(tRadar.hdwfname)
+			if not siteF: continue
 			tsnum = 0
 			for isit in range( len(siteF['tval']) ):
 				tRadar.site[isit].tval = siteF['tval'][isit]
@@ -307,7 +310,7 @@ Reads radar.dat file
 	except:
 		print 'radarRead: cannot read '+os.environ['RSTPATH']+'/tables/superdarn/radar.dat'
 		err = -1
-		return {}
+		return None
 	
 	# Initialize placeholder dictionary of lists
 	radarF = {}
@@ -357,7 +360,7 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 		file_hdw.close()
 	except:
 		print 'hdwRead: cannot read '+os.environ['RSTPATH']+'/tables/superdarn/hdw/'+fname
-		return {}
+		return None
 	
 	# Site placeholder
 	siteF = {}
