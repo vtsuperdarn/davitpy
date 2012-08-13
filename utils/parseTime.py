@@ -5,11 +5,14 @@ def parseTime( time ) :
 ** atime = parseTime( time )
 Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
 
+INPUT:
+TIME: time in HHMM or HHMMSS or [HH,MM] or [HH,MM,SS]
+
 Created by Sebastien
 *******************************
 	"""
 	# transform time into an array for testing
-	if ~isinstance(time, list): time = [time]
+	if not isinstance(time, list): time = [time]
 	
 	# make sure we are getting integers
 	for it in range( len(time) ):

@@ -218,7 +218,7 @@ class fitData(dict):
 		self._dict = {}
 		self['pwr0'] = []							#lag 0 power array
 		self['slist'] = []						#list of range gates w/ scatter
-		self['npnts'] = []						#number of gates w/ scatter
+		self['npnts'] = 0						#number of gates w/ scatter
 		self['nlag'] = []							#number of good lags
 		self['qflg'] = []							#quality flag
 		self['gflg'] = []							#g scat flag

@@ -2,11 +2,14 @@ import pydarn
 import numpy
 import matplotlib
 import matplotlib.pyplot as plot
+import matplotlib.lines as lines
 import calendar
 import datetime
 import utils
+from matplotlib.ticker import MultipleLocator
 
-def plotRti(dateStr,rad,beam,time=[0,2400],fileType='fitex'):
+def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
+scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	"""
 	*******************************
 	
@@ -17,7 +20,8 @@ def plotRti(dateStr,rad,beam,time=[0,2400],fileType='fitex'):
 	INPUTS:
 		dateStr: a string containing the target date in yyyymmdd format
 		rad: the 3 letter radar code, e.g. 'bks'
-		beam: the beam to plot
+		[beam]: the beam to plot
+			default: 7
 		[times]: the range of times for which the file should be read,
 			in SIMPLIFIED [hhmm,hhmm] format, eg [29,156], 
 			instead of [0029,0156]
@@ -25,20 +29,40 @@ def plotRti(dateStr,rad,beam,time=[0,2400],fileType='fitex'):
 			default = [0,2400]
 		[fileType]: one of ['fitex','fitacf','lmfit']
 			default = 'fitex'
+		[params]: a list of the fit parameters to plot, allowable values are:
+			['velocity','power','width']
+			default: ['velocity','power','width']
+		[scales]: a list of the min/max values for the color scale for
+			each param.  The list should be n x 2 where n is the number of
+			elements in the params list
+			default: [[-200,200],[0,30],[0,150]]
+		[channel]: the channel you wish to plot, the allowable values are
+			'a' and 'b'
+			default: 'a'
+		[coords]: the coordinates to use for the y axis.  The allowable values are
+			'gate','rng','geo','mag'
+			default: 'gate'
 	OUTPUTS:
 
-	EXAMPLE
+	EXAMPLE:
+		plotRti('20120101','bks',beam=12,time=[10,1453],fileType='fitex',
+		params=['vel','power'],scales=[[-200,200],[0,30]],channel='b',
+		coords='mag'):
 		
 	Written by AJ 20120807
 	*******************************
 	"""
 	
 	#check the inputs
-	assert(isinstance(dateStr,str)),'error, dateStr must be a string'
-	assert(isinstance(rad,str)),'error, dateStr must be a string'
-	assert(len(dateStr) == 8),'error, dateStr must be 8 characters long'
-	assert(len(rad) == 3),'error, rad must be 3 characters long'
-	assert(isinstance(beam,int)),'error, beam mest be integer'
+	assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
+	assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
+	assert(isinstance(beam,int)),'error, beam must be integer'
+	assert(0 < len(params) < 4),'error, must input between 1 and 3'
+	for i in range(0,len(params)):
+		assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width'),\
+		"error, allowable params are 'velocity','power','width'"
+	assert(len(scales)==len(params)), \
+	'error, input scales must have same number of elements as params'
 	
 	#read the radar data
 	myData = pydarn.io.radDataRead(dateStr,rad,time=time,fileType=fileType,vb=0,beam=beam)
@@ -49,14 +73,99 @@ def plotRti(dateStr,rad,beam,time=[0,2400],fileType='fitex'):
 	
 	rtiTitle(myData,dateStr,beam)
 	
-	x=plotNoise(myData)
+	plotNoise(myData,rtiFig)
 	
+	plotFreq(myData,rtiFig)
+	
+	figtop = .77
+	figheight = .72/len(params)
+	for i in range(0,len(params)):
+		plotData(myData,rtiFig,params[i],scales[i],i==len(params)-1, \
+		pos=[.1,figtop-figheight*(i+1)+.02,.8,figheight-.02])
+		
 	rtiFig.show()
-	return x
+	
+def plotData(myData,myFig,param,scale,bottom,yrng=-1,pos=[.1,.05,.8,.72]):
+	
+	#add an axes to the figure
+	ax = myFig.add_axes(pos)
+	ax.yaxis.set_tick_params(direction='out')
+	ax.xaxis.set_tick_params(direction='out')
+	ax.yaxis.set_minor_locator(MultipleLocator(5))
+	ax.yaxis.set_tick_params(direction='out',which='minor')
+	ax.xaxis.set_tick_params(direction='out',which='minor')
+	
+	#check that we have data
+	if(myData.nrecs == 0): return None
+	
+	#check if we want default y axis
+	if(isinstance(yrng,int) and yrng == -1):
+		ymin = 0
+		ymax = -1
+		for i in range(0,myData.nrecs):
+			if(myData[myData.times[0]]['prm']['nrang'] > ymax): ymax = myData[myData.times[0]]['prm']['nrang']
+			
+	ax.set_ylim(bottom=ymin,top=ymax)
+		
+	#draw the axes
+	ax.plot_date(matplotlib.dates.date2num(myData.times), numpy.arange(len(myData.times)), fmt='w', \
+	tz=None, xdate=True, ydate=False)
+	
+		
+	ypnts=[]
+	xpnts=[]
+	#verts=[(0.,0.),(0.,1.),(1.,1.),(1.,0.)]
+	#plot the data!
+	for i in range(0,myData.nrecs):
+		t = myData.times[i]
+		x1 = matplotlib.dates.date2num(t)
+		if(i < myData.nrecs-1): 
+			x2 =  matplotlib.dates.date2num(myData.times[i+1])
+			if(x2-x1 > 4./1440.): x2 = x1+2./1440.
+		else: x2 = x1+1./1440.
+
+		xtips = [x1,x1,x2,x2]
+		for j in range(0,len(myData[t]['fit']['slist'])):
+			y1,y2 = myData[t]['fit']['slist'][j],myData[t]['fit']['slist'][j]+1
+			#r = matplotlib.patches.Rectangle((x1,y1),x2-x1,y2-y1,fill=True,fc='b',ec='g',figure=myFig)
+			#ax.add_patch(r)
+			ytips = [y1,y2,y2,y1]
+			ax.fill(xtips,ytips,facecolor='b',edgecolor='none')
+			xpnts.append(xtips)
+			ypnts.append(ytips)
+			#ypnts.append(myData[t]['fit']['slist'][j])
+			#xpnts.append(t)
+
+	# rebuild ends using none to separate polygons
+	#xlist = []
+	#ylist = []
+	#for xtips,ytips in zip(xpnts,ypnts):
+		#xlist.extend(xtips)
+		#xlist.append(None)
+		#ylist.extend(ytips)
+		#ylist.append(None)
+	############################
+	# time single call to matplotlib
+	
+	#ax.fill(xlist,ylist,facecolor='b',edgecolor='none')
+
+	#ax.scatter(xpnts,ypnts,marker=numpy.array(verts))
+				
+	#format the x axis
+	ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator(interval=20))
+	plot.xticks(size=9)
+	if(not bottom):
+		loc,lab = plot.xticks()
+		plot.xticks(loc,(' '))
+	else:
+		ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
+	
 def rtiTitle(myData,dateStr,beam):
 	
-	rname = 'Radar Name'
-	plot.figtext(.1,.95,rname+'  ('+myData.ftype+')',ha='left',weight=550)
+	n=pydarn.radar.network()
+	r=n.getRadarById(33)
+	
+	plot.figtext(.1,.95,r.name+'  ('+myData.ftype+')',ha='left',weight=550)
 	
 	d = utils.yyyymmddToDate(dateStr)
 	plot.figtext(.5,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
@@ -65,26 +174,124 @@ def rtiTitle(myData,dateStr,beam):
 	plot.figtext(.9,.95,'Beam '+str(beam),weight=550,ha='right')
 	
 
-def plotNoise(myData,position=[.1,.88,.8,.06]):
+def plotNoise(myData,myFig,pos=[.1,.88,.8,.06]):
+	
+	#read the data
+	sky=[]
+	search = []
+	for i in range(0,myData.nrecs):
+		sky.append(myData[myData.times[i]]['prm']['noise.sky'])
+		search.append(myData[myData.times[i]]['prm']['noise.search'])
+	
+	#add an axes to the figure
+	ax = myFig.add_axes(pos)
+	ax.yaxis.tick_left()
+	ax.yaxis.set_tick_params(direction='out')
+	ax.set_ylim(bottom=0,top=6)
+	ax.yaxis.set_minor_locator(MultipleLocator())
+	ax.yaxis.set_tick_params(direction='out',which='minor')
+
+	
+	#plot the sky noise data
+	ax.plot_date(matplotlib.dates.date2num(myData.times), numpy.log10(sky), fmt='k-', \
+	tz=None, xdate=True, ydate=False)
+	#remove the x tick labels
+	loc,lab = plot.xticks()
+	plot.xticks(loc,(' '))
+	#use only 2 major yticks
+	plot.yticks([0,6],(' '))
+	
+	#left y axis annotation
+	plot.figtext(pos[0]-.01,pos[1]+.004,'10^0',ha='right',va='bottom',size=8)
+	plot.figtext(pos[0]-.01,pos[1]+pos[3],'10^6',ha='right',va='top',size=8)
+	plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'N.Sky',ha='center',va='center', \
+	size=8.5,rotation='vertical')
+	l=lines.Line2D([pos[0]-.06,pos[0]-.06], [pos[1]+.01,pos[1]+pos[3]-.01], \
+	transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
+	ax.add_line(l)
+	
+	
+	#add an axes to the figure
+	ax2 = myFig.add_axes(pos,frameon=False)
+	ax2.yaxis.tick_right()
+	ax2.yaxis.set_tick_params(direction='out')
+	ax2.set_ylim(bottom=0,top=6)
+	ax2.yaxis.set_minor_locator(MultipleLocator())
+	ax2.yaxis.set_tick_params(direction='out',which='minor')
+	
+	#plot the search noise data
+	ax2.plot_date(matplotlib.dates.date2num(myData.times), numpy.log10(search), fmt='k:', \
+	tz=None, xdate=True, ydate=False,lw=1.5)
+	
+	#remove the x tick labels
+	loc,lab = plot.xticks()
+	plot.xticks(loc,(' '))
+	#use only 2 major yticks
+	plot.yticks([0,6],(' '))
+	
+	#right y axis annotation
+	plot.figtext(pos[0]+pos[2]+.01,pos[1]+.004,'10^0',ha='left',va='bottom',size=8)
+	plot.figtext(pos[0]+pos[2]+.01,pos[1]+pos[3],'10^6',ha='left',va='top',size=8)
+	plot.figtext(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'N.Sch',ha='center',va='center',size=8.5,rotation='vertical')
+	l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
+	transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
+	ax2.add_line(l)
+	
+def plotFreq(myData,myFig,pos=[.1,.82,.8,.06]):
 	
 	y=[]
-	
+	nave=[]
 	for i in range(0,myData.nrecs):
-		y.append(myData[myData.times[i]]['prm']['noise.sky'])
-	
-	ax = plot.axes(position)
+		y.append(myData[myData.times[i]]['prm']['tfreq']/1e3)
+		if(y[i] > 16): y[i] = 16
+		if(y[i] < 10): y[i] = 10
+		nave.append(myData[myData.times[i]]['prm']['nave'])
+		
+		
+	#FIRST, DO THE TFREQ PLOTTING
+	ax = myFig.add_axes(pos)
+	ax.yaxis.tick_left()
 	ax.yaxis.set_tick_params(direction='out')
-	ax.xaxis.set_tick_params(labelsize=0)
+	ax.set_ylim(bottom=10,top=16)
+	ax.yaxis.set_minor_locator(MultipleLocator())
+	ax.yaxis.set_tick_params(direction='out',which='minor')
 	
-	
-	plot.plot_date(matplotlib.dates.date2num(myData.times), numpy.log10(y), fmt='ko-', \
+	ax.plot_date(matplotlib.dates.date2num(myData.times), y, fmt='k-', \
 	tz=None, xdate=True, ydate=False,markersize=2)
 	
 	loc,lab = plot.xticks()
 	plot.xticks(loc,(' '))
 	#customize yticks
-	plot.yticks(numpy.arange(0,6,5),('10^0','10^5'),fontsize=9,weight=550)
-	plot.ylabel('N.Sky',fontsize=10,weight=550)
-	return ax
+	plot.yticks([10,16],(' '))
+	
+	plot.figtext(pos[0]-.01,pos[1],'10',ha='right',va='bottom',size=8)
+	plot.figtext(pos[0]-.01,pos[1]+pos[3]-.003,'16',ha='right',va='top',size=8)
+	plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
+	plot.figtext(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
+	l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
+	transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
+	ax.add_line(l)
 	
 	
+	#NEXT, DO THE NAVE PLOTTING
+	ax2 = myFig.add_axes(pos,frameon=False)
+	ax2.yaxis.tick_right()
+	ax2.yaxis.set_tick_params(direction='out')
+	ax2.set_ylim(bottom=0,top=80)
+	ax2.yaxis.set_minor_locator(MultipleLocator(20))
+	ax2.yaxis.set_tick_params(direction='out',which='minor')
+	
+	ax2.plot_date(matplotlib.dates.date2num(myData.times), nave, fmt='k:', \
+	tz=None, xdate=True, ydate=False,markersize=2)
+	
+	loc,lab = plot.xticks()
+	plot.xticks(loc,(' '))
+	#customize yticks
+	plot.yticks([0,80],(' '))
+	
+	plot.figtext(pos[0]+pos[2]+.01,pos[1]+.004,'0',ha='left',va='bottom',size=8)
+	plot.figtext(pos[0]+pos[2]+.01,pos[1]+pos[3],'80',ha='left',va='top',size=8)
+	plot.figtext(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'Nave',ha='center',va='center',size=8.5,rotation='vertical')
+	l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
+	transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
+	ax2.add_line(l)
