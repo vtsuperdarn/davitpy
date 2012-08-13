@@ -1,8 +1,8 @@
 FCC = gfortran
-FFLAGS = -cpp
+FFLAGS = -w -ffixed-line-length-132 -g -fno-automatic -fno-align-commons
 
 check:
-	$(FCC) igrf_run.for igrf.for -o igrf_run
+	$(FCC) $(FFLAGS) igrf_run.for igrf.for -o igrf_run
 
 clean:
-	rm *.o igrf_run
+	find . -name "*~" -o -name "*.o" | xargs rm -f igrf_run

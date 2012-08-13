@@ -26,3 +26,5 @@ This includes the following module(s):
 
 *******************************
 """
+
+from map import *

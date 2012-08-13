@@ -1,5 +1,4 @@
 # UTILS
-
 def parseDate( date ) :
 	"""
 *******************************
@@ -7,14 +6,13 @@ def parseDate( date ) :
 Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
 
 INPUT:
-DATE: experiment date in YYYYMMDD or numpy.array([YYYY,MM,DD])
+DATE: experiment date in YYYYMMDD or [YYYY,MM,DD]
 
 Created by Sebastien
 *******************************
 	"""
-	
 	# transform date into an array for testing
-	if ~isinstance(date, list): date = [date]
+	if not isinstance(date, list): date = [date]
 	
 	# make sure we are getting integers
 	for id in range( len(date) ):
