@@ -322,6 +322,7 @@ Reads radar.dat file
 	radarF['cnum'] = []
 	# Fill dictionary with each radar.dat lines
 	for ldat in data:
+		if len(ldat) == 0: continue
 		ldat = shlex.split(ldat)
 		radarF['id'].append( int(ldat[0]) )
 		radarF['status'].append( int(ldat[1]) )
@@ -377,6 +378,7 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 	siteF['maxbeam'] = []
 	# Read line by line, ignoring comments
 	for ldat in data:
+		if len(ldat) == 0: continue
 		if ldat[0] == '#': continue
 		ldat = shlex.split(ldat)
 		if int(ldat[1]) == 2999: 
