@@ -239,7 +239,7 @@ Reads hdw.dat for a given radar and fills a SITE structure
 		self.vdir = 0
 		self.atten = 0.0
 		self.tdiff = 0.0
-		self.phidiff = 0
+		self.phidiff = 0.0
 		self.interfer = [0.0, 0.0, 0.0]
 		self.recrise = 0.0
 		self.maxatten = 0
@@ -378,9 +378,9 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 	siteF['maxbeam'] = []
 	# Read line by line, ignoring comments
 	for ldat in data:
+		ldat = shlex.split(ldat)
 		if len(ldat) == 0: continue
 		if ldat[0] == '#': continue
-		ldat = shlex.split(ldat)
 		if int(ldat[1]) == 2999: 
 			siteF['tval'].append( -1 )
 		else:
@@ -393,7 +393,7 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 		siteF['vdir'].append( float(ldat[8]) )
 		siteF['atten'].append( float(ldat[9]) )
 		siteF['tdiff'].append( float(ldat[10]) )
-		siteF['phidiff'].append( int(ldat[11]) )
+		siteF['phidiff'].append( float(ldat[11]) )
 		siteF['interfer'].append( [float(ldat[12]), float(ldat[13]), float(ldat[14])] )
 		siteF['recrise'].append( float(ldat[15]) )
 		siteF['maxatten'].append( int(ldat[16]) )
