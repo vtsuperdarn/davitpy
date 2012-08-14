@@ -188,7 +188,7 @@ OUTPUT:
 			if abs(xAlt - dictOut['distAlt']) <= 0.5: 
 				return dictOut['distLat'], dictOut['distLon']
 				break
-			print '-----------------', RePos, xAlt, dictOut['distAlt'], dictOut['distLat'], dictOut['distLon']
+			print '----------', xAlt, dictOut['distAlt'], dictOut['distLat'], dictOut['distLon'], RePos
 			n += 1L
 			if n > 3: 
 				return dictOut['distLat'], dictOut['distLon']
