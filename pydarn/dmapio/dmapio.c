@@ -24,7 +24,7 @@ read_dmap(PyObject *self, PyObject *args)
 	else
 	{
 		char *command;
-		int c,nRecs=0,yr,mo,dy,hr,mt,sc,us,i;
+		int c,nRecs=0,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang=0;
 		double epoch;
 		struct DataMap *ptr;
 		struct DataMapScalar *s;
@@ -113,7 +113,10 @@ read_dmap(PyObject *self, PyObject *args)
 				if ( ( strcmp( s->name, "ifmode" ) == 0 ) && ( s->type == DATASHORT ) )
 					PyDict_SetItem(beamData,Py_BuildValue("s", "ifmode"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"nrang")==0) && (s->type==DATASHORT))
+				{
 					PyDict_SetItem(beamData,Py_BuildValue("s", "nrang"), Py_BuildValue("i", *(s->data.sptr)));
+					nrang = *(s->data.sptr);
+				}
 				if ((strcmp(s->name,"frang")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "frang"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"rsep")==0) && (s->type==DATASHORT))
@@ -353,13 +356,37 @@ read_dmap(PyObject *self, PyObject *args)
  					PyDict_SetItem(beamData,Py_BuildValue("s", "phi0_e"), myList);
 					Py_DECREF(myList);
 				}
+				if ((strcmp(a->name,"acfd")==0) && (a->type==DATAFLOAT) && (a->dim==3))
+				{
+					int mplgs = a->rng[1];
+					PyObject *myList = PyList_New(nrang*mplgs*2);
+					for(i=0;i<nrang;i++)
+						for(j=0;j<mplgs;j++)
+							for(k=0;k<2;k++)
+								PyList_SetItem(myList,(i*mplgs+j)*2+k,Py_BuildValue("d", a->data.fptr[(i*mplgs+j)*2+k]));
+ 					PyDict_SetItem(beamData,Py_BuildValue("s", "acfd"), myList);
+					Py_DECREF(myList);
+				}
+				if ((strcmp(a->name,"xcfd")==0) && (a->type==DATAFLOAT) && (a->dim==3))
+				{
+					int mplgs = a->rng[1];
+					PyObject *myList = PyList_New(nrang*mplgs*2);
+					for(i=0;i<nrang;i++)
+						for(j=0;j<mplgs;j++)
+							for(k=0;k<2;k++)
+								PyList_SetItem(myList,(i*mplgs+j)*2+k,Py_BuildValue("d", a->data.fptr[(i*mplgs+j)*2+k]));
+ 					PyDict_SetItem(beamData,Py_BuildValue("s", "xcfd"), myList);
+					Py_DECREF(myList);
+				}
 			}
+			
 			/*convert time to epoch time (key)*/
 			epoch = TimeYMDHMSToEpoch(yr,mo,dy,hr,mt,(double)sc+us/1.e6);
 			
 			/*add the beam to the radData dict*/
 			PyDict_SetItem(rawData,Py_BuildValue("d", epoch), beamData);
 			
+			/*free beam data object*/
 			Py_DECREF(beamData);
 			
 			DataMapFree(ptr);
