@@ -27,4 +27,6 @@ This includes the following module(s):
 *******************************
 """
 
+import rti
+from rti import *
 from map import *

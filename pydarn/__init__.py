@@ -19,7 +19,8 @@ This includes the following submodules:
 """
 
 #import utils
-#import dmapio
+import dmapio
 import radar
 import io
+import plot
 from datetime import *

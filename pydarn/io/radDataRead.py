@@ -79,7 +79,7 @@ def dmapRead(dateStr,rad,times,fileType):
 		
 	dfile = pydarn.dmapio.readDmap(tempname)
 	
-	#os.system('rm '+tempname)
+	os.system('rm '+tempname)
 		
 	return dfile
 
@@ -165,8 +165,11 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 			
 	print 'done copy'
 	
-	myRadData.times = myRadData.getTimes();
-	
+	myRadData.times = myRadData.getTimes()
+	myRadData.nrecs = len(myRadData.times)
+	if(myRadData.nrecs > 0):
+		myRadData.ftype = fileType
+		
 	return myRadData
 
 
