@@ -6,7 +6,10 @@ import matplotlib.lines as lines
 import calendar
 import datetime
 import utils
+import pylab
 from matplotlib.ticker import MultipleLocator
+from matplotlib.collections import PolyCollection
+from itertools import cycle
 
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
 scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
@@ -67,6 +70,8 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	#read the radar data
 	myData = pydarn.io.radDataRead(dateStr,rad,time=time,fileType=fileType,vb=0,beam=beam)
 	
+	myData = myData.getChannel(channel)
+	
 	assert(myData.nrecs > 0),'error, no data available'
 	
 	rtiFig = plot.figure()
@@ -81,12 +86,12 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	figheight = .72/len(params)
 	for i in range(0,len(params)):
 		plotData(myData,rtiFig,params[i],scales[i],i==len(params)-1, \
-		pos=[.1,figtop-figheight*(i+1)+.02,.8,figheight-.02])
+		coords=coords,pos=[.1,figtop-figheight*(i+1)+.02,.76,figheight-.02])
 		
 	rtiFig.show()
 	
-def plotData(myData,myFig,param,scale,bottom,yrng=-1,pos=[.1,.05,.8,.72]):
-	
+def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
+
 	#add an axes to the figure
 	ax = myFig.add_axes(pos)
 	ax.yaxis.set_tick_params(direction='out')
@@ -112,10 +117,9 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,pos=[.1,.05,.8,.72]):
 	tz=None, xdate=True, ydate=False)
 	
 		
-	ypnts=[]
-	xpnts=[]
-	#verts=[(0.,0.),(0.,1.),(1.,1.),(1.,0.)]
-	#plot the data!
+	verts,intensities=[],[]
+	fcs = ['b','g','m']
+	#collect the data into a list of vertices to be plotted
 	for i in range(0,myData.nrecs):
 		t = myData.times[i]
 		x1 = matplotlib.dates.date2num(t)
@@ -124,33 +128,39 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,pos=[.1,.05,.8,.72]):
 			if(x2-x1 > 4./1440.): x2 = x1+2./1440.
 		else: x2 = x1+1./1440.
 
-		xtips = [x1,x1,x2,x2]
 		for j in range(0,len(myData[t]['fit']['slist'])):
 			y1,y2 = myData[t]['fit']['slist'][j],myData[t]['fit']['slist'][j]+1
-			#r = matplotlib.patches.Rectangle((x1,y1),x2-x1,y2-y1,fill=True,fc='b',ec='g',figure=myFig)
-			#ax.add_patch(r)
-			ytips = [y1,y2,y2,y1]
-			ax.fill(xtips,ytips,facecolor='b',edgecolor='none')
-			xpnts.append(xtips)
-			ypnts.append(ytips)
-			#ypnts.append(myData[t]['fit']['slist'][j])
-			#xpnts.append(t)
+			verts.append(((x1,y1),(x1,y2),(x2,y2),(x2,y1)))
+			if(param == 'velocity'): intensities.append(myData[t]['fit']['v'][j])
+			if(param == 'power'): intensities.append(myData[t]['fit']['p_l'][j])
+			if(param == 'width'): intensities.append(myData[t]['fit']['w_l'][j])
 
-	# rebuild ends using none to separate polygons
-	#xlist = []
-	#ylist = []
-	#for xtips,ytips in zip(xpnts,ypnts):
-		#xlist.extend(xtips)
-		#xlist.append(None)
-		#ylist.extend(ytips)
-		#ylist.append(None)
-	############################
-	# time single call to matplotlib
+
+	#create a collection of polygons with the specified vertices, use numpy arrays to increase speed
+	pcoll = PolyCollection(numpy.array(verts), closed=False, edgecolor='none')
+	pcoll.set_array(numpy.array(intensities))
 	
-	#ax.fill(xlist,ylist,facecolor='b',edgecolor='none')
-
-	#ax.scatter(xpnts,ypnts,marker=numpy.array(verts))
-				
+	if(param == 'velocity'):
+		cmj = matplotlib.cm.jet
+		cmap = matplotlib.colors.ListedColormap([cmj(1.),cmj(.85),cmj(.75),cmj(.65),cmj(.55),cmj(.45),cmj(.3),cmj(0.)])
+		bounds = numpy.linspace(scale[0],scale[1],7)
+		bounds = numpy.insert(bounds,0,-9999999.)
+		bounds = numpy.append(bounds,9999999.)
+		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+	else:
+		cmj = matplotlib.cm.jet
+		cmap = matplotlib.colors.ListedColormap([cmj(0.),cmj(.125),cmj(.25),cmj(.375),cmj(.5),cmj(.625),cmj(.75),cmj(.99)])
+		bounds = numpy.linspace(scale[0],scale[1],8)
+		bounds = numpy.append(bounds,9999999.)
+		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+		
+	pcoll.set_cmap(cmap)
+	pcoll.set_norm(norm)
+	#add the collection of polygons to the axes
+	cax = ax.add_collection(pcoll, autolim=True)
+	
+	loc,lab = plot.yticks()
+	ax.yaxis.set_ticklabels(loc,lab,size=9)
 	#format the x axis
 	ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator(interval=20))
 	plot.xticks(size=9)
@@ -159,22 +169,38 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,pos=[.1,.05,.8,.72]):
 		plot.xticks(loc,(' '))
 	else:
 		ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
+		ax.xaxis.set_label_text('UT')
+		
+	if(coords == 'gate'): ax.yaxis.set_label_text('Range gate',size=10)
+	if(coords == 'geo'): ax.yaxis.set_label_text('Geo Lat [deg]',size=10)
+	if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
+	if(coords == 'rng'): ax.yaxis.set_label_text('Slant Range [km]',size=10)
 	
-def rtiTitle(myData,dateStr,beam):
+	#create a new axes for the colorbar
+	cax = myFig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
+	cb = plot.colorbar(pcoll,cax=cax)
+	
+	for t in cb.ax.get_yticklabels():
+		t.set_fontsize(10)
+	if(param == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
+	if(param == 'power'): cb.set_label('Power [dB]',size=10)
+	if(param == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
+	
+def rtiTitle(myData,dateStr,beam,xmin=.1,xmax=.86):
 	
 	n=pydarn.radar.network()
 	r=n.getRadarById(33)
 	
-	plot.figtext(.1,.95,r.name+'  ('+myData.ftype+')',ha='left',weight=550)
+	plot.figtext(xmin,.95,r.name+'  ('+myData.ftype+')',ha='left',weight=550)
 	
 	d = utils.yyyymmddToDate(dateStr)
-	plot.figtext(.5,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
+	plot.figtext((xmin+xmax)/2.,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
 	weight=550,size='large',ha='center')
 	
-	plot.figtext(.9,.95,'Beam '+str(beam),weight=550,ha='right')
+	plot.figtext(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
 	
 
-def plotNoise(myData,myFig,pos=[.1,.88,.8,.06]):
+def plotNoise(myData,myFig,pos=[.1,.88,.76,.06]):
 	
 	#read the data
 	sky=[]
@@ -237,7 +263,7 @@ def plotNoise(myData,myFig,pos=[.1,.88,.8,.06]):
 	transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
 	ax2.add_line(l)
 	
-def plotFreq(myData,myFig,pos=[.1,.82,.8,.06]):
+def plotFreq(myData,myFig,pos=[.1,.82,.76,.06]):
 	
 	y=[]
 	nave=[]

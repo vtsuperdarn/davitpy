@@ -89,7 +89,47 @@ class radData(dict):
 		myData.times = myData.getTimes()
 		myData.nrecs = len(myData.times)
 		return myData
-      
+		
+		
+	def getChannel(self,chn):
+		"""
+		*******************************
+		FUNCTION radData.getChannel(bmnum):
+		
+		returns a radData object containing only data from a specified channel
+		
+		BELONGS TO: class pydarn.io.radData
+
+		INPUTS:
+			chn: the desired channel letter, e.g. 'a'
+		OUTPUTS:
+			myData: a new radData structure containing only data from channel chn
+			
+		EXAMPLE:
+			myRadarData = inRadData.getChannel('a')
+			
+		Written by AJ 20120814
+		*******************************
+		"""
+		
+		assert(isinstance(chn,str)),"channel must be character"
+		
+		myData = pydarn.io.radData()
+		
+		for k in self.iterkeys():
+			if((self[k]['prm']['channel'] == 0 or self[k]['prm']['channel'] == 1) and chn == 'a'):
+				myData[k] = self[k]
+			if(self[k]['prm']['channel'] == 2 and chn == 'b'):
+				myData[k] = self[k]
+			if(self[k]['prm']['channel'] == 3 and chn == 'c'):
+				myData[k] = self[k]
+			if(self[k]['prm']['channel'] == 4 and chn == 'd'):
+				myData[k] = self[k]
+				
+		myData.times = myData.getTimes()
+		myData.nrecs = len(myData.times)
+		return myData  
+		
 class beam(dict):
 	"""
 	*******************************
