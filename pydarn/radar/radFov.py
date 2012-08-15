@@ -22,6 +22,7 @@ Based on R.J. Barnes radar.pro
 Created by Sebastien
 *******************************
 """
+from numpy import shape
 
 # *************************************************************
 class fov(object):
@@ -47,6 +48,26 @@ See getFov documentation for details.
 			self.beams = radarDict['beams']
 			self.gates = radarDict['gates']
 			self.coords = radarDict['coords']
+			
+	def __str__(self):
+		outstring = 'latCenter: {} \
+					 \nlonCenter: {} \
+					 \nlatFull: {} \
+					 \nlonFull: {} \
+					 \nslantRCenter: {} \
+					 \nslantRFull: {} \
+					 \nbeams: {} \
+					 \ngates: {} \
+					 \ncoords: {}'.format(shape(self.latCenter), \
+										shape(self.lonCenter), \
+										shape(self.latFull), \
+										shape(self.lonFull), \
+										shape(self.slantRCenter), \
+										shape(self.slantRFull), \
+										shape(self.beams), \
+										shape(self.gates), \
+										self.coords)
+		return outstring
 
 
 # *************************************************************
@@ -71,7 +92,7 @@ OUTPUT:
 	range_offset = -0.5*rsep if center else 0.0
 	
 	# Slant range [km]
-	srang = ( lagfr - recrise + (range_gate - 1.) * smsep ) * 0.3/2. + range_offset
+	srang = ( lagfr - recrise + range_gate * smsep ) * 0.3/2. + range_offset
 	
 	return srang
 
@@ -162,21 +183,20 @@ OUTPUT:
 		if slantRange < 150.: xAlt = slantRange / 150. * 115.
 		
 		# To start, set Earth radius below field point to Earth radius at radar
-		(lat,lon,tRe) = geoPack.geodToGeoc(tGeoLat,tGeoLat,into='geoc')
+		(lat,lon,tRe) = geoPack.geodToGeoc(tGeoLat, tGeoLon,into='geoc')
 		RePos = tRe
 		
 		# Iterate until the altitude corresponding to the calculated elevation matches the desired altitude
 		n = 0L # safety counter
 		while True:
 			# pointing elevation (spherical Earth value) [degree]
-			tel = degrees( asin( ((RePos+xAlt)**2 - tRe**2 - slantRange**2) / (2. * tRe * slantRange) ) )
+			tel = degrees( asin( ((RePos+xAlt)**2 - (tRe+tAlt)**2 - slantRange**2) / (2. * (tRe+tAlt) * slantRange) ) )
 			
 			# estimate off-array-normal azimuth (because it varies slightly with elevation) [degree]
 			bOff = calcAzOffBore(tel, boreOffset)
 			
 			# pointing azimuth
 			taz = boreSight + bOff
-			print n, tel, taz, RePos
 			
 			# calculate position of field point
 			dictOut = geoPack.calcDistPnt(tGeoLat, tGeoLon, tAlt, dist=slantRange, el=tel, az=taz)
@@ -185,12 +205,8 @@ OUTPUT:
 			RePos = dictOut['distRe']
 			
 			# stop if the altitude is what we want it to be (or close enough)
-			if abs(xAlt - dictOut['distAlt']) <= 0.5: 
-				return dictOut['distLat'], dictOut['distLon']
-				break
-			print '----------', xAlt, dictOut['distAlt'], dictOut['distLat'], dictOut['distLon'], RePos
 			n += 1L
-			if n > 3: 
+			if abs(xAlt - dictOut['distAlt']) <= 0.5 or n > 5: 
 				return dictOut['distLat'], dictOut['distLon']
 				break
 			
@@ -335,7 +351,7 @@ OUTPUT:
 	lonCenter = zeros((nbeams+1, ngates+1), dtype='float')
 	
 	# Iterates through beams
-	for ib in beams:
+	for ib in beams[0:1]:
 		# if none of frang, rsep or recrise are arrays, then only execute this for the first loop, otherwise, repeat for every beam
 		if (~isParamArray and ib == 0) or isParamArray:
 			# Calculate center slant range
@@ -355,14 +371,11 @@ OUTPUT:
 		bOffEdge = bmsep * (ib - nbeams/2.0)
 		
 		# Calculate coordinates for Edge and Center of the current beam
-		for ig in gates:
-			print ib, ig, sRangCenter[ig]
+		for ig in gates[0:1]:
 			# This is a bit redundant, but I could not think of any other way to deal with the array-or-not-array issue
 			if not isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				print bOffCenter
 				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffCenter, site.boresite, sRangCenter[ig], \
 							elevation=elevation, altitude=altitude, model=model)
-				print bOffEdge
 				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffEdge, site.boresite, sRangEdge[ig], \
 							elevation=elevation, altitude=altitude, model=model)
 			elif isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):

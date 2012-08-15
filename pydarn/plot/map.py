@@ -118,10 +118,7 @@ OUTPUTS:
 	if all:
 		codes = []
 		for irad in range( len(NetworkObj) ):
-			# time between given date and start of radar
-			tSdelta = dateTime - NetworkObj.info[irad].stTime
-			tEdelta = NetworkObj.info[irad].edTime - dateTime
-			if NetworkObj.info[irad].status != 0 and tSdelta > timedelta(0) and tEdelta > timedelta(0):
+			if NetworkObj.info[irad].status != 0 and NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime:
 				codes.append(NetworkObj.info[irad].code[0])
 	
 	# Define how the radars to be plotted are identified (code, id or name)
@@ -150,6 +147,8 @@ OUTPUTS:
 		if not site: continue
 		# Get radar coordinates in map projection
 		x,y = Basemap(site.geolon, site.geolat)
+		if not Basemap.xmin <= x <= Basemap.xmax: continue
+		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot radar position
 		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=2)
 		# Now add radar name
