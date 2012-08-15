@@ -341,14 +341,14 @@ OUTPUTS
 		# Convert distant point from geodetic to geocentric
 		(gcDistLat, gcDistLon, distRe) = geodToGeoc(distLat, distLon, into='geoc')
 		# convert point of origin from geocentric to global cartesian
-		(pX, pY, pZ) = gspToGcar(gcDistLat, gcDistLon, origRe+distAlt, into='gcar')
+		(pX, pY, pZ) = gspToGcar(gcDistLat, gcDistLon, distRe+distAlt, into='gcar')
 		# convert pointing direction from global cartesian to local cartesian
-		(dX, dY, dZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon, origRe+distAlt, into='lcar')
+		(dX, dY, dZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon, origRe+origAlt, into='lcar')
 		# convert pointing direction from local cartesian to local spherical
 		(gaz, gel, rho) = lspToLcar(dX, dY, dZ, into='lsp')
 		# convert pointing azimuth and elevation to geodetic
 		(lat, lon, Re, az, el) = geodToGeocAzEl(gcLat, gcLon, gaz, gel, into='geod')
-		dist = sqrt( pX**2 + pY**2 + pZ**2 )
+		dist = sqrt( dX**2 + dY**2 + dZ**2 )
 	elif mode == 'findDistPnt':
 		# convert pointing azimuth and elevation to geocentric
 		(gcLat, gcLon, origRe, gaz, gel) = geodToGeocAzEl(origLat, origLon, az, el, into='geoc')
