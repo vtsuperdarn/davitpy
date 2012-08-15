@@ -8,3 +8,4 @@ history.sqlite
 *.swp
 .*project
 bin/profile_davitpy/security/kernel*
+*rootmodules*
