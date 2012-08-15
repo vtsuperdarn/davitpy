@@ -22,7 +22,6 @@ Based on R.J. Barnes radar.pro
 Created by Sebastien
 *******************************
 """
-from numpy import shape
 
 # *************************************************************
 class fov(object):
@@ -50,6 +49,8 @@ See getFov documentation for details.
 			self.coords = radarDict['coords']
 			
 	def __str__(self):
+		from numpy import shape
+		
 		outstring = 'latCenter: {} \
 					 \nlonCenter: {} \
 					 \nlatFull: {} \
@@ -109,17 +110,17 @@ INPUTS:
 OUTPUT:
 	boreOffset: off-boresight azimuth [degree]
 	"""
-	from math import radians, cos, sin, atan, pi, sqrt
+	from math import radians, degrees, cos, sin, atan, pi, sqrt
 	
 	if ( cos(radians(boreOffset0))**2 - sin(radians(elevation))**2 ) < 0:
 		if boreOffset0 >= 0: boreOffset = pi/2.
 		else: boreOffset = -pi/2.
 	else:
 		tan_bOff = sqrt( sin(radians(boreOffset0))**2 / ( cos(radians(boreOffset0))**2 - sin(radians(elevation))**2 ) )
-		if boreOffset0 >= 0: boreOffset0 = atan( tan_bOff )
+		if boreOffset0 >= 0: boreOffset = atan( tan_bOff )
 		else: boreOffset = -atan( tan_bOff )
 		
-	return boreOffset
+	return degrees(boreOffset)
 
 		
 # *************************************************************
@@ -225,9 +226,11 @@ OUTPUT:
 # *************************************************************
 def getFov(frang=180.0, rsep=45.0, site=None, nbeams=None, ngates=None, bmsep=None, recrise=None, elevation=None, altitude=None, model=None, coords='geo'):
 	"""radarFovDict = getFov(frang=180.0, rsep=45.0, site=None, nbeams=None, ngates=None, bmsep=None, recrise=None, elevation=None, altitude=None, model=None, coords='geo')
-Calculate field of view coordinates. Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object. Parameters from the
-input-set will always take precedence over parameters from the SITE object.
+Calculate field of view coordinates. Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object. Parameters from 
+the input-set will always take precedence over parameters from the SITE object.
 Make sure to provide frang and rsep, the default values are not always applicable.
+The full projection gives the coordinates at each corner of each gate, in the following order: looking in the beam direction, 
+lower-left, lower-right, upper-right, upper-left.
 
 INPUTS:
 	site: site structure for a given radar and date-time
@@ -351,7 +354,7 @@ OUTPUT:
 	lonCenter = zeros((nbeams+1, ngates+1), dtype='float')
 	
 	# Iterates through beams
-	for ib in beams[0:1]:
+	for ib in beams:
 		# if none of frang, rsep or recrise are arrays, then only execute this for the first loop, otherwise, repeat for every beam
 		if (~isParamArray and ib == 0) or isParamArray:
 			# Calculate center slant range
@@ -371,27 +374,27 @@ OUTPUT:
 		bOffEdge = bmsep * (ib - nbeams/2.0)
 		
 		# Calculate coordinates for Edge and Center of the current beam
-		for ig in gates[0:1]:
+		for ig in gates:
 			# This is a bit redundant, but I could not think of any other way to deal with the array-or-not-array issue
 			if not isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffCenter, site.boresite, sRangCenter[ig], \
+				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffCenter, site.boresite, sRangCenter[ig], \
 							elevation=elevation, altitude=altitude, model=model)
-				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffEdge, site.boresite, sRangEdge[ig], \
+				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffEdge, site.boresite, sRangEdge[ig], \
 							elevation=elevation, altitude=altitude, model=model)
 			elif isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffCenter, site.boresite, sRangCenter[ig], \
+				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffCenter, site.boresite, sRangCenter[ig], \
 							elevation=elevation, altitude=altitude[ib,ir], model=model)
-				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffEdge, site.boresite, sRangEdge[ig], \
+				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffEdge, site.boresite, sRangEdge[ig], \
 							elevation=elevation, altitude=altitude[ib,ir], model=model)
 			elif isinstance(elevation, ndarray) and not isinstance(altitude, ndarray):
-				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffCenter, site.boresite, sRangCenter[ig], \
+				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffCenter, site.boresite, sRangCenter[ig], \
 							elevation=elevation[ib,ir], altitude=altitude, model=model)
-				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffEdge, site.boresite, sRangEdge[ig], \
+				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffEdge, site.boresite, sRangEdge[ig], \
 							elevation=elevation[ib,ir], altitude=altitude, model=model)
 			else:
-				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffCenter, site.boresite, sRangCenter[ig], \
+				latC, lonC = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffCenter, site.boresite, sRangCenter[ig], \
 							elevation=elevation[ib,ir], altitude=altitude[ib,ir], model=model)
-				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt, bOffEdge, site.boresite, sRangEdge[ig], \
+				latE, lonE = calcFieldPnt(site.geolat, site.geolon, site.alt*1e-3, bOffEdge, site.boresite, sRangEdge[ig], \
 							elevation=elevation[ib,ir], altitude=altitude[ib,ir], model=model)
 			# Save into output arrays
 			latCenter[ib, ig] = latC

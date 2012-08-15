@@ -165,4 +165,89 @@ OUTPUTS:
 				ha = 'center'
 			# Plot radar name
 			plt.text(x + xOff, y - height*.01, rad.code[0].upper(), ha=ha, va='top', variant='small-caps', fontsize=fontSize, zorder=zorder)
-		
+
+	return
+
+
+# *************************************************************
+def overlayFov(Basemap, codes=None, ids=None, names=None, dateTime=None, coords='geo', all=False, \
+				maxGate=None, \
+				zorder=2, lineColor='k'):
+	"""
+Overlay FoV position(s) on map
+
+INPUTS:
+	Basemap: a python Basemap object on which to overplot the radar position(s)
+	codes: a list of radar 3-letter codes to plot
+	ids: a list of radar IDs to plot
+	names: a list of radar names to plot
+	dateTime: the date and time as a python datetime object
+	coords: 'geo' (default), 'mag', 'mlt' (not implemented yest)
+	all: set to true to plot all the radars (active ones)
+	maxGate: Maximum number of gates to be plotted. Defaults to hdw.dat information.
+	zorder: the overlay order number
+	lineColor: FoV contour color
+OUTPUTS:
+	
+	"""
+	from ..radar.radNetwork import network
+	from ..radar.radFov import fov
+	from datetime import datetime as dt
+	from datetime import timedelta
+	import matplotlib.pyplot as plt
+	
+	# Set default date/time to now
+	if not dateTime:
+		dateTime = dt.utcnow()
+	
+	# Load radar structure
+	NetworkObj = network()
+	
+	# If all radars are to be plotted, create the list
+	if all:
+		codes = []
+		for irad in range( len(NetworkObj) ):
+			if NetworkObj.info[irad].status != 0 and NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime:
+				codes.append(NetworkObj.info[irad].code[0])
+	
+	# Define how the radars to be plotted are identified (code, id or name)
+	if codes:
+		input = {'meth': 'code', 'vals': codes}
+	elif ids:
+		input = {'meth': 'id', 'vals': ids}
+	elif names:
+		input = {'meth': 'name', 'vals': names}
+	else:
+		print 'overlayRadar: no radars to plot'
+		return
+	
+	# Check if radars is given as a list
+	if not isinstance(input['vals'], list): input['vals'] = [input['vals']]
+	
+	# iterates through radars to be plotted
+	for radN in input['vals']:
+		rad = NetworkObj.getRadarBy(radN, input['meth'])
+		if not rad: continue
+		site = rad.getSiteByDate(dateTime)
+		if not site: continue
+		# Set number of gates to be plotted
+		eGate = site.maxgate-1 if not maxGate else maxGate
+		# Get field of view coordinates
+		radFov = fov(site=site)
+		# Get radar coordinates in map projection
+		x,y = Basemap(radFov.lonFull, radFov.latFull)
+#		if not Basemap.xmin <= x <= Basemap.xmax: continue
+#		if not Basemap.ymin <= y <= Basemap.ymax: continue
+		# Plot field of view
+		# Side boundary
+		Basemap.plot(x[0,0:eGate,0], y[0,0:eGate,0], color=lineColor)
+		# Other side boundary
+		Basemap.plot(x[-1,0:eGate,1], y[-1,0:eGate,1], color=lineColor)
+		# Furthest boundary
+		Basemap.plot(x[:,eGate,0], y[:,eGate,0], color=lineColor)
+		Basemap.plot(x[-1,eGate,[0,1]], y[-1,eGate,[0,1]], color=lineColor)
+		# Closest boundary
+		Basemap.plot(x[:,0,0], y[:,0,0], color=lineColor)
+		Basemap.plot(x[:,0,[0,1]], y[:,0,[0,1]], color=lineColor)
+	
+	return
