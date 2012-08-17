@@ -233,7 +233,7 @@ OUTPUTS:
 		# Set number of gates to be plotted
 		eGate = site.maxgate-1 if not maxGate else maxGate
 		# Get field of view coordinates
-		radFov = fov(site=site)
+		radFov = fov(site=site, ngates=eGate+1)
 		# Get radar coordinates in map projection
 		x,y = Basemap(radFov.lonFull, radFov.latFull)
 #		if not Basemap.xmin <= x <= Basemap.xmax: continue
