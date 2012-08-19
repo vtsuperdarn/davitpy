@@ -240,14 +240,12 @@ OUTPUTS:
 #		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot field of view
 		# Side boundary
-		Basemap.plot(x[0,0:eGate,0], y[0,0:eGate,0], color=lineColor)
+		Basemap.plot(x[0,0:eGate], y[0,0:eGate], color=lineColor)
 		# Other side boundary
-		Basemap.plot(x[-1,0:eGate,1], y[-1,0:eGate,1], color=lineColor)
+		Basemap.plot(x[-1,0:eGate], y[-1,0:eGate], color=lineColor)
 		# Furthest boundary
-		Basemap.plot(x[:,eGate,0], y[:,eGate,0], color=lineColor)
-		Basemap.plot(x[-1,eGate,[0,1]], y[-1,eGate,[0,1]], color=lineColor)
+		Basemap.plot(x[:,eGate], y[:,eGate], color=lineColor)
 		# Closest boundary
-		Basemap.plot(x[:,0,0], y[:,0,0], color=lineColor)
-		Basemap.plot(x[:,0,[0,1]], y[:,0,[0,1]], color=lineColor)
+		Basemap.plot(x[:,0], y[:,0], color=lineColor)
 	
 	return
