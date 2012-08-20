@@ -60,7 +60,7 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
 	assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
 	assert(isinstance(beam,int)),'error, beam must be integer'
-	assert(0 < len(params) < 4),'error, must input between 1 and 3'
+	assert(0 < len(params) < 4),'error, must input between 1 and 3 params in LIST form'
 	for i in range(0,len(params)):
 		assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width'),\
 		"error, allowable params are 'velocity','power','width'"
@@ -81,6 +81,8 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	plotNoise(myData,rtiFig)
 	
 	plotFreq(myData,rtiFig)
+	
+	plotCpid(myData,rtiFig)
 	
 	figtop = .77
 	figheight = .72/len(params)
@@ -114,7 +116,7 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 		
 	#draw the axes
 	ax.plot_date(matplotlib.dates.date2num(myData.times), numpy.arange(len(myData.times)), fmt='w', \
-	tz=None, xdate=True, ydate=False)
+	tz=None, xdate=True, ydate=False, alpha=0.0)
 	
 		
 	verts,intensities=[],[]
@@ -140,24 +142,8 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 	pcoll = PolyCollection(numpy.array(verts), closed=False, edgecolor='none')
 	pcoll.set_array(numpy.array(intensities))
 	
-	if(param == 'velocity'):
-		cmj = matplotlib.cm.jet
-		cmap = matplotlib.colors.ListedColormap([cmj(1.),cmj(.85),cmj(.75),cmj(.65),cmj(.55),cmj(.45),cmj(.3),cmj(0.)])
-		bounds = numpy.linspace(scale[0],scale[1],7)
-		bounds = numpy.insert(bounds,0,-9999999.)
-		bounds = numpy.append(bounds,9999999.)
-		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
-	else:
-		cmj = matplotlib.cm.jet
-		cmap = matplotlib.colors.ListedColormap([cmj(0.),cmj(.125),cmj(.25),cmj(.375),cmj(.5),cmj(.625),cmj(.75),cmj(.99)])
-		bounds = numpy.linspace(scale[0],scale[1],8)
-		bounds = numpy.append(bounds,9999999.)
-		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
-		
-	pcoll.set_cmap(cmap)
-	pcoll.set_norm(norm)
 	#add the collection of polygons to the axes
-	cax = ax.add_collection(pcoll, autolim=True)
+	ax.add_collection(pcoll, autolim=True)
 	
 	loc,lab = plot.yticks()
 	ax.yaxis.set_ticklabels(loc,lab,size=9)
@@ -176,15 +162,7 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 	if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
 	if(coords == 'rng'): ax.yaxis.set_label_text('Slant Range [km]',size=10)
 	
-	#create a new axes for the colorbar
-	cax = myFig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
-	cb = plot.colorbar(pcoll,cax=cax)
-	
-	for t in cb.ax.get_yticklabels():
-		t.set_fontsize(10)
-	if(param == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
-	if(param == 'power'): cb.set_label('Power [dB]',size=10)
-	if(param == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
+	pydarn.plot.plotUtils.genCmap(myFig,pcoll,param,scale,pos)
 	
 def rtiTitle(myData,dateStr,beam,xmin=.1,xmax=.86):
 	
@@ -199,7 +177,47 @@ def rtiTitle(myData,dateStr,beam,xmin=.1,xmax=.86):
 	
 	plot.figtext(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
 	
-
+def plotCpid(myData,myFig,pos=[.1,.77,.76,.05]):
+	
+	oldCpid = -9999999
+	
+	#add an axes to the figure
+	ax = myFig.add_axes(pos)
+	ax.yaxis.tick_left()
+	ax.yaxis.set_tick_params(direction='out')
+	ax.set_ylim(bottom=0,top=1)
+	ax.yaxis.set_minor_locator(MultipleLocator(1))
+	ax.yaxis.set_tick_params(direction='out',which='minor')
+	
+	#draw the axes
+	ax.plot_date(matplotlib.dates.date2num(myData.times), numpy.arange(len(myData.times)), fmt='w', \
+	tz=None, xdate=True, ydate=False, alpha=0.0)
+	
+	for i in range(0,myData.nrecs):
+		if(myData[myData.times[i]]['prm']['cp'] != oldCpid):
+			
+			ax.plot_date([matplotlib.dates.date2num(myData.times[i]),matplotlib.dates.date2num(myData.times[i])],\
+			[0,1], fmt='k-', tz=None, xdate=True, ydate=False)
+			
+			oldCpid = myData[myData.times[i]]['prm']['cp']
+			
+			s = ' '+pydarn.radar.radUtils.getCpName(oldCpid)
+		
+			istr = ' '
+			if(myData[myData.times[i]]['prm']['ifmode'] == 1): istr = ' IF'
+			if(myData[myData.times[i]]['prm']['ifmode'] == 0): istr = ' RF'
+			
+			ax.text(myData.times[i],.5,' '+str(oldCpid)+s+istr,ha='left',va='center', size=10)
+			
+	#remove the x tick labels
+	loc,lab = plot.xticks()
+	plot.xticks(loc,(' '))
+	#use only 2 major yticks
+	plot.yticks([],(' '))
+	plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'CPID',ha='center',va='center', \
+	size=8.5,rotation='vertical')
+	
+		
 def plotNoise(myData,myFig,pos=[.1,.88,.76,.06]):
 	
 	#read the data

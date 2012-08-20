@@ -132,6 +132,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 	for epochT in dfile.keys():
 
 		dateT = datetime.datetime.utcfromtimestamp(epochT)
+		
 		#check that we are in the target time interval
 		if(dateT >= stime and dateT <= etime):
 			
