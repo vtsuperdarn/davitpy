@@ -3,7 +3,7 @@
 # *********************************
 # Modify this part if needed
 # *********************************
-TMP_RST=/rst/VT_RST3
+TMP_RST=/davit/lib/rst/rst
 TMP_DAVITPY=/davitpy
 
 # *********************************

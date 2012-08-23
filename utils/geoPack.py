@@ -178,8 +178,8 @@ OUTPUTS
 
 
 # *************************************************************
-def gcarToLcar(X, Y, Z, lat, lon , into='lcar'):
-	""" (X, Y, Z) = gcarToLcar(X, Y, Z, lat, lon , into='lcar')
+def gcarToLcar(X, Y, Z, lat, lon, rho , into='lcar'):
+	""" (X, Y, Z) = gcarToLcar(X, Y, Z, lat, lon, alt, into='lcar')
 Converts a position from global cartesian to local cartesian (and vice-versa).
 The global cartesian coordinate system is defined as:
 	- origin: center of the Earth
@@ -194,16 +194,17 @@ The meaning of the input (X,Y,Z) depends on the direction of the conversion (to 
 or to global spherical).
 
 INPUTS:
-	X: local cartesian X [km] or global cartesian X [km]
-	Y: local cartesian Y [km] or global cartesian Y [km]
-	Z: local cartesian Z [km] or global cartesian Z [km]
-	lat: latitude [degree] of local cartesian system origin
-	lon: longitude [degree] of local cartesian system origin
-	into: 'lcar' (local cartesian, default) or 'gcar' (global cartesian) specifies the system to convert into
-OUTPUTS
 	X: global cartesian X [km] or local cartesian X [km]
 	Y: global cartesian Y [km] or local cartesian Y [km]
 	Z: global cartesian Z [km] or local cartesian Z [km]
+	lat: geocentric latitude [degree] of local cartesian system origin
+	lon: geocentric longitude [degree] of local cartesian system origin
+	rho: distance from center of the Earth [km] of local cartesian system origin
+	into: 'lcar' (local cartesian, default) or 'gcar' (global cartesian) specifies the system to convert into
+OUTPUTS
+	X: local cartesian X [km] or global cartesian X [km]
+	Y: local cartesian Y [km] or global cartesian Y [km]
+	Z: local cartesian Z [km] or global cartesian Z [km]
 	"""
 	from math import radians, degrees, cos, sin
 	
@@ -211,15 +212,22 @@ OUTPUTS
 		print 'gcarToLcar: Argument "into" must be a string. Try again!'
 		return
 	
+	# First get global cartesian coordinates of local origin
+	(goX, goY, goZ) = gspToGcar(lat, lon, rho)
+	
 	if into == 'lcar':
-		# First, rotate about global-Z to get local-X pointing eastward
-		sx = X * cos( radians(lon + 90.) ) - Y * sin( radians(lon + 90.) )
-		sy = X * sin( radians(lon + 90.) ) + Y * cos( radians(lon + 90.) )
-		sz = Z
-		# Then, rotate about X axis to align Z with upward direction
+		# Translate global position to local origin
+		tx = X - goX
+		ty = Y - goY
+		tz = Z - goZ
+		# Then, rotate about global-Z to get local-X pointing eastward
+		sx = tx * cos( -radians(lon + 90.) ) - ty * sin( -radians(lon + 90.) )
+		sy = tx * sin( -radians(lon + 90.) ) + ty * cos( -radians(lon + 90.) )
+		sz = tz
+		# Finally, rotate about X axis to align Z with upward direction
 		xOut = sx
-		yOut = sy * cos( radians(90. - lat) ) - sz * sin( radians(90. - lat) )
-		zOut = sy * sin( radians(90. - lat) ) + sz * cos( radians(90. - lat) )
+		yOut = sy * cos( -radians(90. - lat) ) - sz * sin( -radians(90. - lat) )
+		zOut = sy * sin( -radians(90. - lat) ) + sz * cos( -radians(90. - lat) )
 	elif into == 'gcar':
 		# First rotate about X axis to align Z with Earth rotational axis direction
 		sx = X
@@ -229,6 +237,10 @@ OUTPUTS
 		xOut = sx * cos( radians(lon + 90.) ) - sy * sin( radians(lon + 90.) )
 		yOut = sx * sin( radians(lon + 90.) ) + sy * cos( radians(lon + 90.) )
 		zOut = sz
+		# Finally, translate local position to global origin
+		xOut = xOut + goX
+		yOut = yOut + goY
+		zOut = zOut + goZ
 	else:
 		print 'gcarToLcar: {} is not a valid system. Try again!'.format(into)
 	
@@ -315,54 +327,41 @@ OUTPUTS
 			print 'calcDistPnt: Warning: No keywords are set.'
 			return
 		else: pass
-			#print 'Calculating distance/azimuth/elevation to point ({:6.2f}N, {:6.2f}E, {:6.2f} km)'.format(distLat, distLon, distAlt)
+#			print 'Calculating distance/azimuth/elevation to point ({:6.2f}N, {:6.2f}E, {:6.2f} km)'.format(distLat, distLon, distAlt)
 	elif None in [distLat, distLon, distAlt]:
-		#print 'Calculating coordinates of distant point at {:6.2f} km, {:6.2f}'.format(dist,az)+unichr(176)+'E, {:6.2f}'.format(el)+unichr(176)+' elevation.'
+#		print 'Calculating coordinates of distant point at {:6.2f} km, {:6.2f}'.format(dist,az)+unichr(176)+'E, {:6.2f}'.format(el)+unichr(176)+' elevation.'
 		mode = 'findDistPnt'
 	else:
-		print 'calcDistPnt: Too many keywords set at once. This function does not understand what you are asking. Do you?'
+#		print 'calcDistPnt: Too many keywords set at once. This function does not understand what you are asking. Do you?'
 		return
 	
 	if mode == 'findDistAzEl':
 		# Convert point of origin from geodetic to geocentric
 		(gcLat, gcLon, origRe) = geodToGeoc(origLat, origLon, into='geoc')
-		# convert point of origin from geocentric to global cartesian
-		(oX, oY, oZ) = gspToGcar(gcLat, gcLon, origRe+origAlt, into='gcar')
 		# Convert distant point from geodetic to geocentric
 		(gcDistLat, gcDistLon, distRe) = geodToGeoc(distLat, distLon, into='geoc')
 		# convert point of origin from geocentric to global cartesian
-		(dX, dY, dZ) = gspToGcar(gcDistLat, gcDistLon, Re+distAlt, into='gcar')
-		# Find pointing direction from vector subtraction
-		pX = dX - oX
-		pY = dY - oY
-		pZ = dZ - oZ
+		(pX, pY, pZ) = gspToGcar(gcDistLat, gcDistLon, distRe+distAlt, into='gcar')
 		# convert pointing direction from global cartesian to local cartesian
-		(pX, pY, pZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon , into='lcar')
+		(dX, dY, dZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon, origRe+origAlt, into='lcar')
 		# convert pointing direction from local cartesian to local spherical
-		(gaz, gel, rho) = lspToLcar(pX, pY, pZ, into='lsp')
+		(gaz, gel, rho) = lspToLcar(dX, dY, dZ, into='lsp')
 		# convert pointing azimuth and elevation to geodetic
 		(lat, lon, Re, az, el) = geodToGeocAzEl(gcLat, gcLon, gaz, gel, into='geod')
-		dist = sqrt( pX**2 + pY**2 + pZ**2 )
+		dist = sqrt( dX**2 + dY**2 + dZ**2 )
 	elif mode == 'findDistPnt':
 		# convert pointing azimuth and elevation to geocentric
 		(gcLat, gcLon, origRe, gaz, gel) = geodToGeocAzEl(origLat, origLon, az, el, into='geoc')
 		# convert pointing direction from local spherical to local cartesian
 		(pX, pY, pZ) = lspToLcar(gaz, gel, dist, into='lcar')
 		# convert pointing direction from local cartesian to global cartesian
-		(pX, pY, pZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon , into='gcar')
-		# convert point of origin from geocentric to global cartesian
-		(oX, oY, oZ) = gspToGcar(gcLat, gcLon, origRe+origAlt, into='gcar')
-		# Find distant point by vector addition
-		dX = oX + pX
-		dY = oY + pY
-		dZ = oZ + pZ
+		(dX, dY, dZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon, origRe+origAlt, into='gcar')
 		# Convert distant point from global cartesian to geocentric
 		(gcDistLat, gcDistLon, rho) = gspToGcar(dX, dY, dZ, into='gsp')
 		# Convert distant point from geocentric to geodetic
 		(distLat, distLon, Re) = geodToGeoc(gcDistLat, gcDistLon, into='geod')
 		distAlt = rho - Re
 		distRe = Re
-		
 	# Fill output dictionary
 	dictOut = {'origLat': origLat, 'origLon': origLon, 'origAlt': origAlt, \
 				'distLat': distLat, 'distLon': distLon, 'distAlt': distAlt, \
