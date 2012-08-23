@@ -24,7 +24,7 @@ read_dmap(PyObject *self, PyObject *args)
 	else
 	{
 		char *command;
-		int c,nRecs=0,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang=0;
+		int c,nRecs=0,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang=0,chn=0;
 		double epoch;
 		struct DataMap *ptr;
 		struct DataMapScalar *s;
@@ -88,7 +88,10 @@ read_dmap(PyObject *self, PyObject *args)
 				if ((strcmp(s->name,"noise.mean")==0) && (s->type==DATAFLOAT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "noise.mean"), Py_BuildValue("d", *(s->data.fptr)));
 				if ((strcmp(s->name,"channel")==0) && (s->type==DATASHORT))
+				{
 					PyDict_SetItem(beamData,Py_BuildValue("s", "channel"), Py_BuildValue("i", *(s->data.sptr)));
+					chn = *(s->data.sptr);
+				}
 				if ((strcmp(s->name,"bmazm")==0) && (s->type==DATAFLOAT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "bmazm"), Py_BuildValue("d", *(s->data.fptr)));
 				if ((strcmp(s->name,"scan")==0) && (s->type==DATASHORT))
@@ -381,6 +384,7 @@ read_dmap(PyObject *self, PyObject *args)
 			}
 			
 			/*convert time to epoch time (key)*/
+			if(chn > 1) us += chn-1;
 			epoch = TimeYMDHMSToEpoch(yr,mo,dy,hr,mt,(double)sc+us/1.e6);
 			
 			/*add the beam to the radData dict*/

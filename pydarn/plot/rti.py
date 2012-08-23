@@ -12,7 +12,7 @@ from matplotlib.collections import PolyCollection
 from itertools import cycle
 
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
-scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
+scales=[],channel='a',coords='gate',colors='lasse',yrng=-1):
 	"""
 	*******************************
 	
@@ -33,11 +33,13 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 		[fileType]: one of ['fitex','fitacf','lmfit']
 			default = 'fitex'
 		[params]: a list of the fit parameters to plot, allowable values are:
-			['velocity','power','width']
+			['velocity','power','width','elevation','phi0']
 			default: ['velocity','power','width']
 		[scales]: a list of the min/max values for the color scale for
-			each param.  The list should be n x 2 where n is the number of
-			elements in the params list
+			each param.  If omitted, default scales will be used.  If present,
+			the list should be n x 2 where n is the number of
+			elements in the params list.  Use an empty list for default range,
+			e.g. [[-250,300],[],[]]
 			default: [[-200,200],[0,30],[0,150]]
 		[channel]: the channel you wish to plot, the allowable values are
 			'a' and 'b'
@@ -45,11 +47,17 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 		[coords]: the coordinates to use for the y axis.  The allowable values are
 			'gate','rng','geo','mag'
 			default: 'gate'
+		[colors]: a string indicating what color bar to use, valid inputs are
+			['lasse','aj']
+			default: 'lasse'
+		[yrng]: a list indicating the min and max values for the y axis in the
+			chosen coordinate system, or a -1 indicating to plot everything
+			default: -1
 	OUTPUTS:
 
 	EXAMPLE:
 		plotRti('20120101','bks',beam=12,time=[10,1453],fileType='fitex',
-		params=['vel','power'],scales=[[-200,200],[0,30]],channel='b',
+		params=['vel','power'],scales=[[-200,200],[]],channel='b',
 		coords='mag'):
 		
 	Written by AJ 20120807
@@ -60,13 +68,28 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
 	assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
 	assert(isinstance(beam,int)),'error, beam must be integer'
-	assert(0 < len(params) < 4),'error, must input between 1 and 3 params in LIST form'
+	assert(0 < len(params) < 6),'error, must input between 1 and 5 params in LIST form'
 	for i in range(0,len(params)):
-		assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width'),\
-		"error, allowable params are 'velocity','power','width'"
-	assert(len(scales)==len(params)), \
-	'error, input scales must have same number of elements as params'
+		assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width' or \
+		params[i] == 'elevation' or params[i] == 'phi0'), \
+		"error, allowable params are 'velocity','power','width','elevation','phi0'"
+	assert(scales == [] or len(scales)==len(params)), \
+	'error, if present, scales must have same number of elements as params'
+	assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
+	'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
+	assert(colors == 'lasse' or colors == 'aj'),"error, valid imnputs for color are 'lasse' and 'aj'"
 	
+	tscales = []
+	for i in range(0,len(params)):
+		if(scales == [] or scales[i] == []):
+			if(params[i] == 'velocity'): tscales.append([-200,200])
+			elif(params[i] == 'power'): tscales.append([0,30])
+			elif(params[i] == 'width'): tscales.append([0,150])
+			elif(params[i] == 'elevation'): tscales.append([0,50])
+			elif(params[i] == 'phi0'): tscales.append([-numpy.pi,numpy.pi])
+		else: tscales.append(scales[i])
+	scales = tscales
+			
 	#read the radar data
 	myData = pydarn.io.radDataRead(dateStr,rad,time=time,fileType=fileType,vb=0,beam=beam)
 	
@@ -88,16 +111,51 @@ scales=[[-200,200],[0,30],[0,150]],channel='a',coords='gate'):
 	figheight = .72/len(params)
 	for i in range(0,len(params)):
 		plotData(myData,rtiFig,params[i],scales[i],i==len(params)-1, \
-		coords=coords,pos=[.1,figtop-figheight*(i+1)+.02,.76,figheight-.02])
+		coords=coords,pos=[.1,figtop-figheight*(i+1)+.02,.76,figheight-.02],\
+		yrng=yrng,colors=colors)
 		
 	rtiFig.show()
 	
-def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
+def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],colors='lasse'):
+	"""
+	*******************************
+	
+	plotData(myData,myFig,param,scale,bottom,[yrng],[coords],[pos],[colors]):
+	
+	plots a frequency and Nave panel on Figure myFig at position pos
 
+	INPUTS:
+		myData: a radarData object containing the data to be plotted
+		myFig: the figure to plot the panel on
+		param: a list of the fit parameters to plot, allowable values are:
+			['velocity','power','width','elevation','phi0']
+			default: ['velocity','power','width']
+		scale: a list of the min/max values for the color scale for
+			each param.  The list should be n x 2 where n is the number of
+			elements in the params list
+			default: [[-200,200],[0,30],[0,150]]
+		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
+		[coords]: the coordinates to use for the y axis.  The allowable values are
+			'gate','rng','geo','mag'
+			default: 'gate'
+		[colors]: a string indicating what color bar to use, valid inputs are
+			['lasse','aj']
+			default: 'lasse'
+		[yrng]: a list indicating the min and max values for the y axis in the
+			chosen coordinate system, or a -1 indicating to plot everything
+			default: -1
+	OUTPUTS:
+
+		
+	Written by AJ 20120807
+	*******************************
+	"""
+	
 	#add an axes to the figure
 	ax = myFig.add_axes(pos)
 	ax.yaxis.set_tick_params(direction='out')
 	ax.xaxis.set_tick_params(direction='out')
+	ax.yaxis.set_major_locator(MultipleLocator(20))
 	ax.yaxis.set_minor_locator(MultipleLocator(5))
 	ax.yaxis.set_tick_params(direction='out',which='minor')
 	ax.xaxis.set_tick_params(direction='out',which='minor')
@@ -106,11 +164,15 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 	if(myData.nrecs == 0): return None
 	
 	#check if we want default y axis
-	if(isinstance(yrng,int) and yrng == -1):
+	if(yrng == -1):
 		ymin = 0
 		ymax = -1
 		for i in range(0,myData.nrecs):
-			if(myData[myData.times[0]]['prm']['nrang'] > ymax): ymax = myData[myData.times[0]]['prm']['nrang']
+			if(myData[myData.times[i]]['prm']['nrang'] > ymax): ymax = myData[myData.times[i]]['prm']['nrang']
+			
+	if(isinstance(yrng,list)):
+		ymin = yrng[0]
+		ymax = yrng[1]
 			
 	ax.set_ylim(bottom=ymin,top=ymax)
 		
@@ -136,6 +198,8 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 			if(param == 'velocity'): intensities.append(myData[t]['fit']['v'][j])
 			if(param == 'power'): intensities.append(myData[t]['fit']['p_l'][j])
 			if(param == 'width'): intensities.append(myData[t]['fit']['w_l'][j])
+			if(param == 'elevation'): intensities.append(myData[t]['fit']['elv'][j])
+			if(param == 'phi0'): intensities.append(myData[t]['fit']['phi0'][j])
 
 
 	#create a collection of polygons with the specified vertices, use numpy arrays to increase speed
@@ -157,12 +221,13 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 		ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
 		ax.xaxis.set_label_text('UT')
 		
+	ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
 	if(coords == 'gate'): ax.yaxis.set_label_text('Range gate',size=10)
 	if(coords == 'geo'): ax.yaxis.set_label_text('Geo Lat [deg]',size=10)
 	if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
 	if(coords == 'rng'): ax.yaxis.set_label_text('Slant Range [km]',size=10)
 	
-	pydarn.plot.plotUtils.genCmap(myFig,pcoll,param,scale,pos)
+	pydarn.plot.plotUtils.genCmap(myFig,pcoll,param,scale,pos,colors=colors)
 	
 def rtiTitle(myData,dateStr,beam,xmin=.1,xmax=.86):
 	
@@ -178,7 +243,23 @@ def rtiTitle(myData,dateStr,beam,xmin=.1,xmax=.86):
 	plot.figtext(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
 	
 def plotCpid(myData,myFig,pos=[.1,.77,.76,.05]):
+	"""
+	*******************************
 	
+	plotCpid(myData,myFig,[pos]):
+	
+	plots a cpid panel on Figure myFig at position pos
+
+	INPUTS:
+		myData: a radarData object containing the data to be plotted
+		myFig: the figure to plot the panel on
+		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
+	OUTPUTS:
+
+		
+	Written by AJ 20120807
+	*******************************
+	"""
 	oldCpid = -9999999
 	
 	#add an axes to the figure
@@ -219,7 +300,23 @@ def plotCpid(myData,myFig,pos=[.1,.77,.76,.05]):
 	
 		
 def plotNoise(myData,myFig,pos=[.1,.88,.76,.06]):
+	"""
+	*******************************
 	
+	plotNoise(myData,myFig,[pos]):
+	
+	plots a noise panel on Figure myFig at position pos
+
+	INPUTS:
+		myData: a radarData object containing the data to be plotted
+		myFig: the figure to plot the panel on
+		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
+	OUTPUTS:
+
+		
+	Written by AJ 20120807
+	*******************************
+	"""
 	#read the data
 	sky=[]
 	search = []
@@ -282,7 +379,23 @@ def plotNoise(myData,myFig,pos=[.1,.88,.76,.06]):
 	ax2.add_line(l)
 	
 def plotFreq(myData,myFig,pos=[.1,.82,.76,.06]):
+	"""
+	*******************************
 	
+	plotFreq(myData,myFig,[pos]):
+	
+	plots a frequency and Nave panel on Figure myFig at position pos
+
+	INPUTS:
+		myData: a radarData object containing the data to be plotted
+		myFig: the figure to plot the panel on
+		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
+	OUTPUTS:
+
+		
+	Written by AJ 20120807
+	*******************************
+	"""
 	y=[]
 	nave=[]
 	for i in range(0,myData.nrecs):

@@ -89,6 +89,7 @@ class radData(dict):
 		myData.times = myData.getTimes()
 		myData.nrecs = len(myData.times)
 		myData.ftype = self.ftype
+		
 		return myData
 		
 		

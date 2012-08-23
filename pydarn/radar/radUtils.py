@@ -23,6 +23,7 @@ def getCpName(cpid):
 	if(math.fabs(cpid) == 26003): return 'stereoscan (b)'
 	if(math.fabs(cpid) == 153): return 'stereoscan (a)'
 	if(math.fabs(cpid) == 3310): return 'themis-tauscan'
+	if(math.fabs(cpid) == 3300): return 'themisscan'
 	if(math.fabs(cpid) == 150): return 'katscan'
 	if(math.fabs(cpid) == 151): return 'katscan -fast'
 	if(math.fabs(cpid) == 503): return 'tauscan'
