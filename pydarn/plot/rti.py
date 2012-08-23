@@ -1,15 +1,8 @@
-import pydarn
-import numpy
-import matplotlib
+import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
-import calendar
-import datetime
-import utils
-import pylab
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
-from itertools import cycle
 
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
 scales=[],channel='a',coords='gate',colors='lasse',yrng=-1):
@@ -45,7 +38,7 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1):
 			'a' and 'b'
 			default: 'a'
 		[coords]: the coordinates to use for the y axis.  The allowable values are
-			'gate','rng','geo','mag'
+			'gate','rng','geo'
 			default: 'gate'
 		[colors]: a string indicating what color bar to use, valid inputs are
 			['lasse','aj']
@@ -67,6 +60,7 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1):
 	#check the inputs
 	assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
 	assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
+	assert(coords == 'gate' or coords == 'rng' or coords == 'geo'),"error, coords must be one of 'gate','rng','geo'"
 	assert(isinstance(beam,int)),'error, beam must be integer'
 	assert(0 < len(params) < 6),'error, must input between 1 and 5 params in LIST form'
 	for i in range(0,len(params)):
@@ -77,7 +71,7 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1):
 	'error, if present, scales must have same number of elements as params'
 	assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
 	'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
-	assert(colors == 'lasse' or colors == 'aj'),"error, valid imnputs for color are 'lasse' and 'aj'"
+	assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
 	
 	tscales = []
 	for i in range(0,len(params)):
@@ -107,16 +101,28 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1):
 	
 	plotCpid(myData,rtiFig)
 	
+	myFov = None
+	if(coords == 'geo' or coords == 'mag'):
+		rmax,bmax=-1,-1
+		for i in range(0,myData.nrecs):
+			if(myData[myData.times[i]]['prm']['nrang'] > rmax): rmax = myData[myData.times[i]]['prm']['nrang']
+			if(myData[myData.times[i]]['prm']['bmnum'] > bmax): bmax = myData[myData.times[i]]['prm']['bmnum']
+		d = myData[myData.times[0]]['prm']
+		site = pydarn.radar.network().getRadarById(d['stid']).getSiteByDate(myData.times[0])
+		myFov=pydarn.radar.radFov.getFov(frang=d['frang'],rsep=d['rsep'],site=site,ngates=rmax,\
+		recrise=d['rxrise'],coords=coords,altitude=300,nbeams=max(bmax,site.maxbeam))
+
+		
 	figtop = .77
 	figheight = .72/len(params)
 	for i in range(0,len(params)):
-		plotData(myData,rtiFig,params[i],scales[i],i==len(params)-1, \
+		plotData(myData,rtiFig,params[i],scales[i],i==len(params)-1, myFov, \
 		coords=coords,pos=[.1,figtop-figheight*(i+1)+.02,.76,figheight-.02],\
 		yrng=yrng,colors=colors)
 		
 	rtiFig.show()
 	
-def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],colors='lasse'):
+def plotData(myData,myFig,param,scale,bottom,fov,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],colors='lasse'):
 	"""
 	*******************************
 	
@@ -155,34 +161,37 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 	ax = myFig.add_axes(pos)
 	ax.yaxis.set_tick_params(direction='out')
 	ax.xaxis.set_tick_params(direction='out')
-	ax.yaxis.set_major_locator(MultipleLocator(20))
-	ax.yaxis.set_minor_locator(MultipleLocator(5))
 	ax.yaxis.set_tick_params(direction='out',which='minor')
 	ax.xaxis.set_tick_params(direction='out',which='minor')
-	
-	#check that we have data
-	if(myData.nrecs == 0): return None
+
 	
 	#check if we want default y axis
 	if(yrng == -1):
 		ymin = 0
 		ymax = -1
+		#find maxrange
 		for i in range(0,myData.nrecs):
 			if(myData[myData.times[i]]['prm']['nrang'] > ymax): ymax = myData[myData.times[i]]['prm']['nrang']
-			
+		#check for coords type
+		if(coords == 'geo' or coords == 'mag'):
+			ymin=fov['latFull'][myData[myData.times[i]]['prm']['bmnum']][ymin][0]
+			ymax=fov['latFull'][myData[myData.times[i]]['prm']['bmnum']][ymax-1][3]
+		elif(coords == 'rng'):
+			ymin = ymin*myData[myData.times[i]]['prm']['rsep']
+			ymax = ymax*myData[myData.times[i]]['prm']['rsep']
+	#check fi we want custom y range
 	if(isinstance(yrng,list)):
 		ymin = yrng[0]
 		ymax = yrng[1]
-			
+	#sey y range
 	ax.set_ylim(bottom=ymin,top=ymax)
 		
 	#draw the axes
 	ax.plot_date(matplotlib.dates.date2num(myData.times), numpy.arange(len(myData.times)), fmt='w', \
 	tz=None, xdate=True, ydate=False, alpha=0.0)
 	
-		
+	
 	verts,intensities=[],[]
-	fcs = ['b','g','m']
 	#collect the data into a list of vertices to be plotted
 	for i in range(0,myData.nrecs):
 		t = myData.times[i]
@@ -192,25 +201,36 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 			if(x2-x1 > 4./1440.): x2 = x1+2./1440.
 		else: x2 = x1+1./1440.
 
+		#loop through gates with scatter
 		for j in range(0,len(myData[t]['fit']['slist'])):
+			#range gate numbers
 			y1,y2 = myData[t]['fit']['slist'][j],myData[t]['fit']['slist'][j]+1
+			#get geo or mag coords if desired
+			if(coords == 'geo' or coords == 'mag'):
+				y1,y2 = fov['latFull'][myData[t]['prm']['bmnum']][y1][0],fov['latFull'][myData[t]['prm']['bmnum']][y1][3]
+			#get slant raneg if desired
+			if(coords == 'rng'):
+				y1 = myData[t]['prm']['rsep']*y1+myData[t]['prm']['frang']
+				y2 = y1+myData[t]['prm']['rsep']
+				
+			#save the polygon vertices
 			verts.append(((x1,y1),(x1,y2),(x2,y2),(x2,y1)))
+			#save the param to use as a color scale
 			if(param == 'velocity'): intensities.append(myData[t]['fit']['v'][j])
-			if(param == 'power'): intensities.append(myData[t]['fit']['p_l'][j])
-			if(param == 'width'): intensities.append(myData[t]['fit']['w_l'][j])
-			if(param == 'elevation'): intensities.append(myData[t]['fit']['elv'][j])
-			if(param == 'phi0'): intensities.append(myData[t]['fit']['phi0'][j])
+			elif(param == 'power'): intensities.append(myData[t]['fit']['p_l'][j])
+			elif(param == 'width'): intensities.append(myData[t]['fit']['w_l'][j])
+			elif(param == 'elevation'): intensities.append(myData[t]['fit']['elv'][j])
+			elif(param == 'phi0'): intensities.append(myData[t]['fit']['phi0'][j])
 
 
 	#create a collection of polygons with the specified vertices, use numpy arrays to increase speed
 	pcoll = PolyCollection(numpy.array(verts), closed=False, edgecolor='none')
+	#set color array to intensities
 	pcoll.set_array(numpy.array(intensities))
-	
 	#add the collection of polygons to the axes
 	ax.add_collection(pcoll, autolim=True)
-	
-	loc,lab = plot.yticks()
-	ax.yaxis.set_ticklabels(loc,lab,size=9)
+
+
 	#format the x axis
 	ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator(interval=20))
 	plot.xticks(size=9)
@@ -220,19 +240,52 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 	else:
 		ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
 		ax.xaxis.set_label_text('UT')
-		
-	ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
-	if(coords == 'gate'): ax.yaxis.set_label_text('Range gate',size=10)
-	if(coords == 'geo'): ax.yaxis.set_label_text('Geo Lat [deg]',size=10)
-	if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
-	if(coords == 'rng'): ax.yaxis.set_label_text('Slant Range [km]',size=10)
 	
+	#set ytick size
+	plot.yticks(size=9)
+	#format y axis depending on coords
+	if(coords == 'gate'): 
+		ax.yaxis.set_label_text('Range gate',size=10)
+		ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
+		ax.yaxis.set_major_locator(MultipleLocator(20))
+		ax.yaxis.set_minor_locator(MultipleLocator(5))
+	elif(coords == 'geo' or coords == 'mag'): 
+		if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
+		else: ax.yaxis.set_label_text('Geo Lat [deg]',size=10)
+		ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%0.2f'))
+		ax.yaxis.set_major_locator(MultipleLocator((ymax-ymin)/5.))
+		ax.yaxis.set_minor_locator(MultipleLocator((ymax-ymin)/25.))
+	elif(coords == 'rng'): 
+		ax.yaxis.set_label_text('Slant Range [km]',size=10)
+		ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
+		ax.yaxis.set_major_locator(MultipleLocator(500))
+		ax.yaxis.set_minor_locator(MultipleLocator(100))
+	
+	#generate the colormap
 	pydarn.plot.plotUtils.genCmap(myFig,pcoll,param,scale,pos,colors=colors)
 	
 def rtiTitle(myData,dateStr,beam,xmin=.1,xmax=.86):
+	"""
+	*******************************
 	
+	rtiTitle(myData,dateStr,beam,[xmin],[xmax]):
+	
+	prints a title on an rti plot
+
+	INPUTS:
+		myData: a radarData object containing the data to be plotted
+		dateStr: the date in yyyymmdd format
+		beam: the beam number
+		[xmin]: coord for left alignment
+		[xmax]: coord for right alignment
+	OUTPUTS:
+
+		
+	Written by AJ 20120807
+	*******************************
+	"""
 	n=pydarn.radar.network()
-	r=n.getRadarById(33)
+	r=n.getRadarById(myData[myData.times[0]]['prm']['stid'])
 	
 	plot.figtext(xmin,.95,r.name+'  ('+myData.ftype+')',ha='left',weight=550)
 	
