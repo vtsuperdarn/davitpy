@@ -85,16 +85,23 @@ def genCmap(fig,coll,param,scale,pos,colors='lasse'):
 		bounds = numpy.append(bounds,9999999.)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
-	#set the colormap and boundaries for the collection
-	#of plotted items
-	coll.set_cmap(cmap)
-	coll.set_norm(norm)
-	
+
 	
 	#create a new axes for the colorbar
 	cax = fig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
 	cax.yaxis.set_tick_params(direction='out')
-	cb = plot.colorbar(coll,cax=cax)
+	#set the colormap and boundaries for the collection
+	#of plotted items
+	if(isinstance(coll,list)):
+		for c in coll:
+			c.set_cmap(cmap)
+			c.set_norm(norm)
+			cb = plot.colorbar(c,cax=cax)
+	else:
+		coll.set_cmap(cmap)
+		coll.set_norm(norm)
+		cb = plot.colorbar(coll,cax=cax)
+		
 	
 	l = []
 	#define the colorbar labels

@@ -27,6 +27,7 @@ def getCpName(cpid):
 	if(math.fabs(cpid) == 150): return 'katscan'
 	if(math.fabs(cpid) == 151): return 'katscan -fast'
 	if(math.fabs(cpid) == 503): return 'tauscan'
+	if(math.fabs(cpid) == 9213): return 'pcpscan'
 	if(math.fabs(cpid) == 1): return 'normalscan'
 	return ' '
 
