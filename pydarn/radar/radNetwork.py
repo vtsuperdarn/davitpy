@@ -325,8 +325,8 @@ Reads radar.dat file
 	radarF['cnum'] = []
 	# Fill dictionary with each radar.dat lines
 	for ldat in data:
-		if len(ldat) == 0: continue
 		ldat = shlex.split(ldat)
+		if len(ldat) == 0: continue
 		radarF['id'].append( int(ldat[0]) )
 		radarF['status'].append( int(ldat[1]) )
 		tmpDate = parseDate( int(ldat[2]) )
