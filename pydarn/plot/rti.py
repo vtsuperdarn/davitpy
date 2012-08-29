@@ -116,11 +116,12 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0):
 	print 'done plot'
 	
 
-	if(pdf):
-		rtiFig.savefig('/home/miker/temp.png',orientation='landscape', papertype='letter',format='png')
-	else:
-			rtiFig.show()
-
+	t1 = datetime.datetime.now()
+	#if(pdf):
+	rtiFig.savefig('/home/miker/temp.png',orientation='landscape', papertype='letter',format='png',dpi=1000)
+	#else:
+	rtiFig.show()
+	print datetime.datetime.now()-t1
 
 def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],colors='lasse',gsct=0):
 	"""
@@ -229,7 +230,8 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 			
 
 		intensities = numpy.zeros((myData.nrecs,n_y))
-		intensities[:][:]=9999999.
+		intensities[:][:]=100000.
+		mask = numpy.zeros((myData.nrecs,n_y))
 		gs_flg = numpy.zeros((myData.nrecs,n_y))
 		X,Y = numpy.meshgrid(matplotlib.dates.date2num(myData.times),y_arr)
 		
@@ -249,13 +251,16 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 				elif(param == 'phi0' and myData[j]['prm']['xcf']): intensities[j][r] = myData[t]['fit']['phi0'][k]
 				if(gsct): gs_flg[j][r] = myData[t]['fit']['gflg'][k]
 
-
-		scat = numpy.ma.masked_where(numpy.transpose(intensities) == 9999999., numpy.transpose(intensities))
 		#plot the array
-		pcoll.append(ax.pcolormesh(X, Y, numpy.ma.masked_where(numpy.transpose(gs_flg) == 1, scat)))
-		if(gsct):
-			pcoll.append(ax.pcolormesh(X, Y, numpy.ma.masked_where(numpy.transpose(gs_flg) == 0, scat),alpha=0.05))
-		
+		scat = numpy.ma.masked_where(numpy.transpose(intensities) == 100000., numpy.transpose(intensities))
+		if(gsct == 0):
+			pcoll.append(ax.pcolormesh(X, Y, scat,edgecolors='None',linewidths=0.0))
+		else:
+			pcoll.append(ax.pcolormesh(X, Y, numpy.ma.masked_where(numpy.transpose(gs_flg) == 1., scat),edgecolors='None',linewidths=0.0))
+			pcoll[i].set_linewidths(0.0)
+			#pcoll.append(ax.pcolormesh(X, Y, numpy.ma.masked_where(gs_flg.T == 1, scat),edgecolors='None',linewidths=0.0,color='k'))
+			#ax.pcolormesh(X, Y, numpy.ma.masked_where(gs_flg.T == 0., scat),edgecolors='None',linewidths=0.0,color='k')
+
 	#format the x axis
 	ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator(interval=20))
 	plot.xticks(size=9)

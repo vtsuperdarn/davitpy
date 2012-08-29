@@ -48,8 +48,8 @@ def genCmap(fig,coll,param,scale,pos,colors='lasse'):
 			
 		#define the boundaries for color assignments
 		bounds = numpy.round(numpy.linspace(scale[0],scale[1],7))
-		bounds = numpy.insert(bounds,0,-9999999.)
-		bounds = numpy.append(bounds,9999999.)
+		bounds = numpy.insert(bounds,0,-9999.)
+		bounds = numpy.append(bounds,9999.)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
 	elif(param == 'phi0'):
@@ -82,11 +82,13 @@ def genCmap(fig,coll,param,scale,pos,colors='lasse'):
 			
 		#define the boundaries for color assignments
 		bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
-		bounds = numpy.append(bounds,9999999.)
+		bounds = numpy.append(bounds,9999.)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
 
-	
+	#cmap.set_bad('w',1.0)
+	#cmap.set_over('w',1.0)
+	#cmap.set_under('w',1.0)
 	#create a new axes for the colorbar
 	cax = fig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
 	cax.yaxis.set_tick_params(direction='out')
