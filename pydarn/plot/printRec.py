@@ -16,7 +16,9 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 	f = open(outfile, 'w')
 	
 	
-	site = pydarn.radar.network().getRadarByCode(rad)
+	radar = pydarn.radar.network().getRadarByCode(rad)
+	site = radar.getSiteByDate(myData.times[0])
+	myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[myData.times[0]]['prm']['rsep'])
 	
 	if(summ == 0):
 		for t in myData.times:
@@ -27,7 +29,7 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 			
 			f.write(t.strftime("%Y-%m-%d  "))
 			f.write(t.strftime("%H:%M:%S  "))
-			f.write(site.name+'\n')
+			f.write(radar.name+'\n')
 			f.write('bmnum = '+str(myData[t]['prm']['bmnum']))
 			f.write('  tfreq = '+str(myData[t]['prm']['tfreq']))
 			f.write('  sky_noise_lev = '+str(int(round(myData[t]['prm']['noise.sky']))))
@@ -46,7 +48,8 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 				f.write('{0:4d}  {1:>8.1f} / {2:<5.1f} {3:>8.1f}  {4:>5d} {5:>8.1f} {6:>8.1f} {7:>8.2f} {8:>8.2f}\n'.format\
 				(myData[t]['fit']['slist'][i],myData[t]['fit']['pwr0'][i],myData[t]['fit']['p_l'][i],\
 				myData[t]['fit']['v'][i],myData[t]['fit']['gflg'][i],myData[t]['fit']['v_e'][i],\
-				myData[t]['fit']['w_l'][i],64.488888,65.55555))
+				myData[t]['fit']['w_l'][i],myFov.latFull[myData[t]['prm']['bmnum']][myData[t]['fit']['slist'][i]],\
+				myFov.lonFull[myData[t]['prm']['bmnum']][myData[t]['fit']['slist'][i]]))
 					
 			f.write('\n')
 	else:
