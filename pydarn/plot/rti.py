@@ -117,10 +117,10 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0):
 	
 
 	t1 = datetime.datetime.now()
-	#if(pdf):
-	rtiFig.savefig('/home/miker/temp.png',orientation='landscape', papertype='letter',format='png',dpi=1000)
-	#else:
-	rtiFig.show()
+	if(pdf):
+		rtiFig.savefig('/home/miker/temp.png',orientation='landscape', papertype='letter',format='png',dpi=750)
+	else:
+		rtiFig.show()
 	print datetime.datetime.now()-t1
 
 def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],colors='lasse',gsct=0):
@@ -229,38 +229,55 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 			y_arr = numpy.array(y_arr)
 			
 
-		intensities = numpy.zeros((myData.nrecs,n_y))
-		intensities[:][:]=100000.
-		mask = numpy.zeros((myData.nrecs,n_y))
-		gs_flg = numpy.zeros((myData.nrecs,n_y))
-		X,Y = numpy.meshgrid(matplotlib.dates.date2num(myData.times),y_arr)
-		
+		verts,intensities,gs_flg = [],[],[]
 		
 		#collect the data into a list of vertices to be plotted
 		for j in range(rswitch[i],endrec):
 			t = myData.times[j]
-			
+			x1 = matplotlib.dates.date2num(t)
+			if(j < endrec-1): 
+				x2 =  matplotlib.dates.date2num(myData.times[j+1])
+				if(x2-x1 > 4./1440.): x2 = x1+2./1440.
+			else: x2 = x1+1./1440.
+		
 			#loop through gates with scatter
 			for k in range(0,len(myData[t]['fit']['slist'])):
 				r = myData[t]['fit']['slist'][k]
+				#range gate numbers
+				y1,y2 = r,r+1
+				#get geo or mag coords if desired
+				if(coords == 'geo' or coords == 'mag'):
+					y1,y2 = fov.latFull[myData[t]['prm']['bmnum']][y1],fov.latFull[myData[t]['prm']['bmnum']][y2]
+				#get slant raneg if desired
+				if(coords == 'rng'):
+					y1 = myData[t]['prm']['rsep']*y1+myData[t]['prm']['frang']
+					y2 = y1+myData[t]['prm']['rsep']
+					
+				#save the polygon vertices
+				verts.append(((x1,y1),(x1,y2),(x2,y2),(x2,y1)))
+				
 				#save the param to use as a color scale
-				if(param == 'velocity'): intensities[j][r] = myData[t]['fit']['v'][k]
-				elif(param == 'power'): intensities[j][r] = myData[t]['fit']['p_l'][k]
-				elif(param == 'width'): intensities[j][r] = myData[t]['fit']['w_l'][k]
-				elif(param == 'elevation' and myData[j]['prm']['xcf']): intensities[i][r] = myData[t]['fit']['elv'][k]
-				elif(param == 'phi0' and myData[j]['prm']['xcf']): intensities[j][r] = myData[t]['fit']['phi0'][k]
-				if(gsct): gs_flg[j][r] = myData[t]['fit']['gflg'][k]
+				if(param == 'velocity'): intensities.append(myData[t]['fit']['v'][k])
+				elif(param == 'power'): intensities.append(myData[t]['fit']['p_l'][k])
+				elif(param == 'width'): intensities.append(myData[t]['fit']['w_l'][k])
+				elif(param == 'elevation' and myData[j]['prm']['xcf']): intensities.append(myData[t]['fit']['elv'][k])
+				elif(param == 'phi0' and myData[j]['prm']['xcf']): intensities.append(myData[t]['fit']['phi0'][k])
+				if(gsct): gs_flg.append(myData[t]['fit']['gflg'][k])
 
-		#plot the array
-		scat = numpy.ma.masked_where(numpy.transpose(intensities) == 100000., numpy.transpose(intensities))
 		if(gsct == 0):
-			pcoll.append(ax.pcolormesh(X, Y, scat,edgecolors='None',linewidths=0.0))
+			inx = numpy.arange(len(verts))
 		else:
-			pcoll.append(ax.pcolormesh(X, Y, numpy.ma.masked_where(numpy.transpose(gs_flg) == 1., scat),edgecolors='None',linewidths=0.0))
-			pcoll[i].set_linewidths(0.0)
-			#pcoll.append(ax.pcolormesh(X, Y, numpy.ma.masked_where(gs_flg.T == 1, scat),edgecolors='None',linewidths=0.0,color='k'))
-			#ax.pcolormesh(X, Y, numpy.ma.masked_where(gs_flg.T == 0., scat),edgecolors='None',linewidths=0.0,color='k')
+			inx = numpy.where(numpy.array(gs_flg)==0)
+			x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)], closed=False, facecolors='.5',edgecolors='.5',linewidths=.01)
+			ax.add_collection(x, autolim=True)
 
+		pcoll.append(PolyCollection(numpy.array(verts)[inx], closed=False, edgecolors='face',linewidths=.01))
+		#set color array to intensities
+		pcoll[i].set_array(numpy.array(intensities)[inx])
+		#add the collection of polygons to the axes
+		ax.add_collection(pcoll[i], autolim=True)
+
+		
 	#format the x axis
 	ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator(interval=20))
 	plot.xticks(size=9)
