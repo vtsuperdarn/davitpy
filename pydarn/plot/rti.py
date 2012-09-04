@@ -268,7 +268,7 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 			inx = numpy.arange(len(verts))
 		else:
 			inx = numpy.where(numpy.array(gs_flg)==0)
-			x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)], closed=False, facecolors='.5',edgecolors='.5',linewidths=.01)
+			x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)], closed=False, facecolors='.5',edgecolors='None')
 			ax.add_collection(x, autolim=True)
 
 		pcoll.append(PolyCollection(numpy.array(verts)[inx], closed=False, edgecolors='face',linewidths=.01))
