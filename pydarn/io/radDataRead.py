@@ -53,33 +53,25 @@ def dmapRead(dateStr,rad,times,fileType):
 
 		#iterate through all of the files which begin in this hour
 		for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
-			#copy the file from sd-data to a local temp directory
-			print 'copying '+filename
-			os.system('cp '+filename+' '+tmpDir)
-			filename = string.replace(filename,myDir,tmpDir)
+			outname = string.replace(filename,myDir,tmpDir)
 			
 			#unzip the compressed file
-			print 'unzipping '+filename
 			if(string.find(filename,'.bz2') != -1):
-				os.system('bunzip2 '+filename)
-				filename = string.replace(filename,'.bz2','')
+				outname = string.replace(outname,'.bz2','')
+				print 'bunzip2 -c '+filename+' > '+outname+'\n'
+				os.system('bunzip2 -c '+filename+' > '+outname)
 			else:
-				os.system('gunzip '+filename)
-				filename = string.replace(filename,'.bz2','')
+				outname = string.replace(outname,'.gz','')
+				print 'gunzip -c '+filename+' > '+outname+'\n'
+				os.system('gunzip -c '+filename+' > '+outname)
 				
-			filelist.append(filename)
-			
-	tempname = tmpDir+str(int(time.time()))+'.'+fileType
+			filelist.append(outname)
+
 	
-	print 'concatenating '+' '.join(filelist)+' > '+tempname
-	os.system('cat '+' '.join(filelist)+' > '+tempname)
+	dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
 	
 	for filename in filelist:
 		os.system('rm '+filename)
-		
-	dfile = pydarn.dmapio.readDmap(tempname)
-	
-	os.system('rm '+tempname)
 		
 	return dfile
 
@@ -118,6 +110,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 	
 	#create radData object
 	myRadData = pydarn.io.radData()
+	
 	
 	#calculate start and end times
 	stime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
