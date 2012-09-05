@@ -318,7 +318,7 @@ def plotData(myData,myFig,param,scale,bottom,yrng=-1,coords='gate',pos=[.1,.05,.
 		
 	for i in range(0,rcnt+1):
 		#generate the colormap
-		pydarn.plot.plotUtils.genCmap(myFig,pcoll,param,scale,pos,colors=colors)
+		pydarn.plot.plotUtils.genCmap(myFig,pcoll,param,scale,pos=pos,colors=colors)
 		
 
 	

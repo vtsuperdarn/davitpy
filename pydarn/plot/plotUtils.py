@@ -1,7 +1,7 @@
 import matplotlib,numpy
 import matplotlib.pyplot as plot
 
-def genCmap(fig,coll,param,scale,pos,colors='lasse'):
+def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 
 	"""
 	******************************
@@ -89,22 +89,8 @@ def genCmap(fig,coll,param,scale,pos,colors='lasse'):
 	#cmap.set_bad('w',1.0)
 	#cmap.set_over('w',1.0)
 	#cmap.set_under('w',1.0)
-	#create a new axes for the colorbar
-	cax = fig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
-	cax.yaxis.set_tick_params(direction='out')
-	#set the colormap and boundaries for the collection
-	#of plotted items
-	if(isinstance(coll,list)):
-		for c in coll:
-			c.set_cmap(cmap)
-			c.set_norm(norm)
-			cb = plot.colorbar(c,cax=cax)
-	else:
-		coll.set_cmap(cmap)
-		coll.set_norm(norm)
-		cb = plot.colorbar(coll,cax=cax)
-		
-	
+
+	cb = drawCB(fig,coll,cmap,norm,map=map,pos=pos)
 	l = []
 	#define the colorbar labels
 	for i in range(0,len(bounds)):
@@ -132,3 +118,33 @@ def genCmap(fig,coll,param,scale,pos,colors='lasse'):
 	if(param == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
 	
 	return
+
+def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
+
+	if(map == 0):
+		#create a new axes for the colorbar
+		cax = fig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
+		#set the colormap and boundaries for the collection
+		#of plotted items
+		if(isinstance(coll,list)):
+			for c in coll:
+				c.set_cmap(cmap)
+				c.set_norm(norm)
+				cb = plot.colorbar(c,cax=cax)
+		else:
+			coll.set_cmap(cmap)
+			coll.set_norm(norm)
+			cb = plot.colorbar(coll,cax=cax)
+	else:
+		if(isinstance(coll,list)):
+			for c in coll:
+				c.set_cmap(cmap)
+				c.set_norm(norm)
+				cb = fig.colorbar(c,location='right')
+		else:
+			coll.set_cmap(cmap)
+			coll.set_norm(norm)
+			cb = fig.colorbar(coll,location='right')
+	
+	cb.ax.tick_params(axis='y',direction='out')
+	return cb

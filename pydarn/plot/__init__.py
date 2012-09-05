@@ -32,4 +32,5 @@ from rti import *
 from plotUtils import *
 from map import *
 from printRec import *
+from fan import *
 
