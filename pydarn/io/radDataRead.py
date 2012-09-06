@@ -52,15 +52,12 @@ def dmapRead(dateStr,rad,times,fileType,filter=0):
 	ctime = stime.replace(minute=0)
 	if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
 	while ctime <= etime:
-		print ctime,etime
 		#directory on the data server
 		myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+fileType+'/'+rad+'/'
 		hrStr = ctime.strftime("%H")
 		dateStr = ctime.strftime("%Y%m%d")
 		#iterate through all of the files which begin in this hour
-		print myDir+dateStr+'.'+hrStr+'*'
 		for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
-			print filename
 			outname = string.replace(filename,myDir,tmpDir)
 			
 			#unzip the compressed file

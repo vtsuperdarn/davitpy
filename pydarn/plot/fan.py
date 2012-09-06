@@ -3,6 +3,7 @@ import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
+from mpl_toolkits.basemap import Basemap, pyproj
 
 def plotFan(dateStr,rad,time=[0,0],interval=60,fileType='fitex',param='velocity', \
 scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
@@ -64,14 +65,46 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 	#assert(myData.nrecs > 0),'error, no data available'
 	
 	t1 = datetime.datetime.now()
+	
+	minx,miny,maxx,maxy = 1e16,1e16,-1e16,-1e16
+
+	for r in rad:
+		site = pydarn.radar.network().getRadarByCode(r).getSiteByDate(utils.yyyymmddToDate(dateStr))
+		myFov = pydarn.radar.radFov.fov(site=site,rsep=45,ngates=site.maxgate+1,nbeams= site.maxbeam+1)
+		for b in range(0,site.maxbeam+1):
+			for k in range(0,site.maxgate+1):
+				if(myFov.lonCenter[b][k] > maxx): maxx = myFov.lonCenter[b][k]
+				if(myFov.lonCenter[b][k] < minx): minx = myFov.lonCenter[b][k]
+				if(myFov.latCenter[b][k] > maxy): maxy = myFov.latCenter[b][k]
+				if(myFov.latCenter[b][k] < miny): miny = myFov.latCenter[b][k]
+	
+	lon_0 = (minx+maxx)/2.
+	lat_0 = (miny+maxy)/2.
+	
+	projparams = {'lon_0': lon_0, 'lat_ts': lat_0, 'R': 6370997.0, 'proj': 'stere', 'units': 'm', 'lat_0': lat_0}
+	proj = pyproj.Proj(projparams)
+	x1,y1 = proj(minx,miny)
+	x2,y2 = proj(maxx,maxy)
+	
+	print x1,x2
+
 	for i in range(0,nTimes):
+		
 		myFig = plot.figure()
-		
-		myMap = pydarn.plot.map(limits=None, lon_0=290., hemi='north', boundingLat=None, \
-			grid=True, fillContinents='white', fillOceans='white', fillLakes='white', coastLineWidth=.5)
+
+		myMap = Basemap(width=1.5*(x2-x1),height=1.5*(y2-y1),projection='stere',\
+            lat_0=lat_0,lon_0=lon_0)
+            
+    #myMap.llcrnrx = x1
+    #myMap.llcrnry = y1
+    #myMap.urcrnrx = x2
+    #myMap.urcrnry = y2
+    
 		myMap.drawstates(linewidth=0.5, color='k')
-		
+		myMap.drawcoastlines(linewidth=0.5,color='k')
 		myMap.drawcountries(linewidth=0.5, color='k')
+		myMap.drawmapboundary(fill_color='w')
+		myMap.fillcontinents(color='w', lake_color='w')
 		
 		for j in range(0,len(myData)):
 			pydarn.plot.overlayRadar(myMap, ids=myData[j][myData[j].times[0]]['prm']['stid'], dateTime=myData[j].times[0], coords=coords)
@@ -80,6 +113,8 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 				plotFanData(myData[j],myFig,myMap,param,scale,coords,colors,gsct)
 		
 		myFig.show()
+		
+		plot.ion()
 		
 	print datetime.datetime.now()-t1
 
@@ -118,8 +153,6 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 			
 			#save the polygon vertices
 			verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
-			#print ((x1,y1),(x2,y2),(x3,y3),(x4,y4))
-			#myFig.gca().add_patch(matplotlib.patches.Polygon([(x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)],fill=1,facecolor='red',edgecolor='black'))
 			#save the param to use as a color scale
 			if(param == 'velocity'): intensities.append(myData[t]['fit']['v'][k])
 			elif(param == 'power'): intensities.append(myData[t]['fit']['p_l'][k])
@@ -139,7 +172,5 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 	#set color array to intensities
 	pcoll.set_array(numpy.array(intensities)[inx])
 	myFig.gca().add_collection(pcoll, autolim=True)
-
-	#myMap.colorbar(mappable=pcoll, location='right', size='5%', pad='2%')
 	
 	pydarn.plot.plotUtils.genCmap(myMap,pcoll,param,scale,colors=colors,map=1)
