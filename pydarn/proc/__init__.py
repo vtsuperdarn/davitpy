@@ -16,3 +16,5 @@ This includes the following function(s):
 
 *******************************
 """
+
+from grid import *

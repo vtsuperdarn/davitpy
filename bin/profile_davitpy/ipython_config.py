@@ -10,7 +10,8 @@ c.InteractiveShellApp.exec_lines = [
 	'from math import *',
 	'%load_ext autoreload',
 	'%autoreload 2',
-	'import pydarn'
+	'import pydarn',
+	'import utils'
 ]
 # c.InteractiveShellApp.exec_files = []
 c.InteractiveShell.autoindent = True
