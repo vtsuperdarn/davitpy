@@ -4,7 +4,7 @@ import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
 
-def plotFan(dateStr,rad,time=[2,2],interval=60,fileType='fitex',param='velocity', \
+def plotFan(dateStr,rad,time=[0,0],interval=60,fileType='fitex',param='velocity', \
 scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 	"""
 	*******************************
@@ -51,6 +51,7 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 			
 	nTimes = (time[1]-time[0])/interval+1
 	if(time[0] == time[1]): time[1] = time[0]+interval/60
+	print time
 	#read the radar data
 	
 	myData=[]

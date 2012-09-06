@@ -1,6 +1,6 @@
-import os,datetime,glob,math,shutil,string,time,pydarn,numpy
+import os,datetime,glob,math,shutil,string,time,pydarn,numpy,utils
 
-def dmapRead(dateStr,rad,times,fileType):
+def dmapRead(dateStr,rad,times,fileType,filter=0):
 	"""
 	*******************************
 	
@@ -15,6 +15,7 @@ def dmapRead(dateStr,rad,times,fileType):
 		rad: the 3 letter radar code, e.g. 'bks'
 		[times]: the range of times for which the file should be read
 		[fileType]: 0 for fitex, 1 for fitacf, 2 for lmfit, 3 for rawacf
+		[filter]: 1 to boxcar filter, 0 for raw data
 	OUTPUTS:
 		dfile: the contents of the datamap file(s) in a pydmap object
 		
@@ -23,18 +24,21 @@ def dmapRead(dateStr,rad,times,fileType):
 	"""
 	
 	#get the year of the file
-	yrStr = dateStr[0:4]
-	
-	#this needs to be changed when the network is working
-	myDir = '/sd-data/'+yrStr+'/'+fileType+'/'+rad+'/'
+	myDate = utils.yyyymmddToDate(dateStr)
 	
 	#we need to get the start and end hours of the request
 	#becasue of how the files are named
-	hr1 = times[0]/100.
-	hr2 = times[1]/100.
-	hr1 = int(math.floor(hr1/2.)*2)
-	hr2 = int(math.floor(hr2/2.)*2)
-	
+	hr1,hr2 = int(math.floor(times[0]/100./2.)*2),int(math.floor(times[1]/100./2.)*2)
+	min1 = int(times[0]-int(math.floor(times[0]/100.)*100))
+
+	stime = myDate.replace(hour=hr1,minute=min1)
+	stime = stime-datetime.timedelta(minutes=4)
+
+	if(hr2 == 24):
+		etime = myDate+datetime.timedelta(days=1)
+	else:
+		etime = myDate.replace(hour=hr2)
+
 	#a temporary directory to store a temporary file
 	tmpDir = '/tmp/fit/'
 	d = os.path.dirname(tmpDir)
@@ -45,14 +49,18 @@ def dmapRead(dateStr,rad,times,fileType):
 	#iterate through all of the hours in the request
 	#ie, iterate through all possible file names
 	filelist=[]
-	for i in range(hr1,hr2+1):
-		if(i < 10):
-			hrStr = '0'+str(i)
-		else:
-			hrStr = str(i)
-
+	ctime = stime.replace(minute=0)
+	if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+	while ctime <= etime:
+		print ctime,etime
+		#directory on the data server
+		myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+fileType+'/'+rad+'/'
+		hrStr = ctime.strftime("%H")
+		dateStr = ctime.strftime("%Y%m%d")
 		#iterate through all of the files which begin in this hour
+		print myDir+dateStr+'.'+hrStr+'*'
 		for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
+			print filename
 			outname = string.replace(filename,myDir,tmpDir)
 			
 			#unzip the compressed file
@@ -66,9 +74,10 @@ def dmapRead(dateStr,rad,times,fileType):
 				os.system('gunzip -c '+filename+' > '+outname)
 				
 			filelist.append(outname)
+			
+		ctime = ctime+datetime.timedelta(hours=1)
 
-	
-	dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
+	if(filter == 0): dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
 	
 	for filename in filelist:
 		os.system('rm '+filename)
@@ -113,19 +122,18 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 	
 	
 	#calculate start and end times
-	stime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
-	int(math.floor(time[0]/100.)),int((time[0]/100.-math.floor(time[0]/100.))*100))
+	stime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[0]/100.)),minute=int((time[0]-int(math.floor(time[0]/100.))*100)))
+	
 	if(time[1] == 2400):
-		etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8])+1,1,0,0)
+		etime = utils.yyyymmddToDate(dateStr)+datetime.timedelta(days=1)
 	else:
-		etime = datetime.datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]), \
-		int(math.floor(time[1]/100.)),int((time[1]/100.-math.floor(time[1]/100.))*100))
+		etime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[1]/100.)),minute=int((time[1]-int(math.floor(time[0]/100.))*100)))
 		
 	#iterate through the available times from the file
 	for epochT in dfile.keys():
 
 		dateT = datetime.datetime.utcfromtimestamp(epochT)
-		
+
 		#check that we are in the target time interval
 		if(dateT >= stime and dateT <= etime):
 			
