@@ -11,7 +11,8 @@ c.InteractiveShellApp.exec_lines = [
 	'%load_ext autoreload',
 	'%autoreload 2',
 	'import pydarn',
-	'import utils'
+	'import utils',
+	'import aacgm'
 ]
 # c.InteractiveShellApp.exec_files = []
 c.InteractiveShell.autoindent = True

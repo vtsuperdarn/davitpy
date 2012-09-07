@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include "rtypes.h"
 #include "rtime.h"
-#include "rconvert.h"
+#include "rconvert.h" 
 #include "dmap.h"
 #include "structmember.h"
 #include "rprm.h"
@@ -20,7 +20,7 @@ read_dmap(PyObject *self, PyObject *args)
 {
 	int len;
 	PyObject* filelist, *item;
-	
+	 
 	if(!PyArg_ParseTuple(args, "iO", &len, &filelist))
 		return NULL;
 	else

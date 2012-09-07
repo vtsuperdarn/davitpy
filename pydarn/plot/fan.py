@@ -114,8 +114,6 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 		
 		myFig.show()
 		
-		plot.ion()
-		
 	print datetime.datetime.now()-t1
 
 def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=0):
