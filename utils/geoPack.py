@@ -373,9 +373,10 @@ def greatCircleMove(origLat, origLon, dist, az):
 	import math
 	
 	Re = 6378.1e3
-
 	lat1 = math.radians(origLat) 
 	lon1 = math.radians(origLon)
+	az = math.radians(az)
+	
 	lat2 = math.asin(math.sin(lat1)*math.cos(dist/Re) +\
 	math.cos(lat1)*math.sin(dist/Re)*math.cos(az))
 	lon2 = lon1 + math.atan2(math.sin(az)*math.sin(dist/Re)*math.cos(lat1),\
