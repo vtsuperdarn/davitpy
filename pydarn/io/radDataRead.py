@@ -75,13 +75,20 @@ def dmapRead(dateStr,rad,times,fileType,filter=0):
 		ctime = ctime+datetime.timedelta(hours=1)
 
 	if(filter == 0): dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
+	else:
+		print 'cat '+' '.join(filelist)+' > '+tmpName
+		os.system('cat '+' '.join(filelist)+' > '+tmpName)
+		print 'fitexfilter '+tmpName+' > '+tmpName+'.f'
+		os.system('fitexfilter '+tmpName+' > '+tmpName+'.f')
+		
+		dfile = pydarn.dmapio.readDmap(1,tmpName+'.f')
 	
 	for filename in filelist:
 		os.system('rm '+filename)
 		
 	return dfile
 
-def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
+def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0):
 	"""
 	*******************************
 	
@@ -111,7 +118,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 	"""
 	
 	#read the datamap file
-	dfile = dmapRead(dateStr,rad,time,fileType)
+	dfile = dmapRead(dateStr,rad,time,fileType,filter=filter)
 	print 'done read'
 	
 	#create radData object
@@ -124,7 +131,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1):
 	if(time[1] == 2400):
 		etime = utils.yyyymmddToDate(dateStr)+datetime.timedelta(days=1)
 	else:
-		etime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[1]/100.)),minute=int((time[1]-int(math.floor(time[0]/100.))*100)))
+		etime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[1]/100.)),minute=int((time[1]-int(math.floor(time[1]/100.))*100)))
 		
 	#iterate through the available times from the file
 	for epochT in dfile.keys():

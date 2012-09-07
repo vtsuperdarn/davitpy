@@ -16,7 +16,7 @@ class radData(dict):
 	EXAMPLES:
 	
 	DECLARATION: 
-		myData = prm.io.radData()
+		myData = pydarn.io.radData()
 		
 	ACCESS:
 		myData[datetime] = beam
