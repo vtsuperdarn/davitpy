@@ -11,6 +11,7 @@
 #include "rtime.h"
 #include "aacgm.h"
 #include "mlt.h"
+#include "invmag.h"
 #include "AstAlg.h"
 
 static PyObject *
@@ -84,12 +85,85 @@ MLTConvertYrsec_wrap(PyObject *self, PyObject *args)
 
 }
 
+static PyObject * 
+rposinvmag_wrap(PyObject *self, PyObject *args)
+{
+	double mlat,mlon,azm,eTime,frang,rsep,rx,height,sc;
+	int bm,rng,yr,mo,dy,hr,mt,stid; 
+	
+	if(!PyArg_ParseTuple(args, "iiiddddd", &bm,&rng,&stid,&eTime,&frang,&rsep,&rx,&height )) 
+		return NULL;
+	else
+	{ 
+		
+		struct RadarNetwork *network;  
+		struct Radar *radar;
+		struct RadarSite *site;
+		FILE * fp;
+		char *envstr;
+		
+		envstr=getenv("SD_RADAR");
+		if (envstr==NULL) 
+		{
+			fprintf(stderr,"Environment variable 'SD_RADAR' must be defined.\n");
+			exit(-1);
+		}
+
+		fp=fopen(envstr,"r");
+
+		if (fp==NULL) 
+		{
+			fprintf(stderr,"Could not locate radar information file.\n");
+			exit(-1);
+		}
+
+		network=RadarLoad(fp);
+		fclose(fp); 
+		if (network==NULL) 
+		{
+			fprintf(stderr,"Failed to read radar information.\n");
+			exit(-1);
+		}
+
+		envstr=getenv("SD_HDWPATH");
+		if (envstr==NULL) 
+		{
+			fprintf(stderr,"Environment variable 'SD_HDWPATH' must be defined.\n");
+			exit(-1);
+		}
+
+		RadarLoadHardware(envstr,network);
+			
+		radar=RadarGetRadar(network,stid);
+		if (radar==NULL)
+		{
+			fprintf(stderr,"Failed to get radar information.\n");
+			return NULL;
+		}
+		TimeEpochToYMDHMS(eTime,&yr,&mo,&dy,&hr,&mt,&sc);
+		
+		site=RadarYMDHMSGetSite(radar,yr,mo,dy,hr,mt,(int)sc);
+						
+						
+		RPosInvMag(bm,rng,yr,site,frang,rsep,rx,height,&mlat,&mlon,&azm);
+		
+		PyObject *outList = PyList_New(0);
+		PyList_Append(outList,PyFloat_FromDouble(mlat)); 
+		PyList_Append(outList,PyFloat_FromDouble(mlon));
+		PyList_Append(outList,PyFloat_FromDouble(azm)); 
+		 
+		return outList;
+	}
+
+}
+
 static PyMethodDef aacgmMethods[] = 
 {
 	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: [lat,lon,lt]=aacgmConv(inLat,inLon,height,flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
  	{"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
 	{"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
  	{"mltFromYrsec", MLTConvertYrsec_wrap , METH_VARARGS, "calculate mlt from yr seconds and mag lon\nformat:mlt=mltFromEpoch(year,yrsec,mLon)"},
+ 	{"rPosMag",  rposinvmag_wrap, METH_VARARGS, "wraper for rposinvmag\nformat:pos=rPosMag(bm,rng,stid,eTime,frang,rsep,rx,height)"},
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

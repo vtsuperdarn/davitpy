@@ -383,5 +383,17 @@ def greatCircleMove(origLat, origLon, dist, az):
 	math.cos(dist/Re)-math.sin(lat1)*math.sin(lat2))
 
 	return [math.degrees(lat2),math.degrees(lon2)]
+	
+def greatCircleAzm(lat1,lon1,lat2,lon2):
+	
+	import math
+	lat1,lon1,lat2,lon2 = math.radians(lat1),math.radians(lon1),math.radians(lat2),math.radians(lon2)
+	
+	y = math.sin(lon2-lon1) * math.cos(lat2)
+	x = math.cos(lat1)*math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(lon2-lon1)
+	
+	azm = math.atan2(y,x)
+
+	return math.degrees(azm)
 
 	

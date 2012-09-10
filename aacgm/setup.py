@@ -24,6 +24,6 @@ setup (name = "aagcmlib",
                                 library_dirs = [
                                      "/usr/local/lib64/",
                                      "/rst/lib/"],
-				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1"]),]
+				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1","radar.1","dmap.1","rpos.1","igrf.1"]),]
        )
 
