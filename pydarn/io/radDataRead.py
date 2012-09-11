@@ -81,7 +81,7 @@ def dmapRead(dateStr,rad,times,fileType,filter=0):
 		print 'fitexfilter '+tmpName+' > '+tmpName+'.f'
 		os.system('fitexfilter '+tmpName+' > '+tmpName+'.f')
 		
-		dfile = pydarn.dmapio.readDmap(1,tmpName+'.f')
+		dfile = pydarn.dmapio.readDmap(1,[tmpName+'.f'])
 	
 	for filename in filelist:
 		os.system('rm '+filename)

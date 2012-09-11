@@ -67,6 +67,22 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 		bounds = numpy.linspace(scale[0],scale[1],9)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
+	elif(param == 'grid'):
+		#check what color scale we want to use
+		if(colors == 'aj'):
+			#define our discrete colorbar
+			cmap = matplotlib.colors.ListedColormap([cmpr(.18),cmpr(.17),cmj(.32),cmj(.37),\
+			cmpr(.142),cmpr(.13),cmpr(.11),cmpr(.10)])
+		else:
+			#define our discrete colorbar
+			cmap = matplotlib.colors.ListedColormap([cmj(.1),cmj(.3),cmj(.45),cmpr(.142),\
+			cmj(.65),cmj(.7),cmj(.8),cmj(.9)])
+			
+		#define the boundaries for color assignments
+		bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
+		bounds = numpy.append(bounds,9999.)
+		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+		
 	#if its a non-velocity plot
 	else:
 		
@@ -112,6 +128,7 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 	
 	#set colorbar label
 	if(param == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
+	if(param == 'grid'): cb.set_label('Velocity [m/s]',size=10)
 	if(param == 'power'): cb.set_label('Power [dB]',size=10)
 	if(param == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
 	if(param == 'elevation'): cb.set_label('Elev [deg]',size=10)
@@ -144,7 +161,7 @@ def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
 		else:
 			coll.set_cmap(cmap)
 			coll.set_norm(norm)
-			cb = fig.colorbar(coll,location='right')
+			cb = fig.colorbar(coll,location='right',pad="5%")
 	
 	cb.ax.tick_params(axis='y',direction='out')
 	return cb

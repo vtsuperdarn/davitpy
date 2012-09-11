@@ -144,7 +144,7 @@ rposinvmag_wrap(PyObject *self, PyObject *args)
 		
 		site=RadarYMDHMSGetSite(radar,yr,mo,dy,hr,mt,(int)sc);
 						
-						
+		
 		RPosInvMag(bm,rng,yr,site,frang,rsep,rx,height,&mlat,&mlon,&azm);
 		
 		PyObject *outList = PyList_New(0);
