@@ -4,8 +4,7 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 	"""
 	*******************************
 	PACKAGE: pydarn.proc.grid
-	
-	makeGrid(dateStr,rad,[times],[fileType],[interval],[vb],[filter],[plot]):
+	FUNCTION: makeGrid(dateStr,rad,[times],[fileType],[interval],[vb],[filter],[plot]):
 	
 	reads in fitted radar data and puts it into a geospatial grid
 	
@@ -54,7 +53,7 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 	ctime = stime
 	lastInd = 0
 	
-	#until we reac h the designated end time
+	#until we reach the designated end time
 	while ctime < etime:
 		#boundary time
 		bndT = ctime+datetime.timedelta(seconds=interval)
@@ -103,7 +102,8 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 class gridVec(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid.gridVec
+	PACKAGE: pydarn.proc.grid
+	CLASS: gridVec
 	
 	a class defining a single gridded vector
 	
@@ -139,7 +139,8 @@ class gridVec(object):
 class gridCell(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid.gridCell
+	PACKAGE: pydarn.proc.grid
+	CLASS: gridCell
 	
 	a class defining a single grid cell
 
@@ -182,7 +183,8 @@ class gridCell(object):
 class latCell(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid.latCell
+	PACKAGE: pydarn.proc.grid
+	CLASS: latCell
 	
 	a class to hold the information for a single latitude
 		for a geospatial grid
@@ -228,7 +230,8 @@ class latCell(object):
 class grid(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid
+	PACKAGE: pydarn.proc.grid
+	CLASS: grid
 	
 	the top level class for defining a geospatial grid for 
 	velocity gridding
@@ -267,12 +270,12 @@ class grid(object):
 	def delVecs(self):
 		"""
 		*******************************
-		FUNCTION grid.delVecs():
+		PACKAGE: pydarn.proc.grid
+		FUNCTION: grid.delVecs():
+		BELONGS TO: CLASS: pydarn.proc.grid.grid
 		
 		delete all vectors from a grid object
 		
-		BELONGS TO: class pydarn.proc.grid.grid
-
 		INPUTS:
 			None
 		OUTPUTS:
@@ -293,11 +296,12 @@ class grid(object):
 	def enterData(self,myData,coordsList):
 		"""
 		*******************************
+		PACKAGE: pydarn.proc.grid
 		FUNCTION grid.enterData():
 		
 		inserts radar fitacf data into a grid object
 		
-		BELONGS TO: class pydarn.proc.grid.grid
+		BELONGS TO: CLASS: pydarn.proc.grid.grid
 
 		INPUTS:
 			myData: a pydarn.io.radDataTypes.beam object
