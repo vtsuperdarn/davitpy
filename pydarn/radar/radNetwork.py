@@ -145,6 +145,21 @@ Get a specific radar from its name/code/id
 		if not found:
 			print 'getRadarBy: could not find radar {}: {}'.format(by, radN)
 			return found
+		
+	def getAllCodes(self, datetime=None):
+		"""
+Get a list of all active radar codes
+		"""
+		from datetime import datetime
+		
+		if not datetime: datetime = datetime.utcnow()
+		
+		codes = []
+		for iRad in range( self.nradar ):
+			tcod = self.info[iRad].getSiteByDate(datetime)
+			if tcod and self.info[iRad].status == 1: codes.append(self.info[iRad].code[0])
+		
+		return codes
 			
 
 # *************************************************************
@@ -203,9 +218,9 @@ Object string representation
 										len(self.site))
 		return outstring
 		
-	def getSiteByDate(self, date):
+	def getSiteByDate(self, datetime):
 		"""
-Get a specific radar site at a given date
+Get a specific radar site at a given date (as a python datetime object)
 		"""
 		found = False
 		for iSit in range( self.__maxSites ):
@@ -213,15 +228,15 @@ Get a specific radar site at a given date
 				found = True
 				return self.site[iSit]
 				break
-			elif self.site[iSit].tval >= date:
-				found = True
+			elif self.site[iSit].tval >= datetime:
 				if iSit > 0: 
+					found = True
 					return self.site[iSit-1]
 				else:
-					return self.site[iSit]
+					return found
 				break
 		if not found:
-			print 'getSiteByDate: could not get SITE for date {}'.format(date)
+			print 'getSiteByDate: could not get SITE for date {}'.format(datetime)
 			return found
 		
 
