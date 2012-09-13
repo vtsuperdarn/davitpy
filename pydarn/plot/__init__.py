@@ -26,3 +26,12 @@ This includes the following module(s):
 
 *******************************
 """
+
+import rti
+from rti import *
+from plotUtils import *
+from map import *
+from printRec import *
+from fan import *
+from grid import *
+

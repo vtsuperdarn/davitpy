@@ -18,6 +18,10 @@ This includes the following submodules:
 *******************************
 """
 
-from pydarn import utils
-from pydarn.io.dmap import *
-from pydarn import pydmap
+#import utils
+import dmapio
+import radar
+import io
+import plot
+import proc
+from datetime import *

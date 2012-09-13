@@ -7,17 +7,12 @@ c.TerminalIPythonApp.display_banner = True
 c.InteractiveShellApp.log_level = 20
 # c.InteractiveShellApp.extensions = []
 c.InteractiveShellApp.exec_lines = [
-	'import numpy',
-	'import scipy',
-	'import matplotlib as mplot',
-	'import pylab',
-	'import h5py',
-	'import pydarn',
 	'from math import *',
-	'import string',
-	'from pydarn.io.dmap import *',
 	'%load_ext autoreload',
-	'%autoreload 2'
+	'%autoreload 2',
+	'import pydarn',
+	'import utils',
+	'import aacgm'
 ]
 # c.InteractiveShellApp.exec_files = []
 c.InteractiveShell.autoindent = True
@@ -37,3 +32,5 @@ c.PrefilterManager.multi_line_specials = True
 c.AliasManager.user_aliases = [
  ('la', 'ls -al')
 ]
+
+

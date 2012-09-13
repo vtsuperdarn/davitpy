@@ -1,25 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#COPYRIGHT:
-#Copyright (C) 2011 by Virginia Tech
-
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
-
-#The above copyright notice and this permission notice shall be included in
-#all copies or substantial portions of the Software.
-
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#THE SOFTWARE.
 
 from datetime import date
 from kpDay import *
@@ -44,7 +24,7 @@ def readKpDay(myDate):
 	Created by AJ
 	*******************************
 	"""
-	
+	import utils
 	try:
 		#open the file
 		f = h5py.File(os.environ['DAVITPY']+'/gmi/kp/kp_index.hdf5','r')
@@ -54,7 +34,7 @@ def readKpDay(myDate):
 	
 	try:
 		#get the vales for that day
-		vals = f['kpVals'].value[f['kpDates'].value == pydarn.utils.timeUtils.dateToYyyymmdd(myDate)]
+		vals = f['kpVals'].value[f['kpDates'].value == utils.timeUtils.dateToYyyymmdd(myDate)]
 	except:
 		print 'error reading the kp file'
 		sys.exit()
@@ -84,6 +64,7 @@ def readKpHdf5():
 	Created by AJ
 	*******************************
 	"""
+	import utils
 	#open the file
 	f = h5py.File(os.environ['DAVITPY']+'gmi/kp/kp_index.hdf5','r')
 	dates = f['kpDates'].value
@@ -92,12 +73,13 @@ def readKpHdf5():
 	
 	allKp = []
 	for i in range(0,len(dates)):
-		myDay = kpDay(pydarn.utils.timeUtils.yyyymmddToDate(dates[i]),vals[i])
+		myDay = kpDay(utils.timeUtils.yyyymmddToDate(dates[i]),vals[i])
 		allKp.append(myDay)
 		
 	return allKp
 
 def kp2Hdf5():
+	import utils
 	"""
 	*******************************
 	
@@ -121,7 +103,7 @@ def kp2Hdf5():
 	dates = []
 	vals = []
 	for i in range(0,len(allKp)):
-		dates.append(pydarn.utils.timeUtils.dateToYyyymmdd(allKp[i].date))
+		dates.append(utils.timeUtils.dateToYyyymmdd(allKp[i].day))
 		vals.append(allKp[i].vals)
 		
 	f = h5py.File(os.environ['DAVITPY']+'/gmi/kp/kp_index.hdf5','w')
@@ -131,7 +113,7 @@ def kp2Hdf5():
 	
 	
 	
-def readKpAscii(filename):
+def readKpAscii():
 	"""
 	*******************************
 	
@@ -149,7 +131,7 @@ def readKpAscii(filename):
 	Written by AJ 20120718
 	*******************************
 	"""
-	
+	import utils
 	#open the Kp ascii file
 	f = open(os.environ['DAVITPY']+'/gmi/kp/kp_index.ascii', 'r')
 	allKp = []
@@ -162,7 +144,7 @@ def readKpAscii(filename):
 		myLine.replace( "\n", "" )
 		
 		#parse the date into a date object
-		d = pydarn.utils.timeUtils.yyyymmddToDate(myLine[0:8])
+		d = utils.timeUtils.yyyymmddToDate(myLine[0:8])
 		
 		#parse the Kp values into a list
 		kpVals = []

@@ -5,7 +5,9 @@
 ver=2.7
 
 apt-get install python$ver
+apt-get install python-pip
 apt-get install ipython
+pip install --upgrade ipython
 apt-get install ipython-notebook
 apt-get install python-numpy
 apt-get install python-scipy

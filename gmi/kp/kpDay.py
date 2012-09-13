@@ -15,3 +15,4 @@ class kpDay:
 		self.day = d
 		#the actual Kp indices
 		self.vals = vals
+		
