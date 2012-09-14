@@ -17,4 +17,5 @@ This includes the following function(s):
 *******************************
 """
 
-from grid import *
+from gridLib import *
+from gridIo import *

@@ -131,4 +131,25 @@ def julToDatetime( ndarray ) :
   for iso in t.ISO: dt.append(dateutil.parser.parse(iso))
 
   return dt
+  
+	
+def datetimeToEpoch(myDate):
+	"""
+	*******************************
+	myEpoch = datetimeToEpoch(dateStr)
+	
+	reads in a datetime and outputs the equivalent epoch time
+
+	INPUTS:
+		myDate : a datetime object
+	OUTPUTS:
+		myEpoch : an epoch time equal to the datetime object
+		
+	Written by AJ 20120914
+	*******************************
+	"""
+	
+	import datetime,calendar
+	
+	return calendar.timegm(myDate.timetuple())
 
