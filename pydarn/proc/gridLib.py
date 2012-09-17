@@ -42,8 +42,23 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 	assert(myData.nrecs > 0),'error, no data for this time period'
 	#get a radar site object
 	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(myData.times[0])
+	myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[myData.times[0]]['prm']['rsep'],\
+	ngates=site.maxgate+1,nbeams=site.maxbeam+1)
+	
 	#create a 2D list to hold coords of RB cells
 	coordsList = [[None]*site.maxgate for _ in range(site.maxbeam)]
+	
+	for i in range(site.maxbeam):
+		for j in range(site.maxgate):
+			t=myData.times[0]
+			arr1=aacgm.aacgmConv(myFov.latCenter[i][j],myFov.lonCenter[i][j],300,0)
+			arr2=aacgm.aacgmConv(myFov.latCenter[i][j+1],myFov.lonCenter[i][j+1],300,0)
+			
+			azm = utils.geoPack.greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
+			myPos = aacgm.rPosAzm(i,j,\
+			myData[t]['prm']['stid'],time.mktime(t.timetuple()),myData[t]['prm']['frang'],\
+			myData[t]['prm']['rsep'],myData[t]['prm']['rxrise'],300.,1)
+			print azm,myPos[2]
 
 	#a list for all the grid objects
 	myGrids = []
@@ -74,9 +89,9 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 					#check if we have calculated the coords for this RB cell
 					if(coordsList[myData[t]['prm']['bmnum']][myData[t]['fit']['slist'][j]] == None):
 						#calculate and save [mlat,mlon,mazm] of the RB cell
-						myPos = aacgm.rPosMag(myData[t]['prm']['bmnum'],myData[t]['fit']['slist'][j],\
+						myPos = aacgm.rPosAzm(myData[t]['prm']['bmnum'],myData[t]['fit']['slist'][j],\
 						myData[t]['prm']['stid'],time.mktime(t.timetuple()),myData[t]['prm']['frang'],\
-						myData[t]['prm']['rsep'],myData[t]['prm']['rxrise'],300.)
+						myData[t]['prm']['rsep'],myData[t]['prm']['rxrise'],300.,1)
 						coordsList[myData[t]['prm']['bmnum']][myData[t]['fit']['slist'][j]] = myPos
 				#enter the radar data into the grid
 				g.enterData(myData[t],coordsList)
