@@ -22,7 +22,7 @@ def writePygridRec(myFile,myGrid):
 	epoch = utils.datetimeToEpoch(myGrid.stime)
 	
 	#create a group in the file with a key value of epoch
-	myFile.create_group(str(epoch))
+	myFile.create_group(str(epoch))  
 	
 	#store some attributes
 	myFile[str(epoch)].attrs['nVecs'] = myGrid.nVecs
