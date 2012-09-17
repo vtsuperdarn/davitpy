@@ -4,16 +4,16 @@
 
 ver=2.7
 
-apt-get install python$ver
-apt-get install python-pip
-apt-get install ipython
+apt-get install -y python$ver
+apt-get install -y python-pip
+apt-get install -y ipython
 pip install --upgrade ipython
-apt-get install ipython-notebook
-apt-get install python-numpy
-apt-get install python-scipy
-apt-get install python-matplotlib
-apt-get install python-mpltoolkits.basemap
-apt-get install python-h5py
-apt-get install python-tornado
-apt-get install python-zmq
-apt-get install python-imaging
+apt-get install -y ipython-notebook
+apt-get install -y python-numpy
+apt-get install -y python-scipy
+apt-get install -y python-matplotlib
+apt-get install -y python-mpltoolkits.basemap
+apt-get install -y python-h5py
+apt-get install -y python-tornado
+apt-get install -y python-zmq
+apt-get install -y python-imaging
