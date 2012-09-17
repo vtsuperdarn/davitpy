@@ -11,14 +11,6 @@ Models module. Contains the following models:
 	HWM: Horizontal Wind Model 2007
 	COND: conductivity model based on IRI and MSIS
 
-This includes the following submodules:
-	rt: ray tracing interface
-	iri: iri interface
-	igrf: igrf interface
-	hwm: hwm interface
-	msis: msis interface
-	cond: conductivity model interface
-
 *******************************
 """
 
