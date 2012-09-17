@@ -84,14 +84,16 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 			elif(t >= bndT): break
 		#record the last record we examined
 		lastInd = i
-		#if we have >1 gridded vector
+		#if we have > 0 gridded vector
 		if(g.nVecs > 0):
 			#record some information
 			g.stime = ctime
 			g.etime = bndT
-			#and copy the grid into the list
-			#myGrids.append(copy.deepcopy(g))
+			#average is LOS vectors
+			g.averageVecs()
+			#write to the hdf5 file
 			pydarn.proc.gridIo.writePygridRec(gFile,g)
+			
 		#reassign the current time we are at
 		ctime = bndT
 		
@@ -184,6 +186,8 @@ class gridCell(object):
 		#initialize number of grid vectors in this cell and the list to hold them
 		self.nVecs = 0
 		self.allVecs = []
+		self.nAvg = 0
+		self.avgVecs = []
 		
 class latCell(object):
 	"""
@@ -298,10 +302,44 @@ class grid(object):
 		self.nVecs = 0
 
 		
-		for i in range(0,self.nLats):
-			for j in range(self.lats[i].nCells):
-				self.lats[i].cells[j].vecs = [];
-				self.lats[i].cells[j].nVecs = 0;
+		for l in self.lats:
+			for c in l.cells:
+				c.allVecs = [];
+				c.nVecs = 0;
+				c.avgVecs = [];
+				c.nAvg = 0;
+				
+	def averageVecs(self):
+		"""
+		*******************************
+		PACKAGE: pydarn.proc.gridLib
+		FUNCTION: grid.averageVecs():
+		BELONGS TO: CLASS: pydarn.proc.gridLib.grid
+		
+		go through all grid cells and average the vectors in 
+		cells with more than 1 vector
+		
+		INPUTS:
+			None
+		OUTPUTS:
+			None
+			
+		EXAMPLE:
+			myGrid.averageVecs()
+			
+		Written by AJ 20120917
+		*******************************
+		"""
+		
+		for l in self.lats:
+			for c in l.cells:
+				if(c.nVecs == 4):
+					print ''
+					print c.nVecs
+					for v in c.allVecs:
+						print v.azm,v.bmnum,v.rng
+					print ''
+				
 				
 	def enterData(self,myData,coordsList):
 		"""
@@ -326,6 +364,7 @@ class grid(object):
 		Written by AJ 20120911
 		*******************************
 		"""
+		
 		#go through all scatter points on this beam
 		for i in range(0,myData['fit']['npnts']):
 			
