@@ -86,12 +86,12 @@ MLTConvertYrsec_wrap(PyObject *self, PyObject *args)
 }
 
 static PyObject * 
-rposinvmag_wrap(PyObject *self, PyObject *args)
+rposazm_wrap(PyObject *self, PyObject *args)
 {
-	double mlat,mlon,azm,eTime,frang,rsep,rx,height,sc;
-	int bm,rng,yr,mo,dy,hr,mt,stid; 
+	double lat,lon,azm,eTime,frang,rsep,rx,height,sc,elv;
+	int bm,rng,yr,mo,dy,hr,mt,stid,magflg=0; 
 	
-	if(!PyArg_ParseTuple(args, "iiiddddd", &bm,&rng,&stid,&eTime,&frang,&rsep,&rx,&height )) 
+	if(!PyArg_ParseTuple(args, "iiidddddi", &bm,&rng,&stid,&eTime,&frang,&rsep,&rx,&height,&magflg)) 
 		return NULL;
 	else
 	{ 
@@ -100,6 +100,7 @@ rposinvmag_wrap(PyObject *self, PyObject *args)
 		struct Radar *radar;
 		struct RadarSite *site;
 		FILE * fp;
+		
 		char *envstr;
 		
 		envstr=getenv("SD_RADAR");
@@ -145,11 +146,17 @@ rposinvmag_wrap(PyObject *self, PyObject *args)
 		site=RadarYMDHMSGetSite(radar,yr,mo,dy,hr,mt,(int)sc);
 						
 		
-		RPosInvMag(bm,rng,yr,site,frang,rsep,rx,height,&mlat,&mlon,&azm);
+		if(magflg)
+			RPosInvMag(bm,rng,yr,site,frang,rsep,rx,height,&lat,&lon,&azm);
+		else
+		{
+			RPosGeo(1,bm,rng,site,(int)(frang/.15),(int)(rsep/.15),(int)rx,height,&azm,&lat,&lon);
+			RPosRngBmAzmElv(bm,rng,yr,site,frang,rsep,rx,height,&azm,&elv);
+		}
 		
 		PyObject *outList = PyList_New(0);
-		PyList_Append(outList,PyFloat_FromDouble(mlat)); 
-		PyList_Append(outList,PyFloat_FromDouble(mlon));
+		PyList_Append(outList,PyFloat_FromDouble(lat)); 
+		PyList_Append(outList,PyFloat_FromDouble(lon));
 		PyList_Append(outList,PyFloat_FromDouble(azm)); 
 		 
 		return outList;
@@ -163,7 +170,7 @@ static PyMethodDef aacgmMethods[] =
  	{"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
 	{"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
  	{"mltFromYrsec", MLTConvertYrsec_wrap , METH_VARARGS, "calculate mlt from yr seconds and mag lon\nformat:mlt=mltFromEpoch(year,yrsec,mLon)"},
- 	{"rPosMag",  rposinvmag_wrap, METH_VARARGS, "wraper for rposinvmag\nformat:pos=rPosMag(bm,rng,stid,eTime,frang,rsep,rx,height)"},
+ 	{"rPosAzm",  rposazm_wrap, METH_VARARGS, "wraper for rpos, MAY NOT be right\nformat:pos=rPosAzm(bm,rng,stid,eTime,frang,rsep,rx,height,magflg)"},
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
