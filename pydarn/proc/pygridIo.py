@@ -8,7 +8,7 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	
 	INPUTS:
 		myFile: the pygrid file to read from
-		myGrid: the pydarn.proc.gridLib.grid object to be filled (should be empty)
+		myGrid: the pydarn.proc.gridLib.grid object to be filled
 		sEpoch: read times >= this time (in epoch)
 		eEpoch: read times < this time (in epoch)
 	OUTPUTS:
@@ -17,8 +17,9 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	Written by AJ 201209118
 	*******************************
 	"""
-	import math
-	keys = numpy.array(myFile.keys()).astype(i)
+	import math,numpy,pydarn,datetime
+	
+	keys = numpy.array(myFile.keys()).astype('i')
 	keys = keys[sEpoch <= keys]
 	keys = keys[keys < eEpoch]
 	
@@ -29,8 +30,8 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 			lonInd = int(v['index']-latInd*500)
 			
 			#create a gridVec object and append it to the list of gridCells
-			myGrid.lats[latInd].cells[lonInd].allVecs.append(pydarn.proc.grid.gridVec(abs(v['v']),v['w_l'],\
-			v['p_l'],v['stid'],v['time'],v['bmnum'],v['rng'],v['azm']))
+			myGrid.lats[latInd].cells[lonInd].allVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
+			v['p_l'],v['stid'],-1,v['bmnum'],v['rng'],v['azm']))
 			
 			myGrid.lats[latInd].cells[lonInd].nVecs += 1
 			myGrid.nVecs += 1
@@ -40,8 +41,8 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 			lonInd = int(v['index']-latInd*500)
 			
 			#create a gridVec object and append it to the list of gridCells
-			myGrid.lats[latInd].cells[lonInd].avgVec = pydarn.proc.grid.gridVec(abs(v['v']),v['w_l'],\
-			v['p_l'],v['stid'],v['time'],-1,-1,v['azm'])
+			myGrid.lats[latInd].cells[lonInd].avgVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
+			v['p_l'],v['stid'],-1,-1,-1,v['azm']))
 			
 			myGrid.nAvg += 1
 		
@@ -114,9 +115,8 @@ def writePygridRec(myFile,myGrid):
 	#iterate through lat, lon, vecs
 	for l in myGrid.lats:
 		for c in l.cells:
-			if(c.nVecs > 0):
+			for v in c.avgVecs:
 				#store the values of the data
-				v = c.avgVec
 				myAvg[cnt]['index'] = c.index
 				myAvg[cnt]['v'] = v.v
 				myAvg[cnt]['w_l'] = v.w_l
@@ -126,11 +126,11 @@ def writePygridRec(myFile,myGrid):
 				cnt += 1
 				
 	#create the dataset within the epoch group
-	myFile[str(epoch)].create_dataset('avgVec',data=myAvg,dtype=avgType)
+	myFile[str(epoch)].create_dataset('avgVecs',data=myAvg,dtype=avgType)
 	
 	return
 	
-def openPygrid(dateStr,rad,action):
+def openPygrid(fileName,action):
 	"""
 	*******************************
 	PACKAGE: pydarn.proc.gridIo
@@ -139,8 +139,7 @@ def openPygrid(dateStr,rad,action):
 	opens a pygrid file for reading or writing or appending
 	
 	INPUTS:
-		dateStr : a string containing the target date in yyyymmdd format
-		rad: the 3 letter radar code, e.g. 'bks'
+		fileName: the fule to open
 		action: the action to be done, e.g. 'w', 'a', etc.
 	OUTPUTS:
 		myFile: an h5py file instance
@@ -148,11 +147,9 @@ def openPygrid(dateStr,rad,action):
 	Written by AJ 20120914
 	*******************************
 	"""
-	import h5py,os
+	import h5py
 	
-	fileName = dateStr+'.'+rad+'.pygrid.hdf5'
-	
-	myFile = h5py.File(os.environ['DATADIR']+'/pygrid/'+fileName,action)
+	myFile = h5py.File(fileName,action)
 
 	return myFile
 		

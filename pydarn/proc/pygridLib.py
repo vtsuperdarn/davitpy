@@ -1,3 +1,7 @@
+from pydarn.proc.pygridIo import *
+from utils.timeUtils import *
+from utils.geoPack import *
+	
 def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 	"""
 	*******************************
@@ -12,19 +16,97 @@ def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 		[times]: the range of times for which the file should be read in
 			MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
 			default = [0,2400]
-		[fileType]: 'fitex', 'fitacf', or 'lmfit'; default = 'fitex'
-		[interval]: the time interval at which to do the gridding
+		[interval]: the time interval at which to do the merging
 			in seconds; default = 120
-		[filter]: 1 to boxcar filter, 0 for normal data; default = 1
-		[plot]: whether to plot the gridded data after gridding, 
-			1 for yes, 0 for no; default = 0
 	OUTPUTS:
 		NONE
 		
 	Written by AJ 20120807
 	*******************************
 	"""
+	import datetime,pydarn,os,string,math
 	
+	#convert date string, start time, end time to datetime
+	myDate = yyyymmddToDate(dateStr)
+	hr1,hr2 = int(math.floor(times[0]/100.)),int(math.floor(times[1]/100.))
+	min1,min2 = int(times[0]-hr1*100),int(times[1]-hr2*100)
+	stime = myDate.replace(hour=hr1,minute=min1)
+	if(hr2 == 24):
+		etime = myDate+datetime.timedelta(days=1)
+	else:
+		etime = myDate.replace(hour=hr2,minute=min2)
+		
+	baseDir = os.environ['DATADIR']+'/pygrid'
+	network = pydarn.radar.network();
+	codes = network.getAllCodes();
+	myFiles,fileNames = [],[]
+	for c in codes:
+		glat = network.getRadarByCode(c).getSiteByDate(stime).geolat
+		if(hemi == 'north' and glat < 0): continue
+		if(hemi == 'south' and glat >= 0): continue
+		
+		radDir = baseDir+'/'+c
+		if not os.path.exists(radDir):
+			print 'dir '+radDir+' does not exist'
+			continue
+		
+		fileName = radDir+'/'+dateStr+'.'+c+'.pygrid.hdf5.bz2'
+		if not os.path.exists(fileName):
+			fileName = string.replace(fileName,'.bz2','')
+			if not os.path.exists(fileName):
+				print 'file '+fileName+'[.bz2] does not exist'
+				continue
+		else:
+			print 'bunzip2 '+fileName
+			os.system('bunzip2 '+fileName)
+			fileName = string.replace(fileName,'.bz2','')
+		
+		print 'opening: '+fileName
+		fileNames.append(fileName)
+		myFiles.append(openPygrid(fileName,'r'))
+		
+	
+	if(myFiles == []): return
+	
+	d = baseDir+'/'+hemi
+	if not os.path.exists(d):
+		os.makedirs(d)
+	outName = d+'/'+dateStr+'.'+hemi+'.pygrid.hdf5'
+	outFile = openPygrid(outName,'w')
+	
+	g = pygrid()
+	ctime = stime
+	#until we reach the designated end time
+	while ctime < etime:
+		#boundary time
+		bndT = ctime+datetime.timedelta(seconds=interval)
+		#remove vectors from the grid object
+		g.delVecs()
+		#verbose option
+		if(vb==1): print ctime
+
+		
+		for f in myFiles:
+			readPygridRec(f,g,datetimeToEpoch(ctime),\
+			datetimeToEpoch(bndT))
+			
+		if(g.nVecs > 0):
+			g.stime = ctime
+			g.etime = bndT
+			g.mergeVecs()
+			writePygridRec(outFile,g)
+		
+		#reassign the current time we are at
+		ctime = bndT
+	
+	#close the files
+	closePygrid(outFile)
+	for f in myFiles: closePygrid(f)
+	
+	for f in fileNames:
+		print 'zipping: '+f
+		os.system('bzip2 '+f)
+		
 
 def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filter=1):
 	
@@ -45,18 +127,17 @@ def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,fil
 		[interval]: the time interval at which to do the gridding
 			in seconds; default = 120
 		[filter]: 1 to boxcar filter, 0 for normal data; default = 1
-		[plot]: whether to plot the gridded data after gridding, 
-			1 for yes, 0 for no; default = 0
 	OUTPUTS:
 		NONE
 		
 	Written by AJ 20120807
 	*******************************
 	"""
-	import pydarn,math,utils,datetime,aacgm,pygridIo
+	import pydarn,math,datetime,aacgm,os
+
 	
 	#convert date string, start time, end time to datetime
-	myDate = utils.yyyymmddToDate(dateStr)
+	myDate = yyyymmddToDate(dateStr)
 	hr1,hr2 = int(math.floor(times[0]/100.)),int(math.floor(times[1]/100.))
 	min1,min2 = int(times[0]-hr1*100),int(times[1]-hr2*100)
 	stime = myDate.replace(hour=hr1,minute=min1)
@@ -81,7 +162,7 @@ def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,fil
 			t=myData.times[0]
 			arr1=aacgm.aacgmConv(myFov.latCenter[i][j],myFov.lonCenter[i][j],300,0)
 			arr2=aacgm.aacgmConv(myFov.latCenter[i][j+1],myFov.lonCenter[i][j+1],300,0)
-			azm = utils.geoPack.greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
+			azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
 			coordsList[i][j] = [arr1[0],arr1[1],azm]
 
 	#a list for all the grid objects
@@ -91,8 +172,14 @@ def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,fil
 	#initialize start time
 	ctime = stime
 	lastInd = 0
+
+
+	d = os.environ['DATADIR']+'/pygrid/'+rad
+	if not os.path.exists(d):
+		os.makedirs(d)
+	fileName = d+'/'+dateStr+'.'+rad+'.pygrid.hdf5'
 	#open a pygrid file
-	gFile = pydarn.proc.pygridIo.openPygrid(dateStr,rad,'w')
+	gFile = openPygrid(fileName,'w')
 	
 	#until we reach the designated end time
 	while ctime < etime:
@@ -122,13 +209,15 @@ def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,fil
 			#average is LOS vectors
 			g.averageVecs()
 			#write to the hdf5 file
-			pydarn.proc.pygridIo.writePygridRec(gFile,g)
+			writePygridRec(gFile,g)
 			
 		#reassign the current time we are at
 		ctime = bndT
 		
 		
-	pydarn.proc.pygridIo.closePygrid(gFile)
+	closePygrid(gFile)
+	if(os.path.exists(fileName+'.bz2')): os.system('rm '+fileName+'.bz2')
+	os.system('bzip2 '+fileName)
 			
 	
 class pygridVec(object):
@@ -212,7 +301,7 @@ class pygridCell(object):
 		#initialize number of grid vectors in this cell and the list to hold them
 		self.nVecs = 0
 		self.allVecs = []
-		self.avgVec = None
+		self.avgVecs = []
 		
 class latCell(object):
 	"""
@@ -333,7 +422,36 @@ class pygrid(object):
 			for c in l.cells:
 				c.allVecs = [];
 				c.nVecs = 0;
-				c.avgVec = None;
+				c.avgVecs = [];
+			
+	def mergeVecs(self):
+		"""
+		*******************************
+		PACKAGE: pydarn.proc.pygridLib
+		FUNCTION: pygrid.mergeVecs():
+		BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
+		
+		go through all grid cells and average the vectors in 
+		cells with more than 1 vector
+		
+		INPUTS:
+			None
+		OUTPUTS:
+			None
+			
+		EXAMPLE:
+			myGrid.averageVecs()
+			
+		Written by AJ 20120917
+		*******************************
+		"""
+		import numpy
+		
+		for l in self.lats:
+			for c in l.cells:
+				if(c.nVecs > 0):
+					tmpV = [[]*1 for _ in range(50)]
+
 				
 	def averageVecs(self):
 		"""
@@ -361,16 +479,23 @@ class pygrid(object):
 		for l in self.lats:
 			for c in l.cells:
 				if(c.nVecs > 0):
-					tmpV,tmpW,tmpP,tmpA = [],[],[],[]
+					tmpV = [[]*1 for _ in range(50)]
+					tmpA = [[]*1 for _ in range(50)]
+					tmpW,tmpP = [],[]
 					for v in c.allVecs:
-						tmpV.append(v.v)
+						tmpV[v.bmnum].append(v.v)
+						tmpA[v.bmnum].append(v.azm)
 						tmpW.append(v.w_l)
 						tmpP.append(v.p_l)
-						tmpA.append(v.azm)
-					c.avgVec = pygridVec(numpy.mean(numpy.array(tmpV)),numpy.mean(numpy.array(tmpW)),\
-					numpy.mean(numpy.array(tmpP)),c.allVecs[0].stid,c.allVecs[0].time,-1,-1,numpy.mean(numpy.array(tmpA)))
+					v,a = [],[]
+					for i in range(50):
+						if(tmpV[i] != []):
+							v.append(numpy.mean(numpy.array(tmpV[i])))
+							a.append(numpy.mean(numpy.array(tmpA[i])))
+					c.avgVecs.append(pygridVec(numpy.mean(numpy.array(v)),numpy.mean(numpy.array(tmpW)),\
+					numpy.mean(numpy.array(tmpP)),c.allVecs[0].stid,c.allVecs[0].time,-1,-1,numpy.mean(numpy.array(a))))
 					self.nAvg += 1
-				
+
 				
 	def enterData(self,myData,coordsList):
 		"""
