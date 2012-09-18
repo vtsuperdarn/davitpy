@@ -212,7 +212,6 @@ OUTPUT:
 			if abs(xAlt - dictOut['distAlt']) <= 0.5 or n > 5: 
 				return dictOut['distLat'], dictOut['distLon']
 				break
-			
 	
 	# No projection model (i.e., the elevation or altitude is so good that it gives you the proper projection by simple geometric considerations)
 	elif not model:
@@ -386,25 +385,22 @@ OUTPUT:
 		for ig in gates:
 			# This is a bit redundant, but I could not think of any other way to deal with the array-or-not-array issue
 			if not isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter[ib], siteBore, sRangCenter[ig], \
-							elevation=elevation, altitude=altitude, model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge[ib], siteBore, sRangEdge[ig], \
-							elevation=elevation, altitude=altitude, model=model)
+				tElev = elevation
+				tAlt = altitude
 			elif isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter[ib], siteBore, sRangCenter[ig], \
-							elevation=elevation, altitude=altitude[ib,ig], model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge[ib], siteBore, sRangEdge[ig], \
-							elevation=elevation, altitude=altitude[ib,ig], model=model)
+				tElev = elevation
+				tAlt = altitude[ib,ig]
 			elif isinstance(elevation, ndarray) and not isinstance(altitude, ndarray):
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter[ib], siteBore, sRangCenter[ig], \
-							elevation=elevation[ib,ig], altitude=altitude, model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge[ib], siteBore, sRangEdge[ig], \
-							elevation=elevation[ib,ig], altitude=altitude, model=model)
+				tElev = elevation[ib,ig]
+				tAlt = altitude
 			else:
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter[ib], siteBore, sRangCenter[ig], \
-							elevation=elevation[ib,ig], altitude=altitude[ib,ig], model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge[ib], siteBore, sRangEdge[ig], \
-							elevation=elevation[ib,ig], altitude=altitude[ib,ig], model=model)
+				tElev = elevation[ib,ig]
+				tAlt = altitude[ib,ig]
+			# Then calculate projections
+			latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
+						elevation=tElev, altitude=tAlt, model=model)
+			latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
+						elevation=tElev, altitude=tAlt, model=model)
 			# Save into output arrays
 			latCenter[ib, ig] = latC
 			lonCenter[ib, ig] = lonC
