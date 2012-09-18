@@ -171,7 +171,7 @@ OUTPUTS:
 
 # *************************************************************
 def overlayFov(Basemap, codes=None, ids=None, names=None, dateTime=None, coords='geo', all=False, \
-				maxGate=None, \
+				maxGate=None, fovColor=None, fovAlpha=0.2, \
 				zorder=2, lineColor='k'):
 	"""
 Overlay FoV position(s) on map
@@ -187,6 +187,8 @@ INPUTS:
 	maxGate: Maximum number of gates to be plotted. Defaults to hdw.dat information.
 	zorder: the overlay order number
 	lineColor: FoV contour color
+	fovColor: field of view fill color (integer between 0-255)
+	fovAlpha: field of view fill color transparency
 OUTPUTS:
 	
 	"""
@@ -194,7 +196,8 @@ OUTPUTS:
 	from ..radar.radFov import fov
 	from datetime import datetime as dt
 	from datetime import timedelta
-	import matplotlib.pyplot as plt
+	import matplotlib.cm as cm
+	from numpy import meshgrid, ones
 	
 	# Set default date/time to now
 	if not dateTime:
@@ -247,5 +250,12 @@ OUTPUTS:
 		Basemap.plot(x[:,eGate], y[:,eGate], color=lineColor)
 		# Closest boundary
 		Basemap.plot(x[:,0], y[:,0], color=lineColor)
+		# For debug, plot each beam
+		for ib in radFov.beams:
+				Basemap.plot(x[ib,:], y[ib,:], color=lineColor)
+		# Field of view fill
+		if fovColor:
+			Basemap.pcolormesh(x[:,0:eGate], y[:,0:eGate], fovColor/255.*ones(x[:,0:eGate].shape), vmin=0., vmax=1., \
+						zorder=2, alpha=fovAlpha, cmap=cm.Pastel1, edgecolors='None')
 	
 	return

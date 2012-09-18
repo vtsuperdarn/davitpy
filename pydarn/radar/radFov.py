@@ -212,7 +212,6 @@ OUTPUT:
 			if abs(xAlt - dictOut['distAlt']) <= 0.5 or n > 5: 
 				return dictOut['distLat'], dictOut['distLon']
 				break
-			
 	
 	# No projection model (i.e., the elevation or altitude is so good that it gives you the proper projection by simple geometric considerations)
 	elif not model:
@@ -365,6 +364,11 @@ OUTPUT:
 	latCenter = zeros((nbeams+1, ngates+1), dtype='float')
 	lonCenter = zeros((nbeams+1, ngates+1), dtype='float')
 	
+	# Calculate deviation from boresight for center of beam
+	bOffCenter = bmsep * (beams - nbeams/2.0 + 0.5)
+	# Calculate deviation from boresight for edge of beam
+	bOffEdge = bmsep * (beams - nbeams/2.0)
+	
 	# Iterates through beams
 	for ib in beams:
 		# if none of frang, rsep or recrise are arrays, then only execute this for the first loop, otherwise, repeat for every beam
@@ -376,52 +380,32 @@ OUTPUT:
 		# Save into output arrays
 		slantRangeCenter[ib, :-1] = sRangCenter[:-1]
 		slantRangeFull[ib,:] = sRangEdge
-# 		slantRangeFull[ib, :-1, 1] = sRangEdge[:-1]
-# 		slantRangeFull[ib, :-1, 2] = sRangEdge[1:]
-# 		slantRangeFull[ib, :-1, 3] = sRangEdge[1:]
-	
-		# Calculate deviation from boresight for center of beam
-		bOffCenter = bmsep * (ib - nbeams/2.0 + 0.5)
-		# Calculate deviation from boresight for edge of beam
-		bOffEdge = bmsep * (ib - nbeams/2.0)
 		
 		# Calculate coordinates for Edge and Center of the current beam
 		for ig in gates:
 			# This is a bit redundant, but I could not think of any other way to deal with the array-or-not-array issue
 			if not isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter, siteBore, sRangCenter[ig], \
-							elevation=elevation, altitude=altitude, model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge, siteBore, sRangEdge[ig], \
-							elevation=elevation, altitude=altitude, model=model)
+				tElev = elevation
+				tAlt = altitude
 			elif isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter, siteBore, sRangCenter[ig], \
-							elevation=elevation, altitude=altitude[ib,ig], model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge, siteBore, sRangEdge[ig], \
-							elevation=elevation, altitude=altitude[ib,ig], model=model)
+				tElev = elevation
+				tAlt = altitude[ib,ig]
 			elif isinstance(elevation, ndarray) and not isinstance(altitude, ndarray):
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter, siteBore, sRangCenter[ig], \
-							elevation=elevation[ib,ig], altitude=altitude, model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge, siteBore, sRangEdge[ig], \
-							elevation=elevation[ib,ig], altitude=altitude, model=model)
+				tElev = elevation[ib,ig]
+				tAlt = altitude
 			else:
-				latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffCenter, siteBore, sRangCenter[ig], \
-							elevation=elevation[ib,ig], altitude=altitude[ib,ig], model=model)
-				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, bOffEdge, siteBore, sRangEdge[ig], \
-							elevation=elevation[ib,ig], altitude=altitude[ib,ig], model=model)
+				tElev = elevation[ib,ig]
+				tAlt = altitude[ib,ig]
+			# Then calculate projections
+			latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
+						elevation=tElev, altitude=tAlt, model=model)
+			latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
+						elevation=tElev, altitude=tAlt, model=model)
 			# Save into output arrays
 			latCenter[ib, ig] = latC
 			lonCenter[ib, ig] = lonC
 			latFull[ib, ig] = latE
 			lonFull[ib, ig] = lonE
-# 			if ig > 0: 
-# 				latFull[ib, ig-1] = latE
-# 				lonFull[ib, ig-1] = lonE
-# 			if ib > 0: 
-# 				latFull[ib-1, ig] = latE
-# 				lonFull[ib-1, ig] = lonE
-# 			if ib > 0 and ig > 0:
-# 				latFull[ib-1, ig-1] = latE
-# 				lonFull[ib-1, ig-1] = lonE
 	
 	# Output is...
 	radarFovDict = {'latCenter': latCenter[:-1,:-1], \
