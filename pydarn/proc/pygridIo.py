@@ -1,5 +1,53 @@
-import utils,pydarn,math,datetime,time,copy,numpy,gridLib,h5py
-
+def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
+	"""
+	*******************************
+	PACKAGE: pydarn.proc.gridIo
+	FUNCTION: readPygridRec(myFile):
+	
+	reads pygrid records from sEpoch to eEpoch into a grid structure
+	
+	INPUTS:
+		myFile: the pygrid file to read from
+		myGrid: the pydarn.proc.gridLib.grid object to be filled (should be empty)
+		sEpoch: read times >= this time (in epoch)
+		eEpoch: read times < this time (in epoch)
+	OUTPUTS:
+		outGrid: the grid object that has been filled
+		
+	Written by AJ 201209118
+	*******************************
+	"""
+	import math
+	keys = numpy.array(myFile.keys()).astype(i)
+	keys = keys[sEpoch <= keys]
+	keys = keys[keys < eEpoch]
+	
+	for k in keys:
+		k=str(k)
+		for v in myFile[k]['allVecs']:
+			latInd = int(math.floor(v['index']/500))
+			lonInd = int(v['index']-latInd*500)
+			
+			#create a gridVec object and append it to the list of gridCells
+			myGrid.lats[latInd].cells[lonInd].allVecs.append(pydarn.proc.grid.gridVec(abs(v['v']),v['w_l'],\
+			v['p_l'],v['stid'],v['time'],v['bmnum'],v['rng'],v['azm']))
+			
+			myGrid.lats[latInd].cells[lonInd].nVecs += 1
+			myGrid.nVecs += 1
+			
+		for v in myFile[k]['avgVecs']:
+			latInd = int(math.floor(v['index']/500))
+			lonInd = int(v['index']-latInd*500)
+			
+			#create a gridVec object and append it to the list of gridCells
+			myGrid.lats[latInd].cells[lonInd].avgVec = pydarn.proc.grid.gridVec(abs(v['v']),v['w_l'],\
+			v['p_l'],v['stid'],v['time'],-1,-1,v['azm'])
+			
+			myGrid.nAvg += 1
+		
+	return myGrid
+	
+	
 def writePygridRec(myFile,myGrid):
 	"""
 	*******************************
@@ -17,6 +65,7 @@ def writePygridRec(myFile,myGrid):
 	Written by AJ 20120914
 	*******************************
 	"""
+	import utils,numpy
 	
 	#convert the start time to epoch time
 	epoch = utils.datetimeToEpoch(myGrid.stime)
@@ -26,6 +75,7 @@ def writePygridRec(myFile,myGrid):
 	
 	#store some attributes
 	myFile[str(epoch)].attrs['nVecs'] = myGrid.nVecs
+	myFile[str(epoch)].attrs['nAvg'] = myGrid.nAvg
 	myFile[str(epoch)].attrs['stime'] = epoch
 	myFile[str(epoch)].attrs['etime'] =  utils.datetimeToEpoch(myGrid.etime)
 	
@@ -36,9 +86,7 @@ def writePygridRec(myFile,myGrid):
 	vecType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid', 'i2'),\
 	('azm', 'f4'), ('bmnum', 'i2'), ('rng', 'i2')])
 	myVecs = numpy.empty(myGrid.nVecs,dtype=vecType)
-	
 	cnt = 0
-	
 	#iterate through lat, lon, vecs
 	for l in myGrid.lats:
 		for c in l.cells:
@@ -54,11 +102,32 @@ def writePygridRec(myFile,myGrid):
 				myVecs[cnt]['azm'] = v.azm
 				myVecs[cnt]['bmnum'] = v.bmnum
 				myVecs[cnt]['rng'] = v.rng
-				cnt = cnt+1
-				
+				cnt += 1
 	#create the dataset within the epoch group
 	myFile[str(epoch)].create_dataset('allVecs',data=myVecs,dtype=vecType)
 
+	#create a numpy type to store the averaged vectors
+	avgType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid', 'i2'),\
+	('azm', 'f4')])
+	myAvg = numpy.empty(myGrid.nAvg,dtype=avgType)
+	cnt = 0
+	#iterate through lat, lon, vecs
+	for l in myGrid.lats:
+		for c in l.cells:
+			if(c.nVecs > 0):
+				#store the values of the data
+				v = c.avgVec
+				myAvg[cnt]['index'] = c.index
+				myAvg[cnt]['v'] = v.v
+				myAvg[cnt]['w_l'] = v.w_l
+				myAvg[cnt]['p_l'] = v.p_l
+				myAvg[cnt]['stid'] = v.stid
+				myAvg[cnt]['azm'] = v.azm
+				cnt += 1
+				
+	#create the dataset within the epoch group
+	myFile[str(epoch)].create_dataset('avgVec',data=myAvg,dtype=avgType)
+	
 	return
 	
 def openPygrid(dateStr,rad,action):
@@ -79,10 +148,11 @@ def openPygrid(dateStr,rad,action):
 	Written by AJ 20120914
 	*******************************
 	"""
+	import h5py,os
 	
 	fileName = dateStr+'.'+rad+'.pygrid.hdf5'
 	
-	myFile = h5py.File('/data/grd/hdf5/'+fileName,action)
+	myFile = h5py.File(os.environ['DATADIR']+'/pygrid/'+fileName,action)
 
 	return myFile
 		

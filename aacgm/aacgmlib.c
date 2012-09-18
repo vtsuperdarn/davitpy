@@ -170,7 +170,7 @@ static PyMethodDef aacgmMethods[] =
  	{"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
 	{"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
  	{"mltFromYrsec", MLTConvertYrsec_wrap , METH_VARARGS, "calculate mlt from yr seconds and mag lon\nformat:mlt=mltFromEpoch(year,yrsec,mLon)"},
- 	{"rPosAzm",  rposazm_wrap, METH_VARARGS, "wraper for rpos\nformat:pos=rPosAzm(bm,rng,stid,eTime,frang,rsep,rx,height,magflg)"},
+ 	{"rPosAzm",  rposazm_wrap, METH_VARARGS, "wraper for rpos, MAY NOT be right\nformat:pos=rPosAzm(bm,rng,stid,eTime,frang,rsep,rx,height,magflg)"},
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
