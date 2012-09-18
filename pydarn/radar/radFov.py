@@ -419,6 +419,3 @@ OUTPUT:
 		'coords': coords}
 	
 	return radarFovDict
-
-if __name__ == "__main__":
-	fov(nbeams=16, ngates=75, bmsep=3.24, recrise=0., siteLat=40., siteLon=-80., siteBore=0., siteAlt=0.)
