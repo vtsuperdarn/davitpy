@@ -44,6 +44,7 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 			myGrid.lats[latInd].cells[lonInd].avgVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
 			v['p_l'],v['stid'],-1,-1,-1,v['azm']))
 			
+			myGrid.lats[latInd].cells[lonInd].nAvg += 1
 			myGrid.nAvg += 1
 		
 	return myGrid

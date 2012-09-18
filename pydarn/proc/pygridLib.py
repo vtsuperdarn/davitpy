@@ -257,6 +257,37 @@ class pygridVec(object):
 		self.rng = rng
 		
 		
+class mergeVec(object):
+	"""
+	*******************************
+	PACKAGE: pydarn.proc.pygridLib
+	CLASS: mergeVec
+	
+	a class defining a single merged vector
+	
+	DECLARATION: 
+		myVel = pydarn.proc.pygridLib.pygridVec(v,w_l,p_l,stid,time,bmnum,rng,azm):
+	MEMBERS:
+		v : Doppler velocity
+		w_l : spectral width
+		p_l : power
+		stids : station id list
+		azm : azimuth of the measurement
+
+	Written by AJ 20120918
+	*******************************
+	"""
+	
+	def __init__(self,v,w_l,p_l,stid1,stid2,azm):
+		
+		#initialize all the values, pretty self-explanatory
+		self.v = v
+		self.w_l = w_l
+		self.p_l = p_l
+		self.stids = [stid1,stid2]
+		self.rng = rng
+		
+		
 class pygridCell(object):
 	"""
 	*******************************
@@ -301,7 +332,10 @@ class pygridCell(object):
 		#initialize number of grid vectors in this cell and the list to hold them
 		self.nVecs = 0
 		self.allVecs = []
+		self.nAvg = 0
 		self.avgVecs = []
+		self.mrgVec = []
+		
 		
 class latCell(object):
 	"""
@@ -423,6 +457,8 @@ class pygrid(object):
 				c.allVecs = [];
 				c.nVecs = 0;
 				c.avgVecs = [];
+				c.nAvg = 0
+				c.mrgVec = []
 			
 	def mergeVecs(self):
 		"""
@@ -445,14 +481,33 @@ class pygrid(object):
 		Written by AJ 20120917
 		*******************************
 		"""
-		import numpy
+		
+		import numpy as np
+		import math
+		from numpy import linalg as la
 		
 		for l in self.lats:
 			for c in l.cells:
-				if(c.nVecs > 0):
-					tmpV = [[]*1 for _ in range(50)]
-
-				
+				if(c.nAvg > 0): print c.nAvg
+				if(c.nAvg > 1):
+					v1,v2 = c.avgVecs[0],c.avgVecs[1]
+					a1,a2 = math.radians(v1.azm),math.radians(v2.azm)
+					if(abs(a2-a1) < math.radians(20)): continue
+					
+					arr = np.array([[math.cos(a1),math.sin(a1)],[math.cos(a2),math.sin(a2)]])
+					inv = la.inv(arr)
+					
+					v_n = inv[0][0]*v1.v+inv[0][1]*v2.v
+					v_e = inv[1][0]*v1.v+inv[1][1]*v2.v
+					
+					vel = math.sqrt(v_n*v_n + v_e*v_e)
+					azm = math.degrees(math.atan2(v_e,v_n))
+					
+					print v1.v,v1.azm
+					print v2.v,v2.azm
+					print vel,azm
+					print ""
+					
 	def averageVecs(self):
 		"""
 		*******************************
@@ -495,6 +550,7 @@ class pygrid(object):
 					c.avgVecs.append(pygridVec(numpy.mean(numpy.array(v)),numpy.mean(numpy.array(tmpW)),\
 					numpy.mean(numpy.array(tmpP)),c.allVecs[0].stid,c.allVecs[0].time,-1,-1,numpy.mean(numpy.array(a))))
 					self.nAvg += 1
+					c.nAvg += 1
 
 				
 	def enterData(self,myData,coordsList):
@@ -539,8 +595,8 @@ class pygrid(object):
 				mlt1 = aacgm.mltFromEpoch(time.mktime(myData['prm']['time'].timetuple()),myPos[1])
 				
 				#compensate for neg. direction is away from radar
-				if(myData['fit']['v'][i] > 0.): azm = myPos[2] * -1.
-				else: azm = myPos[2]
+				if(myData['fit']['v'][i] > 0.): azm = (myPos[2]+180+360)%360
+				else: azm = (myPos[2]+360)%360
 
 				#longitudinal index
 				lonInd = int(math.floor(mlt1/24.*360./self.lats[latInd].delLon))
