@@ -250,9 +250,6 @@ OUTPUTS:
 		Basemap.plot(x[:,eGate], y[:,eGate], color=lineColor)
 		# Closest boundary
 		Basemap.plot(x[:,0], y[:,0], color=lineColor)
-		# For debug, plot each beam
-		for ib in radFov.beams:
-				Basemap.plot(x[ib,:], y[ib,:], color=lineColor)
 		# Field of view fill
 		if fovColor:
 			Basemap.pcolormesh(x[:,0:eGate], y[:,0:eGate], fovColor/255.*ones(x[:,0:eGate].shape), vmin=0., vmax=1., \
