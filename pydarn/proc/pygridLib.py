@@ -1,4 +1,4 @@
-from pydarn.proc.pygridIo import *
+from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 	
@@ -94,6 +94,11 @@ def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 			g.stime = ctime
 			g.etime = bndT
 			g.mergeVecs()
+			g.nVecs = 0
+			for l in g.lats:
+				for c in l.cells:
+					c.allVecs = [];
+					c.nVecs = 0;
 			writePygridRec(outFile,g)
 		
 		#reassign the current time we are at
@@ -285,7 +290,7 @@ class mergeVec(object):
 		self.w_l = w_l
 		self.p_l = p_l
 		self.stids = [stid1,stid2]
-		self.rng = rng
+		self.azm = azm
 		
 		
 class pygridCell(object):
@@ -334,7 +339,7 @@ class pygridCell(object):
 		self.allVecs = []
 		self.nAvg = 0
 		self.avgVecs = []
-		self.mrgVec = []
+		self.mrgVec = None
 		
 		
 class latCell(object):
@@ -414,6 +419,7 @@ class pygrid(object):
 		
 		self.nVecs = 0
 		self.nAvg = 0
+		self.nMrg = 0
 		self.lats = []
 		self.nLats = 90
 		
@@ -451,6 +457,7 @@ class pygrid(object):
 		"""
 		self.nVecs = 0
 		self.nAvg = 0
+		self.nMrg = 0
 		
 		for l in self.lats:
 			for c in l.cells:
@@ -458,7 +465,7 @@ class pygrid(object):
 				c.nVecs = 0;
 				c.avgVecs = [];
 				c.nAvg = 0
-				c.mrgVec = []
+				c.mrgVec = None
 			
 	def mergeVecs(self):
 		"""
@@ -488,7 +495,7 @@ class pygrid(object):
 		
 		for l in self.lats:
 			for c in l.cells:
-				if(c.nAvg > 0): print c.nAvg
+				#if(c.nAvg > 0): print c.nAvg
 				if(c.nAvg > 1):
 					v1,v2 = c.avgVecs[0],c.avgVecs[1]
 					a1,a2 = math.radians(v1.azm),math.radians(v2.azm)
@@ -503,10 +510,16 @@ class pygrid(object):
 					vel = math.sqrt(v_n*v_n + v_e*v_e)
 					azm = math.degrees(math.atan2(v_e,v_n))
 					
-					print v1.v,v1.azm
-					print v2.v,v2.azm
-					print vel,azm
-					print ""
+					
+					c.mrgVec = mergeVec(vel,np.average(np.array([v1.w_l,v2.w_l])),\
+					np.average(np.array([v1.p_l,v2.p_l])),v1.stid,v2.stid,azm)
+					
+					self.nMrg += 1
+					
+					#print v1.v,v1.azm,v1.stid
+					#print v2.v,v2.azm,v2.stid
+					#print vel,azm
+					#print ""
 					
 	def averageVecs(self):
 		"""
@@ -594,10 +607,12 @@ class pygrid(object):
 				#convert coords to mlt
 				mlt1 = aacgm.mltFromEpoch(time.mktime(myData['prm']['time'].timetuple()),myPos[1])
 				
+				#print myData['fit']['v'][i],myPos[2]
 				#compensate for neg. direction is away from radar
 				if(myData['fit']['v'][i] > 0.): azm = (myPos[2]+180+360)%360
 				else: azm = (myPos[2]+360)%360
-
+				#print abs(myData['fit']['v'][i]),azm
+				#print ""
 				#longitudinal index
 				lonInd = int(math.floor(mlt1/24.*360./self.lats[latInd].delLon))
 				

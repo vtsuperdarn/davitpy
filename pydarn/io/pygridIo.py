@@ -1,7 +1,7 @@
 def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	"""
 	*******************************
-	PACKAGE: pydarn.proc.gridIo
+	PACKAGE: pydarn.io.gridIo
 	FUNCTION: readPygridRec(myFile):
 	
 	reads pygrid records from sEpoch to eEpoch into a grid structure
@@ -53,7 +53,7 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 def writePygridRec(myFile,myGrid):
 	"""
 	*******************************
-	PACKAGE: pydarn.proc.gridIo
+	PACKAGE: pydarn.io.gridIo
 	FUNCTION: writePygridRec(myFile,myGrid):
 	
 	writes a single grid record to a pygrid file
@@ -82,65 +82,91 @@ def writePygridRec(myFile,myGrid):
 	myFile[str(epoch)].attrs['etime'] =  utils.datetimeToEpoch(myGrid.etime)
 	
 	#check if we have data
-	if(myGrid.nVecs == 0): return
+	if(myGrid.nVecs == 0 and myGrid.nAvg == 0 and myGrid.nMrg == 0): return
 	
-	#create a numpy type to store the gridded vectors
-	vecType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid', 'i2'),\
-	('azm', 'f4'), ('bmnum', 'i2'), ('rng', 'i2')])
-	myVecs = numpy.empty(myGrid.nVecs,dtype=vecType)
-	cnt = 0
-	#iterate through lat, lon, vecs
-	for l in myGrid.lats:
-		for c in l.cells:
-			for i in range(0,c.nVecs):
-				#print cnt,myGrid.nVecs
-				#store the values of the data
-				v = c.allVecs[i]
-				myVecs[cnt]['index'] = c.index
-				myVecs[cnt]['v'] = v.v
-				myVecs[cnt]['w_l'] = v.w_l
-				myVecs[cnt]['p_l'] = v.p_l
-				myVecs[cnt]['stid'] = v.stid
-				myVecs[cnt]['azm'] = v.azm
-				myVecs[cnt]['bmnum'] = v.bmnum
-				myVecs[cnt]['rng'] = v.rng
-				cnt += 1
-	#create the dataset within the epoch group
-	myFile[str(epoch)].create_dataset('allVecs',data=myVecs,dtype=vecType)
+	if(myGrid.nVecs > 0):
+		#create a numpy type to store the gridded vectors
+		vecType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid', 'i2'),\
+		('azm', 'f4'), ('bmnum', 'i2'), ('rng', 'i2')])
+		myVecs = numpy.empty(myGrid.nVecs,dtype=vecType)
+		cnt = 0
+		#iterate through lat, lon, vecs
+		for l in myGrid.lats:
+			for c in l.cells:
+				for i in range(0,c.nVecs):
+					#print cnt,myGrid.nVecs
+					#store the values of the data
+					v = c.allVecs[i]
+					myVecs[cnt]['index'] = c.index
+					myVecs[cnt]['v'] = v.v
+					myVecs[cnt]['w_l'] = v.w_l
+					myVecs[cnt]['p_l'] = v.p_l
+					myVecs[cnt]['stid'] = v.stid
+					myVecs[cnt]['azm'] = v.azm
+					myVecs[cnt]['bmnum'] = v.bmnum
+					myVecs[cnt]['rng'] = v.rng
+					cnt += 1
+		#create the dataset within the epoch group
+		myFile[str(epoch)].create_dataset('allVecs',data=myVecs,dtype=vecType)
 
-	#create a numpy type to store the averaged vectors
-	avgType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid', 'i2'),\
-	('azm', 'f4')])
-	myAvg = numpy.empty(myGrid.nAvg,dtype=avgType)
-	cnt = 0
-	#iterate through lat, lon, vecs
-	for l in myGrid.lats:
-		for c in l.cells:
-			for v in c.avgVecs:
-				#store the values of the data
-				myAvg[cnt]['index'] = c.index
-				myAvg[cnt]['v'] = v.v
-				myAvg[cnt]['w_l'] = v.w_l
-				myAvg[cnt]['p_l'] = v.p_l
-				myAvg[cnt]['stid'] = v.stid
-				myAvg[cnt]['azm'] = v.azm
-				cnt += 1
-				
-	#create the dataset within the epoch group
-	myFile[str(epoch)].create_dataset('avgVecs',data=myAvg,dtype=avgType)
+	if(myGrid.nAvg > 0):
+		#create a numpy type to store the averaged vectors
+		avgType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid', 'i2'),\
+		('azm', 'f4')])
+		myAvg = numpy.empty(myGrid.nAvg,dtype=avgType)
+		cnt = 0
+		#iterate through lat, lon, vecs
+		for l in myGrid.lats:
+			for c in l.cells:
+				for v in c.avgVecs:
+					#store the values of the data
+					myAvg[cnt]['index'] = c.index
+					myAvg[cnt]['v'] = v.v
+					myAvg[cnt]['w_l'] = v.w_l
+					myAvg[cnt]['p_l'] = v.p_l
+					myAvg[cnt]['stid'] = v.stid
+					myAvg[cnt]['azm'] = v.azm
+					cnt += 1
+					
+		#create the dataset within the epoch group
+		myFile[str(epoch)].create_dataset('avgVecs',data=myAvg,dtype=avgType)
 	
+	if(myGrid.nMrg > 0):
+		#create a numpy type to store the averaged vectors
+		mrgType = numpy.dtype([('index', 'i4'), ('v', 'f4'), ('w_l', 'f4'), ('p_l', 'f4'), ('stid1', 'i2'),\
+		('stid2', 'i2'),('azm', 'f4')])
+		myMrg = numpy.empty(myGrid.nMrg,dtype=mrgType)
+		cnt = 0
+		#iterate through lat, lon, vecs
+		for l in myGrid.lats:
+			for c in l.cells:
+				if(c.mrgVec != None):
+					v = c.mrgVec
+					#store the values of the data
+					myMrg[cnt]['index'] = c.index
+					myMrg[cnt]['v'] = v.v
+					myMrg[cnt]['w_l'] = v.w_l
+					myMrg[cnt]['p_l'] = v.p_l
+					myMrg[cnt]['stid1'] = v.stids[0]
+					myMrg[cnt]['stid2'] = v.stids[1]
+					myMrg[cnt]['azm'] = v.azm
+					cnt += 1
+					
+		#create the dataset within the epoch group
+		myFile[str(epoch)].create_dataset('mrgVecs',data=myMrg,dtype=mrgType)
+		
 	return
 	
 def openPygrid(fileName,action):
 	"""
 	*******************************
-	PACKAGE: pydarn.proc.gridIo
+	PACKAGE: pydarn.io.gridIo
 	FUNCTION: openPygrid(dateStr,rad,action):
 	
 	opens a pygrid file for reading or writing or appending
 	
 	INPUTS:
-		fileName: the fule to open
+		fileName: the file to open
 		action: the action to be done, e.g. 'w', 'a', etc.
 	OUTPUTS:
 		myFile: an h5py file instance

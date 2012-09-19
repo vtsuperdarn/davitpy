@@ -17,4 +17,3 @@ This includes the following function(s):
 """
 
 from pygridLib import *
-from pygridIo import *

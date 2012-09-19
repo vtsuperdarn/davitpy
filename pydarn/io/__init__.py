@@ -15,7 +15,6 @@ This includes the following module(s):
 
 *******************************
 """
-import radDataTypes
 from radDataTypes import *
-import radDataRead
 from radDataRead import *
+from pygridIo import *
