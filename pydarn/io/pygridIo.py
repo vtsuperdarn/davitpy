@@ -8,11 +8,13 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	
 	INPUTS:
 		myFile: the pygrid file to read from
-		myGrid: the pydarn.proc.gridLib.grid object to be filled
+		myGrid: the pydarn.proc.pygridLib.pygrid object to be filled
 		sEpoch: read times >= this time (in epoch)
 		eEpoch: read times < this time (in epoch)
+			NOTE: if eEpoch <= sEpoch, only the first record after 
+			sEpoch will be read
 	OUTPUTS:
-		outGrid: the grid object that has been filled
+		outGrid: the pygrid object that has been filled
 		
 	Written by AJ 201209118
 	*******************************
@@ -21,31 +23,50 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	
 	keys = numpy.array(myFile.keys()).astype('i')
 	keys = keys[sEpoch <= keys]
-	keys = keys[keys < eEpoch]
+	keys.sort()
+	if(eEpoch > sEpoch):
+		keys = keys[keys < eEpoch]
+	else:
+		keys = keys[0:1]
 	
 	for k in keys:
 		k=str(k)
-		for v in myFile[k]['allVecs']:
-			latInd = int(math.floor(v['index']/500))
-			lonInd = int(v['index']-latInd*500)
-			
-			#create a gridVec object and append it to the list of gridCells
-			myGrid.lats[latInd].cells[lonInd].allVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
-			v['p_l'],v['stid'],-1,v['bmnum'],v['rng'],v['azm']))
-			
-			myGrid.lats[latInd].cells[lonInd].nVecs += 1
-			myGrid.nVecs += 1
-			
-		for v in myFile[k]['avgVecs']:
-			latInd = int(math.floor(v['index']/500))
-			lonInd = int(v['index']-latInd*500)
-			
-			#create a gridVec object and append it to the list of gridCells
-			myGrid.lats[latInd].cells[lonInd].avgVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
-			v['p_l'],v['stid'],-1,-1,-1,v['azm']))
-			
-			myGrid.lats[latInd].cells[lonInd].nAvg += 1
-			myGrid.nAvg += 1
+		for r in myFile[k].keys():
+			if(r == 'allVecs'):
+				for v in myFile[k]['allVecs']:
+					latInd = int(math.floor(v['index']/500))
+					lonInd = int(v['index']-latInd*500)
+					
+					#create a gridVec object and append it to the list of gridCells
+					myGrid.lats[latInd].cells[lonInd].allVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
+					v['p_l'],v['stid'],-1,v['bmnum'],v['rng'],v['azm']))
+					
+					myGrid.lats[latInd].cells[lonInd].nVecs += 1
+					myGrid.nVecs += 1
+					
+			elif(r == 'avgVecs'):
+				for v in myFile[k]['avgVecs']:
+					latInd = int(math.floor(v['index']/500))
+					lonInd = int(v['index']-latInd*500)
+					
+					#create a gridVec object and append it to the list of gridCells
+					myGrid.lats[latInd].cells[lonInd].avgVecs.append(pydarn.proc.pygridLib.pygridVec(abs(v['v']),v['w_l'],\
+					v['p_l'],v['stid'],-1,-1,-1,v['azm']))
+					
+					myGrid.lats[latInd].cells[lonInd].nAvg += 1
+					myGrid.nAvg += 1
+					
+			elif(r == 'mrgVec'):
+				
+				for v in myFile[k]['mrgVec']:
+					latInd = int(math.floor(v['index']/500))
+					lonInd = int(v['index']-latInd*500)
+					
+					#create a gridVec object and append it to the list of gridCells
+					myGrid.lats[latInd].cells[lonInd].mrgVec = pydarn.proc.pygridLib.mergeVec(abs(v['v']),v['w_l'],\
+					v['p_l'],v['stid1'],v['stid2'],v['azm'])
+					
+					myGrid.nMrg += 1
 		
 	return myGrid
 	
@@ -53,7 +74,7 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 def writePygridRec(myFile,myGrid):
 	"""
 	*******************************
-	PACKAGE: pydarn.io.gridIo
+	PACKAGE: pydarn.io.pygridIo
 	FUNCTION: writePygridRec(myFile,myGrid):
 	
 	writes a single grid record to a pygrid file
@@ -153,14 +174,14 @@ def writePygridRec(myFile,myGrid):
 					cnt += 1
 					
 		#create the dataset within the epoch group
-		myFile[str(epoch)].create_dataset('mrgVecs',data=myMrg,dtype=mrgType)
+		myFile[str(epoch)].create_dataset('mrgVec',data=myMrg,dtype=mrgType)
 		
 	return
 	
 def openPygrid(fileName,action):
 	"""
 	*******************************
-	PACKAGE: pydarn.io.gridIo
+	PACKAGE: pydarn.io.pygridIo
 	FUNCTION: openPygrid(dateStr,rad,action):
 	
 	opens a pygrid file for reading or writing or appending
@@ -183,7 +204,7 @@ def openPygrid(fileName,action):
 def closePygrid(myFile):
 	"""
 	*******************************
-	PACKAGE: pydarn.proc.gridIo
+	PACKAGE: pydarn.proc.pygridIo
 	FUNCTION: closePygrid(dateStr,rad,action):
 	
 	closes a pygrid file
@@ -198,3 +219,41 @@ def closePygrid(myFile):
 	"""
 	
 	myFile.close()
+	
+def locatePygridFile(dateStr,ext):
+	"""
+	*******************************
+	PACKAGE: pydarn.proc.pygridIo
+	FUNCTION: locatePygridFile(dateStr,ext):
+	
+	locates a pygrid file for the given dateStr and ext
+	
+	INPUTS:
+		dateStr: the date in the file title, eg '20110101'
+		ext: the extension in the filename, eg 'bks', 'cve', 'north', etc.
+	OUTPUTS:
+		fileName: the complete filename (including path) of the
+			pygrid file
+		
+	Written by AJ 20120919
+	*******************************
+	"""
+	import os,string
+	
+	radDir = os.environ['DATADIR']+'/pygrid'+'/'+ext
+	if not os.path.exists(radDir):
+		print 'dir '+radDir+' does not exist'
+		return None
+	
+	fileName = radDir+'/'+dateStr+'.'+ext+'.pygrid.hdf5.bz2'
+	if not os.path.exists(fileName):
+		fileName = string.replace(fileName,'.bz2','')
+		if not os.path.exists(fileName):
+			print 'file '+fileName+'[.bz2] does not exist'
+			return None
+	else:
+		print 'bunzip2 '+fileName
+		os.system('bunzip2 '+fileName)
+		fileName = string.replace(fileName,'.bz2','')
+	
+	return fileName

@@ -37,7 +37,7 @@ def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 		etime = myDate.replace(hour=hr2,minute=min2)
 		
 	baseDir = os.environ['DATADIR']+'/pygrid'
-	network = pydarn.radar.network();
+	network = pydarn.network();
 	codes = network.getAllCodes();
 	myFiles,fileNames = [],[]
 	for c in codes:
@@ -45,22 +45,8 @@ def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 		if(hemi == 'north' and glat < 0): continue
 		if(hemi == 'south' and glat >= 0): continue
 		
-		radDir = baseDir+'/'+c
-		if not os.path.exists(radDir):
-			print 'dir '+radDir+' does not exist'
-			continue
-		
-		fileName = radDir+'/'+dateStr+'.'+c+'.pygrid.hdf5.bz2'
-		if not os.path.exists(fileName):
-			fileName = string.replace(fileName,'.bz2','')
-			if not os.path.exists(fileName):
-				print 'file '+fileName+'[.bz2] does not exist'
-				continue
-		else:
-			print 'bunzip2 '+fileName
-			os.system('bunzip2 '+fileName)
-			fileName = string.replace(fileName,'.bz2','')
-		
+		fileName = locatePygridFile(dateStr,c)
+		if(fileName == None): continue
 		print 'opening: '+fileName
 		fileNames.append(fileName)
 		myFiles.append(openPygrid(fileName,'r'))
@@ -373,7 +359,7 @@ class latCell(object):
 		#bottom latitude boundary of this latCell
 		self.botLat = lat
 		#latitude step size of this cell
-		self.delLon = 360./self.nCells
+		self.delMlt = 24./self.nCells
 		#top latitude boundary of this cell
 		self.topLat = lat+1
 		#list for pygridCell objects
@@ -382,9 +368,10 @@ class latCell(object):
 		#iterate over all longitudinal cells
 		for i in range(0,self.nCells):
 			#calculate left and right mlt boundaries for this pygridCell
-			mlt1 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*i)
-			mlt2 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*(i+1))
-
+			#mlt1 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*i)
+			#mlt2 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*(i+1))
+			mlt1=i*24./self.nCells
+			mlt2=(i+1)*24./self.nCells
 			#create a new pygridCell object and append it to the list
 			self.cells.append(pygridCell(self.botLat,self.topLat,mlt1,mlt2,i))
 		
@@ -605,7 +592,7 @@ class pygrid(object):
 				latInd = int(math.floor(myPos[0]/self.delLat))
 				
 				#convert coords to mlt
-				mlt1 = aacgm.mltFromEpoch(time.mktime(myData['prm']['time'].timetuple()),myPos[1])
+				mlt1 = aacgm.mltFromEpoch(datetimeToEpoch(myData['prm']['time']),myPos[1])
 				
 				#print myData['fit']['v'][i],myPos[2]
 				#compensate for neg. direction is away from radar
@@ -614,7 +601,7 @@ class pygrid(object):
 				#print abs(myData['fit']['v'][i]),azm
 				#print ""
 				#longitudinal index
-				lonInd = int(math.floor(mlt1/24.*360./self.lats[latInd].delLon))
+				lonInd = int(math.floor(mlt1/self.lats[latInd].delMlt))
 				
 				#create a pygridVec object and append it to the list of pygridCells
 				self.lats[latInd].cells[lonInd].allVecs.append(pygridVec(abs(myData['fit']['v'][i]),myData['fit']['w_l'][i],\
