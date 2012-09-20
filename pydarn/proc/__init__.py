@@ -7,14 +7,14 @@ This subpackage contains various data processing routines for DaViT-py
 DEV: functions/modules/classes with a * have not been developed yet
 
 This includes the following function(s):
-	*filter
-		AJ's median filter
-	*dopsearch
-		AJ's scatter identification algo
-	*fft
-		Nathaniel's FFT
+	gridLib
+		library of functions and classes needed 
+		for gridding vectors
+	gridIo
+		library of pygrid I/O functions
 
 *******************************
 """
 
-from grid import *
+from gridLib import *
+from gridIo import *

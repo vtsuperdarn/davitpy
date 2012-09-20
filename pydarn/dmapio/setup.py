@@ -1,5 +1,7 @@
 from distutils.core import setup, Extension
+import os
 
+rst = os.environ['RSTPATH']
 setup (name = "dmapio",
        version = "0.2",
        description = "lib to read dmap files",
@@ -16,14 +18,14 @@ setup (name = "dmapio",
                                 sources=["dmapio.c"],
                                 include_dirs = [
                                      "/usr/local/include/pydarn",
-                                     "/rst/include/superdarn",
-                                     "/rst/include/analysis",
-                                     "/rst/include/base",
-                                     "/rst/include/general",
+                                     rst+"/include/superdarn",
+                                     rst+"/include/analysis",
+                                     rst+"/include/base",
+                                     rst+"/include/general",
                                      ],
                                 library_dirs = [
                                      "/usr/local/lib64/",
-                                     "/rst/lib/"],
+                                     rst+"/lib/"],
 				libraries=["m","z","rtime.1","dmap.1", "rcnv.1"]),]
        )
 

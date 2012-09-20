@@ -1,11 +1,10 @@
-import utils,pydarn,aacgm,math,datetime,time,copy,numpy
+import utils,pydarn,aacgm,math,datetime,time,copy,numpy,gridIo
 
 def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filter=1,plot=0):
 	"""
 	*******************************
 	PACKAGE: pydarn.proc.grid
-	
-	makeGrid(dateStr,rad,[times],[fileType],[interval],[vb],[filter],[plot]):
+	FUNCTION: makeGrid(dateStr,rad,[times],[fileType],[interval],[vb],[filter],[plot]):
 	
 	reads in fitted radar data and puts it into a geospatial grid
 	
@@ -53,8 +52,10 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 	#initialize start time
 	ctime = stime
 	lastInd = 0
+	#open a pygrid file
+	gFile = pydarn.proc.gridIo.openPygrid(dateStr,rad,'w')
 	
-	#until we reac h the designated end time
+	#until we reach the designated end time
 	while ctime < etime:
 		#boundary time
 		bndT = ctime+datetime.timedelta(seconds=interval)
@@ -83,27 +84,34 @@ def makeGrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filte
 			elif(t >= bndT): break
 		#record the last record we examined
 		lastInd = i
-		#if we have >1 gridded vector
+		#if we have > 0 gridded vector
 		if(g.nVecs > 0):
 			#record some information
 			g.stime = ctime
 			g.etime = bndT
-			#and copy the grid into the list
-			myGrids.append(copy.deepcopy(g))
+			#average is LOS vectors
+			g.averageVecs()
+			#write to the hdf5 file
+			pydarn.proc.gridIo.writePygridRec(gFile,g)
+			
 		#reassign the current time we are at
 		ctime = bndT
-
+		
+		
+	pydarn.proc.gridIo.closePygrid(gFile)
+	
+	
 	#if the user desires plots
 	if(plot == 1):
 		#make a plot
 		for i in range(0,len(myGrids)):
 			pydarn.plot.grid.plotGrid(myGrid=myGrids[i], grid=0)
 	
-	
 class gridVec(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid.gridVec
+	PACKAGE: pydarn.proc.grid
+	CLASS: gridVec
 	
 	a class defining a single gridded vector
 	
@@ -139,7 +147,8 @@ class gridVec(object):
 class gridCell(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid.gridCell
+	PACKAGE: pydarn.proc.grid
+	CLASS: gridCell
 	
 	a class defining a single grid cell
 
@@ -160,12 +169,14 @@ class gridCell(object):
 	*******************************
 	"""
 	
-	def __init__(self,lat1,lat2,mlt1,mlt2):
+	def __init__(self,lat1,lat2,mlt1,mlt2,n):
 		#define the 4 corners of the cell
 		self.bl = [lat1,mlt1]
 		self.tl = [lat2,mlt1]
 		self.tr = [lat2,mlt2]
 		self.br = [lat1,mlt2]
+		
+		self.index = int(math.floor(lat1))*500+n
 		
 		#check for a wrap around midnight (causes issues with mean) and then
 		#calculate the center point of the cell
@@ -174,15 +185,15 @@ class gridCell(object):
 		
 		#initialize number of grid vectors in this cell and the list to hold them
 		self.nVecs = 0
-		self.vecs = []
-		
-		
-
+		self.allVecs = []
+		self.nAvg = 0
+		self.avgVecs = []
 		
 class latCell(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid.latCell
+	PACKAGE: pydarn.proc.grid
+	CLASS: latCell
 	
 	a class to hold the information for a single latitude
 		for a geospatial grid
@@ -218,17 +229,18 @@ class latCell(object):
 		#iterate over all longitudinal cells
 		for i in range(0,self.nCells):
 			#calculate left and right mlt boundaries for this gridCell
-			mlt1 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,delLon*i)
-			mlt2 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,delLon*(i+1))
+			mlt1 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*i)
+			mlt2 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*(i+1))
 			#create a new gridCell object and append it to the list
-			self.cells.append(gridCell(self.botLat,self.topLat,mlt1,mlt2))
+			self.cells.append(gridCell(self.botLat,self.topLat,mlt1,mlt2,i))
 			
 		
 		
 class grid(object):
 	"""
 	*******************************
-	CLASS pydarn.proc.grid
+	PACKAGE: pydarn.proc.grid
+	CLASS: grid
 	
 	the top level class for defining a geospatial grid for 
 	velocity gridding
@@ -258,6 +270,9 @@ class grid(object):
 		#latitude step size
 		self.delLat = 90./self.nLats
 		
+		self.stime = None
+		self.etime = None
+		
 		#for all the latitude steps
 		for i in range(0,self.nLats):
 			#create a new latCell object and append it to the list
@@ -267,12 +282,12 @@ class grid(object):
 	def delVecs(self):
 		"""
 		*******************************
-		FUNCTION grid.delVecs():
+		PACKAGE: pydarn.proc.grid
+		FUNCTION: grid.delVecs():
+		BELONGS TO: CLASS: pydarn.proc.grid.grid
 		
 		delete all vectors from a grid object
 		
-		BELONGS TO: class pydarn.proc.grid.grid
-
 		INPUTS:
 			None
 		OUTPUTS:
@@ -285,19 +300,56 @@ class grid(object):
 		*******************************
 		"""
 		self.nVecs = 0
-		for i in range(0,self.nLats):
-			for j in range(self.lats[i].nCells):
-				self.lats[i].cells[j].vecs = [];
-				self.lats[i].cells[j].nVecs = 0;
+
+		
+		for l in self.lats:
+			for c in l.cells:
+				c.allVecs = [];
+				c.nVecs = 0;
+				c.avgVecs = [];
+				c.nAvg = 0;
+				
+	def averageVecs(self):
+		"""
+		*******************************
+		PACKAGE: pydarn.proc.gridLib
+		FUNCTION: grid.averageVecs():
+		BELONGS TO: CLASS: pydarn.proc.gridLib.grid
+		
+		go through all grid cells and average the vectors in 
+		cells with more than 1 vector
+		
+		INPUTS:
+			None
+		OUTPUTS:
+			None
+			
+		EXAMPLE:
+			myGrid.averageVecs()
+			
+		Written by AJ 20120917
+		*******************************
+		"""
+		
+		for l in self.lats:
+			for c in l.cells:
+				if(c.nVecs == 4):
+					print ''
+					print c.nVecs
+					for v in c.allVecs:
+						print v.azm,v.bmnum,v.rng
+					print ''
+				
 				
 	def enterData(self,myData,coordsList):
 		"""
 		*******************************
+		PACKAGE: pydarn.proc.grid
 		FUNCTION grid.enterData():
 		
 		inserts radar fitacf data into a grid object
 		
-		BELONGS TO: class pydarn.proc.grid.grid
+		BELONGS TO: CLASS: pydarn.proc.grid.grid
 
 		INPUTS:
 			myData: a pydarn.io.radDataTypes.beam object
@@ -312,6 +364,7 @@ class grid(object):
 		Written by AJ 20120911
 		*******************************
 		"""
+		
 		#go through all scatter points on this beam
 		for i in range(0,myData['fit']['npnts']):
 			
@@ -337,10 +390,10 @@ class grid(object):
 				newAzm = newAzm*(-1.)*myData['fit']['v'][i]/abs(myData['fit']['v'][i])
 				
 				#longitudinal index
-				lonInd = int(math.floor(mlt1/24.*360./self.lats[latInd].delta))
+				lonInd = int(math.floor(mlt1/24.*360./self.lats[latInd].delLon))
 				
 				#create a gridVec object and append it to the list of gridCells
-				self.lats[latInd].cells[lonInd].vecs.append(gridVec(abs(myData['fit']['v'][i]),myData['fit']['w_l'][i],\
+				self.lats[latInd].cells[lonInd].allVecs.append(gridVec(abs(myData['fit']['v'][i]),myData['fit']['w_l'][i],\
 				myData['fit']['p_l'][i],myData['prm']['stid'],myData['prm']['time'],myData['prm']['bmnum'],rng,newAzm))
 				
 				#increment number of vectors in grid cell and grid object
