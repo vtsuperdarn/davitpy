@@ -14,9 +14,4 @@ Models module. Contains the following models:
 *******************************
 """
 
-from models import rt
-from models import iri
-from models import hwm
-from models import msis
-from models import cond
-from models import igrf
+from models import geopack
