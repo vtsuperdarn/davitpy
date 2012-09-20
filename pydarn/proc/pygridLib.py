@@ -2,18 +2,18 @@ from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 	
-def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
+def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 	"""
 	*******************************
 	PACKAGE: pydarn.proc.pygridLib
-	FUNCTION: makePyrid(dateStr,rad,[times],[fileType],[interval],[vb],[filter],[plot]):
+	FUNCTION: makePyrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):
 	
 	reads in fitted radar data and puts it into a geospatial grid
 	
 	INPUTS:
 		dateStr : a string containing the target date in yyyymmdd format
 		rad: the 3 letter radar code, e.g. 'bks'
-		[times]: the range of times for which the file should be read in
+		[time]: the range of times for which the file should be read in
 			MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
 			default = [0,2400]
 		[interval]: the time interval at which to do the merging
@@ -28,8 +28,8 @@ def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 	
 	#convert date string, start time, end time to datetime
 	myDate = yyyymmddToDate(dateStr)
-	hr1,hr2 = int(math.floor(times[0]/100.)),int(math.floor(times[1]/100.))
-	min1,min2 = int(times[0]-hr1*100),int(times[1]-hr2*100)
+	hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
+	min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
 	stime = myDate.replace(hour=hr1,minute=min1)
 	if(hr2 == 24):
 		etime = myDate+datetime.timedelta(days=1)
@@ -99,19 +99,19 @@ def mergePygrid(dateStr,hemi='north',times=[0,2400],interval=120,vb=0):
 		os.system('bzip2 '+f)
 		
 
-def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,filter=1):
+def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filter=1):
 	
 	"""
 	*******************************
 	PACKAGE: pydarn.proc.prgridLib
-	FUNCTION: makePygrid(dateStr,rad,[times],[fileType],[interval],[vb],[filter],[plot]):
+	FUNCTION: makePygrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):
 	
 	reads in fitted radar data and puts it into a geospatial grid
 	
 	INPUTS:
 		dateStr : a string containing the target date in yyyymmdd format
 		rad: the 3 letter radar code, e.g. 'bks'
-		[times]: the range of times for which the file should be read in
+		[time]: the range of time for which the file should be read in
 			MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
 			default = [0,2400]
 		[fileType]: 'fitex', 'fitacf', or 'lmfit'; default = 'fitex'
@@ -129,8 +129,8 @@ def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,fil
 	
 	#convert date string, start time, end time to datetime
 	myDate = yyyymmddToDate(dateStr)
-	hr1,hr2 = int(math.floor(times[0]/100.)),int(math.floor(times[1]/100.))
-	min1,min2 = int(times[0]-hr1*100),int(times[1]-hr2*100)
+	hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
+	min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
 	stime = myDate.replace(hour=hr1,minute=min1)
 	if(hr2 == 24):
 		etime = myDate+datetime.timedelta(days=1)
@@ -138,7 +138,7 @@ def makePygrid(dateStr,rad,times=[0,2400],fileType='fitex',interval=120,vb=0,fil
 		etime = myDate.replace(hour=hr2,minute=min2)
 	
 	#read the radar data
-	myData = pydarn.io.radDataRead(dateStr,rad,time=times,filter=filter)
+	myData = pydarn.io.radDataRead(dateStr,rad,time=time,filter=filter)
 	#check for data in this time period
 	assert(myData.nrecs > 0),'error, no data for this time period'
 	#get a radar site object
