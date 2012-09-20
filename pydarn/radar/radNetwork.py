@@ -146,7 +146,7 @@ Get a specific radar from its name/code/id
 			print 'getRadarBy: could not find radar {}: {}'.format(by, radN)
 			return found
 		
-	def getAllCodes(self, datetime=None):
+	def getAllCodes(self, datetime=None, hemi=None):
 		"""
 Get a list of all active radar codes
 		"""
@@ -157,7 +157,11 @@ Get a list of all active radar codes
 		codes = []
 		for iRad in range( self.nradar ):
 			tcod = self.info[iRad].getSiteByDate(datetime)
-			if tcod and self.info[iRad].status == 1: codes.append(self.info[iRad].code[0])
+			if tcod and self.info[iRad].status == 1: 
+				if(hemi == None or \
+				(hemi == 'south' and tcod.geolat < 0) or \
+				(hemi == 'north' and tcod.geolat >= 0)): codes.append(self.info[iRad].code[0])
+				
 		
 		return codes
 			
