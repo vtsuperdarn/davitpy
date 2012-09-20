@@ -1,0 +1,452 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module igrf ! in 
+    interface  ! in :igrf
+        subroutine igrf_sub(xlat,xlong,year,height,xl,icode,dipl,babs,dip,dec) ! in :igrf:igrf.for
+            real intent(in) :: xlat
+            real intent(in) :: xlong
+            integer intent(in) :: year
+            real intent(in) :: height
+            integer intent(out) :: xl
+            integer intent(out) :: icode
+            real intent(out) :: dipl
+            real intent(out) :: babs
+            real intent(out) :: dip
+            real intent(out) :: dec
+            real :: umr
+            real :: era
+            real :: aquad
+            real :: bquad
+            common /igrf1/ umr,era,aquad,bquad
+        end subroutine igrf_sub
+        subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,ymodip) ! in :igrf:igrf.for
+            real :: xlat
+            real :: xlong
+            real :: year
+            real :: height
+            real :: dip
+            real :: dipl
+            real :: ymodip
+            real :: umr
+            real :: era
+            real :: aquad
+            real :: bquad
+            common /igrf1/ umr,era,aquad,bquad
+        end subroutine igrf_dip
+!         subroutine shellg(glat,glon,alt,dimo,fl,icode,b0) ! in :igrf:igrf.for
+!             real :: glat
+!             real :: glon
+!             real :: alt
+!             real :: dimo
+!             real :: fl
+!             integer :: icode
+!             real :: b0
+!             real :: umr
+!             real :: era
+!             real :: aquad
+!             real :: bquad
+!             real dimension(3) :: sp
+!             real dimension(3) :: x
+!             real dimension(196) :: h
+!             real dimension(3) :: v
+!             common /igrf1/ umr,era,aquad,bquad
+!             common /fidb0/ sp
+!             common /igrf2/ x,h
+!             entry shellc(v,fl,b0)
+!         end subroutine shellg
+!         subroutine stoer(p,bq,r) ! in :igrf:igrf.for
+!             real dimension(7) :: p
+!             real :: bq
+!             real :: r
+!             real dimension(3) :: xi
+!             real dimension(196) :: h
+!             common /igrf2/ xi,h
+!         end subroutine stoer
+!         subroutine feldg(glat,glon,alt,bnorth,beast,bdown,babs) ! in :igrf:igrf.for
+!             real :: glat
+!             real :: glon
+!             real :: alt
+!             real :: bnorth
+!             real :: beast
+!             real :: bdown
+!             real :: babs
+!             real :: umr
+!             real :: era
+!             real :: aquad
+!             real :: bquad
+!             character*13 :: name
+!             integer :: nmax
+!             real :: time
+!             real dimension(196) :: g
+!             real dimension(3) :: xi
+!             real dimension(196) :: h
+!             real dimension(3) :: v
+!             real dimension(3) :: b
+!             common /igrf1/ umr,era,aquad,bquad
+!             common /model/ name,nmax,time,g
+!             common /igrf2/ xi,h
+!             entry feldi()
+!             entry feldc(v,b)
+!         end subroutine feldg
+!         subroutine feldcof(year,dimo) ! in :igrf:igrf.for
+!             real :: year
+!             real :: dimo
+!             real :: umr
+!             real :: erad
+!             real :: aquad
+!             real :: bquad
+!             character*13 :: fil1
+!             integer :: nmax
+!             real :: time
+!             real dimension(196) :: gh1
+!             real :: ghi1
+!             real :: ghi2
+!             real :: ghi3
+!             common /igrf1/ umr,erad,aquad,bquad
+!             common /model/ fil1,nmax,time,gh1
+!             common /dipol/ ghi1,ghi2,ghi3
+!         end subroutine feldcof
+!         subroutine getshc(iu,fspec,nmax,erad,gh,ier) ! in :igrf:igrf.for
+!             integer :: iu
+!             character*(*) :: fspec
+!             integer :: nmax
+!             real :: erad
+!             real dimension(196) :: gh
+!             integer :: ier
+!             integer :: konsol
+!             common /iounit/ konsol
+!         end subroutine getshc
+!         subroutine intershc(date,dte1,nmax1,gh1,dte2,nmax2,gh2,nmax,gh) ! in :igrf:igrf.for
+!             real :: date
+!             real :: dte1
+!             integer :: nmax1
+!             real dimension(*) :: gh1
+!             real :: dte2
+!             integer :: nmax2
+!             real dimension(*) :: gh2
+!             integer :: nmax
+!             real dimension(*) :: gh
+!         end subroutine intershc
+!         subroutine extrashc(date,dte1,nmax1,gh1,nmax2,gh2,nmax,gh) ! in :igrf:igrf.for
+!             real :: date
+!             real :: dte1
+!             integer :: nmax1
+!             real dimension(*) :: gh1
+!             integer :: nmax2
+!             real dimension(*) :: gh2
+!             integer :: nmax
+!             real dimension(*) :: gh
+!         end subroutine extrashc
+!         subroutine initize ! in :igrf:igrf.for
+!             real :: umr
+!             real :: era
+!             real :: aquad
+!             real :: bquad
+!             common /igrf1/ umr,era,aquad,bquad
+!         end subroutine initize
+!         subroutine geodip(iyr,sla,slo,dla,dlo,j) ! in :igrf:igrf.for
+!             integer :: iyr
+!             real :: sla
+!             real :: slo
+!             real :: dla
+!             real :: dlo
+!             integer :: j
+!             real :: umr
+!             common /const/ umr
+!         end subroutine geodip
+!         function fmodip(xlat) ! in :igrf:igrf.for
+!             real :: xlat
+!             real :: xlong
+!             real :: year
+!             real :: fmodip
+!             common /findrlat/ xlong,year
+!         end function fmodip
+!         subroutine geocgm01(icor,iyear,hi,dat,pla,plo) ! in :igrf:igrf.for
+!             integer :: icor
+!             integer :: iyear
+!             real :: hi
+!             real dimension(11,4) :: dat
+!             real dimension(4) :: pla
+!             real dimension(4) :: plo
+!             integer :: nm
+!             integer :: iyr
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine geocgm01
+!         function ovl_ang(sla,slo,cla,clo,rr) ! in :igrf:igrf.for
+!             real :: sla
+!             real :: slo
+!             real :: cla
+!             real :: clo
+!             real :: rr
+!             real :: clat
+!             logical :: cr360
+!             logical :: cr0
+!             real :: rh
+!             real :: ovl_ang
+!             common /cgmgeo/ clat,cr360,cr0,rh
+!         end function ovl_ang
+!         function cgmgla(clon) ! in :igrf:igrf.for
+!             real :: clon
+!             real :: cclat
+!             logical :: cr360
+!             logical :: cr0
+!             real :: rh
+!             real :: cgmgla
+!             common /cgmgeo/ cclat,cr360,cr0,rh
+!         end function cgmgla
+!         function cgmglo(clon) ! in :igrf:igrf.for
+!             real :: clon
+!             real :: cclat
+!             logical :: cr360
+!             logical :: cr0
+!             real :: rh
+!             real :: cgmglo
+!             common /cgmgeo/ cclat,cr360,cr0,rh
+!         end function cgmglo
+!         function dfridr(func,x,h,err) ! in :igrf:igrf.for
+!             external func
+!             real :: x
+!             real :: h
+!             real :: err
+!             real :: dfridr
+!         end function dfridr
+!         function azm_ang(sla,slo,cla,pla,plo) ! in :igrf:igrf.for
+!             real :: sla
+!             real :: slo
+!             real :: cla
+!             real :: pla
+!             real :: plo
+!             real :: azm_ang
+!         end function azm_ang
+!         subroutine mltut(sla,slo,cla,pla,plo,ut) ! in :igrf:igrf.for
+!             real :: sla
+!             real :: slo
+!             real :: cla
+!             real :: pla
+!             real :: plo
+!             real :: ut
+!         end subroutine mltut
+!         subroutine mfc(sla,slo,r,h,d,z) ! in :igrf:igrf.for
+!             real :: sla
+!             real :: slo
+!             real :: r
+!             real :: h
+!             real :: d
+!             real :: z
+!             integer :: nm
+!             integer :: iyr
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine mfc
+!         subroutine ftprnt(rh,sla,slo,cla,clo,acla,aclo,slaf,slof,rf) ! in :igrf:igrf.for
+!             real :: rh
+!             real :: sla
+!             real :: slo
+!             real :: cla
+!             real :: clo
+!             real :: acla
+!             real :: aclo
+!             real :: slaf
+!             real :: slof
+!             real :: rf
+!             integer :: nm
+!             integer :: iyr
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine ftprnt
+!         subroutine geolow(slar,slor,rh,clar,clor,rbm,slac,sloc) ! in :igrf:igrf.for
+!             real :: slar
+!             real :: slor
+!             real :: rh
+!             real :: clar
+!             real :: clor
+!             real :: rbm
+!             real :: slac
+!             real :: sloc
+!             integer :: nm
+!             integer :: iyr
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine geolow
+!         subroutine corgeo(sla,slo,rh,dla,dlo,cla,clo,pmi) ! in :igrf:igrf.for
+!             real :: sla
+!             real :: slo
+!             real :: rh
+!             real :: dla
+!             real :: dlo
+!             real :: cla
+!             real :: clo
+!             real :: pmi
+!             integer :: nm
+!             integer :: iyr
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine corgeo
+!         subroutine geocor(sla,slo,rh,dla,dlo,cla,clo,pmi) ! in :igrf:igrf.for
+!             real :: sla
+!             real :: slo
+!             real :: rh
+!             real :: dla
+!             real :: dlo
+!             real :: cla
+!             real :: clo
+!             real :: pmi
+!             integer :: nm
+!             integer :: iyr
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine geocor
+!         subroutine shag(x,y,z,ds) ! in :igrf:igrf.for
+!             real :: x
+!             real :: y
+!             real :: z
+!             real :: ds
+!             real :: ds3
+!             common /a5/ ds3
+!         end subroutine shag
+!         subroutine right(x,y,z,r1,r2,r3) ! in :igrf:igrf.for
+!             real :: x
+!             real :: y
+!             real :: z
+!             real :: r1
+!             real :: r2
+!             real :: r3
+!             real :: ds3
+!             integer :: nm
+!             integer :: iyr
+!             common /a5/ ds3
+!             common /nm/ nm
+!             common /iyr/ iyr
+!         end subroutine right
+!         subroutine igrf(iy,nm,r,t,f,br,bt,bf) ! in :igrf:igrf.for
+!             integer :: iy
+!             integer :: nm
+!             real :: r
+!             real :: t
+!             real :: f
+!             real :: br
+!             real :: bt
+!             real :: bf
+!         end subroutine igrf
+!         subroutine recalc(iyr,iday,ihour,min_bn,isec) ! in :igrf:igrf.for
+!             integer :: iyr
+!             integer :: iday
+!             integer :: ihour
+!             integer :: min_bn
+!             integer :: isec
+!             real :: st0
+!             real :: ct0
+!             real :: sl0
+!             real :: cl0
+!             real :: ctcl
+!             real :: stcl
+!             real :: ctsl
+!             real :: stsl
+!             real :: sfi
+!             real :: cfi
+!             real :: sps
+!             real :: cps
+!             real :: shi
+!             real :: chi
+!             real :: hi
+!             real :: psi
+!             real :: xmut
+!             real :: a11
+!             real :: a21
+!             real :: a31
+!             real :: a12
+!             real :: a22
+!             real :: a32
+!             real :: a13
+!             real :: a23
+!             real :: a33
+!             real :: ds3
+!             integer :: k
+!             integer :: iy
+!             real dimension(8) :: ba
+!             common /c1/ st0,ct0,sl0,cl0,ctcl,stcl,ctsl,stsl,sfi,cfi,sps,cps,shi,chi,hi,psi,xmut,a11,a21,a31,a12,a22,a32,a13,a23,a33,ds3,k,iy,ba
+!         end subroutine recalc
+!         subroutine sphcar(r,teta,phi,x,y,z,j) ! in :igrf:igrf.for
+!             real :: r
+!             real :: teta
+!             real :: phi
+!             real :: x
+!             real :: y
+!             real :: z
+!             integer :: j
+!         end subroutine sphcar
+!         subroutine bspcar(teta,phi,br,btet,bphi,bx,by,bz) ! in :igrf:igrf.for
+!             real :: teta
+!             real :: phi
+!             real :: br
+!             real :: btet
+!             real :: bphi
+!             real :: bx
+!             real :: by
+!             real :: bz
+!         end subroutine bspcar
+!         subroutine geomag(xgeo,ygeo,zgeo,xmag,ymag,zmag,j,iyr) ! in :igrf:igrf.for
+!             real :: xgeo
+!             real :: ygeo
+!             real :: zgeo
+!             real :: xmag
+!             real :: ymag
+!             real :: zmag
+!             integer :: j
+!             integer :: iyr
+!             real :: st0
+!             real :: ct0
+!             real :: sl0
+!             real :: cl0
+!             real :: ctcl
+!             real :: stcl
+!             real :: ctsl
+!             real :: stsl
+!             real dimension(19) :: ab
+!             integer :: k
+!             integer :: iy
+!             real dimension(8) :: bb
+!             common /c1/ st0,ct0,sl0,cl0,ctcl,stcl,ctsl,stsl,ab,k,iy,bb
+!         end subroutine geomag
+!         subroutine magsm(xmag,ymag,zmag,xsm,ysm,zsm,j) ! in :igrf:igrf.for
+!             real :: xmag
+!             real :: ymag
+!             real :: zmag
+!             real :: xsm
+!             real :: ysm
+!             real :: zsm
+!             integer :: j
+!             real dimension(8) :: a
+!             real :: sfi
+!             real :: cfi
+!             real dimension(7) :: b
+!             real dimension(10) :: ab
+!             integer :: k
+!             integer :: iy
+!             real dimension(8) :: ba
+!             common /c1/ a,sfi,cfi,b,ab,k,iy,ba
+!         end subroutine magsm
+!         subroutine smgsm(xsm,ysm,zsm,xgsm,ygsm,zgsm,j) ! in :igrf:igrf.for
+!             real :: xsm
+!             real :: ysm
+!             real :: zsm
+!             real :: xgsm
+!             real :: ygsm
+!             real :: zgsm
+!             integer :: j
+!             real dimension(10) :: a
+!             real :: sps
+!             real :: cps
+!             real dimension(15) :: b
+!             integer :: k
+!             integer :: iy
+!             real dimension(8) :: ab
+!             common /c1/ a,sps,cps,b,k,iy,ab
+!         end subroutine smgsm
+    end interface 
+end python module igrf
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
