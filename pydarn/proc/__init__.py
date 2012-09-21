@@ -16,5 +16,5 @@ This includes the following function(s):
 *******************************
 """
 
-from gridLib import *
-from gridIo import *
+from pygridLib import *
+from pygridIo import *
