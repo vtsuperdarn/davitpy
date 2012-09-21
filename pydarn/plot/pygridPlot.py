@@ -1,3 +1,18 @@
+"""
+*******************************
+MODULE: pydarn.plot.pygridPlot
+*******************************
+
+This module contains the following functions:
+
+	plotPygrid
+	
+	drawPygridVecs
+	
+	drawPygridMap
+
+"""
+
 import pydarn,numpy,utils
 from matplotlib import pyplot as plt
 from matplotlib.collections import PolyCollection,LineCollection
@@ -8,11 +23,12 @@ from utils.timeUtils import *
 
 def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=120,grid=0,vmax=500,vwidth=.2):
 	"""
-	*******************************
+
 	PACKAGE: pydarn.plot.pygrid
+	
 	FUNCTION: plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=120,grid=0,vmax=500,vwidth=.2)
 	
-	a function that plots the contents of a pygrid file
+	PURPOSE: a function that plots the contents of a pygrid file
 	
 	INPUTS:
 		[dateStr]: a string indicating the date to plot in 
@@ -42,18 +58,20 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 		[vmax]: the maximum value for the color and vector length
 			scale in m/s.  default = 500
 		[vwidth]: the width of the velocity vectors, default = .2
+		
 		OUTPUTS:
 			None
 			
 			
 		EXAMPLES:
 			plotPygrid(dateStr='20110409',plot='avg',rads=['bks'],time=[840,840],vmax=700)
+			
 			plotPygrid(dateStr='20110409',plot='all',rads='north',time=[840,840],vmax=760)
+			
 			plotPygrid(dateStr='20110409',plot='mrg',hemi='south',time=[840,840],vmax=200)
 	
-	
 	Written by AJ 20120919
-	*******************************
+
 	"""
 	import math,os
 	#create a pygrid item
@@ -80,7 +98,8 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 		if(plot != 'mrg'):
 			#check for valid rads input
 			assert(rads != None),"must input rads if dateStr is given and plot is not 'mrg'"
-			if(rads == 'north' or rads == 'south'): rads = [rads]
+			if(rads == 'north' or rads == 'south'):
+				rads = pydarn.radar.network().getAllCodes(hemi=hemi)
 			else: 
 				assert(isinstance(rads,list)),\
 				"must input a LIST of radars or a hemisphere name if dateStr is given and plot is not 'mrg'"
@@ -144,12 +163,15 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 	"""
 	*******************************
+	
 	PACKAGE: pydarn.plot.pygrid
+	
 	FUNCTION: drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500)
 	
 	a function that assigns the information for the gridded velocity vectors
 	
 	INPUTS:
+	
 		myGrid: the pygrid data being plotted
 		myMap: the map object to draw onto
 		lines: the line array to be filled
@@ -157,6 +179,7 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 		[plot]: the plot type, one of 'all','avg','mrg'. default = 'all'
 		[vmax]: the max value for the color and velocity vector scale.
 			default: 500
+			
 	OUTPUTS: 
 		[lines,intensities]: a list of the lines and intensities lists
 		
@@ -198,7 +221,9 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 def drawPygridMap(myFig,myGrid,grid=0):
 	"""
 	*******************************
+	
 	PACKAGE: pydarn.plot.pygrid
+	
 	FUNCTION: drawPygridMap(myFig,myGrid,grid=0)
 	
 	a function that draws the pygrid map
@@ -208,6 +233,7 @@ def drawPygridMap(myFig,myGrid,grid=0):
 		myGrid: a pygrid object
 		[grid]: a flag indicating whether to draw the grid or not, 1 = yes,
 		0 = no.  default = 0
+		
 	OUTPUTS: 
 		myMap: a Basemap object
 		

@@ -1,15 +1,44 @@
+"""
+*******************************
+MODULE: pydarn.proc.pygridLib
+*******************************
+
+This module contains the following functions:
+
+	mergePygrid
+	
+	makePygrid
+	
+	drawPygridMap
+
+This module contains the following classes:
+
+	pygrid
+	
+	latcell
+	
+	pygridCell
+	
+	mergeVec
+	
+	pygridVec
+	
+*******************************
+"""
+
 from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 	
 def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 	"""
-	*******************************
+
 	PACKAGE: pydarn.proc.pygridLib
+
 	FUNCTION: makePyrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):
-	
-	reads in fitted radar data and puts it into a geospatial grid
-	
+
+	PURPOSE: reads in fitted radar data and puts it into a geospatial grid
+
 	INPUTS:
 		dateStr : a string containing the target date in yyyymmdd format
 		rad: the 3 letter radar code, e.g. 'bks'
@@ -18,11 +47,15 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 			default = [0,2400]
 		[interval]: the time interval at which to do the merging
 			in seconds; default = 120
+			
 	OUTPUTS:
 		NONE
 		
+	EXAMPLES:
+		
+		
 	Written by AJ 20120807
-	*******************************
+
 	"""
 	import datetime,pydarn,os,string,math
 	
@@ -37,14 +70,10 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 		etime = myDate.replace(hour=hr2,minute=min2)
 		
 	baseDir = os.environ['DATADIR']+'/pygrid'
-	network = pydarn.network();
-	codes = network.getAllCodes();
+	codes = pydarn.radar.network().getAllCodes(hemi=hemi)
 	myFiles,fileNames = [],[]
 	for c in codes:
-		glat = network.getRadarByCode(c).getSiteByDate(stime).geolat
-		if(hemi == 'north' and glat < 0): continue
-		if(hemi == 'south' and glat >= 0): continue
-		
+
 		fileName = locatePygridFile(dateStr,c)
 		if(fileName == None): continue
 		print 'opening: '+fileName
@@ -102,11 +131,12 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filter=1):
 	
 	"""
-	*******************************
+
 	PACKAGE: pydarn.proc.prgridLib
+	
 	FUNCTION: makePygrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):
 	
-	reads in fitted radar data and puts it into a geospatial grid
+	PURPOSE: reads in fitted radar data and puts it into a geospatial grid
 	
 	INPUTS:
 		dateStr : a string containing the target date in yyyymmdd format
@@ -118,11 +148,12 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 		[interval]: the time interval at which to do the gridding
 			in seconds; default = 120
 		[filter]: 1 to boxcar filter, 0 for normal data; default = 1
+		
 	OUTPUTS:
 		NONE
 		
 	Written by AJ 20120807
-	*******************************
+
 	"""
 	import pydarn,math,datetime,aacgm,os
 
@@ -213,14 +244,16 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	
 class pygridVec(object):
 	"""
-	*******************************
+
 	PACKAGE: pydarn.proc.pygridLib
+	
 	CLASS: pygridVec
-	
-	a class defining a single gridded vector
-	
+
+	PURPOSE: a class defining a single gridded vector
+
 	DECLARATION: 
 		myVel = pydarn.proc.pygridLib.pygridVec(v,w_l,p_l,stid,time,bmnum,rng,azm):
+		
 	MEMBERS:
 		v : Doppler velocity
 		w_l : spectral width
@@ -232,7 +265,7 @@ class pygridVec(object):
 		azm : azimuth of the measurement
 
 	Written by AJ 20120907
-	*******************************
+
 	"""
 	
 	def __init__(self,v,w_l,p_l,stid,time,bmnum,rng,azm):
@@ -250,14 +283,16 @@ class pygridVec(object):
 		
 class mergeVec(object):
 	"""
-	*******************************
+	
 	PACKAGE: pydarn.proc.pygridLib
+	
 	CLASS: mergeVec
 	
-	a class defining a single merged vector
+	PURPOSE: a class defining a single merged vector
 	
 	DECLARATION: 
 		myVel = pydarn.proc.pygridLib.pygridVec(v,w_l,p_l,stid,time,bmnum,rng,azm):
+		
 	MEMBERS:
 		v : Doppler velocity
 		w_l : spectral width
@@ -266,7 +301,7 @@ class mergeVec(object):
 		azm : azimuth of the measurement
 
 	Written by AJ 20120918
-	*******************************
+
 	"""
 	
 	def __init__(self,v,w_l,p_l,stid1,stid2,azm):
@@ -281,16 +316,16 @@ class mergeVec(object):
 		
 class pygridCell(object):
 	"""
-	*******************************
+
 	PACKAGE: pydarn.proc.pygridLib
+	
 	CLASS: pygridCell
 	
-	a class defining a single grid cell
+	PURPOSE: a class defining a single grid cell
 
-	EXAMPLES:
-	
 	DECLARATION: 
 		myCell = pydarn.proc.pygridLib.pygridCell(botLat,topLat,leftLon,rightLon)
+		
 	MEMBERS:
 		bl : bottom left corner in [lat,mlt]
 		tl : bottom left corner in [lat,mlt]
@@ -301,7 +336,7 @@ class pygridCell(object):
 		vecs : a list to hold the pygridVec objects
 		
 	Written by AJ 20120907
-	*******************************
+
 	"""
 	
 	def __init__(self,lat1,lat2,mlt1,mlt2,n):
@@ -330,15 +365,17 @@ class pygridCell(object):
 		
 class latCell(object):
 	"""
-	*******************************
+
 	PACKAGE: pydarn.proc.pygridLib
+	
 	CLASS: latCell
 	
-	a class to hold the information for a single latitude
+	PURPOSE: a class to hold the information for a single latitude
 		for a geospatial grid
 	
 	DECLARATION: 
 		myLat = pydarn.proc.pygridLib.latCell()
+		
 	MEMBERS:
 		nCells : the number of pygridCells contained in this latCell
 		botLat : the lower latitude limit of thsi cell
@@ -347,9 +384,8 @@ class latCell(object):
 			latCell
 		cells : a list of the pygridCell objects
 		
-	
 	Written by AJ 20120907
-	*******************************
+
 	"""
 	
 	def __init__(self,lat):
@@ -378,27 +414,26 @@ class latCell(object):
 		
 class pygrid(object):
 	"""
-	*******************************
+
 	PACKAGE: pydarn.proc.pygridLib
+	
 	CLASS: pygrid
 	
-	the top level class for defining a geospatial grid for 
+	PURPOSE:the top level class for defining a geospatial grid for 
 		velocity gridding
 
-	EXAMPLES:
-	
 	DECLARATION: 
-		myGrid = pydarn.proc.pygridLib.pygrid()
-	MEMBERS:
-		lats : a list of latCell objects
-		nLats : an integer number equal to the number of
-			items in the lats list
-		delLat : the spacing between latCell objects
-		nVecs : the number of gridded vectors in the pygrid object
+		myGrid = pygrid()
 		
-	
+	MEMBERS:
+		lats: a list of latCell objects
+		nLats: an integer number equal to the number of
+			items in the lats list
+		delLat: the spacing between latCell objects
+		nVecs: the number of gridded vectors in the pygrid object
+		
 	Written by AJ 20120907
-	*******************************
+
 	"""
 	
 	def __init__(self):
@@ -424,15 +459,18 @@ class pygrid(object):
 			
 	def delVecs(self):
 		"""
-		*******************************
+
 		PACKAGE: pydarn.proc.pygridLib
+		
 		FUNCTION: pygrid.delVecs():
+		
 		BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
 		
-		delete all vectors from a pygrid object
+		PURPOSE: delete all vectors from a pygrid object
 		
 		INPUTS:
 			None
+			
 		OUTPUTS:
 			None
 			
@@ -440,7 +478,7 @@ class pygrid(object):
 			myGrid.delVecs()
 			
 		Written by AJ 20120911
-		*******************************
+
 		"""
 		self.nVecs = 0
 		self.nAvg = 0
@@ -456,16 +494,19 @@ class pygrid(object):
 			
 	def mergeVecs(self):
 		"""
-		*******************************
-		PACKAGE: pydarn.proc.pygridLib
-		FUNCTION: pygrid.mergeVecs():
-		BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
 		
+		PACKAGE: pydarn.proc.pygridLib
+		
+		FUNCTION: pygrid.mergeVecs():
+		
+		BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
+
 		go through all grid cells and average the vectors in 
 		cells with more than 1 vector
-		
+
 		INPUTS:
 			None
+			
 		OUTPUTS:
 			None
 			
@@ -473,7 +514,7 @@ class pygrid(object):
 			myGrid.averageVecs()
 			
 		Written by AJ 20120917
-		*******************************
+
 		"""
 		
 		import numpy as np
@@ -482,7 +523,6 @@ class pygrid(object):
 		
 		for l in self.lats:
 			for c in l.cells:
-				#if(c.nAvg > 0): print c.nAvg
 				if(c.nAvg > 1):
 					v1,v2 = c.avgVecs[0],c.avgVecs[1]
 					a1,a2 = math.radians(v1.azm),math.radians(v2.azm)
@@ -502,24 +542,23 @@ class pygrid(object):
 					np.average(np.array([v1.p_l,v2.p_l])),v1.stid,v2.stid,azm)
 					
 					self.nMrg += 1
-					
-					#print v1.v,v1.azm,v1.stid
-					#print v2.v,v2.azm,v2.stid
-					#print vel,azm
-					#print ""
+
 					
 	def averageVecs(self):
 		"""
-		*******************************
+		
 		PACKAGE: pydarn.proc.pygridLibLib
+		
 		FUNCTION: pygrid.averageVecs():
+		
 		BELONGS TO: CLASS: pydarn.proc.pygridLibLib.pygrid
 		
-		go through all grid cells and average the vectors in 
+		PURPOSE: go through all grid cells and average the vectors in 
 		cells with more than 1 vector
 		
 		INPUTS:
 			None
+			
 		OUTPUTS:
 			None
 			
@@ -527,7 +566,7 @@ class pygrid(object):
 			myGrid.averageVecs()
 			
 		Written by AJ 20120917
-		*******************************
+
 		"""
 		import numpy
 		
@@ -555,18 +594,20 @@ class pygrid(object):
 				
 	def enterData(self,myData,coordsList):
 		"""
-		*******************************
+		
 		PACKAGE: pydarn.proc.pygridLib
+		
 		FUNCTION pygrid.enterData():
 		
-		inserts radar fitacf data into a pygrid object
-		
 		BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
-
+		
+		PURPOSE: inserts radar fitacf data into a pygrid object
+		
 		INPUTS:
 			myData: a pydarn.io.radDataTypes.beam object
 			coordsList: a 2D list containing the coords [lat,lon,azm] 
 				corresponding to range-beam cells
+				
 		OUTPUTS:
 			None
 			
@@ -574,7 +615,7 @@ class pygrid(object):
 			myGrid.enterData(myBeam,myCoords)
 			
 		Written by AJ 20120911
-		*******************************
+
 		"""
 		import math,aacgm,time
 		

@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kpIo &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for kpIo</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">kpDay</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pydarn</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<div class="viewcode-block" id="readKpDay"><a class="viewcode-back" href="../kpIo.html#kpIo.readKpDay">[docs]</a><span class="k">def</span> <span class="nf">readKpDay</span><span class="p">(</span><span class="n">myDate</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	</span>
+<span class="sd">	kpVals = readKpDay(myDate)</span>
+<span class="sd">	</span>
+<span class="sd">	takes a python date object and returns kpDay object for that day</span>
+
+<span class="sd">	INPUTS:</span>
+<span class="sd">		myDate : a python date object</span>
+<span class="sd">	OUTPUTS:</span>
+<span class="sd">		kpVals : a list of the Kp indices in string format, e.g. &#39;3+&#39;</span>
+
+<span class="sd">	Created by AJ</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="kn">import</span> <span class="nn">utils</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="c">#open the file</span>
+		<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DAVITPY&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/gmi/kp/kp_index.hdf5&#39;</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="k">print</span> <span class="s">&#39;error opening &#39;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DAVITPY&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/gmi/kp/kp_index.hdf5&#39;</span>
+		<span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+	
+	<span class="k">try</span><span class="p">:</span>
+		<span class="c">#get the vales for that day</span>
+		<span class="n">vals</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s">&#39;kpVals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;kpDates&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">utils</span><span class="o">.</span><span class="n">timeUtils</span><span class="o">.</span><span class="n">dateToYyyymmdd</span><span class="p">(</span><span class="n">myDate</span><span class="p">)]</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="k">print</span> <span class="s">&#39;error reading the kp file&#39;</span>
+		<span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+		
+	<span class="c">#close the file</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	
+	<span class="c">#return the kpDay object</span>
+	<span class="k">return</span> <span class="n">kpDay</span><span class="p">(</span><span class="n">myDate</span><span class="p">,</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="readKpHdf5"><a class="viewcode-back" href="../kpIo.html#kpIo.readKpHdf5">[docs]</a><span class="k">def</span> <span class="nf">readKpHdf5</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	</span>
+<span class="sd">	kpVals = readKpHdf5()</span>
+<span class="sd">	</span>
+<span class="sd">	reads the entirety of a Kp index file located at ${DAVITPY}gmi/kp/kp_index.hdf5&#39; and returns</span>
+<span class="sd">	the contents as a list of kpDay objects</span>
+<span class="sd">	</span>
+<span class="sd">	Note that getting Kp values with readKpDay() is preferred</span>
+
+<span class="sd">	INPUTS:</span>
+<span class="sd">		myDate : a python date object</span>
+<span class="sd">	OUTPUTS:</span>
+<span class="sd">		kpVals : a list of the Kp indices in string format, e.g. &#39;3+&#39;</span>
+
+<span class="sd">	Created by AJ</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="kn">import</span> <span class="nn">utils</span>
+	<span class="c">#open the file</span>
+	<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DAVITPY&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;gmi/kp/kp_index.hdf5&#39;</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">dates</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s">&#39;kpDates&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+	<span class="n">vals</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s">&#39;kpVals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	
+	<span class="n">allKp</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)):</span>
+		<span class="n">myDay</span> <span class="o">=</span> <span class="n">kpDay</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">timeUtils</span><span class="o">.</span><span class="n">yyyymmddToDate</span><span class="p">(</span><span class="n">dates</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span><span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+		<span class="n">allKp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">myDay</span><span class="p">)</span>
+		
+	<span class="k">return</span> <span class="n">allKp</span>
+</div>
+<span class="k">def</span> <span class="nf">kp2Hdf5</span><span class="p">():</span>
+	<span class="kn">import</span> <span class="nn">utils</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	</span>
+<span class="sd">	kp2Hdf5():</span>
+<span class="sd">	</span>
+<span class="sd">	reads the entirety of a Kp index file located at ${DAVITPY}/gmi/kp/kp_index.ascii</span>
+<span class="sd">	and writes out a Kp file in hdf5 format to ${DAVITPY}/gmi/kp/kp_index.hdf5</span>
+
+<span class="sd">	INPUTS:</span>
+<span class="sd">		none</span>
+<span class="sd">	OUTPUTS:</span>
+<span class="sd">		NONE</span>
+<span class="sd">		</span>
+<span class="sd">	Written by AJ 20120718</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	
+	<span class="n">allKp</span> <span class="o">=</span> <span class="n">readKpAscii</span><span class="p">()</span>
+	
+	<span class="c">#rearrage the Kp data</span>
+	<span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">allKp</span><span class="p">)):</span>
+		<span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">timeUtils</span><span class="o">.</span><span class="n">dateToYyyymmdd</span><span class="p">(</span><span class="n">allKp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+		<span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">allKp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span>
+		
+	<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DAVITPY&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/gmi/kp/kp_index.hdf5&#39;</span><span class="p">,</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;kpDates&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;kpVals&#39;</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">vals</span><span class="p">)</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	
+	
+	
+<div class="viewcode-block" id="readKpAscii"><a class="viewcode-back" href="../kpIo.html#kpIo.readKpAscii">[docs]</a><span class="k">def</span> <span class="nf">readKpAscii</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	</span>
+<span class="sd">	allKp = readKpAscii():</span>
+<span class="sd">	</span>
+<span class="sd">	reads the entirety of a Kp index file located at ${DAVITPY}/gmi/kp/kp_index.ascii</span>
+<span class="sd">	</span>
+<span class="sd">	Note that getting Kp values with readKpDay() is preferred</span>
+
+<span class="sd">	INPUTS:</span>
+<span class="sd">		none</span>
+<span class="sd">	OUTPUTS:</span>
+<span class="sd">		allKp : a list of kpDay objects containing the entire contents of the file</span>
+<span class="sd">		</span>
+<span class="sd">	Written by AJ 20120718</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="kn">import</span> <span class="nn">utils</span>
+	<span class="c">#open the Kp ascii file</span>
+	<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DAVITPY&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/gmi/kp/kp_index.ascii&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">allKp</span> <span class="o">=</span> <span class="p">[]</span>
+	
+	<span class="c">#read the first line</span>
+	<span class="n">myLine</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+	
+	<span class="c">#iterate through the entire file</span>
+	<span class="k">while</span> <span class="p">(</span><span class="n">myLine</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span> <span class="p">):</span>
+		<span class="n">myLine</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span> <span class="p">)</span>
+		
+		<span class="c">#parse the date into a date object</span>
+		<span class="n">d</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">timeUtils</span><span class="o">.</span><span class="n">yyyymmddToDate</span><span class="p">(</span><span class="n">myLine</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span>
+		
+		<span class="c">#parse the Kp values into a list</span>
+		<span class="n">kpVals</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">8</span><span class="p">):</span>
+			<span class="n">index</span> <span class="o">=</span> <span class="mi">9</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span>
+			<span class="n">kpVals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">myLine</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+			
+		<span class="c">#create a kpDay object with the date and values</span>
+		<span class="n">myDay</span> <span class="o">=</span> <span class="n">kpDay</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">kpVals</span><span class="p">)</span>
+		
+		<span class="n">allKp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">myDay</span><span class="p">)</span>
+		
+		<span class="c">#read the next line in the file</span>
+		<span class="n">myLine</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+		
+	<span class="c">#return the array of data</span>
+	<span class="k">return</span> <span class="n">allKp</span>
+
+	</div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

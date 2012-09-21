@@ -32,5 +32,5 @@ from plotUtils import *
 from map import *
 from printRec import *
 from fan import *
-from pygrid import *
-import pygrid
+from pygridPlot import *
+import pygridPlot
