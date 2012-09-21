@@ -155,12 +155,12 @@ Get a list of all active radar codes
 		if not datetime: datetime = datetime.utcnow()
 		
 		codes = []
-		for iRad in range( self.nradar ):
+		for iRad in xrange( self.nradar ):
 			tcod = self.info[iRad].getSiteByDate(datetime)
 			if tcod and self.info[iRad].status == 1: 
 				if(hemi == None or \
-				(hemi == 'south' and tcod.geolat < 0) or \
-				(hemi == 'north' and tcod.geolat >= 0)): codes.append(self.info[iRad].code[0])
+				(hemi.lower() == 'south' and tcod.geolat < 0) or \
+				(hemi.lower() == 'north' and tcod.geolat >= 0)): codes.append(self.info[iRad].code[0])
 				
 		
 		return codes

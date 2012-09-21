@@ -172,6 +172,7 @@ OUTPUTS:
 # *************************************************************
 def overlayFov(Basemap, codes=None, ids=None, names=None, dateTime=None, coords='geo', all=False, \
 				maxGate=None, fovColor=None, fovAlpha=0.2, \
+				beams=None, \
 				zorder=2, lineColor='k'):
 	"""
 Overlay FoV position(s) on map
@@ -210,7 +211,8 @@ OUTPUTS:
 	if all:
 		codes = []
 		for irad in range( len(NetworkObj) ):
-			if NetworkObj.info[irad].status != 0 and NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime:
+			if NetworkObj.info[irad].status != 0 and \
+				NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime:
 				codes.append(NetworkObj.info[irad].code[0])
 	
 	# Define how the radars to be plotted are identified (code, id or name)
@@ -252,7 +254,16 @@ OUTPUTS:
 		Basemap.plot(x[:,0], y[:,0], color=lineColor)
 		# Field of view fill
 		if fovColor:
-			Basemap.pcolormesh(x[:,0:eGate], y[:,0:eGate], fovColor/255.*ones(x[:,0:eGate].shape), vmin=0., vmax=1., \
-						zorder=2, alpha=fovAlpha, cmap=cm.Pastel1, edgecolors='None')
+			Basemap.pcolormesh(x[:,0:eGate], y[:,0:eGate], \
+							fovColor/255.*ones(x[:,0:eGate].shape), vmin=0., vmax=1., \
+							zorder=2, alpha=fovAlpha, cmap=cm.Pastel1, edgecolors='None')
+		# Beams fill
+		if beams:
+			for ib in beams:
+				if not (0 <= ib <= site.maxbeam): continue
+				bCol = ib/float(site.maxbeam)
+				Basemap.pcolormesh(x[ib:ib+2,0:eGate], y[ib:ib+2,0:eGate], \
+							bCol*ones(x[ib:ib+2,0:eGate].shape), vmin=0., vmax=1., \
+							zorder=3, alpha=.4, cmap=cm.Paired, edgecolors='None')
 	
 	return
