@@ -19,8 +19,9 @@ This includes the following functions:
 from parseDate import parseDate
 from parseTime import parseTime
 from timeUtils import *
-from geoPack import *
+import geoPack
 import calcSun
+import profileUtils
 
 
 # *************************************************************
@@ -31,5 +32,5 @@ Re = 6371.0
 # Polar Earth radius [km]
 RePol = 6378.1370
 # Equatorial Earth radius [km]
-ReEqu = 6,356.7523
+ReEqu = 6356.7523
 
