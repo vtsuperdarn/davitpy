@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>calcSun &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for calcSun</h1><div class="highlight"><pre>
+<span class="c"># UTILS/calcSun</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">*******************************</span>
+<span class="sd">            calcSun</span>
+<span class="sd">*******************************</span>
+<span class="sd">This subpackage contains def to calculate sunrise/sunset</span>
+
+<span class="sd">This includes the following defs:</span>
+<span class="sd">	getJD( date )</span>
+<span class="sd">		calculate the julian date from a python datetime object</span>
+<span class="sd">	calcTimeJulianCent( jd )</span>
+<span class="sd">		convert Julian Day to centuries since J2000.0.</span>
+<span class="sd">	calcGeomMeanLongSun( t )</span>
+<span class="sd">		calculate the Geometric Mean Longitude of the Sun (in degrees)</span>
+<span class="sd">	calcGeomMeanAnomalySun( t )</span>
+<span class="sd">		calculate the Geometric Mean Anomaly of the Sun (in degrees)</span>
+<span class="sd">	calcEccentricityEarthOrbit( t )</span>
+<span class="sd">		calculate the eccentricity of earth&#39;s orbit (unitless)</span>
+<span class="sd">	calcSunEqOfCenter( t )</span>
+<span class="sd">		calculate the equation of center for the sun (in degrees)</span>
+<span class="sd">	calcSunTrueLong( t )</span>
+<span class="sd">		calculate the true longitude of the sun (in degrees)</span>
+<span class="sd">	calcSunTrueAnomaly( t )</span>
+<span class="sd">		calculate the true anamoly of the sun (in degrees)</span>
+<span class="sd">	calcSunRadVector( t )</span>
+<span class="sd">		calculate the distance to the sun in AU (in degrees)</span>
+<span class="sd">	calcSunApparentLong( t )</span>
+<span class="sd">		calculate the apparent longitude of the sun (in degrees)</span>
+<span class="sd">	calcMeanObliquityOfEcliptic( t )</span>
+<span class="sd">		calculate the mean obliquity of the ecliptic (in degrees)</span>
+<span class="sd">	calcObliquityCorrection( t )</span>
+<span class="sd">		calculate the corrected obliquity of the ecliptic (in degrees)</span>
+<span class="sd">	calcSunRtAscension( t )</span>
+<span class="sd">		calculate the right ascension of the sun (in degrees)</span>
+<span class="sd">	calcSunDeclination( t )</span>
+<span class="sd">		calculate the declination of the sun (in degrees)</span>
+<span class="sd">	calcEquationOfTime( t )</span>
+<span class="sd">		calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)</span>
+<span class="sd">	calcHourAngleSunrise( lat, solarDec )</span>
+<span class="sd">		calculate the hour angle of the sun at sunrise for the latitude (in radians)</span>
+<span class="sd">	calcAzEl( output, t, localtime, latitude, longitude, zone )</span>
+<span class="sd">		calculate sun azimuth and zenith angle</span>
+<span class="sd">	calcSolNoonUTC( jd, longitude )</span>
+<span class="sd">		calculate time of solar noon the given day at the given location on earth (in minutes since 0 UTC)</span>
+<span class="sd">	calcSolNoon( jd, longitude, timezone, dst )</span>
+<span class="sd">		calculate time of solar noon the given day at the given location on earth (in minutes)</span>
+<span class="sd">	calcSunRiseSetUTC( jd, latitude, longitude )</span>
+<span class="sd">		calculate sunrise/sunset the given day at the given location on earth (in minutes since 0 UTC)</span>
+<span class="sd">	calcSunRiseSet( jd, latitude, longitude, timezone, dst )</span>
+<span class="sd">		calculate sunrise/sunset the given day at the given location on earth (in minutes)</span>
+<span class="sd">	calcTerminator( jd, latitudes, longitudes )</span>
+<span class="sd">		calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits</span>
+<span class="sd">		note that for plotting only, basemap has a built-in terminator</span>
+
+<span class="sd">Source: http://www.esrl.noaa.gov/gmd/grad/solcalc/</span>
+<span class="sd">Translated to Python by Sebastien de Larquier</span>
+<span class="sd">*******************************</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>	
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">zeros</span>	
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">linspace</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">argmin</span>
+
+<div class="viewcode-block" id="calcTimeJulianCent"><a class="viewcode-back" href="../calcSun.html#calcSun.calcTimeJulianCent">[docs]</a><span class="k">def</span> <span class="nf">calcTimeJulianCent</span><span class="p">(</span> <span class="n">jd</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Convert Julian Day to centuries since J2000.0.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="n">jd</span> <span class="o">-</span> <span class="mf">2451545.0</span><span class="p">)</span><span class="o">/</span><span class="mf">36525.0</span>
+	<span class="k">return</span> <span class="n">T</span>
+
+</div>
+<div class="viewcode-block" id="calcGeomMeanLongSun"><a class="viewcode-back" href="../calcSun.html#calcSun.calcGeomMeanLongSun">[docs]</a><span class="k">def</span> <span class="nf">calcGeomMeanLongSun</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the Geometric Mean Longitude of the Sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">L0</span> <span class="o">=</span> <span class="mf">280.46646</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span> <span class="mf">36000.76983</span> <span class="o">+</span> <span class="n">t</span><span class="o">*</span><span class="mf">0.0003032</span> <span class="p">)</span>
+	<span class="k">while</span> <span class="n">L0</span> <span class="o">&gt;</span> <span class="mf">360.0</span><span class="p">:</span>
+		<span class="n">L0</span> <span class="o">-=</span> <span class="mf">360.0</span>
+	<span class="k">while</span> <span class="n">L0</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+		<span class="n">L0</span> <span class="o">+=</span> <span class="mf">360.0</span>
+	<span class="k">return</span> <span class="n">L0</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcGeomMeanAnomalySun"><a class="viewcode-back" href="../calcSun.html#calcSun.calcGeomMeanAnomalySun">[docs]</a><span class="k">def</span> <span class="nf">calcGeomMeanAnomalySun</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the Geometric Mean Anomaly of the Sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">M</span> <span class="o">=</span> <span class="mf">357.52911</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span> <span class="mf">35999.05029</span> <span class="o">-</span> <span class="mf">0.0001537</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">M</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcEccentricityEarthOrbit"><a class="viewcode-back" href="../calcSun.html#calcSun.calcEccentricityEarthOrbit">[docs]</a><span class="k">def</span> <span class="nf">calcEccentricityEarthOrbit</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the eccentricity of earth&#39;s orbit (unitless)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">e</span> <span class="o">=</span> <span class="mf">0.016708634</span> <span class="o">-</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span> <span class="mf">0.000042037</span> <span class="o">+</span> <span class="mf">0.0000001267</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">e</span> <span class="c"># unitless</span>
+
+</div>
+<div class="viewcode-block" id="calcSunEqOfCenter"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunEqOfCenter">[docs]</a><span class="k">def</span> <span class="nf">calcSunEqOfCenter</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the equation of center for the sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">mrad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">calcGeomMeanAnomalySun</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+	<span class="n">sinm</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">mrad</span><span class="p">)</span>
+	<span class="n">sin2m</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">mrad</span><span class="o">+</span><span class="n">mrad</span><span class="p">)</span>
+	<span class="n">sin3m</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">mrad</span><span class="o">+</span><span class="n">mrad</span><span class="o">+</span><span class="n">mrad</span><span class="p">)</span>
+	<span class="n">C</span> <span class="o">=</span> <span class="n">sinm</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.914602</span> <span class="o">-</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.004817</span> <span class="o">+</span> <span class="mf">0.000014</span> <span class="o">*</span> <span class="n">t</span><span class="p">))</span> <span class="o">+</span> <span class="n">sin2m</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.019993</span> <span class="o">-</span> <span class="mf">0.000101</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="n">sin3m</span> <span class="o">*</span> <span class="mf">0.000289</span>
+	<span class="k">return</span> <span class="n">C</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcSunTrueLong"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunTrueLong">[docs]</a><span class="k">def</span> <span class="nf">calcSunTrueLong</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the true longitude of the sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">l0</span> <span class="o">=</span> <span class="n">calcGeomMeanLongSun</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">c</span> <span class="o">=</span> <span class="n">calcSunEqOfCenter</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">O</span> <span class="o">=</span> <span class="n">l0</span> <span class="o">+</span> <span class="n">c</span>
+	<span class="k">return</span> <span class="n">O</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcSunTrueAnomaly"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunTrueAnomaly">[docs]</a><span class="k">def</span> <span class="nf">calcSunTrueAnomaly</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the true anamoly of the sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">m</span> <span class="o">=</span> <span class="n">calcGeomMeanAnomalySun</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">c</span> <span class="o">=</span> <span class="n">calcSunEqOfCenter</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">v</span> <span class="o">=</span> <span class="n">m</span> <span class="o">+</span> <span class="n">c</span>
+	<span class="k">return</span> <span class="n">v</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcSunRadVector"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunRadVector">[docs]</a><span class="k">def</span> <span class="nf">calcSunRadVector</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the distance to the sun in AU (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">v</span> <span class="o">=</span> <span class="n">calcSunTrueAnomaly</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">e</span> <span class="o">=</span> <span class="n">calcEccentricityEarthOrbit</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.000001018</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">e</span> <span class="o">*</span> <span class="n">e</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span> <span class="mf">1.</span> <span class="o">+</span> <span class="n">e</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+	<span class="k">return</span> <span class="n">R</span> <span class="c"># n AUs</span>
+
+</div>
+<div class="viewcode-block" id="calcSunApparentLong"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunApparentLong">[docs]</a><span class="k">def</span> <span class="nf">calcSunApparentLong</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the apparent longitude of the sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">o</span> <span class="o">=</span> <span class="n">calcSunTrueLong</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">omega</span> <span class="o">=</span> <span class="mf">125.04</span> <span class="o">-</span> <span class="mf">1934.136</span> <span class="o">*</span> <span class="n">t</span>
+	<span class="n">SunLong</span> <span class="o">=</span> <span class="n">o</span> <span class="o">-</span> <span class="mf">0.00569</span> <span class="o">-</span> <span class="mf">0.00478</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">omega</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">SunLong</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcMeanObliquityOfEcliptic"><a class="viewcode-back" href="../calcSun.html#calcSun.calcMeanObliquityOfEcliptic">[docs]</a><span class="k">def</span> <span class="nf">calcMeanObliquityOfEcliptic</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the mean obliquity of the ecliptic (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">seconds</span> <span class="o">=</span> <span class="mf">21.448</span> <span class="o">-</span> <span class="n">t</span><span class="o">*</span><span class="p">(</span><span class="mf">46.8150</span> <span class="o">+</span> <span class="n">t</span><span class="o">*</span><span class="p">(</span><span class="mf">0.00059</span> <span class="o">-</span> <span class="n">t</span><span class="o">*</span><span class="p">(</span><span class="mf">0.001813</span><span class="p">)))</span>
+	<span class="n">e0</span> <span class="o">=</span> <span class="mf">23.0</span> <span class="o">+</span> <span class="p">(</span><span class="mf">26.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">seconds</span><span class="o">/</span><span class="mf">60.0</span><span class="p">))</span><span class="o">/</span><span class="mf">60.0</span>
+	<span class="k">return</span> <span class="n">e0</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcObliquityCorrection"><a class="viewcode-back" href="../calcSun.html#calcSun.calcObliquityCorrection">[docs]</a><span class="k">def</span> <span class="nf">calcObliquityCorrection</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the corrected obliquity of the ecliptic (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">e0</span> <span class="o">=</span> <span class="n">calcMeanObliquityOfEcliptic</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">omega</span> <span class="o">=</span> <span class="mf">125.04</span> <span class="o">-</span> <span class="mf">1934.136</span> <span class="o">*</span> <span class="n">t</span>
+	<span class="n">e</span> <span class="o">=</span> <span class="n">e0</span> <span class="o">+</span> <span class="mf">0.00256</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">omega</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">e</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcSunRtAscension"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunRtAscension">[docs]</a><span class="k">def</span> <span class="nf">calcSunRtAscension</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the right ascension of the sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">e</span> <span class="o">=</span> <span class="n">calcObliquityCorrection</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">SunLong</span> <span class="o">=</span> <span class="n">calcSunApparentLong</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">tananum</span> <span class="o">=</span> <span class="p">(</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">SunLong</span><span class="p">))</span> <span class="p">)</span>
+	<span class="n">tanadenom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">SunLong</span><span class="p">))</span>
+	<span class="n">alpha</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">amath</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">tananum</span><span class="p">,</span> <span class="n">tanadenom</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">alpha</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcSunDeclination"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunDeclination">[docs]</a><span class="k">def</span> <span class="nf">calcSunDeclination</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the declination of the sun (in degrees)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">e</span> <span class="o">=</span> <span class="n">calcObliquityCorrection</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">SunLong</span> <span class="o">=</span> <span class="n">calcSunApparentLong</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">sint</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">SunLong</span><span class="p">))</span>
+	<span class="n">theta</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">sint</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">theta</span> <span class="c"># in degrees</span>
+
+</div>
+<div class="viewcode-block" id="calcEquationOfTime"><a class="viewcode-back" href="../calcSun.html#calcSun.calcEquationOfTime">[docs]</a><span class="k">def</span> <span class="nf">calcEquationOfTime</span><span class="p">(</span> <span class="n">t</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)	</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">epsilon</span> <span class="o">=</span> <span class="n">calcObliquityCorrection</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">l0</span> <span class="o">=</span> <span class="n">calcGeomMeanLongSun</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">e</span> <span class="o">=</span> <span class="n">calcEccentricityEarthOrbit</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">m</span> <span class="o">=</span> <span class="n">calcGeomMeanAnomalySun</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">epsilon</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
+	<span class="n">y</span> <span class="o">*=</span> <span class="n">y</span>
+
+	<span class="n">sin2l0</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">l0</span><span class="p">))</span>
+	<span class="n">sinm</span>   <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+	<span class="n">cos2l0</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">l0</span><span class="p">))</span>
+	<span class="n">sin4l0</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">l0</span><span class="p">))</span>
+	<span class="n">sin2m</span>  <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">m</span><span class="p">))</span>
+
+	<span class="n">Etime</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">sin2l0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">e</span> <span class="o">*</span> <span class="n">sinm</span> <span class="o">+</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">e</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">sinm</span> <span class="o">*</span> <span class="n">cos2l0</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">sin4l0</span> <span class="o">-</span> <span class="mf">1.25</span> <span class="o">*</span> <span class="n">e</span> <span class="o">*</span> <span class="n">e</span> <span class="o">*</span> <span class="n">sin2m</span>
+	<span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">Etime</span><span class="o">*</span><span class="mf">4.0</span><span class="p">)</span> <span class="c"># in minutes of time</span>
+
+</div>
+<div class="viewcode-block" id="calcHourAngleSunrise"><a class="viewcode-back" href="../calcSun.html#calcSun.calcHourAngleSunrise">[docs]</a><span class="k">def</span> <span class="nf">calcHourAngleSunrise</span><span class="p">(</span> <span class="n">lat</span><span class="p">,</span> <span class="n">solarDec</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate the hour angle of the sun at sunrise for the latitude (in radians)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">latRad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+	<span class="n">sdRad</span>  <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">solarDec</span><span class="p">)</span>
+	<span class="n">HAarg</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mf">90.833</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">latRad</span><span class="p">)</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sdRad</span><span class="p">)</span> <span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">latRad</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">sdRad</span><span class="p">)</span>
+	<span class="n">HA</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">HAarg</span><span class="p">);</span>
+	<span class="k">return</span> <span class="n">HA</span> <span class="c"># in radians (for sunset, use -HA)</span>
+
+</div>
+<div class="viewcode-block" id="calcAzEl"><a class="viewcode-back" href="../calcSun.html#calcSun.calcAzEl">[docs]</a><span class="k">def</span> <span class="nf">calcAzEl</span><span class="p">(</span> <span class="n">t</span><span class="p">,</span> <span class="n">localtime</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">,</span> <span class="n">zone</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate sun azimuth and zenith angle</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">eqTime</span> <span class="o">=</span> <span class="n">calcEquationOfTime</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">theta</span>  <span class="o">=</span> <span class="n">calcSunDeclination</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+	<span class="n">solarTimeFix</span> <span class="o">=</span> <span class="n">eqTime</span> <span class="o">+</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">longitude</span> <span class="o">-</span> <span class="mf">60.0</span> <span class="o">*</span> <span class="n">zone</span>
+	<span class="n">earthRadVec</span> <span class="o">=</span> <span class="n">calcSunRadVector</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+	<span class="n">trueSolarTime</span> <span class="o">=</span> <span class="n">localtime</span> <span class="o">+</span> <span class="n">solarTimeFix</span>
+	<span class="k">while</span> <span class="n">trueSolarTime</span> <span class="o">&gt;</span> <span class="mi">1440</span><span class="p">:</span>
+		<span class="n">trueSolarTime</span> <span class="o">-=</span> <span class="mf">1440.</span>
+
+	<span class="n">hourAngle</span> <span class="o">=</span> <span class="n">trueSolarTime</span> <span class="o">/</span> <span class="mf">4.0</span> <span class="o">-</span> <span class="mf">180.0</span>
+	<span class="k">if</span> <span class="n">hourAngle</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">180.</span><span class="p">:</span> 
+		<span class="n">hourAngle</span> <span class="o">+=</span> <span class="mf">360.0</span>
+
+	<span class="n">haRad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">hourAngle</span><span class="p">)</span>
+	<span class="n">csz</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">latitude</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">latitude</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">haRad</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">csz</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span> 
+		<span class="n">csz</span> <span class="o">=</span> <span class="mf">1.0</span> 
+	<span class="k">elif</span> <span class="n">csz</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">:</span> 
+		<span class="n">csz</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+	<span class="n">zenith</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">csz</span><span class="p">))</span>
+	<span class="n">azDenom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">latitude</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">zenith</span><span class="p">))</span>
+	<span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">azDenom</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">:</span> 
+		<span class="n">azRad</span> <span class="o">=</span> <span class="p">((</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">latitude</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">zenith</span><span class="p">))</span> <span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">theta</span><span class="p">)))</span> <span class="o">/</span> <span class="n">azDenom</span>
+		<span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">azRad</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span> 
+			<span class="k">if</span> <span class="n">azRad</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span> 
+				<span class="n">azRad</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> 
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">azRad</span> <span class="o">=</span> <span class="mf">1.0</span>
+		
+		<span class="n">azimuth</span> <span class="o">=</span> <span class="mf">180.0</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">azRad</span><span class="p">))</span>
+		<span class="k">if</span> <span class="n">hourAngle</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span> 
+			<span class="n">azimuth</span> <span class="o">=</span> <span class="o">-</span><span class="n">azimuth</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">latitude</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span> 
+			<span class="n">azimuth</span> <span class="o">=</span> <span class="mf">180.0</span> 
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">azimuth</span> <span class="o">=</span> <span class="mf">0.0</span>
+	<span class="k">if</span> <span class="n">azimuth</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span> 
+		<span class="n">azimuth</span> <span class="o">+=</span> <span class="mf">360.0</span>
+	<span class="n">exoatmElevation</span> <span class="o">=</span> <span class="mf">90.0</span> <span class="o">-</span> <span class="n">zenith</span>
+
+	<span class="c"># Atmospheric Refraction correction</span>
+	<span class="k">if</span> <span class="n">exoatmElevation</span> <span class="o">&gt;</span> <span class="mf">85.0</span><span class="p">:</span> 
+		<span class="n">refractionCorrection</span> <span class="o">=</span> <span class="mf">0.0</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">te</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">exoatmElevation</span><span class="p">))</span>
+		<span class="k">if</span> <span class="n">exoatmElevation</span> <span class="o">&gt;</span> <span class="mf">5.0</span><span class="p">:</span> 
+			<span class="n">refractionCorrection</span> <span class="o">=</span> <span class="mf">58.1</span> <span class="o">/</span> <span class="n">te</span> <span class="o">-</span> <span class="mf">0.07</span> <span class="o">/</span> <span class="p">(</span><span class="n">te</span><span class="o">*</span><span class="n">te</span><span class="o">*</span><span class="n">te</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.000086</span> <span class="o">/</span> <span class="p">(</span><span class="n">te</span><span class="o">*</span><span class="n">te</span><span class="o">*</span><span class="n">te</span><span class="o">*</span><span class="n">te</span><span class="o">*</span><span class="n">te</span><span class="p">)</span> 
+		<span class="k">elif</span> <span class="n">exoatmElevation</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">0.575</span><span class="p">:</span> 
+			<span class="n">refractionCorrection</span> <span class="o">=</span> <span class="mf">1735.0</span> <span class="o">+</span> <span class="n">exoatmElevation</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">518.2</span> <span class="o">+</span> <span class="n">exoatmElevation</span> <span class="o">*</span> <span class="p">(</span><span class="mf">103.4</span> <span class="o">+</span> <span class="n">exoatmElevation</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">12.79</span> <span class="o">+</span> <span class="n">exoatmElevation</span> <span class="o">*</span> <span class="mf">0.711</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span> 
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">refractionCorrection</span> <span class="o">=</span> <span class="o">-</span><span class="mf">20.774</span> <span class="o">/</span> <span class="n">te</span>
+		<span class="n">refractionCorrection</span> <span class="o">=</span> <span class="n">refractionCorrection</span> <span class="o">/</span> <span class="mf">3600.0</span>
+
+	<span class="n">solarZen</span> <span class="o">=</span> <span class="n">zenith</span> <span class="o">-</span> <span class="n">refractionCorrection</span>
+	
+	<span class="k">return</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">solarZen</span>
+
+</div>
+<div class="viewcode-block" id="calcSolNoonUTC"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSolNoonUTC">[docs]</a><span class="k">def</span> <span class="nf">calcSolNoonUTC</span><span class="p">(</span> <span class="n">jd</span><span class="p">,</span> <span class="n">longitude</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">tnoon</span> <span class="o">=</span> <span class="n">calcTimeJulianCent</span><span class="p">(</span><span class="n">jd</span><span class="p">)</span>
+	<span class="n">eqTime</span> <span class="o">=</span> <span class="n">calcEquationOfTime</span><span class="p">(</span><span class="n">tnoon</span><span class="p">)</span>
+	<span class="n">solNoonUTC</span> <span class="o">=</span> <span class="mf">720.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">longitude</span> <span class="o">*</span> <span class="mf">4.</span><span class="p">)</span> <span class="o">-</span> <span class="n">eqTime</span> <span class="c"># in minutes</span>
+	<span class="k">return</span> <span class="n">solNoonUTC</span>
+
+</div>
+<div class="viewcode-block" id="calcSolNoon"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSolNoon">[docs]</a><span class="k">def</span> <span class="nf">calcSolNoon</span><span class="p">(</span> <span class="n">jd</span><span class="p">,</span> <span class="n">longitude</span><span class="p">,</span> <span class="n">timezone</span><span class="p">,</span> <span class="n">dst</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate time of solar noon the given day at the given location on earth (in minute)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">timeUTC</span>    <span class="o">=</span> <span class="n">calcSolNoonUTC</span><span class="p">(</span><span class="n">jd</span><span class="p">,</span> <span class="n">longitude</span><span class="p">)</span>
+	<span class="n">newTimeUTC</span> <span class="o">=</span> <span class="n">calcSolNoonUTC</span><span class="p">(</span><span class="n">jd</span> <span class="o">+</span> <span class="n">timeUTC</span><span class="o">/</span><span class="mf">1440.0</span><span class="p">,</span> <span class="n">longitude</span><span class="p">)</span>
+	<span class="n">solNoonLocal</span> <span class="o">=</span> <span class="n">newTimeUTC</span> <span class="o">+</span> <span class="p">(</span><span class="n">timezone</span><span class="o">*</span><span class="mf">60.0</span><span class="p">)</span> <span class="c"># in minutes</span>
+	<span class="k">if</span> <span class="n">dst</span><span class="p">:</span> 
+		<span class="n">solNoonLocal</span> <span class="o">+=</span> <span class="mf">60.0</span>
+	<span class="k">return</span> <span class="n">solNoonLocal</span>
+
+</div>
+<div class="viewcode-block" id="calcSunRiseSetUTC"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunRiseSetUTC">[docs]</a><span class="k">def</span> <span class="nf">calcSunRiseSetUTC</span><span class="p">(</span> <span class="n">jd</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate sunrise/sunset the given day at the given location on earth (in minute since 0 UTC)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">t</span> <span class="o">=</span> <span class="n">calcTimeJulianCent</span><span class="p">(</span><span class="n">jd</span><span class="p">)</span>
+	<span class="n">eqTime</span> <span class="o">=</span> <span class="n">calcEquationOfTime</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">solarDec</span> <span class="o">=</span> <span class="n">calcSunDeclination</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+	<span class="n">hourAngle</span> <span class="o">=</span> <span class="n">calcHourAngleSunrise</span><span class="p">(</span><span class="n">latitude</span><span class="p">,</span> <span class="n">solarDec</span><span class="p">)</span>
+	<span class="c"># Rise time</span>
+	<span class="n">delta</span> <span class="o">=</span> <span class="n">longitude</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">hourAngle</span><span class="p">)</span>
+	<span class="n">riseTimeUTC</span> <span class="o">=</span> <span class="mf">720.</span> <span class="o">-</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span> <span class="o">-</span> <span class="n">eqTime</span> <span class="c"># in minutes</span>
+	<span class="c"># Set time</span>
+	<span class="n">hourAngle</span> <span class="o">=</span> <span class="o">-</span><span class="n">hourAngle</span>
+	<span class="n">delta</span> <span class="o">=</span> <span class="n">longitude</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">hourAngle</span><span class="p">)</span>
+	<span class="n">setTimeUTC</span> <span class="o">=</span> <span class="mf">720.</span> <span class="o">-</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span> <span class="o">-</span> <span class="n">eqTime</span> <span class="c"># in minutes</span>
+	<span class="k">return</span> <span class="n">riseTimeUTC</span><span class="p">,</span> <span class="n">setTimeUTC</span>
+
+</div>
+<div class="viewcode-block" id="calcSunRiseSet"><a class="viewcode-back" href="../calcSun.html#calcSun.calcSunRiseSet">[docs]</a><span class="k">def</span> <span class="nf">calcSunRiseSet</span><span class="p">(</span> <span class="n">jd</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">,</span> <span class="n">timezone</span><span class="p">,</span> <span class="n">dst</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate sunrise/sunset the given day at the given location on earth (in minutes)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">rtimeUTC</span><span class="p">,</span> <span class="n">stimeUTC</span> <span class="o">=</span> <span class="n">calcSunRiseSetUTC</span><span class="p">(</span><span class="n">jd</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">)</span>
+	<span class="c"># calculate local sunrise time (in minutes)</span>
+	<span class="n">rnewTimeUTC</span><span class="p">,</span> <span class="n">snewTimeUTC</span> <span class="o">=</span> <span class="n">calcSunRiseSetUTC</span><span class="p">(</span><span class="n">jd</span> <span class="o">+</span> <span class="n">rtimeUTC</span><span class="o">/</span><span class="mf">1440.0</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">)</span>
+	<span class="n">rtimeLocal</span> <span class="o">=</span> <span class="n">rnewTimeUTC</span> <span class="o">+</span> <span class="p">(</span><span class="n">timezone</span> <span class="o">*</span> <span class="mf">60.0</span><span class="p">)</span>
+	<span class="n">rtimeLocal</span> <span class="o">+=</span> <span class="mf">60.0</span> <span class="k">if</span> <span class="n">dst</span> <span class="k">else</span> <span class="mf">0.0</span>
+	<span class="k">if</span> <span class="n">rtimeLocal</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">rtimeLocal</span> <span class="o">&gt;=</span> <span class="mf">1440.0</span><span class="p">:</span> 
+		<span class="n">jday</span> <span class="o">=</span> <span class="n">jd</span>
+		<span class="n">increment</span> <span class="o">=</span> <span class="mf">1.</span> <span class="k">if</span> <span class="n">rtimeLocal</span> <span class="o">&lt;</span> <span class="mf">0.</span> <span class="k">else</span> <span class="o">-</span><span class="mf">1.</span>
+		<span class="k">while</span> <span class="n">rtimeLocal</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">rtimeLocal</span> <span class="o">&gt;=</span> <span class="mf">1440.0</span><span class="p">:</span>
+			<span class="n">rtimeLocal</span> <span class="o">+=</span> <span class="n">increment</span> <span class="o">*</span> <span class="mf">1440.0</span>
+			<span class="n">jday</span> <span class="o">-=</span> <span class="n">increment</span>
+	<span class="c"># calculate local sunset time (in minutes)</span>
+	<span class="n">rnewTimeUTC</span><span class="p">,</span> <span class="n">snewTimeUTC</span> <span class="o">=</span> <span class="n">calcSunRiseSetUTC</span><span class="p">(</span><span class="n">jd</span> <span class="o">+</span> <span class="n">stimeUTC</span><span class="o">/</span><span class="mf">1440.0</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">)</span>
+	<span class="n">stimeLocal</span> <span class="o">=</span> <span class="n">snewTimeUTC</span> <span class="o">+</span> <span class="p">(</span><span class="n">timezone</span> <span class="o">*</span> <span class="mf">60.0</span><span class="p">)</span>
+	<span class="n">stimeLocal</span> <span class="o">+=</span> <span class="mf">60.0</span> <span class="k">if</span> <span class="n">dst</span> <span class="k">else</span> <span class="mf">0.0</span>
+	<span class="k">if</span> <span class="n">stimeLocal</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">stimeLocal</span> <span class="o">&gt;=</span> <span class="mf">1440.0</span><span class="p">:</span> 
+		<span class="n">jday</span> <span class="o">=</span> <span class="n">jd</span>
+		<span class="n">increment</span> <span class="o">=</span> <span class="mf">1.</span> <span class="k">if</span> <span class="n">stimeLocal</span> <span class="o">&lt;</span> <span class="mf">0.</span> <span class="k">else</span> <span class="o">-</span><span class="mf">1.</span>
+		<span class="k">while</span> <span class="n">stimeLocal</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">stimeLocal</span> <span class="o">&gt;=</span> <span class="mf">1440.0</span><span class="p">:</span>
+			<span class="n">stimeLocal</span> <span class="o">+=</span> <span class="n">increment</span> <span class="o">*</span> <span class="mf">1440.0</span>
+			<span class="n">jday</span> <span class="o">-=</span> <span class="n">increment</span>
+	<span class="c"># return</span>
+	<span class="k">return</span> <span class="n">rtimeLocal</span><span class="p">,</span> <span class="n">stimeLocal</span>
+
+</div>
+<div class="viewcode-block" id="calcTerminator"><a class="viewcode-back" href="../calcSun.html#calcSun.calcTerminator">[docs]</a><span class="k">def</span> <span class="nf">calcTerminator</span><span class="p">(</span> <span class="n">jd</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">,</span> <span class="n">longitudes</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits</span>
+<span class="sd">Note that for plotting only, basemap has a built-in terminator</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">t</span> <span class="o">=</span> <span class="n">calcTimeJulianCent</span><span class="p">(</span><span class="n">jd</span><span class="p">)</span>
+	<span class="n">ut</span> <span class="o">=</span> <span class="p">(</span> <span class="n">jd</span> <span class="o">-</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">jd</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="p">)</span><span class="o">*</span><span class="mf">1440.</span>
+	<span class="n">npoints</span> <span class="o">=</span> <span class="mi">100</span>
+	<span class="n">zen</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">npoints</span><span class="p">,</span><span class="n">npoints</span><span class="p">))</span>
+	<span class="n">lats</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">latitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">latitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">npoints</span><span class="p">)</span>
+	<span class="n">lons</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">longitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">longitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">npoints</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">ilat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npoints</span><span class="p">):</span>
+		<span class="k">for</span> <span class="n">ilon</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npoints</span><span class="p">):</span>
+			<span class="n">az</span><span class="p">,</span><span class="n">el</span> <span class="o">=</span> <span class="n">calcAzEl</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ut</span><span class="p">,</span> <span class="n">lats</span><span class="p">[</span><span class="n">ilat</span><span class="p">],</span> <span class="n">lons</span><span class="p">[</span><span class="n">ilon</span><span class="p">],</span> <span class="mf">0.</span><span class="p">)</span>
+			<span class="n">zen</span><span class="p">[</span><span class="n">ilat</span><span class="p">,</span><span class="n">ilon</span><span class="p">]</span> <span class="o">=</span> <span class="n">el</span>
+	<span class="n">zmin</span> <span class="o">=</span> <span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="mf">90.</span><span class="o">-</span><span class="n">zen</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+	<span class="n">inds</span> <span class="o">=</span> <span class="p">(</span><span class="n">zmin</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">zmin</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">zmin</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">term</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">zmin</span><span class="p">[</span><span class="n">inds</span><span class="p">]),</span><span class="mi">2</span><span class="p">))</span>
+	<span class="n">term</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">lats</span><span class="p">[</span><span class="n">zmin</span><span class="p">[</span><span class="n">inds</span><span class="p">]]</span>
+	<span class="n">term</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lons</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
+	<span class="k">return</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">zen</span><span class="p">,</span> <span class="n">term</span>
+
+</div>
+<div class="viewcode-block" id="getJD"><a class="viewcode-back" href="../calcSun.html#calcSun.getJD">[docs]</a><span class="k">def</span> <span class="nf">getJD</span><span class="p">(</span> <span class="n">date</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calculate julian date for given day, month and year</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">if</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span> 
+		<span class="n">date</span><span class="o">.</span><span class="n">year</span> <span class="o">-=</span> <span class="mi">1</span>
+		<span class="n">date</span><span class="o">.</span><span class="n">month</span> <span class="o">+=</span> <span class="mi">12</span>
+
+	<span class="n">A</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="o">/</span><span class="mf">100.</span><span class="p">)</span>
+	<span class="n">B</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">-</span> <span class="n">A</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">A</span><span class="o">/</span><span class="mf">4.</span><span class="p">)</span>
+	<span class="n">jd</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">365.25</span><span class="o">*</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mf">4716.</span><span class="p">))</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">30.6001</span><span class="o">*</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">date</span><span class="o">.</span><span class="n">day</span> <span class="o">+</span> <span class="n">B</span> <span class="o">-</span> <span class="mf">1524.5</span>
+	<span class="n">jd</span> <span class="o">=</span> <span class="n">jd</span> <span class="o">+</span> <span class="n">date</span><span class="o">.</span><span class="n">hour</span><span class="o">/</span><span class="mf">24.0</span> <span class="o">+</span> <span class="n">date</span><span class="o">.</span><span class="n">minute</span><span class="o">/</span><span class="mf">1440.0</span> <span class="o">+</span> <span class="n">date</span><span class="o">.</span><span class="n">second</span><span class="o">/</span><span class="mf">86400.0</span>
+	<span class="k">return</span> <span class="n">jd</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>/pydarn/io/pygridIo.py &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="index.html" />
+    <link rel="up" title="/pydarn/io" href="io.html" />
+    <link rel="next" title="/pydarn/plot" href="plot.html" />
+    <link rel="prev" title="/pydarn/io/radDataRead.py" href="radDataRead.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plot.html" title="/pydarn/plot"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="radDataRead.html" title="/pydarn/io/radDataRead.py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="io.html" accesskey="U">/pydarn/io</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pydarn-io-pygridio-py">
+<h1>/pydarn/io/pygridIo.py<a class="headerlink" href="#pydarn-io-pygridio-py" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-pygridIo"></span><dl class="function">
+<dt id="pygridIo.closePygrid">
+<tt class="descclassname">pygridIo.</tt><tt class="descname">closePygrid</tt><big>(</big><em>myFile</em><big>)</big><a class="reference internal" href="_modules/pygridIo.html#closePygrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridIo.closePygrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridIo
+FUNCTION: closePygrid(dateStr,rad,action):</p>
+<p>closes a pygrid file</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>myFile: the file to be closed</dd>
+<dt>OUTPUTS:</dt>
+<dd>NONE</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygridIo.locatePygridFile">
+<tt class="descclassname">pygridIo.</tt><tt class="descname">locatePygridFile</tt><big>(</big><em>dateStr</em>, <em>ext</em><big>)</big><a class="reference internal" href="_modules/pygridIo.html#locatePygridFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridIo.locatePygridFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridIo
+FUNCTION: locatePygridFile(dateStr,ext):</p>
+<p>locates a pygrid file for the given dateStr and ext</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>dateStr: the date in the file title, eg &#8216;20110101&#8217;
+ext: the extension in the filename, eg &#8216;bks&#8217;, &#8216;cve&#8217;, &#8216;north&#8217;, etc.</dd>
+<dt>OUTPUTS:</dt>
+<dd><dl class="first last docutils">
+<dt>fileName: the complete filename (including path) of the</dt>
+<dd>pygrid file</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygridIo.openPygrid">
+<tt class="descclassname">pygridIo.</tt><tt class="descname">openPygrid</tt><big>(</big><em>fileName</em>, <em>action</em><big>)</big><a class="reference internal" href="_modules/pygridIo.html#openPygrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridIo.openPygrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.io.pygridIo
+FUNCTION: openPygrid(dateStr,rad,action):</p>
+<p>opens a pygrid file for reading or writing or appending</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>fileName: the file to open
+action: the action to be done, e.g. &#8216;w&#8217;, &#8216;a&#8217;, etc.</dd>
+<dt>OUTPUTS:</dt>
+<dd>myFile: an h5py file instance</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygridIo.readPygridRec">
+<tt class="descclassname">pygridIo.</tt><tt class="descname">readPygridRec</tt><big>(</big><em>myFile</em>, <em>myGrid</em>, <em>sEpoch</em>, <em>eEpoch</em><big>)</big><a class="reference internal" href="_modules/pygridIo.html#readPygridRec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridIo.readPygridRec" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.io.gridIo
+FUNCTION: readPygridRec(myFile):</p>
+<p>reads pygrid records from sEpoch to eEpoch into a grid structure</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd><p class="first">myFile: the pygrid file to read from
+myGrid: the pydarn.proc.pygridLib.pygrid object to be filled
+sEpoch: read times &gt;= this time (in epoch)
+eEpoch: read times &lt; this time (in epoch)</p>
+<blockquote class="last">
+<div>NOTE: if eEpoch &lt;= sEpoch, only the first record after 
+sEpoch will be read</div></blockquote>
+</dd>
+<dt>OUTPUTS:</dt>
+<dd>outGrid: the pygrid object that has been filled</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygridIo.writePygridRec">
+<tt class="descclassname">pygridIo.</tt><tt class="descname">writePygridRec</tt><big>(</big><em>myFile</em>, <em>myGrid</em><big>)</big><a class="reference internal" href="_modules/pygridIo.html#writePygridRec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridIo.writePygridRec" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.io.pygridIo
+FUNCTION: writePygridRec(myFile,myGrid):</p>
+<p>writes a single grid record to a pygrid file</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>myFile: the pygrid file to write to
+myGrid: the pydarn.proc.gridLib.grid object to be written</dd>
+<dt>OUTPUTS:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="radDataRead.html"
+                        title="previous chapter">/pydarn/io/radDataRead.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot.html"
+                        title="next chapter">/pydarn/plot</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pygridIo.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plot.html" title="/pydarn/plot"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="radDataRead.html" title="/pydarn/io/radDataRead.py"
+             >previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="io.html" >/pydarn/io</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

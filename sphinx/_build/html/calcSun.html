@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>/utils/calcSun.py &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="index.html" />
+    <link rel="up" title="/utils" href="utils.html" />
+    <link rel="next" title="/utils/geoPack.py" href="geoPack.html" />
+    <link rel="prev" title="/utils/parseTime.py" href="parseTime.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geoPack.html" title="/utils/geoPack.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parseTime.html" title="/utils/parseTime.py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="utils.html" accesskey="U">/utils</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-calcsun-py">
+<h1>/utils/calcSun.py<a class="headerlink" href="#utils-calcsun-py" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-calcSun"></span><div class="section" id="calcsun">
+<h2>calcSun<a class="headerlink" href="#calcsun" title="Permalink to this headline">¶</a></h2>
+<p>This subpackage contains def to calculate sunrise/sunset</p>
+<dl class="docutils">
+<dt>This includes the following defs:</dt>
+<dd><dl class="first last docutils">
+<dt>getJD( date )</dt>
+<dd>calculate the julian date from a python datetime object</dd>
+<dt>calcTimeJulianCent( jd )</dt>
+<dd>convert Julian Day to centuries since J2000.0.</dd>
+<dt>calcGeomMeanLongSun( t )</dt>
+<dd>calculate the Geometric Mean Longitude of the Sun (in degrees)</dd>
+<dt>calcGeomMeanAnomalySun( t )</dt>
+<dd>calculate the Geometric Mean Anomaly of the Sun (in degrees)</dd>
+<dt>calcEccentricityEarthOrbit( t )</dt>
+<dd>calculate the eccentricity of earth&#8217;s orbit (unitless)</dd>
+<dt>calcSunEqOfCenter( t )</dt>
+<dd>calculate the equation of center for the sun (in degrees)</dd>
+<dt>calcSunTrueLong( t )</dt>
+<dd>calculate the true longitude of the sun (in degrees)</dd>
+<dt>calcSunTrueAnomaly( t )</dt>
+<dd>calculate the true anamoly of the sun (in degrees)</dd>
+<dt>calcSunRadVector( t )</dt>
+<dd>calculate the distance to the sun in AU (in degrees)</dd>
+<dt>calcSunApparentLong( t )</dt>
+<dd>calculate the apparent longitude of the sun (in degrees)</dd>
+<dt>calcMeanObliquityOfEcliptic( t )</dt>
+<dd>calculate the mean obliquity of the ecliptic (in degrees)</dd>
+<dt>calcObliquityCorrection( t )</dt>
+<dd>calculate the corrected obliquity of the ecliptic (in degrees)</dd>
+<dt>calcSunRtAscension( t )</dt>
+<dd>calculate the right ascension of the sun (in degrees)</dd>
+<dt>calcSunDeclination( t )</dt>
+<dd>calculate the declination of the sun (in degrees)</dd>
+<dt>calcEquationOfTime( t )</dt>
+<dd>calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)</dd>
+<dt>calcHourAngleSunrise( lat, solarDec )</dt>
+<dd>calculate the hour angle of the sun at sunrise for the latitude (in radians)</dd>
+<dt>calcAzEl( output, t, localtime, latitude, longitude, zone )</dt>
+<dd>calculate sun azimuth and zenith angle</dd>
+<dt>calcSolNoonUTC( jd, longitude )</dt>
+<dd>calculate time of solar noon the given day at the given location on earth (in minutes since 0 UTC)</dd>
+<dt>calcSolNoon( jd, longitude, timezone, dst )</dt>
+<dd>calculate time of solar noon the given day at the given location on earth (in minutes)</dd>
+<dt>calcSunRiseSetUTC( jd, latitude, longitude )</dt>
+<dd>calculate sunrise/sunset the given day at the given location on earth (in minutes since 0 UTC)</dd>
+<dt>calcSunRiseSet( jd, latitude, longitude, timezone, dst )</dt>
+<dd>calculate sunrise/sunset the given day at the given location on earth (in minutes)</dd>
+<dt>calcTerminator( jd, latitudes, longitudes )</dt>
+<dd>calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
+note that for plotting only, basemap has a built-in terminator</dd>
+</dl>
+</dd>
+</dl>
+<p>Source: <a class="reference external" href="http://www.esrl.noaa.gov/gmd/grad/solcalc/">http://www.esrl.noaa.gov/gmd/grad/solcalc/</a>
+Translated to Python by Sebastien de Larquier
+<strong>***************************</strong></p>
+<dl class="function">
+<dt id="calcSun.calcAzEl">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcAzEl</tt><big>(</big><em>t</em>, <em>localtime</em>, <em>latitude</em>, <em>longitude</em>, <em>zone</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcAzEl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcAzEl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate sun azimuth and zenith angle</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcEccentricityEarthOrbit">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcEccentricityEarthOrbit</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcEccentricityEarthOrbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcEccentricityEarthOrbit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the eccentricity of earth&#8217;s orbit (unitless)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcEquationOfTime">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcEquationOfTime</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcEquationOfTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcEquationOfTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcGeomMeanAnomalySun">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcGeomMeanAnomalySun</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcGeomMeanAnomalySun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcGeomMeanAnomalySun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Geometric Mean Anomaly of the Sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcGeomMeanLongSun">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcGeomMeanLongSun</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcGeomMeanLongSun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcGeomMeanLongSun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Geometric Mean Longitude of the Sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcHourAngleSunrise">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcHourAngleSunrise</tt><big>(</big><em>lat</em>, <em>solarDec</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcHourAngleSunrise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcHourAngleSunrise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the hour angle of the sun at sunrise for the latitude (in radians)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcMeanObliquityOfEcliptic">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcMeanObliquityOfEcliptic</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcMeanObliquityOfEcliptic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcMeanObliquityOfEcliptic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean obliquity of the ecliptic (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcObliquityCorrection">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcObliquityCorrection</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcObliquityCorrection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcObliquityCorrection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the corrected obliquity of the ecliptic (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSolNoon">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSolNoon</tt><big>(</big><em>jd</em>, <em>longitude</em>, <em>timezone</em>, <em>dst</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSolNoon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSolNoon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate time of solar noon the given day at the given location on earth (in minute)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSolNoonUTC">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSolNoonUTC</tt><big>(</big><em>jd</em>, <em>longitude</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSolNoonUTC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSolNoonUTC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunApparentLong">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunApparentLong</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunApparentLong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunApparentLong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the apparent longitude of the sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunDeclination">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunDeclination</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunDeclination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunDeclination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the declination of the sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunEqOfCenter">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunEqOfCenter</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunEqOfCenter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunEqOfCenter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the equation of center for the sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunRadVector">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunRadVector</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunRadVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunRadVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the distance to the sun in AU (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunRiseSet">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunRiseSet</tt><big>(</big><em>jd</em>, <em>latitude</em>, <em>longitude</em>, <em>timezone</em>, <em>dst</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunRiseSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunRiseSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate sunrise/sunset the given day at the given location on earth (in minutes)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunRiseSetUTC">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunRiseSetUTC</tt><big>(</big><em>jd</em>, <em>latitude</em>, <em>longitude</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunRiseSetUTC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunRiseSetUTC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate sunrise/sunset the given day at the given location on earth (in minute since 0 UTC)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunRtAscension">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunRtAscension</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunRtAscension"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunRtAscension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the right ascension of the sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunTrueAnomaly">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunTrueAnomaly</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunTrueAnomaly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunTrueAnomaly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the true anamoly of the sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcSunTrueLong">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcSunTrueLong</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcSunTrueLong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcSunTrueLong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the true longitude of the sun (in degrees)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcTerminator">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcTerminator</tt><big>(</big><em>jd</em>, <em>latitudes</em>, <em>longitudes</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcTerminator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcTerminator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
+Note that for plotting only, basemap has a built-in terminator</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.calcTimeJulianCent">
+<tt class="descclassname">calcSun.</tt><tt class="descname">calcTimeJulianCent</tt><big>(</big><em>jd</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#calcTimeJulianCent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.calcTimeJulianCent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Julian Day to centuries since J2000.0.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="calcSun.getJD">
+<tt class="descclassname">calcSun.</tt><tt class="descname">getJD</tt><big>(</big><em>date</em><big>)</big><a class="reference internal" href="_modules/calcSun.html#getJD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calcSun.getJD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate julian date for given day, month and year</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">/utils/calcSun.py</a><ul>
+<li><a class="reference internal" href="#calcsun">calcSun</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parseTime.html"
+                        title="previous chapter">/utils/parseTime.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geoPack.html"
+                        title="next chapter">/utils/geoPack.py</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/calcSun.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geoPack.html" title="/utils/geoPack.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parseTime.html" title="/utils/parseTime.py"
+             >previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="utils.html" >/utils</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>/pydarn/plot/map.py &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="index.html" />
+    <link rel="up" title="/pydarn/plot" href="plot.html" />
+    <link rel="next" title="/pydarn/plot/rti.py" href="rti.html" />
+    <link rel="prev" title="/pydarn/plot" href="plot.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rti.html" title="/pydarn/plot/rti.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot.html" title="/pydarn/plot"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="plot.html" accesskey="U">/pydarn/plot</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pydarn-plot-map-py">
+<h1>/pydarn/plot/map.py<a class="headerlink" href="#pydarn-plot-map-py" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-map"></span><div class="section" id="map">
+<h2>map<a class="headerlink" href="#map" title="Permalink to this headline">¶</a></h2>
+<p>Plot maps in polar projections</p>
+<dl class="docutils">
+<dt>This includes the following function(s):</dt>
+<dd><dl class="first docutils">
+<dt>plot</dt>
+<dd>Plot an empty map</dd>
+<dt>overlayRadar</dt>
+<dd>Overlay radar position and name on a map</dd>
+</dl>
+<p class="last"><a href="#id1"><span class="problematic" id="id2">*</span></a>overlayFov
+<a href="#id3"><span class="problematic" id="id4">*</span></a>overlayTerminator
+<a href="#id5"><span class="problematic" id="id6">*</span></a>overlayDaynight</p>
+</dd>
+</dl>
+<div class="section" id="created-by-sebastien">
+<h3>Created by Sebastien<a class="headerlink" href="#created-by-sebastien" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="map.map">
+<tt class="descclassname">map.</tt><tt class="descname">map</tt><big>(</big><em>limits=None</em>, <em>lon_0=290.0</em>, <em>hemi='north'</em>, <em>boundingLat=None</em>, <em>grid=True</em>, <em>fillContinents='grey'</em>, <em>fillOceans='None'</em>, <em>fillLakes='white'</em>, <em>coastLineWidth=0.0</em><big>)</big><a class="reference internal" href="_modules/map.html#map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#map.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot empty map</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>limits: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates
+lon_0: center meridian (default is -70E)
+hemi: &#8216;north&#8217; (default) or &#8216;south&#8217;
+boundingLat: bounding latitude (default it +/-20)
+grid: show/hide parallels and meridians grid
+fill_continents: continent color. Default is &#8216;grey&#8217;
+fill_water: water color. Default is &#8216;None&#8217;</dd>
+<dt>OUTPUTS:</dt>
+<dd>map: a Basemap object</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="map.overlayFov">
+<tt class="descclassname">map.</tt><tt class="descname">overlayFov</tt><big>(</big><em>Basemap</em>, <em>codes=None</em>, <em>ids=None</em>, <em>names=None</em>, <em>dateTime=None</em>, <em>coords='geo'</em>, <em>all=False</em>, <em>maxGate=None</em>, <em>fovColor=None</em>, <em>fovAlpha=0.2</em>, <em>zorder=2</em>, <em>lineColor='k'</em><big>)</big><a class="reference internal" href="_modules/map.html#overlayFov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#map.overlayFov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overlay FoV position(s) on map</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>Basemap: a python Basemap object on which to overplot the radar position(s)
+codes: a list of radar 3-letter codes to plot
+ids: a list of radar IDs to plot
+names: a list of radar names to plot
+dateTime: the date and time as a python datetime object
+coords: &#8216;geo&#8217; (default), &#8216;mag&#8217;, &#8216;mlt&#8217; (not implemented yest)
+all: set to true to plot all the radars (active ones)
+maxGate: Maximum number of gates to be plotted. Defaults to hdw.dat information.
+zorder: the overlay order number
+lineColor: FoV contour color
+fovColor: field of view fill color (integer between 0-255)
+fovAlpha: field of view fill color transparency</dd>
+</dl>
+<p>OUTPUTS:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="map.overlayRadar">
+<tt class="descclassname">map.</tt><tt class="descname">overlayRadar</tt><big>(</big><em>Basemap</em>, <em>codes=None</em>, <em>ids=None</em>, <em>names=None</em>, <em>dateTime=None</em>, <em>annotate=True</em>, <em>coords='geo'</em>, <em>all=False</em>, <em>zorder=2</em>, <em>markerColor='k'</em>, <em>markerSize=10</em>, <em>fontSize=10</em>, <em>xOffset=None</em><big>)</big><a class="reference internal" href="_modules/map.html#overlayRadar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#map.overlayRadar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overlay radar position(s) and name(s) on map</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>Basemap: a python Basemap object on which to overplot the radar position(s)
+codes: a list of radar 3-letter codes to plot
+ids: a list of radar IDs to plot
+names: a list of radar names to plot
+dateTime: the date and time as a python datetime object
+annotate: wether or not to show the radar(s) name(s)
+coords: &#8216;geo&#8217; (default), &#8216;mag&#8217;, &#8216;mlt&#8217; (not implemented yest)
+all: set to true to plot all the radars (active ones)
+zorder: the overlay order number
+markerColor: 
+markerSize: [point]
+fontSize: [point]
+xOffset: x-Offset of the annotation in map projection coordinates</dd>
+</dl>
+<p>OUTPUTS:</p>
+</dd></dl>
+
+</div>
+</div>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">map.</tt><tt class="descname">map</tt><a class="reference internal" href="_modules/map.html#map"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Plot empty map</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>limits: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates
+lon_0: center meridian (default is -70E)
+hemi: &#8216;north&#8217; (default) or &#8216;south&#8217;
+boundingLat: bounding latitude (default it +/-20)
+grid: show/hide parallels and meridians grid
+fill_continents: continent color. Default is &#8216;grey&#8217;
+fill_water: water color. Default is &#8216;None&#8217;</dd>
+<dt>OUTPUTS:</dt>
+<dd>map: a Basemap object</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">/pydarn/plot/map.py</a><ul>
+<li><a class="reference internal" href="#map">map</a><ul>
+<li><a class="reference internal" href="#created-by-sebastien">Created by Sebastien</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot.html"
+                        title="previous chapter">/pydarn/plot</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rti.html"
+                        title="next chapter">/pydarn/plot/rti.py</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/map.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rti.html" title="/pydarn/plot/rti.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plot.html" title="/pydarn/plot"
+             >previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="plot.html" >/pydarn/plot</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

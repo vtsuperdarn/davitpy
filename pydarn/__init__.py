@@ -18,10 +18,19 @@ This includes the following submodules:
 *******************************
 """
 
-#import utils
-import dmapio
-import radar
-import io
-import plot
-import proc
+
+
+from dmapio import *
+from radar import *
+from io import *
+from plot import *
+from proc import *
 from datetime import *
+from utils import *
+import dmapio 
+import radar 
+import io 
+import plot 
+import proc 
+import datetime 
+import utils

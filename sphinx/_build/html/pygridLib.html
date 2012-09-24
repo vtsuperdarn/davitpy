@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>/pydarn/proc/pygridLib.py &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="index.html" />
+    <link rel="up" title="/pydarn/proc" href="proc.html" />
+    <link rel="next" title="/mstid" href="mstid.html" />
+    <link rel="prev" title="/pydarn/proc" href="proc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mstid.html" title="/mstid"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="proc.html" title="/pydarn/proc"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="proc.html" accesskey="U">/pydarn/proc</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pydarn-proc-pygridlib-py">
+<h1>/pydarn/proc/pygridLib.py<a class="headerlink" href="#pydarn-proc-pygridlib-py" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-pygridLib"></span><div class="section" id="module-pydarn-proc-pygridlib">
+<h2>MODULE: pydarn.proc.pygridLib<a class="headerlink" href="#module-pydarn-proc-pygridlib" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the following functions:</p>
+<blockquote>
+<div><p>mergePygrid</p>
+<p>makePygrid</p>
+<p>drawPygridMap</p>
+</div></blockquote>
+<p>This module contains the following classes:</p>
+<blockquote>
+<div><p>pygrid</p>
+<p>latcell</p>
+<p>pygridCell</p>
+<p>mergeVec</p>
+<p>pygridVec</p>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="class">
+<dt id="pygridLib.latCell">
+<em class="property">class </em><tt class="descclassname">pygridLib.</tt><tt class="descname">latCell</tt><big>(</big><em>lat</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#latCell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.latCell" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>CLASS: latCell</p>
+<dl class="docutils">
+<dt>PURPOSE: a class to hold the information for a single latitude</dt>
+<dd>for a geospatial grid</dd>
+<dt>DECLARATION: </dt>
+<dd>myLat = pydarn.proc.pygridLib.latCell()</dd>
+<dt>MEMBERS:</dt>
+<dd><p class="first">nCells : the number of pygridCells contained in this latCell
+botLat : the lower latitude limit of thsi cell
+topLat : the upper latitude limit of this cell
+delLon : the step size (in degrees) in longitude for this</p>
+<blockquote>
+<div>latCell</div></blockquote>
+<p class="last">cells : a list of the pygridCell objects</p>
+</dd>
+</dl>
+<p>Written by AJ 20120907</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygridLib.makePygrid">
+<tt class="descclassname">pygridLib.</tt><tt class="descname">makePygrid</tt><big>(</big><em>dateStr, rad, time=[0, 2400], fileType='fitex', interval=120, vb=0, filter=1</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#makePygrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.makePygrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.prgridLib</p>
+<p>FUNCTION: makePygrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):</p>
+<p>PURPOSE: reads in fitted radar data and puts it into a geospatial grid</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd><p class="first">dateStr : a string containing the target date in yyyymmdd format
+rad: the 3 letter radar code, e.g. &#8216;bks&#8217;
+[time]: the range of time for which the file should be read in</p>
+<blockquote>
+<div>MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
+default = [0,2400]</div></blockquote>
+<p>[fileType]: &#8216;fitex&#8217;, &#8216;fitacf&#8217;, or &#8216;lmfit&#8217;; default = &#8216;fitex&#8217;
+[interval]: the time interval at which to do the gridding</p>
+<blockquote>
+<div>in seconds; default = 120</div></blockquote>
+<p class="last">[filter]: 1 to boxcar filter, 0 for normal data; default = 1</p>
+</dd>
+<dt>OUTPUTS:</dt>
+<dd>NONE</dd>
+</dl>
+<p>Written by AJ 20120807</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygridLib.mergePygrid">
+<tt class="descclassname">pygridLib.</tt><tt class="descname">mergePygrid</tt><big>(</big><em>dateStr, hemi='north', time=[0, 2400], interval=120, vb=0</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#mergePygrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.mergePygrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>FUNCTION: makePyrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):</p>
+<p>PURPOSE: reads in fitted radar data and puts it into a geospatial grid</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd><p class="first">dateStr : a string containing the target date in yyyymmdd format
+rad: the 3 letter radar code, e.g. &#8216;bks&#8217;
+[time]: the range of times for which the file should be read in</p>
+<blockquote>
+<div>MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
+default = [0,2400]</div></blockquote>
+<dl class="last docutils">
+<dt>[interval]: the time interval at which to do the merging</dt>
+<dd>in seconds; default = 120</dd>
+</dl>
+</dd>
+<dt>OUTPUTS:</dt>
+<dd>NONE</dd>
+</dl>
+<p>EXAMPLES:</p>
+<p>Written by AJ 20120807</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygridLib.mergeVec">
+<em class="property">class </em><tt class="descclassname">pygridLib.</tt><tt class="descname">mergeVec</tt><big>(</big><em>v</em>, <em>w_l</em>, <em>p_l</em>, <em>stid1</em>, <em>stid2</em>, <em>azm</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#mergeVec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.mergeVec" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>CLASS: mergeVec</p>
+<p>PURPOSE: a class defining a single merged vector</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myVel = pydarn.proc.pygridLib.pygridVec(v,w_l,p_l,stid,time,bmnum,rng,azm):</dd>
+<dt>MEMBERS:</dt>
+<dd>v : Doppler velocity
+w_l : spectral width
+p_l : power
+stids : station id list
+azm : azimuth of the measurement</dd>
+</dl>
+<p>Written by AJ 20120918</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygridLib.pygrid">
+<em class="property">class </em><tt class="descclassname">pygridLib.</tt><tt class="descname">pygrid</tt><a class="reference internal" href="_modules/pygridLib.html#pygrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>CLASS: pygrid</p>
+<dl class="docutils">
+<dt>PURPOSE:the top level class for defining a geospatial grid for </dt>
+<dd>velocity gridding</dd>
+<dt>DECLARATION: </dt>
+<dd>myGrid = pygrid()</dd>
+<dt>MEMBERS:</dt>
+<dd><p class="first">lats: a list of latCell objects
+nLats: an integer number equal to the number of</p>
+<blockquote>
+<div>items in the lats list</div></blockquote>
+<p class="last">delLat: the spacing between latCell objects
+nVecs: the number of gridded vectors in the pygrid object</p>
+</dd>
+</dl>
+<p>Written by AJ 20120907</p>
+<dl class="method">
+<dt id="pygridLib.pygrid.averageVecs">
+<tt class="descname">averageVecs</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygridLib.html#pygrid.averageVecs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygrid.averageVecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLibLib</p>
+<p>FUNCTION: pygrid.averageVecs():</p>
+<p>BELONGS TO: CLASS: pydarn.proc.pygridLibLib.pygrid</p>
+<p>PURPOSE: go through all grid cells and average the vectors in 
+cells with more than 1 vector</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>None</dd>
+<dt>OUTPUTS:</dt>
+<dd>None</dd>
+<dt>EXAMPLE:</dt>
+<dd>myGrid.averageVecs()</dd>
+</dl>
+<p>Written by AJ 20120917</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygridLib.pygrid.delVecs">
+<tt class="descname">delVecs</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygridLib.html#pygrid.delVecs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygrid.delVecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>FUNCTION: pygrid.delVecs():</p>
+<p>BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid</p>
+<p>PURPOSE: delete all vectors from a pygrid object</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>None</dd>
+<dt>OUTPUTS:</dt>
+<dd>None</dd>
+<dt>EXAMPLE:</dt>
+<dd>myGrid.delVecs()</dd>
+</dl>
+<p>Written by AJ 20120911</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygridLib.pygrid.enterData">
+<tt class="descname">enterData</tt><big>(</big><em>myData</em>, <em>coordsList</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#pygrid.enterData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygrid.enterData" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>FUNCTION pygrid.enterData():</p>
+<p>BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid</p>
+<p>PURPOSE: inserts radar fitacf data into a pygrid object</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd><p class="first">myData: a pydarn.io.radDataTypes.beam object
+coordsList: a 2D list containing the coords [lat,lon,azm]</p>
+<blockquote class="last">
+<div>corresponding to range-beam cells</div></blockquote>
+</dd>
+<dt>OUTPUTS:</dt>
+<dd>None</dd>
+<dt>EXAMPLE:</dt>
+<dd>myGrid.enterData(myBeam,myCoords)</dd>
+</dl>
+<p>Written by AJ 20120911</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygridLib.pygrid.mergeVecs">
+<tt class="descname">mergeVecs</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygridLib.html#pygrid.mergeVecs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygrid.mergeVecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>FUNCTION: pygrid.mergeVecs():</p>
+<p>BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid</p>
+<p>go through all grid cells and average the vectors in 
+cells with more than 1 vector</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>None</dd>
+<dt>OUTPUTS:</dt>
+<dd>None</dd>
+<dt>EXAMPLE:</dt>
+<dd>myGrid.averageVecs()</dd>
+</dl>
+<p>Written by AJ 20120917</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygridLib.pygridCell">
+<em class="property">class </em><tt class="descclassname">pygridLib.</tt><tt class="descname">pygridCell</tt><big>(</big><em>lat1</em>, <em>lat2</em>, <em>mlt1</em>, <em>mlt2</em>, <em>n</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#pygridCell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygridCell" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>CLASS: pygridCell</p>
+<p>PURPOSE: a class defining a single grid cell</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myCell = pydarn.proc.pygridLib.pygridCell(botLat,topLat,leftLon,rightLon)</dd>
+<dt>MEMBERS:</dt>
+<dd>bl : bottom left corner in [lat,mlt]
+tl : bottom left corner in [lat,mlt]
+tr : top right corner in [lat,mlt]
+br : bottom right corner in [lat,mlt]
+center : the center coordinate pair in [lat,mlt]
+nVecs : the number of gridded vectors in this cell
+vecs : a list to hold the pygridVec objects</dd>
+</dl>
+<p>Written by AJ 20120907</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygridLib.pygridVec">
+<em class="property">class </em><tt class="descclassname">pygridLib.</tt><tt class="descname">pygridVec</tt><big>(</big><em>v</em>, <em>w_l</em>, <em>p_l</em>, <em>stid</em>, <em>time</em>, <em>bmnum</em>, <em>rng</em>, <em>azm</em><big>)</big><a class="reference internal" href="_modules/pygridLib.html#pygridVec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygridLib.pygridVec" title="Permalink to this definition">¶</a></dt>
+<dd><p>PACKAGE: pydarn.proc.pygridLib</p>
+<p>CLASS: pygridVec</p>
+<p>PURPOSE: a class defining a single gridded vector</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myVel = pydarn.proc.pygridLib.pygridVec(v,w_l,p_l,stid,time,bmnum,rng,azm):</dd>
+<dt>MEMBERS:</dt>
+<dd>v : Doppler velocity
+w_l : spectral width
+p_l : power
+stid : station id
+time : time of the measurement
+bmnum : beam number of the measurement
+rng : range gate of the measurement
+azm : azimuth of the measurement</dd>
+</dl>
+<p>Written by AJ 20120907</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">/pydarn/proc/pygridLib.py</a><ul>
+<li><a class="reference internal" href="#module-pydarn-proc-pygridlib">MODULE: pydarn.proc.pygridLib</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="proc.html"
+                        title="previous chapter">/pydarn/proc</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mstid.html"
+                        title="next chapter">/mstid</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pygridLib.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mstid.html" title="/mstid"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="proc.html" title="/pydarn/proc"
+             >previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="proc.html" >/pydarn/proc</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

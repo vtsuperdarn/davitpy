@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>/pydarn/radar/radFov.py &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="index.html" />
+    <link rel="up" title="/pydarn/radar" href="radar.html" />
+    <link rel="next" title="/pydarn/radar/radNetwork.py" href="radNetwork.html" />
+    <link rel="prev" title="/pydarn/radar/radUtils.py" href="radUtils.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="radNetwork.html" title="/pydarn/radar/radNetwork.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="radUtils.html" title="/pydarn/radar/radUtils.py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="radar.html" accesskey="U">/pydarn/radar</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pydarn-radar-radfov-py">
+<h1>/pydarn/radar/radFov.py<a class="headerlink" href="#pydarn-radar-radfov-py" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-radFov"></span><div class="section" id="radfov">
+<h2>radFov<a class="headerlink" href="#radfov" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>This module contains the following class:</dt>
+<dd><dl class="first last docutils">
+<dt>fov</dt>
+<dd>field of view position</dd>
+<dt>fieldPnt</dt>
+<dd>field of view point</dd>
+</dl>
+</dd>
+<dt>This module contains the following functions</dt>
+<dd><dl class="first last docutils">
+<dt>slantRange</dt>
+<dd>Calculate slant range</dd>
+<dt>calcAzOffBore</dt>
+<dd>Calculate off-array-normal azimuth</dd>
+<dt>calcFieldPnt</dt>
+<dd>Calculate field point projection</dd>
+</dl>
+</dd>
+</dl>
+<p>Based on Mike Ruohoniemi&#8217;s GEOPACK
+Based on R.J. Barnes radar.pro
+Created by Sebastien
+<strong>***************************</strong></p>
+<dl class="function">
+<dt id="radFov.calcAzOffBore">
+<tt class="descclassname">radFov.</tt><tt class="descname">calcAzOffBore</tt><big>(</big><em>elevation</em>, <em>boreOffset0</em><big>)</big><a class="reference internal" href="_modules/radFov.html#calcAzOffBore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radFov.calcAzOffBore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate off-boresight azimuth as a function of elevation angle and zero-elevation off-boresight azimuth.
+See Milan et al. [1997] for more details on how this works.</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>elevation: elevation angle [degree]
+boreOffset0: zero-elevation off-boresight azimuth [degree]</dd>
+<dt>OUTPUT:</dt>
+<dd>boreOffset: off-boresight azimuth [degree]</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="radFov.calcFieldPnt">
+<tt class="descclassname">radFov.</tt><tt class="descname">calcFieldPnt</tt><big>(</big><em>tGeoLat</em>, <em>tGeoLon</em>, <em>tAlt</em>, <em>boreSight</em>, <em>boreOffset</em>, <em>slantRange</em>, <em>elevation=None</em>, <em>altitude=None</em>, <em>model=None</em>, <em>coords='geo'</em><big>)</big><a class="reference internal" href="_modules/radFov.html#calcFieldPnt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radFov.calcFieldPnt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate coordinates of field point given the radar coordinates and boresight, 
+the pointing direction deviation from boresight and elevation angle, and the 
+field point slant range and altitude. Either the elevation or the altitude must 
+be provided. If none is provided, the altitude is set to 300 km and the elevation 
+evaluated to accomodate altitude and range.</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd><p class="first">tGeoLat: transmitter latitude [degree, N]
+tGeoLon: transmitter longitude [degree, E]
+tAlt: transmitter altitude [km]
+boreSight: boresight azimuth [degree, E]
+boreOffset: offset from boresight [degree]
+slantRange: slant range [km]
+elevation: elevation angle [degree] (estimated if None)
+altitude: altitude [km] (default 300 km)
+model:</p>
+<blockquote>
+<div>&#8216;IS&#8217;: for ionopsheric scatter projection model
+&#8216;GS&#8217;: for ground scatter projection model
+None: if you are really confident in your elevation or altitude data
+... more to come</div></blockquote>
+<p class="last">coords: &#8216;geo&#8217; (more to come)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="radFov.fov">
+<em class="property">class </em><tt class="descclassname">radFov.</tt><tt class="descname">fov</tt><big>(</big><em>frang=180.0</em>, <em>rsep=45.0</em>, <em>site=None</em>, <em>nbeams=None</em>, <em>ngates=None</em>, <em>bmsep=None</em>, <em>recrise=None</em>, <em>siteLat=None</em>, <em>siteLon=None</em>, <em>siteBore=None</em>, <em>siteAlt=None</em>, <em>elevation=None</em>, <em>altitude=300.0</em>, <em>model='IS'</em>, <em>coords='geo'</em><big>)</big><a class="reference internal" href="_modules/radFov.html#fov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radFov.fov" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class calculates and stores field-of-view coordinates. 
+Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object. Parameters from the input-set 
+will always take precedence over parameters from the SITE object.Make sure to provide frang and rsep, 
+the default values are not always applicable. The full projection gives the coordinates at each corner 
+of each gate, in the following order: looking in the beam direction, lower-left, lower-right, 
+upper-right, upper-left.</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd><p class="first">site: site structure for a given radar and date-time
+frang: first range gate position [km] (defaults to 180 km) (scalar or ndarray(nbeams))
+rsep: range gate separation [km] (defaults to 45 km) (scalar or ndarray(nbeams))
+nbeams: number of beams (use site information if not provided)
+ngates: number of gates (use site information if not provided)
+bmsep: beam separation [degree] (use site information if not provided)
+siteLat: geographic latitude of radar [degree] (use site information if not provided)
+siteLon: geographic longitude of radar [degree] (use site information if not provided)
+siteAlt: altitude of radar site [m] (use site information if not provided)
+siteBore: radar boresite [degree] (use site information if not provided)
+recrise: receiver rise time [us] (use site information if not provided) (scalar or ndarray(nbeams))
+elevation: elevation angle [degree] (if not provided, is evaluated using &#8216;model&#8217;) (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
+altitude: altitude [km] (if not provided, set to 300 km) (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
+model:</p>
+<blockquote>
+<div>&#8216;IS&#8217;: for ionopsheric scatter projection model (default)
+&#8216;GS&#8217;: for ground scatter projection model
+None: if you are really confident in your elevation or altitude values
+... more to come</div></blockquote>
+<p class="last">coords: &#8216;geo&#8217; (more to come)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="radFov.slantRange">
+<tt class="descclassname">radFov.</tt><tt class="descname">slantRange</tt><big>(</big><em>frang</em>, <em>rsep</em>, <em>recrise</em>, <em>range_gate</em>, <em>center=True</em><big>)</big><a class="reference internal" href="_modules/radFov.html#slantRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radFov.slantRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate slant range</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>frang: first range gate position [km]
+rsep: range gate separation [km]
+recrise: receiver rise time [us]
+range_gate: range gate number(s)
+center: wether or not to compute the slant range in the center of the gate rather than at the edge</dd>
+<dt>OUTPUT:</dt>
+<dd>srang: slant range [km]</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">/pydarn/radar/radFov.py</a><ul>
+<li><a class="reference internal" href="#radfov">radFov</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="radUtils.html"
+                        title="previous chapter">/pydarn/radar/radUtils.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="radNetwork.html"
+                        title="next chapter">/pydarn/radar/radNetwork.py</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/radFov.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="radNetwork.html" title="/pydarn/radar/radNetwork.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="radUtils.html" title="/pydarn/radar/radUtils.py"
+             >previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="radar.html" >/pydarn/radar</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
