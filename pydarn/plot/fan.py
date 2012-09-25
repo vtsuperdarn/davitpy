@@ -94,11 +94,6 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 
 		myMap = Basemap(width=1.5*(x2-x1),height=1.5*(y2-y1),projection='stere',\
             lat_0=lat_0,lon_0=lon_0)
-            
-    #myMap.llcrnrx = x1
-    #myMap.llcrnry = y1
-    #myMap.urcrnrx = x2
-    #myMap.urcrnry = y2
     
 		myMap.drawstates(linewidth=0.5, color='k')
 		myMap.drawcoastlines(linewidth=0.5,color='k')

@@ -29,6 +29,8 @@ This module contains the following classes:
 from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
+
+def batchMakePygrid()
 	
 def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 	"""
