@@ -30,7 +30,21 @@ from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 
-def batchMakePygrid()
+def batchMakePygrid(sDateStr,eDateStr=None,rads=None,hemi=None):
+	
+	assert(isinstance(sDateStr,str) and len(sDateStr) == 8),\
+	'error, sDateStr must be a date in yyyymmdd format'
+	sDate = DateyyyymmddToDate(sDateStr)
+	if(eDateStr == None): eDate = sDate
+	else:
+		assert(isinstance(eDateStr,str) and len(eDateStr) == 8),\
+		'error, eDateStr must be a date in yyyymmdd format'
+		eDate = DateyyyymmddToDate(eDateStr)
+	
+	if(hemi != None):
+		assert(hemi == 'north' or hemi == 'south' or hemi == 'both'),\
+		"error, acceptable values for hemi are 'north', 'south', or 'both'"
+	
 	
 def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 	"""
