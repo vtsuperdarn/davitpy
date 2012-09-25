@@ -30,20 +30,71 @@ from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 
-def batchMakePygrid(sDateStr,eDateStr=None,rads=None,hemi=None):
+def makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0):
+	"""
+
+	PACKAGE: pydarn.proc.pygridLib
+
+	FUNCTION: makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0)
+
+	PURPOSE: performs makePygrid in a batch format
+
+	INPUTS:
+		sDateStr: a string containing the starting date in yyyymmdd format
+		[eDateStr] : a string containing the ending date in yyyymmdd format
+			If this equals None, eDateStr is assigned the value of sDateStr
+			default = None
+		[hemi]: the hemispheres for which to do the gridding, allowable values
+			are 'north', 'south', and 'both'.  default = 'both'
+		[merge]: a flag indicating whether to merge the gridded data or not
+			default: 1
+		[vb]: a flag for verbose output.  default = 0
+			
+	OUTPUTS:
+		NONE
+		
+	EXAMPLES:
+		
+		
+	Written by AJ 20120925
+
+	"""
+	
+	import datetime,pydarn
 	
 	assert(isinstance(sDateStr,str) and len(sDateStr) == 8),\
 	'error, sDateStr must be a date in yyyymmdd format'
-	sDate = DateyyyymmddToDate(sDateStr)
+	sDate = yyyymmddToDate(sDateStr)
 	if(eDateStr == None): eDate = sDate
 	else:
 		assert(isinstance(eDateStr,str) and len(eDateStr) == 8),\
 		'error, eDateStr must be a date in yyyymmdd format'
-		eDate = DateyyyymmddToDate(eDateStr)
+		eDate = yyyymmddToDate(eDateStr)
 	
 	if(hemi != None):
 		assert(hemi == 'north' or hemi == 'south' or hemi == 'both'),\
 		"error, acceptable values for hemi are 'north', 'south', or 'both'"
+		
+		if(hemi == 'both'):
+			rads = pydarn.radar.network().getAllCodes()
+		else:
+			rads = pydarn.radar.network().getAllCodes(hemi=hemi)
+			
+		cDate = sDate
+		while(cDate <= eDate):
+			for r in rads:
+				if(vb == 1): print r, cDate
+				
+				makePygrid(dateToYyyymmdd(cDate),r,vb=vb)
+
+			if(merge == 1):
+				if(hemi == 'both'):
+					mergePygrid(dateStr,hemi='north',vb=vb)
+					mergePygrid(dateStr,hemi='south',vb=vb)
+				else:
+					mergePygrid(dateStr,hemi=hemi,vb=vb)
+					
+			cDate += datetime.timedelta(days=1)
 	
 	
 def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
@@ -187,21 +238,11 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	#read the radar data
 	myData = pydarn.io.radDataRead(dateStr,rad,time=time,filter=filter)
 	#check for data in this time period
-	assert(myData.nrecs > 0),'error, no data for this time period'
+	if(myData.nrecs <= 0):
+		print 'no data for this time period'
+		return
 	#get a radar site object
 	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(myData.times[0])
-	myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[myData.times[0]]['prm']['rsep'],\
-	ngates=site.maxgate+1,nbeams=site.maxbeam+1)
-	
-	#create a 2D list to hold coords of RB cells
-	coordsList = [[None]*site.maxgate for _ in range(site.maxbeam)]
-	for i in range(site.maxbeam):
-		for j in range(site.maxgate):
-			t=myData.times[0]
-			arr1=aacgm.aacgmConv(myFov.latCenter[i][j],myFov.lonCenter[i][j],300,0)
-			arr2=aacgm.aacgmConv(myFov.latCenter[i][j+1],myFov.lonCenter[i][j+1],300,0)
-			azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
-			coordsList[i][j] = [arr1[0],arr1[1],azm]
 
 	#a list for all the grid objects
 	myGrids = []
@@ -219,6 +260,8 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	#open a pygrid file
 	gFile = openPygrid(fileName,'w')
 	
+	oldCpid = -999999999999999
+	
 	#until we reach the designated end time
 	while ctime < etime:
 		#boundary time
@@ -231,6 +274,24 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 		for i in range(lastInd,myData.nrecs):
 			#current time of radar data
 			t = myData.times[i]
+			
+			if(myData[t]['prm']['cp'] != oldCpid and myData[t]['prm']['channel'] < 2):
+				ngates = myData[t]['prm']['nrang']
+
+				myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[t]['prm']['rsep'],\
+				ngates=ngates+1,nbeams=site.maxbeam+1)
+				
+				#create a 2D list to hold coords of RB cells
+				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
+				for i in range(site.maxbeam):
+					for j in range(ngates):
+						t=myData.times[0]
+						arr1=aacgm.aacgmConv(myFov.latCenter[i][j],myFov.lonCenter[i][j],300,0)
+						arr2=aacgm.aacgmConv(myFov.latCenter[i][j+1],myFov.lonCenter[i][j+1],300,0)
+						azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
+						coordsList[i][j] = [arr1[0],arr1[1],azm]
+				oldCpid = myData[t]['prm']['cp']
+					
 			#are we in the target time interval?
 			if(ctime < t <= bndT): 
 				#enter the radar data into the grid
