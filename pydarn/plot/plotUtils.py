@@ -71,7 +71,7 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 		#check what color scale we want to use
 		if(colors == 'aj'):
 			#define our discrete colorbar
-			cmap = matplotlib.colors.ListedColormap([cmpr(.18),cmpr(.17),cmj(.32),cmj(.37),\
+			cmap = matplotlib.colors.ListedColormap([cmpr(.175),cmpr(.17),cmj(.32),cmj(.37),\
 			cmpr(.142),cmpr(.13),cmpr(.11),cmpr(.10)])
 		else:
 			#define our discrete colorbar

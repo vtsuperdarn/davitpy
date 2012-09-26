@@ -1,0 +1,521 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>radNetwork &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for radNetwork</h1><div class="highlight"><pre>
+<span class="c"># pydarn/radar/radNetwork.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">*******************************</span>
+<span class="sd">		radNetwork</span>
+<span class="sd">*******************************</span>
+<span class="sd">This module contains the following class:</span>
+<span class="sd">	network</span>
+<span class="sd">		radar.dat and hdw.dat information from all the radars</span>
+<span class="sd">	radar</span>
+<span class="sd">		placeholder for radar.dat and hdw.dat information</span>
+<span class="sd">	site</span>
+<span class="sd">		placeholder for hdw.dat information</span>
+<span class="sd">		</span>
+<span class="sd">This module contains the following functions</span>
+<span class="sd">	hdwRead</span>
+<span class="sd">		reads hdw.dat files</span>
+<span class="sd">	radarRead</span>
+<span class="sd">		reads radar.dat</span>
+
+<span class="sd">Created by Sebastien</span>
+<span class="sd">*******************************</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># *************************************************************</span>
+<div class="viewcode-block" id="network"><a class="viewcode-back" href="../radNetwork.html#radNetwork.network">[docs]</a><span class="k">class</span> <span class="nc">network</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This class stores information from all radars according to their hdw.dat and radar.dat</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Creates NETWORK object</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="c"># First, load info from radar.dat file</span>
+		<span class="n">radarF</span> <span class="o">=</span> <span class="n">radarRead</span><span class="p">()</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">radarF</span><span class="p">:</span> 
+			<span class="k">print</span> <span class="s">&#39;network(object): No radars found in radar.dat&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">nradar</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radarF</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">irad</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nradar</span> <span class="p">):</span>
+			<span class="n">tRadar</span> <span class="o">=</span> <span class="n">radar</span><span class="p">()</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">cnum</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;cnum&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">stTime</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;stTime&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">edTime</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;edTime&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;operator&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">hdwfname</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;hdwfname&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">radarF</span><span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">][</span><span class="n">irad</span><span class="p">]</span>
+			<span class="c"># Then, load info from hdw.dat file</span>
+			<span class="n">siteF</span> <span class="o">=</span> <span class="n">hdwRead</span><span class="p">(</span><span class="n">tRadar</span><span class="o">.</span><span class="n">hdwfname</span><span class="p">)</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="n">siteF</span><span class="p">:</span> <span class="k">continue</span>
+			<span class="n">tsnum</span> <span class="o">=</span> <span class="mi">0</span>
+			<span class="k">for</span> <span class="n">isit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tval&#39;</span><span class="p">])</span> <span class="p">):</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">tval</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tval&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">geolat</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;geolat&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">geolon</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;geolon&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">alt</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;alt&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">boresite</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;boresite&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">bmsep</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;bmsep&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">vdir</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;vdir&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">atten</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;atten&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">tdiff</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tdiff&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">phidiff</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;phidiff&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">interfer</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;interfer&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">recrise</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;recrise&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">maxatten</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxatten&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">maxgate</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxgate&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tRadar</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">isit</span><span class="p">]</span><span class="o">.</span><span class="n">maxbeam</span> <span class="o">=</span> <span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxbeam&#39;</span><span class="p">][</span><span class="n">isit</span><span class="p">]</span>
+				<span class="n">tsnum</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="n">tRadar</span><span class="o">.</span><span class="n">snum</span> <span class="o">=</span> <span class="n">tsnum</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tRadar</span><span class="p">)</span>
+			
+	<span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Object length (number of radars)</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nradar</span>
+	
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Object string representation</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">outstring</span> <span class="o">=</span> <span class="s">&quot;Network information object: </span><span class="se">\</span>
+<span class="s">				</span><span class="se">\n\t</span><span class="s">Total radars: {:d}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nradar</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">iRad</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nradar</span> <span class="p">):</span>
+			<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="n">status</span> <span class="o">=</span> <span class="s">&#39;active&#39;</span>
+			<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+				<span class="n">status</span> <span class="o">=</span> <span class="s">&#39;offline&#39;</span>
+			<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="n">status</span> <span class="o">=</span> <span class="s">&#39;planned&#39;</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">status</span> <span class="o">=</span> <span class="s">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+			<span class="n">hemi</span> <span class="o">=</span> <span class="s">&#39;South&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">geolat</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s">&#39;North&#39;</span>
+			<span class="n">outstring</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n\t\t</span><span class="s">({}) - [{:d}][{}] {} ({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hemi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">outstring</span>
+		
+<div class="viewcode-block" id="network.getRadarById"><a class="viewcode-back" href="../radNetwork.html#radNetwork.network.getRadarById">[docs]</a>	<span class="k">def</span> <span class="nf">getRadarById</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get a specific radar from its ID</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">radar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRadarBy</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s">&#39;id&#39;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">radar</span>
+		</div>
+<div class="viewcode-block" id="network.getRadarByName"><a class="viewcode-back" href="../radNetwork.html#radNetwork.network.getRadarByName">[docs]</a>	<span class="k">def</span> <span class="nf">getRadarByName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get a specific radar from its name</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">radar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRadarBy</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s">&#39;name&#39;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">radar</span>
+		</div>
+<div class="viewcode-block" id="network.getRadarByCode"><a class="viewcode-back" href="../radNetwork.html#radNetwork.network.getRadarByCode">[docs]</a>	<span class="k">def</span> <span class="nf">getRadarByCode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get a specific radar from its 3-letter code</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">radar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRadarBy</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s">&#39;code&#39;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">radar</span>
+		</div>
+<div class="viewcode-block" id="network.getRadarBy"><a class="viewcode-back" href="../radNetwork.html#radNetwork.network.getRadarBy">[docs]</a>	<span class="k">def</span> <span class="nf">getRadarBy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radN</span><span class="p">,</span> <span class="n">by</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get a specific radar from its name/code/id</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+		<span class="k">for</span> <span class="n">iRad</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nradar</span> <span class="p">):</span>
+			<span class="k">if</span> <span class="n">by</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;code&#39;</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">cnum</span><span class="p">):</span>
+					<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">radN</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+						<span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+						<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span>
+						<span class="k">break</span>
+			<span class="k">elif</span> <span class="n">by</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;name&#39;</span><span class="p">:</span>
+				<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">radN</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+					<span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+					<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span>
+					<span class="k">break</span>
+			<span class="k">elif</span> <span class="n">by</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;id&#39;</span><span class="p">:</span>
+				<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">radN</span><span class="p">:</span>
+					<span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+					<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span>
+					<span class="k">break</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">print</span> <span class="s">&#39;getRadarBy: invalid method by {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">by</span><span class="p">)</span>
+				<span class="k">break</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+			<span class="k">print</span> <span class="s">&#39;getRadarBy: could not find radar {}: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">by</span><span class="p">,</span> <span class="n">radN</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">found</span>
+		</div>
+<div class="viewcode-block" id="network.getAllCodes"><a class="viewcode-back" href="../radNetwork.html#radNetwork.network.getAllCodes">[docs]</a>	<span class="k">def</span> <span class="nf">getAllCodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hemi</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get a list of all active radar codes</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+		
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">datetime</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+		
+		<span class="n">codes</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">iRad</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nradar</span> <span class="p">):</span>
+			<span class="n">tcod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">getSiteByDate</span><span class="p">(</span><span class="n">datetime</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">tcod</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> 
+				<span class="k">if</span><span class="p">(</span><span class="n">hemi</span> <span class="o">==</span> <span class="bp">None</span> <span class="ow">or</span> \
+				<span class="p">(</span><span class="n">hemi</span> <span class="o">==</span> <span class="s">&#39;south&#39;</span> <span class="ow">and</span> <span class="n">tcod</span><span class="o">.</span><span class="n">geolat</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> \
+				<span class="p">(</span><span class="n">hemi</span> <span class="o">==</span> <span class="s">&#39;north&#39;</span> <span class="ow">and</span> <span class="n">tcod</span><span class="o">.</span><span class="n">geolat</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)):</span> <span class="n">codes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">iRad</span><span class="p">]</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+				
+		
+		<span class="k">return</span> <span class="n">codes</span>
+			
+
+<span class="c"># *************************************************************</span></div></div>
+<div class="viewcode-block" id="radar"><a class="viewcode-back" href="../radNetwork.html#radNetwork.radar">[docs]</a><span class="k">class</span> <span class="nc">radar</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Reads radar.dat file and hdw.dat for a given radar and fills a radar structure</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">__maxSites</span> <span class="o">=</span> <span class="mi">32</span>
+	<span class="c">#__slots__ = (&#39;id&#39;, &#39;status&#39;, &#39;cnum&#39;, &#39;code&#39;, &#39;name&#39;, &#39;operator&#39;, &#39;hdwfname&#39;, &#39;stTime&#39;, &#39;edTime&#39;, &#39;snum&#39;, &#39;site&#39;)</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">cnum</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">hdwfname</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">stTime</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">edTime</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">snum</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">site</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">isit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__maxSites</span><span class="p">):</span>
+			<span class="n">tsite</span> <span class="o">=</span> <span class="n">site</span><span class="p">()</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tsite</span><span class="p">)</span>
+			
+	<span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Object length</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="mi">1</span>
+	
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Object string representation</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">outstring</span> <span class="o">=</span> <span class="s">&#39;id: {0:d} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">status: {1:d} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">cnum: {2:d} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">code: {3} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">name: {4} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">operator: {5} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">hdwfname: {6} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">stTime: {7} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">edTime: {8} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">snum: {9:d} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">site: {10:d} elements&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">cnum</span><span class="p">,</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">hdwfname</span><span class="p">,</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">stTime</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">edTime</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> \
+										<span class="bp">self</span><span class="o">.</span><span class="n">snum</span><span class="p">,</span> \
+										<span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="p">))</span>
+		<span class="k">return</span> <span class="n">outstring</span>
+		
+<div class="viewcode-block" id="radar.getSiteByDate"><a class="viewcode-back" href="../radNetwork.html#radNetwork.radar.getSiteByDate">[docs]</a>	<span class="k">def</span> <span class="nf">getSiteByDate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get a specific radar site at a given date (as a python datetime object)</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+		<span class="k">for</span> <span class="n">iSit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">__maxSites</span> <span class="p">):</span>
+			<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">iSit</span><span class="p">]</span><span class="o">.</span><span class="n">tval</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+				<span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+				<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">iSit</span><span class="p">]</span>
+				<span class="k">break</span>
+			<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">iSit</span><span class="p">]</span><span class="o">.</span><span class="n">tval</span> <span class="o">&gt;=</span> <span class="n">datetime</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">iSit</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+					<span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+					<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="p">[</span><span class="n">iSit</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="k">return</span> <span class="n">found</span>
+				<span class="k">break</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+			<span class="k">print</span> <span class="s">&#39;getSiteByDate: could not get SITE for date {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datetime</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">found</span>
+		
+
+
+<span class="c"># *************************************************************</span></div></div>
+<div class="viewcode-block" id="site"><a class="viewcode-back" href="../radNetwork.html#radNetwork.site">[docs]</a><span class="k">class</span> <span class="nc">site</span><span class="p">(</span><span class="n">radar</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Reads hdw.dat for a given radar and fills a SITE structure</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c">#__slots__ = (&#39;tval&#39;, &#39;geolat&#39;, &#39;geolon&#39;, &#39;alt&#39;, &#39;boresite&#39;, &#39;bmsep&#39;, &#39;vdir&#39;, &#39;atten&#39;, &#39;tdif&#39;, &#39;phidiff&#39;, &#39;interfer&#39;, &#39;recrise&#39;, &#39;maxatten&#39;, &#39;maxgate&#39;, &#39;maxbeam&#39;)</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">tval</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">geolat</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">geolon</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alt</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">boresite</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">bmsep</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">vdir</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">atten</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">tdiff</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">phidiff</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">interfer</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">recrise</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">maxatten</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">maxgate</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">maxbeam</span> <span class="o">=</span> <span class="mi">0</span>
+			
+	<span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Object length</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="mi">1</span>
+	
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Object string representation</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">outstring</span> <span class="o">=</span> <span class="s">&#39;tval: {0} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">geolat: {1:5.2f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">geolon: {2:5.2f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">alt: {3:6.2f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">boresite: {4:5.2f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">bmsep: {5:5.2f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">vdir: {6:3.1f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">atten: {7:5.2f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">tdiff: {8:6.4f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">phidiff: {9:3.1f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">interfer: [{10:5.2f}, {11:5.2f}, {12:5.2f}] </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">recrise: {13:5.3f} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">maxatten: {14:d} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">maxgate: {15:d} </span><span class="se">\</span>
+<span class="s">					</span><span class="se">\n</span><span class="s">maxbeam: {16:d}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tval</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">geolat</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">geolon</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">alt</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">boresite</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">bmsep</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">atten</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">tdiff</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">phidiff</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">interfer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">interfer</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">interfer</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">recrise</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">maxatten</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">maxgate</span><span class="p">,</span> \
+											<span class="bp">self</span><span class="o">.</span><span class="n">maxbeam</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">outstring</span>
+		
+
+<span class="c"># *************************************************************</span></div>
+<div class="viewcode-block" id="radarRead"><a class="viewcode-back" href="../radNetwork.html#radNetwork.radarRead">[docs]</a><span class="k">def</span> <span class="nf">radarRead</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;radarRead()</span>
+<span class="sd">Reads radar.dat file</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="kn">import</span> <span class="nn">shlex</span>
+	<span class="kn">import</span> <span class="nn">os</span>
+	<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+	<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">parseDate</span>
+	
+	<span class="c"># Read file</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">file_net</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;RSTPATH&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/tables/superdarn/radar.dat&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+		<span class="n">data</span> <span class="o">=</span> <span class="n">file_net</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+		<span class="n">file_net</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+		<span class="n">err</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="k">print</span> <span class="s">&#39;radarRead: cannot read &#39;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;RSTPATH&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/tables/superdarn/radar.dat&#39;</span>
+		<span class="n">err</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+		<span class="k">return</span> <span class="bp">None</span>
+	
+	<span class="c"># Initialize placeholder dictionary of lists</span>
+	<span class="n">radarF</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;stTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;edTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;operator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;hdwfname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;cnum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="c"># Fill dictionary with each radar.dat lines</span>
+	<span class="k">for</span> <span class="n">ldat</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+		<span class="n">ldat</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ldat</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ldat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">continue</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">tmpDate</span> <span class="o">=</span> <span class="n">parseDate</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;stTime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">datetime</span><span class="p">(</span><span class="n">tmpDate</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmpDate</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tmpDate</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">tmpDate</span> <span class="o">=</span> <span class="n">parseDate</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;edTime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">datetime</span><span class="p">(</span><span class="n">tmpDate</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmpDate</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tmpDate</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">ldat</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;operator&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">ldat</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;hdwfname&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">ldat</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">ldat</span><span class="p">[</span><span class="mi">7</span><span class="p">:]</span> <span class="p">)</span>
+		<span class="n">radarF</span><span class="p">[</span><span class="s">&#39;cnum&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">7</span><span class="p">:])</span> <span class="p">)</span>
+	
+	<span class="c"># Return			</span>
+	<span class="k">return</span> <span class="n">radarF</span>
+
+
+<span class="c"># *************************************************************</span></div>
+<div class="viewcode-block" id="hdwRead"><a class="viewcode-back" href="../radNetwork.html#radNetwork.hdwRead">[docs]</a><span class="k">def</span> <span class="nf">hdwRead</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;hdwRead(name=name, id=id, code=code)</span>
+<span class="sd">Reads hdw.dat files for given radar specified by its hdw.dat file name (path excluded)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="kn">import</span> <span class="nn">os</span>
+	<span class="kn">import</span> <span class="nn">shlex</span>
+	<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+	<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">timeYrsecToDate</span>
+	
+	<span class="c"># Read hardware file FNAME</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">file_hdw</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;RSTPATH&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/tables/superdarn/hdw/&#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+		<span class="n">data</span> <span class="o">=</span> <span class="n">file_hdw</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+		<span class="n">file_hdw</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="k">print</span> <span class="s">&#39;hdwRead: cannot read &#39;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;RSTPATH&#39;</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/tables/superdarn/hdw/&#39;</span><span class="o">+</span><span class="n">fname</span>
+		<span class="k">return</span> <span class="bp">None</span>
+	
+	<span class="c"># Site placeholder</span>
+	<span class="n">siteF</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tval&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;geolat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;geolon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;alt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;boresite&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;bmsep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;vdir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;atten&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tdiff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;phidiff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;interfer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;recrise&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxatten&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxgate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxbeam&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="c"># Read line by line, ignoring comments</span>
+	<span class="k">for</span> <span class="n">ldat</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+		<span class="n">ldat</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ldat</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ldat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">continue</span>
+		<span class="k">if</span> <span class="n">ldat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;#&#39;</span><span class="p">:</span> <span class="k">continue</span>
+		<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2999</span><span class="p">:</span> 
+			<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tval&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tval&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">timeYrsecToDate</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;geolat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;geolon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;alt&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;boresite&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;bmsep&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;vdir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;atten&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;tdiff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;phidiff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">11</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;interfer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">12</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">13</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">14</span><span class="p">])]</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;recrise&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">15</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxatten&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">16</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxgate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">17</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">siteF</span><span class="p">[</span><span class="s">&#39;maxbeam&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">ldat</span><span class="p">[</span><span class="mi">18</span><span class="p">])</span> <span class="p">)</span>
+		
+	<span class="c"># Return</span>
+	<span class="k">return</span> <span class="n">siteF</span>
+	</div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

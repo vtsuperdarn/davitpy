@@ -15,6 +15,5 @@ This includes the following function(s):
 
 *******************************
 """
-
+import pygridLib
 from pygridLib import *
-from pygridIo import *

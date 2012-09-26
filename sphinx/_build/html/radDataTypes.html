@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>/pydarn/io/radDataTypes.py &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="index.html" />
+    <link rel="up" title="/pydarn/io" href="io.html" />
+    <link rel="next" title="/pydarn/io/radDataRead.py" href="radDataRead.html" />
+    <link rel="prev" title="/pydarn/io" href="io.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="radDataRead.html" title="/pydarn/io/radDataRead.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="/pydarn/io"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="io.html" accesskey="U">/pydarn/io</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pydarn-io-raddatatypes-py">
+<h1>/pydarn/io/radDataTypes.py<a class="headerlink" href="#pydarn-io-raddatatypes-py" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-radDataTypes"></span><dl class="class">
+<dt id="radDataTypes.beam">
+<em class="property">class </em><tt class="descclassname">radDataTypes.</tt><tt class="descname">beam</tt><a class="reference internal" href="_modules/radDataTypes.html#beam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.beam" title="Permalink to this definition">¶</a></dt>
+<dd><p>CLASS pydarn.io.beam</p>
+<p>a dictionary class containing a pydarn.io.prm class 
+and either a pydarn.io.fit or pydarn.io.raw class</p>
+<dl class="docutils">
+<dt>KEYS:</dt>
+<dd>[&#8216;prm&#8217;,&#8217;fit&#8217;,&#8217;raw&#8217;]</dd>
+<dt>VALUES:</dt>
+<dd>[prmData,fitData, rawData]</dd>
+</dl>
+<p>EXAMPLES:</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myBeam = pydarn.io.beam()</dd>
+<dt>ACCESS:</dt>
+<dd>myBeam[&#8216;prm&#8217;] = prmData</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="radDataTypes.fitData">
+<em class="property">class </em><tt class="descclassname">radDataTypes.</tt><tt class="descname">fitData</tt><a class="reference internal" href="_modules/radDataTypes.html#fitData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.fitData" title="Permalink to this definition">¶</a></dt>
+<dd><p>CLASS pydarn.io.fitData</p>
+<p>a dictionary class containing fitted radar data</p>
+<p>EXAMPLES:</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myFit = pydarn.io.fitData()</dd>
+<dt>ACCESS:</dt>
+<dd>#number of range gates with scatter:
+myFit[&#8216;npnts&#8217;]
+#first range gate with scatter
+r = myFit[&#8216;slist&#8217;][0]
+#velocity of range gate r
+v = myFit[&#8216;v&#8217;][0]</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="radDataTypes.prmData">
+<em class="property">class </em><tt class="descclassname">radDataTypes.</tt><tt class="descname">prmData</tt><a class="reference internal" href="_modules/radDataTypes.html#prmData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.prmData" title="Permalink to this definition">¶</a></dt>
+<dd><p>CLASS pydarn.io.prmData</p>
+<p>a dictionary class containing radar operating parameter data</p>
+<dl class="docutils">
+<dt>KEYS:</dt>
+<dd>[&#8216;cp&#8217;,&#8217;tfreq&#8217;, ...]</dd>
+<dt>VALUES:</dt>
+<dd>[CP ID, T Freq, ...]</dd>
+</dl>
+<p>EXAMPLES:</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myPrm = pydarn.io.prmData()</dd>
+<dt>ACCESS:</dt>
+<dd>myPrm[&#8216;tfreq&#8217;] = tfreq</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="radDataTypes.radData">
+<em class="property">class </em><tt class="descclassname">radDataTypes.</tt><tt class="descname">radData</tt><a class="reference internal" href="_modules/radDataTypes.html#radData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.radData" title="Permalink to this definition">¶</a></dt>
+<dd><p>CLASS pydarn.io.radData</p>
+<p>a dictionary class containing a time sequence of
+radar data in beam structures</p>
+<dl class="docutils">
+<dt>KEYS:</dt>
+<dd>[datetime1, datetime2, ...]</dd>
+<dt>VALUES:</dt>
+<dd>[beam1, beam2, ...]</dd>
+</dl>
+<p>EXAMPLES:</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myData = pydarn.io.radData()</dd>
+<dt>ACCESS:</dt>
+<dd>myData[datetime] = beam</dd>
+</dl>
+<dl class="method">
+<dt id="radDataTypes.radData.getBeam">
+<tt class="descname">getBeam</tt><big>(</big><em>bmnum</em><big>)</big><a class="reference internal" href="_modules/radDataTypes.html#radData.getBeam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.radData.getBeam" title="Permalink to this definition">¶</a></dt>
+<dd><p>FUNCTION radData.getBeam(bmnum):</p>
+<p>returns a radData object containing only data from a specified beam</p>
+<p>BELONGS TO: class pydarn.io.radData</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>bmnum: the desired beam number</dd>
+<dt>OUTPUTS:</dt>
+<dd>myData: a new radData structure containing only beams of bmnum</dd>
+<dt>EXAMPLE:</dt>
+<dd>myRadarData = inRadData.getBeam(7)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="radDataTypes.radData.getChannel">
+<tt class="descname">getChannel</tt><big>(</big><em>chn</em><big>)</big><a class="reference internal" href="_modules/radDataTypes.html#radData.getChannel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.radData.getChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>FUNCTION radData.getChannel(bmnum):</p>
+<p>returns a radData object containing only data from a specified channel</p>
+<p>BELONGS TO: class pydarn.io.radData</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>chn: the desired channel letter, e.g. &#8216;a&#8217;</dd>
+<dt>OUTPUTS:</dt>
+<dd>myData: a new radData structure containing only data from channel chn</dd>
+<dt>EXAMPLE:</dt>
+<dd>myRadarData = inRadData.getChannel(&#8216;a&#8217;)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="radDataTypes.radData.getTimes">
+<tt class="descname">getTimes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/radDataTypes.html#radData.getTimes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.radData.getTimes" title="Permalink to this definition">¶</a></dt>
+<dd><p>FUNCTION radData.getTimes():</p>
+<p>returns a sorted list of the datetime keys belonging
+to a radData object</p>
+<p>BELONGS TO: class pydarn.io.radData</p>
+<dl class="docutils">
+<dt>INPUTS:</dt>
+<dd>NONE</dd>
+<dt>OUTPUTS:</dt>
+<dd>k: a sorted list of datetime keys for a radData obect</dd>
+<dt>EXAMPLE:</dt>
+<dd>timelist = myRadData.getTimes()</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="radDataTypes.rawData">
+<em class="property">class </em><tt class="descclassname">radDataTypes.</tt><tt class="descname">rawData</tt><a class="reference internal" href="_modules/radDataTypes.html#rawData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#radDataTypes.rawData" title="Permalink to this definition">¶</a></dt>
+<dd><p>CLASS pydarn.io.rawData</p>
+<p>a dictionary class containing raw radar data</p>
+<p>EXAMPLES:</p>
+<dl class="docutils">
+<dt>DECLARATION: </dt>
+<dd>myRaw = pydarn.io.rawData()</dd>
+<dt>ACCESS:</dt>
+<dd>#acf for range gate r
+acf = myRaw[&#8216;acfd&#8217;][r]</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="previous chapter">/pydarn/io</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="radDataRead.html"
+                        title="next chapter">/pydarn/io/radDataRead.py</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/radDataTypes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="radDataRead.html" title="/pydarn/io/radDataRead.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="/pydarn/io"
+             >previous</a> |</li>
+        <li><a href="index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="pydarn.html" >/pydarn</a> &raquo;</li>
+          <li><a href="io.html" >/pydarn/io</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
