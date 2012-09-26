@@ -32,7 +32,7 @@ from pydarn.io.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 
-def makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0):
+def makePygridBatch(sDateStr,eDateStr=None,hemi='both',interval=120,merge=1,vb=0):
 	"""
 
 	PACKAGE: pydarn.proc.pygridLib
@@ -48,6 +48,7 @@ def makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0):
 			default = None
 		[hemi]: the hemispheres for which to do the gridding, allowable values
 			are 'north', 'south', and 'both'.  default = 'both'
+		[interval]: the gridding interval in seconds, default = 120
 		[merge]: a flag indicating whether to merge the gridded data or not
 			default: 1
 		[vb]: a flag for verbose output.  default = 0
@@ -63,7 +64,7 @@ def makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0):
 	"""
 	
 	import datetime,pydarn
-	
+	#check for valie date input
 	assert(isinstance(sDateStr,str) and len(sDateStr) == 8),\
 	'error, sDateStr must be a date in yyyymmdd format'
 	sDate = yyyymmddToDate(sDateStr)
@@ -72,30 +73,31 @@ def makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0):
 		assert(isinstance(eDateStr,str) and len(eDateStr) == 8),\
 		'error, eDateStr must be a date in yyyymmdd format'
 		eDate = yyyymmddToDate(eDateStr)
-	
+	#check for valid hemi input
 	if(hemi != None):
 		assert(hemi == 'north' or hemi == 'south' or hemi == 'both'),\
 		"error, acceptable values for hemi are 'north', 'south', or 'both'"
-		
+		#get 3 letter radar codes
 		if(hemi == 'both'):
 			rads = pydarn.radar.network().getAllCodes()
 		else:
 			rads = pydarn.radar.network().getAllCodes(hemi=hemi)
-			
+		#iterate from start to end date
 		cDate = sDate
 		while(cDate <= eDate):
+			#iterate through the radars
 			for r in rads:
 				if(vb == 1): print r, cDate
-				
-				makePygrid(dateToYyyymmdd(cDate),r,vb=vb)
-
+				#make the pygrid files
+				makePygrid(dateToYyyymmdd(cDate),r,vb=vb,interval=interval)
+			#merge the pygrid files if desired
 			if(merge == 1):
 				if(hemi == 'both'):
-					mergePygrid(dateToYyyymmdd(cDate),hemi='north',vb=vb)
-					mergePygrid(dateToYyyymmdd(cDate),hemi='south',vb=vb)
+					mergePygrid(dateToYyyymmdd(cDate),hemi='north',vb=vb,interval=interval)
+					mergePygrid(dateToYyyymmdd(cDate),hemi='south',vb=vb,interval=interval)
 				else:
-					mergePygrid(dateToYyyymmdd(cDate),hemi=hemi,vb=vb)
-					
+					mergePygrid(dateToYyyymmdd(cDate),hemi=hemi,vb=vb,interval=interval)
+			#increment current datetime by 1 day
 			cDate += datetime.timedelta(days=1)
 	
 	

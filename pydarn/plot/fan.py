@@ -4,6 +4,7 @@ import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
 from mpl_toolkits.basemap import Basemap, pyproj
+from utils.timeUtils import *
 
 def plotFan(dateStr,rad,time=[0,0],interval=60,fileType='fitex',param='velocity', \
 scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
@@ -50,64 +51,81 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0):
 		elif(param == 'elevation'): scale=[0,50]
 		elif(param == 'phi0'): scale=[-numpy.pi,numpy.pi]
 			
-	nTimes = (time[1]-time[0])/interval+1
-	if(time[0] == time[1]): time[1] = time[0]+interval/60
-	print time
+	#convert date string, start time, end time to datetime
+	myDate = yyyymmddToDate(dateStr)
+	hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
+	min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
+	sTime = myDate.replace(hour=hr1,minute=min1)
+	if(hr2 == 24):
+		sTime = myDate+datetime.timedelta(days=1)
+	else:
+		eTime = myDate.replace(hour=hr2,minute=min2)
+		
 	#read the radar data
 	
 	myData=[]
-	for i in range(0,len(rad)):
-		data = pydarn.io.radDataRead(dateStr,rad[i],time=time,fileType=fileType,vb=0)
-		if(data.nrecs > 0):
-			data.getChannel(channel)
-			myData.append(data)
-	
-	#assert(myData.nrecs > 0),'error, no data available'
-	
+	for r in rad:
+		tmpData = pydarn.io.radDataRead(dateStr,r,time=time,fileType=fileType,vb=0)
+		if(tmpData.nrecs > 0):
+			tmpData.getChannel(channel)
+			myData.append(tmpData)
+
 	t1 = datetime.datetime.now()
-	
-	minx,miny,maxx,maxy = 1e16,1e16,-1e16,-1e16
+
+	xmin,ymin,xmax,ymax = 1e16,1e16,-1e16,-1e16
 
 	for r in rad:
 		site = pydarn.radar.network().getRadarByCode(r).getSiteByDate(utils.yyyymmddToDate(dateStr))
 		myFov = pydarn.radar.radFov.fov(site=site,rsep=45,ngates=site.maxgate+1,nbeams= site.maxbeam+1)
 		for b in range(0,site.maxbeam+1):
 			for k in range(0,site.maxgate+1):
-				if(myFov.lonCenter[b][k] > maxx): maxx = myFov.lonCenter[b][k]
-				if(myFov.lonCenter[b][k] < minx): minx = myFov.lonCenter[b][k]
-				if(myFov.latCenter[b][k] > maxy): maxy = myFov.latCenter[b][k]
-				if(myFov.latCenter[b][k] < miny): miny = myFov.latCenter[b][k]
+				x,y = myFov.lonCenter[b][k],myFov.latCenter[b][k]
+				if(x > xmax): xmax = x
+				if(x < xmin): xmin = x
+				if(y > ymax): ymax = y
+				if(y < ymin): ymin = y
 	
-	lon_0 = (minx+maxx)/2.
-	lat_0 = (miny+maxy)/2.
+	lon_0 = (xmin+xmax)/2.
+	lat_0 = (ymin+ymax)/2.
 	
-	projparams = {'lon_0': lon_0, 'lat_ts': lat_0, 'R': 6370997.0, 'proj': 'stere', 'units': 'm', 'lat_0': lat_0}
-	proj = pyproj.Proj(projparams)
-	x1,y1 = proj(minx,miny)
-	x2,y2 = proj(maxx,maxy)
-	
-	print x1,x2
-
-	for i in range(0,nTimes):
 		
-		myFig = plot.figure()
+	tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=lon_0)
+	
+	pt1x,pt1y =  tmpmap(xmin,ymin)
+	pt2x,pt2y =  tmpmap(lon_0,ymin)
+	pt4x,pt4y =  tmpmap(xmax,ymin)
+	pt5x,pt5y =  tmpmap(xmax,ymax)
 
-		myMap = Basemap(width=1.5*(x2-x1),height=1.5*(y2-y1),projection='stere',\
-            lat_0=lat_0,lon_0=lon_0)
-    
+	
+	lon1,lat1 = tmpmap(pt1x,pt2y,inverse=True)
+	lon2,lat2 = tmpmap(pt4x,pt5y,inverse=True)
+	
+	
+	cTime = sTime
+	
+	while(cTime <= eTime):
+
+		myFig = plot.figure()
+		myMap = Basemap(projection='stere',llcrnrlat=lat1,llcrnrlon=lon1,urcrnrlat=lat2,urcrnrlon=lon2,lon_0=lon_0,lat_0=lat_0)
+			
+		out = myMap.drawparallels(numpy.arange(-80.,81.,20.),labels=[1,0,1,0])
+		out = myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[1,0,1,0])
+		
 		myMap.drawstates(linewidth=0.5, color='k')
 		myMap.drawcoastlines(linewidth=0.5,color='k')
 		myMap.drawcountries(linewidth=0.5, color='k')
 		myMap.drawmapboundary(fill_color='w')
 		myMap.fillcontinents(color='w', lake_color='w')
 		
-		for j in range(0,len(myData)):
-			pydarn.plot.overlayRadar(myMap, ids=myData[j][myData[j].times[0]]['prm']['stid'], dateTime=myData[j].times[0], coords=coords)
-			pydarn.plot.overlayFov(myMap, ids=myData[j][myData[j].times[0]]['prm']['stid'], dateTime=myData[j].times[0], coords=coords)
-			if(myData[j].nrecs > 0):
-				plotFanData(myData[j],myFig,myMap,param,scale,coords,colors,gsct)
+		for data in myData:
+			pydarn.plot.overlayRadar(myMap, ids=data[myData[j].times[0]]['prm']['stid'], dateTime=data.times[0], coords=coords)
+			pydarn.plot.overlayFov(myMap, ids=data[myData[j].times[0]]['prm']['stid'], dateTime=data.times[0], coords=coords)
+			if(data.nrecs > 0):
+				plotFanData(data,myFig,myMap,param,scale,coords,colors,gsct)
 		
 		myFig.show()
+		
+		cTime += datetime.timedelta(seconds=interval)
 		
 	print datetime.datetime.now()-t1
 
@@ -158,7 +176,7 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 		inx = numpy.arange(len(verts))
 	else:
 		inx = numpy.where(numpy.array(gs_flg)==0)
-		x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',edgecolors='k',linewidths=.3,alpha=.5,zorder=4)
+		x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',edgecolors='k',linewidths=.3,alpha=.5,zorder=10)
 		myFig.gca().add_collection(x, autolim=True)
 		
 	pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors='k',linewidths=.3,closed=False,zorder=5)
