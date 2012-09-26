@@ -5,6 +5,8 @@ MODULE: pydarn.proc.pygridLib
 
 This module contains the following functions:
 
+	makePygridBatch
+
 	mergePygrid
 	
 	makePygrid
@@ -89,10 +91,10 @@ def makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0):
 
 			if(merge == 1):
 				if(hemi == 'both'):
-					mergePygrid(dateStr,hemi='north',vb=vb)
-					mergePygrid(dateStr,hemi='south',vb=vb)
+					mergePygrid(dateToYyyymmdd(cDate),hemi='north',vb=vb)
+					mergePygrid(dateToYyyymmdd(cDate),hemi='south',vb=vb)
 				else:
-					mergePygrid(dateStr,hemi=hemi,vb=vb)
+					mergePygrid(dateToYyyymmdd(cDate),hemi=hemi,vb=vb)
 					
 			cDate += datetime.timedelta(days=1)
 	
@@ -275,21 +277,22 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 			#current time of radar data
 			t = myData.times[i]
 			
+			#check for a control program change
 			if(myData[t]['prm']['cp'] != oldCpid and myData[t]['prm']['channel'] < 2):
+				#get possibly new ngates
 				ngates = myData[t]['prm']['nrang']
-
+				#gereate a new FOV
 				myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[t]['prm']['rsep'],\
 				ngates=ngates+1,nbeams=site.maxbeam+1)
-				
 				#create a 2D list to hold coords of RB cells
 				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
-				for i in range(site.maxbeam):
-					for j in range(ngates):
-						t=myData.times[0]
-						arr1=aacgm.aacgmConv(myFov.latCenter[i][j],myFov.lonCenter[i][j],300,0)
-						arr2=aacgm.aacgmConv(myFov.latCenter[i][j+1],myFov.lonCenter[i][j+1],300,0)
+				#generate new coordsList
+				for ii in range(site.maxbeam):
+					for jj in range(ngates):
+						arr1=aacgm.aacgmConv(myFov.latCenter[ii][jj],myFov.lonCenter[ii][jj],300,0)
+						arr2=aacgm.aacgmConv(myFov.latCenter[ii][jj+1],myFov.lonCenter[ii][jj+1],300,0)
 						azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
-						coordsList[i][j] = [arr1[0],arr1[1],azm]
+						coordsList[ii][jj] = [arr1[0],arr1[1],azm]
 				oldCpid = myData[t]['prm']['cp']
 					
 			#are we in the target time interval?
