@@ -76,12 +76,13 @@ def dmapRead(dateStr,rad,times,fileType,filter=0):
 
 	if(filter == 0): dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
 	else:
-		print 'cat '+' '.join(filelist)+' > '+tmpName
-		os.system('cat '+' '.join(filelist)+' > '+tmpName)
-		print 'fitexfilter '+tmpName+' > '+tmpName+'.f'
-		os.system('fitexfilter '+tmpName+' > '+tmpName+'.f')
-		
-		dfile = pydarn.dmapio.readDmap(1,[tmpName+'.f'])
+		if(len(filelist) > 0):
+			print 'cat '+' '.join(filelist)+' > '+tmpName
+			os.system('cat '+' '.join(filelist)+' > '+tmpName)
+			print 'fitexfilter '+tmpName+' > '+tmpName+'.f'
+			os.system('fitexfilter '+tmpName+' > '+tmpName+'.f')
+			dfile = pydarn.dmapio.readDmap(1,[tmpName+'.f'])
+		else: dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
 	
 	for filename in filelist:
 		os.system('rm '+filename)
