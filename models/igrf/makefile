@@ -1,8 +1,10 @@
-FCC = gfortran
-FFLAGS = -w -ffixed-line-length-132 -g -fno-automatic -fno-align-commons
+#!/bin/bash
+# Compile with f2py
 
-check:
-	$(FCC) $(FFLAGS) igrf_run.for igrf.for -o igrf_run
+all:
+	f2py igrf11.f90 -m igrf -h igrf11.pyf
+	f2py -c igrf11.pyf igrf11.f90
 
 clean:
-	find . -name "*~" -o -name "*.o" | xargs rm -f igrf_run
+	find . -type f -name "*.so" | xargs rm -f
+	find . -type f -name "*.pyf" | xargs rm -f

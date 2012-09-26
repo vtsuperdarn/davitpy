@@ -14,4 +14,5 @@ Models module. Contains the following models:
 *******************************
 """
 
-from models import geopack
+import geopack
+import igrf
