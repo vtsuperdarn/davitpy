@@ -1,13 +1,21 @@
 # IGRF module __init__.py
 """
 *******************************
-            IGRF
+MODULE: models.igrf
 *******************************
-This subpackage contains IGRF11
-DEV: functions/modules/classes with a * have not been developed yet
 
-This includes the following object(s):
+This module contains the following functions:
 
+  igrf11
+
+  igrf11syn
+  
+  ddecdm
+  
+  dmddec
+  
+Written by Sebastien 20120926
+    
 *******************************
 """
 

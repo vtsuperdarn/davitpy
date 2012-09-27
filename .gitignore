@@ -11,3 +11,5 @@ history.sqlite
 bin/profile_davitpy/security/kernel*
 *rootmodules*
 *.prof
+*.log
+

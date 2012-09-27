@@ -159,9 +159,9 @@ INPUTS:
 		lonCenter = zeros((nbeams+1, ngates+1), dtype='float')
 		
 		# Calculate deviation from boresight for center of beam
-		bOffCenter = bmsep * (beams - nbeams/2.0 + 0.5)
+		bOffCenter = bmsep * (beams - nbeams/2.0)
 		# Calculate deviation from boresight for edge of beam
-		bOffEdge = bmsep * (beams - nbeams/2.0)
+		bOffEdge = bmsep * (beams - nbeams/2.0 - 0.5)
 		
 		# Iterates through beams
 		for ib in beams:
@@ -353,7 +353,7 @@ OUTPUT:
 	# Sample separation [us]
 	smsep = rsep * 2./0.3
 	# Range offset if calculating slant range at center of the gate
-	range_offset = -0.5*rsep if center else 0.0
+	range_offset = -0.5*rsep if not center else 0.0
 	
 	# Slant range [km]
 	srang = ( lagfr - recrise + range_gate * smsep ) * 0.3/2. + range_offset
