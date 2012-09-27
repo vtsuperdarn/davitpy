@@ -11,4 +11,6 @@
 
    parseDate
 
+   profileUtils
+
    timeUtils
