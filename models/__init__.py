@@ -1,18 +1,24 @@
 # Ionospheric and ray tracing models module __init__.py
 """
 *******************************
-            Models
+MODULE: models
 *******************************
-Models module. Contains the following models:
+
+This module contains the following functions:
+
 	raydarn: SuperDARN ray tracing code coupled with IRI
+	
 	IRI: International Reference Ionosphere 2012
+	
 	IGRF: International Geomagnetic Reference Field 2011
+	
 	MSIS: Neutral atmosphere model (NRLMSISE-00)
+	
 	HWM: Horizontal Wind Model 2007
-	COND: conductivity model based on IRI and MSIS
 
 *******************************
 """
 
-import geopack
+import tsyganenko
 import igrf
+import iri

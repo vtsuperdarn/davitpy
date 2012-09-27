@@ -2575,6 +2575,3 @@ C
       BZ=Q*((P+T-2.*U)*CPS-V*SPS)
       RETURN
       END
-
-
-

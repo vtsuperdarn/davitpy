@@ -57,6 +57,8 @@ C           - 0 for main field (MF)
 C           - 1 for secular variation (SV)
 C           - 2 for both
 C   OUTPUTS:
+C       - aLat is the latitude of each point
+C       - aLon is the longitude of each point
 C       - D is declination in degrees (+ve east)
 C       - I is inclination in degrees (+ve down)
 C       - H is horizontal intensity in nT
@@ -74,13 +76,12 @@ C
       integer totpts
       INTEGER NPTS                                                              ! Edit SdL
       integer ITYPE,IFL                                                         ! Edit SdL
-      real DATE,ALT                                                           ! Edit SdL
-      real XLTI,XLTF,XLTD                                                     ! Edit SdL
-      real XLNI,XLNF,XLND                                                     ! Edit SdL
-!      parameter ( TOTPTS = abs(XLTF-XLTI)/XLTD * abs(XLNF-XLNI)/XLND )          ! Edit SdL
-      real,DIMENSION(totpts) :: aLat,aLon                                     ! Edit SdL
-      real,DIMENSION(totpts) :: aD,aS,aH                                      ! Edit SdL
-      real,DIMENSION(totpts) :: aX,aY,aZ,aF                                   ! Edit SdL
+      real DATE,ALT                                                             ! Edit SdL
+      real XLTI,XLTF,XLTD                                                       ! Edit SdL
+      real XLNI,XLNF,XLND                                                       ! Edit SdL
+      real,DIMENSION(totpts) :: aLat,aLon                                       ! Edit SdL
+      real,DIMENSION(totpts) :: aD,aS,aH                                        ! Edit SdL
+      real,DIMENSION(totpts) :: aX,aY,aZ,aF                                     ! Edit SdL
 Cf2py intent(in) ITYPE,IFL,DATE,ALT
 Cf2py intent(in) XLTI,XLTF,XLTD
 Cf2py intent(in) XLNI,XLNF,XLND
