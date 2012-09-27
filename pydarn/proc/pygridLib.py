@@ -226,7 +226,7 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	Written by AJ 20120807
 
 	"""
-	import pydarn,math,datetime,aacgm,os
+	import pydarn,math,datetime,models.aacgm as aacgm,os
 
 	
 	#convert date string, start time, end time to datetime
@@ -285,7 +285,7 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 				ngates = myData[t]['prm']['nrang']
 				#gereate a new FOV
 				myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[t]['prm']['rsep'],\
-				ngates=ngates+1,nbeams=site.maxbeam+1)
+				ngates=ngates,nbeams=site.maxbeam)
 				#create a 2D list to hold coords of RB cells
 				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
 				#generate new coordsList
@@ -471,7 +471,7 @@ class latCell(object):
 	"""
 	
 	def __init__(self,lat):
-		import math,aacgm
+		import math,models.aacgm as aacgm
 		#calculate number of pygridCells, defined in Ruohoniemi and Baker
 		self.nCells = int(round(360.*math.sin(math.radians(90.-lat))))
 		#bottom latitude boundary of this latCell

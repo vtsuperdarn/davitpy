@@ -246,7 +246,6 @@ OUTPUTS:
 #		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot field of view
 		# Side boundary
-		print radFov.lonFull[0,:]
 		Basemap.plot(x[0,0:eGate], y[0,0:eGate], color=lineColor)
 		# Other side boundary
 		Basemap.plot(x[-1,0:eGate], y[-1,0:eGate], color=lineColor)

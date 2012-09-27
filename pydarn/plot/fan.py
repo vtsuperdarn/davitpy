@@ -7,7 +7,7 @@ from mpl_toolkits.basemap import Basemap, pyproj
 from utils.timeUtils import *
 
 def plotFan(dateStr,rad,time=[0,0],interval=60,fileType='fitex',param='velocity', \
-scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1):
+scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='face'):
 	"""
 	*******************************
 	
@@ -75,53 +75,69 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1):
 
 	xmin,ymin,xmax,ymax = 1e16,1e16,-1e16,-1e16
 
-	sites,fovs,oldCpids=[],[],[]
+	sites,fovs,oldCpids,lonFull,latFull=[],[],[],[],[]
 	for i in range(len(myData)):
 		data=myData[i]
 		t=data.times[0]
 		site = pydarn.radar.network().getRadarById(data[t]['prm']['stid']).getSiteByDate(utils.yyyymmddToDate(dateStr))
 		sites.append(site)
+		latFull.append(site.geolat)
+		lonFull.append(site.geolon)
 		myFov = pydarn.radar.radFov.fov(site=site,rsep=data[t]['prm']['rsep'],ngates=data[t]['prm']['nrang'],nbeams=site.maxbeam)
 		fovs.append(myFov)
 		for b in range(0,site.maxbeam+1):
 			for k in range(0,data[t]['prm']['nrang']+1):
-				x,y = myFov.lonFull[b][k],myFov.latFull[b][k]
-				if(x > xmax): xmax = x
-				if(x < xmin): xmin = x
-				if(y > ymax): ymax = y
-				if(y < ymin): ymin = y
+				lonFull.append(myFov.lonFull[b][k])
+				latFull.append(myFov.latFull[b][k])
 		oldCpids.append(data[t]['prm']['cp'])
 	lon_0 = (xmin+xmax)/2.
 	lat_0 = (ymin+ymax)/2.
 	
+	d1=datetime.datetime.now()
 
-	tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=lon_0)
+	lonFull,latFull = (numpy.array(lonFull)+360.)%360.,numpy.array(latFull)
 	
-	pt1x,pt1y =  tmpmap(xmin,ymin)
-	pt2x,pt2y =  tmpmap(lon_0,ymin)
-	pt4x,pt4y =  tmpmap(xmax,ymin)
-	pt5x,pt5y =  tmpmap(xmax,ymax)
-
+	tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=numpy.mean(lonFull))
 	
-	lon1,lat1 = tmpmap(pt1x,pt2y,inverse=True)
-	lon2,lat2 = tmpmap(pt4x,pt5y,inverse=True)
-
+	x,y = tmpmap(lonFull,latFull)
+	minx = x.min()
+	miny = y.min()
+	maxx = x.max()
+	maxy = y.max()
+	width = (maxx-minx)
+	height = (maxy-miny)
+	cx = minx + width/2.
+	cy = miny + height/2.
+	lon_0,lat_0 = tmpmap(cx, cy, inverse=True)
 	
 	cTime = sTime
 	
 	while(cTime <= eTime):
-
+		bndTime = cTime + datetime.timedelta(seconds=interval)
+		
 		myFig = plot.figure()
-		myMap = Basemap(projection='stere',llcrnrlat=lat1,llcrnrlon=lon1,urcrnrlat=lat2,urcrnrlon=lon2,lon_0=lon_0,lat_0=lat_0)
-		myMap.drawparallels(numpy.arange(-80.,81.,20.),labels=[0,0,1,0])
-		myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,1,0])
-		myMap.drawstates(linewidth=0.5, color='k')
+		#myMap = Basemap(projection='stere',llcrnrlat=lat1,llcrnrlon=lon1,urcrnrlat=lat2,urcrnrlon=lon2,lon_0=lon_0,lat_0=lat_0)
+
+		myMap = Basemap(projection='stere',width=width,height=height,lon_0=numpy.mean(lonFull),lat_0=lat_0)
+		bbox = myFig.gca().get_axes().get_position()
+		
+		plot.figtext((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%d/%m/%Y'),ha='center',size=14,weight=600)
+		
+				
+		plot.figtext(bbox.x1,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
+		bndTime.strftime('%H:%M      '),ha='right',size=13,weight=600)
+		
+		plot.figtext(bbox.x0,bbox.y1+.02,'['+fileType+']',ha='left',size=13,weight=600)
+		#plotTitle(fileType,cTime)
+		#print lat1,lon1,lat2,lon2
+		
+		myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
+		myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
 		myMap.drawcoastlines(linewidth=0.5,color='k')
-		myMap.drawcountries(linewidth=0.5, color='k')
 		myMap.drawmapboundary(fill_color='w')
 		myMap.fillcontinents(color='w', lake_color='w')
 
-		bndTime = cTime + datetime.timedelta(seconds=interval)
+
 		for i in range(len(myData)):
 			data = myData[i]
 			if(fov == 1):
@@ -132,12 +148,11 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1):
 				
 			nptimes = numpy.array(data.times)[numpy.array(data.times) >= cTime]
 			for t in nptimes[nptimes < bndTime]:
-				print t
 				if(data[t]['prm']['cp'] != oldCpids[i]):
 					sites[i] = pydarn.radar.network().getRadarById(data[t]['prm']['stid']).getSiteByDate(utils.yyyymmddToDate(dateStr))
 					fovs[i] = pydarn.radar.radFov.fov(site=site,rsep=data[t]['prm']['rsep'],ngates=data[t]['prm']['nrang'],nbeams=site.maxbeam)
 					oldCpids[i] = data[t]['prm']['cp']
-				plotFanData(data[t],myFig,myMap,param,scale,coords,colors,gsct,site=sites[i],fov=fovs[i])
+				plotFanData(data[t],myFig,myMap,param,scale,coords,colors,gsct,site=sites[i],fov=fovs[i],edgeColors=edgeColors)
 		
 		myFig.show()
 		
@@ -145,7 +160,7 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1):
 		
 	print datetime.datetime.now()-t1
 
-def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=0,site=None,fov=None):
+def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=0,site=None,fov=None,edgeColors='face'):
 	"""
 	*******************************
 	
@@ -163,10 +178,8 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 	if(site == None):
 		site = pydarn.radar.network().getRadarById(myData['prm']['stid']).getSiteByDate(myData['prm']['time'])
 	if(fov == None):
-		print 'make fov'
 		fov = pydarn.radar.radFov.fov(site=site,rsep=myData['prm']['rsep'],\
-		ngates=myData['prm']['nrang']+1,nbeams= site.maxbeam+1)	
-	print fov.lonFull[0,:]
+		ngates=myData['prm']['nrang'],nbeams= site.maxbeam)	
 	verts,intensities,gs_flg = [],[],[]
 	
 		
@@ -193,10 +206,10 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 		inx = numpy.arange(len(verts))
 	else:
 		inx = numpy.where(numpy.array(gs_flg)==0)
-		x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',edgecolors='k',linewidths=.3,alpha=.5,zorder=10)
+		x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',edgecolors=edgeColors,linewidths=.3,alpha=.5,zorder=10)
 		myFig.gca().add_collection(x, autolim=True)
 		
-	pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors='k',linewidths=.3,closed=False,zorder=5)
+	pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors=edgeColors,linewidths=.3,closed=False,zorder=5)
 	#set color array to intensities
 	pcoll.set_array(numpy.array(intensities)[inx])
 	myFig.gca().add_collection(pcoll, autolim=True)
