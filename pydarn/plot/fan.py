@@ -81,11 +81,11 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1):
 		t=data.times[0]
 		site = pydarn.radar.network().getRadarById(data[t]['prm']['stid']).getSiteByDate(utils.yyyymmddToDate(dateStr))
 		sites.append(site)
-		myFov = pydarn.radar.radFov.fov(site=site,rsep=data[t]['prm']['rsep'],ngates=data[t]['prm']['nrang']+1,nbeams=site.maxbeam+1)
+		myFov = pydarn.radar.radFov.fov(site=site,rsep=data[t]['prm']['rsep'],ngates=data[t]['prm']['nrang'],nbeams=site.maxbeam)
 		fovs.append(myFov)
 		for b in range(0,site.maxbeam+1):
 			for k in range(0,data[t]['prm']['nrang']+1):
-				x,y = myFov.lonCenter[b][k],myFov.latCenter[b][k]
+				x,y = myFov.lonFull[b][k],myFov.latFull[b][k]
 				if(x > xmax): xmax = x
 				if(x < xmin): xmin = x
 				if(y > ymax): ymax = y
@@ -126,14 +126,16 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1):
 			data = myData[i]
 			if(fov == 1):
 				pydarn.plot.overlayRadar(myMap, ids=data[data.times[0]]['prm']['stid'], dateTime=data.times[0], coords=coords)
+				
 				pydarn.plot.overlayFov(myMap, ids=data[data.times[0]]['prm']['stid'], dateTime=data.times[0], \
 				coords=coords,maxGate=data[data.times[0]]['prm']['nrang'])
+				
 			nptimes = numpy.array(data.times)[numpy.array(data.times) >= cTime]
 			for t in nptimes[nptimes < bndTime]:
 				print t
 				if(data[t]['prm']['cp'] != oldCpids[i]):
 					sites[i] = pydarn.radar.network().getRadarById(data[t]['prm']['stid']).getSiteByDate(utils.yyyymmddToDate(dateStr))
-					fovs[i] = pydarn.radar.radFov.fov(site=site,rsep=data[t]['prm']['rsep'],ngates=data[t]['prm']['nrang']+1,nbeams=site.maxbeam+1)
+					fovs[i] = pydarn.radar.radFov.fov(site=site,rsep=data[t]['prm']['rsep'],ngates=data[t]['prm']['nrang'],nbeams=site.maxbeam)
 					oldCpids[i] = data[t]['prm']['cp']
 				plotFanData(data[t],myFig,myMap,param,scale,coords,colors,gsct,site=sites[i],fov=fovs[i])
 		
@@ -164,7 +166,7 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 		print 'make fov'
 		fov = pydarn.radar.radFov.fov(site=site,rsep=myData['prm']['rsep'],\
 		ngates=myData['prm']['nrang']+1,nbeams= site.maxbeam+1)	
-	
+	print fov.lonFull[0,:]
 	verts,intensities,gs_flg = [],[],[]
 	
 		
@@ -172,10 +174,10 @@ def plotFanData(myData,myFig,myMap,param,scale,coords='geo',colors='lasse',gsct=
 	for k in range(0,len(myData['fit']['slist'])):
 		r = myData['fit']['slist'][k]
 
-		x1,y1 = myMap(fov.lonFull[myData['prm']['bmnum']][r],fov.latFull[myData['prm']['bmnum']][r])
-		x2,y2 = myMap(fov.lonFull[myData['prm']['bmnum']][r+1],fov.latFull[myData['prm']['bmnum']][r+1])
-		x3,y3 = myMap(fov.lonFull[myData['prm']['bmnum']+1][r+1],fov.latFull[myData['prm']['bmnum']+1][r+1])
-		x4,y4 = myMap(fov.lonFull[myData['prm']['bmnum']+1][r],fov.latFull[myData['prm']['bmnum']+1][r])
+		x1,y1 = myMap(fov.lonFull[myData['prm']['bmnum'],r],fov.latFull[myData['prm']['bmnum'],r])
+		x2,y2 = myMap(fov.lonFull[myData['prm']['bmnum'],r+1],fov.latFull[myData['prm']['bmnum'],r+1])
+		x3,y3 = myMap(fov.lonFull[myData['prm']['bmnum']+1,r+1],fov.latFull[myData['prm']['bmnum']+1,r+1])
+		x4,y4 = myMap(fov.lonFull[myData['prm']['bmnum']+1,r],fov.latFull[myData['prm']['bmnum']+1,r])
 
 		#save the polygon vertices
 		verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))

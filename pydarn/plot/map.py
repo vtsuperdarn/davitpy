@@ -173,7 +173,7 @@ OUTPUTS:
 def overlayFov(Basemap, codes=None, ids=None, names=None, dateTime=None, coords='geo', all=False, \
 				maxGate=None, fovColor=None, fovAlpha=0.2, \
 				beams=None, \
-				zorder=2, lineColor='k'):
+				zorder=2, lineColor='k',radFov=None):
 	"""
 Overlay FoV position(s) on map
 
@@ -238,13 +238,15 @@ OUTPUTS:
 		# Set number of gates to be plotted
 		eGate = site.maxgate-1 if not maxGate else maxGate
 		# Get field of view coordinates
-		radFov = fov(site=site, ngates=eGate+1)
+		if(radFov == None):
+			radFov = fov(site=site, ngates=eGate+1)
 		# Get radar coordinates in map projection
 		x,y = Basemap(radFov.lonFull, radFov.latFull)
 #		if not Basemap.xmin <= x <= Basemap.xmax: continue
 #		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot field of view
 		# Side boundary
+		print radFov.lonFull[0,:]
 		Basemap.plot(x[0,0:eGate], y[0,0:eGate], color=lineColor)
 		# Other side boundary
 		Basemap.plot(x[-1,0:eGate], y[-1,0:eGate], color=lineColor)
