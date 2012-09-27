@@ -1,7 +1,7 @@
 def davitpydoc():
 	
 	import os,string
-	docPath = '/davitpy/sphinx'
+	docPath = '/davitpy/docs/sphinx'
 	projPath = '/davitpy'
 	
 	f = open(docPath+'/index_backup.rst','r')
