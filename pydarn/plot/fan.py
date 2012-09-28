@@ -128,8 +128,7 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='
 		bndTime.strftime('%H:%M      '),ha='right',size=13,weight=600)
 		
 		plot.figtext(bbox.x0,bbox.y1+.02,'['+fileType+']',ha='left',size=13,weight=600)
-		#plotTitle(fileType,cTime)
-		#print lat1,lon1,lat2,lon2
+
 		
 		myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
 		myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
