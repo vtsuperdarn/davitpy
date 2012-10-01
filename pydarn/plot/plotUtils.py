@@ -40,7 +40,7 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 		if(colors == 'aj'):
 			#define our discrete colorbar
 			cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),\
-			cmpr(.18),cmpr(.16),cmj(.32),cmj(.37)])
+			cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
 		else:
 			#define our discrete colorbar
 			cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),\
@@ -48,8 +48,8 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 			
 		#define the boundaries for color assignments
 		bounds = numpy.round(numpy.linspace(scale[0],scale[1],7))
-		bounds = numpy.insert(bounds,0,-9999.)
-		bounds = numpy.append(bounds,9999.)
+		bounds = numpy.insert(bounds,0,-50000.)
+		bounds = numpy.append(bounds,50000.)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
 	elif(param == 'phi0'):
@@ -80,7 +80,7 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 			
 		#define the boundaries for color assignments
 		bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
-		bounds = numpy.append(bounds,9999.)
+		bounds = numpy.append(bounds,50000.)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
 	#if its a non-velocity plot
@@ -98,12 +98,12 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0):
 			
 		#define the boundaries for color assignments
 		bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
-		bounds = numpy.append(bounds,9999.)
+		bounds = numpy.append(bounds,50000.)
 		norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 		
 
-	#cmap.set_bad('w',1.0)
-	#cmap.set_over('w',1.0)
+	cmap.set_bad('w',1.0)
+	cmap.set_over('w',1.0)
 	#cmap.set_under('w',1.0)
 
 	cb = drawCB(fig,coll,cmap,norm,map=map,pos=pos)
