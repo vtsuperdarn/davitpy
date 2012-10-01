@@ -21,22 +21,26 @@ class sig(object):
     self.metadata = attrdict(defaults.items() + metadata.items())
     self.items = metadata.items()
 
-    self.raw = sigStruct(dtv, data, parent=self)
+    self.raw = sigStruct(dtv, data, id=0, parent=self)
     self.active = self.raw
 
 class sigStruct(sig):
-  def __init__(self, dtv, data, parent=0, **metadata):
+  def __init__(self, dtv, data, id, parent=0, **metadata):
     self.parent = parent
     """Define a vtsd sigStruct object.
 
     :param dtv: datetime.datetime list
     :param data: raw data
-    :param ylabel: Y-Label String for data
+    :param id: A serial number uniquely identifying this signal in the
+    : processing chain.
+    :param **metadata: keywords sent to matplot lib, etc.
     :returns: sig object
     """
     self.dtv      = dtv
     self.data     = data
     self.metadata = attrdict({})
+
+    self.id = id
 
     for key in metadata:
       print "%s: %s" % (key, metadata[key])
@@ -58,6 +62,16 @@ class sigStruct(sig):
       mp.xlim(xmin=metadata.dtStart)
     if 'dtEnd' in metadata:
       mp.xlim(xmax=metadata.dtEnd)
+
+    if 'xmin' in metadata:
+      mp.xlim(xmin=metadata.xmin)
+    if 'xmax' in metadata:
+      mp.xlim(xmax=metadata.xmax)
+
+    if 'ymin' in metadata:
+      mp.ylim(ymin=metadata.ymin)
+    if 'ymax' in metadata:
+      mp.ylim(ymax=metadata.ymax)
 
     mp.xlabel(metadata.xlabel)
     mp.ylabel(metadata.ylabel)
