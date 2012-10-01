@@ -123,7 +123,7 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	#return the file object
 	return f
 	
-def radDataReadRec(myFile,vb=0):
+def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	"""
 	*******************************
 
@@ -137,6 +137,10 @@ def radDataReadRec(myFile,vb=0):
 		myFile: the file object we are reading from.  This object must be
 			created using the dmapOpen() function.
 		[vb]: flag to indicate verbose output.  default = 0
+		[beam]: read only records from this beam, a value of -1 will read
+			all beams.  default = -1
+		[channel]: read only records from this channel.  a value of None
+			will read all channels.  Default = None
 
 	OUTPUTS:
 		myBeam: a radar beam object containign keys of 'prm','fit','raw'
@@ -149,9 +153,17 @@ def radDataReadRec(myFile,vb=0):
 	"""
 	
 	#read the datamap file
-	dfile = pydarn.dmapio.readDmapRec(myFile)
-	
-	if(dfile == None): return None
+	redo = 1
+	while(redo == 1):
+		redo = 0
+		dfile = pydarn.dmapio.readDmapRec(myFile)
+		if(dfile == None): return None
+		if(beam != -1 and dfile[dfile.keys()[0]]['bmnum'] != beam): redo = 1
+		elif(channel != None):
+			if((channel == 'a' and (dfile[dfile.keys()[0]]['channel'] != 0 and dfile[dfile.keys()[0]]['channel'] != 1)) or \
+			(channel == 'b' and dfile[dfile.keys()[0]]['channel'] != 2) or \
+			(channel == 'c' and dfile[dfile.keys()[0]]['channel'] != 3) or \
+			(channel == 'd' and dfile[dfile.keys()[0]]['channel'] != 4)): redo = 1
 
 
 	#iterate through the available times from the file

@@ -29,25 +29,16 @@ read_dmap_rec(PyObject *self, PyObject *args)
 		struct DataMap *ptr;
 		struct DataMapScalar *s;
 		struct DataMapArray *a;
-		fprintf(stderr,"im in\n");
 		FILE * fp = PyFile_AsFile(f);
 		
-// 		Py_DECREF(f);
 
 		nrang=0,chn=0;
 		
-		
-// 		Py_DECREF(item);
-		
-		fprintf(stderr,"im in\n");
 		Py_BEGIN_ALLOW_THREADS
 		PyFile_IncUseCount(f);
-		fprintf(stderr,"%d\n",fileno(fp));
 		ptr = DataMapRead(fileno(fp));
 		PyFile_DecUseCount(f);
 		Py_END_ALLOW_THREADS
-		
-		fprintf(stderr,"read the file\n");
 		if(ptr == NULL)
 		{
 			Py_INCREF(Py_None);
@@ -56,7 +47,6 @@ read_dmap_rec(PyObject *self, PyObject *args)
 		
 		else
 		{
-			fprintf(stderr,"im in\n");
 			PyObject *beamData = PyDict_New();
 			
 			/*first, parse all of the scalars in the file*/
