@@ -16,3 +16,4 @@ Models module. Contains the following models:
 
 import geopack
 import igrf
+import aacgm
