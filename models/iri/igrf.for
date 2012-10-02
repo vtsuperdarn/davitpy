@@ -700,12 +700,10 @@
 !       Open coefficient file. Read past first header record.        
 !       Read degree and order of model and Earth's radius.           
 ! ---------------------------------------------------------------
-        CALL getenv("DAVITPY", davitpydir)
-        WRITE(FOUT,667) davitpydir,FSPEC
-        WRITE(*,*)'FileOut: ', FOUT
+        WRITE(FOUT,667) FSPEC
 !  667    FORMAT(A13)
 !  667    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/',A13)
- 667    FORMAT(A20,'/models/iri/',A13)
+ 667    FORMAT('/davitpy/models/iri/',A13)
         OPEN (IU, FILE=FOUT, STATUS='OLD', IOSTAT=IER, ERR=999)     
         READ (IU, *, IOSTAT=IER, ERR=999)                            
         READ (IU, *, IOSTAT=IER, ERR=999) NMAX, ERAD, XMYEAR 

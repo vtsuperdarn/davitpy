@@ -972,7 +972,7 @@ c-binary-104   FORMAT('ccir',I2,'.bin')
 c-web- special for web-version:
 ! 104   FORMAT('/usr/local/etc/httpd/cgi-bin/models/IRI/ccir',I2,'.asc')
 c-davit- special for davit-version:
-104   FORMAT('ccir',I2,'.asc')
+104   FORMAT('/davitpy/models/iri/ccir',I2,'.asc')
 c
         OPEN(IUCCIR,FILE=FILNAM,STATUS='OLD',ERR=8448,
      &          FORM='FORMATTED')
@@ -995,7 +995,7 @@ C
 c-web- special for web-version:
 ! 1144  FORMAT('/usr/local/etc/httpd/cgi-bin/models/IRI/ursi',I2,'.asc')
 c-davit- special for davit-version:
-1144   FORMAT('ursi',I2,'.asc')
+1144   FORMAT('/davitpy/models/iri/ursi',I2,'.asc')
 c-binary- if binary files than use:
 c-binary-1144          FORMAT('ursi',I2,'.bin')
 
