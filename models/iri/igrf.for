@@ -690,7 +690,7 @@
 !                                 = FORTRAN run-time error number    
 ! ===============================================================               
                                                                                 
-        CHARACTER  FSPEC*(*), FOUT*80                                    
+        CHARACTER  FSPEC*(*), FOUT*100, davitpydir*20
         DIMENSION       GH(196) 
         COMMON/iounit/konsol        
         do 1 j=1,196  
@@ -699,11 +699,11 @@
 ! ---------------------------------------------------------------               
 !       Open coefficient file. Read past first header record.        
 !       Read degree and order of model and Earth's radius.           
-! ---------------------------------------------------------------               
+! ---------------------------------------------------------------
         WRITE(FOUT,667) FSPEC
 !  667    FORMAT(A13)
 !  667    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/',A13)
- 667    FORMAT('${DAVITPY}/models/fort/igrf/',A13)
+ 667    FORMAT('/davitpy/models/iri/',A13)
         OPEN (IU, FILE=FOUT, STATUS='OLD', IOSTAT=IER, ERR=999)     
         READ (IU, *, IOSTAT=IER, ERR=999)                            
         READ (IU, *, IOSTAT=IER, ERR=999) NMAX, ERAD, XMYEAR 

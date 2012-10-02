@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 from matplotlib.collections import PolyCollection,LineCollection
 from mpl_toolkits.basemap import Basemap
 from pydarn.proc.pygridLib import *
-from pydarn.io.pygridIo import *
+from pydarn.sdio.pygridIo import *
 from utils.timeUtils import *
 
 def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=120,grid=0,vmax=500,vwidth=.2):
