@@ -21,8 +21,5 @@ This module contains the following functions:
 
 import tsyganenko
 import igrf
-<<<<<<< HEAD
 import aacgm
-=======
 import iri
->>>>>>> models_branch
