@@ -1,8 +1,10 @@
 import os,datetime,glob,math,shutil,string,time,pydarn,numpy,utils
 from utils.timeUtils import *
+from pydarn.sdio.radDataTypes import *
+import pydarn.sdio.radDataTypes
 """
 *******************************
-MODULE: pydarn.io.radDataRead
+MODULE: pydarn.sdio.radDataRead
 *******************************
 
 This module contains the following functions:
@@ -25,7 +27,7 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	"""
 	*******************************
 
-	PACKAGE: pydarn.io.radDataRead
+	PACKAGE: pydarn.sdio.radDataRead
 
 	FUNCTION: dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 
@@ -127,7 +129,7 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	"""
 	*******************************
 
-	PACKAGE: pydarn.io.radDataRead
+	PACKAGE: pydarn.sdio.radDataRead
 
 	FUNCTION: radDataReadRec(myFile,vb=0)
 
@@ -176,19 +178,19 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 		print dateT
 
 	#create a beam object
-	myBeam = pydarn.io.beam()
+	myBeam = pydarn.sdio.radDataTypes.beam()
 
 	#parse the parameters
-	myPrmData = parseDmap(dfile[epochT],pydarn.io.prmData())
+	myPrmData = parseDmap(dfile[epochT],prmData())
 	myBeam['prm'] = myPrmData
 	myBeam['prm']['time'] = dateT
 	
 	#parse the fit data
-	myFitData = parseDmap(dfile[epochT],pydarn.io.fitData())
+	myFitData = parseDmap(dfile[epochT],fitData())
 	myBeam['fit'] = myFitData
 
 	#parse the raw data
-	myRawData = parseDmap(dfile[epochT],pydarn.io.rawData())
+	myRawData = parseDmap(dfile[epochT],rawData())
 	myBeam['raw'] = myRawData
 
 	return myBeam
@@ -197,7 +199,7 @@ def dmapRead(dateStr,rad,times,fileType,filter=0):
 	"""
 	*******************************
 
-	PACKAGE: pydarn.io.radDataRead
+	PACKAGE: pydarn.sdio.radDataRead
 
 	FUNCTION: dmapRead(dateStr,rad,times,fileType,filter=0)
 
@@ -291,7 +293,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 	"""
 	*******************************
 
-	PACKAGE: pydarn.io.radDataRead
+	PACKAGE: pydarn.sdio.radDataRead
 
 	FUNCTION: radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0)
 
@@ -326,7 +328,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 	print 'done read'
 	
 	#create radData object
-	myRadData = pydarn.io.radData()
+	myRadData = radData()
 	
 	
 	#calculate start and end times
@@ -354,21 +356,21 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 				continue
 			
 			#create a beam object
-			myBeam = pydarn.io.beam()
+			myBeam = beam()
 		
 			#parse the parameters
-			myPrmData = parseDmap(dfile[epochT],pydarn.io.prmData())
+			myPrmData = parseDmap(dfile[epochT],prmData())
 			myBeam['prm'] = myPrmData
 			myBeam['prm']['time'] = dateT
 			
 			#parse the fit data
 			if(fileType == 'fitex' or fileType == 'fitacf' or fileType == 'lmfit'):
-				myFitData = parseDmap(dfile[epochT],pydarn.io.fitData())
+				myFitData = parseDmap(dfile[epochT],fitData())
 				myBeam['fit'] = myFitData
 			
 			#parse the raw data
 			if(fileType == 'rawacf'):
-				myRawData = parseDmap(dfile[epochT],pydarn.io.rawData())
+				myRawData = parseDmap(dfile[epochT],rawData())
 				myBeam['raw'] = myRawData
 				
 			myRadData[dateT] = myBeam
@@ -387,7 +389,7 @@ def parseDmap(myRec,myData):
 	"""
 	*******************************
 
-	PACKAGE: pydarn.io.radDataRead
+	PACKAGE: pydarn.sdio.radDataRead
 
 	FUNCTION: parseDmap(myRec,myData)
 
