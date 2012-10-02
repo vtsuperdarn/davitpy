@@ -6,14 +6,40 @@ from matplotlib.collections import PolyCollection
 from utils.timeUtils import *
 from pydarn.sdio import *
 
+"""
+*******************************
+MODULE: pydarn.plot.rti
+*******************************
+
+This module contains the following functions:
+
+  plotRti
+  
+  plotFreq
+  
+  plotNoise
+  
+  plotCpid
+  
+  rtiTitle
+
+  drawAxes
+
+	
+*******************************
+"""
+
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
 scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0):
 	"""
 	*******************************
 	
-	plotRti(dateStr,rad,beam,[time],[fileType]):
+	PACKAGE: pydarn.plot.rti
 	
-	crate an rti plot for a secified radar and time period
+	FUNCTION: plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
+		scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0)
+	
+	PURPOSE: create an rti plot for a secified radar and time period
 
 	INPUTS:
 		dateStr: a string containing the target date in yyyymmdd format
@@ -50,6 +76,12 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 			default: -1
 		[gsct]: a flag indicating whether to plot ground scatter as transparent
 			default: 0 (ground scatter plotted normally)
+		[pdf]: a flag indicating whether to output to a file
+			default = 0 ( on screen output)
+		[filter]: a flag indicating whether to boxcar filter the data
+			default = 0 (no filter)
+		[gflg]: a flag indicating whether to plot low velocities in gray
+			default = 0 
 	OUTPUTS:
 
 	EXAMPLE:
@@ -57,8 +89,8 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 		params=['vel','power'],scales=[[-200,200],[]],channel='b',
 		coords='mag'):
 		
-	Written by AJ 20120807
-	*******************************
+	Written by AJ 20121002
+
 	"""
 	t1 = datetime.datetime.now()
 	#check the inputs
@@ -212,9 +244,39 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 	"""
 	*******************************
 
-	Written by AJ 20120807
-	*******************************
+	PACKAGE: pydarn.plot.rti
+
+	FUNCTION: drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72])
+
+	PURPOSE: draws empty axes for an rti plot
+
+	INPUTS:
+		myFig: the MPL figure we are plotting to
+		times: a list of datetime objects referencing the beam soundings
+		rad: 3 letter radar code
+		cpid: list of the cpids or the beam soundings
+		bmnum: beam number being plotted
+		nrang: list of nrang for the beam soundings
+		frang: list of frang of the beam soundings
+		cpid: list of cpids of the beam soundings
+		rsep: list of rsep of the beam soundings
+		bottom: flag indicating if we are at the bottom of the page
+		[yrng]: range of y axis, -1=autoscale (default)
+		[coords]: y axis coordinate system, acceptable values are
+			'geo', 'mag', 'gate', 'rng'
+		[pos]: position of the plot
+
+	OUTPUTS:
+		ax: an axes object
+		
+	EXAMPLES:
+		ax = drawAxes(rtiFig,times,rad,cpid,beam,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
+			pos=pos)
+			
+	Written by AJ 20121002
+
 	"""
+	
 	nrecs = len(times)
 	#add an axes to the figure
 	ax = myFig.add_axes(pos)
@@ -290,22 +352,29 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 def rtiTitle(dateStr,rad,fileType,beam,xmin=.1,xmax=.86):
 	"""
 	*******************************
-	
-	rtiTitle(myData,dateStr,beam,[xmin],[xmax]):
-	
-	prints a title on an rti plot
+
+	PACKAGE: pydarn.plot.rti
+
+	FUNCTION: rtiTitle(dateStr,rad,fileType,beam,xmin=.1,xmax=.86)
+
+	PURPOSE: draws title for an rti plot
 
 	INPUTS:
-		myData: a radarData object containing the data to be plotted
-		dateStr: the date in yyyymmdd format
-		beam: the beam number
-		[xmin]: coord for left alignment
-		[xmax]: coord for right alignment
-	OUTPUTS:
+		dateStr: the date being plotted in 'yyyymmdd' format
+		rad: the 3 letter radar code
+		fileType: the file type being plotted
+		beam: the beam number being plotted
+		[xmin]: minimum x value o the plot in page coords
+		[xmax]: maximum x value o the plot in page coords
 
+	OUTPUTS:
+		NONE
 		
-	Written by AJ 20120807
-	*******************************
+	EXAMPLES:
+		rtiTitle(dateStr,rad,fileType,beam)
+			
+	Written by AJ 20121002
+
 	"""
 	r=pydarn.radar.network().getRadarByCode(rad)
 	
@@ -320,21 +389,30 @@ def rtiTitle(dateStr,rad,fileType,beam,xmin=.1,xmax=.86):
 def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
 	"""
 	*******************************
-	
-	plotCpid(myData,myFig,[pos]):
-	
-	plots a cpid panel on Figure myFig at position pos
+
+	PACKAGE: pydarn.plot.rti
+
+	FUNCTION: plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05])
+
+	PURPOSE: plots cpid panel as position pos
 
 	INPUTS:
-		myData: a radarData object containing the data to be plotted
-		myFig: the figure to plot the panel on
-		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
-	OUTPUTS:
+		myFig: the MPL figure we are plotting on
+		times: a list of the times of the beam soundings
+		cpid: a lsit of the cpids of th beam soundings
+		mode: a list of the ifmode param
+		[pos]: position of the panel
 
+	OUTPUTS:
+		NONE
 		
-	Written by AJ 20120807
-	*******************************
+	EXAMPLES:
+		plotCpid(rtiFig,times,cpid,mode)
+			
+	Written by AJ 20121002
+
 	"""
+	
 	oldCpid = -9999999
 	
 	#add an axes to the figure
@@ -389,21 +467,30 @@ def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
 def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
 	"""
 	*******************************
-	
-	plotNoise(myData,myFig,[pos]):
-	
-	plots a noise panel on Figure myFig at position pos
+
+	PACKAGE: pydarn.plot.rti
+
+	FUNCTION: plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06])
+
+	PURPOSE: plots a noise panel at position pos
 
 	INPUTS:
-		myData: a radarData object containing the data to be plotted
-		myFig: the figure to plot the panel on
-		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
-	OUTPUTS:
+		myFig: the MPL figure we are plotting on
+		times: a list of the times of the beam soundings
+		sky: a lsit of the noise.sky of the beam soundings
+		search: a list of the noise.search param
+		[pos]: position of the panel
 
+	OUTPUTS:
+		NONE
 		
-	Written by AJ 20120807
-	*******************************
+	EXAMPLES:
+		plotNoise(rtiFig,times,nsky,nsch)
+			
+	Written by AJ 20121002
+
 	"""
+	
 	#read the data
 	#add an axes to the figure
 	ax = myFig.add_axes(pos)
@@ -470,20 +557,28 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
 def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
 	"""
 	*******************************
-	
-	plotFreq(myData,myFig,[pos]):
-	
-	plots a frequency and Nave panel on Figure myFig at position pos
+
+	PACKAGE: pydarn.plot.rti
+
+	FUNCTION: plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06])
+
+	PURPOSE: plots a frequency panel at position pos
 
 	INPUTS:
-		myData: a radarData object containing the data to be plotted
-		myFig: the figure to plot the panel on
-		[pos]: the position of the panel, [xmin, ymin, xsize, ysize]
-	OUTPUTS:
+		myFig: the MPL figure we are plotting on
+		times: a list of the times of the beam soundings
+		freq: a lsit of the tfreq of the beam soundings
+		search: a list of the nave param
+		[pos]: position of the panel
 
+	OUTPUTS:
+		NONE
 		
-	Written by AJ 20120807
-	*******************************
+	EXAMPLES:
+		plotNoise(rtiFig,times,tfreq,nave)
+			
+	Written by AJ 20121002
+
 	"""
 		
 	#FIRST, DO THE TFREQ PLOTTING
