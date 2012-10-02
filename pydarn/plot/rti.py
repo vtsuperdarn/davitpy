@@ -6,7 +6,7 @@ from matplotlib.collections import PolyCollection
 from utils.timeUtils import *
 
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
-scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0):
+scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0):
 	"""
 	*******************************
 	
@@ -63,7 +63,8 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 	#check the inputs
 	assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
 	assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
-	assert(coords == 'gate' or coords == 'rng' or coords == 'geo'),"error, coords must be one of 'gate','rng','geo'"
+	assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or coords == 'mag'),\
+	"error, coords must be one of 'gate','rng','geo','mag"
 	assert(isinstance(beam,int)),'error, beam must be integer'
 	assert(0 < len(params) < 6),'error, must input between 1 and 5 params in LIST form'
 	for i in range(0,len(params)):
@@ -180,8 +181,8 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 		if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
 		elif(coords == 'rng'): y = numpy.linspace(frang[0],rmax*rsep[0],rmax+1)
 		else:
-			site = pydarn.radar.network().getRadarById(rad).getSiteByDate(times[0])
-			myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,nbeams=site.maxbeam,rsep=rsep[0])
+			site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[0])
+			myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,nbeams=site.maxbeam,rsep=rsep[0],coords=coords)
 			y =  myFov.latFull[beam]
 			
 		X, Y = numpy.meshgrid(x[:tcnt], y)
@@ -192,16 +193,17 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 		pcoll = plot.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True)
 		
 			
-		pydarn.plot.plotUtils.genCmap(rtiFig,pcoll,params[p],scales[p],pos=pos,colors=colors)
+		pydarn.plot.plotUtils.genCmap(rtiFig,pcoll,params[p],scales[p],pos=pos,colors=colors,gflg=gflg)
 			
 	print 'done plot'
 	
 
 
 	if(pdf):
-		rtiFig.savefig('/home/miker/temp.pdf',orientation='landscape', papertype='letter')
+		rtiFig.savefig('/home/miker/temp.png',orientation='landscape', papertype='letter',dpi=300)
 	else:
 		rtiFig.show()
+		
 	print datetime.datetime.now()-t1
 
 	
@@ -230,10 +232,10 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 			oldCpid = -99999999
 			for i in range(len(cpid)):
 				if(cpid[i] == oldCpid): continue
-				oldCpid == cpid[i]
+				oldCpid = cpid[i]
 				if(coords == 'geo' or coords == 'mag'):
 					site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[i])
-					myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],nbeams=site.maxbeam,rsep=rsep[i])
+					myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],nbeams=site.maxbeam,rsep=rsep[i],coords=coords)
 					if(myFov.latFull[bmnum].max() > ymax): ymax = myFov.latFull[bmnum].max()
 					if(myFov.latFull[bmnum].min() < ymin): ymin = myFov.latFull[bmnum].min()
 				else:

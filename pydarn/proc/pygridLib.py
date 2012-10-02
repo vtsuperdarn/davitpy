@@ -282,10 +282,10 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 			#check for a control program change
 			if(myData[t]['prm']['cp'] != oldCpid and myData[t]['prm']['channel'] < 2):
 				#get possibly new ngates
-				ngates = myData[t]['prm']['nrang']
+				ngates = max([site.maxgate,myData[t]['prm']['nrang']])
 				#gereate a new FOV
 				myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[t]['prm']['rsep'],\
-				ngates=ngates,nbeams=site.maxbeam)
+				ngates=ngates+1,nbeams=site.maxbeam)
 				#create a 2D list to hold coords of RB cells
 				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
 				#generate new coordsList
@@ -699,10 +699,10 @@ class pygrid(object):
 		Written by AJ 20120911
 
 		"""
-		import math,aacgm,time
+		import math,models.aacgm as aacgm,time
 		
 		#go through all scatter points on this beam
-		for i in range(0,myData['fit']['npnts']):
+		for i in range(myData['fit']['npnts']):
 			
 			#check for good ionospheric scatter
 			if(myData['fit']['gflg'][i] == 0 and myData['fit']['v'][i] != 0.0):
