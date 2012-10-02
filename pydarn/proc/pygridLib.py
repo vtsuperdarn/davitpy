@@ -242,7 +242,8 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	
 	#read the radar data
 	myFile = dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
-
+	if(myFile == None): return None
+	
 	#get a radar site object
 	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(stime)
 
@@ -266,11 +267,13 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	
 	myBeam = radDataReadRec(myFile,channel='a')
 	
-	while(myBeam['prm']['time'] < stime):
+	while(myBeam['prm']['time'] < stime and myBeam != None):
 		myBeam = radDataReadRec(myFile,channel='a')
 
 	#until we reach the designated end time
 	while ctime < etime:
+		
+		if(myBeam == None): break
 		
 		#boundary time
 		bndT = ctime+datetime.timedelta(seconds=interval)
@@ -281,6 +284,7 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 		#iterate through the radar data
 		
 		while(myBeam['prm']['time'] < bndT):
+			
 			#current time of radar data
 			t = myBeam['prm']['time'] 
 			
@@ -309,6 +313,8 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 				
 			#read the next record
 			myBeam = radDataReadRec(myFile,channel='a')
+			
+			if(myBeam == None): break
 
 		#if we have > 0 gridded vector
 		if(g.nVecs > 0):
@@ -573,9 +579,9 @@ class pygrid(object):
 		
 		for l in self.lats:
 			for c in l.cells:
-				c.allVecs = [];
-				c.nVecs = 0;
-				c.avgVecs = [];
+				c.allVecs = []
+				c.nVecs = 0
+				c.avgVecs = []
 				c.nAvg = 0
 				c.mrgVec = None
 			
