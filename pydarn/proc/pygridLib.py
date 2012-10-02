@@ -29,6 +29,7 @@ This module contains the following classes:
 """
 
 from pydarn.sdio.pygridIo import *
+from pydarn.sdio.radDataRead import *
 from utils.timeUtils import *
 from utils.geoPack import *
 
@@ -240,13 +241,10 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 		etime = myDate.replace(hour=hr2,minute=min2)
 	
 	#read the radar data
-	myData = pydarn.io.radDataRead(dateStr,rad,time=time,filter=filter)
-	#check for data in this time period
-	if(myData.nrecs <= 0):
-		print 'no data for this time period'
-		return
+	myFile = dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
+
 	#get a radar site object
-	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(myData.times[0])
+	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(stime)
 
 	#a list for all the grid objects
 	myGrids = []
@@ -266,8 +264,14 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	
 	oldCpid = -999999999999999
 	
+	myBeam = radDataReadRec(myFile,channel='a')
+	
+	while(myBeam['prm']['time'] < stime):
+		myBeam = radDataReadRec(myFile,channel='a')
+
 	#until we reach the designated end time
 	while ctime < etime:
+		
 		#boundary time
 		bndT = ctime+datetime.timedelta(seconds=interval)
 		#remove vectors from the grid object
@@ -275,16 +279,17 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 		#verbose option
 		if(vb==1): print ctime
 		#iterate through the radar data
-		for i in range(lastInd,myData.nrecs):
+		
+		while(myBeam['prm']['time'] < bndT):
 			#current time of radar data
-			t = myData.times[i]
+			t = myBeam['prm']['time'] 
 			
 			#check for a control program change
-			if(myData[t]['prm']['cp'] != oldCpid and myData[t]['prm']['channel'] < 2):
+			if(myBeam['prm']['cp'] != oldCpid and myBeam['prm']['channel'] < 2):
 				#get possibly new ngates
-				ngates = max([site.maxgate,myData[t]['prm']['nrang']])
+				ngates = max([site.maxgate,myBeam['prm']['nrang']])
 				#gereate a new FOV
-				myFov = pydarn.radar.radFov.fov(site=site,rsep=myData[t]['prm']['rsep'],\
+				myFov = pydarn.radar.radFov.fov(site=site,rsep=myBeam['prm']['rsep'],\
 				ngates=ngates+1,nbeams=site.maxbeam)
 				#create a 2D list to hold coords of RB cells
 				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
@@ -295,16 +300,16 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 						arr2=aacgm.aacgmConv(myFov.latCenter[ii][jj+1],myFov.lonCenter[ii][jj+1],300,0)
 						azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
 						coordsList[ii][jj] = [arr1[0],arr1[1],azm]
-				oldCpid = myData[t]['prm']['cp']
-					
+				oldCpid = myBeam['prm']['cp']
+				
 			#are we in the target time interval?
 			if(ctime < t <= bndT): 
 				#enter the radar data into the grid
-				g.enterData(myData[t],coordsList)
-			#if we have exceeded the boundary time
-			elif(t >= bndT): break
-		#record the last record we examined
-		lastInd = i
+				g.enterData(myBeam,coordsList)
+				
+			#read the next record
+			myBeam = radDataReadRec(myFile,channel='a')
+
 		#if we have > 0 gridded vector
 		if(g.nVecs > 0):
 			#record some information
