@@ -1,6 +1,10 @@
+import copy 
+import datetime
+
 from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
+
 
 class sig(object):
   def __init__(self, dtv, data, **metadata):
@@ -15,14 +19,15 @@ class sig(object):
     defaults['ylabel'] = 'Untitled Y-Axis'
     defaults['xlabel'] = 'Time [UT]'
     defaults['title']  = 'Untitled Plot'
+    defaults['fft_xlabel'] = 'Frequency [Hz]'
+    defaults['fft_ylabel'] = 'Amplitude'
 
     self.metadata = dict(defaults.items() + metadata.items())
-
-    self.raw = sigStruct(dtv, data, id=0, parent=self)
+    self.raw = sigStruct(dtv, data, parent=self)
     self.active = self.raw
 
 class sigStruct(sig):
-  def __init__(self, dtv, data, id, parent=0, **metadata):
+  def __init__(self, dtv, data, comment='Raw Data', parent=0, **metadata):
     self.parent = parent
     """Define a vtsd sigStruct object.
 
@@ -37,13 +42,33 @@ class sigStruct(sig):
     self.data     = data
     self.metadata = {}
 
-    self.id = id
+    self.history = {datetime.datetime.now():comment}
 
     for key in metadata:
       print "%s: %s" % (key, metadata[key])
 
     for key in metadata:
       self.metadata[key] = metadata[key]
+
+  def copy(self,newsig,comment):
+    """Copy a vtsig object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+
+
+    :param newsig: A string with the name for the new signal.
+    :param comment: A string comment describing the new signal.
+    :returns: sig object
+    """
+    setattr(self.parent,newsig,copy.copy(self))
+    newsigobj = getattr(self.parent,newsig)
+
+    newsigobj.dtv       = copy.deepcopy(self.dtv)
+    newsigobj.data      = copy.deepcopy(self.data)
+    newsigobj.metadata  = copy.deepcopy(self.metadata)
+    newsigobj.history   = copy.deepcopy(self.history)
+
+    newsigobj.history[datetime.datetime.now()] = comment
+    
+    return newsigobj
 
   def plot(self):
     #from matplotlib import pyplot as mp
@@ -74,6 +99,52 @@ class sigStruct(sig):
     mp.ylabel(metadata['ylabel'])
     mp.title(metadata['title'])
 
+#Plot FFT of Some Signal
+  def plotfft(self):
+    sampRate = 1
+    nsamp = len(self.data)
+
+    #Metadata of "processed" signal overrides defaults.
+    metadata = dict(self.parent.metadata.items() + self.metadata.items())
+
+#Nyquist Frequency
+    f_max = 1/(2.*sampRate)
+
+    freq_ax = np.arange(nsamp,dtype='f8')
+    freq_ax = (freq_ax / max(freq_ax)) - 0.5
+    freq_ax = freq_ax * 2. * f_max
+
+    window  = np.hanning(nsamp)
+    signal  = self.data*window
+
+    sig_fft = sp.fftpack.fft(signal)
+    sig_fft = sp.fftpack.fftshift(sig_fft)
+
+    fig = mp.figure()
+    ax = fig.add_subplot(111)
+
+    ax.plot(freq_ax,abs(sig_fft))
+
+    fftsuptitle = 'FFT Spectrum Magnitude'
+
+    if metadata.has_key('title'): mp.title(metadata['title'])
+    if metadata.has_key('fft_title'): mp.title(metadata['fft_title'])
+    if metadata.has_key('fft_suptitle'): mp.suptitle(metadata['fft_suptitle'])
+    else: mp.suptitle(fftsuptitle)
+    if metadata.has_key('fft_xlabel'): mp.xlabel(metadata['fft_xlabel'])
+    if metadata.has_key('fft_ylabel'): mp.ylabel(metadata['fft_ylabel'])
+
+    if metadata.has_key('fft_xmin'): mp.xlim(xmin=metadata['fft_xmin'])
+    else: mp.xlim(xmin=0)
+
+    if metadata.has_key('fft_xmax'): mp.xlim(xmax=metadata['fft_xmax'])
+    else: mp.xlim(xmax=f_max)
+
+    if metadata.has_key('fft_ymin'): mp.ylim(ymin=metadata['fft_ymin'])
+    if metadata.has_key('fft_ymax'): mp.ylim(ymax=metadata['fft_ymax'])
+
+    mp.show()
+
 class bandpass(object):
   def __init__(self,nsamp,f_c,sampRate,window='blackmanharris'):
     """Define a bandpass filter object
@@ -100,11 +171,17 @@ class bandpass(object):
     self.f_c = f_c
     self.sampRate = sampRate
     self.window = window
+
+    self.comment = ' '.join(['Filter:',window+',','sampRate:',str(sampRate),'Hz,','Cuttoffs:',str(f_c[0])+',', str(f_c[1]),'Hz'])
     self.ir = d
   #These functions are modified from Matti Pastell's Page:
   # http://mpastell.com/2010/01/18/fir-with-scipy/
 
   #Plot frequency and phase response
+
+  def __str__(self):
+    return self.comment
+
   def plotTransferFunction(self,xmin=0,xmax=None,ymin_freq=-150,ymax_freq=5,ymin_phase=None,ymax_phase=None):
       """Plot the frequency and phase response of the filter object.
 
@@ -201,14 +278,8 @@ class bandpass(object):
       #Apply filter
       filt_data = sp.signal.lfilter(self.ir,[1.0],sigobj.data)
 
-      #Make a new signal object based on the currently selected object.
-      import copy 
       newsig = 'filtered'
-#      vtsig.filtered = copy.copy(sigobj)
-
-      setattr(vtsig,newsig,copy.deepcopy(sigobj))
-      newsigobj = getattr(vtsig,newsig)
-
+      newsigobj = sigobj.copy(newsig,self.comment)
       #Put in the filtered data.
       newsigobj.data = copy.copy(filt_data)
 
