@@ -52,7 +52,7 @@ INPUTS:
 		'GS': for ground scatter projection model
 		None: if you are really confident in your elevation or altitude values
 		... more to come
-	coords: 'geo' (more to come)
+	coords: 'geo', 'mag'
 	"""
 	def __init__(self, \
 			frang=180.0, rsep=45.0, site=None, \
@@ -62,6 +62,7 @@ INPUTS:
 			model='IS', coords='geo'):
 		# Get fov
 		from numpy import ndarray, array, arange, zeros
+		import models.aacgm as aacgm
 		
 		# Test that we have enough input arguments to work with
 		if not site and None in [nbeams, ngates, bmsep, recrise, siteLat, siteLon, siteBore, siteAlt]:
@@ -195,6 +196,11 @@ INPUTS:
 							elevation=tElev, altitude=tAlt, model=model)
 				latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
 							elevation=tElev, altitude=tAlt, model=model)
+							
+				if(coords == 'mag'):
+					[latC,lonC,alt] = aacgm.aacgmlib.aacgmConv(latC,lonC,tAlt,0)
+					[latE,lonE,lt] = aacgm.aacgmlib.aacgmConv(latE,lonE,tAlt,0)
+					
 				# Save into output arrays
 				latCenter[ib, ig] = latC
 				lonCenter[ib, ig] = lonC
