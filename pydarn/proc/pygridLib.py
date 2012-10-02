@@ -28,7 +28,7 @@ This module contains the following classes:
 *******************************
 """
 
-from pydarn.io.pygridIo import *
+from pydarn.sdio.pygridIo import *
 from utils.timeUtils import *
 from utils.geoPack import *
 

@@ -4,6 +4,7 @@ import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
 from utils.timeUtils import *
+from pydarn.sdio import *
 
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
 scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0):
@@ -99,10 +100,10 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 		etime = myDate.replace(hour=hr2,minute=min2)
 		
 	#open the file
-	myFile = pydarn.io.dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
+	myFile = dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
 	
 	assert(myFile != None),'error, no data available for the requested time/radar/filetype combination'
-	myBeam = pydarn.io.radDataReadRec(myFile,beam=beam,channel=channel)
+	myBeam = radDataReadRec(myFile,beam=beam,channel=channel)
 	assert(myBeam != None),'error, no data available for the requested time/radar/filetype combination'
 	
 	vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
@@ -128,7 +129,7 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 			if('phi0' in params): phi0.append(myBeam['fit']['phi0'])
 			
 
-		myBeam = pydarn.io.radDataReadRec(myFile,beam=beam,channel=channel)
+		myBeam = radDataReadRec(myFile,beam=beam,channel=channel)
 		
 	myFile.close()
 	
