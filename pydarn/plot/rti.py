@@ -1,11 +1,3 @@
-import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
-import matplotlib.pyplot as plot
-import matplotlib.lines as lines
-from matplotlib.ticker import MultipleLocator
-from matplotlib.collections import PolyCollection
-from utils.timeUtils import *
-from pydarn.sdio import *
-
 """
 *******************************
 MODULE: pydarn.plot.rti
@@ -24,10 +16,19 @@ This module contains the following functions:
   rtiTitle
 
   drawAxes
-
 	
 *******************************
 """
+
+
+import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+import matplotlib.pyplot as plot
+import matplotlib.lines as lines
+from matplotlib.ticker import MultipleLocator
+from matplotlib.collections import PolyCollection
+from utils.timeUtils import *
+from pydarn.sdio import *
+
 
 def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
 scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0):
