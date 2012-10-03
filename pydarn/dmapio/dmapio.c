@@ -102,7 +102,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
 				if ((strcmp(s->name,"intt.sc")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "intt.sc"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"intt.us")==0) && (s->type==DATAINT))
-					PyDict_SetItem(beamData,Py_BuildValue("s", "intt.us"), Py_BuildValue("i", *(s->data.sptr)));
+					PyDict_SetItem(beamData,Py_BuildValue("s", "intt.us"), Py_BuildValue("i", *(s->data.iptr)));
 				if ((strcmp(s->name,"mpinc")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "mpinc"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"mppul")==0) && (s->type==DATASHORT))
@@ -494,7 +494,7 @@ read_dmap(PyObject *self, PyObject *args)
 					if ((strcmp(s->name,"intt.sc")==0) && (s->type==DATASHORT))
 						PyDict_SetItem(beamData,Py_BuildValue("s", "intt.sc"), Py_BuildValue("i", *(s->data.sptr)));
 					if ((strcmp(s->name,"intt.us")==0) && (s->type==DATAINT))
-						PyDict_SetItem(beamData,Py_BuildValue("s", "intt.us"), Py_BuildValue("i", *(s->data.sptr)));
+						PyDict_SetItem(beamData,Py_BuildValue("s", "intt.us"), Py_BuildValue("i", *(s->data.iptr)));
 					if ((strcmp(s->name,"mpinc")==0) && (s->type==DATASHORT))
 						PyDict_SetItem(beamData,Py_BuildValue("s", "mpinc"), Py_BuildValue("i", *(s->data.sptr)));
 					if ((strcmp(s->name,"mppul")==0) && (s->type==DATASHORT))

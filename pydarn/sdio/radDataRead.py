@@ -117,10 +117,10 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	#filter(if desired) and open the file
 	if(filter == 0): f = open(tmpName,'r')
 	else:
-		print 'fitexfilter '+tmpName+' > '+tmpName+'.f'
-		os.system('fitexfilter '+tmpName+' > '+tmpName+'.f')
+		print 'fitexfilter '+tmpName+' > '+tmpName+'f'
+		os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
 		os.system('rm '+tmpName)
-		f = open(tmpName+'.f','r')
+		f = open(tmpName+'f','r')
 		
 	#return the file object
 	return f
@@ -193,6 +193,10 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	myRawData = parseDmap(dfile[epochT],rawData())
 	myBeam['raw'] = myRawData
 
+	fileName, fileExtension = os.path.splitext(myFile.name)
+	
+	myBeam.ftype = fileExtension
+	
 	return myBeam
 	
 def dmapRead(dateStr,rad,times,fileType,filter=0):
@@ -287,7 +291,7 @@ def dmapRead(dateStr,rad,times,fileType,filter=0):
 	for filename in filelist:
 		os.system('rm '+filename)
 		
-	return dfile
+	return dfile,'.'+fileType
 
 def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0):
 	"""
@@ -324,7 +328,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 	
 	
 	#read the datamap file
-	dfile = dmapRead(dateStr,rad,time,fileType,filter=filter)
+	dfile,fileType = dmapRead(dateStr,rad,time,fileType,filter=filter)
 	print 'done read'
 	
 	#create radData object
@@ -373,15 +377,16 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 				myRawData = parseDmap(dfile[epochT],rawData())
 				myBeam['raw'] = myRawData
 				
+			myBeam.ftype=fileType
+			
 			myRadData[dateT] = myBeam
 			
 	print 'done copy'
 	
 	myRadData.times = myRadData.getTimes()
 	myRadData.nrecs = len(myRadData.times)
-	if(myRadData.nrecs > 0):
-		myRadData.ftype = fileType
-		
+	myRadData.ftype = fileType
+	
 	return myRadData
 
 
