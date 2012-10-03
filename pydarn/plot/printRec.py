@@ -32,8 +32,8 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 		smt: start minute
 		ehr: end hour
 		emt: end minute
-		rad: the 3 letter radar code, eg 'bks'
-		outfile: the txt file we are outputting to
+		rad: the 3 letter radar code, eg 'bks'|
+		outfile: the txt file we are outputting to|
 		[fileType]: the filetype to read, 'fitex','fitacf','lmfit'
 			default = 'fitex'
 		[summ]: option to output a beam summary instead of all data
