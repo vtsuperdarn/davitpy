@@ -10,9 +10,9 @@ DEV: functions/modules/classes with a * have not been developed yet
 
 *******************************
 """
-
 import sigio
-from sig import *
+from signal import *
+
 
 # *************************************************************
 # Define a few general-use constants
