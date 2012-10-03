@@ -142,15 +142,12 @@ class sigStruct(sig):
     mp.ylabel(metadata['ylabel'])
     mp.title(metadata['title'])
 
-#Plot FFT of Some Signal
-  def plotfft(self):
-
+  def fft(self):
+    """Calculates the FFT spectral magnitude for the signal.
+    """
     sampRate = self.sampRate()
     assert sampRate != np.NAN, 'FFT requires a valid sample rate. Signal may not have a regularly spaced sampling rate.'
     nsamp = len(self.data)
-
-    #Metadata of "processed" signal overrides defaults.
-    metadata = dict(self.parent.metadata.items() + self.metadata.items())
 
 #Nyquist Frequency
     f_max = 1/(2.*sampRate)
@@ -164,6 +161,21 @@ class sigStruct(sig):
 
     sig_fft = sp.fftpack.fft(signal)
     sig_fft = sp.fftpack.fftshift(sig_fft)
+
+    self.freqVec  = freq_ax
+    self.spectrum = sig_fft
+
+#Plot FFT of Some Signal
+  def plotfft(self):
+    """Plots the FFT spectral magnitude for the signal.
+    """
+
+    self.fft()
+    freq_ax = self.freqVec
+    sig_fft = self.spectrum
+
+    #Metadata of "processed" signal overrides defaults.
+    metadata = dict(self.parent.metadata.items() + self.metadata.items())
 
     fig = mp.figure()
     ax = fig.add_subplot(111)
