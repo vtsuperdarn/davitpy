@@ -50,14 +50,10 @@ class sigStruct(sig):
     self.dtv      = dtv
     self.data     = data
     self.metadata = {}
+    for key in metadata: self.metadata[key] = metadata[key]
 
     self.history = {datetime.datetime.now():comment}
 
-    for key in metadata:
-      print "%s: %s" % (key, metadata[key])
-
-    for key in metadata:
-      self.metadata[key] = metadata[key]
 
   def copy(self,newsig,comment):
     """Copy a vtsig object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
@@ -107,11 +103,14 @@ class sigStruct(sig):
     else:
       self.metadata['validTimes'] = times
 
+  def getAllMetaData(self):
+    return dict(self.parent.metadata.items() + self.metadata.items())
+
   def plot(self):
     #from matplotlib import pyplot as mp
 
     #Metadata of "processed" signal overrides defaults.
-    metadata = dict(self.parent.metadata.items() + self.metadata.items())
+    metadata = self.getAllMetaData()
 
     fig = mp.figure()
     mp.plot(self.dtv,self.data)

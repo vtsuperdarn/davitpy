@@ -5,6 +5,49 @@ from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
 
+def detrend(vtsig,signal='active'):
+    """Apply the filter to a vtsig object.
+
+    :param vtsig: vtsig object
+    :param xmax: Maximum value for x-axis.
+    :param ymin_imp: Minimum value for y-axis for the impulse response plot.
+    :param ymax_imp: Maximum value for y-axis for the impulse response plot.
+    :param ymin_step: Minimum value for y-axis for the step response plot.
+    :param ymax_step: Maximum value for y-axis for the step response plot.
+    """
+    
+    sigobj = getattr(vtsig,signal)
+
+    #Apply filter
+    detrend_data = sp.signal.detrend(sigobj.data)
+
+    #Create new signal object.
+    newsigobj = sigobj.copy('detrended','Linear detrend (scipy.signal.detrend)')
+    #Put in the filtered data.
+    newsigobj.data = copy.copy(detrend_data)
+
+    #Clear out ymin and ymax from metadata; make sure meta data block exists.
+    #If not, create it.
+    if hasattr(newsigobj,'metadata'):
+      delMeta = ['ymin','ymax']
+      for key in delMeta:
+        if newsigobj.metadata.has_key(key):
+          del newsigobj.metadata[key]
+    else:
+      newsigobj.metadata = {}
+
+    key = 'title'
+    if newsigobj.metadata.has_key(key):
+      newsigobj.metadata[key] = ' '.join(['Detrended ',newsigobj.metadata[key]])
+    elif vtsig.metadata.has_key(key):
+      newsigobj.metadata[key] = ' '.join(['Detrended ',vtsig.metadata[key]])
+    else:
+      newsigobj.metadata[key] = 'Detrended'
+
+    #newsigobj.metadata = 
+    setattr(vtsig,'active',newsigobj)
+
+
 class bandpass(object):
   def __init__(self,nsamp,f_c,sampRate,window='blackmanharris'):
     """Define a bandpass filter object
