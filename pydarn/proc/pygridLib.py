@@ -33,7 +33,7 @@ from pydarn.sdio.radDataRead import *
 from utils.timeUtils import *
 from utils.geoPack import *
 
-def makePygridBatch(sDateStr,eDateStr=None,hemi='both',interval=120,merge=1,vb=0):
+def makePygridBatch(sDateStr,eDateStr=None,hemi='both',interval=120,merge=1,vb=0,filter=1):
 	"""
 
 	PACKAGE: pydarn.proc.pygridLib
@@ -90,7 +90,7 @@ def makePygridBatch(sDateStr,eDateStr=None,hemi='both',interval=120,merge=1,vb=0
 			for r in rads:
 				if(vb == 1): print r, cDate
 				#make the pygrid files
-				makePygrid(dateToYyyymmdd(cDate),r,vb=vb,interval=interval)
+				makePygrid(dateToYyyymmdd(cDate),r,vb=vb,interval=interval,filter=filter)
 			#merge the pygrid files if desired
 			if(merge == 1):
 				if(hemi == 'both'):
@@ -263,16 +263,15 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	#open a pygrid file
 	gFile = openPygrid(fileName,'w')
 	
+
+	
 	oldCpid = -999999999999999
-	
 	myBeam = radDataReadRec(myFile,channel='a')
-	
 	while(myBeam['prm']['time'] < stime and myBeam != None):
 		myBeam = radDataReadRec(myFile,channel='a')
 
 	#until we reach the designated end time
 	while ctime < etime:
-		
 		if(myBeam == None): break
 		
 		#boundary time
