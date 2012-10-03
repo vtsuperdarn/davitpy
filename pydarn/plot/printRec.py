@@ -55,11 +55,11 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 	else:
 		t = myData.times[0]
 		f.write('{0:10s} {1:3}\n'.format(t.strftime("%Y-%m-%d"),rad))
-		f.write('{0:8s} {1:>6s} {2:>6s} {3:>6s} {4:>6s} {5:>7s} {6:>6s} {7:>6s} {8:>6s} {9:>6s} {10:>6s}\n'.\
+		f.write('{0:15s} {1:>4s} {2:>5s} {3:>5s} {4:>4s} {5:>7s} {6:>5s} {7:>5s} {8:>5s} {9:>5s} {10:>4s}\n'.\
 		format('time','beam','npnts','nrang','cpid','channel','tfreq','lagfr','smsep','intt','scan'))
 		for t in myData.times:
-			f.write('{0:8s} {1:>6d} {2:>6d} {3:>6d} {4:>6d} {5:>7d} {6:>6d} {7:>6d} {8:>6d} {9:>6.2f} {10:>6d}\n'.\
-			format(t.strftime("%H:%M:%S"),myData[t]['prm']['bmnum'],len(myData[t]['fit']['slist']),\
+			f.write('{0:15s} {1:>4d} {2:>5d} {3:>5d} {4:>4d} {5:>7d} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
+			format(t.strftime("%H:%M:%S.%f"),myData[t]['prm']['bmnum'],len(myData[t]['fit']['slist']),\
 			myData[t]['prm']['nrang'],myData[t]['prm']['cp'],myData[t]['prm']['channel'],myData[t]['prm']['tfreq'],\
 			myData[t]['prm']['lagfr'],myData[t]['prm']['smsep'],myData[t]['prm']['intt.sc']+myData[t]['prm']['intt.us']/1e6,myData[t]['prm']['scan']))
 			
