@@ -8,7 +8,7 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 	sTime = shr*100+smt
 	eTime = ehr*100+emt
 	
-	myData = pydarn.io.radDataRead(dateStr,rad,time=[sTime,eTime],fileType=fileType,vb=0)
+	myData = pydarn.sdio.radDataRead(dateStr,rad,time=[sTime,eTime],fileType=fileType,vb=0)
 	
 	if(myData.nrecs == 0): return
 	

@@ -11,7 +11,7 @@ DEV: functions/modules/classes with a * have not been developed yet
 *******************************
 """
 
-import io
+import sigio
 from sig import *
 
 # *************************************************************
