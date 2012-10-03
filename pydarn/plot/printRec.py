@@ -7,7 +7,6 @@ This module contains the following functions:
 
   fitPrintRec
 	
-*******************************
 """
 
 
@@ -18,29 +17,29 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 	"""
 	*******************************
 
-	PACKAGE: pydarn.plot.printRec\n
-	FUNCTION: fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', summ=0)\n
-	PURPOSE: prints out the contents of a fit file\n
+	**PACKAGE**: pydarn.plot.printRec\n
+	**FUNCTION**: fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', summ=0)\n
+	**PURPOSE**: prints out the contents of a fit file\n
 
-	INPUTS:
-		**yr**: the year
+	INPUTS:\n
+		**yr**: the year\n
 		**mo**: the month\n
-		dy: the day\n
-		shr: start hour
-		smt: start minute
-		ehr: end hour
-		emt: end minute
-		rad: the 3 letter radar code, eg 'bks'
-		outfile: the txt file we are outputting to
-		[fileType]: the filetype to read, 'fitex','fitacf','lmfit'
-			default = 'fitex'
-		[summ]: option to output a beam summary instead of all data
+		**dy**: the day\n
+		**shr**: start hour\n
+		**smt**: start minute\n
+		**ehr**: end hour\n
+		**emt**: end minute\n
+		**rad**: the 3 letter radar code, eg 'bks'\n
+		**outfile**: the txt file we are outputting to\n
+		**[fileType]**: the filetype to read, 'fitex','fitacf','lmfit'\n
+		default = 'fitex'\n
+		**[summ]**: option to output a beam summary instead of all data\n
 
-	OUTPUTS:
+	OUTPUTS:\n
 		NONE
-		
-	EXAMPLES:
-		fitPrintRec(2012,10,3,2,3,5,43,'bks','myoutfile.txt',summ=1)
+	
+	EXAMPLES:\n
+		fitPrintRec(2012,10,3,2,3,5,43,'bks','myoutfile.txt',summ=1)\n
 		
 	Written by AJ 20121003
 
