@@ -12,6 +12,7 @@ DEV: functions/modules/classes with a * have not been developed yet
 """
 import sigio
 from signal import *
+from filter import *
 
 
 # *************************************************************

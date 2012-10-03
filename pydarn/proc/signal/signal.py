@@ -25,6 +25,16 @@ class sig(object):
     self.raw = sigStruct(dtv, data, parent=self)
     self.active = self.raw
 
+  def plot(self):
+    """Plots the currently active signal.
+    """
+    self.active.plot()
+
+  def plotfft(self):
+    """Plots the spectrum of the currently active signal.
+    """
+    self.active.plotfft()
+
 class sigStruct(sig):
   def __init__(self, dtv, data, comment='Raw Data', parent=0, **metadata):
     self.parent = parent
@@ -69,6 +79,11 @@ class sigStruct(sig):
     
     return newsigobj
 
+  def setActive(self):
+    """Sets this signal as the currently active signal.
+    """
+    self.parent.active = self
+
   def sampRate(self):
     """Calculate the sample rate parameters of a vt sigStruct signal.
     :returns: sampRate: sample rate of signal in seconds.  This is NAN if more than one unique timestep in sig.
@@ -81,6 +96,16 @@ class sigStruct(sig):
       sampRate = np.NAN
 
     return sampRate
+
+  def updateValidTimes(self,times):
+    """Update the metadata block times that a signal is valid for.
+    :param: times: List of times between which the signal is valid.
+    """
+    if self.metadata.has_key('validTimes'):
+      if self.metadata['validTimes'][0] < times[0]: self.metadata['validTimes'][0] = times[0]
+      if self.metadata['validTimes'][1] > times[1]: self.metadata['validTimes'][1] = times[1]
+    else:
+      self.metadata['validTimes'] = times
 
   def plot(self):
     #from matplotlib import pyplot as mp
@@ -106,6 +131,13 @@ class sigStruct(sig):
       mp.ylim(ymin=metadata['ymin'])
     if 'ymax' in metadata:
       mp.ylim(ymax=metadata['ymax'])
+
+    if self.metadata.has_key('validTimes'):
+      grey = '0.75'
+      mp.axvspan(self.dtv[0],self.metadata['validTimes'][0],color=grey)
+      mp.axvspan(self.metadata['validTimes'][1],self.dtv[-1],color=grey)
+      mp.axvline(x=self.metadata['validTimes'][0],color='g',ls='--',lw=2)
+      mp.axvline(x=self.metadata['validTimes'][1],color='g',ls='--',lw=2)
 
     mp.xlabel(metadata['xlabel'])
     mp.ylabel(metadata['ylabel'])
@@ -158,162 +190,3 @@ class sigStruct(sig):
     if metadata.has_key('fft_ymax'): mp.ylim(ymax=metadata['fft_ymax'])
 
     mp.show()
-
-class bandpass(object):
-  def __init__(self,nsamp,f_c,sampRate,window='blackmanharris'):
-    """Define a bandpass filter object
-
-    :param nsamp: number of samples the filter will have
-    :param f_c: Two-element list of cutoff frequencies
-    :param sampRante: Sample rate of filter.  This should match the sample rate of the data being filtered.
-    :param window: Type of window the filter should use.  See scipy.signal.firwin() for options.
-    :returns: sig object
-    """
-    f_c = np.array(f_c)
-    f_max = 1/(2.*sampRate)
-    f_cn = f_c / f_max
-
-    n = nsamp
-
-    #Lowpass filter
-    a = sp.signal.firwin(n, cutoff = f_cn[0], window = window)
-    #Highpass filter with spectral inversion
-    b = - sp.signal.firwin(n, cutoff = f_cn[1], window = window); b[n/2] = b[n/2] + 1
-    #Combine into a bandpass filter
-    d = - (a+b); d[n/2] = d[n/2] + 1
-    
-    self.f_c = f_c
-    self.sampRate = sampRate
-    self.window = window
-
-    self.comment = ' '.join(['Filter:',window+',','sampRate:',str(sampRate),'Hz,','Cuttoffs:',str(f_c[0])+',', str(f_c[1]),'Hz'])
-    self.ir = d
-  #These functions are modified from Matti Pastell's Page:
-  # http://mpastell.com/2010/01/18/fir-with-scipy/
-
-  #Plot frequency and phase response
-
-  def __str__(self):
-    return self.comment
-
-  def plotTransferFunction(self,xmin=0,xmax=None,ymin_freq=-150,ymax_freq=5,ymin_phase=None,ymax_phase=None):
-      """Plot the frequency and phase response of the filter object.
-
-      :param xmin: Minimum value for x-axis.
-      :param xmax: Maximum value for x-axis.
-      :param ymin_freq: Minimum value for y-axis for the frequency response plot.
-      :param ymax_freq: Maximum value for y-axis for the frequency response plot.
-      :param ymin_phase: Minimum value for y-axis for the phase response plot.
-      :param ymax_phase: Maximum value for y-axis for the phase response plot.
-      """
-      w,h = sp.signal.freqz(self.ir,1)
-      h_dB = 20 * np.log10(abs(h))
-      mp.subplot(211)
-      w = w/max(w)
-      if self.sampRate != 0:
-          maxw = 1./(2.* self.sampRate)
-          w = w * maxw
-      mp.plot(w,h_dB)
-
-      if xmin is not None: mp.xlim(xmin=xmin)
-      if xmax is not None: mp.xlim(xmax=xmax)
-      if ymin_freq is not None: mp.ylim(ymin=ymin_freq)
-      if ymax_freq is not None: mp.ylim(ymax=ymax_freq)
-
-      mp.ylabel('Magnitude (db)')
-
-      if self.sampRate==0:
-                      mp.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
-      else:
-                      mp.xlabel(r'Frequency (Hz)')
-      mp.title(r'Frequency response')
-      mp.subplot(212)
-      h_Phase = np.unwrap(np.arctan2(np.imag(h),np.real(h)))
-      mp.plot(w,h_Phase)
-
-      if xmin is not None: mp.xlim(xmin=xmin)
-      if xmax is not None: mp.xlim(xmax=xmax)
-      if ymin_phase is not None: mp.ylim(ymin=ymin_phase)
-      if ymax_phase is not None: mp.ylim(ymax=ymax_phase)
-
-      mp.ylabel('Phase (radians)')
-      if self.sampRate==0:
-                      mp.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
-      else:
-                      mp.xlabel(r'Frequency (Hz)')
-      mp.title(r'Phase response')
-      mp.subplots_adjust(hspace=0.5)
-      mp.show()
-
-  #Plot step and impulse response
-  def plotImpulseResponse(self,xmin=None,xmax=None,ymin_imp=None,ymax_imp=None,ymin_step=None,ymax_step=None):
-      """Plot the frequency and phase response of the filter object.
-
-      :param xmin: Minimum value for x-axis.
-      :param xmax: Maximum value for x-axis.
-      :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-      :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-      :param ymin_step: Minimum value for y-axis for the step response plot.
-      :param ymax_step: Maximum value for y-axis for the step response plot.
-      """
-    #  def plotImpulseResponse(b,a=1):
-      l = len(self.ir)
-      impulse = np.repeat(0.,l); impulse[0] =1.
-      x = np.arange(0,l)
-      response = sp.signal.lfilter(self.ir,1,impulse)
-      mp.subplot(211)
-      mp.stem(x, response)
-      mp.ylabel('Amplitude')
-      mp.xlabel(r'n (samples)')
-      mp.title(r'Impulse response')
-      mp.subplot(212)
-
-      step = np.cumsum(response)
-      mp.stem(x, step)
-      mp.ylabel('Amplitude')
-      mp.xlabel(r'n (samples)')
-      mp.title(r'Step response')
-      mp.subplots_adjust(hspace=0.5)
-      mp.show()
-
-  def filter(self,vtsig,signal='active'):
-      """Apply the filter to a vtsig object.
-
-      :param vtsig: vtsig object
-      :param xmax: Maximum value for x-axis.
-      :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-      :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-      :param ymin_step: Minimum value for y-axis for the step response plot.
-      :param ymax_step: Maximum value for y-axis for the step response plot.
-      """
-      
-      sigobj = getattr(vtsig,signal)
-
-      #Apply filter
-      filt_data = sp.signal.lfilter(self.ir,[1.0],sigobj.data)
-
-      newsig = 'filtered'
-      newsigobj = sigobj.copy(newsig,self.comment)
-      #Put in the filtered data.
-      newsigobj.data = copy.copy(filt_data)
-
-      #Clear out ymin and ymax from metadata; make sure meta data block exists.
-      #If not, create it.
-      if hasattr(newsigobj,'metadata'):
-        delMeta = ['ymin','ymax']
-        for key in delMeta:
-          if newsigobj.metadata.has_key(key):
-            del newsigobj.metadata[key]
-      else:
-        newsigobj.metadata = {}
-
-      key = 'title'
-      if newsigobj.metadata.has_key(key):
-        newsigobj.metadata[key] = ' '.join(['Filtered ',newsigobj.metadata[key]])
-      elif vtsig.metadata.has_key(key):
-        newsigobj.metadata[key] = ' '.join(['Filtered ',vtsig.metadata[key]])
-      else:
-        newsigobj.metadata[key] = 'Filtered'
-
-      #newsigobj.metadata = 
-      setattr(vtsig,'active',newsigobj)
