@@ -19,7 +19,7 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 |	**FUNCTION**: fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', summ=0)
 |	**PURPOSE**: prints out the contents of a fit file
 |
-|	INPUTS:
+|	**INPUTS**:
 |		**yr**: the year
 |		**mo**: the month
 |		**dy**: the day
@@ -29,13 +29,14 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 |		**emt**: end minute
 |		**rad**: the 3 letter radar code, eg 'bks'
 |		**outfile**: the txt file we are outputting to
-|		**[fileType]**: the filetype to read, 'fitex','fitacf','lmfit'; default = 'fitex'
+|		**[fileType]**: the filetype to read, 'fitex','fitacf','lmfit'; 
+|	default = 'fitex'
 |		**[summ]**: option to output a beam summary instead of all data
 |
-|	OUTPUTS:
+|	**OUTPUTS**:
 |		NONE
 |	
-|	EXAMPLES:
+|	**EXAMPLES**:
 |		fitPrintRec(2012,10,3,2,3,5,43,'bks','myoutfile.txt',summ=1)
 |		
 |	Written by AJ 20121003
