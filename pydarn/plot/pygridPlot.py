@@ -155,11 +155,13 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interva
 				
 			#get the vectors
 			print 'drawing'
-			lines,intensities = [],[]
-			li = drawPygridVecs(myGrid,myMap,lines,intensities,plot=plot,vmax=vmax)
-			lines,intensities = li[0],li[1]
+			
+			lines,circs,intensities = [],[[],[]],[]
+			li = drawPygridVecs(myGrid,myMap,lines,circs,intensities,plot=plot,vmax=vmax)
+			lines,circs,intensities = li[0],li[1],li[2]
 
 			#add the collection of vectors to the figure
+			ccoll = plt.scatter(circs[0],circs[1],s=1,c='k')
 			lcoll = LineCollection(numpy.array(lines),linewidths=vwidth,zorder=10)
 			lcoll.set_array(numpy.array(intensities))
 			myFig.gca().add_collection(lcoll)
@@ -170,10 +172,13 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interva
 			ctime += datetime.timedelta(minutes = interval/60)
 			
 			myFig.savefig(pp, format='pdf')
-			return myFig
-			while(myFig.gca().collections != []):
-				myFig.gca().collections.pop()
-				print myFig.gca().collections
+			
+			ccoll.remove()
+			lcoll.remove()
+			#return myFig
+			#while(myFig.gca().collections != []):
+				#myFig.gca().collections.pop()
+				#print myFig.gca().collections
 		
 		#close all our open files and zip them
 		for f in myFiles: closePygrid(f)
@@ -182,11 +187,11 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interva
 			os.system('bzip2 '+f)
 	
 	#show the figure
-	myFig.show()
+	#myFig.show()
 	
 	pp.close()
 
-def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
+def drawPygridVecs(myGrid,myMap,lines,circs,intensities,plot='all',vmax=500):
 	"""
 	*******************************
 	
@@ -227,8 +232,10 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 			if(len(ls) > 0 and ls[0] != None):
 				#convert start point to map cords
 				x1,y1 = myMap(c.center[1]*360./24., c.center[0])
+				circs[0].append(x1)
+				circs[1].append(y1)
 				#plot a point at the center of the cell
-				plt.plot(x1,y1,'ko',ms=1)
+				#plt.plot(x1,y1,'ko',ms=1)
 			#iterate through the vectors in the cell
 			for v in ls:
 				#check if the vector has a value
@@ -242,7 +249,7 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 				#append the velocity to the intensities list
 				intensities.append(v.v)
 				
-	return [lines,intensities]
+	return [lines,circs,intensities]
 
 def drawPygridMap(myFig,myGrid,grid=0):
 	"""
