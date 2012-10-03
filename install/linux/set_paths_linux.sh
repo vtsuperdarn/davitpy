@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Sets path and fundamental environment variables for DaViT-py
 
 # *********************************
@@ -5,6 +7,7 @@
 # *********************************
 TMP_RST=/davit/lib/rst/rst
 TMP_DAVITPY=/davitpy
+TMP_PYPLOTS=/data/pyplots
 
 # *********************************
 # You probably do not need to modify the following part
@@ -12,7 +15,7 @@ TMP_DAVITPY=/davitpy
 # Set path to DAVITPY
 if [ "" == "${DAVITPY}" ]
 then
-    echo "# DaViTpy environment variables:" >> ~/.bashrc
+  echo "# DaViTpy environment variables:" >> ~/.bashrc
 	echo "export DAVITPY='"$TMP_DAVITPY"'" >> ~/.bashrc
 	echo "export PATH=\${DAVITPY}/bin:\${PATH}" >> ~/.bashrc
 	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
@@ -20,7 +23,15 @@ fi
 # Set RSTPATH
 if [ "" == "${RSTPATH}" ]
 then
-    echo "# RST environment variables:" >> ~/.bashrc
+  echo "# RST environment variables:" >> ~/.bashrc
 	echo "export RSTPATH='"${TMP_RST}"'" >> ~/.bashrc
+	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
+fi
+
+# Set PYPLOTS
+if [ "" == "${PYPLOTS}" ]
+then
+  echo "# Plotting directory:" >> ~/.bashrc
+	echo "export PYPLOTS='"${TMP_PYPLOTS}"'" >> ~/.bashrc
 	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
 fi

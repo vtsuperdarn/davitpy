@@ -33,7 +33,6 @@ read_dmap_rec(PyObject *self, PyObject *args)
 		
 
 		nrang=0,chn=0;
-		
 		Py_BEGIN_ALLOW_THREADS
 		PyFile_IncUseCount(f);
 		ptr = DataMapRead(fileno(fp));

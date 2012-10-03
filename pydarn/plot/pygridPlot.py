@@ -21,12 +21,12 @@ from pydarn.proc.pygridLib import *
 from pydarn.sdio.pygridIo import *
 from utils.timeUtils import *
 
-def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=120,grid=0,vmax=500,vwidth=.2):
+def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interval=2,grid=0,vmax=500,vwidth=.2):
 	"""
 
 	PACKAGE: pydarn.plot.pygrid
 	
-	FUNCTION: plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=120,grid=0,vmax=500,vwidth=.2)
+	FUNCTION: plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=2,grid=0,vmax=500,vwidth=.2)
 	
 	PURPOSE: a function that plots the contents of a pygrid file
 	
@@ -51,7 +51,7 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 			MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
 			default = [0,0].
 		[interval]: the time interval to be used between plots in
-			seconds.  default = 120
+			minutes.  default = 2
 		[grid]: a flag to determine whether to plot the grid or not,
 			1 = yes, 0 = no.  Note that plotting the grid can make the
 			output plot file very large.  default = 0
@@ -73,7 +73,16 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 	Written by AJ 20120919
 
 	"""
-	import math,os
+	
+	import os,math
+	from matplotlib.backends.backend_pdf import PdfPages
+	
+	
+	d = os.environ['PYPLOTS']+'/pygrid'
+	if not os.path.exists(d):
+		os.makedirs(d)
+	pp = PdfPages(d+'/'+dateStr+'.'+plot+'.pdf')
+	
 	#create a pygrid item
 	myGrid = pygrid()
 	#create a MPL figure
@@ -87,11 +96,16 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 		#check dateStr input
 		assert(isinstance(dateStr,str) and len(dateStr) == 8),'error with date input'
 		
-		#convert date string, time to datetime
+
+		#convert date string, start time, end time to datetime
 		myDate = yyyymmddToDate(dateStr)
-		hr = int(math.floor(time/100.))
-		min = int(time-hr*100)
-		stime = myDate.replace(hour=hr,minute=min)
+		hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
+		min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
+		stime = myDate.replace(hour=hr1,minute=min1)
+		if(hr2 == 24):
+			stime = myDate+datetime.timedelta(days=1)
+		else:
+			etime = myDate.replace(hour=hr2,minute=min2)
 		
 		myFiles,fileNames = [],[]
 		#check for plot type to be either 'avg' or 'all'
@@ -129,38 +143,55 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=0,interval=12
 		for f in fileNames: 
 			print 'opening: '+f
 			myFiles.append(openPygrid(f,'r'))
-	
-		print 'plotting'
-		#read the files we have opened
-		for f in myFiles:
-			print 'reading'
-			#read a record
-			readPygridRec(f,myGrid,datetimeToEpoch(stime),-1)
-			
-		#get the vectors
-		print 'drawing'
-		lines,intensities = [],[]
-		li = drawPygridVecs(myGrid,myMap,lines,intensities,plot=plot,vmax=vmax)
-		lines,intensities = li[0],li[1]
-
-		#add the collection of vectors to the figure
-		lcoll = LineCollection(numpy.array(lines),linewidths=vwidth,zorder=10)
-		lcoll.set_array(numpy.array(intensities))
-		myFig.gca().add_collection(lcoll)
 		
-		#do the colormapping
-		pydarn.plot.plotUtils.genCmap(myMap,lcoll,'grid',[0,vmax],colors='aj',map=1)
+		ctime = stime
+		while ctime <= etime:
+			
+			myGrid.delVecs()
+			
+			print ctime
+			print 'plotting'
+			#read the files we have opened
+			for f in myFiles:
+				print 'reading'
+				#read a record
+				readPygridRec(f,myGrid,datetimeToEpoch(ctime),-1)
+				
+			#get the vectors
+			print 'drawing'
+			
+			circs,lines,intensities = drawPygridVecs(myGrid,myMap,plot=plot,vmax=vmax)
+
+			#add the collection of vectors to the figure
+			ccoll = plt.scatter(circs[0],circs[1],s=.5,c='k')
+			lcoll = LineCollection(numpy.array(lines),linewidths=vwidth,zorder=10)
+			lcoll.set_array(numpy.array(intensities))
+			myFig.gca().add_collection(lcoll)
+			
+			#do the colormapping
+			pydarn.plot.plotUtils.genCmap(myMap,lcoll,'grid',[0,vmax],colors='aj',map=1)
+			
+			ctime += datetime.timedelta(minutes = interval)
+			
+			txt = plt.figtext(.5,.95,ctime.strftime("%Y/%m/%d  %H:%M:%S"),weight=550,size='large',ha='center')
+	
+			myFig.savefig(pp, format='pdf')
+			
+			ccoll.remove()
+			lcoll.remove()
+			myFig.texts.remove(txt)
+		
+		pp.close()
 		
 		#close all our open files and zip them
 		for f in myFiles: closePygrid(f)
 		for f in fileNames:
 			print 'zipping: '+f
 			os.system('bzip2 '+f)
+			
 	
-	#show the figure
-	myFig.show()
 
-def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
+def drawPygridVecs(myGrid,myMap,plot='all',vmax=500):
 	"""
 	*******************************
 	
@@ -189,7 +220,7 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 	Written by AJ 20120919
 	*******************************
 	"""
-	
+	circs,lines,intensities = [[],[]],[],[]
 	#iterate through the lat cells
 	for l in myGrid.lats:
 		#iterate through the lon cells
@@ -201,8 +232,8 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 			if(len(ls) > 0 and ls[0] != None):
 				#convert start point to map cords
 				x1,y1 = myMap(c.center[1]*360./24., c.center[0])
-				#plot a point at the center of the cell
-				plt.plot(x1,y1,'ko',ms=1)
+				circs[0].append(x1)
+				circs[1].append(y1)
 			#iterate through the vectors in the cell
 			for v in ls:
 				#check if the vector has a value
@@ -216,7 +247,7 @@ def drawPygridVecs(myGrid,myMap,lines,intensities,plot='all',vmax=500):
 				#append the velocity to the intensities list
 				intensities.append(v.v)
 				
-	return [lines,intensities]
+	return circs,lines,intensities
 
 def drawPygridMap(myFig,myGrid,grid=0):
 	"""
