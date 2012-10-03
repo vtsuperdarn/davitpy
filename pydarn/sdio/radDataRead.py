@@ -356,7 +356,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 				continue
 			
 			#create a beam object
-			myBeam = beam()
+			myBeam = pydarn.sdio.radDataTypes.beam()
 		
 			#parse the parameters
 			myPrmData = parseDmap(dfile[epochT],prmData())
