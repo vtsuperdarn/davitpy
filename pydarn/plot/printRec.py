@@ -18,15 +18,13 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 	"""
 	*******************************
 
-	PACKAGE: pydarn.plot.printRec
-
-	FUNCTION: fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', summ=0)
-
-	PURPOSE: prints out the contents of a fit file
+	PACKAGE: pydarn.plot.printRec\n
+	FUNCTION: fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', summ=0)\n
+	PURPOSE: prints out the contents of a fit file\n
 
 	INPUTS:
-		**yr**: the year\n
-		mo: the month\n
+		**yr**: the year
+		**mo**: the month\n
 		dy: the day\n
 		shr: start hour
 		smt: start minute
