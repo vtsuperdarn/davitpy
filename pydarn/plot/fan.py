@@ -29,8 +29,8 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',
 |	**PURPOSE**: makes fov (fan) plots
 |
 |	**INPUTS**:
-|		**dateStr: a string containing the target date in yyyymmdd format
-|		**rad: a list of 3 letter radar codes
+|		**dateStr**: a string containing the target date in yyyymmdd format
+|		**rad**: a list of 3 letter radar codes
 |		**[time]**: the range of times for which should be plotted
 |			in SIMPLIFIED [hhmm,hhmm] format, eg [29,156], instead of [0029,0156]
 |			note that an end time of 2400 will read to the end of the file
@@ -60,7 +60,7 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',
 |		NONE
 |
 |	**EXAMPLE**:
-|		plotFan('20121001',['bks','fhw'],time=[0,24],interval=2,fileType='fitex',param='velocity',filter=0 ,\
+|		plotFan('20121001',['bks','fhw'],time=[0,24],interval=2,fileType='fitex',param='velocity',filter=0 ,
 |								scale=[-400,400],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='face',gflg=0)
 |
 |	Written by AJ 20121004
