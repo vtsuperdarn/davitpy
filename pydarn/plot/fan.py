@@ -1,5 +1,3 @@
-import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
-import matplotlib.pyplot as plot
 """
 *******************************
 MODULE: pydarn.plot.fan
@@ -12,7 +10,8 @@ This module contains the following functions:
 	plotFanData
 """
 	
-
+import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
@@ -25,7 +24,7 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',
 	"""
 |	*************************************************
 |	**PACKAGE**: pydarn.plot.fan
-|	**FUNCTION**: plotFan(dateStr,rad,time=[0,0],interval=1,fileType='fitex',param='velocity',filter=0 ,\
+|	**FUNCTION**: plotFan(dateStr,rad,time=[0,0],interval=1,fileType='fitex',param='velocity',filter=0 ,
 |								scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='face',gflg=0)
 |	**PURPOSE**: makes fov (fan) plots
 |
@@ -65,6 +64,7 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',
 |								scale=[-400,400],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='face',gflg=0)
 |
 |	Written by AJ 20121004
+|
 	"""
 	
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -265,10 +265,10 @@ scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',
 def plotFanData(myData,myMap,param,coords='geo',gsct=0,site=None,\
 		fov=None,verts=[],intensities=[],gs_flg=[]):
 	"""
-|**************************************************
+| *************************************************
 |	**PACKAGE**: pydarn.plot.fan
-|	**FUNCTION**: plotFanData(myData,myMap,param,coords='geo',gsct=0,site=None,\
-								fov=None,verts=[],intensities=[],gs_flg=[])
+|	**FUNCTION**: plotFanData(myData,myMap,param,coords='geo',gsct=0,site=None,
+|								fov=None,verts=[],intensities=[],gs_flg=[])
 |	**PURPOSE**: gets vertices and intensities of polygons in a beam 
 |
 |	**INPUTS**:
