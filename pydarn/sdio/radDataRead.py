@@ -107,7 +107,7 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	if(len(filelist) == 0): return None
 	
 	#concatenate the files into a single file
-	tmpName = tmpDir+str(int(datetimeToEpoch(datetime.datetime.now())))+'.'+fileType
+	tmpName = tmpDir+str(int(datetimeToEpoch(datetime.datetime.now())))+'.'+rad+'.'+fileType
 	print 'cat '+string.join(filelist)+' > '+tmpName
 	os.system('cat '+string.join(filelist)+' > '+tmpName)
 

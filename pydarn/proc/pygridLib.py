@@ -332,6 +332,8 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	closePygrid(gFile)
 	if(os.path.exists(fileName+'.bz2')): os.system('rm '+fileName+'.bz2')
 	os.system('bzip2 '+fileName)
+	
+	myFile.close()
 			
 	
 class pygridVec(object):
