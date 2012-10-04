@@ -1,5 +1,18 @@
 import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
 import matplotlib.pyplot as plot
+"""
+*******************************
+MODULE: pydarn.plot.fan
+*******************************
+
+This module contains the following functions:
+
+	plotFan
+
+	plotFanData
+"""
+	
+
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
@@ -10,8 +23,7 @@ from pydarn.sdio.radDataRead import *
 def plotFan(dateStr,rad,time=[0,0],interval=1,fileType='fitex',param='velocity',filter=0 ,\
 scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',gflg=0):
 	"""
-| plotFan(dateStr,rad,beam,[time],[fileType]):
-|**************************************************
+|	*************************************************
 |	**PACKAGE**: pydarn.plot.fan
 |	**FUNCTION**: plotFan(dateStr,rad,time=[0,0],interval=1,fileType='fitex',param='velocity',filter=0 ,\
 |								scale=[],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='face',gflg=0)
