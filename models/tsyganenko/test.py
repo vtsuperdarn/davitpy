@@ -36,7 +36,7 @@ XFGEO,YFGEO,ZFGEO,XGSW,YGSW,ZGSW  = tsyganenko.geogsw_08(xgeo, ygeo, zgeo,0,0,0,
 PARMOD = np.zeros(10)
 PARMOD[0:6] = [2, -8, -2, -5, .5, 1.1]
 XF,YF,ZF,XX,YY,ZZ,Ll = tsyganenko.trace_08(XGSW,YGSW,ZGSW,DIR,DSMAX,ERR, 
-    RLIM,R0,0,PARMOD,'T01_01','IGRF_GSW_08',LMAX) 
+    RLIM,R0,0,PARMOD,'T96_01','IGRF_GSW_08',LMAX) 
 #print ' XF,YF,ZF = ',XF,YF,ZF 
 
 XFGEO,YFGEO,ZFGEO,XGSW,YGSW,ZGSW  = tsyganenko.geogsw_08(0,0,0,XF,YF,ZF,-1) 
