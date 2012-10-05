@@ -8,9 +8,12 @@ This module contains the following functions:
 
   trace_08
   
+  trace
+  
 Written by Sebastien 20121001
     
 *******************************
 """
 
-from tsyg import *
+from tsygFort import *
+from trace import *
