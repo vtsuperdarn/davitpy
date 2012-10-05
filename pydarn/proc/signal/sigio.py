@@ -6,12 +6,9 @@ def readsav(radar,date,time,param,bandLim,procType,dataDir):
 	
         dataObj = readsav(radar,date,time,param,bandlim)
 	
-	takes a python datetime object and returns a string in yyyymmdd format
 
 	INPUTS:
-		myDate : a python date object
 	OUTPUTS:
-		dateStr : a string in yyyymmdd format
 
 	Written by Nathaniel 14AUG2012
 	*******************************

@@ -21,5 +21,5 @@ This module contains the following functions:
 
 import tsyganenko
 import igrf
-#import aacgm
+import aacgm
 import iri
