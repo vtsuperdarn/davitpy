@@ -5,6 +5,35 @@ from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
 
+# Create a system for handling metadata that applies to all signals. ###########
+glob = {}
+def globalMetaData():
+  """Return the glob (global metadata) dictionary.
+  """
+  return glob
+
+def globalMetaData_add(**metadata):
+  """Add an item to the glob (global metadata) dictionary.
+  :**metadata : keywords and values to be added to the glob dictionary.
+  """
+  global glob
+  glob = dict(glob.items() + metadata.items())
+
+def globalMetaData_del(keys):
+  """Delete an item from the glob (global metadata) dictionary.
+  :param keys: List of keys to be deleted.
+  """
+  global glob
+  for key in keys:
+    if glob.has_key(key): del glob[key]
+
+def globalMetaData_clear():
+  """Clear the glob (global metadata) dictionary.
+  """
+  global glob
+  glob.clear()
+
+# Signal Objects Start Here ####################################################
 class sig(object):
   def __init__(self, dtv, data, **metadata):
     """Define a vtsd sig object.
@@ -121,7 +150,7 @@ class sigStruct(sig):
       self.metadata['validTimes'] = times
 
   def getAllMetaData(self):
-    return dict(self.parent.metadata.items() + self.metadata.items())
+    return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
 
   def truncate(self):
     """Trim the ends of the current signal to match the valid time.
@@ -158,32 +187,34 @@ class sigStruct(sig):
     #from matplotlib import pyplot as mp
 
     #Metadata of "processed" signal overrides defaults.
-    metadata = self.getAllMetaData()
+    md = self.getAllMetaData()
 
+    if md.has_key('lineStyle'): lineStyle=md['lineStyle']
+    else: lineStyle = '-'
     fig = mp.figure()
-    mp.plot(self.dtv,self.data)
+    mp.plot(self.dtv,self.data,lineStyle)
     fig.autofmt_xdate()
 
-    if 'xmin' in metadata:
-      mp.xlim(xmin=metadata['xmin'])
-    if 'xmax' in metadata:
-      mp.xlim(xmax=metadata['xmax'])
+    if 'xmin' in md:
+      mp.xlim(xmin=md['xmin'])
+    if 'xmax' in md:
+      mp.xlim(xmax=md['xmax'])
 
-    if 'ymin' in metadata:
-      mp.ylim(ymin=metadata['ymin'])
-    if 'ymax' in metadata:
-      mp.ylim(ymax=metadata['ymax'])
+    if 'ymin' in md:
+      mp.ylim(ymin=md['ymin'])
+    if 'ymax' in md:
+      mp.ylim(ymax=md['ymax'])
 
-    if metadata.has_key('validTimes'):
+    if md.has_key('validTimes'):
       grey = '0.75'
-      mp.axvspan(self.dtv[0],metadata['validTimes'][0],color=grey)
-      mp.axvspan(metadata['validTimes'][1],self.dtv[-1],color=grey)
-      mp.axvline(x=metadata['validTimes'][0],color='g',ls='--',lw=2)
-      mp.axvline(x=metadata['validTimes'][1],color='g',ls='--',lw=2)
+      mp.axvspan(self.dtv[0],md['validTimes'][0],color=grey)
+      mp.axvspan(md['validTimes'][1],self.dtv[-1],color=grey)
+      mp.axvline(x=md['validTimes'][0],color='g',ls='--',lw=2)
+      mp.axvline(x=md['validTimes'][1],color='g',ls='--',lw=2)
 
-    mp.xlabel(metadata['xlabel'])
-    mp.ylabel(metadata['ylabel'])
-    mp.title(metadata['title'])
+    mp.xlabel(md['xlabel'])
+    mp.ylabel(md['ylabel'])
+    mp.title(md['title'])
 
   def getFftTimes(self):
     """Returns the time window for which to calculate the FFT times for a given signal.
@@ -295,26 +326,28 @@ class sigStruct(sig):
     sig_fft = self.spectrum
 
     #Metadata of "processed" signal overrides defaults.
-    metadata = dict(self.parent.metadata.items() + self.metadata.items())
+    md = self.getAllMetaData()
 
     fig = mp.figure()
     ax = fig.add_subplot(111)
 
-    ax.plot(freq_ax,abs(sig_fft))
+    if md.has_key('fft_lineStyle'): lineStyle=md['fft_lineStyle']
+    else: lineStyle = '-'
+    ax.plot(freq_ax,abs(sig_fft),lineStyle)
 
-    if metadata.has_key('title'): mp.title(metadata['title'])
-    if metadata.has_key('fft_title'): mp.title(metadata['fft_title'])
+    if md.has_key('title'): mp.title(md['title'])
+    if md.has_key('fft_title'): mp.title(md['fft_title'])
 
-    if metadata.has_key('fft_xlabel'): mp.xlabel(metadata['fft_xlabel'])
-    if metadata.has_key('fft_ylabel'): mp.ylabel(metadata['fft_ylabel'])
+    if md.has_key('fft_xlabel'): mp.xlabel(md['fft_xlabel'])
+    if md.has_key('fft_ylabel'): mp.ylabel(md['fft_ylabel'])
 
-    if metadata.has_key('fft_xmin'): mp.xlim(xmin=metadata['fft_xmin'])
+    if md.has_key('fft_xmin'): mp.xlim(xmin=md['fft_xmin'])
     else: mp.xlim(xmin=0)
 
-    if metadata.has_key('fft_xmax'): mp.xlim(xmax=metadata['fft_xmax'])
+    if md.has_key('fft_xmax'): mp.xlim(xmax=md['fft_xmax'])
 
-    if metadata.has_key('fft_ymin'): mp.ylim(ymin=metadata['fft_ymin'])
-    if metadata.has_key('fft_ymax'): mp.ylim(ymax=metadata['fft_ymax'])
+    if md.has_key('fft_ymin'): mp.ylim(ymin=md['fft_ymin'])
+    if md.has_key('fft_ymax'): mp.ylim(ymax=md['fft_ymax'])
 
     
     valid = self.getFftTimes()
