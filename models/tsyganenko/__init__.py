@@ -11,5 +11,4 @@ This includes the following object(s):
 *******************************
 """
 
-from geopack08 import *
-from T96 import *
+from tsyg import *

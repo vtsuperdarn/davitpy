@@ -57,7 +57,7 @@ C
 C
       DATA  AM0,S0,X00,DSIG/70.,1.08,5.48,0.005/
       DATA  DELIMFX,DELIMFY /20.,10./
-C
+
        PDYN=PARMOD(1)
        DST=PARMOD(2)
        BYIMF=PARMOD(3)
@@ -180,6 +180,7 @@ C                      POSSIBILITY IS NOW THE CASE (3):
                 BY=OIMFY-QY
                 BZ=OIMFZ-QZ
          ENDIF
+!         print*, 'T96_01',X,Y,Z,BX,BY,BZ
 C
        RETURN
        END

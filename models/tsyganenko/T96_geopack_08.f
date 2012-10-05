@@ -338,6 +338,7 @@ c        write(*,*)'M = ',M
      + ,XMAG_end,YMAG_end,ZMAG_end,-1)
        CALL SPHCAR_08 (RE_end,COLAT_end,XLON_end
      +   ,XGEO_end,YGEO_end,ZGEO_end,-1)
+        print*, '*****LOOK HERE*****',RE_end,COLAT_end,XLON_end
 
 CCC       write(*,*)RE,REM_end,RE_end
        GEOLON_end=XLON_end*57.2958

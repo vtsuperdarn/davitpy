@@ -5,9 +5,7 @@ FFLAGS := -w -O2 -fbacktrace
 EXEC := raydarn
 
 IRIDIR := ../iri/
-IRIOBJS := $(IRIDIR)irisub.o $(IRIDIR)irifun.o $(IRIDIR)iritec.o $(IRIDIR)iridreg.o $(IRIDIR)iriflip.o $(IRIDIR)cira.o
-IGRFDIR := ../igrf/
-IGRFOBJS := $(IGRFDIR)igrf.o
+IRIOBJS := $(IRIDIR)irisub.o $(IRIDIR)irifun.o $(IRIDIR)iritec.o $(IRIDIR)iridreg.o $(IRIDIR)iriflip.o $(IRIDIR)cira.o $(IRIDIR)igrf.o
 RTOBJS := constants.o MPIutils.o
 
 %.o: %.for
@@ -29,4 +27,3 @@ $(EXEC):
 clean:
 	find . -name "*~" -o -name "*.o" -name "*.mod" | xargs rm -f $(EXEC)
 	find ../iri -name "*~" -o -name "*.o" | xargs rm -f $(EXEC)
-	find ../igrf -name "*~" -o -name "*.o" | xargs rm -f $(EXEC)

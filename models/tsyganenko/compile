@@ -1,0 +1,245 @@
+f2py geopack08.for -m tsyg -h geopack08.pyf
+gfortran -w -O2 -fbacktrace -fno-automatic -fPIC -c geopack08.for T96.f
+f2py --f77flags="-w" -c geopack08.pyf geopack08.for T96.f
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+build_src
+building extension "tsyg" sources
+creating /tmp/tmpjAcU6j
+creating /tmp/tmpjAcU6j/src.linux-x86_64-2.7
+f2py options: []
+f2py: geopack08.pyf
+Reading fortran codes...
+	Reading file 'geopack08.pyf' (format:free)
+Post-processing...
+	Block: rhand_08__user__routines
+		Block: rhand_08_user_interface
+			Block: exname
+			Block: inname
+	Block: tsyg
+			Block: igrf_gsw_08
+			Block: igrf_geo_08
+			Block: dip_08
+			Block: sun_08
+			Block: sphcar_08
+			Block: bspcar_08
+			Block: bcarsp_08
+			Block: recalc_08
+			Block: gswgse_08
+			Block: geomag_08
+			Block: geigeo_08
+			Block: magsm_08
+			Block: smgsw_08
+			Block: geogsw_08
+			Block: geodgeo_08
+			Block: rhand_08
+In: geopack08.pyf:tsyg:unknown_interface:rhand_08
+get_useparameters: no module rhand_08__user__routines info used by rhand_08
+			Block: step_08
+			Block: trace_08
+			Block: shuetal_mgnp_08
+			Block: t96_mgnp_08
+Post-processing (stage 2)...
+Building modules...
+	Constructing call-back function "cb_exname_in_rhand_08__user__routines"
+	  def exname(iopt,parmod,psi,x,y,z,bxgsw,bygsw,bzgsw): return 
+	Constructing call-back function "cb_inname_in_rhand_08__user__routines"
+	  def inname(x,y,z,hxgsw,hygsw,hzgsw): return 
+	Building module "tsyg"...
+		Constructing wrapper function "igrf_gsw_08"...
+		  igrf_gsw_08(xgsw,ygsw,zgsw,hxgsw,hygsw,hzgsw)
+		Constructing wrapper function "igrf_geo_08"...
+		  igrf_geo_08(r,theta,phi,br,btheta,bphi)
+		Constructing wrapper function "dip_08"...
+		  dip_08(xgsw,ygsw,zgsw,bxgsw,bygsw,bzgsw)
+		Constructing wrapper function "sun_08"...
+		  sun_08(iyear,iday,ihour,min_bn,isec,gst,slong,srasn,sdec)
+		Constructing wrapper function "sphcar_08"...
+		  sphcar_08(r,theta,phi,x,y,z,j)
+		Constructing wrapper function "bspcar_08"...
+		  bspcar_08(theta,phi,br,btheta,bphi,bx,by,bz)
+		Constructing wrapper function "bcarsp_08"...
+		  bcarsp_08(x,y,z,bx,by,bz,br,btheta,bphi)
+		Constructing wrapper function "recalc_08"...
+		  recalc_08(iyear,iday,ihour,min_bn,isec,vgsex,vgsey,vgsez)
+		Constructing wrapper function "gswgse_08"...
+		  gswgse_08(xgsw,ygsw,zgsw,xgse,ygse,zgse,j)
+		Constructing wrapper function "geomag_08"...
+		  geomag_08(xgeo,ygeo,zgeo,xmag,ymag,zmag,j)
+		Constructing wrapper function "geigeo_08"...
+		  geigeo_08(xgei,ygei,zgei,xgeo,ygeo,zgeo,j)
+		Constructing wrapper function "magsm_08"...
+		  magsm_08(xmag,ymag,zmag,xsm,ysm,zsm,j)
+		Constructing wrapper function "smgsw_08"...
+		  smgsw_08(xsm,ysm,zsm,xgsw,ygsw,zgsw,j)
+		Constructing wrapper function "geogsw_08"...
+		  geogsw_08(xgeo,ygeo,zgeo,xgsw,ygsw,zgsw,j)
+		Constructing wrapper function "geodgeo_08"...
+		  geodgeo_08(h,xmu,r,theta,j)
+		Constructing wrapper function "rhand_08"...
+		  rhand_08(x,y,z,r1,r2,r3,iopt,parmod,exname,inname,[exname_extra_args,inname_extra_args])
+		Constructing wrapper function "step_08"...
+		  step_08(x,y,z,ds,dsmax,errin,iopt,parmod,exname,inname,[exname_extra_args,inname_extra_args])
+		Constructing wrapper function "trace_08"...
+		  xf,yf,zf,xx,yy,zz,l = trace_08(xi,yi,zi,dir,dsmax,err,rlim,r0,iopt,parmod,exname,inname,lmax,[exname_extra_args,inname_extra_args])
+		Constructing wrapper function "shuetal_mgnp_08"...
+		  shuetal_mgnp_08(xn_pd,vel,bzimf,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id)
+		Constructing wrapper function "t96_mgnp_08"...
+		  t96_mgnp_08(xn_pd,vel,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id)
+		Constructing COMMON block support for "geopack2"...
+		  g,h,rec
+		Constructing COMMON block support for "geopack1"...
+		  aa,sps,cps,bb
+	Wrote C/API module "tsyg" to file "/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c"
+	Fortran 77 wrappers are saved to "/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsyg-f2pywrappers.f"
+  adding '/tmp/tmpjAcU6j/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding '/tmp/tmpjAcU6j/src.linux-x86_64-2.7' to include_dirs.
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpjAcU6j/src.linux-x86_64-2.7
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpjAcU6j/src.linux-x86_64-2.7
+  adding '/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsyg-f2pywrappers.f' to sources.
+build_src: building npy-pkg config files
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize GnuFCompiler
+Could not locate executable g77
+Could not locate executable f77
+customize IntelFCompiler
+Could not locate executable ifort
+Could not locate executable ifc
+customize LaheyFCompiler
+Could not locate executable lf95
+customize PGroupFCompiler
+Could not locate executable pgf90
+Could not locate executable pgf77
+customize AbsoftFCompiler
+Could not locate executable f90
+customize NAGFCompiler
+Found executable /usr/bin/f95
+customize VastFCompiler
+customize CompaqFCompiler
+Could not locate executable fort
+customize IntelItaniumFCompiler
+Could not locate executable efort
+Could not locate executable efc
+customize IntelEM64TFCompiler
+customize Gnu95FCompiler
+Found executable /usr/bin/gfortran
+customize Gnu95FCompiler
+customize Gnu95FCompiler using build_ext
+building 'tsyg' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpjAcU6j/tmp
+creating /tmp/tmpjAcU6j/tmp/tmpjAcU6j
+creating /tmp/tmpjAcU6j/tmp/tmpjAcU6j/src.linux-x86_64-2.7
+compile options: '-I/tmp/tmpjAcU6j/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+gcc: /tmp/tmpjAcU6j/src.linux-x86_64-2.7/fortranobject.c
+gcc: /tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_exname_in_rhand_08__user__routines’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:366:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_inname_in_rhand_08__user__routines’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:503:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_step_08’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2651:3: error: unknown type name ‘exname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2656:3: error: unknown type name ‘inname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2670:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: error: ‘exname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: note: each undeclared identifier is reported only once for each function it appears in
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2675:25: error: ‘exname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:53: error: ‘maxnofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:66: error: ‘nofoptargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2697:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2699:17: error: ‘inname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2702:25: error: ‘inname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 9 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 10 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_trace_08’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2870:3: error: unknown type name ‘exname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2875:3: error: unknown type name ‘inname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2916:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2918:17: error: ‘exname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2921:25: error: ‘exname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:53: error: ‘maxnofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:66: error: ‘nofoptargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2962:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2964:17: error: ‘inname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2967:25: error: ‘inname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 11 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 12 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_exname_in_rhand_08__user__routines’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:366:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_inname_in_rhand_08__user__routines’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:503:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_step_08’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2651:3: error: unknown type name ‘exname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2656:3: error: unknown type name ‘inname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2670:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: error: ‘exname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: note: each undeclared identifier is reported only once for each function it appears in
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2675:25: error: ‘exname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:53: error: ‘maxnofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:66: error: ‘nofoptargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2697:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2699:17: error: ‘inname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2702:25: error: ‘inname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 9 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 10 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_trace_08’:
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2870:3: error: unknown type name ‘exname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2875:3: error: unknown type name ‘inname_typedef’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2916:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2918:17: error: ‘exname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2921:25: error: ‘exname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:53: error: ‘maxnofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:66: error: ‘nofoptargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2962:15: warning: assignment makes integer from pointer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2964:17: error: ‘inname’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2967:25: error: ‘inname_nofargs’ undeclared (first use in this function)
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 11 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 12 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
+/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
