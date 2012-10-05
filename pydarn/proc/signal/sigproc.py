@@ -101,13 +101,13 @@ class bandpass(object):
   def __str__(self):
     return self.comment
 
-  def plotTransferFunction(self,xmin=0,xmax=None,ymin_freq=-150,ymax_freq=5,ymin_phase=None,ymax_phase=None):
+  def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None):
       """Plot the frequency and phase response of the filter object.
 
       :param xmin: Minimum value for x-axis.
       :param xmax: Maximum value for x-axis.
-      :param ymin_freq: Minimum value for y-axis for the frequency response plot.
-      :param ymax_freq: Maximum value for y-axis for the frequency response plot.
+      :param ymin_mag: Minimum value for y-axis for the frequency response plot.
+      :param ymax_mag: Maximum value for y-axis for the frequency response plot.
       :param ymin_phase: Minimum value for y-axis for the phase response plot.
       :param ymax_phase: Maximum value for y-axis for the phase response plot.
       """
@@ -122,8 +122,8 @@ class bandpass(object):
 
       if xmin is not None: mp.xlim(xmin=xmin)
       if xmax is not None: mp.xlim(xmax=xmax)
-      if ymin_freq is not None: mp.ylim(ymin=ymin_freq)
-      if ymax_freq is not None: mp.ylim(ymax=ymax_freq)
+      if ymin_mag is not None: mp.ylim(ymin=ymin_mag)
+      if ymax_mag is not None: mp.ylim(ymax=ymax_mag)
 
       mp.ylabel('Magnitude (db)')
 

@@ -24,7 +24,11 @@ class oplot(object):
     provided, then the sig.active is used.
     :param **metadata: keywords sent to matplot lib, etc.
     """
+
+#Add metadata in keywords to object's metadata.
     for key in metadata: self.metadata[key] = metadata[key]
+
+    #Make sure each item in siglist is a sigStruct object, not a sig object.
     sigList = self.sigList
     nSigs = len(sigList)
     sigRange = range(nSigs)
@@ -42,7 +46,11 @@ class oplot(object):
 
     #Plot the traces.
     for xx in sigRange:
-      mp.plot(sigList[xx].dtv,sigList[xx].data,color=colors[xx])
+      plotData = sigList[xx].data
+      if self.metadata.has_key('normalize'):
+        if self.metadata['normalize'] == True:
+          plotData = plotData / np.nanmax(np.abs(plotData))
+      mp.plot(sigList[xx].dtv,plotData,color=colors[xx])
 
     ################################################################################ 
     #Parse out valid times, grey out bad sections.
@@ -98,8 +106,15 @@ class oplot(object):
 
       legend.append(temp)
 
-    font = {'size'   : 10}
+    if self.metadata.has_key('legend_size'):
+      leg_size = self.metadata['legend_size']
+    else:
+      leg_size = 10
+    font = {'size'   : leg_size}
     mp.legend(legend,loc='best',shadow=True,fancybox=True,prop=font)
+
+    if self.metadata.has_key('normalize'):
+      if self.metadata['normalize'] == True: mp.ylabel('All Data Normalized')
 
     #Use local plot settings.
     if hasattr(self,'metadata'):
@@ -143,6 +158,18 @@ class oplotfft(object):
       if hasattr(sigList[xx],'data') is False: 
           sigList[xx] = sigList[xx].active
 
+    #Find the most restrictive FFT time limits for all of the signals.
+    fftStart = []
+    fftEnd   = []
+    for xx in sigRange:
+      temp = sigList[xx].getFftTimes()
+      fftStart.append(temp[0])
+      fftEnd.append(temp[1])
+
+    fftStart.sort(reverse=True)
+    fftEnd.sort()
+    fftTimes = [fftStart[0],fftEnd[0]]
+
     #Generate color iterator.
     cm = mp.get_cmap('gist_rainbow')
     colors = [cm(1.*i/nSigs) for i in sigRange]
@@ -152,8 +179,13 @@ class oplotfft(object):
 
     #Plot the traces.
     for xx in sigRange:
+      sigList[xx].metadata['fftTimes'] = fftTimes
       sigList[xx].fft()
-      mp.plot(sigList[xx].freqVec,abs(sigList[xx].spectrum),color=colors[xx])
+      plotData = abs(sigList[xx].spectrum)
+      if self.metadata.has_key('normalize'):
+        if self.metadata['normalize'] == True:
+          plotData = plotData / np.nanmax(np.abs(plotData))
+      mp.plot(sigList[xx].freqVec,plotData,color=colors[xx])
 
     mp.xlim(xmin=0)
 
@@ -178,8 +210,15 @@ class oplotfft(object):
 
       legend.append(temp)
 
-    font = {'size'   : 10}
+    if self.metadata.has_key('legend_size'):
+      leg_size = self.metadata['legend_size']
+    else:
+      leg_size = 10
+    font = {'size'   : leg_size}
     mp.legend(legend,loc='best',shadow=True,fancybox=True,prop=font)
+
+    if self.metadata.has_key('normalize'):
+      if self.metadata['normalize'] == True: mp.ylabel('All Data Normalized')
 
     #Use local plot settings.
     if hasattr(self,'metadata'):
@@ -197,6 +236,10 @@ class oplotfft(object):
       if self.metadata.has_key('fft_xmax'): mp.xlim(xmax=self.metadata['fft_xmax'])
       if self.metadata.has_key('fft_ymin'): mp.ylim(ymin=self.metadata['fft_ymin'])
       if self.metadata.has_key('fft_ymax'): mp.ylim(ymax=self.metadata['fft_ymax'])
+
+    #Print the time window of the FFT on the side of the plot.
+    s = ' - '.join([x.strftime('%Y%b%d %H:%M UT').upper() for x in fftTimes])
+    mp.annotate(s, xy=(1.01, 0.95), xycoords="axes fraction",rotation=90)
 
     mp.hold(False) 
     mp.show()

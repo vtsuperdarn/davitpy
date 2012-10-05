@@ -59,10 +59,10 @@ class sig(object):
     """
     self.active.plot()
 
-  def plotfft(self):
+  def plotfft(self,**metadata):
     """Plots the spectrum of the currently active signal.
     """
-    self.active.plotfft()
+    self.active.plotfft(**metadata)
 
 class sigStruct(sig):
   def __init__(self, dtv, data, comment='Raw Data', parent=0, **metadata):
@@ -96,7 +96,7 @@ class sigStruct(sig):
       ok = False
       while ok is False:
         xx += 1
-        testsig = '-'.join([newsig,'%03d' % xx])
+        testsig = '_'.join([newsig,'%03d' % xx])
         if hasattr(self.parent,testsig) == False:
           newsig = testsig
           ok = True
@@ -124,15 +124,20 @@ class sigStruct(sig):
     :returns: sampRate: sample rate of signal in seconds.  This is NAN if more than one unique timestep in sig.
     """
     diffs = np.unique(np.diff(self.preFftDtv))
+    self.diffs = diffs
 
     if len(diffs) == 1:
-      sampRate = diffs[0].seconds
+      sampRate = diffs[0].total_seconds()
     else:
       maxDt = np.max(diffs) - np.min(diffs)
-      maxDt = maxDt.seconds + (maxDt.microseconds / 1000000.)
+      maxDt = maxDt.total_seconds()
       avg = np.sum(diffs)/len(diffs)
-      avg = avg.seconds + (avg.microseconds / 1000000.)
-      print 'WARNING: Date time vector is not regularly sampled!'
+      avg = avg.total_seconds()
+      md  = self.getAllMetaData()
+      warn = 'WARNING'
+      if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
+      print warn + ':'
+      print '   Date time vector is not regularly sampled!'
       print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
       print '   Using average sampling rate of ' + str(avg) + ' sec.'
       sampRate = avg
@@ -152,8 +157,11 @@ class sigStruct(sig):
   def getAllMetaData(self):
     return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
 
+  def setMetaData(self,**metadata):
+    self.metadata = dict(self.metadata.items() + metadata.items())
+
   def truncate(self):
-    """Trim the ends of the current signal to match the valid time.
+    """Trim the ends of the current signal to match the valid time and sets the truncated signal to active.
     """
    
     #Don't do anything if the whole thing is valid.
@@ -236,7 +244,7 @@ class sigStruct(sig):
     end.sort()
 
     if start == []:
-      return None
+      return [self.dtv[0],self.dtv[-1]]
     else:
       return [start[0],end[0]]
 
@@ -317,7 +325,7 @@ class sigStruct(sig):
     self.spectrum = sig_fft
 
 #Plot FFT of Some Signal
-  def plotfft(self):
+  def plotfft(self,**metadata):
     """Plots the FFT spectral magnitude for the signal.
     """
 
@@ -325,6 +333,7 @@ class sigStruct(sig):
     freq_ax = self.freqVec
     sig_fft = self.spectrum
 
+    self.setMetaData(**metadata)
     #Metadata of "processed" signal overrides defaults.
     md = self.getAllMetaData()
 
@@ -350,11 +359,9 @@ class sigStruct(sig):
     if md.has_key('fft_ymax'): mp.ylim(ymax=md['fft_ymax'])
 
     
+    #Print the time window of the FFT on the side of the plot.
     valid = self.getFftTimes()
     s = ' - '.join([x.strftime('%Y%b%d %H:%M UT').upper() for x in valid])
-
     mp.annotate(s, xy=(1.01, 0.95), xycoords="axes fraction",rotation=90)
-
-    #    print s
 
     mp.show()
