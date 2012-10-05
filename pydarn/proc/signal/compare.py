@@ -81,8 +81,6 @@ class oplot(object):
     
     md = sigList[0].getAllMetaData()
     if md.has_key('xlabel'): mp.xlabel(md['xlabel'])
-    if md.has_key('dtStart'): mp.xlim(xmin=md['dtStart'])
-    if md.has_key('dtEnd'): mp.xlim(xmax=md['dtEnd'])
     if md.has_key('xmin'): mp.xlim(xmin=md['xmin'])
     if md.has_key('xmax'): mp.xlim(xmax=md['xmax'])
 
