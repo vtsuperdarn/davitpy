@@ -4,26 +4,43 @@ import datetime
 from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
+import scipy.signal
 
-def detrend(vtsig,signal='active'):
-    """Apply the filter to a vtsig object.
+
+def prepForProc(vtsig):
+    """Determines if the called signal is a vt sig or a vt sigStruct object. 
+    If it is a vt sig object, the active vtsig.active sigStruct object is returned.
+    The signal is truncated to its current valid time limits if necessary.
+    This also sets the called sigStruct to be the active sigStruct.
+    :returns sigobj: vt sigStruct object
+    """
+
+    if hasattr(vtsig,'data'):
+      sigobj = vtsig
+      vtsid = sigobj.parent
+    else:
+      sigobj = vtsig.active
+    
+    #Remove times that are not valid.
+    sigobj = sigobj.truncate()
+    sigobj.setActive()
+
+    return sigobj
+
+def detrend(vtsig):
+    """Linearly detrend a vtsig object.
 
     :param vtsig: vtsig object
-    :param xmax: Maximum value for x-axis.
-    :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-    :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-    :param ymin_step: Minimum value for y-axis for the step response plot.
-    :param ymax_step: Maximum value for y-axis for the step response plot.
     """
     
-    sigobj = getattr(vtsig,signal)
+    sigobj = prepForProc(vtsig)
+    vtsig  = sigobj.parent
 
-    #Apply filter
+    #Detrend data
     detrend_data = sp.signal.detrend(sigobj.data)
 
     #Create new signal object.
     newsigobj = sigobj.copy('detrended','Linear detrend (scipy.signal.detrend)')
-    #Put in the filtered data.
     newsigobj.data = copy.copy(detrend_data)
 
     #Clear out ymin and ymax from metadata; make sure meta data block exists.
@@ -44,7 +61,6 @@ def detrend(vtsig,signal='active'):
     else:
       newsigobj.metadata[key] = 'Detrended'
 
-    #newsigobj.metadata = 
     setattr(vtsig,'active',newsigobj)
 
 
@@ -54,7 +70,7 @@ class bandpass(object):
 
     :param nsamp: number of samples the filter will have
     :param f_c: Two-element list of cutoff frequencies
-    :param sampRante: Sample rate of filter.  This should match the sample rate of the data being filtered.
+    :param sampRate: Sample rate of filter.  This should match the sample rate of the data being filtered.
     :param window: Type of window the filter should use.  See scipy.signal.firwin() for options.
     :returns: sig object
     """
@@ -165,7 +181,7 @@ class bandpass(object):
       mp.subplots_adjust(hspace=0.5)
       mp.show()
 
-  def filter(self,vtsig,signal='active'):
+  def filter(self,vtsig):
       """Apply the filter to a vtsig object.
 
       :param vtsig: vtsig object
@@ -176,7 +192,8 @@ class bandpass(object):
       :param ymax_step: Maximum value for y-axis for the step response plot.
       """
       
-      sigobj = getattr(vtsig,signal)
+      sigobj = prepForProc(vtsig)
+      vtsig  = sigobj.parent
 
       #Apply filter
       filt_data = sp.signal.lfilter(self.ir,[1.0],sigobj.data)
@@ -201,6 +218,7 @@ class bandpass(object):
       newsigobj = sigobj.copy(newsig,self.comment)
       #Put in the filtered data.
       newsigobj.data = copy.copy(filt_data)
+      newsigobj.dtv = copy.copy(sigobj.dtv)
 
       #Clear out ymin and ymax from metadata; make sure meta data block exists.
       #If not, create it.
