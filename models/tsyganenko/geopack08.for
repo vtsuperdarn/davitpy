@@ -1498,16 +1498,18 @@ C
 C       EXTERNAL EXNAME,INNAME
       CHARACTER EXNAME*(*),INNAME*(*)
 
-!         print*, '-----------IN--',X,Y,Z,HXGSW,HYGSW,HZGSW,BXGSW,BYGSW,BZGSW
+!       print*, '-------IN--',X,Y,Z,HXGSW,HYGSW,HZGSW,BXGSW,BYGSW,BZGSW
       IF (EXNAME.eq.'T96_01') THEN
             CALL T96_01(IOPT,PARMOD,PSI,X,Y,Z,BXGSW,BYGSW,BZGSW)
+      ELSE IF (EXNAME.eq.'T01_01') THEN
+            CALL T01_01(IOPT,PARMOD,PSI,X,Y,Z,BXGSW,BYGSW,BZGSW)
       ENDIF
       IF (INNAME.eq.'IGRF_GSW_08') THEN
             CALL IGRF_GSW_08(X,Y,Z,HXGSW,HYGSW,HZGSW)
       ELSE IF (INNAME.eq.'DIP_08') THEN
             CALL DIP_08(X,Y,Z,HXGSW,HYGSW,HZGSW)
       ENDIF
-!         print*, '-----------OUT-',X,Y,Z,HXGSW,HYGSW,HZGSW,BXGSW,BYGSW,BZGSW
+!       print*, '-------OUT-',X,Y,Z,HXGSW,HYGSW,HZGSW,BXGSW,BYGSW,BZGSW
 !         rr = SQRT(X**2 + Y**2 + Z**2)
 !         print*, X,Y,Z,rr,HXGSW,HYGSW,HZGSW
 !         print*, '##PARMOD ',PARMOD
@@ -1686,7 +1688,7 @@ C       EXTERNAL EXNAME,INNAME
 Cf2py intent(in) ::  XI, YI, ZI
 Cf2py intent(in) ::  DIR, DSMAX, ERR, R0, RLIM, IOPT, PARMOD
 Cf2py intent(in) ::  EXNAME, INNAME
-Cf2py intent(in) ::  LMAX
+Cf2py integer intent(in) ::  LMAX
 Cf2py intent(out) :: XF,YF,ZF
 Cf2py intent(out),depend(LMAX) :: XX,YY,ZZ
 Cf2py intent(out) :: L

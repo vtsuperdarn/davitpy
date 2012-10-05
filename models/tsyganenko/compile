@@ -1,6 +1,1892 @@
-f2py geopack08.for -m tsyg -h geopack08.pyf
-gfortran -w -O2 -fbacktrace -fno-automatic -fPIC -c geopack08.for T96.f
-f2py --f77flags="-w" -c geopack08.pyf geopack08.for T96.f
+f2py geopack08.for -m tsyg -h geopack08.pyf T96.f T02.f
+Reading fortran codes...
+	Reading file 'geopack08.for' (format:fix,strict)
+Line #1693 in geopack08.for:"      intent(out),depend(LMAX) :: XX,YY,ZZ"
+	analyzeline: cannot handle multiple attributes without type specification. Ignoring 'depend(lmax)'.
+	Reading file 'T96.f' (format:fix,strict)
+	Reading file 'T02.f' (format:fix,strict)
+Post-processing...
+	Block: tsyg
+{}
+In: :tsyg:geopack08.for:igrf_gsw_08
+vars2fortran: No typespec for argument "xgsw".
+{}
+In: :tsyg:geopack08.for:igrf_gsw_08
+vars2fortran: No typespec for argument "ygsw".
+{}
+In: :tsyg:geopack08.for:igrf_gsw_08
+vars2fortran: No typespec for argument "zgsw".
+{}
+In: :tsyg:geopack08.for:igrf_gsw_08
+vars2fortran: No typespec for argument "hxgsw".
+{}
+In: :tsyg:geopack08.for:igrf_gsw_08
+vars2fortran: No typespec for argument "hygsw".
+{}
+In: :tsyg:geopack08.for:igrf_gsw_08
+vars2fortran: No typespec for argument "hzgsw".
+			Block: igrf_gsw_08
+{}
+In: :tsyg:geopack08.for:igrf_geo_08
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:geopack08.for:igrf_geo_08
+vars2fortran: No typespec for argument "theta".
+{}
+In: :tsyg:geopack08.for:igrf_geo_08
+vars2fortran: No typespec for argument "phi".
+{}
+In: :tsyg:geopack08.for:igrf_geo_08
+vars2fortran: No typespec for argument "br".
+{}
+In: :tsyg:geopack08.for:igrf_geo_08
+vars2fortran: No typespec for argument "btheta".
+{}
+In: :tsyg:geopack08.for:igrf_geo_08
+vars2fortran: No typespec for argument "bphi".
+			Block: igrf_geo_08
+{}
+In: :tsyg:geopack08.for:dip_08
+vars2fortran: No typespec for argument "xgsw".
+{}
+In: :tsyg:geopack08.for:dip_08
+vars2fortran: No typespec for argument "ygsw".
+{}
+In: :tsyg:geopack08.for:dip_08
+vars2fortran: No typespec for argument "zgsw".
+{}
+In: :tsyg:geopack08.for:dip_08
+vars2fortran: No typespec for argument "bxgsw".
+{}
+In: :tsyg:geopack08.for:dip_08
+vars2fortran: No typespec for argument "bygsw".
+{}
+In: :tsyg:geopack08.for:dip_08
+vars2fortran: No typespec for argument "bzgsw".
+			Block: dip_08
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "iyear".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "iday".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "ihour".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "min_bn".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "isec".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "gst".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "slong".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "srasn".
+{}
+In: :tsyg:geopack08.for:sun_08
+vars2fortran: No typespec for argument "sdec".
+			Block: sun_08
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "r".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "theta".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "phi".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "x".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "y".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "z".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:sphcar_08
+vars2fortran: No typespec for argument "j".
+			Block: sphcar_08
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "theta".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "phi".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "br".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "btheta".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "bphi".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:geopack08.for:bspcar_08
+vars2fortran: No typespec for argument "bz".
+			Block: bspcar_08
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "bz".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "br".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "btheta".
+{}
+In: :tsyg:geopack08.for:bcarsp_08
+vars2fortran: No typespec for argument "bphi".
+			Block: bcarsp_08
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "iyear".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "iday".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "ihour".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "min_bn".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "isec".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "vgsex".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "vgsey".
+{}
+In: :tsyg:geopack08.for:recalc_08
+vars2fortran: No typespec for argument "vgsez".
+			Block: recalc_08
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "xgsw".
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "ygsw".
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "zgsw".
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "xgse".
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "ygse".
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "zgse".
+{}
+In: :tsyg:geopack08.for:gswgse_08
+vars2fortran: No typespec for argument "j".
+			Block: gswgse_08
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "xgeo".
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "ygeo".
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "zgeo".
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "xmag".
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "ymag".
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "zmag".
+{}
+In: :tsyg:geopack08.for:geomag_08
+vars2fortran: No typespec for argument "j".
+			Block: geomag_08
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "xgei".
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "ygei".
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "zgei".
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "xgeo".
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "ygeo".
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "zgeo".
+{}
+In: :tsyg:geopack08.for:geigeo_08
+vars2fortran: No typespec for argument "j".
+			Block: geigeo_08
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "xmag".
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "ymag".
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "zmag".
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "xsm".
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "ysm".
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "zsm".
+{}
+In: :tsyg:geopack08.for:magsm_08
+vars2fortran: No typespec for argument "j".
+			Block: magsm_08
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "xsm".
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "ysm".
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "zsm".
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "xgsw".
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "ygsw".
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "zgsw".
+{}
+In: :tsyg:geopack08.for:smgsw_08
+vars2fortran: No typespec for argument "j".
+			Block: smgsw_08
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "xgeo".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "ygeo".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "zgeo".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "xgsw".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "ygsw".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "zgsw".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:geogsw_08
+vars2fortran: No typespec for argument "j".
+			Block: geogsw_08
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geodgeo_08
+vars2fortran: No typespec for argument "h".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geodgeo_08
+vars2fortran: No typespec for argument "xmu".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geodgeo_08
+vars2fortran: No typespec for argument "r".
+{'attrspec': ['intent(in,out)']}
+In: :tsyg:geopack08.for:geodgeo_08
+vars2fortran: No typespec for argument "theta".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:geodgeo_08
+vars2fortran: No typespec for argument "j".
+			Block: geodgeo_08
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "r1".
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "r2".
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "r3".
+{}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "iopt".
+{'attrspec': ['dimension(10)']}
+In: :tsyg:geopack08.for:rhand_08
+vars2fortran: No typespec for argument "parmod".
+			Block: rhand_08
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "ds".
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "dsmax".
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "errin".
+{}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "iopt".
+{'attrspec': ['dimension(10)']}
+In: :tsyg:geopack08.for:step_08
+vars2fortran: No typespec for argument "parmod".
+			Block: step_08
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "xi".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "yi".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "zi".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "dir".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "dsmax".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "err".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "rlim".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "r0".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "iopt".
+{'attrspec': ['dimension(10)', 'intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "parmod".
+{'attrspec': ['intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "xf".
+{'attrspec': ['intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "yf".
+{'attrspec': ['intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "zf".
+{'attrspec': ['dimension(lmax)', 'intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "xx".
+{'attrspec': ['dimension(lmax)', 'intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "yy".
+{'attrspec': ['dimension(lmax)', 'intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "zz".
+{'attrspec': ['intent(out)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "l".
+{'attrspec': ['intent(in)']}
+In: :tsyg:geopack08.for:trace_08
+vars2fortran: No typespec for argument "lmax".
+			Block: trace_08
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "xn_pd".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "vel".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "bzimf".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "xgsw".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "ygsw".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "zgsw".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "xmgnp".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "ymgnp".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "zmgnp".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "dist".
+{}
+In: :tsyg:geopack08.for:shuetal_mgnp_08
+vars2fortran: No typespec for argument "id".
+			Block: shuetal_mgnp_08
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "xn_pd".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "vel".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "xgsw".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "ygsw".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "zgsw".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "xmgnp".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "ymgnp".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "zmgnp".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "dist".
+{}
+In: :tsyg:geopack08.for:t96_mgnp_08
+vars2fortran: No typespec for argument "id".
+			Block: t96_mgnp_08
+{}
+In: :tsyg:T96.f:t96_01
+vars2fortran: No typespec for argument "iopt".
+			Block: t96_01
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:dipshld
+vars2fortran: No typespec for argument "bz".
+			Block: dipshld
+{'attrspec': ['dimension(12)']}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:cylharm
+vars2fortran: No typespec for argument "bz".
+			Block: cylharm
+{'attrspec': ['dimension(12)']}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:cylhar1
+vars2fortran: No typespec for argument "bz".
+			Block: cylhar1
+{}
+In: :tsyg:T96.f:bes
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:bes
+vars2fortran: No typespec for argument "k".
+			Block: bes
+{}
+In: :tsyg:T96.f:bes0
+vars2fortran: No typespec for argument "x".
+			Block: bes0
+{}
+In: :tsyg:T96.f:bes1
+vars2fortran: No typespec for argument "x".
+			Block: bes1
+{}
+In: :tsyg:T96.f:intercon
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:intercon
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:intercon
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:intercon
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:intercon
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:intercon
+vars2fortran: No typespec for argument "bz".
+			Block: intercon
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "sps".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "bxrc".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "byrc".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "bzrc".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "bxt2".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "byt2".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "bzt2".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "bxt3".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "byt3".
+{}
+In: :tsyg:T96.f:tailrc96
+vars2fortran: No typespec for argument "bzt3".
+			Block: tailrc96
+{}
+In: :tsyg:T96.f:ringcurr96
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:ringcurr96
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:ringcurr96
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:ringcurr96
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:ringcurr96
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:ringcurr96
+vars2fortran: No typespec for argument "bz".
+			Block: ringcurr96
+{}
+In: :tsyg:T96.f:taildisk
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:taildisk
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:taildisk
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:taildisk
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:taildisk
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:taildisk
+vars2fortran: No typespec for argument "bz".
+			Block: taildisk
+{}
+In: :tsyg:T96.f:tail87
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:tail87
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:tail87
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:tail87
+vars2fortran: No typespec for argument "bz".
+			Block: tail87
+{'attrspec': ['dimension(48)']}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "sps".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "hx".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "hy".
+{}
+In: :tsyg:T96.f:shlcar3x3
+vars2fortran: No typespec for argument "hz".
+			Block: shlcar3x3
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:birk1tot_02
+vars2fortran: No typespec for argument "bz".
+			Block: birk1tot_02
+{'attrspec': ['dimension(4)']}
+In: :tsyg:T96.f:diploop1
+vars2fortran: No typespec for argument "xi".
+{'attrspec': ['dimension(3,26)']}
+In: :tsyg:T96.f:diploop1
+vars2fortran: No typespec for argument "d".
+			Block: diploop1
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "rl".
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:circle
+vars2fortran: No typespec for argument "bz".
+			Block: circle
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "bz".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "xc".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "rl".
+{}
+In: :tsyg:T96.f:crosslp
+vars2fortran: No typespec for argument "al".
+			Block: crosslp
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "bxx".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "byx".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "bzx".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "bxy".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "byy".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "bzy".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "bxz".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "byz".
+{}
+In: :tsyg:T96.f:dipxyz
+vars2fortran: No typespec for argument "bzz".
+			Block: dipxyz
+{'attrspec': ['dimension(4)']}
+In: :tsyg:T96.f:condip1
+vars2fortran: No typespec for argument "xi".
+{'attrspec': ['dimension(3,79)']}
+In: :tsyg:T96.f:condip1
+vars2fortran: No typespec for argument "d".
+			Block: condip1
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:birk1shld
+vars2fortran: No typespec for argument "bz".
+			Block: birk1shld
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:birk2tot_02
+vars2fortran: No typespec for argument "bz".
+			Block: birk2tot_02
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "hx".
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "hy".
+{}
+In: :tsyg:T96.f:birk2shl
+vars2fortran: No typespec for argument "hz".
+			Block: birk2shl
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:r2_birk
+vars2fortran: No typespec for argument "bz".
+			Block: r2_birk
+{}
+In: :tsyg:T96.f:r2inner
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:r2inner
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:r2inner
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:r2inner
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:r2inner
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:r2inner
+vars2fortran: No typespec for argument "bz".
+			Block: r2inner
+{}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "z".
+{'attrspec': ['dimension(nmax)']}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "cbx".
+{'attrspec': ['dimension(nmax)']}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "cby".
+{'attrspec': ['dimension(nmax)']}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "cbz".
+{}
+In: :tsyg:T96.f:bconic
+vars2fortran: No typespec for argument "nmax".
+			Block: bconic
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "bz".
+{}
+In: :tsyg:T96.f:dipdistr
+vars2fortran: No typespec for argument "mode".
+			Block: dipdistr
+{}
+In: :tsyg:T96.f:r2outer
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:r2outer
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:r2outer
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:r2outer
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:r2outer
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:r2outer
+vars2fortran: No typespec for argument "bz".
+			Block: r2outer
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "bz".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "xc".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "yc".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "zc".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "theta".
+{}
+In: :tsyg:T96.f:loops4
+vars2fortran: No typespec for argument "phi".
+			Block: loops4
+{}
+In: :tsyg:T96.f:r2sheet
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:r2sheet
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:r2sheet
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T96.f:r2sheet
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T96.f:r2sheet
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T96.f:r2sheet
+vars2fortran: No typespec for argument "bz".
+			Block: r2sheet
+{}
+In: :tsyg:T96.f:xksi
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T96.f:xksi
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T96.f:xksi
+vars2fortran: No typespec for argument "z".
+			Block: xksi
+{}
+In: :tsyg:T96.f:fexp
+vars2fortran: No typespec for argument "s".
+{}
+In: :tsyg:T96.f:fexp
+vars2fortran: No typespec for argument "a".
+			Block: fexp
+{}
+In: :tsyg:T96.f:fexp1
+vars2fortran: No typespec for argument "s".
+{}
+In: :tsyg:T96.f:fexp1
+vars2fortran: No typespec for argument "a".
+			Block: fexp1
+{}
+In: :tsyg:T96.f:tksi
+vars2fortran: No typespec for argument "xksi".
+{}
+In: :tsyg:T96.f:tksi
+vars2fortran: No typespec for argument "xks0".
+{}
+In: :tsyg:T96.f:tksi
+vars2fortran: No typespec for argument "dxksi".
+			Block: tksi
+			Block: dipole
+{}
+In: :tsyg:T02.f:t01_01
+vars2fortran: No typespec for argument "iopt".
+			Block: t01_01
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "iopgen".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "iopb".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "iopr".
+{'attrspec': ['dimension(ntot)']}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "ntot".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "pdyn".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "dst".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byimf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzimf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "vbimf1".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "vbimf2".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxcf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bycf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzcf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxt1".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byt1".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzt1".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxt2".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byt2".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzt2".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxsrc".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bysrc".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzsrc".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxprc".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byprc".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzprc".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxr11".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byr11".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzr11".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxr12".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byr12".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzr12".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxr21".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byr21".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzr21".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bxr22".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "byr22".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bzr22".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "hximf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "hyimf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "hzimf".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_extall
+vars2fortran: No typespec for argument "bz".
+			Block: t02_extall
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_shlcar3x3
+vars2fortran: No typespec for argument "bz".
+			Block: t02_shlcar3x3
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "bx1".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "by1".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "bz1".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "bx2".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "by2".
+{}
+In: :tsyg:T02.f:t02_deformed
+vars2fortran: No typespec for argument "bz2".
+			Block: t02_deformed
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "bx1".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "by1".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "bz1".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "bx2".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "by2".
+{}
+In: :tsyg:T02.f:t02_warped
+vars2fortran: No typespec for argument "bz2".
+			Block: t02_warped
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "bx1".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "by1".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "bz1".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "bx2".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "by2".
+{}
+In: :tsyg:T02.f:t02_unwarped
+vars2fortran: No typespec for argument "bz2".
+			Block: t02_unwarped
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "d0".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "deltadx".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "deltady".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_taildisk
+vars2fortran: No typespec for argument "bz".
+			Block: t02_taildisk
+{'attrspec': ['dimension(60)']}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "dshift".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "hx".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "hy".
+{}
+In: :tsyg:T02.f:t02_shlcar5x5
+vars2fortran: No typespec for argument "hz".
+			Block: t02_shlcar5x5
+In: :tsyg:T02.f:t02_birk_tot
+determineexprtype: could not determine expressions ('bz                          bx21') type.
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "iopb".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "bx11".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "by11".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "bz11".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "bx12".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "by12".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "e_bz__________________________bx21_e".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "by21".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "bz21".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "bx22".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "by22".
+{}
+In: :tsyg:T02.f:t02_birk_tot
+vars2fortran: No typespec for argument "bz22".
+			Block: t02_birk_tot
+In: :tsyg:T02.f:t02_birk_tot
+determineexprtype: could not determine expressions ('bz                          bx21') type.
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "numb".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "mode".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_birk_1n2
+vars2fortran: No typespec for argument "bz".
+			Block: t02_birk_1n2
+{'attrspec': ['dimension(31)']}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_twocones
+vars2fortran: No typespec for argument "bz".
+			Block: t02_twocones
+{'attrspec': ['dimension(31)']}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_one_cone
+vars2fortran: No typespec for argument "bz".
+			Block: t02_one_cone
+{'attrspec': ['dimension(31)']}
+In: :tsyg:T02.f:t02_r_s
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_r_s
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:t02_r_s
+vars2fortran: No typespec for argument "theta".
+			Block: t02_r_s
+{'attrspec': ['dimension(31)']}
+In: :tsyg:T02.f:t02_theta_s
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_theta_s
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:t02_theta_s
+vars2fortran: No typespec for argument "theta".
+			Block: t02_theta_s
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "theta".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "phi".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "btheta".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "bphi".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "n".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "theta0".
+{}
+In: :tsyg:T02.f:t02_fialcos
+vars2fortran: No typespec for argument "dt".
+			Block: t02_fialcos
+{'attrspec': ['dimension(86)']}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "x_sc".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_birk_shl
+vars2fortran: No typespec for argument "bz".
+			Block: t02_birk_shl
+In: :tsyg:T02.f:t02_full_rc
+determineexprtype: could not determine expressions ('bypr  bzprc') type.
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "iopr".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "bxsrc".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "bysrc".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "bzsrc".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "bxprc".
+{}
+In: :tsyg:T02.f:t02_full_rc
+vars2fortran: No typespec for argument "e_bypr__bzprc_e".
+			Block: t02_full_rc
+In: :tsyg:T02.f:t02_full_rc
+determineexprtype: could not determine expressions ('bypr  bzprc') type.
+In: :tsyg:T02.f:t02_src_prc
+determineexprtype: could not determine expressions ('bysrc    bzsrc') type.
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "iopr".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "sc_sy".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "sc_pr".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "phi".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "bxsrc".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "e_bysrc____bzsrc_e".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "bxprc".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "byprc".
+{}
+In: :tsyg:T02.f:t02_src_prc
+vars2fortran: No typespec for argument "bzprc".
+			Block: t02_src_prc
+In: :tsyg:T02.f:t02_src_prc
+determineexprtype: could not determine expressions ('bysrc    bzsrc') type.
+{}
+In: :tsyg:T02.f:t02_rc_symm
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_rc_symm
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_rc_symm
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_rc_symm
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_rc_symm
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_rc_symm
+vars2fortran: No typespec for argument "bz".
+			Block: t02_rc_symm
+{}
+In: :tsyg:T02.f:ap
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:ap
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg:T02.f:ap
+vars2fortran: No typespec for argument "cost".
+			Block: ap
+{}
+In: :tsyg:T02.f:t02_prc_symm
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_prc_symm
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_prc_symm
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_prc_symm
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_prc_symm
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_prc_symm
+vars2fortran: No typespec for argument "bz".
+			Block: t02_prc_symm
+{}
+In: :tsyg:T02.f:t02_apprc
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:t02_apprc
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg:T02.f:t02_apprc
+vars2fortran: No typespec for argument "cost".
+			Block: t02_apprc
+{}
+In: :tsyg:T02.f:t02_prc_quad
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_prc_quad
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_prc_quad
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_prc_quad
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_prc_quad
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_prc_quad
+vars2fortran: No typespec for argument "bz".
+			Block: t02_prc_quad
+{}
+In: :tsyg:T02.f:t02_br_prc_quad
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:t02_br_prc_quad
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg:T02.f:t02_br_prc_quad
+vars2fortran: No typespec for argument "cost".
+			Block: t02_br_prc_quad
+{}
+In: :tsyg:T02.f:bt_prc_q
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg:T02.f:bt_prc_q
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg:T02.f:bt_prc_q
+vars2fortran: No typespec for argument "cost".
+			Block: bt_prc_q
+{}
+In: :tsyg:T02.f:t02_ffs
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_ffs
+vars2fortran: No typespec for argument "a0".
+{}
+In: :tsyg:T02.f:t02_ffs
+vars2fortran: No typespec for argument "da".
+{}
+In: :tsyg:T02.f:t02_ffs
+vars2fortran: No typespec for argument "f".
+{}
+In: :tsyg:T02.f:t02_ffs
+vars2fortran: No typespec for argument "fa".
+{}
+In: :tsyg:T02.f:t02_ffs
+vars2fortran: No typespec for argument "fs".
+			Block: t02_ffs
+{'attrspec': ['dimension(86)']}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "x_sc".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_rc_shield
+vars2fortran: No typespec for argument "bz".
+			Block: t02_rc_shield
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg:T02.f:t02_dipole
+vars2fortran: No typespec for argument "bz".
+			Block: t02_dipole
+Post-processing (stage 2)...
+Saving signatures to file "./geopack08.pyf"
+gfortran -w -O2 -fbacktrace -fno-automatic -fPIC -c geopack08.for T96.f T02.f
+f2py --f77flags="-w" -c geopack08.pyf geopack08.for T96.f T02.f
 running build
 running config_cc
 unifing config_cc, config, build_clib, build_ext, build commands --compiler options
@@ -9,17 +1895,13 @@ unifing config_fc, config, build_clib, build_ext, build commands --fcompiler opt
 running build_src
 build_src
 building extension "tsyg" sources
-creating /tmp/tmpjAcU6j
-creating /tmp/tmpjAcU6j/src.linux-x86_64-2.7
+creating /tmp/tmpSNNbiH
+creating /tmp/tmpSNNbiH/src.linux-x86_64-2.7
 f2py options: []
 f2py: geopack08.pyf
 Reading fortran codes...
 	Reading file 'geopack08.pyf' (format:free)
 Post-processing...
-	Block: rhand_08__user__routines
-		Block: rhand_08_user_interface
-			Block: exname
-			Block: inname
 	Block: tsyg
 			Block: igrf_gsw_08
 			Block: igrf_geo_08
@@ -37,18 +1919,74 @@ Post-processing...
 			Block: geogsw_08
 			Block: geodgeo_08
 			Block: rhand_08
-In: geopack08.pyf:tsyg:unknown_interface:rhand_08
-get_useparameters: no module rhand_08__user__routines info used by rhand_08
 			Block: step_08
 			Block: trace_08
 			Block: shuetal_mgnp_08
 			Block: t96_mgnp_08
+			Block: t96_01
+			Block: dipshld
+			Block: cylharm
+			Block: cylhar1
+			Block: bes
+			Block: bes0
+			Block: bes1
+			Block: intercon
+			Block: tailrc96
+			Block: ringcurr96
+			Block: taildisk
+			Block: tail87
+			Block: shlcar3x3
+			Block: birk1tot_02
+			Block: diploop1
+			Block: circle
+			Block: crosslp
+			Block: dipxyz
+			Block: condip1
+			Block: birk1shld
+			Block: birk2tot_02
+			Block: birk2shl
+			Block: r2_birk
+			Block: r2inner
+			Block: bconic
+			Block: dipdistr
+			Block: r2outer
+			Block: loops4
+			Block: r2sheet
+			Block: xksi
+			Block: fexp
+			Block: fexp1
+			Block: tksi
+			Block: dipole
+			Block: t01_01
+			Block: t02_extall
+			Block: t02_shlcar3x3
+			Block: t02_deformed
+			Block: t02_warped
+			Block: t02_unwarped
+			Block: t02_taildisk
+			Block: t02_shlcar5x5
+			Block: t02_birk_tot
+			Block: t02_birk_1n2
+			Block: t02_twocones
+			Block: t02_one_cone
+			Block: t02_r_s
+			Block: t02_theta_s
+			Block: t02_fialcos
+			Block: t02_birk_shl
+			Block: t02_full_rc
+			Block: t02_src_prc
+			Block: t02_rc_symm
+			Block: ap
+			Block: t02_prc_symm
+			Block: t02_apprc
+			Block: t02_prc_quad
+			Block: t02_br_prc_quad
+			Block: bt_prc_q
+			Block: t02_ffs
+			Block: t02_rc_shield
+			Block: t02_dipole
 Post-processing (stage 2)...
 Building modules...
-	Constructing call-back function "cb_exname_in_rhand_08__user__routines"
-	  def exname(iopt,parmod,psi,x,y,z,bxgsw,bygsw,bzgsw): return 
-	Constructing call-back function "cb_inname_in_rhand_08__user__routines"
-	  def inname(x,y,z,hxgsw,hygsw,hzgsw): return 
 	Building module "tsyg"...
 		Constructing wrapper function "igrf_gsw_08"...
 		  igrf_gsw_08(xgsw,ygsw,zgsw,hxgsw,hygsw,hzgsw)
@@ -59,7 +1997,7 @@ Building modules...
 		Constructing wrapper function "sun_08"...
 		  sun_08(iyear,iday,ihour,min_bn,isec,gst,slong,srasn,sdec)
 		Constructing wrapper function "sphcar_08"...
-		  sphcar_08(r,theta,phi,x,y,z,j)
+		  r,theta,phi,x,y,z = sphcar_08(r,theta,phi,x,y,z,j)
 		Constructing wrapper function "bspcar_08"...
 		  bspcar_08(theta,phi,br,btheta,bphi,bx,by,bz)
 		Constructing wrapper function "bcarsp_08"...
@@ -77,30 +2015,195 @@ Building modules...
 		Constructing wrapper function "smgsw_08"...
 		  smgsw_08(xsm,ysm,zsm,xgsw,ygsw,zgsw,j)
 		Constructing wrapper function "geogsw_08"...
-		  geogsw_08(xgeo,ygeo,zgeo,xgsw,ygsw,zgsw,j)
+		  xgeo,ygeo,zgeo,xgsw,ygsw,zgsw = geogsw_08(xgeo,ygeo,zgeo,xgsw,ygsw,zgsw,j)
 		Constructing wrapper function "geodgeo_08"...
-		  geodgeo_08(h,xmu,r,theta,j)
+		  h,xmu,r,theta = geodgeo_08(h,xmu,r,theta,j)
 		Constructing wrapper function "rhand_08"...
-		  rhand_08(x,y,z,r1,r2,r3,iopt,parmod,exname,inname,[exname_extra_args,inname_extra_args])
+		  rhand_08(x,y,z,r1,r2,r3,iopt,parmod,exname,inname)
 		Constructing wrapper function "step_08"...
-		  step_08(x,y,z,ds,dsmax,errin,iopt,parmod,exname,inname,[exname_extra_args,inname_extra_args])
+		  step_08(x,y,z,ds,dsmax,errin,iopt,parmod,exname,inname)
 		Constructing wrapper function "trace_08"...
-		  xf,yf,zf,xx,yy,zz,l = trace_08(xi,yi,zi,dir,dsmax,err,rlim,r0,iopt,parmod,exname,inname,lmax,[exname_extra_args,inname_extra_args])
+		  xf,yf,zf,xx,yy,zz,l = trace_08(xi,yi,zi,dir,dsmax,err,rlim,r0,iopt,parmod,exname,inname,lmax)
 		Constructing wrapper function "shuetal_mgnp_08"...
 		  shuetal_mgnp_08(xn_pd,vel,bzimf,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id)
 		Constructing wrapper function "t96_mgnp_08"...
 		  t96_mgnp_08(xn_pd,vel,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id)
+		Constructing wrapper function "t96_01"...
+		  t96_01(iopt,parmod,ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "dipshld"...
+		  dipshld(ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "cylharm"...
+		  cylharm(a,x,y,z,bx,by,bz)
+		Constructing wrapper function "cylhar1"...
+		  cylhar1(a,x,y,z,bx,by,bz)
+		Creating wrapper for Fortran function "bes"("bes")...
+		Constructing wrapper function "bes"...
+		  bes = bes(x,k)
+		Creating wrapper for Fortran function "bes0"("bes0")...
+		Constructing wrapper function "bes0"...
+		  bes0 = bes0(x)
+		Creating wrapper for Fortran function "bes1"("bes1")...
+		Constructing wrapper function "bes1"...
+		  bes1 = bes1(x)
+		Constructing wrapper function "intercon"...
+		  intercon(x,y,z,bx,by,bz)
+		Constructing wrapper function "tailrc96"...
+		  tailrc96(sps,x,y,z,bxrc,byrc,bzrc,bxt2,byt2,bzt2,bxt3,byt3,bzt3)
+		Constructing wrapper function "ringcurr96"...
+		  ringcurr96(x,y,z,bx,by,bz)
+		Constructing wrapper function "taildisk"...
+		  taildisk(x,y,z,bx,by,bz)
+		Constructing wrapper function "tail87"...
+		  tail87(x,z,bx,bz)
+		Constructing wrapper function "shlcar3x3"...
+		  shlcar3x3(a,x,y,z,sps,hx,hy,hz)
+		Constructing wrapper function "birk1tot_02"...
+		  birk1tot_02(ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "diploop1"...
+		  diploop1(xi,d)
+		Constructing wrapper function "circle"...
+		  circle(x,y,z,rl,bx,by,bz)
+		Constructing wrapper function "crosslp"...
+		  crosslp(x,y,z,bx,by,bz,xc,rl,al)
+		Constructing wrapper function "dipxyz"...
+		  dipxyz(x,y,z,bxx,byx,bzx,bxy,byy,bzy,bxz,byz,bzz)
+		Constructing wrapper function "condip1"...
+		  condip1(xi,d)
+		Constructing wrapper function "birk1shld"...
+		  birk1shld(ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "birk2tot_02"...
+		  birk2tot_02(ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "birk2shl"...
+		  birk2shl(x,y,z,ps,hx,hy,hz)
+		Constructing wrapper function "r2_birk"...
+		  r2_birk(x,y,z,ps,bx,by,bz)
+		Constructing wrapper function "r2inner"...
+		  r2inner(x,y,z,bx,by,bz)
+		Constructing wrapper function "bconic"...
+		  bconic(x,y,z,cbx,cby,cbz,[nmax])
+		Constructing wrapper function "dipdistr"...
+		  dipdistr(x,y,z,bx,by,bz,mode)
+		Constructing wrapper function "r2outer"...
+		  r2outer(x,y,z,bx,by,bz)
+		Constructing wrapper function "loops4"...
+		  loops4(x,y,z,bx,by,bz,xc,yc,zc,r,theta,phi)
+		Constructing wrapper function "r2sheet"...
+		  r2sheet(x,y,z,bx,by,bz)
+		Creating wrapper for Fortran function "xksi"("xksi")...
+		Constructing wrapper function "xksi"...
+		  xksi = xksi(x,y,z)
+		Creating wrapper for Fortran function "fexp"("fexp")...
+		Constructing wrapper function "fexp"...
+		  fexp = fexp(s,a)
+		Creating wrapper for Fortran function "fexp1"("fexp1")...
+		Constructing wrapper function "fexp1"...
+		  fexp1 = fexp1(s,a)
+		Creating wrapper for Fortran function "tksi"("tksi")...
+		Constructing wrapper function "tksi"...
+		  tksi = tksi(xksi,xks0,dxksi)
+		Constructing wrapper function "dipole"...
+		  dipole(ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "t01_01"...
+		  t01_01(iopt,parmod,ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "t02_extall"...
+		  t02_extall(iopgen,iopt,iopb,iopr,a,pdyn,dst,byimf,bzimf,vbimf1,vbimf2,ps,x,y,z,bxcf,bycf,bzcf,bxt1,byt1,bzt1,bxt2,byt2,bzt2,bxsrc,bysrc,bzsrc,bxprc,byprc,bzprc,bxr11,byr11,bzr11,bxr12,byr12,bzr12,bxr21,byr21,bzr21,bxr22,byr22,bzr22,hximf,hyimf,hzimf,bx,by,bz,[ntot])
+		Constructing wrapper function "t02_shlcar3x3"...
+		  t02_shlcar3x3(x,y,z,ps,bx,by,bz)
+		Constructing wrapper function "t02_deformed"...
+		  t02_deformed(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2)
+		Constructing wrapper function "t02_warped"...
+		  t02_warped(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2)
+		Constructing wrapper function "t02_unwarped"...
+		  t02_unwarped(iopt,x,y,z,bx1,by1,bz1,bx2,by2,bz2)
+		Constructing wrapper function "t02_taildisk"...
+		  t02_taildisk(d0,deltadx,deltady,x,y,z,bx,by,bz)
+		Constructing wrapper function "t02_shlcar5x5"...
+		  t02_shlcar5x5(a,x,y,z,dshift,hx,hy,hz)
+		Constructing wrapper function "t02_birk_tot"...
+		  t02_birk_tot(iopb,ps,x,y,z,bx11,by11,bz11,bx12,by12,e_bz__________________________bx21_er,by21,bz21,bx22,by22,bz22)
+		Constructing wrapper function "t02_birk_1n2"...
+		  t02_birk_1n2(numb,mode,ps,x,y,z,bx,by,bz)
+		Constructing wrapper function "t02_twocones"...
+		  t02_twocones(a,x,y,z,bx,by,bz)
+		Constructing wrapper function "t02_one_cone"...
+		  t02_one_cone(a,x,y,z,bx,by,bz)
+		Creating wrapper for Fortran function "t02_r_s"("t02_r_s")...
+		Constructing wrapper function "t02_r_s"...
+		  t02_r_s = t02_r_s(a,r,theta)
+		Creating wrapper for Fortran function "t02_theta_s"("t02_theta_s")...
+		Constructing wrapper function "t02_theta_s"...
+		  t02_theta_s = t02_theta_s(a,r,theta)
+		Constructing wrapper function "t02_fialcos"...
+		  t02_fialcos(r,theta,phi,btheta,bphi,n,theta0,dt)
+		Constructing wrapper function "t02_birk_shl"...
+		  t02_birk_shl(a,ps,x_sc,x,y,z,bx,by,bz)
+		Constructing wrapper function "t02_full_rc"...
+		  t02_full_rc(iopr,ps,x,y,z,bxsrc,bysrc,bzsrc,bxprc,e_bypr__bzprc_er)
+		Constructing wrapper function "t02_src_prc"...
+		  t02_src_prc(iopr,sc_sy,sc_pr,phi,ps,x,y,z,bxsrc,e_bysrc____bzsrc_er,bxprc,byprc,bzprc)
+		Constructing wrapper function "t02_rc_symm"...
+		  t02_rc_symm(x,y,z,bx,by,bz)
+		Creating wrapper for Fortran function "ap"("ap")...
+		Constructing wrapper function "ap"...
+		  ap = ap(r,sint,cost)
+		Constructing wrapper function "t02_prc_symm"...
+		  t02_prc_symm(x,y,z,bx,by,bz)
+		Creating wrapper for Fortran function "t02_apprc"("t02_apprc")...
+		Constructing wrapper function "t02_apprc"...
+		  t02_apprc = t02_apprc(r,sint,cost)
+		Constructing wrapper function "t02_prc_quad"...
+		  t02_prc_quad(x,y,z,bx,by,bz)
+		Creating wrapper for Fortran function "t02_br_prc_quad"("t02_br_prc_quad")...
+		Constructing wrapper function "t02_br_prc_quad"...
+		  t02_br_prc_quad = t02_br_prc_quad(r,sint,cost)
+		Creating wrapper for Fortran function "bt_prc_q"("bt_prc_q")...
+		Constructing wrapper function "bt_prc_q"...
+		  bt_prc_q = bt_prc_q(r,sint,cost)
+		Constructing wrapper function "t02_ffs"...
+		  t02_ffs(a,a0,da,f,fa,fs)
+		Constructing wrapper function "t02_rc_shield"...
+		  t02_rc_shield(a,ps,x_sc,x,y,z,bx,by,bz)
+		Constructing wrapper function "t02_dipole"...
+		  t02_dipole(ps,x,y,z,bx,by,bz)
 		Constructing COMMON block support for "geopack2"...
 		  g,h,rec
 		Constructing COMMON block support for "geopack1"...
 		  aa,sps,cps,bb
-	Wrote C/API module "tsyg" to file "/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c"
-	Fortran 77 wrappers are saved to "/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsyg-f2pywrappers.f"
-  adding '/tmp/tmpjAcU6j/src.linux-x86_64-2.7/fortranobject.c' to sources.
-  adding '/tmp/tmpjAcU6j/src.linux-x86_64-2.7' to include_dirs.
-copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpjAcU6j/src.linux-x86_64-2.7
-copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpjAcU6j/src.linux-x86_64-2.7
-  adding '/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsyg-f2pywrappers.f' to sources.
+		Constructing COMMON block support for "warp"...
+		  cpss,spss,dpsrr,rps,warp,d,xs,zs,dxsx,dxsy,dxsz,dzsx,dzsy,dzsz,dzetas,ddzetadx,ddzetady,ddzetadz,zsww
+		Constructing COMMON block support for "coord21"...
+		  xx2,yy2,zz2
+		Constructing COMMON block support for "rhdr"...
+		  rh,dr
+		Constructing COMMON block support for "loopdip1"...
+		  tilt,xcentre,radius,dipx,dipy
+		Constructing COMMON block support for "dx1"...
+		  dx,scalein,scaleout
+		Constructing COMMON block support for "coord11"...
+		  xx1,yy1
+		Constructing COMMON block support for "birkpar"...
+		  xkappa1,xkappa2
+		Constructing COMMON block support for "rh0"...
+		  rh0
+		Constructing COMMON block support for "tail"...
+		  dxshift1,dxshift2,d,deltady
+		Constructing COMMON block support for "rcpar"...
+		  sc_sy,sc_as,phi
+		Constructing COMMON block support for "g"...
+		  g
+		Constructing COMMON block support for "dphi_b_rho0"...
+		  dphi,b,rho_0,xkappa
+		Constructing COMMON block support for "modenum"...
+		  m
+		Constructing COMMON block support for "dtheta"...
+		  dtheta
+	Wrote C/API module "tsyg" to file "/tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsygmodule.c"
+	Fortran 77 wrappers are saved to "/tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsyg-f2pywrappers.f"
+  adding '/tmp/tmpSNNbiH/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding '/tmp/tmpSNNbiH/src.linux-x86_64-2.7' to include_dirs.
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpSNNbiH/src.linux-x86_64-2.7
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpSNNbiH/src.linux-x86_64-2.7
+  adding '/tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsyg-f2pywrappers.f' to sources.
 build_src: building npy-pkg config files
 running build_ext
 customize UnixCCompiler
@@ -135,111 +2238,21 @@ building 'tsyg' extension
 compiling C sources
 C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
 
-creating /tmp/tmpjAcU6j/tmp
-creating /tmp/tmpjAcU6j/tmp/tmpjAcU6j
-creating /tmp/tmpjAcU6j/tmp/tmpjAcU6j/src.linux-x86_64-2.7
-compile options: '-I/tmp/tmpjAcU6j/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
-gcc: /tmp/tmpjAcU6j/src.linux-x86_64-2.7/fortranobject.c
-gcc: /tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_exname_in_rhand_08__user__routines’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:366:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_inname_in_rhand_08__user__routines’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:503:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_step_08’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2651:3: error: unknown type name ‘exname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2656:3: error: unknown type name ‘inname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2670:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: error: ‘exname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: note: each undeclared identifier is reported only once for each function it appears in
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2675:25: error: ‘exname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:53: error: ‘maxnofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:66: error: ‘nofoptargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2697:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2699:17: error: ‘inname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2702:25: error: ‘inname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 9 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 10 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_trace_08’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2870:3: error: unknown type name ‘exname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2875:3: error: unknown type name ‘inname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2916:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2918:17: error: ‘exname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2921:25: error: ‘exname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:53: error: ‘maxnofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:66: error: ‘nofoptargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2962:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2964:17: error: ‘inname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2967:25: error: ‘inname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 11 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 12 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_exname_in_rhand_08__user__routines’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:366:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘cb_inname_in_rhand_08__user__routines’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:503:7: warning: variable ‘capi_j’ set but not used [-Wunused-but-set-variable]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_step_08’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2651:3: error: unknown type name ‘exname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2656:3: error: unknown type name ‘inname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2670:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: error: ‘exname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2672:17: note: each undeclared identifier is reported only once for each function it appears in
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2675:25: error: ‘exname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:53: error: ‘maxnofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2676:66: error: ‘nofoptargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2697:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2699:17: error: ‘inname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2702:25: error: ‘inname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2703:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 9 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: warning: passing argument 10 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2735:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c: In function ‘f2py_rout_tsyg_trace_08’:
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2870:3: error: unknown type name ‘exname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2875:3: error: unknown type name ‘inname_typedef’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2916:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2918:17: error: ‘exname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2921:25: error: ‘exname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:53: error: ‘maxnofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2922:66: error: ‘nofoptargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2962:15: warning: assignment makes integer from pointer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2964:17: error: ‘inname’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2967:25: error: ‘inname_nofargs’ undeclared (first use in this function)
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:2968:3: error: stray ‘#’ in program
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 11 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: warning: passing argument 12 of ‘f2py_func’ makes pointer from integer without a cast [enabled by default]
-/tmp/tmpjAcU6j/src.linux-x86_64-2.7/tsygmodule.c:3018:9: note: expected ‘void *’ but argument is of type ‘int’
+creating /tmp/tmpSNNbiH/tmp
+creating /tmp/tmpSNNbiH/tmp/tmpSNNbiH
+creating /tmp/tmpSNNbiH/tmp/tmpSNNbiH/src.linux-x86_64-2.7
+compile options: '-I/tmp/tmpSNNbiH/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+gcc: /tmp/tmpSNNbiH/src.linux-x86_64-2.7/fortranobject.c
+gcc: /tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsygmodule.c
+compiling Fortran sources
+Fortran f77 compiler: /usr/bin/gfortran -w -fPIC -O3 -funroll-loops
+Fortran f90 compiler: /usr/bin/gfortran -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran fix compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+compile options: '-I/tmp/tmpSNNbiH/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+gfortran:f77: geopack08.for
+gfortran:f77: T96.f
+gfortran:f77: T02.f
+gfortran:f77: /tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsyg-f2pywrappers.f
+/usr/bin/gfortran -Wall -Wall -shared /tmp/tmpSNNbiH/tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsygmodule.o /tmp/tmpSNNbiH/tmp/tmpSNNbiH/src.linux-x86_64-2.7/fortranobject.o /tmp/tmpSNNbiH/geopack08.o /tmp/tmpSNNbiH/T96.o /tmp/tmpSNNbiH/T02.o /tmp/tmpSNNbiH/tmp/tmpSNNbiH/src.linux-x86_64-2.7/tsyg-f2pywrappers.o -lgfortran -o ./tsyg.so
+running scons
+Removing build directory /tmp/tmpSNNbiH

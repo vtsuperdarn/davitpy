@@ -1,13 +1,15 @@
-# Geopack module __init__.py
+# TSYGANENKO module __init__.py
 """
 *******************************
-            GEOPACK
+MODULE: models.tsyganenko
 *******************************
-This subpackage contains Tsyganenko's geopak library
-DEV: functions/modules/classes with a * have not been developed yet
 
-This includes the following object(s):
+This module contains the following functions:
 
+  trace_08
+  
+Written by Sebastien 20121001
+    
 *******************************
 """
 

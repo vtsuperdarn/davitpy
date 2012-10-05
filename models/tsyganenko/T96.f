@@ -690,10 +690,11 @@ C
         IMPLICIT REAL*8 (A-H,O-Z)
         DIMENSION F(2),BETA(2)
         COMMON /WARP/ CPSS,SPSS,DPSRR, XNEXT(3),XS,ZSWARPED,DXSX,DXSY,
-     *   DXSZ,DZSX,DZSYWARPED,DZSZ,OTHER(4),ZS  !  ZS HERE IS WITHOUT Y-Z WARP
+     *   DXSZ,DZSX,DZSYWARPED,DZSZ,OTHER(4),ZS                                              !  ZS HERE IS WITHOUT Y-Z WARP
 C
 
-      DATA D0,DELTADX,XD,XLDX /2.,0.,0.,4./  !  ACHTUNG !!  THE RC IS NOW
+      DATA D0,DELTADX,XD,XLDX /2.,0.,0.,4./  
+C                                            ACHTUNG !!  THE RC IS NOW
 C                                            COMPLETELY SYMMETRIC (DELTADX=0)
 
 C
