@@ -1,0 +1,1311 @@
+Reading fortran codes...
+	Reading file 'T02.f' (format:fix,strict)
+Post-processing...
+	Block: tsyg2
+{}
+In: :tsyg2:T02.f:t01_01
+vars2fortran: No typespec for argument "iopt".
+			Block: t01_01
+bxprc
+hzimf
+pdyn
+byr21
+byr22
+byt2
+byt1
+dst_ast
+xx
+iopt
+bzt1
+zz
+ps
+bxr22
+bxr21
+parmod
+bzsrc
+bzr21
+bbz
+bzt2
+bzr22
+byprc
+bxsrc
+byr11
+byr12
+g2
+g1
+bzcf
+bxcf
+bbx
+bby
+yy
+bysrc
+bycf
+pss
+hyimf
+bx
+by
+bz
+a
+hximf
+bxt2
+bxr12
+bzimf
+bxr11
+byimf
+y
+x
+z
+bzprc
+bzr11
+bzr12
+bxt1
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "iopgen".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "iopb".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "iopr".
+{'attrspec': ['dimension(ntot)']}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "ntot".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "pdyn".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "dst".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byimf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzimf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "vbimf1".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "vbimf2".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxcf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bycf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzcf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxt1".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byt1".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzt1".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxt2".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byt2".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzt2".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxsrc".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bysrc".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzsrc".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxprc".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byprc".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzprc".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxr11".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byr11".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzr11".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxr12".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byr12".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzr12".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxr21".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byr21".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzr21".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bxr22".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "byr22".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bzr22".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "hximf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "hyimf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "hzimf".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:extall
+vars2fortran: No typespec for argument "bz".
+			Block: extall
+iopb
+hzimf
+byr21
+byr22
+bxprc
+bysrc
+vbimf2
+iopr
+iopt
+ps
+bzr21
+bzr22
+byprc
+bxsrc
+byr11
+a
+byr12
+bxr21
+bycf
+hyimf
+vbimf1
+dxshift1
+dxshift2
+d
+bxr12
+bxr11
+byimf
+x
+z
+bzprc
+dsig
+pdyn
+rh0
+rh2
+byt2
+byt1
+bzt1
+bzt2
+sc_sy
+bxr22
+dst
+bzsrc
+iopgen
+a0_s0
+phi
+bzcf
+bxcf
+ntot
+a0_a
+bx
+by
+bz
+sc_as
+hximf
+g
+a0_x0
+bzimf
+deltady  ! the common blocks for
+bzr12
+y
+bzr11
+bxt2
+xkappa1
+xkappa2
+bxt1
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:shlcar3x3
+vars2fortran: No typespec for argument "bz".
+			Block: shlcar3x3
+a
+ps
+y
+x
+z
+bx
+by
+bz
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "bx1".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "by1".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "bz1".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "bx2".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "by2".
+{}
+In: :tsyg2:T02.f:deformed
+vars2fortran: No typespec for argument "bz2".
+			Block: deformed
+ps
+rh2
+bz2
+bz1
+bx1
+ieps
+bx2
+by2
+by1
+iopt
+rh0
+y
+x
+z
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "bx1".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "by1".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "bz1".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "bx2".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "by2".
+{}
+In: :tsyg2:T02.f:warped
+vars2fortran: No typespec for argument "bz2".
+			Block: warped
+ps
+bz2
+bz1
+bx1
+bx2
+by2
+by1
+g
+iopt
+y
+x
+z
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "iopt".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "bx1".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "by1".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "bz1".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "bx2".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "by2".
+{}
+In: :tsyg2:T02.f:unwarped
+vars2fortran: No typespec for argument "bz2".
+			Block: unwarped
+deltady
+xshift2
+d0
+xshift1
+d0
+deltadx2
+d0
+a2
+iopt
+d0
+alpha2
+dxshift1
+dxshift2
+alpha1
+a1
+bz2
+bz1
+bx1
+bx2
+by2
+by1
+deltadx1
+d0
+y
+x
+z
+xm1
+d0
+xm2
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "d0".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "deltadx".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "deltady".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:taildisk
+vars2fortran: No typespec for argument "bz".
+			Block: taildisk
+c
+b
+f
+deltady
+deltadx
+d0
+y
+x
+z
+bx
+by
+bz
+{'attrspec': ['dimension(60)']}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "dshift".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "hx".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "hy".
+{}
+In: :tsyg2:T02.f:shlcar5x5
+vars2fortran: No typespec for argument "hz".
+			Block: shlcar5x5
+a
+hz
+hx
+hy
+y
+x
+z
+dshift
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "iopb".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bx11".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "by11".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bz11".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bx12".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "by12".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bz12".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bx21".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "by21".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bz21".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bx22".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "by22".
+{}
+In: :tsyg2:T02.f:birk_tot
+vars2fortran: No typespec for argument "bz22".
+			Block: birk_tot
+rho_0
+iopb
+bz22
+bz21
+bx21
+bx22
+sh12
+y
+sh11
+dphi
+sh22
+sh21
+specified
+bz12
+bz11
+ps
+b
+xkappa2   !  input parameters
+z
+by11
+by12
+bx11
+x
+bx12
+by21
+controlling
+by22
+xkappa1
+xkappa ! parameters
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "numb".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "mode".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:birk_1n2
+vars2fortran: No typespec for argument "bz".
+			Block: birk_1n2
+a21
+a22
+a11
+dtheta
+a12
+xkappa ! these parameters contro
+beta
+rho_0
+numb
+dphi
+bx
+by
+bz
+ps
+b
+m
+eps
+mode
+y
+x
+z
+rh
+{'attrspec': ['dimension(31)']}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:twocones
+vars2fortran: No typespec for argument "bz".
+			Block: twocones
+a
+y
+x
+z
+bx
+by
+bz
+{'attrspec': ['dimension(31)']}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:one_cone
+vars2fortran: No typespec for argument "bz".
+			Block: one_cone
+a
+dr
+m
+dtheta
+y
+x
+dt
+z
+bx
+by
+bz
+{'attrspec': ['dimension(31)']}
+In: :tsyg2:T02.f:r_s
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:r_s
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:r_s
+vars2fortran: No typespec for argument "theta".
+			Block: r_s
+a
+theta
+r
+r_s
+{'attrspec': ['dimension(31)']}
+In: :tsyg2:T02.f:theta_s
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:theta_s
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:theta_s
+vars2fortran: No typespec for argument "theta".
+			Block: theta_s
+a
+theta
+r
+theta_s
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "theta".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "phi".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "btheta".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "bphi".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "n".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "theta0".
+{}
+In: :tsyg2:T02.f:fialcos
+vars2fortran: No typespec for argument "dt".
+			Block: fialcos
+phi
+btn
+ccos
+r
+theta0
+ssin
+bphi
+theta
+n
+dt
+bpn
+btheta
+{'attrspec': ['dimension(86)']}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "x_sc".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:birk_shl
+vars2fortran: No typespec for argument "bz".
+			Block: birk_shl
+a
+ps
+x_sc
+y
+x
+z
+bx
+by
+bz
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "iopr".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "bxsrc".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "bysrc".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "bzsrc".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "bxprc".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "byprc".
+{}
+In: :tsyg2:T02.f:full_rc
+vars2fortran: No typespec for argument "bzprc".
+			Block: full_rc
+c_pr
+bxprc
+phi
+c_sy
+iopr
+bysrc
+x
+sc_sy
+sc_pr
+ps
+bzsrc
+y
+byprc
+z
+bzprc
+bxsrc
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "iopr".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "sc_sy".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "sc_pr".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "phi".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "bxsrc".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "bysrc".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "bzsrc".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "bxprc".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "byprc".
+{}
+In: :tsyg2:T02.f:src_prc
+vars2fortran: No typespec for argument "bzprc".
+			Block: src_prc
+ps
+phi
+sc_sy
+bxprc
+bysrc
+iopr
+bzsrc
+x
+y
+byprc
+z
+bzprc
+bxsrc
+sc_pr
+{}
+In: :tsyg2:T02.f:rc_symm
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:rc_symm
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:rc_symm
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:rc_symm
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:rc_symm
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:rc_symm
+vars2fortran: No typespec for argument "bz".
+			Block: rc_symm
+dc
+ds
+drd
+y
+x
+z
+bx
+by
+bz
+d1
+{}
+In: :tsyg2:T02.f:ap
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:ap
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg2:T02.f:ap
+vars2fortran: No typespec for argument "cost".
+			Block: ap
+r
+sint
+a1
+ap
+cost
+dla2
+dla1
+rrc1
+rrc2
+p2
+p3
+p1
+r1
+r2
+prox
+dr1
+dd2
+dr3
+dr2
+r3
+a2
+dd1
+{}
+In: :tsyg2:T02.f:prc_symm
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:prc_symm
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:prc_symm
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:prc_symm
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:prc_symm
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:prc_symm
+vars2fortran: No typespec for argument "bz".
+			Block: prc_symm
+dc
+ds
+drd
+y
+x
+z
+bx
+by
+bz
+d1
+{}
+In: :tsyg2:T02.f:apprc
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:apprc
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg2:T02.f:apprc
+vars2fortran: No typespec for argument "cost".
+			Block: apprc
+r
+dal3
+dal2
+p3
+dg2
+dg3
+cost
+dal1
+dg4
+dg5
+alpha2
+alpha3
+q2
+alpha4
+prox
+beta7
+beta6
+beta5
+beta4
+beta3
+beta2
+beta1
+a2
+q1
+q0
+sint
+a1
+alpha1
+rrc1
+rrc2
+apprc
+p2
+dal5
+p1
+dal4
+dd2
+dd1
+alpha5
+dg1
+{}
+In: :tsyg2:T02.f:prc_quad
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:prc_quad
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:prc_quad
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:prc_quad
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:prc_quad
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:prc_quad
+vars2fortran: No typespec for argument "bz".
+			Block: prc_quad
+dd
+dc
+ds
+y
+x
+z
+bx
+by
+bz
+d1
+{}
+In: :tsyg2:T02.f:br_prc_q
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:br_prc_q
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg2:T02.f:br_prc_q
+vars2fortran: No typespec for argument "cost".
+			Block: br_prc_q
+b2
+dal2
+dal5
+dal4
+cost
+dal1
+b1
+dal3
+b3
+al4
+r
+be2
+be3
+be1
+a15
+a14
+a17
+a16
+a11
+a10
+a13
+a12
+a9
+sint
+a18
+a1
+a3
+a2
+a5
+a4
+a7
+a6
+al6
+a8
+c1
+al5
+al2
+al3
+c2
+al1
+dg2
+c3
+br_prc_q
+dg1
+drm
+xk2
+xk3
+xk1
+dal6
+xk4
+{}
+In: :tsyg2:T02.f:bt_prc_q
+vars2fortran: No typespec for argument "r".
+{}
+In: :tsyg2:T02.f:bt_prc_q
+vars2fortran: No typespec for argument "sint".
+{}
+In: :tsyg2:T02.f:bt_prc_q
+vars2fortran: No typespec for argument "cost".
+			Block: bt_prc_q
+dal2
+dal5
+dal4
+cost
+dal1
+b1
+dal3
+b3
+al4
+r
+be2
+be3
+be1
+bt_prc_q
+a15
+a14
+a17
+a16
+a11
+a10
+a13
+a12
+sint
+a1
+a3
+a2
+a5
+a4
+a7
+a6
+a9
+a8
+c1
+al5
+al2
+al3
+c2
+al1
+dg2
+c3
+dg1
+xk2
+xk3
+xk1
+xk4
+{}
+In: :tsyg2:T02.f:ffs
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:ffs
+vars2fortran: No typespec for argument "a0".
+{}
+In: :tsyg2:T02.f:ffs
+vars2fortran: No typespec for argument "da".
+{}
+In: :tsyg2:T02.f:ffs
+vars2fortran: No typespec for argument "f".
+{}
+In: :tsyg2:T02.f:ffs
+vars2fortran: No typespec for argument "fa".
+{}
+In: :tsyg2:T02.f:ffs
+vars2fortran: No typespec for argument "fs".
+			Block: ffs
+a
+fa
+a0
+fs
+f
+da
+{'attrspec': ['dimension(86)']}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "a".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "x_sc".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:rc_shield
+vars2fortran: No typespec for argument "bz".
+			Block: rc_shield
+a
+ps
+x_sc
+y
+x
+z
+bx
+by
+bz
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "ps".
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "x".
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "y".
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "z".
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "bx".
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "by".
+{}
+In: :tsyg2:T02.f:dipole
+vars2fortran: No typespec for argument "bz".
+			Block: dipole
+ps
+psi
+m
+y
+x
+z
+bx
+by
+bz
+Post-processing (stage 2)...
+Saving signatures to file "./geopack08.pyf"

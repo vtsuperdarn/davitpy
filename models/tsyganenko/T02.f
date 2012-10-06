@@ -1,44 +1,3 @@
-c
-
-c
-c This is a sample main program, calculating the T01 model field produced by the
-c external (magnetospheric) sources of the geomagnetic field at a specified point
-c of space {XGSM,YGSM,ZGSM}.  The earth's dipole tilt angle PS should be specified
-c in radians, the solar wind ram pressure PDYN in nanoPascals, Dst index, IMF By
-c and Bz components in nT. The two IMF-related indices G1 and G2 take into account
-c the IMF and solar wind conditions during the preceding 1-hour interval; their
-c exact definition is given in the paper "A new data-based model of the near
-c magnetosphere magnetic field. 2. Parameterization and fitting to observations".
-c The paper is available online from:
-c
-c           http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper220.pdf
-c
-c  See also a companion paper describing the mathematical structure of the model:
-c
-c           http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper219.pdf
-c
-      DIMENSION PARMOD(10)
-c
-      PRINT *, '  ENTER PS,PDYN,DST,BYIMF,BZIMF,G1,G2'
-      READ *, PS,PDYN,DST,BYIMF,BZIMF,G1,G2
-
- 1     PRINT *, '  ENTER X,Y,Z'
-      READ *, XGSM,YGSM,ZGSM
-C
-      PARMOD(1)=PDYN
-      PARMOD(2)=DST
-      PARMOD(3)=BYIMF
-      PARMOD(4)=BZIMF
-      PARMOD(5)=G1
-      PARMOD(6)=G2
-
-      CALL T01_01 (0,PARMOD,PS,XGSM,YGSM,ZGSM,FXGSM,FYGSM,FZGSM)
-
-      PRINT *, '  FXGSM,FYGSM,FZGSM=',FXGSM,FYGSM,FZGSM
-      GOTO 1
-
-      END
-c
 c$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 C
 c
@@ -48,7 +7,7 @@ c     RELEASE DATE OF THIS VERSION:   AUGUST 8, 2001.
 c
 c    LATEST MODIFICATIONS/BUGS REMOVED:  JUNE 24, 2006:  REPLACED COEFFICIENTS IN:
 c        (i) DATA statement in FUNCTION AP,
-C        (ii)  DATA C_SY statement in SUBROUTINE FULL_RC, and
+C        (ii)  DATA C_SY statement in SUBROUTINE T02_FULL_RC, and
 c        (iii) DATA A statement in SUBROUTINE T01_01.
 C    This correction was needed because of a bug found in the symmetric ring current module.
 c    Its impact is a minor (a few percent) change of the model field in the inner magnetosphere.
@@ -69,7 +28,7 @@ C
 C   THE REST OF THE INPUT VARIABLES ARE: THE GEODIPOLE TILT ANGLE PS (RADIANS),
 C     AND   X,Y,Z -  GSM POSITION (RE)
 C
-c   IOPT  IS JUST A DUMMY INPUT PARAMETER, NECESSARY TO MAKE THIS SUBROUTINE
+c   IOPT  IS JUST A DUMMY INPUT PARAMETER, NECESSARY TO MAKE THIS SUBROUTINE T02_
 C   COMPATIBLE WITH THE TRACING SOFTWARE PACKAGE (GEOPACK). IN THIS MODEL
 C   IT DOES NOT AFFECT THE OUTPUT FIELD.
 c
@@ -130,7 +89,7 @@ C
       YY=Y
       ZZ=Z
 C
-      CALL EXTALL (0,0,0,0,A,43,PDYN,DST_AST,BYIMF,BZIMF,G1,G2,
+      CALL T02_EXTALL (0,0,0,0,A,43,PDYN,DST_AST,BYIMF,BZIMF,G1,G2,
      *  PSS,XX,YY,ZZ,BXCF,BYCF,BZCF,BXT1,BYT1,BZT1,BXT2,BYT2,BZT2,
      *  BXSRC,BYSRC,BZSRC,BXPRC,BYPRC,BZPRC, BXR11,BYR11,BZR11,
      *  BXR12,BYR12,BZR12,BXR21,BYR21,BZR21,BXR22,BYR22,BZR22,HXIMF,
@@ -139,12 +98,14 @@ C
       BX=BBX
       BY=BBY
       BZ=BBZ
+
+        print*, X,Y,Z,BX,BY,BZ
 C
       RETURN
       END
 C
 C================================================================
-      SUBROUTINE EXTALL (IOPGEN,IOPT,IOPB,IOPR,A,NTOT,
+      SUBROUTINE T02_EXTALL (IOPGEN,IOPT,IOPB,IOPR,A,NTOT,
      *  PDYN,DST,BYIMF,BZIMF,VBIMF1,VBIMF2,PS,X,Y,Z,
      *  BXCF,BYCF,BZCF,BXT1,BYT1,BZT1,BXT2,BYT2,BZT2,
      *  BXSRC,BYSRC,BZSRC,BXPRC,BYPRC,BZPRC, BXR11,BYR11,BZR11,
@@ -262,7 +223,7 @@ C                              (WITH THE POTENTIAL "PENETRATED" INTERCONNECTION 
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
       IF (IOPGEN.LE.1) THEN
-         CALL SHLCAR3X3(XX,YY,ZZ,PS,CFX,CFY,CFZ)         !  DIPOLE SHIELDING FIELD
+         CALL T02_SHLCAR3X3(XX,YY,ZZ,PS,CFX,CFY,CFZ)                                    !  DIPOLE SHIELDING FIELD
          BXCF=CFX*XAPPA3
          BYCF=CFY*XAPPA3
          BZCF=CFZ*XAPPA3
@@ -277,7 +238,7 @@ C
          DXSHIFT2=0.D0
          D=A(28)
          DELTADY=A(29)
-         CALL DEFORMED (IOPT,PS,XX,YY,ZZ,                !  TAIL FIELD (THREE MODES)
+         CALL T02_DEFORMED (IOPT,PS,XX,YY,ZZ,                                           !  TAIL FIELD (THREE MODES)
      *    BXT1,BYT1,BZT1,BXT2,BYT2,BZT2)
       ELSE
          BXT1=0.D0
@@ -291,8 +252,8 @@ C
       IF (IOPGEN.EQ.0.OR.IOPGEN.EQ.3) THEN
          XKAPPA1=A(35)+A(36)*VBIMF2
          XKAPPA2=A(37)+A(38)*VBIMF2
-         CALL BIRK_TOT (IOPB,PS,XX,YY,ZZ,BXR11,BYR11,BZR11,BXR12,BYR12,
-     *   BZR12,BXR21,BYR21,BZR21,BXR22,BYR22,BZR22)    !   BIRKELAND FIELD (TWO MODES FOR R1 AND TWO MODES FOR R2)
+         CALL T02_BIRK_TOT (IOPB,PS,XX,YY,ZZ,BXR11,BYR11,BZR11,BXR12,BYR12,
+     *   BZR12,BXR21,BYR21,BZR21,BXR22,BYR22,BZR22)                                 !   BIRKELAND FIELD (TWO MODES FOR R1 AND TWO MODES FOR R2)
       ELSE
          BXR11=0.D0
          BYR11=0.D0
@@ -314,8 +275,8 @@ C
          IF (ZNAM.LT.20.D0) ZNAM=20.D0
          SC_SY=A(30)*(20.D0/ZNAM)**A(31) *XAPPA    !
          SC_AS=A(32)*(20.D0/ZNAM)**A(33) *XAPPA
-         CALL FULL_RC(IOPR,PS,XX,YY,ZZ,BXSRC,BYSRC,BZSRC,BXPRC,BYPRC,
-     *                                        BZPRC)  !  SHIELDED RING CURRENT (SRC AND PRC)
+         CALL T02_FULL_RC(IOPR,PS,XX,YY,ZZ,BXSRC,BYSRC,BZSRC,BXPRC,BYPRC,
+     *                                        BZPRC)                                !  SHIELDED RING CURRENT (SRC AND PRC)
       ELSE
          BXSRC=0.D0
          BYSRC=0.D0
@@ -388,7 +349,7 @@ C                                             THE INTERPOLATION REGION
        FINT=0.5*(1.-(SIGMA-S0)/DSIG)
        FEXT=0.5*(1.+(SIGMA-S0)/DSIG)
 C
-       CALL DIPOLE (PS,X,Y,Z,QX,QY,QZ)
+       CALL T02_DIPOLE (PS,X,Y,Z,QX,QY,QZ)
        BX=(BBX+QX)*FINT+OIMFX*FEXT -QX
        BY=(BBY+QY)*FINT+OIMFY*FEXT -QY
        BZ=(BBZ+QZ)*FINT+OIMFZ*FEXT -QZ
@@ -397,7 +358,7 @@ c
 C                      POSSIBILITY IS NOW THE CASE (3):
 C--------------------------------------------------------------------------
         ELSE
-                CALL DIPOLE (PS,X,Y,Z,QX,QY,QZ)
+                CALL T02_DIPOLE (PS,X,Y,Z,QX,QY,QZ)
                 BX=OIMFX-QX
                 BY=OIMFY-QY
                 BZ=OIMFZ-QZ
@@ -407,7 +368,7 @@ C
 c
 C$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 C
-         SUBROUTINE  SHLCAR3X3(X,Y,Z,PS,BX,BY,BZ)
+         SUBROUTINE T02_SHLCAR3X3(X,Y,Z,PS,BX,BY,BZ)
 C
 C   THIS S/R RETURNS THE SHIELDING FIELD FOR THE EARTH'S DIPOLE,
 C   REPRESENTED BY  2x3x3=18 "CARTESIAN" HARMONICS, tilted with respect
@@ -737,7 +698,7 @@ c
 c############################################################################
 c
 C
-      SUBROUTINE DEFORMED (IOPT,PS,X,Y,Z,BX1,BY1,BZ1,BX2,BY2,BZ2)
+      SUBROUTINE T02_DEFORMED (IOPT,PS,X,Y,Z,BX1,BY1,BZ1,BX2,BY2,BZ2)
 C
 C   IOPT - TAIL FIELD MODE FLAG:   IOPT=0 - THE TWO TAIL MODES ARE ADDED UP
 C                                  IOPT=1 - MODE 1 ONLY
@@ -745,7 +706,7 @@ C                                  IOPT=2 - MODE 2 ONLY
 C
 C   CALCULATES GSM COMPONENTS OF TWO UNIT-AMPLITUDE TAIL FIELD MODES,
 C    TAKING INTO ACCOUNT BOTH EFFECTS OF DIPOLE TILT:
-C    WARPING IN Y-Z (DONE BY THE S/R WARPED) AND BENDING IN X-Z (DONE BY THIS SUBROUTINE)
+C    WARPING IN Y-Z (DONE BY THE S/R WARPED) AND BENDING IN X-Z (DONE BY THIS SUBROUTINE T02_)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON /RH0/ RH0
@@ -790,7 +751,8 @@ C
 C
 C     DEFORM:
 C
-      CALL WARPED(IOPT,PS,XAS,Y,ZAS,BXAS1,BYAS1,BZAS1,BXAS2,BYAS2,BZAS2)
+      CALL T02_WARPED(IOPT,PS,XAS,Y,ZAS,BXAS1,BYAS1,BZAS1,
+     *  BXAS2,BYAS2,BZAS2)
 C
       BX1=BXAS1*DZASDZ-BZAS1*DXASDZ +BYAS1*FAC1
       BY1=BYAS1*FAC2
@@ -805,7 +767,7 @@ C
 C
 C------------------------------------------------------------------
 C
-      SUBROUTINE WARPED (IOPT,PS,X,Y,Z,BX1,BY1,BZ1,BX2,BY2,BZ2)
+      SUBROUTINE T02_WARPED (IOPT,PS,X,Y,Z,BX1,BY1,BZ1,BX2,BY2,BZ2)
 C
 C   CALCULATES GSM COMPONENTS OF THE WARPED FIELD FOR TWO TAIL UNIT MODES.
 C   THE WARPING DEFORMATION IS IMPOSED ON THE UNWARPED FIELD, COMPUTED
@@ -849,7 +811,7 @@ C
       YAS=RHO*CF
       ZAS=RHO*SF
 
-      CALL UNWARPED (IOPT,X,YAS,ZAS,BX_AS1,BY_AS1,BZ_AS1,
+      CALL T02_UNWARPED (IOPT,X,YAS,ZAS,BX_AS1,BY_AS1,BZ_AS1,
      *  BX_AS2,BY_AS2,BZ_AS2)
 
       BRHO_AS =  BY_AS1*CF+BZ_AS1*SF      !   DEFORM THE 1ST MODE
@@ -877,7 +839,7 @@ C
 C
 C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 C
-       SUBROUTINE UNWARPED (IOPT,X,Y,Z,BX1,BY1,BZ1,BX2,BY2,BZ2)
+       SUBROUTINE T02_UNWARPED (IOPT,X,Y,Z,BX1,BY1,BZ1,BX2,BY2,BZ2)
 
 C   IOPT - TAIL FIELD MODE FLAG:   IOPT=0 - THE TWO TAIL MODES ARE ADDED UP
 C                                  IOPT=1 - MODE 1 ONLY
@@ -933,8 +895,9 @@ C
       ZSC1=Z*ALPHA1
       D0SC1=D0*ALPHA1   ! HERE WE USE A SINGLE VALUE D0 OF THE THICKNESS FOR BOTH MODES
 
-      CALL TAILDISK(D0SC1,DELTADX1,DELTADY,XSC1,YSC1,ZSC1,FX1,FY1,FZ1)
-      CALL SHLCAR5X5(A1,X,Y,Z,DXSHIFT1,HX1,HY1,HZ1)
+      CALL T02_TAILDISK(D0SC1,DELTADX1,DELTADY,XSC1,YSC1,ZSC1,
+     *          FX1,FY1,FZ1)
+      CALL T02_SHLCAR5X5(A1,X,Y,Z,DXSHIFT1,HX1,HY1,HZ1)
 
       BX1=FX1+HX1
       BY1=FY1+HY1
@@ -952,8 +915,9 @@ C
       ZSC2=Z*ALPHA2
       D0SC2=D0*ALPHA2   ! HERE WE USE A SINGLE VALUE D0 OF THE THICKNESS FOR BOTH MODES
 
-      CALL TAILDISK(D0SC2,DELTADX2,DELTADY,XSC2,YSC2,ZSC2,FX2,FY2,FZ2)
-      CALL SHLCAR5X5(A2,X,Y,Z,DXSHIFT2,HX2,HY2,HZ2)
+      CALL T02_TAILDISK(D0SC2,DELTADX2,DELTADY,XSC2,YSC2,ZSC2,
+     *          FX2,FY2,FZ2)
+      CALL T02_SHLCAR5X5(A2,X,Y,Z,DXSHIFT2,HX2,HY2,HZ2)
 
       BX2=FX2+HX2
       BY2=FY2+HY2
@@ -971,9 +935,9 @@ C
 C
 C$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 C
-      SUBROUTINE TAILDISK(D0,DELTADX,DELTADY,X,Y,Z,BX,BY,BZ)
+      SUBROUTINE T02_TAILDISK(D0,DELTADX,DELTADY,X,Y,Z,BX,BY,BZ)
 c
-c       THIS SUBROUTINE COMPUTES THE COMPONENTS OF THE TAIL CURRENT FIELD,
+c       THIS SUBROUTINE T02_COMPUTES THE COMPONENTS OF THE TAIL CURRENT FIELD,
 C       SIMILAR TO THAT DESCRIBED BY TSYGANENKO AND PEREDO (1994).  THE
 C       DIFFERENCE IS THAT NOW WE USE SPACEWARPING, AS DESCRIBED IN OUR
 C       PAPER ON MODELING BIRKELAND CURRENTS (TSYGANENKO AND STERN, 1996)
@@ -1062,7 +1026,7 @@ C
 C THIS CODE RETURNS THE SHIELDING FIELD REPRESENTED BY  5x5=25 "CARTESIAN"
 C    HARMONICS
 C
-         SUBROUTINE  SHLCAR5X5(A,X,Y,Z,DSHIFT,HX,HY,HZ)
+         SUBROUTINE T02_SHLCAR5X5(A,X,Y,Z,DSHIFT,HX,HY,HZ)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  The NLIN coefficients are the amplitudes of the "cartesian"
@@ -1116,7 +1080,7 @@ C
 c
 c %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 C
-      SUBROUTINE BIRK_TOT (IOPB,PS,X,Y,Z,BX11,BY11,BZ11,BX12,BY12,BZ12,
+      SUBROUTINE T02_BIRK_TOT (IOPB,PS,X,Y,Z,BX11,BY11,BZ11,BX12,BY12,BZ12,
      *                          BX21,BY21,BZ21,BX22,BY22,BZ22)
 C
 C      IOPB -  BIRKELAND FIELD MODE FLAG:
@@ -1210,14 +1174,14 @@ C
 
       IF (IOPB.EQ.0.OR.IOPB.EQ.1) THEN
 
-      CALL BIRK_1N2 (1,1,PS,X,Y,Z,FX11,FY11,FZ11)           !  REGION 1, MODE 1
-      CALL BIRK_SHL (SH11,PS,X_SC,X,Y,Z,HX11,HY11,HZ11)
+      CALL T02_BIRK_1N2 (1,1,PS,X,Y,Z,FX11,FY11,FZ11)                               !  REGION 1, MODE 1
+      CALL T02_BIRK_SHL (SH11,PS,X_SC,X,Y,Z,HX11,HY11,HZ11)
       BX11=FX11+HX11
       BY11=FY11+HY11
       BZ11=FZ11+HZ11
 
-      CALL BIRK_1N2 (1,2,PS,X,Y,Z,FX12,FY12,FZ12)           !  REGION 1, MODE 2
-      CALL BIRK_SHL (SH12,PS,X_SC,X,Y,Z,HX12,HY12,HZ12)
+      CALL T02_BIRK_1N2 (1,2,PS,X,Y,Z,FX12,FY12,FZ12)                               !  REGION 1, MODE 2
+      CALL T02_BIRK_SHL (SH12,PS,X_SC,X,Y,Z,HX12,HY12,HZ12)
       BX12=FX12+HX12
       BY12=FY12+HY12
       BZ12=FZ12+HZ12
@@ -1229,14 +1193,14 @@ C
 
       IF (IOPB.EQ.0.OR.IOPB.EQ.2) THEN
 
-      CALL BIRK_1N2 (2,1,PS,X,Y,Z,FX21,FY21,FZ21)           !  REGION 2, MODE 1
-      CALL BIRK_SHL (SH21,PS,X_SC,X,Y,Z,HX21,HY21,HZ21)
+      CALL T02_BIRK_1N2 (2,1,PS,X,Y,Z,FX21,FY21,FZ21)                               !  REGION 2, MODE 1
+      CALL T02_BIRK_SHL (SH21,PS,X_SC,X,Y,Z,HX21,HY21,HZ21)
       BX21=FX21+HX21
       BY21=FY21+HY21
       BZ21=FZ21+HZ21
 
-      CALL BIRK_1N2 (2,2,PS,X,Y,Z,FX22,FY22,FZ22)           !  REGION 2, MODE 2
-      CALL BIRK_SHL (SH22,PS,X_SC,X,Y,Z,HX22,HY22,HZ22)
+      CALL T02_BIRK_1N2 (2,2,PS,X,Y,Z,FX22,FY22,FZ22)                               !  REGION 2, MODE 2
+      CALL T02_BIRK_SHL (SH22,PS,X_SC,X,Y,Z,HX22,HY22,HZ22)
       BX22=FX22+HX22
       BY22=FY22+HY22
       BZ22=FZ22+HZ22
@@ -1249,7 +1213,7 @@ C
 c %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c
 c
-      SUBROUTINE BIRK_1N2 (NUMB,MODE,PS,X,Y,Z,BX,BY,BZ)        !   NB# 6, P.60
+      SUBROUTINE T02_BIRK_1N2 (NUMB,MODE,PS,X,Y,Z,BX,BY,BZ)                             !   NB# 6, P.60
 C
 C  CALCULATES COMPONENTS  OF REGION 1/2 FIELD IN SPHERICAL COORDS.  DERIVED FROM THE S/R DIPDEF2C (WHICH
 C    DOES THE SAME JOB, BUT INPUT/OUTPUT THERE WAS IN SPHERICAL COORDS, WHILE HERE WE USE CARTESIAN ONES)
@@ -1356,11 +1320,11 @@ C
       ZS=-RHO*SPHICS
 
       IF (NUMB.EQ.1) THEN
-        IF (MODE.EQ.1) CALL TWOCONES (A11,XS,Ysc,ZS,BXS,BYAS,BZS)
-        IF (MODE.EQ.2) CALL TWOCONES (A12,XS,Ysc,ZS,BXS,BYAS,BZS)
+        IF (MODE.EQ.1) CALL T02_TWOCONES (A11,XS,Ysc,ZS,BXS,BYAS,BZS)
+        IF (MODE.EQ.2) CALL T02_TWOCONES (A12,XS,Ysc,ZS,BXS,BYAS,BZS)
       ELSE
-        IF (MODE.EQ.1) CALL TWOCONES (A21,XS,Ysc,ZS,BXS,BYAS,BZS)
-        IF (MODE.EQ.2) CALL TWOCONES (A22,XS,Ysc,ZS,BXS,BYAS,BZS)
+        IF (MODE.EQ.1) CALL T02_TWOCONES (A21,XS,Ysc,ZS,BXS,BYAS,BZS)
+        IF (MODE.EQ.2) CALL T02_TWOCONES (A22,XS,Ysc,ZS,BXS,BYAS,BZS)
       ENDIF
 
       BRHOAS=BXS*CPHICS-BZS*SPHICS
@@ -1379,7 +1343,7 @@ C
 c
 C=========================================================================
 c
-      SUBROUTINE TWOCONES (A,X,Y,Z,BX,BY,BZ)
+      SUBROUTINE T02_TWOCONES (A,X,Y,Z,BX,BY,BZ)
 C
 C  ADDS FIELDS FROM TWO CONES (NORTHERN AND SOUTHERN), WITH A PROPER SYMMETRY
 C  OF THE CURRENT AND FIELD, CORRESPONDING TO THE REGION 1 BIRKELAND CURRENTS. (NB #6, P.58).
@@ -1387,8 +1351,8 @@ C
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION A(31)
 
-      CALL ONE_CONE (A,X,Y,Z,BXN,BYN,BZN)
-      CALL ONE_CONE (A,X,-Y,-Z,BXS,BYS,BZS)
+      CALL T02_ONE_CONE (A,X,Y,Z,BXN,BYN,BZN)
+      CALL T02_ONE_CONE (A,X,-Y,-Z,BXS,BYS,BZS)
       BX=BXN-BXS
       BY=BYN+BYS
       BZ=BZN+BZS
@@ -1398,7 +1362,7 @@ C
 c
 C-------------------------------------------------------------------------
 C
-      SUBROUTINE ONE_CONE(A,X,Y,Z,BX,BY,BZ)
+      SUBROUTINE T02_ONE_CONE(A,X,Y,Z,BX,BY,BZ)
 c
 c  RETURNS FIELD COMPONENTS FOR A DEFORMED CONICAL CURRENT SYSTEM, FITTED TO A BIOSAVART FIELD
 c  HERE ONLY THE NORTHERN CONE IS TAKEN INTO ACCOUNT.
@@ -1427,7 +1391,7 @@ C
 C
 C   CALCULATE FIELD COMPONENTS AT THE NEW POSITION (ASTERISKED):
 C
-       CALL FIALCOS (RS,THETAS,PHIS,BTAST,BFAST,M,THETA0,DTHETA)    !   MODE #M
+       CALL T02_FIALCOS (RS,THETAS,PHIS,BTAST,BFAST,M,THETA0,DTHETA)                    !   MODE #M
 C
 C   NOW TRANSFORM B{R,T,F}_AST BY THE DEFORMATION TENSOR:
 C
@@ -1442,7 +1406,7 @@ C
        RSR=RS/R
 
        BR     =-RSR/R*STSST*BTAST*DRSDT                 !   NB#6, P.43    BRAST DOES NOT ENTER HERE
-       BTHETA = RSR*STSST*BTAST*DRSDR                  !          (IT IS IDENTICALLY ZERO IN OUR CASE)
+       BTHETA = RSR*STSST*BTAST*DRSDR                  !          (IT IS IDENTICALL T02_Y ZERO IN OUR CASE)
        BPHI   = RSR*BFAST*(DRSDR*DTSDT-DRSDT*DTSDR)
 
        S=RHO/R
@@ -1490,7 +1454,7 @@ C
 C
 c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 c
-      SUBROUTINE FIALCOS(R,THETA,PHI,BTHETA,BPHI,N,THETA0,DT)
+      SUBROUTINE T02_FIALCOS(R,THETA,PHI,BTHETA,BPHI,N,THETA0,DT)
 C
 C  CONICAL MODEL OF BIRKELAND CURRENT FIELD; BASED ON THE OLD S/R FIALCO (OF 1990-91)
 C  NB OF 1985-86-88, NOTE OF MARCH 5, BUT HERE BOTH INPUT AND OUTPUT ARE IN SPHERICAL CDS.
@@ -1569,7 +1533,7 @@ C
 C-------------------------------------------------------------------------
 C
 C
-         SUBROUTINE BIRK_SHL (A,PS,X_SC,X,Y,Z,BX,BY,BZ)
+         SUBROUTINE T02_BIRK_SHL (A,PS,X_SC,X,Y,Z,BX,BY,BZ)
 C
        IMPLICIT  REAL * 8  (A - H, O - Z)
          DIMENSION A(86)
@@ -1706,7 +1670,7 @@ C                                         TO TAKE INTO ACCOUNT THE SCALE FACTOR 
 C
 C************************************************************************************
 C
-      SUBROUTINE FULL_RC (IOPR,PS,X,Y,Z,BXSRC,BYSRC,BZSRC,BXPRC,BYPRC,
+      SUBROUTINE T02_FULL_RC (IOPR,PS,X,Y,Z,BXSRC,BYSRC,BZSRC,BXPRC,BYPRC,
      *  BZPRC)
 C
 C   CALCULATES GSM FIELD COMPONENTS OF THE SYMMETRIC (SRC) AND PARTIAL (PRC) COMPONENTS OF THE RING CURRENT
@@ -1728,7 +1692,7 @@ C
         DIMENSION C_SY(86),C_PR(86)
         COMMON /RCPAR/ SC_SY,SC_PR,PHI
 C
-        DATA C_SY/-957.2534900,-817.5450246,583.2991249,758.8568270,     !   CORRECTED VALUES (AS OF MAY 2006)
+        DATA C_SY/-957.2534900,-817.5450246,583.2991249,758.8568270,                    !   CORRECTED VALUES (AS OF MAY 2006)
      *13.17029064,68.94173502,-15.29764089,-53.43151590,27.34311724,
      *149.5252826,-11.00696044,-179.7031814,953.0914774,817.2340042,
      *-581.0791366,-757.5387665,-13.10602697,-68.58155678,15.22447386,
@@ -1766,12 +1730,12 @@ C
      *39.57218411,15.69384715,7.123215241,2.300635346,21.90881131,
      *-.01775839370,.3996346710/
 
-        CALL SRC_PRC (IOPR,SC_SY,SC_PR,PHI,PS,X,Y,Z,HXSRC,HYSRC,HZSRC,
+        CALL T02_SRC_PRC (IOPR,SC_SY,SC_PR,PHI,PS,X,Y,Z,HXSRC,HYSRC,HZSRC,
      *      HXPRC,HYPRC,HZPRC)
 
         X_SC=SC_SY-1.D0
         IF (IOPR.EQ.0.OR.IOPR.EQ.1) THEN
-          CALL RC_SHIELD (C_SY,PS,X_SC,X,Y,Z,FSX,FSY,FSZ)
+          CALL T02_RC_SHIELD (C_SY,PS,X_SC,X,Y,Z,FSX,FSY,FSZ)
         ELSE
            FSX=0.D0
            FSY=0.D0
@@ -1780,7 +1744,7 @@ C
 
         X_SC=SC_PR-1.D0
         IF (IOPR.EQ.0.OR.IOPR.EQ.2) THEN
-          CALL RC_SHIELD (C_PR,PS,X_SC,X,Y,Z,FPX,FPY,FPZ)
+          CALL T02_RC_SHIELD (C_PR,PS,X_SC,X,Y,Z,FPX,FPY,FPZ)
         ELSE
            FPX=0.D0
            FPY=0.D0
@@ -1799,7 +1763,7 @@ C
         END
 C---------------------------------------------------------------------------------------
 C
-       SUBROUTINE SRC_PRC (IOPR,SC_SY,SC_PR,PHI,PS,X,Y,Z,BXSRC,BYSRC,
+       SUBROUTINE T02_SRC_PRC (IOPR,SC_SY,SC_PR,PHI,PS,X,Y,Z,BXSRC,BYSRC,
      *    BZSRC,BXPRC,BYPRC,BZPRC)
 C
 C   RETURNS FIELD COMPONENTS FROM A MODEL RING CURRENT, INCLUDING ITS SYMMETRIC PART
@@ -1853,9 +1817,9 @@ C============================================
 C
 C    3a. SYMMETRIC FIELD:
 C
-        IF (IOPR.LE.1) CALL RC_SYMM(XTS,YTS,ZTS,BXS,BYS,BZS)
+        IF (IOPR.LE.1) CALL T02_RC_SYMM(XTS,YTS,ZTS,BXS,BYS,BZS)
         IF (IOPR.EQ.0.OR.IOPR.EQ.2)
-     *                 CALL PRC_SYMM(XTA,YTA,ZTA,BXA_S,BYA_S,BZA_S)
+     *                 CALL T02_PRC_SYMM(XTA,YTA,ZTA,BXA_S,BYA_S,BZA_S)
 
 C    3b. ROTATE THE SCALED SM COORDINATES BY PHI AROUND ZSM AXIS AND CALCULATE QUADRUPOLE PRC FIELD
 C         IN THOSE COORDS:
@@ -1866,7 +1830,7 @@ C         IN THOSE COORDS:
         YR=XTA*SP+YTA*CP
 
         IF (IOPR.EQ.0.OR.IOPR.EQ.2)
-     *                 CALL PRC_QUAD(XR,YR,ZTA,BXA_QR,BYA_QR,BZA_Q)
+     *                 CALL T02_PRC_QUAD(XR,YR,ZTA,BXA_QR,BYA_QR,BZA_Q)
 
 C    3c. TRANSFORM THE QUADRUPOLE FIELD COMPONENTS BACK TO THE SM COORDS:
 C
@@ -1894,15 +1858,15 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-      SUBROUTINE RC_SYMM (X,Y,Z,BX,BY,BZ)
+      SUBROUTINE T02_RC_SYMM (X,Y,Z,BX,BY,BZ)
       IMPLICIT  REAL * 8  (A - H, O - Z)
-      DATA DS,DC/1.D-2,0.99994999875D0/, D/1.D-4/,DRD/5.D3/  ! DS=SIN(THETA) AT THE BOUNDARY OF THE LINEARITY
-                                                                        REGION; DC=SQRT(1-DS**2);  DRD=1/(2*D)
+      DATA DS,DC/1.D-2,0.99994999875D0/, DUP/1.D-4/,DRD/5.D3/  ! DS=SIN(THETA) AT THE BOUNDARY OF THE LINEARITY
+                                                                        REGION; DC=SQRT(1-DS**2);  DRD=1/(2*DUP)
       RHO2=X**2+Y**2
       R2=RHO2+Z**2
       R=DSQRT(R2)
-      RP=R+D
-      RM=R-D
+      RP=R+DUP
+      RM=R-DUP
       SINT=DSQRT(RHO2)/R
       COST=Z/R
 
@@ -1918,8 +1882,8 @@ C                                    TO AVOID THE SINGULARITY PROBLEM
        ELSE
 
         THETA=DATAN2(SINT,COST)
-        TP=THETA+D
-        TM=THETA-D
+        TP=THETA+DUP
+        TM=THETA-DUP
         SINTP=DSIN(TP)
         SINTM=DSIN(TM)
         COSTP=DCOS(TP)
@@ -1945,7 +1909,8 @@ C      Calculates azimuthal component of the vector potential of the symmetric
 c  part of the model ring current.
 C
       IMPLICIT  REAL * 8  (A - H, O - Z)
-      LOGICAL PROX   !  INDICATES WHETHER WE ARE TOO CLOSE TO THE AXIS OF SYMMETRY, WHERE THE INVERSION
+      LOGICAL PROX   
+C                                                             INDICATES WHETHER WE ARE TOO CLOSE TO THE AXIS OF SYMMETRY, WHERE THE INVERSION
 C                                                             OF DIPOLAR COORDINATES BECOMES INACCURATE
       DATA A1,A2,RRC1,DD1,RRC2,DD2,P1,R1,DR1,DLA1,P2,R2,DR2,DLA2,P3,
      *R3,DR3/
@@ -1957,7 +1922,7 @@ C                                                             OF DIPOLAR COORDIN
       PROX=.FALSE.
       SINT1=SINT
       COST1=COST
-      IF (SINT1.LT.1.D-2) THEN  !  TOO CLOSE TO Z-AXIS;  USE LINEAR INTERPOLATION BETWEEN SINT=0 & SINT=0.01
+      IF (SINT1.LT.1.D-2) THEN                                                      !  TOO CLOSE TO Z-AXIS;  USE LINEAR INTERPOLATION BETWEEN SINT=0 & SINT=0.01
         SINT1=1.D-2
         COST1=.99994999875
         PROX=.TRUE.
@@ -2056,19 +2021,20 @@ C
 c
 c@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 C
-      SUBROUTINE PRC_SYMM (X,Y,Z,BX,BY,BZ)
+      SUBROUTINE T02_PRC_SYMM (X,Y,Z,BX,BY,BZ)
       IMPLICIT  REAL * 8  (A - H, O - Z)
-      DATA DS,DC/1.D-2,0.99994999875D0/, D/1.D-4/,DRD/5.D3/  ! DS=SIN(THETA) AT THE BOUNDARY OF THE LINEARITY
-                                                                        REGION; DC=SQRT(1-DS**2);  DRD=1/(2*D)
+      DATA DS,DC/1.D-2,0.99994999875D0/, DUP/1.D-4/,DRD/5.D3/  ! DS=SIN(THETA) AT THE BOUNDARY OF THE LINEARITY
+                                                                        REGION; DC=SQRT(1-DS**2);  DRD=1/(2*DUP)
       RHO2=X**2+Y**2
       R2=RHO2+Z**2
       R=DSQRT(R2)
-      RP=R+D
-      RM=R-D
+      RP=R+DUP
+      RM=R-DUP
       SINT=DSQRT(RHO2)/R
       COST=Z/R
 
-      IF (SINT.LT.DS) THEN  !  TOO CLOSE TO THE Z-AXIS; USING A LINEAR APPROXIMATION A_PHI~SINT,
+      IF (SINT.LT.DS) THEN  
+C                                     TOO CLOSE TO THE Z-AXIS; USING A LINEAR APPROXIMATION A_PHI~SINT,
 C                                    TO AVOID THE SINGULARITY PROBLEM
         A=APPRC(R,DS,DC)/DS
         DARDR=(RP*APPRC(RP,DS,DC)-RM*APPRC(RM,DS,DC))*DRD
@@ -2080,8 +2046,8 @@ C                                    TO AVOID THE SINGULARITY PROBLEM
        ELSE
 
         THETA=DATAN2(SINT,COST)
-        TP=THETA+D
-        TM=THETA-D
+        TP=THETA+DUP
+        TM=THETA-DUP
         SINTP=DSIN(TP)
         SINTM=DSIN(TM)
         COSTP=DCOS(TP)
@@ -2123,25 +2089,25 @@ C
       PROX=.FALSE.
       SINT1=SINT
       COST1=COST
-      IF (SINT1.LT.1.D-2) THEN  !  TOO CLOSE TO Z-AXIS;  USE LINEAR INTERPOLATION BETWEEN SINT=0 & SINT=0.01
+      IF (SINT1.LT.1.D-2) THEN                                                      !  TOO CLOSE TO Z-AXIS;  USE LINEAR INTERPOLATION BETWEEN SINT=0 & SINT=0.01
         SINT1=1.D-2
         COST1=.99994999875
         PROX=.TRUE.
       ENDIF
 
-         ALPHA=SINT1**2/R         !  R,THETA -> ALPHA,GAMMA
+         ALPHA=SINT1**2/R                                                               !  R,THETA -> ALPHA,GAMMA
          GAMMA=COST1/R**2
 
          ARG1=-(GAMMA/DG1)**2
          ARG2=-((ALPHA-ALPHA4)/DAL4)**2-(GAMMA/DG4)**2
 
-         IF (ARG1.LT.-500.D0) THEN        !   TO PREVENT "FLOATING UNDERFLOW" CRASHES
+         IF (ARG1.LT.-500.D0) THEN                                                      !   TO PREVENT "FLOATING UNDERFLOW" CRASHES
            DEXP1=0.D0
          ELSE
            DEXP1=DEXP(ARG1)
          ENDIF
 
-         IF (ARG2.LT.-500.D0) THEN        !   TO PREVENT "FLOATING UNDERFLOW" CRASHES
+         IF (ARG2.LT.-500.D0) THEN                                                      !   TO PREVENT "FLOATING UNDERFLOW" CRASHES
            DEXP2=0.D0
          ELSE
            DEXP2=DEXP(ARG2)
@@ -2221,21 +2187,21 @@ C
 C@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 C
 C
-         SUBROUTINE PRC_QUAD (X,Y,Z,BX,BY,BZ)
+         SUBROUTINE T02_PRC_QUAD (X,Y,Z,BX,BY,BZ)
 C
 C  CALCULATES COMPONENTS OF THE FIELD FROM THE "QUADRUPOLE" COMPONENT OF THE PRC
 C
          IMPLICIT  REAL * 8  (A - H, O - Z)
 
-         DATA D,DD/1.D-4,2.D-4/, DS/1.D-2/,DC/0.99994999875D0/
+         DATA DUP,DD/1.D-4,2.D-4/, DS/1.D-2/,DC/0.99994999875D0/
 
          RHO2=X**2+Y**2
          R=DSQRT(RHO2+Z**2)
          RHO=DSQRT(RHO2)
          SINT=RHO/R
          COST=Z/R
-         RP=R+D
-         RM=R-D
+         RP=R+DUP
+         RM=R-DUP
 
          IF (SINT.GT.DS) THEN
            CPHI=X/RHO
@@ -2244,8 +2210,8 @@ C
            BT=BT_PRC_Q(R,SINT,COST)
            DBRR=(BR_PRC_Q(RP,SINT,COST)-BR_PRC_Q(RM,SINT,COST))/DD
            THETA=DATAN2(SINT,COST)
-           TP=THETA+D
-           TM=THETA-D
+           TP=THETA+DUP
+           TM=THETA-DUP
            SINTP=DSIN(TP)
            COSTP=DCOS(TP)
            SINTM=DSIN(TM)
@@ -2259,8 +2225,8 @@ C
            CT=DC
            IF (Z.LT.0.D0) CT=-DC
            THETA=DATAN2(ST,CT)
-           TP=THETA+D
-           TM=THETA-D
+           TP=THETA+DUP
+           TM=THETA-DUP
            SINTP=DSIN(TP)
            COSTP=DCOS(TP)
            SINTM=DSIN(TM)
@@ -2305,15 +2271,15 @@ C
         ALPHA=SINT2/R
         GAMMA=COST/R**2
 
-        CALL FFS(ALPHA,AL1,DAL1,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL1,DAL1,F,FA,FS)
         D1=SC*F**XK1/((R/B1)**BE1+1.D0)
         D2=D1*COST2
 
-        CALL FFS(ALPHA,AL2,DAL2,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL2,DAL2,F,FA,FS)
         D3=SC*FS**XK2/((R/B2)**BE2+1.D0)
         D4=D3*COST2
 
-        CALL FFS(ALPHA,AL3,DAL3,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL3,DAL3,F,FA,FS)
         D5=SC*(ALPHA**XK3)*(FS**XK4)/((R/B3)**BE3+1.D0)
         D6=D5*COST2
 
@@ -2338,7 +2304,7 @@ C
         D16=SC/(R**4+C2**4)*COST2
         D17=SC/(R**4+C3**4)*COST2**2
 
-        CALL FFS(ALPHA,AL6,DAL6,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL6,DAL6,F,FA,FS)
         D18=SC*FS/(1.D0+((R-1.2D0)/DRM)**2)
 
         BR_PRC_Q=A1*D1+A2*D2+A3*D3+A4*D4+A5*D5+A6*D6+A7*D7+A8*D8+A9*D9+
@@ -2374,19 +2340,19 @@ C
         ALPHA=SINT2/R
         GAMMA=COST/R**2
 
-        CALL FFS(ALPHA,AL1,DAL1,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL1,DAL1,F,FA,FS)
         D1=F**XK1/((R/B1)**BE1+1.D0)
         D2=D1*COST2
 
-        CALL FFS(ALPHA,AL2,DAL2,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL2,DAL2,F,FA,FS)
         D3=FA**XK2/R**BE2
         D4=D3*COST2
 
-        CALL FFS(ALPHA,AL3,DAL3,F,FA,FS)
+        CALL T02_FFS(ALPHA,AL3,DAL3,F,FA,FS)
         D5=FS**XK3*ALPHA**XK4/((R/B3)**BE3+1.D0)
         D6=D5*COST2
 
-        CALL FFS(GAMMA,0.D0,DG1,F,FA,FS)
+        CALL T02_FFS(GAMMA,0.D0,DG1,F,FA,FS)
         FCC=(1.D0+((ALPHA-AL4)/DAL4)**2)
         D7 =1.D0/FCC*FS
         D8 =D7/FCC
@@ -2411,7 +2377,7 @@ C
 c
 c@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-       SUBROUTINE FFS(A,A0,DA,F,FA,FS)
+       SUBROUTINE T02_FFS(A,A0,DA,F,FA,FS)
        IMPLICIT  REAL * 8  (A - H, O - Z)
        SQ1=DSQRT((A+A0)**2+DA**2)
        SQ2=DSQRT((A-A0)**2+DA**2)
@@ -2424,7 +2390,7 @@ C
 C||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 C
 C
-         SUBROUTINE RC_SHIELD (A,PS,X_SC,X,Y,Z,BX,BY,BZ)
+         SUBROUTINE T02_RC_SHIELD (A,PS,X_SC,X,Y,Z,BX,BY,BZ)
 C
 C   COMPUTES THE COMPONENTS OF THE SHIELDING FIELD FOR THE RING CURRENT
 C       (EITHER PARTIAL OR AXISYMMETRICAL)
@@ -2571,7 +2537,7 @@ C                                         TO TAKE INTO ACCOUNT THE SCALE FACTOR 
 C
 c===========================================================================
 c
-      SUBROUTINE DIPOLE (PS,X,Y,Z,BX,BY,BZ)
+      SUBROUTINE T02_DIPOLE (PS,X,Y,Z,BX,BY,BZ)
 C
 C     THIS IS A DOUBLE PRECISION ROUTINE, OTHERWISE IDENTICAL TO THE S/R DIP OF GEOPACK
 C

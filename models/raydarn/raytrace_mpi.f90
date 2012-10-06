@@ -26,8 +26,6 @@ program		rayDARN
 ! ***********************************************************************************
 ! ***********************************************************************************
 
-
-	use HDF5
 	use constants
 	use MPIutils
 	implicit none
@@ -42,23 +40,13 @@ program		rayDARN
 ! MPI
 	integer::		hfrays, hfranges, hfedens, hfionos		! File handles
 	integer::		type_vec, type_param					! New data types
-	integer::		slice, ipar, info						! Misc.
-! HDF5
-	INTEGER        :: error, error_n! Error flags
-	INTEGER        :: fnamelen      ! File name length
-	INTEGER(HID_T) :: file_id       ! File identifier
-	INTEGER(HID_T) :: dset_id       ! Dataset identifier
-	INTEGER(HID_T) :: filespace     ! Dataspace identifier in file
-	INTEGER(HID_T) :: plist_id      ! Property list identifier
-	INTEGER(HSIZE_T), DIMENSION(2) :: dimsf = (/5,8/) ! Dataset dimensions.
-	INTEGER(HSIZE_T), DIMENSION(2) :: dimsfi
+	integer::		slice, ipar								! Misc.
 
 
 
 	! Initialize MPI environment
 	CALL MPI_INIT(code)
 	time_init = MPI_WTIME ()
-	info = MPI_INFO_NULL
 	CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, code)
 	CALL MPI_COMM_RANK(MPI_COMM_WORLD ,rank, code)
 
@@ -67,13 +55,6 @@ program		rayDARN
 	CALL MPI_TYPE_SIZE(MPI_REAL, mpi_size_real, code)
 	CALL MPI_TYPE_SIZE(MPI_INTEGER, mpi_size_int, code)
 	CALL MPI_TYPE_SIZE(type_vec, mpi_size_vec, code)
-
-	! Initialize FORTRAN HDF5 interface
-	CALL h5open_f(error)
-
-	! Setup file access property list with parallel I/O access.
-	CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
-	CALL h5pset_fapl_mpio_f(plist_id, MPI_COMM_WORLD, code, error)
 
 
 	! Read parameters
@@ -139,14 +120,14 @@ program		rayDARN
 	endif
 
 
-!  	print*, rank, nhour, nazim, nelev, slice
+ 	print*, rank, nhour, nazim, nelev, slice
 	!**********************************************************
 	! Time loop
 	nextday = 0
 	hour = hour_0
 	do ihr=1,nhour
 ! 		print*, rank, 'hour',hour
-! 		timeaz = MPI_WTIME()
+		timeaz = MPI_WTIME()
 		!**********************************************************
 		! Azimuth loop
 		azim = azim_0
@@ -160,7 +141,7 @@ program		rayDARN
 											edensARR, &
 											dip/), 2 + 505*500, MPI_REAL, status, code)
 
-! 			timeel = MPI_WTIME()
+			timeel = MPI_WTIME()
 			!**********************************************************
 			! Elevation loop
 			elev = elev_0
@@ -176,9 +157,9 @@ program		rayDARN
 			enddo
 			! End elevation loop
 			!**********************************************************
-! 			timeel = ( MPI_WTIME() - timeel)
-! 			CALL MPI_REDUCE (timeel,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
-! 			if (rank.eq.0) print('("Time in elev loop ",I3,": ",f6.3, " s")'), iaz, time
+			timeel = ( MPI_WTIME() - timeel)
+			CALL MPI_REDUCE (timeel,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
+			if (rank.eq.0) print('("Time in elev loop ",I3,": ",f6.3, " s")'), iaz, time
 
 			! Increment azimuth value
 			azim = azim + params%azimstp
@@ -187,9 +168,9 @@ program		rayDARN
 		enddo
 		! End azimuth loop
 		!**********************************************************
-! 		timeaz = ( MPI_WTIME() - timeaz)
-! 		CALL MPI_REDUCE (timeaz,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
-! 		if (rank.eq.0) print('("Time in azim loop ",I3,": ",f10.3, " s")'), ihr, time
+		timeaz = ( MPI_WTIME() - timeaz)
+		CALL MPI_REDUCE (timeaz,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
+		if (rank.eq.0) print('("Time in azim loop ",I3,": ",f10.3, " s")'), ihr, time
 
 		! Increment time value (but if a process reaches the last value, don't let him go over it)
 		hour = hour + params%hourstp

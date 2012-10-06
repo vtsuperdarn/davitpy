@@ -1,4 +1,3 @@
-c irifun.for, version number can be found at the end of this comment.
 c-----------------------------------------------------------------------
 C
 C Functions and subroutines for the International Reference 
@@ -7292,7 +7291,8 @@ c predictions.
 c
         if(iflag.eq.0) then
       
-          open(unit=12,file='${DAVITPY}/models/fort/igrf/ig_rz.dat',status='old')
+          open(unit=12,file='/davitpy/models/iri/ig_rz.dat',
+     &          status='old')
 c-web- special for web version
 c          open(unit=12,file=
 c     *'/usr/local/etc/httpd/cgi-bin/models/IRI/ig_rz.dat',
@@ -7437,7 +7437,7 @@ c--------------------------------------------------------------------
 
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
-        Open(13,FILe='${DAVITPY}/models/fort/iri/apf107.dat',
+        Open(13,FILe='/davitpy/models/iri/apf107.dat',
 c -web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')
@@ -7486,7 +7486,8 @@ c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
                 iap(j2+i)=iiap(i)
                 enddo
              iss=is-2
-             READ(13,10,REC=ISS,ERR=21) JY,JMN,JD,iiap,iapd,IR,F,F81,F365
+             READ(13,10,REC=ISS,ERR=21)
+     &          JY,JMN,JD,iiap,iapd,IR,F,F81,F365
         	 do i9=1,8
         		if(iiap(i9).lt.-2) goto 21
         		enddo
@@ -7546,7 +7547,7 @@ c--------------------------------------------------------------------
 
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
-        Open(13,FILe='${DAVITPY}/models/fort/iri/apf107.dat',
+        Open(13,FILe='/davitpy/models/iri/apf107.dat',
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')
@@ -7678,7 +7679,7 @@ c--------------------------------------------------------------------
         IYBEG=1958
         if(iyyyy.lt.IYBEG) goto 21   ! APF107.DAT starts at Jan 1, 1958
 
-        Open(13,FILe='${DAVITPY}/models/fort/iri/apf107.dat',
+        Open(13,FILe='/davitpy/models/iri/apf107.dat',
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')

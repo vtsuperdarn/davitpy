@@ -146,7 +146,12 @@ OUTPUTS:
 		site = rad.getSiteByDate(dateTime)
 		if not site: continue
 		# Get radar coordinates in map projection
-		x,y = Basemap(site.geolon, site.geolat)
+		if(coords == 'geo'):
+			x,y = Basemap(site.geolon, site.geolat)
+		elif(coords == 'mag'):
+			import models.aacgm as aacgm
+			magc = aacgm.aacgmConv(site.geolat,site.geolon,0.,0)
+			x,y = Basemap(magc[1], magc[0])
 		if not Basemap.xmin <= x <= Basemap.xmax: continue
 		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot radar position
@@ -239,7 +244,7 @@ OUTPUTS:
 		eGate = site.maxgate-1 if not maxGate else maxGate
 		# Get field of view coordinates
 		if(radFov == None):
-			radFov = fov(site=site, ngates=eGate+1)
+			radFov = fov(site=site, ngates=eGate+1, coords = coords)
 		# Get radar coordinates in map projection
 		x,y = Basemap(radFov.lonFull, radFov.latFull)
 #		if not Basemap.xmin <= x <= Basemap.xmax: continue

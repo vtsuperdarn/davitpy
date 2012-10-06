@@ -1,0 +1,1077 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module tsyg ! in 
+    interface  ! in :tsyg
+        subroutine igrf_gsw_08(xgsw,ygsw,zgsw,hxgsw,hygsw,hzgsw) ! in :tsyg:geopack08.for
+            real :: xgsw
+            real :: ygsw
+            real :: zgsw
+            real :: hxgsw
+            real :: hygsw
+            real :: hzgsw
+            real dimension(105) :: g
+            real dimension(105) :: h
+            real dimension(105) :: rec
+            common /geopack2/ g,h,rec
+        end subroutine igrf_gsw_08
+        subroutine igrf_geo_08(r,theta,phi,br,btheta,bphi) ! in :tsyg:geopack08.for
+            real :: r
+            real :: theta
+            real :: phi
+            real :: br
+            real :: btheta
+            real :: bphi
+            real dimension(105) :: g
+            real dimension(105) :: h
+            real dimension(105) :: rec
+            common /geopack2/ g,h,rec
+        end subroutine igrf_geo_08
+        subroutine dip_08(xgsw,ygsw,zgsw,bxgsw,bygsw,bzgsw) ! in :tsyg:geopack08.for
+            real :: xgsw
+            real :: ygsw
+            real :: zgsw
+            real :: bxgsw
+            real :: bygsw
+            real :: bzgsw
+            real dimension(10) :: aa
+            real :: sps
+            real :: cps
+            real dimension(22) :: bb
+            real dimension(105) :: g
+            real dimension(105) :: h
+            real dimension(105) :: rec
+            common /geopack1/ aa,sps,cps,bb
+            common /geopack2/ g,h,rec
+        end subroutine dip_08
+        subroutine sun_08(iyear,iday,ihour,min_bn,isec,gst,slong,srasn,sdec) ! in :tsyg:geopack08.for
+            integer :: iyear
+            integer :: iday
+            integer :: ihour
+            integer :: min_bn
+            integer :: isec
+            real :: gst
+            real :: slong
+            real :: srasn
+            real :: sdec
+        end subroutine sun_08
+        subroutine sphcar_08(r,theta,phi,x,y,z,j) ! in :tsyg:geopack08.for
+            real intent(in,out) :: r
+            real intent(in,out) :: theta
+            real intent(in,out) :: phi
+            real intent(in,out) :: x
+            real intent(in,out) :: y
+            real intent(in,out) :: z
+            integer intent(in) :: j
+        end subroutine sphcar_08
+        subroutine bspcar_08(theta,phi,br,btheta,bphi,bx,by,bz) ! in :tsyg:geopack08.for
+            real :: theta
+            real :: phi
+            real :: br
+            real :: btheta
+            real :: bphi
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine bspcar_08
+        subroutine bcarsp_08(x,y,z,bx,by,bz,br,btheta,bphi) ! in :tsyg:geopack08.for
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+            real :: br
+            real :: btheta
+            real :: bphi
+        end subroutine bcarsp_08
+        subroutine recalc_08(iyear,iday,ihour,min_bn,isec,vgsex,vgsey,vgsez) ! in :tsyg:geopack08.for
+            integer :: iyear
+            integer :: iday
+            integer :: ihour
+            integer :: min_bn
+            integer :: isec
+            real :: vgsex
+            real :: vgsey
+            real :: vgsez
+            real :: st0
+            real :: ct0
+            real :: sl0
+            real :: cl0
+            real :: ctcl
+            real :: stcl
+            real :: ctsl
+            real :: stsl
+            real :: sfi
+            real :: cfi
+            real :: sps
+            real :: cps
+            real :: ds3
+            real :: cgst
+            real :: sgst
+            real :: psi
+            real :: a11
+            real :: a21
+            real :: a31
+            real :: a12
+            real :: a22
+            real :: a32
+            real :: a13
+            real :: a23
+            real :: a33
+            real :: e11
+            real :: e21
+            real :: e31
+            real :: e12
+            real :: e22
+            real :: e32
+            real :: e13
+            real :: e23
+            real :: e33
+            real dimension(105) :: g
+            real dimension(105) :: h
+            real dimension(105) :: rec
+            common /geopack1/ st0,ct0,sl0,cl0,ctcl,stcl,ctsl,stsl,sfi,cfi,sps,cps,ds3,cgst,sgst,psi,a11,a21,a31,a12,a22,a32,a13,a23,a33,e11,e21,e31,e12,e22,e32,e13,e23,e33
+            common /geopack2/ g,h,rec
+        end subroutine recalc_08
+        subroutine gswgse_08(xgsw,ygsw,zgsw,xgse,ygse,zgse,j) ! in :tsyg:geopack08.for
+            real :: xgsw
+            real :: ygsw
+            real :: zgsw
+            real :: xgse
+            real :: ygse
+            real :: zgse
+            integer :: j
+            real dimension(25) :: aaa
+            real :: e11
+            real :: e21
+            real :: e31
+            real :: e12
+            real :: e22
+            real :: e32
+            real :: e13
+            real :: e23
+            real :: e33
+            common /geopack1/ aaa,e11,e21,e31,e12,e22,e32,e13,e23,e33
+        end subroutine gswgse_08
+        subroutine geomag_08(xgeo,ygeo,zgeo,xmag,ymag,zmag,j) ! in :tsyg:geopack08.for
+            real :: xgeo
+            real :: ygeo
+            real :: zgeo
+            real :: xmag
+            real :: ymag
+            real :: zmag
+            integer :: j
+            real :: st0
+            real :: ct0
+            real :: sl0
+            real :: cl0
+            real :: ctcl
+            real :: stcl
+            real :: ctsl
+            real :: stsl
+            real dimension(26) :: ab
+            common /geopack1/ st0,ct0,sl0,cl0,ctcl,stcl,ctsl,stsl,ab
+        end subroutine geomag_08
+        subroutine geigeo_08(xgei,ygei,zgei,xgeo,ygeo,zgeo,j) ! in :tsyg:geopack08.for
+            real :: xgei
+            real :: ygei
+            real :: zgei
+            real :: xgeo
+            real :: ygeo
+            real :: zgeo
+            integer :: j
+            real dimension(13) :: a
+            real :: cgst
+            real :: sgst
+            real dimension(19) :: b
+            common /geopack1/ a,cgst,sgst,b
+        end subroutine geigeo_08
+        subroutine magsm_08(xmag,ymag,zmag,xsm,ysm,zsm,j) ! in :tsyg:geopack08.for
+            real :: xmag
+            real :: ymag
+            real :: zmag
+            real :: xsm
+            real :: ysm
+            real :: zsm
+            integer :: j
+            real dimension(8) :: a
+            real :: sfi
+            real :: cfi
+            real dimension(24) :: b
+            common /geopack1/ a,sfi,cfi,b
+        end subroutine magsm_08
+        subroutine smgsw_08(xsm,ysm,zsm,xgsw,ygsw,zgsw,j) ! in :tsyg:geopack08.for
+            real :: xsm
+            real :: ysm
+            real :: zsm
+            real :: xgsw
+            real :: ygsw
+            real :: zgsw
+            integer :: j
+            real dimension(10) :: a
+            real :: sps
+            real :: cps
+            real dimension(22) :: b
+            common /geopack1/ a,sps,cps,b
+        end subroutine smgsw_08
+        subroutine geogsw_08(xgeo,ygeo,zgeo,xgsw,ygsw,zgsw,j) ! in :tsyg:geopack08.for
+            real intent(in,out) :: xgeo
+            real intent(in,out) :: ygeo
+            real intent(in,out) :: zgeo
+            real intent(in,out) :: xgsw
+            real intent(in,out) :: ygsw
+            real intent(in,out) :: zgsw
+            integer intent(in) :: j
+            real dimension(16) :: aa
+            real :: a11
+            real :: a21
+            real :: a31
+            real :: a12
+            real :: a22
+            real :: a32
+            real :: a13
+            real :: a23
+            real :: a33
+            real dimension(9) :: b
+            common /geopack1/ aa,a11,a21,a31,a12,a22,a32,a13,a23,a33,b
+        end subroutine geogsw_08
+        subroutine geodgeo_08(h,xmu,r,theta,j) ! in :tsyg:geopack08.for
+            real intent(in,out) :: h
+            real intent(in,out) :: xmu
+            real intent(in,out) :: r
+            real intent(in,out) :: theta
+            integer intent(in) :: j
+        end subroutine geodgeo_08
+        subroutine rhand_08(x,y,z,r1,r2,r3,iopt,parmod,exname,inname) ! in :tsyg:geopack08.for
+            real :: x
+            real :: y
+            real :: z
+            real :: r1
+            real :: r2
+            real :: r3
+            integer :: iopt
+            real dimension(10) :: parmod
+            character*(*) :: exname
+            character*(*) :: inname
+            real dimension(12) :: a
+            real :: ds3
+            real dimension(2) :: bb
+            real :: psi
+            real dimension(18) :: cc
+            common /geopack1/ a,ds3,bb,psi,cc
+        end subroutine rhand_08
+        subroutine step_08(x,y,z,ds,dsmax,errin,iopt,parmod,exname,inname) ! in :tsyg:geopack08.for
+            real :: x
+            real :: y
+            real :: z
+            real :: ds
+            real :: dsmax
+            real :: errin
+            integer :: iopt
+            real dimension(10) :: parmod
+            character*(*) :: exname
+            character*(*) :: inname
+            real dimension(12) :: a
+            real :: ds3
+            real dimension(21) :: b
+            common /geopack1/ a,ds3,b
+        end subroutine step_08
+        subroutine trace_08(xi,yi,zi,dir,dsmax,err,rlim,r0,iopt,parmod,exname,inname,xf,yf,zf,xx,yy,zz,l,lmax) ! in :tsyg:geopack08.for
+            real intent(in) :: xi
+            real intent(in) :: yi
+            real intent(in) :: zi
+            real intent(in) :: dir
+            real intent(in) :: dsmax
+            real intent(in) :: err
+            real intent(in) :: rlim
+            real intent(in) :: r0
+            integer intent(in) :: iopt
+            real dimension(10),intent(in) :: parmod
+            character*(*) intent(in) :: exname
+            character*(*) intent(in) :: inname
+            real intent(out) :: xf
+            real intent(out) :: yf
+            real intent(out) :: zf
+            real dimension(lmax),intent(out),depend(lmax) :: xx
+            real dimension(lmax),intent(out),depend(lmax) :: yy
+            real dimension(lmax),intent(out),depend(lmax) :: zz
+            integer intent(out) :: l
+            integer intent(in) :: lmax
+            real dimension(12) :: aa
+            real :: dd
+            real dimension(21) :: bb
+            common /geopack1/ aa,dd,bb
+        end subroutine trace_08
+        subroutine shuetal_mgnp_08(xn_pd,vel,bzimf,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id) ! in :tsyg:geopack08.for
+            real :: xn_pd
+            real :: vel
+            real :: bzimf
+            real :: xgsw
+            real :: ygsw
+            real :: zgsw
+            real :: xmgnp
+            real :: ymgnp
+            real :: zmgnp
+            real :: dist
+            integer :: id
+        end subroutine shuetal_mgnp_08
+        subroutine t96_mgnp_08(xn_pd,vel,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id) ! in :tsyg:geopack08.for
+            real :: xn_pd
+            real :: vel
+            real :: xgsw
+            real :: ygsw
+            real :: zgsw
+            real :: xmgnp
+            real :: ymgnp
+            real :: zmgnp
+            real :: dist
+            integer :: id
+        end subroutine t96_mgnp_08
+        subroutine t96_01(iopt,parmod,ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            integer :: iopt
+            real dimension(10) :: parmod
+            real :: ps
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t96_01
+        subroutine dipshld(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine dipshld
+        subroutine cylharm(a,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real dimension(12) :: a
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine cylharm
+        subroutine cylhar1(a,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real dimension(12) :: a
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine cylhar1
+        function bes(x,k) ! in :tsyg:T96.f
+            real*8 :: x
+            integer :: k
+            double precision :: bes
+        end function bes
+        function bes0(x) ! in :tsyg:T96.f
+            real*8 :: x
+            double precision :: bes0
+        end function bes0
+        function bes1(x) ! in :tsyg:T96.f
+            real*8 :: x
+            double precision :: bes1
+        end function bes1
+        subroutine intercon(x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine intercon
+        subroutine tailrc96(sps,x,y,z,bxrc,byrc,bzrc,bxt2,byt2,bzt2,bxt3,byt3,bzt3) ! in :tsyg:T96.f
+            real*8 :: sps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bxrc
+            real*8 :: byrc
+            real*8 :: bzrc
+            real*8 :: bxt2
+            real*8 :: byt2
+            real*8 :: bzt2
+            real*8 :: bxt3
+            real*8 :: byt3
+            real*8 :: bzt3
+            real*8 :: cpss
+            real*8 :: spss
+            real*8 :: dpsrr
+            real*8 :: rps
+            real*8 :: warp
+            real*8 :: d
+            real*8 :: xs
+            real*8 :: zs
+            real*8 :: dxsx
+            real*8 :: dxsy
+            real*8 :: dxsz
+            real*8 :: dzsx
+            real*8 :: dzsy
+            real*8 :: dzsz
+            real*8 :: dzetas
+            real*8 :: ddzetadx
+            real*8 :: ddzetady
+            real*8 :: ddzetadz
+            real*8 :: zsww
+            common /warp/ cpss,spss,dpsrr,rps,warp,d,xs,zs,dxsx,dxsy,dxsz,dzsx,dzsy,dzsz,dzetas,ddzetadx,ddzetady,ddzetadz,zsww
+        end subroutine tailrc96
+        subroutine ringcurr96(x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            real*8 :: cpss
+            real*8 :: spss
+            real*8 :: dpsrr
+            real*8 dimension(3) :: xnext
+            real*8 :: xs
+            real*8 :: zswarped
+            real*8 :: dxsx
+            real*8 :: dxsy
+            real*8 :: dxsz
+            real*8 :: dzsx
+            real*8 :: dzsywarped
+            real*8 :: dzsz
+            real*8 dimension(4) :: other
+            real*8 :: zs
+            common /warp/ cpss,spss,dpsrr,xnext,xs,zswarped,dxsx,dxsy,dxsz,dzsx,dzsywarped,dzsz,other,zs
+        end subroutine ringcurr96
+        subroutine taildisk(x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            real*8 :: cpss
+            real*8 :: spss
+            real*8 :: dpsrr
+            real*8 dimension(3) :: xnext
+            real*8 :: xs
+            real*8 :: zs
+            real*8 :: dxsx
+            real*8 :: dxsy
+            real*8 :: dxsz
+            real*8 dimension(3) :: other
+            real*8 :: dzetas
+            real*8 :: ddzetadx
+            real*8 :: ddzetady
+            real*8 :: ddzetadz
+            real*8 :: zsww
+            common /warp/ cpss,spss,dpsrr,xnext,xs,zs,dxsx,dxsy,dxsz,other,dzetas,ddzetadx,ddzetady,ddzetadz,zsww
+        end subroutine taildisk
+        subroutine tail87(x,z,bx,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: bz
+            real*8 dimension(3) :: first
+            real*8 :: rps
+            real*8 :: warp
+            real*8 :: d
+            real*8 dimension(13) :: other
+            common /warp/ first,rps,warp,d,other
+        end subroutine tail87
+        subroutine shlcar3x3(a,x,y,z,sps,hx,hy,hz) ! in :tsyg:T96.f
+            real dimension(48) :: a
+            real :: x
+            real :: y
+            real :: z
+            real :: sps
+            real :: hx
+            real :: hy
+            real :: hz
+        end subroutine shlcar3x3
+        subroutine birk1tot_02(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            real*8, optional :: dx=-0.16d0
+            real*8, optional :: scalein=0.08d0
+            real*8, optional :: scaleout=0.4d0
+            real*8, optional :: rh=9.d0
+            real*8, optional :: dr=4.d0
+            real*8, optional :: tilt=1.00891
+            real*8, optional,dimension(2) :: xcentre=2.28397
+            real*8, optional,dimension(2) :: radius=-5.60831
+            real*8, optional :: dipx=1.86106
+            real*8, optional :: dipy=7.83281
+            real*8, optional,dimension(12) :: xx1=-11.d0
+            real*8, optional,dimension(12) :: yy1=2.d0
+            real*8, optional,dimension(14) :: xx2=-10.d0
+            real*8, optional,dimension(14) :: yy2=3.d0
+            real*8, optional,dimension(14) :: zz2=2*20.d0
+            common /dx1/ dx,scalein,scaleout
+            common /rhdr/ rh,dr
+            common /loopdip1/ tilt,xcentre,radius,dipx,dipy
+            common /coord11/ xx1,yy1
+            common /coord21/ xx2,yy2,zz2
+        end subroutine birk1tot_02
+        subroutine diploop1(xi,d) ! in :tsyg:T96.f
+            real dimension(4) :: xi
+            real dimension(3,26) :: d
+            real :: rh
+            real :: dr
+            real :: tilt
+            real dimension(2) :: xcentre
+            real dimension(2) :: radius
+            real :: dipx
+            real :: dipy
+            real dimension(12) :: xx
+            real dimension(12) :: yy
+            common /rhdr/ rh,dr
+            common /loopdip1/ tilt,xcentre,radius,dipx,dipy
+            common /coord11/ xx,yy
+        end subroutine diploop1
+        subroutine circle(x,y,z,rl,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: rl
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine circle
+        subroutine crosslp(x,y,z,bx,by,bz,xc,rl,al) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            real*8 :: xc
+            real*8 :: rl
+            real*8 :: al
+        end subroutine crosslp
+        subroutine dipxyz(x,y,z,bxx,byx,bzx,bxy,byy,bzy,bxz,byz,bzz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bxx
+            real*8 :: byx
+            real*8 :: bzx
+            real*8 :: bxy
+            real*8 :: byy
+            real*8 :: bzy
+            real*8 :: bxz
+            real*8 :: byz
+            real*8 :: bzz
+        end subroutine dipxyz
+        subroutine condip1(xi,d) ! in :tsyg:T96.f
+            real dimension(4) :: xi
+            real dimension(3,79) :: d
+            real :: dx
+            real :: scalein
+            real :: scaleout
+            real dimension(14) :: xx
+            real dimension(14) :: yy
+            real dimension(14) :: zz
+            common /dx1/ dx,scalein,scaleout
+            common /coord21/ xx,yy,zz
+        end subroutine condip1
+        subroutine birk1shld(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real :: ps
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine birk1shld
+        subroutine birk2tot_02(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine birk2tot_02
+        subroutine birk2shl(x,y,z,ps,hx,hy,hz) ! in :tsyg:T96.f
+            real :: x
+            real :: y
+            real :: z
+            real :: ps
+            real :: hx
+            real :: hy
+            real :: hz
+        end subroutine birk2shl
+        subroutine r2_birk(x,y,z,ps,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: ps
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine r2_birk
+        subroutine r2inner(x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine r2inner
+        subroutine bconic(x,y,z,cbx,cby,cbz,nmax) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 dimension(nmax) :: cbx
+            real*8 dimension(nmax),depend(nmax) :: cby
+            real*8 dimension(nmax),depend(nmax) :: cbz
+            integer, optional,check(len(cbx)>=nmax),depend(cbx) :: nmax=len(cbx)
+        end subroutine bconic
+        subroutine dipdistr(x,y,z,bx,by,bz,mode) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            integer :: mode
+        end subroutine dipdistr
+        subroutine r2outer(x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine r2outer
+        subroutine loops4(x,y,z,bx,by,bz,xc,yc,zc,r,theta,phi) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            real*8 :: xc
+            real*8 :: yc
+            real*8 :: zc
+            real*8 :: r
+            real*8 :: theta
+            real*8 :: phi
+        end subroutine loops4
+        subroutine r2sheet(x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine r2sheet
+        function xksi(x,y,z) ! in :tsyg:T96.f
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            double precision :: xksi
+        end function xksi
+        function fexp(s,a) ! in :tsyg:T96.f
+            real*8 :: s
+            real*8 :: a
+            real*8 :: fexp
+        end function fexp
+        function fexp1(s,a) ! in :tsyg:T96.f
+            real*8 :: s
+            real*8 :: a
+            real*8 :: fexp1
+        end function fexp1
+        function tksi(xksi,xks0,dxksi) ! in :tsyg:T96.f
+            real*8 :: xksi
+            real*8 :: xks0
+            real*8 :: dxksi
+            double precision :: tksi
+        end function tksi
+        subroutine dipole(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
+            real :: ps
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine dipole
+        subroutine t01_01(iopt,parmod,ps,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            integer :: iopt
+            real dimension(10) :: parmod
+            real :: ps
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t01_01
+        subroutine t02_extall(iopgen,iopt,iopb,iopr,a,ntot,pdyn,dst,byimf,bzimf,vbimf1,vbimf2,ps,x,y,z,bxcf,bycf,bzcf,bxt1,byt1,bzt1,bxt2,byt2,bzt2,bxsrc,bysrc,bzsrc,bxprc,byprc,bzprc,bxr11,byr11,bzr11,bxr12,byr12,bzr12,bxr21,byr21,bzr21,bxr22,byr22,bzr22,hximf,hyimf,hzimf,bx,by,bz) ! in :tsyg:T02.f
+            integer :: iopgen
+            integer :: iopt
+            integer :: iopb
+            integer :: iopr
+            real dimension(ntot) :: a
+            integer, optional,check(len(a)>=ntot),depend(a) :: ntot=len(a)
+            real :: pdyn
+            real :: dst
+            real :: byimf
+            real :: bzimf
+            real :: vbimf1
+            real :: vbimf2
+            real :: ps
+            real :: x
+            real :: y
+            real :: z
+            real :: bxcf
+            real :: bycf
+            real :: bzcf
+            real :: bxt1
+            real :: byt1
+            real :: bzt1
+            real :: bxt2
+            real :: byt2
+            real :: bzt2
+            real :: bxsrc
+            real :: bysrc
+            real :: bzsrc
+            real :: bxprc
+            real :: byprc
+            real :: bzprc
+            real :: bxr11
+            real :: byr11
+            real :: bzr11
+            real :: bxr12
+            real :: byr12
+            real :: bzr12
+            real :: bxr21
+            real :: byr21
+            real :: bzr21
+            real :: bxr22
+            real :: byr22
+            real :: bzr22
+            real :: hximf
+            real :: hyimf
+            real :: hzimf
+            real :: bx
+            real :: by
+            real :: bz
+            real :: xkappa1
+            real :: xkappa2
+            real, optional :: rh0=8.0d0
+            real :: dxshift1
+            real :: dxshift2
+            real :: d
+            real :: deltady  ! the common blocks for
+            real :: sc_sy
+            real :: sc_as
+            real :: phi
+            real :: g
+            common /birkpar/ xkappa1,xkappa2
+            common /rh0/ rh0
+            common /tail/ dxshift1,dxshift2,d,deltady  ! the common blocks for
+            common /rcpar/ sc_sy,sc_as,phi
+            common /g/ g
+        end subroutine t02_extall
+        subroutine t02_shlcar3x3(x,y,z,ps,bx,by,bz) ! in :tsyg:T02.f
+            real :: x
+            real :: y
+            real :: z
+            real :: ps
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t02_shlcar3x3
+        subroutine t02_deformed(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsyg:T02.f
+            integer :: iopt
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx1
+            real*8 :: by1
+            real*8 :: bz1
+            real*8 :: bx2
+            real*8 :: by2
+            real*8 :: bz2
+            real*8 :: rh0
+            common /rh0/ rh0
+        end subroutine t02_deformed
+        subroutine t02_warped(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsyg:T02.f
+            integer :: iopt
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx1
+            real*8 :: by1
+            real*8 :: bz1
+            real*8 :: bx2
+            real*8 :: by2
+            real*8 :: bz2
+            real*8 :: g
+            common /g/ g
+        end subroutine t02_warped
+        subroutine t02_unwarped(iopt,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsyg:T02.f
+            integer :: iopt
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx1
+            real*8 :: by1
+            real*8 :: bz1
+            real*8 :: bx2
+            real*8 :: by2
+            real*8 :: bz2
+            real*8 :: dxshift1
+            real*8 :: dxshift2
+            real*8 :: d0
+            real*8 :: deltady
+            common /tail/ dxshift1,dxshift2,d0,deltady
+        end subroutine t02_unwarped
+        subroutine t02_taildisk(d0,deltadx,deltady,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real*8 :: d0
+            real*8 :: deltadx
+            real*8 :: deltady
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine t02_taildisk
+        subroutine t02_shlcar5x5(a,x,y,z,dshift,hx,hy,hz) ! in :tsyg:T02.f
+            real dimension(60) :: a
+            real :: x
+            real :: y
+            real :: z
+            real :: dshift
+            real :: hx
+            real :: hy
+            real :: hz
+        end subroutine t02_shlcar5x5
+        subroutine t02_birk_tot(iopb,ps,x,y,z,bx11,by11,bz11,bx12,by12,e_bz__________________________bx21_er,by21,bz21,bx22,by22,bz22) ! in :tsyg:T02.f
+            integer :: iopb
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx11
+            real*8 :: by11
+            real*8 :: bz11
+            real*8 :: bx12
+            real*8 :: by12
+            real*8 :: e_bz__________________________bx21_er
+            real*8 :: by21
+            real*8 :: bz21
+            real*8 :: bx22
+            real*8 :: by22
+            real*8 :: bz22
+            real*8 :: xkappa1
+            real*8 :: xkappa2   !  input parameters
+            real*8 :: specified
+            real*8 :: dphi
+            real*8 :: b
+            real*8 :: rho_0
+            real*8 :: xkappa ! parameters
+            real*8 :: controlling
+            common /birkpar/ xkappa1,xkappa2   !  input parameters,specified
+            common /dphi_b_rho0/ dphi,b,rho_0,xkappa ! parameters,controlling
+        end subroutine t02_birk_tot
+        subroutine t02_birk_1n2(numb,mode,ps,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            integer :: numb
+            integer :: mode
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            real*8 :: dphi
+            real*8 :: b
+            real*8 :: rho_0
+            real*8 :: xkappa ! these parameters contro
+            integer :: m
+            real*8 :: dtheta
+            common /dphi_b_rho0/ dphi,b,rho_0,xkappa ! these parameters contro
+            common /modenum/ m
+            common /dtheta/ dtheta
+        end subroutine t02_birk_1n2
+        subroutine t02_twocones(a,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real*8 dimension(31) :: a
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine t02_twocones
+        subroutine t02_one_cone(a,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real*8 dimension(31) :: a
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+            integer :: m
+            real*8 :: dtheta
+            common /modenum/ m
+            common /dtheta/ dtheta
+        end subroutine t02_one_cone
+        function r_s(a,r,theta) ! in :tsyg:T02.f
+            real*8 dimension(31) :: a
+            real*8 :: r
+            real*8 :: theta
+            double precision :: r_s
+        end function r_s
+        function theta_s(a,r,theta) ! in :tsyg:T02.f
+            real*8 dimension(31) :: a
+            real*8 :: r
+            real*8 :: theta
+            double precision :: theta_s
+        end function theta_s
+        subroutine t02_fialcos(r,theta,phi,btheta,bphi,n,theta0,dt) ! in :tsyg:T02.f
+            real*8 :: r
+            real*8 :: theta
+            real*8 :: phi
+            real*8 :: btheta
+            real*8 :: bphi
+            integer :: n
+            real*8 :: theta0
+            real*8 :: dt
+        end subroutine t02_fialcos
+        subroutine t02_birk_shl(a,ps,x_sc,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real dimension(86) :: a
+            real :: ps
+            real :: x_sc
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t02_birk_shl
+        subroutine t02_full_rc(iopr,ps,x,y,z,bxsrc,bysrc,bzsrc,bxprc,e_bypr__bzprc_er) ! in :tsyg:T02.f
+            integer :: iopr
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bxsrc
+            real*8 :: bysrc
+            real*8 :: bzsrc
+            real*8 :: bxprc
+            real*8 :: e_bypr__bzprc_er
+            real*8 :: sc_sy
+            real*8 :: sc_pr
+            real*8 :: phi
+            common /rcpar/ sc_sy,sc_pr,phi
+        end subroutine t02_full_rc
+        subroutine t02_src_prc(iopr,sc_sy,sc_pr,phi,ps,x,y,z,bxsrc,e_bysrc____bzsrc_er,bxprc,byprc,bzprc) ! in :tsyg:T02.f
+            integer :: iopr
+            real*8 :: sc_sy
+            real*8 :: sc_pr
+            real*8 :: phi
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bxsrc
+            real*8 :: e_bysrc____bzsrc_er
+            real*8 :: bxprc
+            real*8 :: byprc
+            real*8 :: bzprc
+        end subroutine t02_src_prc
+        subroutine t02_rc_symm(x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t02_rc_symm
+        function ap(r,sint,cost) ! in :tsyg:T02.f
+            real :: r
+            real :: sint
+            real :: cost
+            double precision :: ap
+        end function ap
+        subroutine t02_prc_symm(x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t02_prc_symm
+        function apprc(r,sint,cost) ! in :tsyg:T02.f
+            real :: r
+            real :: sint
+            real :: cost
+            double precision :: apprc
+        end function apprc
+        subroutine t02_prc_quad(x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t02_prc_quad
+        function br_prc_q(r,sint,cost) ! in :tsyg:T02.f
+            real :: r
+            real :: sint
+            real :: cost
+            double precision :: br_prc_q
+        end function br_prc_q
+        function bt_prc_q(r,sint,cost) ! in :tsyg:T02.f
+            real :: r
+            real :: sint
+            real :: cost
+            double precision :: bt_prc_q
+        end function bt_prc_q
+        subroutine t02_ffs(a,a0,da,f,fa,fs) ! in :tsyg:T02.f
+            real :: a
+            real :: a0
+            real :: da
+            real :: f
+            real :: fa
+            real :: fs
+        end subroutine t02_ffs
+        subroutine t02_rc_shield(a,ps,x_sc,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real dimension(86) :: a
+            real :: ps
+            real :: x_sc
+            real :: x
+            real :: y
+            real :: z
+            real :: bx
+            real :: by
+            real :: bz
+        end subroutine t02_rc_shield
+        subroutine t02_dipole(ps,x,y,z,bx,by,bz) ! in :tsyg:T02.f
+            real*8 :: ps
+            real*8 :: x
+            real*8 :: y
+            real*8 :: z
+            real*8 :: bx
+            real*8 :: by
+            real*8 :: bz
+        end subroutine t02_dipole
+    end interface 
+end python module tsyg
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

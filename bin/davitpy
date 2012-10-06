@@ -15,9 +15,6 @@
 export PYTHONPATH=${DAVITPY}:${PYTHONPATH}
 
 # set default config directory for ipython
-# for ipython 0.12
-export IPYTHON_DIR=${DAVITPY}/bin
-# for ipython 0.13 and later
 export IPYTHONDIR=${DAVITPY}/bin
 
 ############################

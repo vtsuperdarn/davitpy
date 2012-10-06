@@ -7,7 +7,6 @@ c.TerminalIPythonApp.display_banner = True
 c.InteractiveShellApp.log_level = 20
 # c.InteractiveShellApp.extensions = []
 c.InteractiveShellApp.exec_lines = [
-	'from math import *',
 	'%load_ext autoreload',
 	'%autoreload 2',
 	'import pydarn',
