@@ -118,12 +118,15 @@ class sigStruct(sig):
     """
     self.parent.active = self
 
-  def preFftSampRate(self):
+  def sampRate(self,dtv=None):
     """Calculate the sample rate parameters of a vt sigStruct signal for the period in which the FFT is valid.
     :param validTimes: Two-element list of datetime.datetime.  The sample rate is calculated between these times.
     :returns: sampRate: sample rate of signal in seconds.  This is NAN if more than one unique timestep in sig.
     """
-    diffs = np.unique(np.diff(self.preFftDtv))
+    
+    if dtv == None: dtv = self.dtv
+
+    diffs = np.unique(np.diff(dtv))
     self.diffs = diffs
 
     if len(diffs) == 1:
@@ -303,7 +306,7 @@ class sigStruct(sig):
     self.preFftDtv = dtv
     self.preFftData = data
 
-    sampRate = self.preFftSampRate()
+    sampRate = self.sampRate(dtv=dtv)
     assert sampRate != np.NAN, 'FFT requires a valid sample rate. Signal may not have a regularly spaced sampling rate.'
     nsamp = len(data)
 
