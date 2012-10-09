@@ -1,16 +1,16 @@
-# TSYGANENKO module __init__.py
+# RAYDARN module __init__.py
 """
 *******************************
-MODULE: models.tsyganenko
+MODULE: models.raydarn
 *******************************
 
 This module contains the following functions:
 
-  trace_08
+  raydarn
   
 Written by Sebastien 20121001
     
 *******************************
 """
 
-from tsyg import *
+from raydarn import *

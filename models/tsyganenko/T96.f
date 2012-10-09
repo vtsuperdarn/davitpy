@@ -57,7 +57,7 @@ C
 C
       DATA  AM0,S0,X00,DSIG/70.,1.08,5.48,0.005/
       DATA  DELIMFX,DELIMFY /20.,10./
-C
+
        PDYN=PARMOD(1)
        DST=PARMOD(2)
        BYIMF=PARMOD(3)
@@ -180,6 +180,7 @@ C                      POSSIBILITY IS NOW THE CASE (3):
                 BY=OIMFY-QY
                 BZ=OIMFZ-QZ
          ENDIF
+!         print*, 'T96_01',X,Y,Z,BX,BY,BZ
 C
        RETURN
        END
@@ -689,10 +690,11 @@ C
         IMPLICIT REAL*8 (A-H,O-Z)
         DIMENSION F(2),BETA(2)
         COMMON /WARP/ CPSS,SPSS,DPSRR, XNEXT(3),XS,ZSWARPED,DXSX,DXSY,
-     *   DXSZ,DZSX,DZSYWARPED,DZSZ,OTHER(4),ZS  !  ZS HERE IS WITHOUT Y-Z WARP
+     *   DXSZ,DZSX,DZSYWARPED,DZSZ,OTHER(4),ZS                                              !  ZS HERE IS WITHOUT Y-Z WARP
 C
 
-      DATA D0,DELTADX,XD,XLDX /2.,0.,0.,4./  !  ACHTUNG !!  THE RC IS NOW
+      DATA D0,DELTADX,XD,XLDX /2.,0.,0.,4./  
+C                                            ACHTUNG !!  THE RC IS NOW
 C                                            COMPLETELY SYMMETRIC (DELTADX=0)
 
 C
