@@ -35,7 +35,7 @@ def globalMetaData_clear():
 
 # Signal Objects Start Here ####################################################
 class sig(object):
-  def __init__(self, dtv, data, **metadata):
+  def __init__(self, dtv, data, comment='Signal Object Created', **metadata):
     """Define a vtsd sig object.
 
     :param dtv: datetime.datetime list
@@ -51,7 +51,7 @@ class sig(object):
     defaults['fft_ylabel'] = 'FFT Spectrum Magnitude'
 
     self.metadata = dict(defaults.items() + metadata.items())
-    self.raw = sigStruct(dtv, data, parent=self)
+    self.raw = sigStruct(dtv, data, comment=comment, parent=self)
     self.active = self.raw
 
   def plot(self):
@@ -65,7 +65,7 @@ class sig(object):
     self.active.plotfft(**metadata)
 
 class sigStruct(sig):
-  def __init__(self, dtv, data, comment='Raw Data', parent=0, **metadata):
+  def __init__(self, dtv, data, comment=None, parent=0, **metadata):
     self.parent = parent
     """Define a vtsd sigStruct object.
 
