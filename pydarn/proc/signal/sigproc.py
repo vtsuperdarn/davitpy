@@ -46,21 +46,35 @@ def detrend(vtsig):
 
 
 class filter(object):
-  def __init__(self, vtsig, numtaps=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True):
-    """Define a FIR filter object
+  def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True):
+    """Filter a VT sig/sigStruct object and define a FIR filter object.
+    If only cutoff_low is defined, this is a high pass filter.
+    If only cutoff_high is defined, this is a low pass filter.
+    If both cutoff_low and cutoff_high is defined, this is a band pass filter.
+
     Uses scipy.signal.firwin()
+    High pass and band pass filters inspired by Matti Pastell's page:
+      http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Metadata keys:
+      'filter_cutoff_low' --> cutoff_low
+      'filter_cutoff_high' --> cutoff_high
+      'filter_cutoff_numtaps' --> cutoff_numtaps
 
     numtaps : int
       Length of the filter (number of coefficients, i.e. the filter
       order + 1).  `numtaps` must be even if a passband includes the
       Nyquist frequency.
 
-    cutoff : float or 1D array_like
-        Cutoff frequency of filter (expressed in the same units as `nyq`)
+    cutoff_low: float or 1D array_like
+        High pass cutoff frequency of filter (expressed in the same units as `nyq`)
         OR an array of cutoff frequencies (that is, band edges). In the
         latter case, the frequencies in `cutoff` should be positive and
         monotonically increasing between 0 and `nyq`.  The values 0 and
         `nyq` must not be included in `cutoff`.
+
+    cutoff_high: float or 1D array_like
+        Like cutoff_low, but this is the low pass cutoff frequency of the filter.
 
     width : float or None
         If `width` is not None, then assume it is the approximate width
@@ -100,9 +114,10 @@ class filter(object):
     if cutoff_high == None:
       if md.has_key('filter_cutoff_high'):
         cutoff_high = md['filter_cutoff_high']
-      else:
-        print 'WARNING: You must provide cutoff frequencies.'
-        return
+
+    if cutoff_low == None:
+      if md.has_key('filter_cutoff_low'):
+        cutoff_low = md['filter_cutoff_low']
 
     if numtaps == None:
       if md.has_key('filter_numtaps'):
@@ -111,34 +126,30 @@ class filter(object):
         print 'WARNING: You must provide numtaps.'
         return
 
-    d = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
 
-#    if   fMin == None and fMax != None:    #Low pass
-#      d =   sp.signal.firwin(numtaps, cutoff = fMax, window = window)
-#    elif fMin != None and fMax == None:    #High pass
-#      d = - sp.signal.firwin(numtaps, cutoff = fMin, window = window)
-#      d[numtaps/2] = d[numtaps/2] + 1
-#    elif fMin != None and fMax != None:    #Band pass
-#      #Lowpass filter
-#      a =   sp.signal.firwin(numtaps, cutoff = fMax, window = window)
-#      #Highpass filter with spectral inversion
-#      b = - sp.signal.firwin(numtaps, cutoff = fMin, window = window); b[n/2] = b[n/2] + 1
-#      #Combine into a bandpass filter
-#      d = - (a+b)
-#      d[numtaps/2] = d[numtaps/2] + 1
-#    else:
-#      print "WARNING!! You must define cutoff frequencies!"
-#      return
+    if   cutoff_high != None:    #Low pass
+      lp = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+      d = lp
+
+    if   cutoff_low != None:    #High pass
+      hp = -sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_low, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+      hp[numtaps/2] = hp[numtaps/2] + 1
+      d = hp
+
+    if cutoff_high != None and cutoff_low != None:
+      d = -(lp+hp)
+      d[numtaps/2] = d[numtaps/2] + 1
+
+    if cutoff_high == None and cutoff_low == None:
+      print "WARNING!! You must define cutoff frequencies!"
+      return
     
     self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:',str(cutoff_high),'Hz'])
     self.nyq = nyq
     self.ir = d
 
     self.filter(sigObj)
-  #These functions are modified from Matti Pastell's Page:
-  # http://mpastell.com/2010/01/18/fir-with-scipy/
 
-  #Plot frequency and phase response
 
   def __str__(self):
     return self.comment
