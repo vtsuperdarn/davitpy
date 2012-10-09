@@ -15,5 +15,5 @@ Written by Sebastien 20121001
 *******************************
 """
 
-from tsygFort import *
+import tsygFort
 from trace import *
