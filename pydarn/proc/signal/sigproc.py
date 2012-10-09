@@ -64,34 +64,46 @@ def detrend(vtsig):
     setattr(vtsig,'active',newsigobj)
 
 
-class bandpass(object):
-  def __init__(self,nsamp,f_c,sampRate,window='blackmanharris'):
-    """Define a bandpass filter object
+class filter(object):
+  def __init__(self,nsamp,sampRate,fMin=None,fMax=None,window='blackmanharris'):
+    """Define a FIR filter object
+    If only fMin is defined, this is a high pass filter.
+    If only fMax is defined, this is a band pass filter.
+    If both fMin and fMax are defined, this is a bandpass filter.
 
     :param nsamp: number of samples the filter will have
-    :param f_c: Two-element list of cutoff frequencies
+    :param fMin: Lower cutoff frequency
+    :param fMax: Upper cutoff frequency
     :param sampRate: Sample rate of filter.  This should match the sample rate of the data being filtered.
     :param window: Type of window the filter should use.  See scipy.signal.firwin() for options.
     :returns: sig object
     """
-    f_c = np.array(f_c)
     f_max = 1/(2.*sampRate)
-    f_cn = f_c / f_max
-
     n = nsamp
 
-    #Lowpass filter
-    a = sp.signal.firwin(n, cutoff = f_cn[0], window = window)
-    #Highpass filter with spectral inversion
-    b = - sp.signal.firwin(n, cutoff = f_cn[1], window = window); b[n/2] = b[n/2] + 1
-    #Combine into a bandpass filter
-    d = - (a+b); d[n/2] = d[n/2] + 1
+    if   fMin == None and fMax != None:    #Low pass
+      d =   sp.signal.firwin(n, cutoff = fMax, window = window)
+    elif fMin != None and fMax == None:    #High pass
+      d = - sp.signal.firwin(n, cutoff = fMin, window = window)
+      d[n/2] = d[n/2] + 1
+    elif fMin != None and fMax != None:    #Band pass
+      #Lowpass filter
+      a =   sp.signal.firwin(n, cutoff = fMax, window = window)
+      #Highpass filter with spectral inversion
+      b = - sp.signal.firwin(n, cutoff = fMin, window = window); b[n/2] = b[n/2] + 1
+      #Combine into a bandpass filter
+      d = - (a+b)
+      d[n/2] = d[n/2] + 1
+    else:
+      print "WARNING!! You must define cutoff frequencies!"
+      return
     
-    self.f_c = f_c
+    self.fMin = fMin
+    self.fMax = fMax
     self.sampRate = sampRate
     self.window = window
 
-    self.comment = ' '.join(['Filter:',window+',','sampRate:',str(sampRate),'sec,','Cuttoffs:',str(f_c[0])+',', str(f_c[1]),'Hz'])
+    self.comment = ' '.join(['Filter:',window+',','sampRate:',str(sampRate),'sec,','Cuttoffs:',str(fMin)+',', str(fMax),'Hz'])
     self.ir = d
   #These functions are modified from Matti Pastell's Page:
   # http://mpastell.com/2010/01/18/fir-with-scipy/
