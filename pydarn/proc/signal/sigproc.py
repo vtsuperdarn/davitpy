@@ -46,7 +46,7 @@ def detrend(vtsig):
 
 
 class filter(object):
-  def __init__(self, vtsig, numtaps=None, cutoff=None, width=None, window='blackman', pass_zero=True, scale=True):
+  def __init__(self, vtsig, numtaps=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True):
     """Define a FIR filter object
     Uses scipy.signal.firwin()
 
@@ -97,9 +97,9 @@ class filter(object):
 
     #Get metadata for cutoffs and numtaps.
     md = sigObj.getAllMetaData()
-    if cutoff == None:
-      if md.has_key('filter_cutoff'):
-        cutoff = md['filter_cutoff']
+    if cutoff_high == None:
+      if md.has_key('filter_cutoff_high'):
+        cutoff_high = md['filter_cutoff_high']
       else:
         print 'WARNING: You must provide cutoff frequencies.'
         return
@@ -111,7 +111,7 @@ class filter(object):
         print 'WARNING: You must provide numtaps.'
         return
 
-    d = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+    d = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
 
 #    if   fMin == None and fMax != None:    #Low pass
 #      d =   sp.signal.firwin(numtaps, cutoff = fMax, window = window)
@@ -130,7 +130,7 @@ class filter(object):
 #      print "WARNING!! You must define cutoff frequencies!"
 #      return
     
-    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:',str(cutoff),'Hz'])
+    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:',str(cutoff_high),'Hz'])
     self.nyq = nyq
     self.ir = d
 
