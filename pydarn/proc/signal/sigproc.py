@@ -6,26 +6,7 @@ import numpy as np
 import scipy as sp
 import scipy.signal
 
-
-def prepForProc(vtsig):
-    """Determines if the called signal is a vt sig or a vt sigStruct object. 
-    If it is a vt sig object, the active vtsig.active sigStruct object is returned.
-    The signal is truncated to its current valid time limits if necessary.
-    This also sets the called sigStruct to be the active sigStruct.
-    :returns sigobj: vt sigStruct object
-    """
-
-    if hasattr(vtsig,'data'):
-      sigobj = vtsig
-      vtsid = sigobj.parent
-    else:
-      sigobj = vtsig.active
-    
-    #Remove times that are not valid.
-    sigobj = sigobj.truncate()
-    sigobj.setActive()
-
-    return sigobj
+from signalCommon import *
 
 def detrend(vtsig):
     """Linearly detrend a vtsig object.
@@ -65,8 +46,7 @@ def detrend(vtsig):
 
 
 class filter(object):
-  #def __init__(self,numtaps,sampRate,fMin=None,fMax=None,window='blackmanharris'):
-  def __init__(self,numtaps, cutoff, width=None, window='blackman', pass_zero=True, scale=True, nyq=1.0):
+  def __init__(self, vtsig, numtaps=None, cutoff=None, width=None, window='blackman', pass_zero=True, scale=True):
     """Define a FIR filter object
     Uses scipy.signal.firwin()
 
@@ -111,8 +91,27 @@ class filter(object):
 
     :returns: filter object
     """
+    
+    sigObj = prepForProc(vtsig)
+    nyq = sigObj.nyquistFrequency()
 
-    d = sp.signal.firwin(numtaps, cutoff, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+    #Get metadata for cutoffs and numtaps.
+    md = sigObj.getAllMetaData()
+    if cutoff == None:
+      if md.has_key('filter_cutoff'):
+        cutoff = md['filter_cutoff']
+      else:
+        print 'WARNING: You must provide cutoff frequencies.'
+        return
+
+    if numtaps == None:
+      if md.has_key('filter_numtaps'):
+        numtaps = md['filter_numtaps']
+      else:
+        print 'WARNING: You must provide numtaps.'
+        return
+
+    d = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
 
 #    if   fMin == None and fMax != None:    #Low pass
 #      d =   sp.signal.firwin(numtaps, cutoff = fMax, window = window)
@@ -131,14 +130,11 @@ class filter(object):
 #      print "WARNING!! You must define cutoff frequencies!"
 #      return
     
-    #self.fMin = fMin
-    #self.fMax = fMax
-    #self.sampRate = sampRate
-    #self.window = window
-
     self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:',str(cutoff),'Hz'])
     self.nyq = nyq
     self.ir = d
+
+    self.filter(sigObj)
   #These functions are modified from Matti Pastell's Page:
   # http://mpastell.com/2010/01/18/fir-with-scipy/
 

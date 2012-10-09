@@ -118,10 +118,19 @@ class sigStruct(sig):
     """
     self.parent.active = self
 
-  def sampRate(self,dtv=None):
-    """Calculate the sample rate parameters of a vt sigStruct signal for the period in which the FFT is valid.
-    :param validTimes: Two-element list of datetime.datetime.  The sample rate is calculated between these times.
-    :returns: sampRate: sample rate of signal in seconds.  This is NAN if more than one unique timestep in sig.
+  def nyquistFrequency(self,dtv=None):
+    """Calculate the Nyquist frequency of a vt sigStruct signal.
+    :param dtv: List of datetime.datetime to use instead of self.dtv.
+    :returns: nyq: Nyquist frequency of the signal in Hz.
+    """
+    dt  = self.samplePeriod(dtv=dtv)
+    nyq = 1. / (2*dt)
+    return nyq
+
+  def samplePeriod(self,dtv=None):
+    """Calculate the sample period of a vt sigStruct signal.
+    :param dtv: List of datetime.datetime to use instead of self.dtv.
+    :returns: samplePeriod: sample period of signal in seconds.
     """
     
     if dtv == None: dtv = self.dtv
@@ -130,7 +139,7 @@ class sigStruct(sig):
     self.diffs = diffs
 
     if len(diffs) == 1:
-      sampRate = diffs[0].total_seconds()
+      samplePeriod = diffs[0].total_seconds()
     else:
       maxDt = np.max(diffs) - np.min(diffs)
       maxDt = maxDt.total_seconds()
@@ -142,10 +151,10 @@ class sigStruct(sig):
       print warn + ':'
       print '   Date time vector is not regularly sampled!'
       print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
-      print '   Using average sampling rate of ' + str(avg) + ' sec.'
-      sampRate = avg
+      print '   Using average sampling period of ' + str(avg) + ' sec.'
+      samplePeriod = avg
 
-    return sampRate
+    return samplePeriod
 
   def updateValidTimes(self,times):
     """Update the metadata block times that a signal is valid for.
@@ -306,16 +315,14 @@ class sigStruct(sig):
     self.preFftDtv = dtv
     self.preFftData = data
 
-    sampRate = self.sampRate(dtv=dtv)
-    assert sampRate != np.NAN, 'FFT requires a valid sample rate. Signal may not have a regularly spaced sampling rate.'
     nsamp = len(data)
 
-#Nyquist Frequency
-    f_max = 1/(2.*sampRate)
+    #Nyquist Frequency
+    nyq = self.nyquistFrequency(dtv)
 
     freq_ax = np.arange(nsamp,dtype='f8')
     freq_ax = (freq_ax / max(freq_ax)) - 0.5
-    freq_ax = freq_ax * 2. * f_max
+    freq_ax = freq_ax * 2. * nyq
 
     window  = np.hanning(nsamp)
     signal  = data*window

@@ -4,6 +4,8 @@ from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
 
+from signalCommon import *
+
 class oplot(object):
   def __init__(self,sigList, **metadata):
     """Plots multiple vt sig/vt sigStruct objects on the same plot.
