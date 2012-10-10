@@ -13,3 +13,5 @@ bin/profile_davitpy/security/kernel*
 *.prof
 *.log
 *.sublime-workspace
+*.xcworkspace
+*.orig
