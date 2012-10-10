@@ -14,6 +14,7 @@ import sigio
 from signal import *
 from sigproc import *
 from compare import *
+from xcor import *
 
 
 # *************************************************************

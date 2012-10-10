@@ -80,7 +80,7 @@ class radData(dict):
 
 		assert(isinstance(bmnum,int)),"bmnum must be integer"
 		
-		myData = pydarn.io.radData()
+		myData = pydarn.sdio.radData()
 		
 		for k in self.iterkeys():
 			if(self[k]['prm']['bmnum'] == bmnum):
