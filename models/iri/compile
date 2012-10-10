@@ -1,40 +1,124 @@
+f2py irisub.for -m iri -h iri.pyf
+gfortran -w -O2 -fbacktrace -fno-automatic -fPIC -c *.for
+f2py --f77flags="-w" -c iri.pyf *.for
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+build_src
+building extension "iri" sources
+creating /tmp/tmpXloWdO
+creating /tmp/tmpXloWdO/src.linux-x86_64-2.7
+f2py options: []
+f2py: iri.pyf
 Reading fortran codes...
-	Reading file 'irisub.for' (format:fix,strict)
+	Reading file 'iri.pyf' (format:free)
 Post-processing...
 	Block: iri
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "jmag".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "alati".
-{}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "along".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "iyyyy".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "mmdd".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "dhour".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "heibeg".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "heiend".
-{'attrspec': ['intent(in)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "heistp".
-{'attrspec': ['dimension(20,1000)', 'intent(out)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "outf".
-{'attrspec': ['dimension(100)', 'intent(in,out)']}
-In: :iri:irisub.for:iri_sub
-vars2fortran: No typespec for argument "oarr".
 			Block: iri_sub
 Post-processing (stage 2)...
-Saving signatures to file "./iri.pyf"
+Building modules...
+	Building module "iri"...
+		Constructing wrapper function "iri_sub"...
+		  outf,oarr = iri_sub(jf,jmag,alati,along,iyyyy,mmdd,dhour,heibeg,heiend,heistp,oarr)
+		Constructing COMMON block support for "block7"...
+		  d1,xkk,fp30,fp3u,fp1,fp2
+		Constructing COMMON block support for "block6"...
+		  hmd,nmd,hdx
+		Constructing COMMON block support for "block5"...
+		  enight,e
+		Constructing COMMON block support for "block4"...
+		  hme,nme,hef
+		Constructing COMMON block support for "const"...
+		  umr
+		Constructing COMMON block support for "block2"...
+		  b0,b1,c1
+		Constructing COMMON block support for "block1"...
+		  hmf2,nmf2,hmf1,f1reg
+		Constructing COMMON block support for "block8"...
+		  hs,tnhs,xsm,mm,dti,mxsm
+		Constructing COMMON block support for "argexp"...
+		  argmax
+		Constructing COMMON block support for "iounit"...
+		  konsol
+		Constructing COMMON block support for "blo11"...
+		  b2top,tc3,itopn,alg10,hcor1
+		Constructing COMMON block support for "blo10"...
+		  beta,eta,delta,zeta
+		Constructing COMMON block support for "const1"...
+		  humr,dumr
+		Constructing COMMON block support for "blote"...
+		  ahh,ate1,stte,dte
+		Constructing COMMON block support for "const2"...
+		  icalls,nmono,iyearo,idaynro,rzino,igino,ut0
+		Constructing COMMON block support for "block3"...
+		  hz,t,hst
+		Constructing COMMON block support for "qtop"...
+		  y05,h05top,qf,xnetop,xm3000,hhalf,tau
+		Constructing COMMON block support for "findrlat"...
+		  flon,ryear
+	Wrote C/API module "iri" to file "/tmp/tmpXloWdO/src.linux-x86_64-2.7/irimodule.c"
+	Fortran 77 wrappers are saved to "/tmp/tmpXloWdO/src.linux-x86_64-2.7/iri-f2pywrappers.f"
+  adding '/tmp/tmpXloWdO/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding '/tmp/tmpXloWdO/src.linux-x86_64-2.7' to include_dirs.
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpXloWdO/src.linux-x86_64-2.7
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpXloWdO/src.linux-x86_64-2.7
+  adding '/tmp/tmpXloWdO/src.linux-x86_64-2.7/iri-f2pywrappers.f' to sources.
+build_src: building npy-pkg config files
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize GnuFCompiler
+Could not locate executable g77
+Could not locate executable f77
+customize IntelFCompiler
+Could not locate executable ifort
+Could not locate executable ifc
+customize LaheyFCompiler
+Could not locate executable lf95
+customize PGroupFCompiler
+Could not locate executable pgf90
+Could not locate executable pgf77
+customize AbsoftFCompiler
+Could not locate executable f90
+customize NAGFCompiler
+Found executable /usr/bin/f95
+customize VastFCompiler
+customize CompaqFCompiler
+Could not locate executable fort
+customize IntelItaniumFCompiler
+Could not locate executable efort
+Could not locate executable efc
+customize IntelEM64TFCompiler
+customize Gnu95FCompiler
+Found executable /usr/bin/gfortran
+customize Gnu95FCompiler
+customize Gnu95FCompiler using build_ext
+building 'iri' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpXloWdO/tmp
+creating /tmp/tmpXloWdO/tmp/tmpXloWdO
+creating /tmp/tmpXloWdO/tmp/tmpXloWdO/src.linux-x86_64-2.7
+compile options: '-I/tmp/tmpXloWdO/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+gcc: /tmp/tmpXloWdO/src.linux-x86_64-2.7/irimodule.c
+gcc: /tmp/tmpXloWdO/src.linux-x86_64-2.7/fortranobject.c
+compiling Fortran sources
+Fortran f77 compiler: /usr/bin/gfortran -w -fPIC -O3 -funroll-loops
+Fortran f90 compiler: /usr/bin/gfortran -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran fix compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+compile options: '-I/tmp/tmpXloWdO/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+gfortran:f77: cira.for
+gfortran:f77: igrf.for
+gfortran:f77: iridreg.for
+gfortran:f77: iriflip.for
+gfortran:f77: irifun.for
+gfortran:f77: irisub.for
+gfortran:f77: iritec.for
+gfortran:f77: /tmp/tmpXloWdO/src.linux-x86_64-2.7/iri-f2pywrappers.f
+/usr/bin/gfortran -Wall -Wall -shared /tmp/tmpXloWdO/tmp/tmpXloWdO/src.linux-x86_64-2.7/irimodule.o /tmp/tmpXloWdO/tmp/tmpXloWdO/src.linux-x86_64-2.7/fortranobject.o /tmp/tmpXloWdO/cira.o /tmp/tmpXloWdO/igrf.o /tmp/tmpXloWdO/iridreg.o /tmp/tmpXloWdO/iriflip.o /tmp/tmpXloWdO/irifun.o /tmp/tmpXloWdO/irisub.o /tmp/tmpXloWdO/iritec.o /tmp/tmpXloWdO/tmp/tmpXloWdO/src.linux-x86_64-2.7/iri-f2pywrappers.o -lgfortran -o ./iri.so
+running scons
+Removing build directory /tmp/tmpXloWdO

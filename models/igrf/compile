@@ -1,61 +1,4 @@
 f2py igrf11.f90 -m igrf -h igrf11.pyf
-Reading fortran codes...
-	Reading file 'igrf11.f90' (format:fix)
-Line #88 in igrf11.f90:"      intent(out),depend(totpts) :: aLat,aLon,aD,aS,aH,aX,aY,aZ,aF"
-	analyzeline: cannot handle multiple attributes without type specification. Ignoring 'depend(totpts)'.
-Post-processing...
-	Block: igrf
-			Block: igrf11
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:dmddec
-vars2fortran: No typespec for argument "i".
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:dmddec
-vars2fortran: No typespec for argument "m".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:dmddec
-vars2fortran: No typespec for argument "x".
-			Block: dmddec
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:ddecdm
-vars2fortran: No typespec for argument "x".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:ddecdm
-vars2fortran: No typespec for argument "i".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:ddecdm
-vars2fortran: No typespec for argument "m".
-			Block: ddecdm
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "isv".
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "itype".
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "alt".
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "colat".
-{'attrspec': ['intent(in)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "elong".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "x".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "y".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "z".
-{'attrspec': ['intent(out)']}
-In: :igrf:igrf11.f90:igrf11syn
-vars2fortran: No typespec for argument "f".
-			Block: igrf11syn
-Post-processing (stage 2)...
-Saving signatures to file "./igrf11.pyf"
 f2py -c igrf11.pyf igrf11.f90
 running build
 running config_cc
@@ -65,8 +8,8 @@ unifing config_fc, config, build_clib, build_ext, build commands --fcompiler opt
 running build_src
 build_src
 building extension "igrf" sources
-creating /tmp/tmpidRwMn
-creating /tmp/tmpidRwMn/src.linux-x86_64-2.7
+creating /tmp/tmpdA_oQK
+creating /tmp/tmpdA_oQK/src.linux-x86_64-2.7
 f2py options: []
 f2py: igrf11.pyf
 Reading fortran codes...
@@ -88,11 +31,11 @@ Building modules...
 		  i,m = ddecdm(x)
 		Constructing wrapper function "igrf11syn"...
 		  x,y,z,f = igrf11syn(isv,date,itype,alt,colat,elong)
-	Wrote C/API module "igrf" to file "/tmp/tmpidRwMn/src.linux-x86_64-2.7/igrfmodule.c"
-  adding '/tmp/tmpidRwMn/src.linux-x86_64-2.7/fortranobject.c' to sources.
-  adding '/tmp/tmpidRwMn/src.linux-x86_64-2.7' to include_dirs.
-copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpidRwMn/src.linux-x86_64-2.7
-copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpidRwMn/src.linux-x86_64-2.7
+	Wrote C/API module "igrf" to file "/tmp/tmpdA_oQK/src.linux-x86_64-2.7/igrfmodule.c"
+  adding '/tmp/tmpdA_oQK/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding '/tmp/tmpdA_oQK/src.linux-x86_64-2.7' to include_dirs.
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpdA_oQK/src.linux-x86_64-2.7
+copying /usr/lib/python2.7/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpdA_oQK/src.linux-x86_64-2.7
 build_src: building npy-pkg config files
 running build_ext
 customize UnixCCompiler
@@ -127,2126 +70,2126 @@ building 'igrf' extension
 compiling C sources
 C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
 
-creating /tmp/tmpidRwMn/tmp
-creating /tmp/tmpidRwMn/tmp/tmpidRwMn
-creating /tmp/tmpidRwMn/tmp/tmpidRwMn/src.linux-x86_64-2.7
-compile options: '-I/tmp/tmpidRwMn/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
-gcc: /tmp/tmpidRwMn/src.linux-x86_64-2.7/igrfmodule.c
-gcc: /tmp/tmpidRwMn/src.linux-x86_64-2.7/fortranobject.c
+creating /tmp/tmpdA_oQK/tmp
+creating /tmp/tmpdA_oQK/tmp/tmpdA_oQK
+creating /tmp/tmpdA_oQK/tmp/tmpdA_oQK/src.linux-x86_64-2.7
+compile options: '-I/tmp/tmpdA_oQK/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+gcc: /tmp/tmpdA_oQK/src.linux-x86_64-2.7/igrfmodule.c
+gcc: /tmp/tmpdA_oQK/src.linux-x86_64-2.7/fortranobject.c
 compiling Fortran sources
 Fortran f77 compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -fPIC -O3 -funroll-loops
 Fortran f90 compiler: /usr/bin/gfortran -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
 Fortran fix compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
-compile options: '-I/tmp/tmpidRwMn/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+compile options: '-I/tmp/tmpdA_oQK/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
 gfortran:fix: igrf11.f90
-igrf11.f90:605.72:
+igrf11.f90:606.72:
 
       data g0/ -31543.,-2298., 5922., -677., 2905.,-1061.,  924., 1121.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:606.72:
+igrf11.f90:607.72:
 
      1           1022.,-1469., -330., 1256.,    3.,  572.,  523.,  876.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:607.72:
+igrf11.f90:608.72:
 
      2            628.,  195.,  660.,  -69., -361., -210.,  134.,  -75.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:608.72:
+igrf11.f90:609.72:
 
      3           -184.,  328., -210.,  264.,   53.,    5.,  -33.,  -86.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:609.72:
+igrf11.f90:610.72:
 
      4           -124.,  -16.,    3.,   63.,   61.,   -9.,  -11.,   83.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:610.72:
+igrf11.f90:611.72:
 
      5           -217.,    2.,  -58.,  -35.,   59.,   36.,  -90.,  -69.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:611.72:
+igrf11.f90:612.72:
 
      6             70.,  -55.,  -45.,    0.,  -13.,   34.,  -10.,  -41.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:612.72:
+igrf11.f90:613.72:
 
      7             -1.,  -21.,   28.,   18.,  -12.,    6.,  -22.,   11.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:613.72:
+igrf11.f90:614.72:
 
      8              8.,    8.,   -4.,  -14.,   -9.,    7.,    1.,  -13.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:614.72:
+igrf11.f90:615.72:
 
      9              2.,    5.,   -9.,   16.,    5.,   -5.,    8.,  -18.,
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:615.72:
-
-     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
-                                                                        1
-Warning: Line truncated at (1)
 igrf11.f90:616.72:
 
-     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,   -1.,
+     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:617.72:
 
-     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,   -1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:618.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:619.72:
 
-     e              0.,   -2.,    2.,    4.,    2.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:620.72:
 
-      data g1/ -31464.,-2298., 5909., -728., 2928.,-1086., 1041., 1065.,
+     e              0.,   -2.,    2.,    4.,    2.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:621.72:
 
-     1           1037.,-1494., -357., 1239.,   34.,  635.,  480.,  880.,
+      data g1/ -31464.,-2298., 5909., -728., 2928.,-1086., 1041., 1065.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:622.72:
 
-     2            643.,  203.,  653.,  -77., -380., -201.,  146.,  -65.,
+     1           1037.,-1494., -357., 1239.,   34.,  635.,  480.,  880.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:623.72:
 
-     3           -192.,  328., -193.,  259.,   56.,   -1.,  -32.,  -93.,
+     2            643.,  203.,  653.,  -77., -380., -201.,  146.,  -65.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:624.72:
 
-     4           -125.,  -26.,   11.,   62.,   60.,   -7.,  -11.,   86.,
+     3           -192.,  328., -193.,  259.,   56.,   -1.,  -32.,  -93.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:625.72:
 
-     5           -221.,    4.,  -57.,  -32.,   57.,   32.,  -92.,  -67.,
+     4           -125.,  -26.,   11.,   62.,   60.,   -7.,  -11.,   86.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:626.72:
 
-     6             70.,  -54.,  -46.,    0.,  -14.,   33.,  -11.,  -41.,
+     5           -221.,    4.,  -57.,  -32.,   57.,   32.,  -92.,  -67.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:627.72:
 
-     7              0.,  -20.,   28.,   18.,  -12.,    6.,  -22.,   11.,
+     6             70.,  -54.,  -46.,    0.,  -14.,   33.,  -11.,  -41.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:628.72:
 
-     8              8.,    8.,   -4.,  -15.,   -9.,    7.,    1.,  -13.,
+     7              0.,  -20.,   28.,   18.,  -12.,    6.,  -22.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:629.72:
 
-     9              2.,    5.,   -8.,   16.,    5.,   -5.,    8.,  -18.,
+     8              8.,    8.,   -4.,  -15.,   -9.,    7.,    1.,  -13.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:630.72:
 
-     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
+     9              2.,    5.,   -8.,   16.,    5.,   -5.,    8.,  -18.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:631.72:
 
-     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,    0.,
+     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:632.72:
 
-     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:633.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:634.72:
 
-     e              0.,   -2.,    2.,    4.,    2.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:635.72:
 
-      data g2/ -31354.,-2297., 5898., -769., 2948.,-1128., 1176., 1000.,
+     e              0.,   -2.,    2.,    4.,    2.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:636.72:
 
-     1           1058.,-1524., -389., 1223.,   62.,  705.,  425.,  884.,
+      data g2/ -31354.,-2297., 5898., -769., 2948.,-1128., 1176., 1000.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:637.72:
 
-     2            660.,  211.,  644.,  -90., -400., -189.,  160.,  -55.,
+     1           1058.,-1524., -389., 1223.,   62.,  705.,  425.,  884.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:638.72:
 
-     3           -201.,  327., -172.,  253.,   57.,   -9.,  -33., -102.,
+     2            660.,  211.,  644.,  -90., -400., -189.,  160.,  -55.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:639.72:
 
-     4           -126.,  -38.,   21.,   62.,   58.,   -5.,  -11.,   89.,
+     3           -201.,  327., -172.,  253.,   57.,   -9.,  -33., -102.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:640.72:
 
-     5           -224.,    5.,  -54.,  -29.,   54.,   28.,  -95.,  -65.,
+     4           -126.,  -38.,   21.,   62.,   58.,   -5.,  -11.,   89.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:641.72:
 
-     6             71.,  -54.,  -47.,    1.,  -14.,   32.,  -12.,  -40.,
+     5           -224.,    5.,  -54.,  -29.,   54.,   28.,  -95.,  -65.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:642.72:
 
-     7              1.,  -19.,   28.,   18.,  -13.,    6.,  -22.,   11.,
+     6             71.,  -54.,  -47.,    1.,  -14.,   32.,  -12.,  -40.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:643.72:
 
-     8              8.,    8.,   -4.,  -15.,   -9.,    6.,    1.,  -13.,
+     7              1.,  -19.,   28.,   18.,  -13.,    6.,  -22.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:644.72:
 
-     9              2.,    5.,   -8.,   16.,    5.,   -5.,    8.,  -18.,
+     8              8.,    8.,   -4.,  -15.,   -9.,    6.,    1.,  -13.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:645.72:
 
-     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
+     9              2.,    5.,   -8.,   16.,    5.,   -5.,    8.,  -18.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:646.72:
 
-     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,    0.,
+     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:647.72:
 
-     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:648.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:649.72:
 
-     e              0.,   -2.,    2.,    4.,    2.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:650.72:
 
-      data g3/ -31212.,-2306., 5875., -802., 2956.,-1191., 1309.,  917.,
+     e              0.,   -2.,    2.,    4.,    2.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:651.72:
 
-     1           1084.,-1559., -421., 1212.,   84.,  778.,  360.,  887.,
+      data g3/ -31212.,-2306., 5875., -802., 2956.,-1191., 1309.,  917.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:652.72:
 
-     2            678.,  218.,  631., -109., -416., -173.,  178.,  -51.,
+     1           1084.,-1559., -421., 1212.,   84.,  778.,  360.,  887.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:653.72:
 
-     3           -211.,  327., -148.,  245.,   58.,  -16.,  -34., -111.,
+     2            678.,  218.,  631., -109., -416., -173.,  178.,  -51.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:654.72:
 
-     4           -126.,  -51.,   32.,   61.,   57.,   -2.,  -10.,   93.,
+     3           -211.,  327., -148.,  245.,   58.,  -16.,  -34., -111.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:655.72:
 
-     5           -228.,    8.,  -51.,  -26.,   49.,   23.,  -98.,  -62.,
+     4           -126.,  -51.,   32.,   61.,   57.,   -2.,  -10.,   93.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:656.72:
 
-     6             72.,  -54.,  -48.,    2.,  -14.,   31.,  -12.,  -38.,
+     5           -228.,    8.,  -51.,  -26.,   49.,   23.,  -98.,  -62.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:657.72:
 
-     7              2.,  -18.,   28.,   19.,  -15.,    6.,  -22.,   11.,
+     6             72.,  -54.,  -48.,    2.,  -14.,   31.,  -12.,  -38.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:658.72:
 
-     8              8.,    8.,   -4.,  -15.,   -9.,    6.,    2.,  -13.,
+     7              2.,  -18.,   28.,   19.,  -15.,    6.,  -22.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:659.72:
 
-     9              3.,    5.,   -8.,   16.,    6.,   -5.,    8.,  -18.,
+     8              8.,    8.,   -4.,  -15.,   -9.,    6.,    2.,  -13.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:660.72:
 
-     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
+     9              3.,    5.,   -8.,   16.,    6.,   -5.,    8.,  -18.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:661.72:
 
-     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,    0.,
+     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:662.72:
 
-     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    8.,    2.,   10.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:663.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:664.72:
 
-     e              0.,   -2.,    1.,    4.,    2.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:665.72:
 
-      data g4/ -31060.,-2317., 5845., -839., 2959.,-1259., 1407.,  823.,
+     e              0.,   -2.,    1.,    4.,    2.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:666.72:
 
-     1           1111.,-1600., -445., 1205.,  103.,  839.,  293.,  889.,
+      data g4/ -31060.,-2317., 5845., -839., 2959.,-1259., 1407.,  823.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:667.72:
 
-     2            695.,  220.,  616., -134., -424., -153.,  199.,  -57.,
+     1           1111.,-1600., -445., 1205.,  103.,  839.,  293.,  889.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:668.72:
 
-     3           -221.,  326., -122.,  236.,   58.,  -23.,  -38., -119.,
+     2            695.,  220.,  616., -134., -424., -153.,  199.,  -57.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:669.72:
 
-     4           -125.,  -62.,   43.,   61.,   55.,    0.,  -10.,   96.,
+     3           -221.,  326., -122.,  236.,   58.,  -23.,  -38., -119.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:670.72:
 
-     5           -233.,   11.,  -46.,  -22.,   44.,   18., -101.,  -57.,
+     4           -125.,  -62.,   43.,   61.,   55.,    0.,  -10.,   96.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:671.72:
 
-     6             73.,  -54.,  -49.,    2.,  -14.,   29.,  -13.,  -37.,
+     5           -233.,   11.,  -46.,  -22.,   44.,   18., -101.,  -57.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:672.72:
 
-     7              4.,  -16.,   28.,   19.,  -16.,    6.,  -22.,   11.,
+     6             73.,  -54.,  -49.,    2.,  -14.,   29.,  -13.,  -37.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:673.72:
 
-     8              7.,    8.,   -3.,  -15.,   -9.,    6.,    2.,  -14.,
+     7              4.,  -16.,   28.,   19.,  -16.,    6.,  -22.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:674.72:
 
-     9              4.,    5.,   -7.,   17.,    6.,   -5.,    8.,  -19.,
+     8              7.,    8.,   -3.,  -15.,   -9.,    6.,    2.,  -14.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:675.72:
 
-     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
+     9              4.,    5.,   -7.,   17.,    6.,   -5.,    8.,  -19.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:676.72:
 
-     b             -3.,    1.,   -2.,   -2.,    9.,    2.,   10.,    0.,
+     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:677.72:
 
-     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    9.,    2.,   10.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:678.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:679.72:
 
-     e              0.,   -2.,    1.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:680.72:
 
-      data g5/ -30926.,-2318., 5817., -893., 2969.,-1334., 1471.,  728.,
+     e              0.,   -2.,    1.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:681.72:
 
-     1           1140.,-1645., -462., 1202.,  119.,  881.,  229.,  891.,
+      data g5/ -30926.,-2318., 5817., -893., 2969.,-1334., 1471.,  728.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:682.72:
 
-     2            711.,  216.,  601., -163., -426., -130.,  217.,  -70.,
+     1           1140.,-1645., -462., 1202.,  119.,  881.,  229.,  891.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:683.72:
 
-     3           -230.,  326.,  -96.,  226.,   58.,  -28.,  -44., -125.,
+     2            711.,  216.,  601., -163., -426., -130.,  217.,  -70.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:684.72:
 
-     4           -122.,  -69.,   51.,   61.,   54.,    3.,   -9.,   99.,
+     3           -230.,  326.,  -96.,  226.,   58.,  -28.,  -44., -125.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:685.72:
 
-     5           -238.,   14.,  -40.,  -18.,   39.,   13., -103.,  -52.,
+     4           -122.,  -69.,   51.,   61.,   54.,    3.,   -9.,   99.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:686.72:
 
-     6             73.,  -54.,  -50.,    3.,  -14.,   27.,  -14.,  -35.,
+     5           -238.,   14.,  -40.,  -18.,   39.,   13., -103.,  -52.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:687.72:
 
-     7              5.,  -14.,   29.,   19.,  -17.,    6.,  -21.,   11.,
+     6             73.,  -54.,  -50.,    3.,  -14.,   27.,  -14.,  -35.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:688.72:
 
-     8              7.,    8.,   -3.,  -15.,   -9.,    6.,    2.,  -14.,
+     7              5.,  -14.,   29.,   19.,  -17.,    6.,  -21.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:689.72:
 
-     9              4.,    5.,   -7.,   17.,    7.,   -5.,    8.,  -19.,
+     8              7.,    8.,   -3.,  -15.,   -9.,    6.,    2.,  -14.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:690.72:
 
-     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
+     9              4.,    5.,   -7.,   17.,    7.,   -5.,    8.,  -19.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:691.72:
 
-     b             -3.,    1.,   -2.,   -2.,    9.,    2.,   10.,    0.,
+     a              8.,   10.,  -20.,    1.,   14.,  -11.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:692.72:
 
-     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    9.,    2.,   10.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:693.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:694.72:
 
-     e              0.,   -2.,    1.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:695.72:
 
-      data g6/ -30805.,-2316., 5808., -951., 2980.,-1424., 1517.,  644.,
+     e              0.,   -2.,    1.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:696.72:
 
-     1           1172.,-1692., -480., 1205.,  133.,  907.,  166.,  896.,
+      data g6/ -30805.,-2316., 5808., -951., 2980.,-1424., 1517.,  644.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:697.72:
 
-     2            727.,  205.,  584., -195., -422., -109.,  234.,  -90.,
+     1           1172.,-1692., -480., 1205.,  133.,  907.,  166.,  896.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:698.72:
 
-     3           -237.,  327.,  -72.,  218.,   60.,  -32.,  -53., -131.,
+     2            727.,  205.,  584., -195., -422., -109.,  234.,  -90.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:699.72:
 
-     4           -118.,  -74.,   58.,   60.,   53.,    4.,   -9.,  102.,
+     3           -237.,  327.,  -72.,  218.,   60.,  -32.,  -53., -131.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:700.72:
 
-     5           -242.,   19.,  -32.,  -16.,   32.,    8., -104.,  -46.,
+     4           -118.,  -74.,   58.,   60.,   53.,    4.,   -9.,  102.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:701.72:
 
-     6             74.,  -54.,  -51.,    4.,  -15.,   25.,  -14.,  -34.,
+     5           -242.,   19.,  -32.,  -16.,   32.,    8., -104.,  -46.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:702.72:
 
-     7              6.,  -12.,   29.,   18.,  -18.,    6.,  -20.,   11.,
+     6             74.,  -54.,  -51.,    4.,  -15.,   25.,  -14.,  -34.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:703.72:
 
-     8              7.,    8.,   -3.,  -15.,   -9.,    5.,    2.,  -14.,
+     7              6.,  -12.,   29.,   18.,  -18.,    6.,  -20.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:704.72:
 
-     9              5.,    5.,   -6.,   18.,    8.,   -5.,    8.,  -19.,
+     8              7.,    8.,   -3.,  -15.,   -9.,    5.,    2.,  -14.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:705.72:
 
-     a              8.,   10.,  -20.,    1.,   14.,  -12.,    5.,   12.,
+     9              5.,    5.,   -6.,   18.,    8.,   -5.,    8.,  -19.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:706.72:
 
-     b             -3.,    1.,   -2.,   -2.,    9.,    3.,   10.,    0.,
+     a              8.,   10.,  -20.,    1.,   14.,  -12.,    5.,   12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:707.72:
 
-     c             -2.,   -2.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -2.,   -2.,    9.,    3.,   10.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:708.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -2.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:709.72:
 
-     e              0.,   -2.,    1.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:710.72:
 
-      data g7/ -30715.,-2306., 5812.,-1018., 2984.,-1520., 1550.,  586.,
+     e              0.,   -2.,    1.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:711.72:
 
-     1           1206.,-1740., -494., 1215.,  146.,  918.,  101.,  903.,
+      data g7/ -30715.,-2306., 5812.,-1018., 2984.,-1520., 1550.,  586.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:712.72:
 
-     2            744.,  188.,  565., -226., -415.,  -90.,  249., -114.,
+     1           1206.,-1740., -494., 1215.,  146.,  918.,  101.,  903.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:713.72:
 
-     3           -241.,  329.,  -51.,  211.,   64.,  -33.,  -64., -136.,
+     2            744.,  188.,  565., -226., -415.,  -90.,  249., -114.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:714.72:
 
-     4           -115.,  -76.,   64.,   59.,   53.,    4.,   -8.,  104.,
+     3           -241.,  329.,  -51.,  211.,   64.,  -33.,  -64., -136.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:715.72:
 
-     5           -246.,   25.,  -25.,  -15.,   25.,    4., -106.,  -40.,
+     4           -115.,  -76.,   64.,   59.,   53.,    4.,   -8.,  104.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:716.72:
 
-     6             74.,  -53.,  -52.,    4.,  -17.,   23.,  -14.,  -33.,
+     5           -246.,   25.,  -25.,  -15.,   25.,    4., -106.,  -40.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:717.72:
 
-     7              7.,  -11.,   29.,   18.,  -19.,    6.,  -19.,   11.,
+     6             74.,  -53.,  -52.,    4.,  -17.,   23.,  -14.,  -33.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:718.72:
 
-     8              7.,    8.,   -3.,  -15.,   -9.,    5.,    1.,  -15.,
+     7              7.,  -11.,   29.,   18.,  -19.,    6.,  -19.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:719.72:
 
-     9              6.,    5.,   -6.,   18.,    8.,   -5.,    7.,  -19.,
+     8              7.,    8.,   -3.,  -15.,   -9.,    5.,    1.,  -15.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:720.72:
 
-     a              8.,   10.,  -20.,    1.,   15.,  -12.,    5.,   11.,
+     9              6.,    5.,   -6.,   18.,    8.,   -5.,    7.,  -19.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:721.72:
 
-     b             -3.,    1.,   -3.,   -2.,    9.,    3.,   11.,    0.,
+     a              8.,   10.,  -20.,    1.,   15.,  -12.,    5.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:722.72:
 
-     c             -2.,   -2.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -3.,   -2.,    9.,    3.,   11.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:723.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -2.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:724.72:
 
-     e              0.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:725.72:
 
-      data g8/ -30654.,-2292., 5821.,-1106., 2981.,-1614., 1566.,  528.,
+     e              0.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:726.72:
 
-     1           1240.,-1790., -499., 1232.,  163.,  916.,   43.,  914.,
+      data g8/ -30654.,-2292., 5821.,-1106., 2981.,-1614., 1566.,  528.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:727.72:
 
-     2            762.,  169.,  550., -252., -405.,  -72.,  265., -141.,
+     1           1240.,-1790., -499., 1232.,  163.,  916.,   43.,  914.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:728.72:
 
-     3           -241.,  334.,  -33.,  208.,   71.,  -33.,  -75., -141.,
+     2            762.,  169.,  550., -252., -405.,  -72.,  265., -141.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:729.72:
 
-     4           -113.,  -76.,   69.,   57.,   54.,    4.,   -7.,  105.,
+     3           -241.,  334.,  -33.,  208.,   71.,  -33.,  -75., -141.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:730.72:
 
-     5           -249.,   33.,  -18.,  -15.,   18.,    0., -107.,  -33.,
+     4           -113.,  -76.,   69.,   57.,   54.,    4.,   -7.,  105.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:731.72:
 
-     6             74.,  -53.,  -52.,    4.,  -18.,   20.,  -14.,  -31.,
+     5           -249.,   33.,  -18.,  -15.,   18.,    0., -107.,  -33.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:732.72:
 
-     7              7.,   -9.,   29.,   17.,  -20.,    5.,  -19.,   11.,
+     6             74.,  -53.,  -52.,    4.,  -18.,   20.,  -14.,  -31.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:733.72:
 
-     8              7.,    8.,   -3.,  -14.,  -10.,    5.,    1.,  -15.,
+     7              7.,   -9.,   29.,   17.,  -20.,    5.,  -19.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:734.72:
 
-     9              6.,    5.,   -5.,   19.,    9.,   -5.,    7.,  -19.,
+     8              7.,    8.,   -3.,  -14.,  -10.,    5.,    1.,  -15.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:735.72:
 
-     a              8.,   10.,  -21.,    1.,   15.,  -12.,    5.,   11.,
+     9              6.,    5.,   -5.,   19.,    9.,   -5.,    7.,  -19.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:736.72:
 
-     b             -3.,    1.,   -3.,   -2.,    9.,    3.,   11.,    1.,
+     a              8.,   10.,  -21.,    1.,   15.,  -12.,    5.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:737.72:
 
-     c             -2.,   -2.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -3.,    1.,   -3.,   -2.,    9.,    3.,   11.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:738.72:
 
-     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -2.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:739.72:
 
-     e              0.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:740.72:
 
-      data g9/ -30594.,-2285., 5810.,-1244., 2990.,-1702., 1578.,  477.,
+     e              0.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:741.72:
 
-     1           1282.,-1834., -499., 1255.,  186.,  913.,  -11.,  944.,
+      data g9/ -30594.,-2285., 5810.,-1244., 2990.,-1702., 1578.,  477.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:742.72:
 
-     2            776.,  144.,  544., -276., -421.,  -55.,  304., -178.,
+     1           1282.,-1834., -499., 1255.,  186.,  913.,  -11.,  944.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:743.72:
 
-     3           -253.,  346.,  -12.,  194.,   95.,  -20.,  -67., -142.,
+     2            776.,  144.,  544., -276., -421.,  -55.,  304., -178.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:744.72:
 
-     4           -119.,  -82.,   82.,   59.,   57.,    6.,    6.,  100.,
+     3           -253.,  346.,  -12.,  194.,   95.,  -20.,  -67., -142.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:745.72:
 
-     5           -246.,   16.,  -25.,   -9.,   21.,  -16., -104.,  -39.,
+     4           -119.,  -82.,   82.,   59.,   57.,    6.,    6.,  100.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:746.72:
 
-     6             70.,  -40.,  -45.,    0.,  -18.,    0.,    2.,  -29.,
+     5           -246.,   16.,  -25.,   -9.,   21.,  -16., -104.,  -39.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:747.72:
 
-     7              6.,  -10.,   28.,   15.,  -17.,   29.,  -22.,   13.,
+     6             70.,  -40.,  -45.,    0.,  -18.,    0.,    2.,  -29.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:748.72:
 
-     8              7.,   12.,   -8.,  -21.,   -5.,  -12.,    9.,   -7.,
+     7              6.,  -10.,   28.,   15.,  -17.,   29.,  -22.,   13.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:749.72:
 
-     9              7.,    2.,  -10.,   18.,    7.,    3.,    2.,  -11.,
+     8              7.,   12.,   -8.,  -21.,   -5.,  -12.,    9.,   -7.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:750.72:
 
-     a              5.,  -21.,  -27.,    1.,   17.,  -11.,   29.,    3.,
+     9              7.,    2.,  -10.,   18.,    7.,    3.,    2.,  -11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:751.72:
 
-     b             -9.,   16.,    4.,   -3.,    9.,   -4.,    6.,   -3.,
+     a              5.,  -21.,  -27.,    1.,   17.,  -11.,   29.,    3.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:752.72:
 
-     c              1.,   -4.,    8.,   -3.,   11.,    5.,    1.,    1.,
+     b             -9.,   16.,    4.,   -3.,    9.,   -4.,    6.,   -3.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:753.72:
 
-     d              2.,  -20.,   -5.,   -1.,   -1.,   -6.,    8.,    6.,
+     c              1.,   -4.,    8.,   -3.,   11.,    5.,    1.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:754.72:
 
-     e             -1.,   -4.,   -3.,   -2.,    5.,    0.,   -2.,   -2./
+     d              2.,  -20.,   -5.,   -1.,   -1.,   -6.,    8.,    6.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:755.72:
 
-      data ga/ -30554.,-2250., 5815.,-1341., 2998.,-1810., 1576.,  381.,
+     e             -1.,   -4.,   -3.,   -2.,    5.,    0.,   -2.,   -2./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:756.72:
 
-     1           1297.,-1889., -476., 1274.,  206.,  896.,  -46.,  954.,
+      data ga/ -30554.,-2250., 5815.,-1341., 2998.,-1810., 1576.,  381.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:757.72:
 
-     2            792.,  136.,  528., -278., -408.,  -37.,  303., -210.,
+     1           1297.,-1889., -476., 1274.,  206.,  896.,  -46.,  954.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:758.72:
 
-     3           -240.,  349.,    3.,  211.,  103.,  -20.,  -87., -147.,
+     2            792.,  136.,  528., -278., -408.,  -37.,  303., -210.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:759.72:
 
-     4           -122.,  -76.,   80.,   54.,   57.,   -1.,    4.,   99.,
+     3           -240.,  349.,    3.,  211.,  103.,  -20.,  -87., -147.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:760.72:
 
-     5           -247.,   33.,  -16.,  -12.,   12.,  -12., -105.,  -30.,
+     4           -122.,  -76.,   80.,   54.,   57.,   -1.,    4.,   99.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:761.72:
 
-     6             65.,  -55.,  -35.,    2.,  -17.,    1.,    0.,  -40.,
+     5           -247.,   33.,  -16.,  -12.,   12.,  -12., -105.,  -30.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:762.72:
 
-     7             10.,   -7.,   36.,    5.,  -18.,   19.,  -16.,   22.,
+     6             65.,  -55.,  -35.,    2.,  -17.,    1.,    0.,  -40.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:763.72:
 
-     8             15.,    5.,   -4.,  -22.,   -1.,    0.,   11.,  -21.,
+     7             10.,   -7.,   36.,    5.,  -18.,   19.,  -16.,   22.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:764.72:
 
-     9             15.,   -8.,  -13.,   17.,    5.,   -4.,   -1.,  -17.,
+     8             15.,    5.,   -4.,  -22.,   -1.,    0.,   11.,  -21.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:765.72:
 
-     a              3.,   -7.,  -24.,   -1.,   19.,  -25.,   12.,   10.,
+     9             15.,   -8.,  -13.,   17.,    5.,   -4.,   -1.,  -17.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:766.72:
 
-     b              2.,    5.,    2.,   -5.,    8.,   -2.,    8.,    3.,
+     a              3.,   -7.,  -24.,   -1.,   19.,  -25.,   12.,   10.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:767.72:
 
-     c            -11.,    8.,   -7.,   -8.,    4.,   13.,   -1.,   -2.,
+     b              2.,    5.,    2.,   -5.,    8.,   -2.,    8.,    3.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:768.72:
 
-     d             13.,  -10.,   -4.,    2.,    4.,   -3.,   12.,    6.,
+     c            -11.,    8.,   -7.,   -8.,    4.,   13.,   -1.,   -2.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:769.72:
 
-     e              3.,   -3.,    2.,    6.,   10.,   11.,    3.,    8./
+     d             13.,  -10.,   -4.,    2.,    4.,   -3.,   12.,    6.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:770.72:
 
-      data gb/ -30500.,-2215., 5820.,-1440., 3003.,-1898., 1581.,  291.,
+     e              3.,   -3.,    2.,    6.,   10.,   11.,    3.,    8./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:771.72:
 
-     1           1302.,-1944., -462., 1288.,  216.,  882.,  -83.,  958.,
+      data gb/ -30500.,-2215., 5820.,-1440., 3003.,-1898., 1581.,  291.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:772.72:
 
-     2            796.,  133.,  510., -274., -397.,  -23.,  290., -230.,
+     1           1302.,-1944., -462., 1288.,  216.,  882.,  -83.,  958.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:773.72:
 
-     3           -229.,  360.,   15.,  230.,  110.,  -23.,  -98., -152.,
+     2            796.,  133.,  510., -274., -397.,  -23.,  290., -230.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:774.72:
 
-     4           -121.,  -69.,   78.,   47.,   57.,   -9.,    3.,   96.,
+     3           -229.,  360.,   15.,  230.,  110.,  -23.,  -98., -152.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:775.72:
 
-     5           -247.,   48.,   -8.,  -16.,    7.,  -12., -107.,  -24.,
+     4           -121.,  -69.,   78.,   47.,   57.,   -9.,    3.,   96.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:776.72:
 
-     6             65.,  -56.,  -50.,    2.,  -24.,   10.,   -4.,  -32.,
+     5           -247.,   48.,   -8.,  -16.,    7.,  -12., -107.,  -24.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:777.72:
 
-     7              8.,  -11.,   28.,    9.,  -20.,   18.,  -18.,   11.,
+     6             65.,  -56.,  -50.,    2.,  -24.,   10.,   -4.,  -32.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:778.72:
 
-     8              9.,   10.,   -6.,  -15.,  -14.,    5.,    6.,  -23.,
+     7              8.,  -11.,   28.,    9.,  -20.,   18.,  -18.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:779.72:
 
-     9             10.,    3.,   -7.,   23.,    6.,   -4.,    9.,  -13.,
+     8              9.,   10.,   -6.,  -15.,  -14.,    5.,    6.,  -23.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:780.72:
 
-     a              4.,    9.,  -11.,   -4.,   12.,   -5.,    7.,    2.,
+     9             10.,    3.,   -7.,   23.,    6.,   -4.,    9.,  -13.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:781.72:
 
-     b              6.,    4.,   -2.,    1.,   10.,    2.,    7.,    2.,
+     a              4.,    9.,  -11.,   -4.,   12.,   -5.,    7.,    2.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:782.72:
 
-     c             -6.,    5.,    5.,   -3.,   -5.,   -4.,   -1.,    0.,
+     b              6.,    4.,   -2.,    1.,   10.,    2.,    7.,    2.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:783.72:
 
-     d              2.,   -8.,   -3.,   -2.,    7.,   -4.,    4.,    1.,
+     c             -6.,    5.,    5.,   -3.,   -5.,   -4.,   -1.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:784.72:
 
-     e             -2.,   -3.,    6.,    7.,   -2.,   -1.,    0.,   -3./
+     d              2.,   -8.,   -3.,   -2.,    7.,   -4.,    4.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:785.72:
 
-      data gc/ -30421.,-2169., 5791.,-1555., 3002.,-1967., 1590.,  206.,
+     e             -2.,   -3.,    6.,    7.,   -2.,   -1.,    0.,   -3./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:786.72:
 
-     1           1302.,-1992., -414., 1289.,  224.,  878., -130.,  957.,
+      data gc/ -30421.,-2169., 5791.,-1555., 3002.,-1967., 1590.,  206.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:787.72:
 
-     2            800.,  135.,  504., -278., -394.,    3.,  269., -255.,
+     1           1302.,-1992., -414., 1289.,  224.,  878., -130.,  957.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:788.72:
 
-     3           -222.,  362.,   16.,  242.,  125.,  -26., -117., -156.,
+     2            800.,  135.,  504., -278., -394.,    3.,  269., -255.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:789.72:
 
-     4           -114.,  -63.,   81.,   46.,   58.,  -10.,    1.,   99.,
+     3           -222.,  362.,   16.,  242.,  125.,  -26., -117., -156.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:790.72:
 
-     5           -237.,   60.,   -1.,  -20.,   -2.,  -11., -113.,  -17.,
+     4           -114.,  -63.,   81.,   46.,   58.,  -10.,    1.,   99.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:791.72:
 
-     6             67.,  -56.,  -55.,    5.,  -28.,   15.,   -6.,  -32.,
+     5           -237.,   60.,   -1.,  -20.,   -2.,  -11., -113.,  -17.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:792.72:
 
-     7              7.,   -7.,   23.,   17.,  -18.,    8.,  -17.,   15.,
+     6             67.,  -56.,  -55.,    5.,  -28.,   15.,   -6.,  -32.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:793.72:
 
-     8              6.,   11.,   -4.,  -14.,  -11.,    7.,    2.,  -18.,
+     7              7.,   -7.,   23.,   17.,  -18.,    8.,  -17.,   15.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:794.72:
 
-     9             10.,    4.,   -5.,   23.,   10.,    1.,    8.,  -20.,
+     8              6.,   11.,   -4.,  -14.,  -11.,    7.,    2.,  -18.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:795.72:
 
-     a              4.,    6.,  -18.,    0.,   12.,   -9.,    2.,    1.,
+     9             10.,    4.,   -5.,   23.,   10.,    1.,    8.,  -20.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:796.72:
 
-     b              0.,    4.,   -3.,   -1.,    9.,   -2.,    8.,    3.,
+     a              4.,    6.,  -18.,    0.,   12.,   -9.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:797.72:
 
-     c              0.,   -1.,    5.,    1.,   -3.,    4.,    4.,    1.,
+     b              0.,    4.,   -3.,   -1.,    9.,   -2.,    8.,    3.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:798.72:
 
-     d              0.,    0.,   -1.,    2.,    4.,   -5.,    6.,    1.,
+     c              0.,   -1.,    5.,    1.,   -3.,    4.,    4.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:799.72:
 
-     e              1.,   -1.,   -1.,    6.,    2.,    0.,    0.,   -7./
+     d              0.,    0.,   -1.,    2.,    4.,   -5.,    6.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:800.72:
 
-      data gd/ -30334.,-2119., 5776.,-1662., 2997.,-2016., 1594.,  114.,
+     e              1.,   -1.,   -1.,    6.,    2.,    0.,    0.,   -7./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:801.72:
 
-     1           1297.,-2038., -404., 1292.,  240.,  856., -165.,  957.,
+      data gd/ -30334.,-2119., 5776.,-1662., 2997.,-2016., 1594.,  114.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:802.72:
 
-     2            804.,  148.,  479., -269., -390.,   13.,  252., -269.,
+     1           1297.,-2038., -404., 1292.,  240.,  856., -165.,  957.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:803.72:
 
-     3           -219.,  358.,   19.,  254.,  128.,  -31., -126., -157.,
+     2            804.,  148.,  479., -269., -390.,   13.,  252., -269.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:804.72:
 
-     4            -97.,  -62.,   81.,   45.,   61.,  -11.,    8.,  100.,
+     3           -219.,  358.,   19.,  254.,  128.,  -31., -126., -157.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:805.72:
 
-     5           -228.,   68.,    4.,  -32.,    1.,   -8., -111.,   -7.,
+     4            -97.,  -62.,   81.,   45.,   61.,  -11.,    8.,  100.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:806.72:
 
-     6             75.,  -57.,  -61.,    4.,  -27.,   13.,   -2.,  -26.,
+     5           -228.,   68.,    4.,  -32.,    1.,   -8., -111.,   -7.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:807.72:
 
-     7              6.,   -6.,   26.,   13.,  -23.,    1.,  -12.,   13.,
+     6             75.,  -57.,  -61.,    4.,  -27.,   13.,   -2.,  -26.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:808.72:
 
-     8              5.,    7.,   -4.,  -12.,  -14.,    9.,    0.,  -16.,
+     7              6.,   -6.,   26.,   13.,  -23.,    1.,  -12.,   13.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:809.72:
 
-     9              8.,    4.,   -1.,   24.,   11.,   -3.,    4.,  -17.,
+     8              5.,    7.,   -4.,  -12.,  -14.,    9.,    0.,  -16.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:810.72:
 
-     a              8.,   10.,  -22.,    2.,   15.,  -13.,    7.,   10.,
+     9              8.,    4.,   -1.,   24.,   11.,   -3.,    4.,  -17.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:811.72:
 
-     b             -4.,   -1.,   -5.,   -1.,   10.,    5.,   10.,    1.,
+     a              8.,   10.,  -22.,    2.,   15.,  -13.,    7.,   10.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:812.72:
 
-     c             -4.,   -2.,    1.,   -2.,   -3.,    2.,    2.,    1.,
+     b             -4.,   -1.,   -5.,   -1.,   10.,    5.,   10.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:813.72:
 
-     d             -5.,    2.,   -2.,    6.,    4.,   -4.,    4.,    0.,
+     c             -4.,   -2.,    1.,   -2.,   -3.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:814.72:
 
-     e              0.,   -2.,    2.,    3.,    2.,    0.,    0.,   -6./
+     d             -5.,    2.,   -2.,    6.,    4.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:815.72:
 
-      data ge/ -30220.,-2068., 5737.,-1781., 3000.,-2047., 1611.,   25.,
+     e              0.,   -2.,    2.,    3.,    2.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:816.72:
 
-     1           1287.,-2091., -366., 1278.,  251.,  838., -196.,  952.,
+      data ge/ -30220.,-2068., 5737.,-1781., 3000.,-2047., 1611.,   25.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:817.72:
 
-     2            800.,  167.,  461., -266., -395.,   26.,  234., -279.,
+     1           1287.,-2091., -366., 1278.,  251.,  838., -196.,  952.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:818.72:
 
-     3           -216.,  359.,   26.,  262.,  139.,  -42., -139., -160.,
+     2            800.,  167.,  461., -266., -395.,   26.,  234., -279.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:819.72:
 
-     4            -91.,  -56.,   83.,   43.,   64.,  -12.,   15.,  100.,
+     3           -216.,  359.,   26.,  262.,  139.,  -42., -139., -160.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:820.72:
 
-     5           -212.,   72.,    2.,  -37.,    3.,   -6., -112.,    1.,
+     4            -91.,  -56.,   83.,   43.,   64.,  -12.,   15.,  100.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:821.72:
 
-     6             72.,  -57.,  -70.,    1.,  -27.,   14.,   -4.,  -22.,
+     5           -212.,   72.,    2.,  -37.,    3.,   -6., -112.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:822.72:
 
-     7              8.,   -2.,   23.,   13.,  -23.,   -2.,  -11.,   14.,
+     6             72.,  -57.,  -70.,    1.,  -27.,   14.,   -4.,  -22.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:823.72:
 
-     8              6.,    7.,   -2.,  -15.,  -13.,    6.,   -3.,  -17.,
+     7              8.,   -2.,   23.,   13.,  -23.,   -2.,  -11.,   14.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:824.72:
 
-     9              5.,    6.,    0.,   21.,   11.,   -6.,    3.,  -16.,
+     8              6.,    7.,   -2.,  -15.,  -13.,    6.,   -3.,  -17.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:825.72:
 
-     a              8.,   10.,  -21.,    2.,   16.,  -12.,    6.,   10.,
+     9              5.,    6.,    0.,   21.,   11.,   -6.,    3.,  -16.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:826.72:
 
-     b             -4.,   -1.,   -5.,    0.,   10.,    3.,   11.,    1.,
+     a              8.,   10.,  -21.,    2.,   16.,  -12.,    6.,   10.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:827.72:
 
-     c             -2.,   -1.,    1.,   -3.,   -3.,    1.,    2.,    1.,
+     b             -4.,   -1.,   -5.,    0.,   10.,    3.,   11.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:828.72:
 
-     d             -5.,    3.,   -1.,    4.,    6.,   -4.,    4.,    0.,
+     c             -2.,   -1.,    1.,   -3.,   -3.,    1.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:829.72:
 
-     e              1.,   -1.,    0.,    3.,    3.,    1.,   -1.,   -4./
+     d             -5.,    3.,   -1.,    4.,    6.,   -4.,    4.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:830.72:
 
-      data gf/ -30100.,-2013., 5675.,-1902., 3010.,-2067., 1632.,  -68.,
+     e              1.,   -1.,    0.,    3.,    3.,    1.,   -1.,   -4./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:831.72:
 
-     1           1276.,-2144., -333., 1260.,  262.,  830., -223.,  946.,
+      data gf/ -30100.,-2013., 5675.,-1902., 3010.,-2067., 1632.,  -68.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:832.72:
 
-     2            791.,  191.,  438., -265., -405.,   39.,  216., -288.,
+     1           1276.,-2144., -333., 1260.,  262.,  830., -223.,  946.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:833.72:
 
-     3           -218.,  356.,   31.,  264.,  148.,  -59., -152., -159.,
+     2            791.,  191.,  438., -265., -405.,   39.,  216., -288.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:834.72:
 
-     4            -83.,  -49.,   88.,   45.,   66.,  -13.,   28.,   99.,
+     3           -218.,  356.,   31.,  264.,  148.,  -59., -152., -159.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:835.72:
 
-     5           -198.,   75.,    1.,  -41.,    6.,   -4., -111.,   11.,
+     4            -83.,  -49.,   88.,   45.,   66.,  -13.,   28.,   99.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:836.72:
 
-     6             71.,  -56.,  -77.,    1.,  -26.,   16.,   -5.,  -14.,
+     5           -198.,   75.,    1.,  -41.,    6.,   -4., -111.,   11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:837.72:
 
-     7             10.,    0.,   22.,   12.,  -23.,   -5.,  -12.,   14.,
+     6             71.,  -56.,  -77.,    1.,  -26.,   16.,   -5.,  -14.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:838.72:
 
-     8              6.,    6.,   -1.,  -16.,  -12.,    4.,   -8.,  -19.,
+     7             10.,    0.,   22.,   12.,  -23.,   -5.,  -12.,   14.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:839.72:
 
-     9              4.,    6.,    0.,   18.,   10.,  -10.,    1.,  -17.,
+     8              6.,    6.,   -1.,  -16.,  -12.,    4.,   -8.,  -19.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:840.72:
 
-     a              7.,   10.,  -21.,    2.,   16.,  -12.,    7.,   10.,
+     9              4.,    6.,    0.,   18.,   10.,  -10.,    1.,  -17.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:841.72:
 
-     b             -4.,   -1.,   -5.,   -1.,   10.,    4.,   11.,    1.,
+     a              7.,   10.,  -21.,    2.,   16.,  -12.,    7.,   10.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:842.72:
 
-     c             -3.,   -2.,    1.,   -3.,   -3.,    1.,    2.,    1.,
+     b             -4.,   -1.,   -5.,   -1.,   10.,    4.,   11.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:843.72:
 
-     d             -5.,    3.,   -2.,    4.,    5.,   -4.,    4.,   -1.,
+     c             -3.,   -2.,    1.,   -3.,   -3.,    1.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:844.72:
 
-     e              1.,   -1.,    0.,    3.,    3.,    1.,   -1.,   -5./
+     d             -5.,    3.,   -2.,    4.,    5.,   -4.,    4.,   -1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:845.72:
 
-      data gg/ -29992.,-1956., 5604.,-1997., 3027.,-2129., 1663., -200.,
+     e              1.,   -1.,    0.,    3.,    3.,    1.,   -1.,   -5./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:846.72:
 
-     1           1281.,-2180., -336., 1251.,  271.,  833., -252.,  938.,
+      data gg/ -29992.,-1956., 5604.,-1997., 3027.,-2129., 1663., -200.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:847.72:
 
-     2            782.,  212.,  398., -257., -419.,   53.,  199., -297.,
+     1           1281.,-2180., -336., 1251.,  271.,  833., -252.,  938.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:848.72:
 
-     3           -218.,  357.,   46.,  261.,  150.,  -74., -151., -162.,
+     2            782.,  212.,  398., -257., -419.,   53.,  199., -297.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:849.72:
 
-     4            -78.,  -48.,   92.,   48.,   66.,  -15.,   42.,   93.,
+     3           -218.,  357.,   46.,  261.,  150.,  -74., -151., -162.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:850.72:
 
-     5           -192.,   71.,    4.,  -43.,   14.,   -2., -108.,   17.,
+     4            -78.,  -48.,   92.,   48.,   66.,  -15.,   42.,   93.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:851.72:
 
-     6             72.,  -59.,  -82.,    2.,  -27.,   21.,   -5.,  -12.,
+     5           -192.,   71.,    4.,  -43.,   14.,   -2., -108.,   17.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:852.72:
 
-     7             16.,    1.,   18.,   11.,  -23.,   -2.,  -10.,   18.,
+     6             72.,  -59.,  -82.,    2.,  -27.,   21.,   -5.,  -12.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:853.72:
 
-     8              6.,    7.,    0.,  -18.,  -11.,    4.,   -7.,  -22.,
+     7             16.,    1.,   18.,   11.,  -23.,   -2.,  -10.,   18.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:854.72:
 
-     9              4.,    9.,    3.,   16.,    6.,  -13.,   -1.,  -15.,
+     8              6.,    7.,    0.,  -18.,  -11.,    4.,   -7.,  -22.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:855.72:
 
-     a              5.,   10.,  -21.,    1.,   16.,  -12.,    9.,    9.,
+     9              4.,    9.,    3.,   16.,    6.,  -13.,   -1.,  -15.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:856.72:
 
-     b             -5.,   -3.,   -6.,   -1.,    9.,    7.,   10.,    2.,
+     a              5.,   10.,  -21.,    1.,   16.,  -12.,    9.,    9.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:857.72:
 
-     c             -6.,   -5.,    2.,   -4.,   -4.,    1.,    2.,    0.,
+     b             -5.,   -3.,   -6.,   -1.,    9.,    7.,   10.,    2.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:858.72:
 
-     d             -5.,    3.,   -2.,    6.,    5.,   -4.,    3.,    0.,
+     c             -6.,   -5.,    2.,   -4.,   -4.,    1.,    2.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:859.72:
 
-     e              1.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    3.,   -2.,    6.,    5.,   -4.,    3.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:860.72:
 
-      data gi/ -29873.,-1905., 5500.,-2072., 3044.,-2197., 1687., -306.,
+     e              1.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:861.72:
 
-     1           1296.,-2208., -310., 1247.,  284.,  829., -297.,  936.,
+      data gi/ -29873.,-1905., 5500.,-2072., 3044.,-2197., 1687., -306.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:862.72:
 
-     2            780.,  232.,  361., -249., -424.,   69.,  170., -297.,
+     1           1296.,-2208., -310., 1247.,  284.,  829., -297.,  936.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:863.72:
 
-     3           -214.,  355.,   47.,  253.,  150.,  -93., -154., -164.,
+     2            780.,  232.,  361., -249., -424.,   69.,  170., -297.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:864.72:
 
-     4            -75.,  -46.,   95.,   53.,   65.,  -16.,   51.,   88.,
+     3           -214.,  355.,   47.,  253.,  150.,  -93., -154., -164.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:865.72:
 
-     5           -185.,   69.,    4.,  -48.,   16.,   -1., -102.,   21.,
+     4            -75.,  -46.,   95.,   53.,   65.,  -16.,   51.,   88.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:866.72:
 
-     6             74.,  -62.,  -83.,    3.,  -27.,   24.,   -2.,   -6.,
+     5           -185.,   69.,    4.,  -48.,   16.,   -1., -102.,   21.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:867.72:
 
-     7             20.,    4.,   17.,   10.,  -23.,    0.,   -7.,   21.,
+     6             74.,  -62.,  -83.,    3.,  -27.,   24.,   -2.,   -6.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:868.72:
 
-     8              6.,    8.,    0.,  -19.,  -11.,    5.,   -9.,  -23.,
+     7             20.,    4.,   17.,   10.,  -23.,    0.,   -7.,   21.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:869.72:
 
-     9              4.,   11.,    4.,   14.,    4.,  -15.,   -4.,  -11.,
+     8              6.,    8.,    0.,  -19.,  -11.,    5.,   -9.,  -23.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:870.72:
 
-     a              5.,   10.,  -21.,    1.,   15.,  -12.,    9.,    9.,
+     9              4.,   11.,    4.,   14.,    4.,  -15.,   -4.,  -11.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:871.72:
 
-     b             -6.,   -3.,   -6.,   -1.,    9.,    7.,    9.,    1.,
+     a              5.,   10.,  -21.,    1.,   15.,  -12.,    9.,    9.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:872.72:
 
-     c             -7.,   -5.,    2.,   -4.,   -4.,    1.,    3.,    0.,
+     b             -6.,   -3.,   -6.,   -1.,    9.,    7.,    9.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:873.72:
 
-     d             -5.,    3.,   -2.,    6.,    5.,   -4.,    3.,    0.,
+     c             -7.,   -5.,    2.,   -4.,   -4.,    1.,    3.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:874.72:
 
-     e              1.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
+     d             -5.,    3.,   -2.,    6.,    5.,   -4.,    3.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:875.72:
 
-      data gj/ -29775.,-1848., 5406.,-2131., 3059.,-2279., 1686., -373.,
+     e              1.,   -1.,    2.,    4.,    3.,    0.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:876.72:
 
-     1           1314.,-2239., -284., 1248.,  293.,  802., -352.,  939.,
+      data gj/ -29775.,-1848., 5406.,-2131., 3059.,-2279., 1686., -373.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:877.72:
 
-     2            780.,  247.,  325., -240., -423.,   84.,  141., -299.,
+     1           1314.,-2239., -284., 1248.,  293.,  802., -352.,  939.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:878.72:
 
-     3           -214.,  353.,   46.,  245.,  154., -109., -153., -165.,
+     2            780.,  247.,  325., -240., -423.,   84.,  141., -299.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:879.72:
 
-     4            -69.,  -36.,   97.,   61.,   65.,  -16.,   59.,   82.,
+     3           -214.,  353.,   46.,  245.,  154., -109., -153., -165.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:880.72:
 
-     5           -178.,   69.,    3.,  -52.,   18.,    1.,  -96.,   24.,
+     4            -69.,  -36.,   97.,   61.,   65.,  -16.,   59.,   82.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:881.72:
 
-     6             77.,  -64.,  -80.,    2.,  -26.,   26.,    0.,   -1.,
+     5           -178.,   69.,    3.,  -52.,   18.,    1.,  -96.,   24.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:882.72:
 
-     7             21.,    5.,   17.,    9.,  -23.,    0.,   -4.,   23.,
+     6             77.,  -64.,  -80.,    2.,  -26.,   26.,    0.,   -1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:883.72:
 
-     8              5.,   10.,   -1.,  -19.,  -10.,    6.,  -12.,  -22.,
+     7             21.,    5.,   17.,    9.,  -23.,    0.,   -4.,   23.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:884.72:
 
-     9              3.,   12.,    4.,   12.,    2.,  -16.,   -6.,  -10.,
+     8              5.,   10.,   -1.,  -19.,  -10.,    6.,  -12.,  -22.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:885.72:
 
-     a              4.,    9.,  -20.,    1.,   15.,  -12.,   11.,    9.,
+     9              3.,   12.,    4.,   12.,    2.,  -16.,   -6.,  -10.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:886.72:
 
-     b             -7.,   -4.,   -7.,   -2.,    9.,    7.,    8.,    1.,
+     a              4.,    9.,  -20.,    1.,   15.,  -12.,   11.,    9.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:887.72:
 
-     c             -7.,   -6.,    2.,   -3.,   -4.,    2.,    2.,    1.,
+     b             -7.,   -4.,   -7.,   -2.,    9.,    7.,    8.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:888.72:
 
-     d             -5.,    3.,   -2.,    6.,    4.,   -4.,    3.,    0.,
+     c             -7.,   -6.,    2.,   -3.,   -4.,    2.,    2.,    1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:889.72:
 
-     e              1.,   -2.,    3.,    3.,    3.,   -1.,    0.,   -6./
+     d             -5.,    3.,   -2.,    6.,    4.,   -4.,    3.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:890.72:
 
-      data gk/ -29692.,-1784., 5306.,-2200., 3070.,-2366., 1681., -413.,
+     e              1.,   -2.,    3.,    3.,    3.,   -1.,    0.,   -6./
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:891.72:
 
-     1           1335.,-2267., -262., 1249.,  302.,  759., -427.,  940.,
+      data gk/ -29692.,-1784., 5306.,-2200., 3070.,-2366., 1681., -413.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:892.72:
 
-     2            780.,  262.,  290., -236., -418.,   97.,  122., -306.,
+     1           1335.,-2267., -262., 1249.,  302.,  759., -427.,  940.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:893.72:
 
-     3           -214.,  352.,   46.,  235.,  165., -118., -143., -166.,
+     2            780.,  262.,  290., -236., -418.,   97.,  122., -306.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:894.72:
 
-     4            -55.,  -17.,  107.,   68.,   67.,  -17.,   68.,   72.,
+     3           -214.,  352.,   46.,  235.,  165., -118., -143., -166.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:895.72:
 
-     5           -170.,   67.,   -1.,  -58.,   19.,    1.,  -93.,   36.,
+     4            -55.,  -17.,  107.,   68.,   67.,  -17.,   68.,   72.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:896.72:
 
-     6             77.,  -72.,  -69.,    1.,  -25.,   28.,    4.,    5.,
+     5           -170.,   67.,   -1.,  -58.,   19.,    1.,  -93.,   36.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:897.72:
 
-     7             24.,    4.,   17.,    8.,  -24.,   -2.,   -6.,   25.,
+     6             77.,  -72.,  -69.,    1.,  -25.,   28.,    4.,    5.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:898.72:
 
-     8              6.,   11.,   -6.,  -21.,   -9.,    8.,  -14.,  -23.,
+     7             24.,    4.,   17.,    8.,  -24.,   -2.,   -6.,   25.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:899.72:
 
-     9              9.,   15.,    6.,   11.,   -5.,  -16.,   -7.,   -4.,
+     8              6.,   11.,   -6.,  -21.,   -9.,    8.,  -14.,  -23.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:900.72:
 
-     a              4.,    9.,  -20.,    3.,   15.,  -10.,   12.,    8.,
+     9              9.,   15.,    6.,   11.,   -5.,  -16.,   -7.,   -4.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:901.72:
 
-     b             -6.,   -8.,   -8.,   -1.,    8.,   10.,    5.,   -2.,
+     a              4.,    9.,  -20.,    3.,   15.,  -10.,   12.,    8.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:902.72:
 
-     c             -8.,   -8.,    3.,   -3.,   -6.,    1.,    2.,    0.,
+     b             -6.,   -8.,   -8.,   -1.,    8.,   10.,    5.,   -2.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:903.72:
 
-     d             -4.,    4.,   -1.,    5.,    4.,   -5.,    2.,   -1.,
+     c             -8.,   -8.,    3.,   -3.,   -6.,    1.,    2.,    0.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:904.72:
 
-     e              2.,   -2.,    5.,    1.,    1.,   -2.,    0.,   -7.,
+     d             -4.,    4.,   -1.,    5.,    4.,   -5.,    2.,   -1.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:905.72:
 
-     f           75*0./                                                 
+     e              2.,   -2.,    5.,    1.,    1.,   -2.,    0.,   -7.,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:906.72:
 
-      data gl/ -29619.4,-1728.2, 5186.1,-2267.7, 3068.4,-2481.6, 1670.9,
+     f           75*0./                                                 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:907.72:
 
-     1           -458.0, 1339.6,-2288.0, -227.6, 1252.1,  293.4,  714.5,
+      data gl/ -29619.4,-1728.2, 5186.1,-2267.7, 3068.4,-2481.6, 1670.9,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:908.72:
 
-     2           -491.1,  932.3,  786.8,  272.6,  250.0, -231.9, -403.0,
+     1           -458.0, 1339.6,-2288.0, -227.6, 1252.1,  293.4,  714.5,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:909.72:
 
-     3            119.8,  111.3, -303.8, -218.8,  351.4,   43.8,  222.3,
+     2           -491.1,  932.3,  786.8,  272.6,  250.0, -231.9, -403.0,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:910.72:
 
-     4            171.9, -130.4, -133.1, -168.6,  -39.3,  -12.9,  106.3,
+     3            119.8,  111.3, -303.8, -218.8,  351.4,   43.8,  222.3,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:911.72:
 
-     5             72.3,   68.2,  -17.4,   74.2,   63.7, -160.9,   65.1,
+     4            171.9, -130.4, -133.1, -168.6,  -39.3,  -12.9,  106.3,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:912.72:
 
-     6             -5.9,  -61.2,   16.9,    0.7,  -90.4,   43.8,   79.0,
+     5             72.3,   68.2,  -17.4,   74.2,   63.7, -160.9,   65.1,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:913.72:
 
-     7            -74.0,  -64.6,    0.0,  -24.2,   33.3,    6.2,    9.1,
+     6             -5.9,  -61.2,   16.9,    0.7,  -90.4,   43.8,   79.0,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:914.72:
 
-     8             24.0,    6.9,   14.8,    7.3,  -25.4,   -1.2,   -5.8,
+     7            -74.0,  -64.6,    0.0,  -24.2,   33.3,    6.2,    9.1,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:915.72:
 
-     9             24.4,    6.6,   11.9,   -9.2,  -21.5,   -7.9,    8.5,
+     8             24.0,    6.9,   14.8,    7.3,  -25.4,   -1.2,   -5.8,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:916.72:
 
-     a            -16.6,  -21.5,    9.1,   15.5,    7.0,    8.9,   -7.9,
+     9             24.4,    6.6,   11.9,   -9.2,  -21.5,   -7.9,    8.5,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:917.72:
 
-     b            -14.9,   -7.0,   -2.1,    5.0,    9.4,  -19.7,    3.0,
+     a            -16.6,  -21.5,    9.1,   15.5,    7.0,    8.9,   -7.9,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:918.72:
 
-     c             13.4,   -8.4,   12.5,    6.3,   -6.2,   -8.9,   -8.4,
+     b            -14.9,   -7.0,   -2.1,    5.0,    9.4,  -19.7,    3.0,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:919.72:
 
-     d             -1.5,    8.4,    9.3,    3.8,   -4.3,   -8.2,   -8.2,
+     c             13.4,   -8.4,   12.5,    6.3,   -6.2,   -8.9,   -8.4,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:920.72:
 
-     e              4.8,   -2.6,   -6.0,    1.7,    1.7,    0.0,   -3.1,
+     d             -1.5,    8.4,    9.3,    3.8,   -4.3,   -8.2,   -8.2,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:921.72:
 
-     f              4.0,   -0.5,    4.9,    3.7,   -5.9,    1.0,   -1.2,
+     e              4.8,   -2.6,   -6.0,    1.7,    1.7,    0.0,   -3.1,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:922.72:
 
-     g              2.0,   -2.9,    4.2,    0.2,    0.3,   -2.2,   -1.1,
+     f              4.0,   -0.5,    4.9,    3.7,   -5.9,    1.0,   -1.2,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:923.72:
 
-     h             -7.4,    2.7,   -1.7,    0.1,   -1.9,    1.3,    1.5,
+     g              2.0,   -2.9,    4.2,    0.2,    0.3,   -2.2,   -1.1,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:924.72:
 
-     i             -0.9,   -0.1,   -2.6,    0.1,    0.9,   -0.7,   -0.7,
+     h             -7.4,    2.7,   -1.7,    0.1,   -1.9,    1.3,    1.5,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:925.72:
 
-     j              0.7,   -2.8,    1.7,   -0.9,    0.1,   -1.2,    1.2,
+     i             -0.9,   -0.1,   -2.6,    0.1,    0.9,   -0.7,   -0.7,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:926.72:
 
-     k             -1.9,    4.0,   -0.9,   -2.2,   -0.3,   -0.4,    0.2,
+     j              0.7,   -2.8,    1.7,   -0.9,    0.1,   -1.2,    1.2,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:927.72:
 
-     l              0.3,    0.9,    2.5,   -0.2,   -2.6,    0.9,    0.7,
+     k             -1.9,    4.0,   -0.9,   -2.2,   -0.3,   -0.4,    0.2,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:928.72:
 
-     m             -0.5,    0.3,    0.3,    0.0,   -0.3,    0.0,   -0.4,
+     l              0.3,    0.9,    2.5,   -0.2,   -2.6,    0.9,    0.7,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:929.72:
 
-     n              0.3,   -0.1,   -0.9,   -0.2,   -0.4,   -0.4,    0.8,
+     m             -0.5,    0.3,    0.3,    0.0,   -0.3,    0.0,   -0.4,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:930.72:
 
-     o             -0.2,   -0.9,   -0.9,    0.3,    0.2,    0.1,    1.8,
+     n              0.3,   -0.1,   -0.9,   -0.2,   -0.4,   -0.4,    0.8,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:931.72:
 
-     p             -0.4,   -0.4,    1.3,   -1.0,   -0.4,   -0.1,    0.7,
+     o             -0.2,   -0.9,   -0.9,    0.3,    0.2,    0.1,    1.8,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:932.72:
 
-     q              0.7,   -0.4,    0.3,    0.3,    0.6,   -0.1,    0.3,
+     p             -0.4,   -0.4,    1.3,   -1.0,   -0.4,   -0.1,    0.7,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:933.72:
 
-     r              0.4,   -0.2,    0.0,   -0.5,    0.1,   -0.9/        
+     q              0.7,   -0.4,    0.3,    0.3,    0.6,   -0.1,    0.3,
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:934.72:
 
-      data gm/-29554.63,-1669.05, 5077.99,-2337.24, 3047.69,-2594.50,   
+     r              0.4,   -0.2,    0.0,   -0.5,    0.1,   -0.9/        
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:935.72:
 
-     1          1657.76, -515.43, 1336.30,-2305.83, -198.86, 1246.39,   
+      data gm/-29554.63,-1669.05, 5077.99,-2337.24, 3047.69,-2594.50,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:936.72:
 
-     2           269.72,  672.51, -524.72,  920.55,  797.96,  282.07,   
+     1          1657.76, -515.43, 1336.30,-2305.83, -198.86, 1246.39,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:937.72:
 
-     3           210.65, -225.23, -379.86,  145.15,  100.00, -305.36,   
+     2           269.72,  672.51, -524.72,  920.55,  797.96,  282.07,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:938.72:
 
-     4          -227.00,  354.41,   42.72,  208.95,  180.25, -136.54,   
+     3           210.65, -225.23, -379.86,  145.15,  100.00, -305.36,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:939.72:
 
-     5          -123.45, -168.05,  -19.57,  -13.55,  103.85,   73.60,   
+     4          -227.00,  354.41,   42.72,  208.95,  180.25, -136.54,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:940.72:
 
-     6            69.56,  -20.33,   76.74,   54.75, -151.34,   63.63,   
+     5          -123.45, -168.05,  -19.57,  -13.55,  103.85,   73.60,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:941.72:
 
-     7           -14.58,  -63.53,   14.58,    0.24,  -86.36,   50.94,   
+     6            69.56,  -20.33,   76.74,   54.75, -151.34,   63.63,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:942.72:
 
-     8            79.88,  -74.46,  -61.14,   -1.65,  -22.57,   38.73,   
+     7           -14.58,  -63.53,   14.58,    0.24,  -86.36,   50.94,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:943.72:
 
-     9             6.82,   12.30,   25.35,    9.37,   10.93,    5.42,   
+     8            79.88,  -74.46,  -61.14,   -1.65,  -22.57,   38.73,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:944.72:
 
-     a           -26.32,    1.94,   -4.64,   24.80,    7.62,   11.20,   
+     9             6.82,   12.30,   25.35,    9.37,   10.93,    5.42,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:945.72:
 
-     b           -11.73,  -20.88,   -6.88,    9.83,  -18.11,  -19.71,   
+     a           -26.32,    1.94,   -4.64,   24.80,    7.62,   11.20,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:946.72:
 
-     c            10.17,   16.22,    9.36,    7.61,  -11.25,  -12.76,   
+     b           -11.73,  -20.88,   -6.88,    9.83,  -18.11,  -19.71,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:947.72:
 
-     d            -4.87,   -0.06,    5.58,    9.76,  -20.11,    3.58,   
+     c            10.17,   16.22,    9.36,    7.61,  -11.25,  -12.76,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:948.72:
 
-     e            12.69,   -6.94,   12.67,    5.01,   -6.72,  -10.76,   
+     d            -4.87,   -0.06,    5.58,    9.76,  -20.11,    3.58,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:949.72:
 
-     f            -8.16,   -1.25,    8.10,    8.76,    2.92,   -6.66,   
+     e            12.69,   -6.94,   12.67,    5.01,   -6.72,  -10.76,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:950.72:
 
-     g            -7.73,   -9.22,    6.01,   -2.17,   -6.12,    2.19,   
+     f            -8.16,   -1.25,    8.10,    8.76,    2.92,   -6.66,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:951.72:
 
-     h             1.42,    0.10,   -2.35,    4.46,   -0.15,    4.76,   
+     g            -7.73,   -9.22,    6.01,   -2.17,   -6.12,    2.19,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:952.72:
 
-     i             3.06,   -6.58,    0.29,   -1.01,    2.06,   -3.47,   
+     h             1.42,    0.10,   -2.35,    4.46,   -0.15,    4.76,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:953.72:
 
-     j             3.77,   -0.86,   -0.21,   -2.31,   -2.09,   -7.93,   
+     i             3.06,   -6.58,    0.29,   -1.01,    2.06,   -3.47,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:954.72:
 
-     k             2.95,   -1.60,    0.26,   -1.88,    1.44,    1.44,   
+     j             3.77,   -0.86,   -0.21,   -2.31,   -2.09,   -7.93,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:955.72:
 
-     l            -0.77,   -0.31,   -2.27,    0.29,    0.90,   -0.79,   
+     k             2.95,   -1.60,    0.26,   -1.88,    1.44,    1.44,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:956.72:
 
-     m            -0.58,    0.53,   -2.69,    1.80,   -1.08,    0.16,   
+     l            -0.77,   -0.31,   -2.27,    0.29,    0.90,   -0.79,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:957.72:
 
-     n            -1.58,    0.96,   -1.90,    3.99,   -1.39,   -2.15,   
+     m            -0.58,    0.53,   -2.69,    1.80,   -1.08,    0.16,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:958.72:
 
-     o            -0.29,   -0.55,    0.21,    0.23,    0.89,    2.38,   
+     n            -1.58,    0.96,   -1.90,    3.99,   -1.39,   -2.15,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:959.72:
 
-     p            -0.38,   -2.63,    0.96,    0.61,   -0.30,    0.40,   
+     o            -0.29,   -0.55,    0.21,    0.23,    0.89,    2.38,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:960.72:
 
-     q             0.46,    0.01,   -0.35,    0.02,   -0.36,    0.28,   
+     p            -0.38,   -2.63,    0.96,    0.61,   -0.30,    0.40,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:961.72:
 
-     r             0.08,   -0.87,   -0.49,   -0.34,   -0.08,    0.88,   
+     q             0.46,    0.01,   -0.35,    0.02,   -0.36,    0.28,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:962.72:
 
-     s            -0.16,   -0.88,   -0.76,    0.30,    0.33,    0.28,   
+     r             0.08,   -0.87,   -0.49,   -0.34,   -0.08,    0.88,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:963.72:
 
-     t             1.72,   -0.43,   -0.54,    1.18,   -1.07,   -0.37,   
+     s            -0.16,   -0.88,   -0.76,    0.30,    0.33,    0.28,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:964.72:
 
-     u            -0.04,    0.75,    0.63,   -0.26,    0.21,    0.35,   
+     t             1.72,   -0.43,   -0.54,    1.18,   -1.07,   -0.37,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:965.72:
 
-     v             0.53,   -0.05,    0.38,    0.41,   -0.22,   -0.10,   
+     u            -0.04,    0.75,    0.63,   -0.26,    0.21,    0.35,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:966.72:
 
-     w            -0.57,   -0.18,   -0.82/                              
+     v             0.53,   -0.05,    0.38,    0.41,   -0.22,   -0.10,   
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:967.72:
 
-      data gp/-29496.5,-1585.9, 4945.1,-2396.6, 3026.0,-2707.7, 1668.6, 
+     w            -0.57,   -0.18,   -0.82/                              
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:968.72:
 
-     1          -575.4, 1339.7,-2326.3, -160.5, 1231.7,  251.7,  634.2, 
+      data gp/-29496.5,-1585.9, 4945.1,-2396.6, 3026.0,-2707.7, 1668.6, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:969.72:
 
-     2          -536.8,  912.6,  809.0,  286.4,  166.6, -211.2, -357.1, 
+     1          -575.4, 1339.7,-2326.3, -160.5, 1231.7,  251.7,  634.2, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:970.72:
 
-     3           164.4,   89.7, -309.2, -231.1,  357.2,   44.7,  200.3, 
+     2          -536.8,  912.6,  809.0,  286.4,  166.6, -211.2, -357.1, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:971.72:
 
-     4           188.9, -141.2, -118.1, -163.1,    0.1,   -7.7,  100.9, 
+     3           164.4,   89.7, -309.2, -231.1,  357.2,   44.7,  200.3, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:972.72:
 
-     5            72.8,   68.6,  -20.8,   76.0,   44.2, -141.4,   61.5, 
+     4           188.9, -141.2, -118.1, -163.1,    0.1,   -7.7,  100.9, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:973.72:
 
-     6           -22.9,  -66.3,   13.1,    3.1,  -77.9,   54.9,   80.4, 
+     5            72.8,   68.6,  -20.8,   76.0,   44.2, -141.4,   61.5, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:974.72:
 
-     7           -75.0,  -57.8,   -4.7,  -21.2,   45.3,    6.6,   14.0, 
+     6           -22.9,  -66.3,   13.1,    3.1,  -77.9,   54.9,   80.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:975.72:
 
-     8            24.9,   10.4,    7.0,    1.6,  -27.7,    4.9,   -3.4, 
+     7           -75.0,  -57.8,   -4.7,  -21.2,   45.3,    6.6,   14.0, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:976.72:
 
-     9            24.3,    8.2,   10.9,  -14.5,  -20.0,   -5.7,   11.9, 
+     8            24.9,   10.4,    7.0,    1.6,  -27.7,    4.9,   -3.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:977.72:
 
-     a           -19.3,  -17.4,   11.6,   16.7,   10.9,    7.1,  -14.1, 
+     9            24.3,    8.2,   10.9,  -14.5,  -20.0,   -5.7,   11.9, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:978.72:
 
-     b           -10.8,   -3.7,    1.7,    5.4,    9.4,  -20.5,    3.4, 
+     a           -19.3,  -17.4,   11.6,   16.7,   10.9,    7.1,  -14.1, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:979.72:
 
-     c            11.6,   -5.3,   12.8,    3.1,   -7.2,  -12.4,   -7.4, 
+     b           -10.8,   -3.7,    1.7,    5.4,    9.4,  -20.5,    3.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:980.72:
 
-     d            -0.8,    8.0,    8.4,    2.2,   -8.4,   -6.1,  -10.1, 
+     c            11.6,   -5.3,   12.8,    3.1,   -7.2,  -12.4,   -7.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:981.72:
 
-     e             7.0,   -2.0,   -6.3,    2.8,    0.9,   -0.1,   -1.1, 
+     d            -0.8,    8.0,    8.4,    2.2,   -8.4,   -6.1,  -10.1, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:982.72:
 
-     f             4.7,   -0.2,    4.4,    2.5,   -7.2,   -0.3,   -1.0, 
+     e             7.0,   -2.0,   -6.3,    2.8,    0.9,   -0.1,   -1.1, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:983.72:
 
-     g             2.2,   -4.0,    3.1,   -2.0,   -1.0,   -2.0,   -2.8, 
+     f             4.7,   -0.2,    4.4,    2.5,   -7.2,   -0.3,   -1.0, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:984.72:
 
-     h            -8.3,    3.0,   -1.5,    0.1,   -2.1,    1.7,    1.6, 
+     g             2.2,   -4.0,    3.1,   -2.0,   -1.0,   -2.0,   -2.8, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:985.72:
 
-     i            -0.6,   -0.5,   -1.8,    0.5,    0.9,   -0.8,   -0.4, 
+     h            -8.3,    3.0,   -1.5,    0.1,   -2.1,    1.7,    1.6, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:986.72:
 
-     j             0.4,   -2.5,    1.8,   -1.3,    0.2,   -2.1,    0.8, 
+     i            -0.6,   -0.5,   -1.8,    0.5,    0.9,   -0.8,   -0.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:987.72:
 
-     k            -1.9,    3.8,   -1.8,   -2.1,   -0.2,   -0.8,    0.3, 
+     j             0.4,   -2.5,    1.8,   -1.3,    0.2,   -2.1,    0.8, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:988.72:
 
-     l             0.3,    1.0,    2.2,   -0.7,   -2.5,    0.9,    0.5, 
+     k            -1.9,    3.8,   -1.8,   -2.1,   -0.2,   -0.8,    0.3, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:989.72:
 
-     m            -0.1,    0.6,    0.5,    0.0,   -0.4,    0.1,   -0.4, 
+     l             0.3,    1.0,    2.2,   -0.7,   -2.5,    0.9,    0.5, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:990.72:
 
-     n             0.3,    0.2,   -0.9,   -0.8,   -0.2,    0.0,    0.8, 
+     m            -0.1,    0.6,    0.5,    0.0,   -0.4,    0.1,   -0.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:991.72:
 
-     o            -0.2,   -0.9,   -0.8,    0.3,    0.3,    0.4,    1.7, 
+     n             0.3,    0.2,   -0.9,   -0.8,   -0.2,    0.0,    0.8, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:992.72:
 
-     p            -0.4,   -0.6,    1.1,   -1.2,   -0.3,   -0.1,    0.8, 
+     o            -0.2,   -0.9,   -0.8,    0.3,    0.3,    0.4,    1.7, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:993.72:
 
-     q             0.5,   -0.2,    0.1,    0.4,    0.5,    0.0,    0.4, 
+     p            -0.4,   -0.6,    1.1,   -1.2,   -0.3,   -0.1,    0.8, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:994.72:
 
-     r             0.4,   -0.2,   -0.3,   -0.5,   -0.3,   -0.8/         
+     q             0.5,   -0.2,    0.1,    0.4,    0.5,    0.0,    0.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:995.72:
 
-      data gq/    11.4,   16.7,  -28.8,  -11.3,   -3.9,  -23.0,    2.7, 
+     r             0.4,   -0.2,   -0.3,   -0.5,   -0.3,   -0.8/         
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:996.72:
 
-     1           -12.9,    1.3,   -3.9,    8.6,   -2.9,   -2.9,   -8.1, 
+      data gq/    11.4,   16.7,  -28.8,  -11.3,   -3.9,  -23.0,    2.7, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:997.72:
 
-     2            -2.1,   -1.4,    2.0,    0.4,   -8.9,    3.2,    4.4, 
+     1           -12.9,    1.3,   -3.9,    8.6,   -2.9,   -2.9,   -8.1, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:998.72:
 
-     3             3.6,   -2.3,   -0.8,   -0.5,    0.5,    0.5,   -1.5, 
+     2            -2.1,   -1.4,    2.0,    0.4,   -8.9,    3.2,    4.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:999.72:
 
-     4             1.5,   -0.7,    0.9,    1.3,    3.7,    1.4,   -0.6, 
+     3             3.6,   -2.3,   -0.8,   -0.5,    0.5,    0.5,   -1.5, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1000.72:
 
-     5            -0.3,   -0.3,   -0.1,   -0.3,   -2.1,    1.9,   -0.4, 
+     4             1.5,   -0.7,    0.9,    1.3,    3.7,    1.4,   -0.6, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1001.72:
 
-     6            -1.6,   -0.5,   -0.2,    0.8,    1.8,    0.5,    0.2, 
+     5            -0.3,   -0.3,   -0.1,   -0.3,   -2.1,    1.9,   -0.4, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1002.72:
 
-     7            -0.1,    0.6,   -0.6,    0.3,    1.4,   -0.2,    0.3, 
+     6            -1.6,   -0.5,   -0.2,    0.8,    1.8,    0.5,    0.2, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1003.72:
 
-     8            -0.1,    0.1,   -0.8,   -0.8,   -0.3,    0.4,    0.2, 
+     7            -0.1,    0.6,   -0.6,    0.3,    1.4,   -0.2,    0.3, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1004.72:
 
-     9            -0.1,    0.1,    0.0,   -0.5,    0.2,    0.3,    0.5, 
+     8            -0.1,    0.1,   -0.8,   -0.8,   -0.3,    0.4,    0.2, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1005.72:
 
-     a            -0.3,    0.4,    0.3,    0.1,    0.2,   -0.1,   -0.5, 
+     9            -0.1,    0.1,    0.0,   -0.5,    0.2,    0.3,    0.5, 
                                                                         1
 Warning: Line truncated at (1)
 igrf11.f90:1006.72:
 
+     a            -0.3,    0.4,    0.3,    0.1,    0.2,   -0.1,   -0.5, 
+                                                                        1
+Warning: Line truncated at (1)
+igrf11.f90:1007.72:
+
      b             0.4,    0.2,    0.4,115*0.0/                         
                                                                         1
 Warning: Line truncated at (1)
-igrf11.f90:489.5:
+igrf11.f90:490.5:
 
   205 WRITE(6,969) LND,LNM                                              
      1
 Warning: Label 205 at (1) defined but not used
-igrf11.f90:483.5:
+igrf11.f90:484.5:
 
   204 WRITE(6,968) LTD,LTM                                              
      1
 Warning: Label 204 at (1) defined but not used
-igrf11.f90:478.5:
+igrf11.f90:479.5:
 
   203 WRITE(6,967) XLN                                                  
      1
 Warning: Label 203 at (1) defined but not used
-igrf11.f90:458.5:
+igrf11.f90:459.5:
 
   159 RETURN    ! Edit SdL                                              
      1
 Warning: Label 159 at (1) defined but not used
-igrf11.f90:422.5:
+igrf11.f90:423.5:
 
   154 LN = LN + LND                                                     
      1
 Warning: Label 154 at (1) defined but not used
-igrf11.f90:1020.14:
+igrf11.f90:1021.14:
 
       ll    = t                                                         
               1
 Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1)
-igrf11.f90:1034.15:
+igrf11.f90:1035.15:
 
        ll    = 0.2*(date - 1995.0)                                      
                1
 Warning: Possible change of value in conversion from REAL(4) to INTEGER(4) at (1)
-igrf11.f90:377.35:
+igrf11.f90:378.35:
 
       CALL IGRF11SYN (0,DATE,ITYPE,ALT,CLT,XLN,X,Y,Z,F)                 
                                    1
 Warning: Type mismatch in argument 'alt' at (1); passed REAL(4) to REAL(8)
-igrf11.f90:389.19:
+igrf11.f90:390.19:
 
       aD(NPTS+1) = D                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:390.19:
+igrf11.f90:391.19:
 
       aH(NPTS+1) = H                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:391.19:
+igrf11.f90:392.19:
 
       aS(NPTS+1) = S                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:392.19:
+igrf11.f90:393.19:
 
       aX(NPTS+1) = X                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:393.19:
+igrf11.f90:394.19:
 
       aY(NPTS+1) = Y                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:394.19:
+igrf11.f90:395.19:
 
       aZ(NPTS+1) = Z                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:395.19:
+igrf11.f90:396.19:
 
       aF(NPTS+1) = F                                                    
                    1
 Warning: Possible change of value in conversion from REAL(8) to REAL(4) at (1)
-igrf11.f90:397.35:
+igrf11.f90:398.35:
 
       CALL IGRF11SYN (1,DATE,ITYPE,ALT,CLT,XLN,DX,DY,DZ,F1)             
                                    1
 Warning: Type mismatch in argument 'alt' at (1); passed REAL(4) to REAL(8)
-igrf11.f90:73.22:
+igrf11.f90:75.22:
 
       CHARACTER*30 FNM                                                  
                       1
 Warning: Unused variable 'fnm' declared at (1)
-igrf11.f90:70.20:
+igrf11.f90:72.20:
 
       CHARACTER*1 IA                                                    
                     1
 Warning: Unused variable 'ia' declared at (1)
-igrf11.f90:72.23:
+igrf11.f90:74.23:
 
       CHARACTER*20 NAME                                                 
                        1
 Warning: Unused variable 'name' declared at (1)
 igrf11.f90: In function ‘igrf11syn’:
-igrf11.f90:1120:0: warning: ‘gn’ may be used uninitialized in this function [-Wuninitialized]
-igrf11.f90:1134:0: warning: ‘fn’ may be used uninitialized in this function [-Wuninitialized]
-/usr/bin/gfortran -Wall -Wall -shared /tmp/tmpidRwMn/tmp/tmpidRwMn/src.linux-x86_64-2.7/igrfmodule.o /tmp/tmpidRwMn/tmp/tmpidRwMn/src.linux-x86_64-2.7/fortranobject.o /tmp/tmpidRwMn/igrf11.o -lgfortran -o ./igrf.so
+igrf11.f90:1121:0: warning: ‘gn’ may be used uninitialized in this function [-Wuninitialized]
+igrf11.f90:1135:0: warning: ‘fn’ may be used uninitialized in this function [-Wuninitialized]
+/usr/bin/gfortran -Wall -Wall -shared /tmp/tmpdA_oQK/tmp/tmpdA_oQK/src.linux-x86_64-2.7/igrfmodule.o /tmp/tmpdA_oQK/tmp/tmpdA_oQK/src.linux-x86_64-2.7/fortranobject.o /tmp/tmpdA_oQK/igrf11.o -lgfortran -o ./igrf.so
 running scons
-Removing build directory /tmp/tmpidRwMn
+Removing build directory /tmp/tmpdA_oQK
