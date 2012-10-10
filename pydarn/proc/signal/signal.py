@@ -112,6 +112,28 @@ class sigStruct(sig):
     newsigobj.history[datetime.datetime.now()] = comment
     
     return newsigobj
+  
+  def makeNewSignal(self,newsig,dtv,data,comment,**kwargs):
+    """Create a new vt sigStruct object that is a derivative of this one.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+    :param newsig: A string with the name for the new signal.
+    :paran dtv: A new datetime.datetime array.
+    :param data: A new data array.
+    :param comment: A string comment describing the new signal.
+    :returns: sig object
+
+    :**kwargs:
+      appendTitle: String that will be appended to plot's title.
+    """
+    newobj = self.copy(newsig,comment)
+    newobj.dtv  = dtv
+    newobj.data = data
+
+    if kwargs.has_key('appendTitle'):
+      md = newobj.getAllMetaData()
+      if md.has_key('title'):
+        newobj.metadata['title'] = ' '.join([kwargs['appendTitle'],md['title']]) 
+
+    newobj.setActive()
 
   def setActive(self):
     """Sets this signal as the currently active signal.

@@ -46,13 +46,22 @@ class oplot(object):
     fig = mp.figure()
     mp.hold(True)
 
+    #Allow linestyles to be passed.
+    if self.metadata.has_key('ls'): ls0 = self.metadata['ls']
+    else: ls0 = '-'
+
+    if np.size(ls0) != nSigs:
+      if np.size(ls0) != 1: ls0 = ls0[0]
+      ls = [ls0 for x in sigRange]
+    
     #Plot the traces.
     for xx in sigRange:
       plotData = sigList[xx].data
       if self.metadata.has_key('normalize'):
         if self.metadata['normalize'] == True:
           plotData = plotData / np.nanmax(np.abs(plotData))
-      mp.plot(sigList[xx].dtv,plotData,color=colors[xx])
+      #mp.plot(sigList[xx].dtv,plotData,color=colors[xx],ls=ls[xx])
+      mp.plot(sigList[xx].dtv,plotData,ls[xx],color=colors[xx])
 
     ################################################################################ 
     #Parse out valid times, grey out bad sections.

@@ -1,3 +1,4 @@
+#sigproc.py
 import copy 
 import datetime
 
@@ -7,6 +8,47 @@ import scipy as sp
 import scipy.signal
 
 from signalCommon import *
+
+def genDtv(start,end,samplePeriod):
+
+  dt  = datetime.timedelta(0,samplePeriod)
+  ndt = np.int(np.ceil((end - start).total_seconds() / dt.total_seconds()))
+  dtv = [start + dt*xx for xx in range(ndt)]
+  dtv = np.array(dtv)
+  return dtv
+
+def dtvToSeconds(dtv,start=None):
+  """Convert a datetime.datetime iterable to a numpy array of seconds from start.
+  :param start: datatime.datetime.  If None, then start = dtv[0].
+  :param dtv: datetime.datetime iterable to convert.
+  :returns sec: numpy.array of seconds from dtv[0].
+  """
+
+  if start == None: start = dtv[0]
+  npDtv     = np.array(dtv)
+  timeDelta = npDtv - start
+  sec       = np.array([x.total_seconds() for x in timeDelta])
+  return sec
+
+def interpolate(vtsig,newDtv):
+  sigobj = prepForProc(vtsig)
+
+  #Convert sigobj.dtv to seconds from newDtv[0].
+  start  = newDtv[0]
+  oldsec = dtvToSeconds(sigobj.dtv,start=start)
+  f = sp.interpolate.interp1d(oldsec,sigobj.data)
+
+  #Convert newDtv to seconds from newDtv[0].
+  newsec = dtvToSeconds(newDtv)
+  newsig = f(newsec)
+  
+  newSigName = 'interpolated'
+  sampPeriod = sigobj.samplePeriod(dtv=newDtv)
+  nyq = sigobj.nyquistFrequency(dtv=newDtv)
+  comment = 'Interpolate: ['+str(newDtv[0])+' to '+str(newDtv[-1])+'] dt='+str(sampPeriod)+' s, Nyq='+str(nyq)+' Hz'
+
+  sigobj.makeNewSignal(newSigName,newDtv,newsig,comment,appendTitle='Interpolated')
+
 
 def detrend(vtsig):
     """Linearly detrend a vtsig object.
@@ -144,7 +186,7 @@ class filter(object):
       print "WARNING!! You must define cutoff frequencies!"
       return
     
-    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:',str(cutoff_high),'Hz'])
+    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz'])
     self.nyq = nyq
     self.ir = d
 
@@ -281,11 +323,10 @@ class filter(object):
 
       key = 'title'
       if newsigobj.metadata.has_key(key):
-        newsigobj.metadata[key] = ' '.join(['Filtered ',newsigobj.metadata[key]])
+        newsigobj.metadata[key] = ' '.join(['Filtered',newsigobj.metadata[key]])
       elif vtsig.metadata.has_key(key):
-        newsigobj.metadata[key] = ' '.join(['Filtered ',vtsig.metadata[key]])
+        newsigobj.metadata[key] = ' '.join(['Filtered',vtsig.metadata[key]])
       else:
         newsigobj.metadata[key] = 'Filtered'
 
-      #newsigobj.metadata = 
       setattr(vtsig,'active',newsigobj)
