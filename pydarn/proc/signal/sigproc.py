@@ -9,14 +9,6 @@ import scipy.signal
 
 from signalCommon import *
 
-def genDtv(start,end,samplePeriod):
-
-  dt  = datetime.timedelta(0,samplePeriod)
-  ndt = np.int(np.ceil((end - start).total_seconds() / dt.total_seconds()))
-  dtv = [start + dt*xx for xx in range(ndt)]
-  dtv = np.array(dtv)
-  return dtv
-
 def dtvToSeconds(dtv,start=None):
   """Convert a datetime.datetime iterable to a numpy array of seconds from start.
   :param start: datatime.datetime.  If None, then start = dtv[0].
@@ -30,8 +22,29 @@ def dtvToSeconds(dtv,start=None):
   sec       = np.array([x.total_seconds() for x in timeDelta])
   return sec
 
-def interpolate(vtsig,newDtv):
+def interpolate(vtsig,start=None,stop=None,samplePeriod=None,newSigName='interpolated'):
+  """Interpolates signal onto a regular grid.
+  :param vtsig: VT sig/sigStruct object to be interpolated
+  :param start: datetime.datetime to start the new grid.
+    If not set, vtsig.getValidTimes()[0] is used.
+  :param stop: datetime.datetime to end the new grid.
+    If not set, vtsig.getValidTimes()[1] is used.
+  :param samplePeriod: Time resolution of the new grid in seconds.
+    If not set, 0.1*vtsig.samplePeriod() is used.
+  :param newSigName: String name of the attribute of the newly created signal.
+  """
   sigobj = prepForProc(vtsig)
+  
+  valid = sigobj.getValidTimes()
+  if start == None: start = valid[0]
+  if stop  == None: stop  = valid[1]
+  if samplePeriod == None: samplePeriod = 0.1*sigobj.getSamplePeriod()
+
+  #Create new date time vector.
+  dt  = datetime.timedelta(0,samplePeriod)
+  ndt = np.int(np.ceil((stop - start).total_seconds() / dt.total_seconds()))
+  dtv = [start + dt*xx for xx in range(ndt)]
+  newDtv = np.array(dtv)
 
   #Convert sigobj.dtv to seconds from newDtv[0].
   start  = newDtv[0]
@@ -42,13 +55,40 @@ def interpolate(vtsig,newDtv):
   newsec = dtvToSeconds(newDtv)
   newsig = f(newsec)
   
-  newSigName = 'interpolated'
   sampPeriod = sigobj.samplePeriod(dtv=newDtv)
   nyq = sigobj.nyquistFrequency(dtv=newDtv)
   comment = 'Interpolate: ['+str(newDtv[0])+' to '+str(newDtv[-1])+'] dt='+str(sampPeriod)+' s, Nyq='+str(nyq)+' Hz'
 
   sigobj.makeNewSignal(newSigName,newDtv,newsig,comment,appendTitle='Interpolated')
 
+def commonDtv(siglist):
+  """Takes a list of vt sig/sigStruct objects and interpolates them all to a common datetime.datetime grid. The most restrictive range of validtimes and the highest time resolution is used.
+  :params siglist: list of vt sig/sigStruct objects
+  """
+
+  sl    = []
+  start = []
+  stop  = []
+  dt    = []
+
+  #Find out the properties of each of the signals, put them into lists.
+  for sig in siglist:
+    s = prepForProc(sig)
+    sl.append(s)
+
+    dt.append(s.samplePeriod())
+
+    rang = s.getValidTimes()
+    start.append(rang[0])
+    stop.append(rang[1])
+
+  #Sort the lists appropriately.
+  dt.sort()
+  start.sort(reverse=True)
+  stop.sort()
+  
+  for sig in sl:
+    interpolate(sig,start[0],stop[0],0.1*dt[0],'common')
 
 def detrend(vtsig):
     """Linearly detrend a vtsig object.

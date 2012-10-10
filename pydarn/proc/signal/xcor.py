@@ -7,54 +7,46 @@ import scipy as sp
 
 from signalCommon import *
 
-# Create a system for handling metadata that applies to all signals. ###########
-glob = {}
-def globalMetaData():
-  """Return the glob (global metadata) dictionary.
-  """
-  return glob
+# Cross Correlation Objects Start Here #########################################
+class xcor(object):
+  def __init__(self, sig0, sig1, mode='full', comment=None, **metadata):
+    """Define a vtsd sig cross correlation object.
 
-def globalMetaData_add(**metadata):
-  """Add an item to the glob (global metadata) dictionary.
-  :**metadata : keywords and values to be added to the glob dictionary.
-  """
-  global glob
-  glob = dict(glob.items() + metadata.items())
-
-def globalMetaData_del(keys):
-  """Delete an item from the glob (global metadata) dictionary.
-  :param keys: List of keys to be deleted.
-  """
-  global glob
-  for key in keys:
-    if glob.has_key(key): del glob[key]
-
-def globalMetaData_clear():
-  """Clear the glob (global metadata) dictionary.
-  """
-  global glob
-  glob.clear()
-
-# Signal Objects Start Here ####################################################
-class sig(object):
-  def __init__(self, dtv, data, comment='Signal Object Created', **metadata):
-    """Define a vtsd sig object.
-
-    :param dtv: datetime.datetime list
-    :param data: raw data
-    :param ylabel: Y-Label String for data
+    :param sigList: List of 2 vt sig/sigStruct objects to cross-correlate.
     :returns: sig object
     """
+    sig0 = prepForProc(sig0)
+    sig1 = prepForProc(sig1)
+
+    assert sig0.samplePeriod() == sig1.samplePeriod(), 'Sample period must be the same!'
+    samplePeriod = sig0.samplePeriod()
+
+    norm0 = sig0.data / np.nanmax(np.abs(sig0.data))
+    norm1 = sig1.data / np.nanmax(np.abs(sig1.data))
+
+    self.norm0 = norm0
+    self.norm1 = norm1
+    xcor = sp.signal.correlate(norm0,norm1,mode=mode)
+
+    xcor = sp.signal.correlate(sig0.data,sig1.data,mode=mode)
+
+    lag  = np.array(range(np.size(xcor))) - np.size(xcor)/2.
+    lag  = lag * samplePeriod / 60. #Lag in minutes
+
+    md0  = sig0.getAllMetaData()
+    md1  = sig1.getAllMetaData()
+    
     defaults = {}
-    defaults['ylabel'] = 'Untitled Y-Axis'
-    defaults['xlabel'] = 'Time [UT]'
-    defaults['title']  = 'Untitled Plot'
+    defaults['ylabel']  = 'Cross Correlation Coefficient'
+    defaults['xlabel']  = 'Lag [min]'
+    defaults['title']   = '\n'.join([md0['title'],md1['title']])
     defaults['fft_xlabel'] = 'Frequency [Hz]'
     defaults['fft_ylabel'] = 'FFT Spectrum Magnitude'
+    defaults['validTimes'] = sig0.getValidTimes()
 
     self.metadata = dict(defaults.items() + metadata.items())
-    self.raw = sigStruct(dtv, data, comment=comment, parent=self)
-    self.active = self.raw
+    self.xcor = xcorStruct(lag, xcor, comment=comment, parent=self)
+    self.active = self.xcor
 
   def plot(self):
     """Plots the currently active signal.
@@ -66,7 +58,7 @@ class sig(object):
     """
     self.active.plotfft(**metadata)
 
-class sigStruct(sig):
+class xcorStruct(xcor):
   def __init__(self, dtv, data, comment=None, parent=0, **metadata):
     self.parent = parent
     """Define a vtsd sigStruct object.
@@ -191,7 +183,7 @@ class sigStruct(sig):
       self.metadata['validTimes'] = times
 
   def getAllMetaData(self):
-    return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
+    return dict(self.parent.metadata.items() + self.metadata.items())
 
   def setMetaData(self,**metadata):
     self.metadata = dict(self.metadata.items() + metadata.items())
@@ -238,15 +230,6 @@ class sigStruct(sig):
     fig = mp.figure()
     mp.plot(self.dtv,self.data,lineStyle)
 
-    #Set up the xaxis format for dates if warranted.
-    if md.has_key('xformat'):
-      if md['xformat']=='no_date':
-        pass
-      else:
-        fig.autofmt_xdate()
-    else:
-      fig.autofmt_xdate()
-
     if 'xmin' in md:
       mp.xlim(xmin=md['xmin'])
     if 'xmax' in md:
@@ -257,16 +240,15 @@ class sigStruct(sig):
     if 'ymax' in md:
       mp.ylim(ymax=md['ymax'])
 
-    if md.has_key('validTimes'):
-      grey = '0.75'
-      mp.axvspan(self.dtv[0],md['validTimes'][0],color=grey)
-      mp.axvspan(md['validTimes'][1],self.dtv[-1],color=grey)
-      mp.axvline(x=md['validTimes'][0],color='g',ls='--',lw=2)
-      mp.axvline(x=md['validTimes'][1],color='g',ls='--',lw=2)
-
     mp.xlabel(md['xlabel'])
     mp.ylabel(md['ylabel'])
     mp.title(md['title'])
+    mp.grid()
+
+    #Print the time window of the FFT on the side of the plot.
+    valid = self.getValidTimes()
+    s = ' - '.join([x.strftime('%Y%b%d %H:%M UT').upper() for x in valid])
+    mp.annotate(s, xy=(1.01, 0.95), xycoords="axes fraction",rotation=90)
 
   def getFftTimes(self):
     """Returns the time window for which to calculate the FFT times for a given signal.
@@ -407,3 +389,4 @@ class sigStruct(sig):
     mp.annotate(s, xy=(1.01, 0.95), xycoords="axes fraction",rotation=90)
 
     mp.show()
+
