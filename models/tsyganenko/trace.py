@@ -49,9 +49,19 @@ class tsygTrace(object):
 |       **.rho[N/S]H**: distance of the trace footpoint in Northern/Southern hemispher
 |
 |   **EXAMPLES**:
+|       # trace a series of points
+|       lats = range(10, 90, 10)
+|       lons = zeros(len(lats))
+|       rhos = 6372.*ones(len(lats))
+|       trace = tsyganenko.tsygTrace(lats, lons, rhos)
+|       # Print the results nicely
+|       print trace
+|       # Plot the traced field lines
+|       ax = trace.plot()
+|       # Or generate a 3d view of the traced field lines
+|       ax = trace.plot3d()
 |
-|
-|   Written by Sebastien 20121005
+|   Written by Sebastien 2012-10
         """
         self.lat = lat
         self.lon = lon
@@ -71,6 +81,8 @@ class tsygTrace(object):
     def __test_valid__(self):
         """
 |   Test the validity of input arguments to the tsygTrace class and trace method
+|
+|   Written by Sebastien 2012-10
         """
         assert (len(self.vswgse) == 3), 'vswgse must have 3 elements'
         assert (self.coords.lower() == 'geo'), '{}: this coordinae system is not supported'.format(self.coords.lower())
@@ -100,6 +112,8 @@ class tsygTrace(object):
 |   See tsygTrace for a description of each parameter
 |   Any unspecified parameter default to the one stored in the object
 |   Unspecified lmax, rmax, rmin, dsmax, err has a set default value
+|
+|   Written by Sebastien 2012-10
         """
         from models.tsyganenko import tsygFort
         from numpy import radians, degrees, zeros
@@ -184,9 +198,9 @@ class tsygTrace(object):
                                                             xgeo, ygeo, zgeo,
                                                             0. ,0. ,0. ,
                                                             1)
-            self.xGsw = xgsw
-            self.yGsw = ygsw
-            self.zGsw = zgsw
+            self.xGsw.append(xgsw)
+            self.yGsw.append(ygsw)
+            self.zGsw.append(zgsw)
 
             # Trace field line
             inmod = 'IGRF_GSW_08'
@@ -237,31 +251,161 @@ class tsygTrace(object):
         self.zTrace = self.zTrace[:,0:self.l.max()]
 
 
-    def plot3d(self, xyzlim=None):
+    def __str__(self):
+        """
+|   Print object information in a nice way
+|
+|   Written by Sebastien 2012-10
+        """
+        # Declare print format
+        outstr =    '''
+vswgse=[{:6.0f},{:6.0f},{:6.0f}]    [m/s]
+pdyn={:3.0f}                        [nPa]
+dst={:3.0f}                         [nT]
+byimf={:3.0f}                       [nT]
+bzimf={:3.0f}                       [nT]
+                    '''.format(self.vswgse[0],
+                               self.vswgse[1],
+                               self.vswgse[2],
+                               self.pdyn,
+                               self.dst,
+                               self.byimf,
+                               self.bzimf)
+        outstr += '\n(latitude [degrees], longitude [degrees], distance from center of the Earth [km])'
+
+        # Print stuff
+        for ip in xrange(len(self.lat)):
+            outstr +=   '''
+({:6.3f}, {:6.3f}, {:6.3f}) 
+    --> NH({:6.3f}, {:6.3f}, {:6.3f})
+    --> SH({:6.3f}, {:6.3f}, {:6.3f}) 
+                        '''.format(self.lat[ip], self.lon[ip], self.rho[ip], 
+                                   self.latNH[ip], self.lonNH[ip], self.rhoNH[ip], 
+                                   self.latSH[ip], self.lonSH[ip], self.rhoSH[ip])
+
+        return outstr
+
+
+    def plot(self, proj='xz', color='b', showPts=False, 
+        subplot=111, showEarth=True, disp=True, **kwargs):
+        """
+|   Generate a 2D plot of the trace projected onto a given plane
+|   Graphic keywords apply to the plot method for the field lines
+|   
+|   **INPUTS**:
+|       **plane**: the projection plane in GSW coordinates
+|       **subplot**: subplot position
+|       **showEarth**: Toggle Earth disk visibility on/off
+|       **showPts**: Toggle start points visibility on/off
+|       **disp**: invoke pylab.show()
+|       **color**: field line color
+|       **kwargs**: see matplotlib.axes.Axes.plot
+|   
+|   **OUTPUTS**:
+|       **ax**: matplotlib axes object
+|
+|   Written by Sebastien 2012-10
+        """
+        from pylab import gcf, show
+        from matplotlib.patches import Circle
+        from numpy import pi, linspace, outer, ones, size, cos, sin, radians
+
+        assert (len(proj) == 2) or \
+            (proj[0] in ['x','y','z'] and proj[1] in ['x','y','z']) or \
+            (proj[0] != proj[1]), 'Invalid projection plane'
+
+        fig = gcf()
+        ax = fig.add_subplot(subplot)
+        ax.set_aspect('equal')
+
+        # First plot a nice disk for the Earth
+        if showEarth:
+            circ = Circle(xy=(0,0), radius=1, facecolor='0.8', edgecolor='k', alpha=.5, zorder=-1)
+            ax.add_patch(circ)
+
+        # Then plot the traced field line
+        for ip in xrange(len(self.lat)):
+            # Select projection plane
+            if proj[0] == 'x':
+                xx = self.xTrace[ip,0:self.l[ip]]
+                xpt = self.xGsw[ip]
+                ax.set_xlabel(r'$X_{GSW}$')
+            elif proj[0] == 'y':
+                xx = self.yTrace[ip,0:self.l[ip]]
+                xpt = self.yGsw[ip]
+                ax.set_xlabel(r'$Y_{GSW}$')
+            elif proj[0] == 'z':
+                xx = self.zTrace[ip,0:self.l[ip]]
+                xpt = self.zGsw[ip]
+                ax.set_xlabel(r'$Z_{GSW}$')
+            if proj[1] == 'x':
+                yy = self.xTrace[ip,0:self.l[ip]]
+                ypt = self.xGsw[ip]
+                ax.set_ylabel(r'$X_{GSW}$')
+            elif proj[1] == 'y':
+                yy = self.yTrace[ip,0:self.l[ip]]
+                ypt = self.yGsw[ip]
+                ax.set_ylabel(r'$Y_{GSW}$')
+            elif proj[1] == 'z':
+                yy = self.zTrace[ip,0:self.l[ip]]
+                ypt = self.zGsw[ip]
+                ax.set_ylabel(r'$Z_{GSW}$')
+            # Plot
+            ax.plot(xx, yy, c=color, **kwargs)
+            if showPts:
+                ax.scatter(xpt, ypt, c='k')
+
+        if disp: show()
+
+        return ax
+
+
+    def plot3d(self, subplot=111, showEarth=True, showPts=False, disp=True, 
+        xyzlim=None, zorder=1, linewidth=2, color='b', **kwargs):
         """
 |   Generate a 3D plot of the trace
+|   Graphic keywords apply to the plot3d method for the field lines
+|   
+|   **INPUTS**:
+|       **subplot**: subplot position
+|       **showEarth**: Toggle Earth sphere visibility on/off
+|       **showPts**: Toggle start points visibility on/off
+|       **disp**: invoke pylab.show()
+|       **xyzlim**: 3D axis limits
+|       **zorder**: 3D layers ordering
+|       **linewidth**: field line width
+|       **color**: field line color
+|       **kwargs**: see mpl_toolkits.mplot3d.axes3d.Axes3D.plot3D
+|   
+|   **OUTPUTS**:
+|       **ax**: matplotlib axes object
+|
+|   Written by Sebastien 2012-10
         """
         from mpl_toolkits.mplot3d import proj3d
         from numpy import pi, linspace, outer, ones, size, cos, sin, radians
-        from pylab import figure, show
+        from pylab import gcf, show
 
-        fig = figure(figsize=(10,10))
-        ax = fig.add_subplot(111, projection='3d')
+        fig = gcf()
+        ax = fig.add_subplot(subplot, projection='3d')
 
         # First plot a nice sphere for the Earth
-        u = linspace(0, 2 * pi, 179)
-        v = linspace(0, pi, 179)
-        tx = outer(cos(u), sin(v))
-        ty = outer(sin(u), sin(v))
-        tz = outer(ones(size(u)), cos(v))
-        ax.plot_surface(tx,ty,tz,rstride=10, cstride=10, color='grey', alpha=.5, zorder=2, linewidth=0.5)
+        if showEarth:
+            u = linspace(0, 2 * pi, 179)
+            v = linspace(0, pi, 179)
+            tx = outer(cos(u), sin(v))
+            ty = outer(sin(u), sin(v))
+            tz = outer(ones(size(u)), cos(v))
+            ax.plot_surface(tx,ty,tz,rstride=10, cstride=10, color='grey', alpha=.5, zorder=0, linewidth=0.5)
 
         # Then plot the traced field line
         for ip in xrange(len(self.lat)):
             ax.plot3D(  self.xTrace[ip,0:self.l[ip]],
                         self.yTrace[ip,0:self.l[ip]],
                         self.zTrace[ip,0:self.l[ip]], 
-                        zorder=3, linewidth=2, color='y')
+                        zorder=zorder, linewidth=linewidth, color=color, **kwargs)
+            if showPts:
+                ax.scatter3D(self.xGsw[ip], self.yGsw[ip], self.zGsw[ip], c='k')
 
         # Set plot limits
         if not xyzlim:
@@ -272,6 +416,6 @@ class tsygTrace(object):
         ax.set_ylim3d([-xyzlim,xyzlim])
         ax.set_zlim3d([-xyzlim,xyzlim])
 
-        show()
+        if disp: show()
 
         return ax
