@@ -82,7 +82,7 @@ ax = trace.plot3d()
         self.byimf = byimf
         self.bzimf = bzimf
         # If no datetime is provided, defaults to today
-        if not datetime: datetime = pydt.utcnow()
+        if datetime==None: datetime = pydt.utcnow()
         self.datetime = datetime
 
         iTest = self.__test_valid__()
