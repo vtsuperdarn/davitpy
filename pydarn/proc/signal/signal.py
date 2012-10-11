@@ -268,6 +268,7 @@ class sigStruct(sig):
     mp.xlabel(md['xlabel'])
     mp.ylabel(md['ylabel'])
     mp.title(md['title'])
+    mp.grid()
 
   def getFftTimes(self):
     """Returns the time window for which to calculate the FFT times for a given signal.
@@ -400,6 +401,8 @@ class sigStruct(sig):
 
     if md.has_key('fft_ymin'): mp.ylim(ymin=md['fft_ymin'])
     if md.has_key('fft_ymax'): mp.ylim(ymax=md['fft_ymax'])
+    
+    mp.grid()
 
     
     #Print the time window of the FFT on the side of the plot.
