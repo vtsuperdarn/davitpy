@@ -56,10 +56,10 @@ class sig(object):
     self.raw = sigStruct(dtv, data, comment=comment, parent=self)
     self.active = self.raw
 
-  def plot(self):
+  def plot(self,**metadata):
     """Plots the currently active signal.
     """
-    self.active.plot()
+    self.active.plot(**metadata)
 
   def plotfft(self,**metadata):
     """Plots the spectrum of the currently active signal.
@@ -227,10 +227,11 @@ class sigStruct(sig):
     newsig.setActive()
     return newsig
 
-  def plot(self):
+  def plot(self,**metadata):
     #from matplotlib import pyplot as mp
 
     #Metadata of "processed" signal overrides defaults.
+    self.setMetaData(**metadata)
     md = self.getAllMetaData()
 
     if md.has_key('lineStyle'): lineStyle=md['lineStyle']

@@ -128,7 +128,7 @@ def detrend(vtsig):
 
 
 class filter(object):
-  def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True):
+  def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newSigName='filtered'):
     """Filter a VT sig/sigStruct object and define a FIR filter object.
     If only cutoff_low is defined, this is a high pass filter.
     If only cutoff_high is defined, this is a low pass filter.
@@ -230,7 +230,7 @@ class filter(object):
     self.nyq = nyq
     self.ir = d
 
-    self.filter(sigObj)
+    self.filter(sigObj,newSigName=newSigName)
 
 
   def __str__(self):
@@ -310,7 +310,7 @@ class filter(object):
       mp.subplots_adjust(hspace=0.5)
       mp.show()
 
-  def filter(self,vtsig):
+  def filter(self,vtsig,newSigName='filtered'):
       """Apply the filter to a vtsig object.
 
       :param vtsig: vtsig object
@@ -343,8 +343,7 @@ class filter(object):
       val_tm1 = sigobj.dtv[tinx1]
 
       #Create new signal object.
-      newsig = 'filtered'
-      newsigobj = sigobj.copy(newsig,self.comment)
+      newsigobj = sigobj.copy(newSigName,self.comment)
       #Put in the filtered data.
       newsigobj.data = copy.copy(filt_data)
       newsigobj.dtv = copy.copy(sigobj.dtv)
