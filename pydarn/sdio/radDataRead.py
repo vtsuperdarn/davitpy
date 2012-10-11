@@ -368,9 +368,10 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 			myBeam['prm']['time'] = dateT
 			
 			#parse the fit data
-			if(fileType == 'fitex' or fileType == 'fitacf' or fileType == 'lmfit'):
+			if(fileType == '.fitex' or fileType == '.fitacf' or fileType == '.lmfit'):
 				myFitData = parseDmap(dfile[epochT],fitData())
 				myBeam['fit'] = myFitData
+
 			
 			#parse the raw data
 			if(fileType == 'rawacf'):
