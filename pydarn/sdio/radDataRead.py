@@ -374,7 +374,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 
 			
 			#parse the raw data
-			if(fileType == 'rawacf'):
+			if(fileType == '.rawacf'):
 				myRawData = parseDmap(dfile[epochT],rawData())
 				myBeam['raw'] = myRawData
 				
