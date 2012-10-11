@@ -70,18 +70,24 @@ ax = trace.plot3d()
 |
 |   Written by Sebastien 2012-10
         """
+        from datetime import datetime as pydt
+
         self.lat = lat
         self.lon = lon
         self.rho = rho
         self.coords = coords
-        self.datetime = datetime
         self.vswgse = vswgse
         self.pdyn = pdyn
         self.dst = dst
         self.byimf = byimf
         self.bzimf = bzimf
+        # If no datetime is provided, defaults to today
+        if not datetime: datetime = pydt.utcnow()
+        self.datetime = datetime
+
         iTest = self.__test_valid__()
         if not iTest: self.__del__()
+
         self.trace()
 
 
@@ -106,8 +112,13 @@ ax = trace.plot3d()
             [r for r in self.rho]
         except:
             self.rho = [self.rho]
+        try:
+            [d for d in self.datetime]
+        except:
+            self.datetime = [self.datetime for l in self.lat]
         # Make sure they're all the sam elength
-        assert (len(self.lat) == len(self.lon) == len(self.rho)), 'lat, lon and rho must me the same length'
+        assert (len(self.lat) == len(self.lon) == len(self.rho) == len(self.datetime)), \
+            'lat, lon, rho and datetime must me the same length'
         
         return True
 
@@ -124,7 +135,6 @@ ax = trace.plot3d()
         """
         from models.tsyganenko import tsygFort
         from numpy import radians, degrees, zeros
-        from datetime import datetime as pydt
 
         # Store existing values of class attributes in case something is wrong
         # and we need to revert back to them
@@ -133,6 +143,7 @@ ax = trace.plot3d()
         if rho: _rho = self.rho
         if coords: _coords = self.coords
         if vswgse: _vswgse = self.vswgse
+        if datetime: _datetime = self.datetime
 
         # Pass position if new
         if lat: self.lat = lat
@@ -141,6 +152,8 @@ ax = trace.plot3d()
         lon = self.lon
         if rho: self.rho = rho
         rho = self.rho
+        if datetime: self.datetime = datetime
+        datetime = self.datetime
 
         # Set necessary parameters if new
         if coords: self.coords = coords
@@ -166,6 +179,7 @@ ax = trace.plot3d()
             if rho: self.rho = _rho
             if coords: self.coords = _coords 
             if vswgse: self.vswgse = _vswgse
+            if datetime: self.datetime = _datetime
 
         # Declare the same Re as used in Tsyganenko models [km]
         Re = 6371.2
@@ -185,16 +199,13 @@ ax = trace.plot3d()
         self.lonSH = []
         self.rhoSH = []
 
-        # If no datetime is provided, defaults to today
-        if not datetime: datetime = pydt.utcnow()
-
-        # This has to be called first
-        tsygFort.recalc_08(datetime.year,datetime.timetuple().tm_yday,
-                                datetime.hour,datetime.minute,datetime.second,
-                                vswgse[0],vswgse[1],vswgse[2])
-
         # And now iterate through the desired points
         for ip in xrange(len(lat)):
+            # This has to be called first
+            tsygFort.recalc_08(datetime[ip].year,datetime[ip].timetuple().tm_yday,
+                                datetime[ip].hour,datetime[ip].minute,datetime[ip].second,
+                                vswgse[0],vswgse[1],vswgse[2])
+
             # Convert lat,lon to geographic cartesian and then gsw
             r, theta, phi, xgeo, ygeo, zgeo = tsygFort.sphcar_08(
                                                     rho[ip]/Re, radians(90.-lat[ip]), radians(lon[ip]),
@@ -278,15 +289,17 @@ bzimf={:3.0f}                       [nT]
                                self.dst,
                                self.byimf,
                                self.bzimf)
-        outstr += '\n(latitude [degrees], longitude [degrees], distance from center of the Earth [km])'
+        outstr += '\nCoords: {}\n'.format(self.coords)
+        outstr += '(latitude [degrees], longitude [degrees], distance from center of the Earth [km])\n'
 
         # Print stuff
         for ip in xrange(len(self.lat)):
             outstr +=   '''
-({:6.3f}, {:6.3f}, {:6.3f}) 
+({:6.3f}, {:6.3f}, {:6.3f}) @ {}
     --> NH({:6.3f}, {:6.3f}, {:6.3f})
     --> SH({:6.3f}, {:6.3f}, {:6.3f}) 
                         '''.format(self.lat[ip], self.lon[ip], self.rho[ip], 
+                                   self.datetime[ip].strftime('%H:%M UT (%d-%b-%y)'), 
                                    self.latNH[ip], self.lonNH[ip], self.rhoNH[ip], 
                                    self.latSH[ip], self.lonSH[ip], self.rhoSH[ip])
 
