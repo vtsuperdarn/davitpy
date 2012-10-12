@@ -19,8 +19,9 @@ Created by Sebastien
 """
 
 # *************************************************************
-def map(limits=None, lon_0=290., hemi='north', boundingLat=None, \
-		grid=True, fillContinents='grey', fillOceans='None', fillLakes='white', coastLineWidth=0.):
+def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
+		grid=True, fillContinents='grey', fillOceans='None', 
+		fillLakes='white', coastLineWidth=0.):
 	"""
 Plot empty map
 
@@ -80,7 +81,8 @@ OUTPUTS:
 	
 
 # *************************************************************
-def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, annotate=True, coords='geo', all=False, \
+def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
+				annotate=True, coords='geo', all=False,
 				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
 	"""
 Overlay radar position(s) and name(s) on map
@@ -118,7 +120,8 @@ OUTPUTS:
 	if all:
 		codes = []
 		for irad in range( len(NetworkObj) ):
-			if NetworkObj.info[irad].status != 0 and NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime:
+			if (NetworkObj.info[irad].status != 0 and \
+				NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime):
 				codes.append(NetworkObj.info[irad].code[0])
 	
 	# Define how the radars to be plotted are identified (code, id or name)
@@ -169,41 +172,51 @@ OUTPUTS:
 				xOff = 0.0
 				ha = 'center'
 			# Plot radar name
-			plt.text(x + xOff, y - height*.01, rad.code[0].upper(), ha=ha, va='top', variant='small-caps', fontsize=fontSize, zorder=zorder)
+			plt.text(x + xOff, y - height*.01, rad.code[0].upper(), 
+				ha=ha, va='top', variant='small-caps', fontsize=fontSize, zorder=zorder)
 
 	return
 
 
 # *************************************************************
-def overlayFov(Basemap, codes=None, ids=None, names=None, dateTime=None, coords='geo', all=False, \
-				maxGate=None, fovColor=None, fovAlpha=0.2, \
-				beams=None, \
-				zorder=2, lineColor='k',radFov=None):
+def overlayFov(Basemap, codes=None, ids=None, names=None, 
+				dateTime=None, coords='geo', all=False, 
+				maxGate=None, fovColor=None, fovAlpha=0.2, 
+				beams=None, hemi=None, fovObj=None, 
+				zorder=2, lineColor='k', lineWidth=1):
 	"""
-Overlay FoV position(s) on map
-
-INPUTS:
-	Basemap: a python Basemap object on which to overplot the radar position(s)
-	codes: a list of radar 3-letter codes to plot
-	ids: a list of radar IDs to plot
-	names: a list of radar names to plot
-	dateTime: the date and time as a python datetime object
-	coords: 'geo' (default), 'mag', 'mlt' (not implemented yest)
-	all: set to true to plot all the radars (active ones)
-	maxGate: Maximum number of gates to be plotted. Defaults to hdw.dat information.
-	zorder: the overlay order number
-	lineColor: FoV contour color
-	fovColor: field of view fill color (integer between 0-255)
-	fovAlpha: field of view fill color transparency
-OUTPUTS:
-	
+|	Overlay FoV position(s) on map
+|	
+|	**INPUTS**:
+|		**Basemap**: a python Basemap object on which to overplot the radar position(s)
+|		**[codes]**: a list of radar 3-letter codes to plot
+|		**[ids]**: a list of radar IDs to plot
+|		**[names]**: a list of radar names to plot
+|		**[dateTime]**: the date and time as a python datetime object
+|		**[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)
+|		**[all]**: set to true to plot all the radars (active ones)
+|		**[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
+|		**[zorder]**: the overlay order number
+|		**[lineColor]**: FoV contour line color
+|		**[lineWidth]**: FoV contour line width
+|		**[fovColor]**: field of view fill color
+|		**[fovAlpha]**: field of view fill color transparency
+|		**[fovObj]**: a fov object. See pydarn.radar.radFov.fov
+|		**[hemi]**: 'north' or 'south', ignore radars from the other hemisphere
+|		**[beam]**: hightlight specified beams
+|	**OUTPUTS**:
+|
+|	Written by Sebastien 2012-09
+|		
 	"""
 	from ..radar.radNetwork import network
 	from ..radar.radFov import fov
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.cm as cm
-	from numpy import meshgrid, ones
+	from numpy import transpose, ones, concatenate, vstack
+	from matplotlib.patches import Polygon
+	from pylab import gca
 	
 	# Set default date/time to now
 	if not dateTime:
@@ -213,63 +226,87 @@ OUTPUTS:
 	NetworkObj = network()
 	
 	# If all radars are to be plotted, create the list
-	if all:
-		codes = []
-		for irad in range( len(NetworkObj) ):
-			if NetworkObj.info[irad].status != 0 and \
-				NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime:
-				codes.append(NetworkObj.info[irad].code[0])
+	if all: codes = NetworkObj.getAllCodes(datetime=dateTime, hemi=hemi)
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
-		input = {'meth': 'code', 'vals': codes}
+		try:
+			[c for c in codes]
+		except:
+			codes = [codes]
+		finally:
+			nradars = len(codes)
+			input = {'meth': 'code', 'vals': codes}
 	elif ids:
-		input = {'meth': 'id', 'vals': ids}
+		try:
+			[c for c in ids]
+		except:
+			ids = [ids]
+		finally:
+			nradars = len(ids)
+			input = {'meth': 'id', 'vals': ids}
 	elif names:
-		input = {'meth': 'name', 'vals': names}
-	else:
+		try:
+			[c for c in names]
+		except:
+			names = [names]
+		finally:
+			nradars = len(names)
+			input = {'meth': 'name', 'vals': names}
+	elif fovObj == None:
 		print 'overlayRadar: no radars to plot'
 		return
-	
-	# Check if radars is given as a list
-	if not isinstance(input['vals'], list): input['vals'] = [input['vals']]
+	else: nradars = 1
 	
 	# iterates through radars to be plotted
-	for radN in input['vals']:
-		rad = NetworkObj.getRadarBy(radN, input['meth'])
-		if not rad: continue
-		site = rad.getSiteByDate(dateTime)
-		if not site: continue
-		# Set number of gates to be plotted
-		eGate = site.maxgate-1 if not maxGate else maxGate
+	for ir in xrange(nradars):
 		# Get field of view coordinates
-		if(radFov == None):
+		if(fovObj == None):
+			rad = NetworkObj.getRadarBy(input['vals'][ir], input['meth'])
+			if not rad: continue
+			site = rad.getSiteByDate(dateTime)
+			if not site: continue
+			# Set number of gates to be plotted
+			eGate = site.maxgate-1 if not maxGate else maxGate
 			radFov = fov(site=site, ngates=eGate+1, coords = coords)
+		else:
+			radFov = fovObj
+			eGate = len(fovObj.gates)
 		# Get radar coordinates in map projection
 		x,y = Basemap(radFov.lonFull, radFov.latFull)
-#		if not Basemap.xmin <= x <= Basemap.xmax: continue
-#		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot field of view
-		# Side boundary
-		Basemap.plot(x[0,0:eGate], y[0,0:eGate], color=lineColor)
-		# Other side boundary
-		Basemap.plot(x[-1,0:eGate], y[-1,0:eGate], color=lineColor)
-		# Furthest boundary
-		Basemap.plot(x[:,eGate], y[:,eGate], color=lineColor)
-		# Closest boundary
-		Basemap.plot(x[:,0], y[:,0], color=lineColor)
+		# Create contour
+		contourX = concatenate( (x[0,0:eGate], 
+								 x[:,eGate],
+								 x[-1,eGate::-1],
+								 x[-1::-1,0]) )
+		contourY = concatenate( (y[0,0:eGate], 
+								 y[:,eGate],
+								 y[-1,eGate::-1],
+								 y[-1::-1,0]) )
+		# Plot contour
+		Basemap.plot(contourX, contourY, 
+			color=lineColor, zorder=4, linewidth=lineWidth)
 		# Field of view fill
 		if fovColor:
-			Basemap.pcolormesh(x[:,0:eGate], y[:,0:eGate], \
-							fovColor/255.*ones(x[:,0:eGate].shape), vmin=0., vmax=1., \
-							zorder=2, alpha=fovAlpha, cmap=cm.Pastel1, edgecolors='None')
+			contour = transpose( vstack((contourX,contourY)) )
+			patch = Polygon( contour, color=fovColor, alpha=fovAlpha)
+			gca().add_patch(patch)
 		# Beams fill
 		if beams:
 			for ib in beams:
 				if not (0 <= ib <= site.maxbeam): continue
 				bCol = ib/float(site.maxbeam)
-				Basemap.pcolormesh(x[ib:ib+2,0:eGate], y[ib:ib+2,0:eGate], \
-							bCol*ones(x[ib:ib+2,0:eGate].shape), vmin=0., vmax=1., \
-							zorder=3, alpha=.4, cmap=cm.Paired, edgecolors='None')
+				contourX = concatenate( (x[ib,0:eGate], 
+										 x[ib:ib+2,eGate],
+										 x[ib+1,eGate::-1],
+										 x[ib+1:ib-1:-1,0]) )
+				contourY = concatenate( (y[ib,0:eGate], 
+										 y[ib:ib+2,eGate],
+										 y[ib+1,eGate::-1],
+										 y[ib+1:ib-1:-1,0]) )
+				contour = transpose( vstack((contourX,contourY)) )
+				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4)
+				gca().add_patch(patch)
 	
 	return

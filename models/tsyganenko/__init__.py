@@ -20,7 +20,8 @@ Written by Sebastien de Larquier 2012-10
 import tsygFort
 
 class tsygTrace(object):
-    def __init__(self, lat, lon, rho, coords='geo', datetime=None,
+    def __init__(self, lat=None, lon=None, rho=None, filename=None, 
+        coords='geo', datetime=None,
         vswgse=[-400.,0.,0.], pdyn=2., dst=-5., byimf=0., bzimf=-5.,
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
         """
@@ -34,6 +35,7 @@ class tsygTrace(object):
 |       **lat**: latitude [degrees]
 |       **lon**: longitude [degrees]
 |       **rho**: distance from center of the Earth [km]
+|       **filename**: load a trace object directly from a file
 |       **[coords]**: coordinates used for start point ['geo']
 |       **[datetime]**: a python datetime object
 |       **[vswgse]**: solar wind velocity in GSE coordinates [m/s, m/s, m/s]
@@ -67,28 +69,38 @@ print trace
 ax = trace.plot()
 # Or generate a 3d view of the traced field lines
 ax = trace.plot3d()
+# Save your trace to a file for later use
+trace.save('trace.dat')
+# And when you want to re-use the saved trace
+trace = tsyganenko.tsygTrace(filename='trace.dat')
 |
 |   Written by Sebastien 2012-10
         """
         from datetime import datetime as pydt
 
-        self.lat = lat
-        self.lon = lon
-        self.rho = rho
-        self.coords = coords
-        self.vswgse = vswgse
-        self.pdyn = pdyn
-        self.dst = dst
-        self.byimf = byimf
-        self.bzimf = bzimf
-        # If no datetime is provided, defaults to today
-        if datetime==None: datetime = pydt.utcnow()
-        self.datetime = datetime
+        assert (None not in [lat, lon, rho]) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
 
-        iTest = self.__test_valid__()
-        if not iTest: self.__del__()
+        if None not in [lat, lon, rho]: 
+            self.lat = lat
+            self.lon = lon
+            self.rho = rho
+            self.coords = coords
+            self.vswgse = vswgse
+            self.pdyn = pdyn
+            self.dst = dst
+            self.byimf = byimf
+            self.bzimf = bzimf
+            # If no datetime is provided, defaults to today
+            if datetime==None: datetime = pydt.utcnow()
+            self.datetime = datetime
 
-        self.trace()
+            iTest = self.__test_valid__()
+            if not iTest: self.__del__()
+
+            self.trace()
+
+        elif filename:
+            self.load(filename)
 
 
     def __test_valid__(self):
@@ -143,7 +155,7 @@ ax = trace.plot3d()
         if rho: _rho = self.rho
         if coords: _coords = self.coords
         if vswgse: _vswgse = self.vswgse
-        if datetime: _datetime = self.datetime
+        if not datetime==None: _datetime = self.datetime
 
         # Pass position if new
         if lat: self.lat = lat
@@ -152,13 +164,13 @@ ax = trace.plot3d()
         lon = self.lon
         if rho: self.rho = rho
         rho = self.rho
-        if datetime: self.datetime = datetime
+        if not datetime==None: self.datetime = datetime
         datetime = self.datetime
 
         # Set necessary parameters if new
         if coords: self.coords = coords
         coords = self.coords
-        if datetime: self.datetime = datetime
+        if not datetime==None: self.datetime = datetime
         datetime = self.datetime
         if vswgse: self.vswgse = vswgse
         vswgse = self.vswgse
@@ -179,7 +191,7 @@ ax = trace.plot3d()
             if rho: self.rho = _rho
             if coords: self.coords = _coords 
             if vswgse: self.vswgse = _vswgse
-            if datetime: self.datetime = _datetime
+            if not datetime==None: self.datetime = _datetime
 
         # Declare the same Re as used in Tsyganenko models [km]
         Re = 6371.2
@@ -304,6 +316,55 @@ bzimf={:3.0f}                       [nT]
                                    self.latSH[ip], self.lonSH[ip], self.rhoSH[ip])
 
         return outstr
+
+
+    def save(self, filename):
+        """
+|   Save trace information to a file
+|
+|   Written by Sebastien 2012-10
+        """
+        import cPickle as pickle
+
+        fileObj = open( filename, "wb" )
+
+        pickle.dump(self, fileObj)
+
+
+    def load(self, filename):
+        """
+|   load trace information from a file
+|
+|   Written by Sebastien 2012-10
+        """
+        import cPickle as pickle
+
+        fileObj = open( filename, "rb" )
+        
+        obj = pickle.load(fileObj)
+        self.lat = obj.lat
+        self.lon = obj.lon
+        self.rho = obj.rho
+        self.coords = obj.coords
+        self.vswgse = obj.vswgse
+        self.pdyn = obj.pdyn
+        self.dst = obj.dst
+        self.byimf = obj.byimf
+        self.bzimf = obj.bzimf
+        self.datetime = obj.datetime
+        self.l = obj.l
+        self.xTrace = obj.xTrace
+        self.yTrace = obj.yTrace
+        self.zTrace = obj.zTrace
+        self.xGsw = obj.xGsw
+        self.yGsw = obj.yGsw
+        self.zGsw = obj.zGsw
+        self.latNH = obj.latNH
+        self.lonNH = obj.lonNH
+        self.rhoNH = obj.rhoNH
+        self.latSH = obj.latSH
+        self.lonSH = obj.lonSH
+        self.rhoSH = obj.rhoSH
 
 
     def plot(self, proj='xz', color='b', showPts=False, 

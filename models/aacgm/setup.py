@@ -1,5 +1,7 @@
 from distutils.core import setup, Extension
+import os
 
+rst = os.environ['RSTPATH']
 setup (name = "aagcmlib",
        version = "0.1",
        description = "wrapper to call c AACGM code in RST3",
@@ -16,14 +18,14 @@ setup (name = "aagcmlib",
                                 sources=["aacgmlib.c"],
                                 include_dirs = [
                                      "/usr/local/include/pydarn",
-                                     "/rst/include/superdarn",
-                                     "/rst/include/analysis",
-                                     "/rst/include/base",
-                                     "/rst/include/general",
+                                     rst+"/include/superdarn",
+                                     rst+"/include/analysis",
+                                     rst+"/include/base",
+                                     rst+"/include/general",
                                      ],
                                 library_dirs = [
                                      "/usr/local/lib64/",
-                                     "/rst/lib/"],
+                                     rst+"/lib/"],
 				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1","radar.1","dmap.1","rpos.1","igrf.1"]),]
        )
 
