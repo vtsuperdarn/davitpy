@@ -1,7 +1,7 @@
 # pydarn/plot/map.py
 """
 *******************************
-			map
+MODULE: pydarn.plot.map
 *******************************
 Plot maps in polar projections 
 
@@ -15,6 +15,7 @@ This includes the following function(s):
 	*overlayDaynight
 			
 Created by Sebastien
+
 *******************************
 """
 
@@ -23,18 +24,21 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 		grid=True, fillContinents='grey', fillOceans='None', 
 		fillLakes='white', coastLineWidth=0.):
 	"""
-Plot empty map
+Plot empty map    
 
-INPUTS:
-	limits: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates
-	lon_0: center meridian (default is -70E)
-	hemi: 'north' (default) or 'south'
-	boundingLat: bounding latitude (default it +/-20)
-	grid: show/hide parallels and meridians grid
-	fill_continents: continent color. Default is 'grey'
-	fill_water: water color. Default is 'None'
-OUTPUTS:
-	map: a Basemap object
+**INPUTS**:    
+	**limits**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
+	**lon_0**: center meridian (default is -70E)    
+	**hemi**: 'north' (default) or 'south'    
+	**boundingLat**: bounding latitude (default it +/-20)    
+	**grid**: show/hide parallels and meridians grid    
+	**fill_continents**: continent color. Default is 'grey'    
+	**fill_water**: water color. Default is 'None'    
+**OUTPUTS**:    
+	**map**: a Basemap object    
+
+Written by Sebastien 2012-08    
+
 	"""
 	from mpl_toolkits.basemap import Basemap, pyproj
 	from numpy import arange
@@ -85,23 +89,25 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 				annotate=True, coords='geo', all=False,
 				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
 	"""
-Overlay radar position(s) and name(s) on map
+Overlay radar position(s) and name(s) on map    
 
-INPUTS:
-	Basemap: a python Basemap object on which to overplot the radar position(s)
-	codes: a list of radar 3-letter codes to plot
-	ids: a list of radar IDs to plot
-	names: a list of radar names to plot
-	dateTime: the date and time as a python datetime object
-	annotate: wether or not to show the radar(s) name(s)
-	coords: 'geo' (default), 'mag', 'mlt' (not implemented yest)
-	all: set to true to plot all the radars (active ones)
-	zorder: the overlay order number
-	markerColor: 
-	markerSize: [point]
-	fontSize: [point]
-	xOffset: x-Offset of the annotation in map projection coordinates
-OUTPUTS:
+**INPUTS**:    
+	**Basemap**: a python Basemap object on which to overplot the radar position(s)    
+	**codes**: a list of radar 3-letter codes to plot    
+	**ids**: a list of radar IDs to plot    
+	**names**: a list of radar names to plot    
+	**dateTime**: the date and time as a python datetime object    
+	**annotate**: wether or not to show the radar(s) name(s)    
+	**coords**: 'geo' (default), 'mag', 'mlt' (not implemented yest)    
+	**all**: set to true to plot all the radars (active ones)    
+	**zorder**: the overlay order number    
+	**markerColor**:     
+	**markerSize**: [point]    
+	**fontSize**: [point]    
+	**xOffset**: x-Offset of the annotation in map projection coordinates    
+**OUTPUTS**:     
+
+Written by Sebastien 2012-08 
 	
 	"""
 	from ..radar.radNetwork import network
