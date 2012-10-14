@@ -218,6 +218,7 @@ def drawPygridVecs(myGrid,myMap,plot='all',vmax=500):
 		drawPygridVecs(myGrid,myMap,lList,iList,plot='mrg',vmax=360)
 	
 	Written by AJ 20120919
+
 	*******************************
 	"""
 	circs,lines,intensities = [[],[]],[],[]
@@ -272,6 +273,7 @@ def drawPygridMap(myFig,myGrid,grid=0):
 		drawPygridMap(myF,myG,grid=1)
 	
 	Written by AJ 20120919
+	
 	*******************************
 	"""
 	

@@ -9,6 +9,7 @@ INPUT:
 DATE: experiment date in YYYYMMDD or [YYYY,MM,DD]
 
 Created by Sebastien
+
 *******************************
 	"""
 	# transform date into an array for testing

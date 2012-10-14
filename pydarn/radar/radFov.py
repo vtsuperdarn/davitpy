@@ -4,55 +4,56 @@
 		radFov
 *******************************
 This module contains the following class:
-	fov
+	* **fov**
 		field of view position
-	fieldPnt
+	* **fieldPnt**
 		field of view point
 		
 This module contains the following functions
-	slantRange
+	* **slantRange**
 		Calculate slant range
-	calcAzOffBore
+	* **calcAzOffBore**
 		Calculate off-array-normal azimuth
-	calcFieldPnt
+	* **calcFieldPnt**
 		Calculate field point projection
 
 Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
 Created by Sebastien
+
 *******************************
 """
 
 # *************************************************************
 class fov(object):
-	"""
-This class calculates and stores field-of-view coordinates. 
+	""" This class calculates and stores field-of-view coordinates. 
 Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object. Parameters from the input-set 
 will always take precedence over parameters from the SITE object.Make sure to provide frang and rsep, 
 the default values are not always applicable. The full projection gives the coordinates at each corner 
 of each gate, in the following order: looking in the beam direction, lower-left, lower-right, 
 upper-right, upper-left.
 
-INPUTS:
-	site: site structure for a given radar and date-time
-	frang: first range gate position [km] (defaults to 180 km) (scalar or ndarray(nbeams))
-	rsep: range gate separation [km] (defaults to 45 km) (scalar or ndarray(nbeams))
-	nbeams: number of beams (use site information if not provided)
-	ngates: number of gates (use site information if not provided)
-	bmsep: beam separation [degree] (use site information if not provided)
-	siteLat: geographic latitude of radar [degree] (use site information if not provided)
-	siteLon: geographic longitude of radar [degree] (use site information if not provided)
-	siteAlt: altitude of radar site [m] (use site information if not provided)
-	siteBore: radar boresite [degree] (use site information if not provided)
-	recrise: receiver rise time [us] (use site information if not provided) (scalar or ndarray(nbeams))
-	elevation: elevation angle [degree] (if not provided, is evaluated using 'model') (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
-	altitude: altitude [km] (if not provided, set to 300 km) (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
-	model: 
-		'IS': for ionopsheric scatter projection model (default)
-		'GS': for ground scatter projection model
-		None: if you are really confident in your elevation or altitude values
-		... more to come
-	coords: 'geo', 'mag'
+**INPUTS**:
+	* **site**: site structure for a given radar and date-time
+	* **frang**: first range gate position [km] (defaults to 180 km) (scalar or ndarray(nbeams))
+	* **rsep**: range gate separation [km] (defaults to 45 km) (scalar or ndarray(nbeams))
+	* **nbeams**: number of beams (use site information if not provided)
+	* **ngates**: number of gates (use site information if not provided)
+	* **bmsep**: beam separation [degree] (use site information if not provided)
+	* **siteLat**: geographic latitude of radar [degree] (use site information if not provided)
+	* **siteLon**: geographic longitude of radar [degree] (use site information if not provided)
+	* **siteAlt**: altitude of radar site [m] (use site information if not provided)
+	* **siteBore**: radar boresite [degree] (use site information if not provided)
+	* **recrise**: receiver rise time [us] (use site information if not provided) (scalar or ndarray(nbeams))
+	* **elevation**: elevation angle [degree] (if not provided, is evaluated using 'model') (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
+	* **altitude**: altitude [km] (if not provided, set to 300 km) (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
+	* **model**: 
+		* **'IS'**: for ionopsheric scatter projection model (default)
+		* **'GS'**: for ground scatter projection model
+		* **None**: if you are really confident in your elevation or altitude values
+		* ... more to come
+	* **coords**: 'geo', 'mag'
+
 	"""
 	def __init__(self, \
 			frang=180.0, rsep=45.0, site=None, \
@@ -253,21 +254,22 @@ field point slant range and altitude. Either the elevation or the altitude must
 be provided. If none is provided, the altitude is set to 300 km and the elevation 
 evaluated to accomodate altitude and range.
 
-INPUTS:
-	tGeoLat: transmitter latitude [degree, N]
-	tGeoLon: transmitter longitude [degree, E]
-	tAlt: transmitter altitude [km]
-	boreSight: boresight azimuth [degree, E]
-	boreOffset: offset from boresight [degree]
-	slantRange: slant range [km]
-	elevation: elevation angle [degree] (estimated if None)
-	altitude: altitude [km] (default 300 km)
-	model: 
-		'IS': for ionopsheric scatter projection model
-		'GS': for ground scatter projection model
-		None: if you are really confident in your elevation or altitude data
-		... more to come
-	coords: 'geo' (more to come)
+**INPUTS**:
+	* **tGeoLat**: transmitter latitude [degree, N]
+	* **tGeoLon**: transmitter longitude [degree, E]
+	* **tAlt**: transmitter altitude [km]
+	* **boreSight**: boresight azimuth [degree, E]
+	* **boreOffset**: offset from boresight [degree]
+	* **slantRange**: slant range [km]
+	* **elevation**: elevation angle [degree] (estimated if None)
+	* **altitude**: altitude [km] (default 300 km)
+	* **model**: 
+		* **'IS'**: for ionopsheric scatter projection model
+		* **'GS'**: for ground scatter projection model
+		* **None**: if you are really confident in your elevation or altitude data
+		* ... more to come
+	* **coords**: 'geo' (more to come)
+
 	"""
 	from math import radians, degrees, sin, cos, asin, atan, sqrt, pi
 	from utils import Re, geoPack
@@ -342,17 +344,18 @@ INPUTS:
 # *************************************************************
 # *************************************************************
 def slantRange(frang, rsep, recrise, range_gate, center=True):
-	"""
-Calculate slant range
+	"""Calculate slant range
 
-INPUTS:
-	frang: first range gate position [km]
-	rsep: range gate separation [km]
-	recrise: receiver rise time [us]
-	range_gate: range gate number(s)
-	center: wether or not to compute the slant range in the center of the gate rather than at the edge
-OUTPUT:
-	srang: slant range [km]
+**INPUTS**:
+	* **frang**: first range gate position [km]
+	* **rsep**: range gate separation [km]
+	* **recrise**: receiver rise time [us]
+	* **range_gate**: range gate number(s)
+	* **center**: wether or not to compute the slant range in the center of the gate rather than at the edge
+
+**OUTPUT**:
+	* **srang**: slant range [km]
+	
 	"""
 	# Lag to first range gate [us]
 	lagfr = frang * 2./0.3
@@ -374,11 +377,13 @@ def calcAzOffBore(elevation, boreOffset0):
 Calculate off-boresight azimuth as a function of elevation angle and zero-elevation off-boresight azimuth.
 See Milan et al. [1997] for more details on how this works.
 
-INPUTS:
-	elevation: elevation angle [degree]
-	boreOffset0: zero-elevation off-boresight azimuth [degree]
-OUTPUT:
-	boreOffset: off-boresight azimuth [degree]
+**INPUTS**:
+	* **elevation**: elevation angle [degree]
+	* **boreOffset0**: zero-elevation off-boresight azimuth [degree]
+
+**OUTPUT**:
+	* **boreOffset**: off-boresight azimuth [degree]
+
 	"""
 	from math import radians, degrees, cos, sin, atan, pi, sqrt
 	

@@ -13,6 +13,7 @@ def dateToYyyymmdd(myDate):
 		dateStr : a string in yyyymmdd format
 
 	Written by AJ 20120718
+	
 	*******************************
 	"""
 	from datetime import datetime

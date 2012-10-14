@@ -26,6 +26,7 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0,gflg=0):
 		genCmap(myFig,polyCollection,'velocity',[-200,200],pos)
 		
 	Written by AJ 20120820
+	
 	*******************************
 	"""
 	
