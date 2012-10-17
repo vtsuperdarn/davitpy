@@ -56,10 +56,10 @@ class sig(object):
     self.raw = sigStruct(dtv, data, comment=comment, parent=self)
     self.active = self.raw
 
-  def plot(self):
+  def plot(self,**metadata):
     """Plots the currently active signal.
     """
-    self.active.plot()
+    self.active.plot(**metadata)
 
   def plotfft(self,**metadata):
     """Plots the spectrum of the currently active signal.
@@ -227,10 +227,11 @@ class sigStruct(sig):
     newsig.setActive()
     return newsig
 
-  def plot(self):
+  def plot(self,**metadata):
     #from matplotlib import pyplot as mp
 
     #Metadata of "processed" signal overrides defaults.
+    self.setMetaData(**metadata)
     md = self.getAllMetaData()
 
     if md.has_key('lineStyle'): lineStyle=md['lineStyle']
@@ -267,6 +268,7 @@ class sigStruct(sig):
     mp.xlabel(md['xlabel'])
     mp.ylabel(md['ylabel'])
     mp.title(md['title'])
+    mp.grid()
 
   def getFftTimes(self):
     """Returns the time window for which to calculate the FFT times for a given signal.
@@ -399,6 +401,8 @@ class sigStruct(sig):
 
     if md.has_key('fft_ymin'): mp.ylim(ymin=md['fft_ymin'])
     if md.has_key('fft_ymax'): mp.ylim(ymax=md['fft_ymax'])
+    
+    mp.grid()
 
     
     #Print the time window of the FFT on the side of the plot.
