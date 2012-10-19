@@ -6,6 +6,7 @@
 A class to contain a day of Kp data
 
 Created by AJ
+
 *******************************
 """
 

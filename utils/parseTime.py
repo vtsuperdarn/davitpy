@@ -9,6 +9,7 @@ INPUT:
 TIME: time in HHMM or HHMMSS or [HH,MM] or [HH,MM,SS]
 
 Created by Sebastien
+
 *******************************
 	"""
 	# transform time into an array for testing

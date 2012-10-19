@@ -4,20 +4,21 @@
 		radNetwork
 *******************************
 This module contains the following class:
-	network
+	* **network**
 		radar.dat and hdw.dat information from all the radars
-	radar
+	* **radar**
 		placeholder for radar.dat and hdw.dat information
-	site
+	* **site**
 		placeholder for hdw.dat information
 		
 This module contains the following functions
-	hdwRead
+	* **hdwRead**
 		reads hdw.dat files
-	radarRead
+	* **radarRead**
 		reads radar.dat
 
 Created by Sebastien
+
 *******************************
 """
 

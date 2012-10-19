@@ -128,7 +128,7 @@ def detrend(vtsig):
 
 
 class filter(object):
-  def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True):
+  def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newSigName='filtered'):
     """Filter a VT sig/sigStruct object and define a FIR filter object.
     If only cutoff_low is defined, this is a high pass filter.
     If only cutoff_high is defined, this is a low pass filter.
@@ -230,13 +230,13 @@ class filter(object):
     self.nyq = nyq
     self.ir = d
 
-    self.filter(sigObj)
+    self.filter(sigObj,newSigName=newSigName)
 
 
   def __str__(self):
     return self.comment
 
-  def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None):
+  def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None,worN=None):
       """Plot the frequency and phase response of the filter object.
 
       :param xmin: Minimum value for x-axis.
@@ -245,8 +245,19 @@ class filter(object):
       :param ymax_mag: Maximum value for y-axis for the frequency response plot.
       :param ymin_phase: Minimum value for y-axis for the phase response plot.
       :param ymax_phase: Maximum value for y-axis for the phase response plot.
+      :param worN: worN : {None, int}, optional
+          passed to scipy.signal.freqz()
+          If None, then compute at 512 frequencies around the unit circle.
+          If the len(filter) > 512, then compute at len(filter) frequencies around the unit circle.
+          If a single integer, the compute at that many frequencies.
+          Otherwise, compute the response at frequencies given in worN
       """
-      w,h = sp.signal.freqz(self.ir,1)
+      if worN == None:
+        if len(self.ir) > 512: worN = len(self.ir)
+        else: worN = None
+      else: pass
+
+      w,h = sp.signal.freqz(self.ir,1,worN=worN)
       h_dB = 20 * np.log10(abs(h))
       mp.subplot(211)
     
@@ -310,7 +321,7 @@ class filter(object):
       mp.subplots_adjust(hspace=0.5)
       mp.show()
 
-  def filter(self,vtsig):
+  def filter(self,vtsig,newSigName='filtered'):
       """Apply the filter to a vtsig object.
 
       :param vtsig: vtsig object
@@ -343,8 +354,7 @@ class filter(object):
       val_tm1 = sigobj.dtv[tinx1]
 
       #Create new signal object.
-      newsig = 'filtered'
-      newsigobj = sigobj.copy(newsig,self.comment)
+      newsigobj = sigobj.copy(newSigName,self.comment)
       #Put in the filtered data.
       newsigobj.data = copy.copy(filt_data)
       newsigobj.dtv = copy.copy(sigobj.dtv)

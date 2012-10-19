@@ -185,22 +185,22 @@ class prmData(dict):
 	"""
 	def __init__(self):
 		self._dict = {}
-		#self['radar.revision.major'] = []
-		#self['radar.revision.minor'] = []
-		#self['origin.code'] = []
-		#self['origin.time'] = []
+		self['radar.revision.major'] = []
+		self['radar.revision.minor'] = []
+		self['origin.code'] = []
+		self['origin.time'] = []
 		self['origin.command'] = []		#command used to generate file	
 		self['cp'] = []								#control prog id
 		self['stid'] = []							#station id
 		self['time'] = []							#time of beam sounding
-		#self['txpow'] = []
+		self['txpow'] = []
 		self['nave'] = []							#number of averages
-		#self['atten'] = []
+		self['atten'] = []
 		self['lagfr'] = []						#lag to first range in us
 		self['smsep'] = []						#sample separation in us
-		#self['ercod'] = []
-		#self['stat.agc'] = []
-		#self['stat.lopwr'] = []
+		self['ercod'] = []
+		self['stat.agc'] = []
+		self['stat.lopwr'] = []
 		self['noise.search'] = []			#clear freq search noise
 		self['noise.mean'] = []				#avg of 10 quietest range gates
 		self['noise.sky'] = []				#noise used for power calculation
@@ -210,11 +210,11 @@ class prmData(dict):
 		self['bmnum'] = []						#beam number
 		self['bmazm'] = []						#beam azimuth
 		self['scan'] = []							#new scan flag
-		#self['offset'] = []
+		self['offset'] = []
 		self['rxrise'] = []						#rec. rise time
 		self['intt.sc'] = []					#integration time in s
 		self['intt.us'] = []					#integration time in us
-		#self['txpl'] = []
+		self['txpl'] = []
 		self['mpinc'] = []						#basic lag time in us
 		self['mppul'] = []						#number of pulses
 		self['mplgs'] = []						#number of lags
@@ -224,12 +224,12 @@ class prmData(dict):
 		self['rsep'] = []							#range gate separation in km
 		self['xcf'] = []							#xcf flag
 		self['tfreq'] = []						#tansmit frequency
-		#self['mxpwr'] = []
-		#self['lvmax'] = []
+		self['mxpwr'] = []
+		self['lvmax'] = []
 		self['ifmode'] = []						#ifmode flag
-		#self['combf'] = []
-		#self['fitacf.revision.major'] = []
-		#self['fitacf.revision.minor'] = []
+		self['combf'] = []
+		self['fitacf.revision.major'] = []
+		self['fitacf.revision.minor'] = []
 		self['ptab'] = []							#pulse table
 		self['ltab'] = []							#lag table
 		
@@ -278,24 +278,24 @@ class fitData(dict):
 		self['sd_phi'] = []						#?
 		self['x_qflg'] = []						#?
 		self['x_gflg'] = []						#?
-		#self['x_p_l'] = []
-		#self['x_p_l_e'] = []
-		#self['x_p_s'] = []
-		#self['x_p_s_e'] = []
-		#self['x_v'] = []
-		#self['x_v_e'] = []
-		#self['x_w_l'] = []
-		#self['x_w_l_e'] = []
-		#self['x_w_s'] = []
-		#self['x_w_s_e'] = []
+		self['x_p_l'] = []
+		self['x_p_l_e'] = []
+		self['x_p_s'] = []
+		self['x_p_s_e'] = []
+		self['x_v'] = []
+		self['x_v_e'] = []
+		self['x_w_l'] = []
+		self['x_w_l_e'] = []
+		self['x_w_s'] = []
+		self['x_w_s_e'] = []
 		self['phi0'] = []							#phase shift from main to inter. array
 		self['phi0_e'] = []						#error on phase shift estimate
 		self['elv'] = []							#elevation angle
 		self['elv_low'] = []
 		self['elv_high'] = []
-		#self['x_sd_l'] = []
-		#self['x_sd_s'] = []
-		#self['x_sd_phi'] = []
+		self['x_sd_l'] = []
+		self['x_sd_s'] = []
+		self['x_sd_phi'] = []
 		
         
 class rawData(dict):

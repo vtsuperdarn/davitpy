@@ -4,7 +4,6 @@
         PROFILEUTILS
 *******************************
 This subpackage is a wrapper for cProfile
-DEV: functions/modules/classes with a * have not been developed yet
 
 *******************************
 """

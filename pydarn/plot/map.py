@@ -1,20 +1,22 @@
 # pydarn/plot/map.py
 """
 *******************************
-			map
+pydarn.plot.map
 *******************************
 Plot maps in polar projections 
 
 This includes the following function(s):
-	plot
-		Plot an empty map
-	overlayRadar
+	* **plot**
+		Create an empty map
+
+	* **overlayRadar**
 		Overlay radar position and name on a map
-	*overlayFov
-	*overlayTerminator
-	*overlayDaynight
+
+	* **overlayFov**
+		Overlay field(s)-of-view on a map
 			
 Created by Sebastien
+
 *******************************
 """
 
@@ -22,19 +24,22 @@ Created by Sebastien
 def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
 		grid=True, fillContinents='grey', fillOceans='None', 
 		fillLakes='white', coastLineWidth=0.):
-	"""
-Plot empty map
+	"""Create empty map    
 
-INPUTS:
-	limits: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates
-	lon_0: center meridian (default is -70E)
-	hemi: 'north' (default) or 'south'
-	boundingLat: bounding latitude (default it +/-20)
-	grid: show/hide parallels and meridians grid
-	fill_continents: continent color. Default is 'grey'
-	fill_water: water color. Default is 'None'
-OUTPUTS:
-	map: a Basemap object
+**INPUTS**:    
+	* **[limits]**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
+	* **[lon_0]**: center meridian (default is -70E)    
+	* **[hemi]**: 'north' (default) or 'south'    
+	* **[boundingLat]**: bounding latitude (default it +/-20)    
+	* **[grid]**: show/hide parallels and meridians grid    
+	* **[fill_continents]**: continent color. Default is 'grey'    
+	* **[fill_water]**: water color. Default is 'None'    
+**OUTPUTS**:    
+	* **map**: a Basemap object    
+
+
+Written by Sebastien 2012-08    
+
 	"""
 	from mpl_toolkits.basemap import Basemap, pyproj
 	from numpy import arange
@@ -84,24 +89,26 @@ OUTPUTS:
 def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
 				annotate=True, coords='geo', all=False,
 				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
-	"""
-Overlay radar position(s) and name(s) on map
+	"""Overlay radar position(s) and name(s) on map    
 
-INPUTS:
-	Basemap: a python Basemap object on which to overplot the radar position(s)
-	codes: a list of radar 3-letter codes to plot
-	ids: a list of radar IDs to plot
-	names: a list of radar names to plot
-	dateTime: the date and time as a python datetime object
-	annotate: wether or not to show the radar(s) name(s)
-	coords: 'geo' (default), 'mag', 'mlt' (not implemented yest)
-	all: set to true to plot all the radars (active ones)
-	zorder: the overlay order number
-	markerColor: 
-	markerSize: [point]
-	fontSize: [point]
-	xOffset: x-Offset of the annotation in map projection coordinates
-OUTPUTS:
+**INPUTS**:    
+	* **Basemap**: a python Basemap object on which to overplot the radar position(s)    
+	* **[codes]**: a list of radar 3-letter codes to plot    
+	* **[ids]**: a list of radar IDs to plot    
+	* **[names]**: a list of radar names to plot    
+	* **[dateTime]**: the date and time as a python datetime object    
+	* **[annotate]**: wether or not to show the radar(s) name(s)    
+	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)    
+	* **[all]**: set to true to plot all the radars (active ones)    
+	* **[zorder]**: the overlay order number    
+	* **[markerColor]**:     
+	* **[markerSize]**: [point]    
+	* **[fontSize]**: [point]    
+	* **[xOffset]**: x-Offset of the annotation in map projection coordinates    
+
+**OUTPUTS**:     
+
+Written by Sebastien 2012-08 
 	
 	"""
 	from ..radar.radNetwork import network
@@ -184,30 +191,31 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 				maxGate=None, fovColor=None, fovAlpha=0.2, 
 				beams=None, hemi=None, fovObj=None, 
 				zorder=2, lineColor='k', lineWidth=1):
-	"""
-|	Overlay FoV position(s) on map
-|	
-|	**INPUTS**:
-|		**Basemap**: a python Basemap object on which to overplot the radar position(s)
-|		**[codes]**: a list of radar 3-letter codes to plot
-|		**[ids]**: a list of radar IDs to plot
-|		**[names]**: a list of radar names to plot
-|		**[dateTime]**: the date and time as a python datetime object
-|		**[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)
-|		**[all]**: set to true to plot all the radars (active ones)
-|		**[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
-|		**[zorder]**: the overlay order number
-|		**[lineColor]**: FoV contour line color
-|		**[lineWidth]**: FoV contour line width
-|		**[fovColor]**: field of view fill color
-|		**[fovAlpha]**: field of view fill color transparency
-|		**[fovObj]**: a fov object. See pydarn.radar.radFov.fov
-|		**[hemi]**: 'north' or 'south', ignore radars from the other hemisphere
-|		**[beam]**: hightlight specified beams
-|	**OUTPUTS**:
-|
-|	Written by Sebastien 2012-09
-|		
+	"""Overlay FoV position(s) on map
+
+**INPUTS**:
+
+	* **Basemap**: a python Basemap object on which to overplot the radar position(s)
+	* **[codes]**: a list of radar 3-letter codes to plot
+	* **[ids]**: a list of radar IDs to plot
+	* **[names]**: a list of radar names to plot
+	* **[dateTime]**: the date and time as a python datetime object
+	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)
+	* **[all]**: set to true to plot all the radars (active ones)
+	* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
+	* **[zorder]**: the overlay order number
+	* **[lineColor]**: FoV contour line color
+	* **[lineWidth]**: FoV contour line width
+	* **[fovColor]**: field of view fill color
+	* **[fovAlpha]**: field of view fill color transparency
+	* **[fovObj]**: a fov object. See pydarn.radar.radFov.fov
+	* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere
+	* **[beam]**: hightlight specified beams
+
+**OUTPUTS**:
+
+Written by Sebastien 2012-09
+	
 	"""
 	from ..radar.radNetwork import network
 	from ..radar.radFov import fov
