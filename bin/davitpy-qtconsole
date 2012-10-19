@@ -23,4 +23,4 @@ export IPYTHONDIR=${DAVITPY}/bin
 ############################
 
 #start ipython
-ipython qtconsole --pylab=inline --profile=davitpy $@
+ipython qtconsole --colors=Linux --profile=davitpy $@

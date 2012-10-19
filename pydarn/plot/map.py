@@ -22,8 +22,10 @@ Created by Sebastien
 
 # *************************************************************
 def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
-		grid=True, fillContinents='grey', fillOceans='None', 
-		fillLakes='white', coastLineWidth=0.):
+		grid=True, gridLabels=True,
+		fillContinents='grey', fillOceans='None', 
+		fillLakes='white', coastLineWidth=0., 
+		coords='geo', datetime=None):
 	"""Create empty map    
 
 **INPUTS**:    
@@ -34,15 +36,20 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 	* **[grid]**: show/hide parallels and meridians grid    
 	* **[fill_continents]**: continent color. Default is 'grey'    
 	* **[fill_water]**: water color. Default is 'None'    
+	* **[coords]**: 'geo', 'mag'
+
 **OUTPUTS**:    
-	* **map**: a Basemap object    
+	* **map**: a Basemap object  
+	
+**EXAMPLES**:     
 
 
 Written by Sebastien 2012-08    
 
 	"""
 	from mpl_toolkits.basemap import Basemap, pyproj
-	from numpy import arange
+	from pylab import text
+	from numpy import arange, ones
 	from math import sqrt
 	
 	# Set map projection limits and center point depending on hemisphere selection
@@ -79,8 +86,23 @@ Written by Sebastien 2012-08
 	
 	# draw parallels and meridians.
 	if grid:
-		out = map.drawparallels(arange(-80.,81.,20.))
-		out = map.drawmeridians(arange(-180.,181.,20.))
+		# draw parallels and meridians.
+		# labels = [left,right,top,bottom]
+		# label parallels on map
+		parallels = arange(-80.,81.,20.)
+		out = map.drawparallels(parallels)
+		if gridLabels: 
+			x,y = map(0*ones(parallels.shape), parallels)
+			for ix,iy,ip in zip(x,y,parallels):
+				text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+					rotation=-lon_0, va='center', clip_on=True)
+		# label meridians on bottom and left
+		meridians = arange(-180.,181.,20.)
+		if gridLabels: 
+			merLabels = [True,False,False,True]
+		else: merLabels = None
+		out = map.drawmeridians(meridians,
+			labels=merLabels)
 	
 	return map
 	

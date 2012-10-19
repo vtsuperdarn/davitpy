@@ -325,12 +325,12 @@ Reads radar.dat file
 	
 	# Read file
 	try:
-		file_net = open(os.environ['RSTPATH']+'/tables/superdarn/radar.dat', 'r')
+		file_net = open(os.environ['SD_RADAR'], 'r')
 		data = file_net.readlines()
 		file_net.close()
 		err = 0
 	except:
-		print 'radarRead: cannot read '+os.environ['RSTPATH']+'/tables/superdarn/radar.dat'
+		print 'radarRead: cannot read '+os.environ['SD_RADAR']
 		err = -1
 		return None
 	
@@ -377,11 +377,11 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 	
 	# Read hardware file FNAME
 	try:
-		file_hdw = open(os.environ['RSTPATH']+'/tables/superdarn/hdw/'+fname, 'r')
+		file_hdw = open(os.environ['SD_HDWPATH']+'/'+fname, 'r')
 		data = file_hdw.readlines()
 		file_hdw.close()
 	except:
-		print 'hdwRead: cannot read '+os.environ['RSTPATH']+'/tables/superdarn/hdw/'+fname
+		print 'hdwRead: cannot read '+os.environ['SD_HDWPATH']+'/'+fname
 		return None
 	
 	# Site placeholder
