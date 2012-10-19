@@ -150,17 +150,19 @@ Get a specific radar from its name/code/id
 		"""
 Get a list of all active radar codes
 		"""
-		from datetime import datetime
+		from datetime import datetime as dt
 		
-		if not datetime: datetime = datetime.utcnow()
+		if not datetime: datetime = dt.utcnow()
 		
 		codes = []
 		for iRad in xrange( self.nradar ):
 			tcod = self.info[iRad].getSiteByDate(datetime)
-			if tcod and self.info[iRad].status == 1: 
-				if(hemi == None or \
+			if (tcod) and (self.info[iRad].status == 1) \
+			and (self.info[iRad].stTime <= datetime <= self.info[iRad].edTime):
+				if (hemi == None) or \
 				(hemi.lower() == 'south' and tcod.geolat < 0) or \
-				(hemi.lower() == 'north' and tcod.geolat >= 0)): codes.append(self.info[iRad].code[0])
+				(hemi.lower() == 'north' and tcod.geolat >= 0): 
+					codes.append(self.info[iRad].code[0])
 				
 		
 		return codes
