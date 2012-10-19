@@ -36,7 +36,7 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 	* **[grid]**: show/hide parallels and meridians grid    
 	* **[fill_continents]**: continent color. Default is 'grey'    
 	* **[fill_water]**: water color. Default is 'None'    
-	* **[coords]**: 'geo', 'mag'
+	* **[coords]**: 'geo'
 
 **OUTPUTS**:    
 	* **map**: a Basemap object  
@@ -92,15 +92,19 @@ Written by Sebastien 2012-08
 		parallels = arange(-80.,81.,20.)
 		out = map.drawparallels(parallels)
 		if gridLabels: 
-			x,y = map(0*ones(parallels.shape), parallels)
+			lablon = int(limits[1]/10)*10
+			x,y = map(lablon*ones(parallels.shape), parallels)
 			for ix,iy,ip in zip(x,y,parallels):
+				if not map.xmin <= ix <= map.xmax: continue
+				if not map.ymin <= iy <= map.ymax: continue
 				text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-					rotation=-lon_0, va='center', clip_on=True)
+					rotation=lablon-lon_0, va='center')
 		# label meridians on bottom and left
 		meridians = arange(-180.,181.,20.)
 		if gridLabels: 
 			merLabels = [True,False,False,True]
-		else: merLabels = None
+		else: 
+			merLabels = [False,False,False,False]
 		out = map.drawmeridians(meridians,
 			labels=merLabels)
 	
@@ -260,13 +264,9 @@ Written by Sebastien 2012-09
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
-		try:
-			[c for c in codes]
-		except:
-			codes = [codes]
-		finally:
-			nradars = len(codes)
-			input = {'meth': 'code', 'vals': codes}
+		if isinstance(codes, str): codes = [codes]
+		nradars = len(codes)
+		input = {'meth': 'code', 'vals': codes}
 	elif ids:
 		try:
 			[c for c in ids]
@@ -276,13 +276,9 @@ Written by Sebastien 2012-09
 			nradars = len(ids)
 			input = {'meth': 'id', 'vals': ids}
 	elif names:
-		try:
-			[c for c in names]
-		except:
-			names = [names]
-		finally:
-			nradars = len(names)
-			input = {'meth': 'name', 'vals': names}
+		if isinstance(names, str): names = [names]
+		nradars = len(names)
+		input = {'meth': 'name', 'vals': names}
 	elif fovObj == None:
 		print 'overlayRadar: no radars to plot'
 		return
