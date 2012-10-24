@@ -269,6 +269,7 @@ class sigStruct(sig):
     mp.ylabel(md['ylabel'])
     mp.title(md['title'])
     mp.grid()
+    mp.show()
 
   def getFftTimes(self):
     """Returns the time window for which to calculate the FFT times for a given signal.
