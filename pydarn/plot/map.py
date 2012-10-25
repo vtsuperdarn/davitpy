@@ -108,6 +108,9 @@ Written by Sebastien 2012-08
 		out = map.drawmeridians(meridians,
 			labels=merLabels)
 	
+	# Save projection coordinates
+	map.projparams['coords'] = coords
+
 	return map
 	
 
@@ -124,7 +127,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	* **[names]**: a list of radar names to plot    
 	* **[dateTime]**: the date and time as a python datetime object    
 	* **[annotate]**: wether or not to show the radar(s) name(s)    
-	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)    
+	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yet)    
 	* **[all]**: set to true to plot all the radars (active ones)    
 	* **[zorder]**: the overlay order number    
 	* **[markerColor]**:     
@@ -226,7 +229,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	* **[ids]**: a list of radar IDs to plot
 	* **[names]**: a list of radar names to plot
 	* **[dateTime]**: the date and time as a python datetime object
-	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)
+	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yet)
 	* **[all]**: set to true to plot all the radars (active ones)
 	* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
 	* **[zorder]**: the overlay order number

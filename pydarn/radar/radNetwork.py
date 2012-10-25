@@ -174,7 +174,7 @@ class radar(network):
 	"""
 Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
 	"""
-	__maxSites = 32
+	__maxSites__ = 32
 	#__slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator', 'hdwfname', 'stTime', 'edTime', 'snum', 'site')
 	def __init__(self):
 		self.id = 0
@@ -188,7 +188,7 @@ Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
 		self.edTime = 0.0
 		self.snum = 0
 		self.site = []
-		for isit in range(self.__maxSites):
+		for isit in range(self.__maxSites__):
 			tsite = site()
 			self.site.append(tsite)
 			
@@ -230,18 +230,14 @@ Object string representation
 Get a specific radar site at a given date (as a python datetime object)
 		"""
 		found = False
-		for iSit in range( self.__maxSites ):
+		for iSit in range( self.__maxSites__ ):
 			if self.site[iSit].tval == -1:
 				found = True
 				return self.site[iSit]
 				break
 			elif self.site[iSit].tval >= datetime:
-				if iSit > 0: 
-					found = True
-					return self.site[iSit-1]
-				else:
-					return found
-				break
+				found = True
+				return self.site[iSit]
 		if not found:
 			print 'getSiteByDate: could not get SITE for date {}'.format(datetime)
 			return found
