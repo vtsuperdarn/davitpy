@@ -1,0 +1,39 @@
+
+**********************************************************************************************************
+
+'import mypackage' allows you to use function from mypackage like so:
+
+mypackage.myfunction()
+
+whereas 'from mypackage import myfunction' or 'from mypackage import *' allows you to 
+call functions from mypackage directly, like so:
+
+myfunction()
+
+**********************************************************************************************************
+
+we can use package name shortcuts by assigning them in import statements, eg:
+
+import numpy as np
+
+allows us to call numpy functions (eg array) like so:
+
+y=np.array(1,2,3])
+
+this applies for any package, egs:
+
+import matplotlib as mpl
+import foo as bar
+etc etc.....
+
+**********************************************************************************************************
+
+With a numpy array, you can access only certain values with a condition inside brackets, e.g:
+
+y = x[x>200]
+
+this means that y is assigned to be an array with all of the elements of x which are greater than 200
+
+**********************************************************************************************************
+
+In numpy, you can assign for/check for a NaN value with numpy.NaN

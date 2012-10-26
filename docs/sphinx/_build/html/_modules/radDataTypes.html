@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>radDataTypes &mdash; DaViTPy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DaViTPy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for radDataTypes</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">pydarn</span> 
+
+<div class="viewcode-block" id="radData"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.radData">[docs]</a><span class="k">class</span> <span class="nc">radData</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	CLASS pydarn.io.radData</span>
+
+<span class="sd">	a dictionary class containing a time sequence of</span>
+<span class="sd">	radar data in beam structures</span>
+<span class="sd">	</span>
+<span class="sd">	KEYS:</span>
+<span class="sd">		[datetime1, datetime2, ...]</span>
+<span class="sd">	VALUES:</span>
+<span class="sd">		[beam1, beam2, ...]</span>
+<span class="sd">		</span>
+<span class="sd">	EXAMPLES:</span>
+<span class="sd">	</span>
+<span class="sd">	DECLARATION: </span>
+<span class="sd">		myData = pydarn.io.radData()</span>
+<span class="sd">		</span>
+<span class="sd">	ACCESS:</span>
+<span class="sd">		myData[datetime] = beam</span>
+<span class="sd">	</span>
+<span class="sd">	Written by AJ 20120808</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">nrecs</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ftype</span> <span class="o">=</span> <span class="s">&#39;no data&#39;</span>
+		
+<div class="viewcode-block" id="radData.getTimes"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.radData.getTimes">[docs]</a>	<span class="k">def</span> <span class="nf">getTimes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		*******************************</span>
+<span class="sd">		FUNCTION radData.getTimes():</span>
+<span class="sd">		</span>
+<span class="sd">		returns a sorted list of the datetime keys belonging</span>
+<span class="sd">		to a radData object</span>
+<span class="sd">		</span>
+<span class="sd">		BELONGS TO: class pydarn.io.radData</span>
+
+<span class="sd">		INPUTS:</span>
+<span class="sd">			NONE</span>
+<span class="sd">		OUTPUTS:</span>
+<span class="sd">			k: a sorted list of datetime keys for a radData obect</span>
+<span class="sd">			</span>
+<span class="sd">		EXAMPLE:</span>
+<span class="sd">			timelist = myRadData.getTimes()</span>
+<span class="sd">			</span>
+<span class="sd">		Written by AJ 20120808</span>
+<span class="sd">		*******************************</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+	
+		<span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+		<span class="n">k</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+		<span class="k">return</span> <span class="n">k</span>
+		</div>
+<div class="viewcode-block" id="radData.getBeam"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.radData.getBeam">[docs]</a>	<span class="k">def</span> <span class="nf">getBeam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bmnum</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		*******************************</span>
+<span class="sd">		FUNCTION radData.getBeam(bmnum):</span>
+<span class="sd">		</span>
+<span class="sd">		returns a radData object containing only data from a specified beam</span>
+<span class="sd">		</span>
+<span class="sd">		BELONGS TO: class pydarn.io.radData</span>
+
+<span class="sd">		INPUTS:</span>
+<span class="sd">			bmnum: the desired beam number</span>
+<span class="sd">		OUTPUTS:</span>
+<span class="sd">			myData: a new radData structure containing only beams of bmnum</span>
+<span class="sd">			</span>
+<span class="sd">		EXAMPLE:</span>
+<span class="sd">			myRadarData = inRadData.getBeam(7)</span>
+<span class="sd">			</span>
+<span class="sd">		Written by AJ 20120811</span>
+<span class="sd">		*******************************</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">bmnum</span><span class="p">,</span><span class="nb">int</span><span class="p">)),</span><span class="s">&quot;bmnum must be integer&quot;</span>
+		
+		<span class="n">myData</span> <span class="o">=</span> <span class="n">pydarn</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">radData</span><span class="p">()</span>
+		
+		<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">():</span>
+			<span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;prm&#39;</span><span class="p">][</span><span class="s">&#39;bmnum&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">bmnum</span><span class="p">):</span>
+				<span class="n">myData</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+			
+		<span class="n">myData</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">myData</span><span class="o">.</span><span class="n">getTimes</span><span class="p">()</span>
+		<span class="n">myData</span><span class="o">.</span><span class="n">nrecs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">myData</span><span class="o">.</span><span class="n">times</span><span class="p">)</span>
+		<span class="n">myData</span><span class="o">.</span><span class="n">ftype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftype</span>
+		
+		<span class="k">return</span> <span class="n">myData</span>
+		
+		</div>
+<div class="viewcode-block" id="radData.getChannel"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.radData.getChannel">[docs]</a>	<span class="k">def</span> <span class="nf">getChannel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chn</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		*******************************</span>
+<span class="sd">		FUNCTION radData.getChannel(bmnum):</span>
+<span class="sd">		</span>
+<span class="sd">		returns a radData object containing only data from a specified channel</span>
+<span class="sd">		</span>
+<span class="sd">		BELONGS TO: class pydarn.io.radData</span>
+
+<span class="sd">		INPUTS:</span>
+<span class="sd">			chn: the desired channel letter, e.g. &#39;a&#39;</span>
+<span class="sd">		OUTPUTS:</span>
+<span class="sd">			myData: a new radData structure containing only data from channel chn</span>
+<span class="sd">			</span>
+<span class="sd">		EXAMPLE:</span>
+<span class="sd">			myRadarData = inRadData.getChannel(&#39;a&#39;)</span>
+<span class="sd">			</span>
+<span class="sd">		Written by AJ 20120814</span>
+<span class="sd">		*******************************</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		
+		<span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">chn</span><span class="p">,</span><span class="nb">str</span><span class="p">)),</span><span class="s">&quot;channel must be character&quot;</span>
+		
+		<span class="n">myData</span> <span class="o">=</span> <span class="n">pydarn</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">radData</span><span class="p">()</span>
+		
+		<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">():</span>
+			<span class="k">if</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;prm&#39;</span><span class="p">][</span><span class="s">&#39;channel&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;prm&#39;</span><span class="p">][</span><span class="s">&#39;channel&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">chn</span> <span class="o">==</span> <span class="s">&#39;a&#39;</span><span class="p">):</span>
+				<span class="n">myData</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+			<span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;prm&#39;</span><span class="p">][</span><span class="s">&#39;channel&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">chn</span> <span class="o">==</span> <span class="s">&#39;b&#39;</span><span class="p">):</span>
+				<span class="n">myData</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+			<span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;prm&#39;</span><span class="p">][</span><span class="s">&#39;channel&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">chn</span> <span class="o">==</span> <span class="s">&#39;c&#39;</span><span class="p">):</span>
+				<span class="n">myData</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+			<span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;prm&#39;</span><span class="p">][</span><span class="s">&#39;channel&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">chn</span> <span class="o">==</span> <span class="s">&#39;d&#39;</span><span class="p">):</span>
+				<span class="n">myData</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+				
+		<span class="n">myData</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">myData</span><span class="o">.</span><span class="n">getTimes</span><span class="p">()</span>
+		<span class="n">myData</span><span class="o">.</span><span class="n">nrecs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">myData</span><span class="o">.</span><span class="n">times</span><span class="p">)</span>
+		<span class="n">myData</span><span class="o">.</span><span class="n">ftype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftype</span>
+		<span class="k">return</span> <span class="n">myData</span>  
+		</div></div>
+<div class="viewcode-block" id="beam"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.beam">[docs]</a><span class="k">class</span> <span class="nc">beam</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	CLASS pydarn.io.beam</span>
+
+<span class="sd">	a dictionary class containing a pydarn.io.prm class </span>
+<span class="sd">	and either a pydarn.io.fit or pydarn.io.raw class</span>
+<span class="sd">	</span>
+<span class="sd">	KEYS:</span>
+<span class="sd">		[&#39;prm&#39;,&#39;fit&#39;,&#39;raw&#39;]</span>
+<span class="sd">	VALUES:</span>
+<span class="sd">		[prmData,fitData, rawData]</span>
+<span class="sd">	</span>
+<span class="sd">	EXAMPLES:</span>
+<span class="sd">	</span>
+<span class="sd">	DECLARATION: </span>
+<span class="sd">		myBeam = pydarn.io.beam()</span>
+<span class="sd">		</span>
+<span class="sd">	ACCESS:</span>
+<span class="sd">		myBeam[&#39;prm&#39;] = prmData</span>
+<span class="sd">	</span>
+<span class="sd">	Written by AJ 20120808</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="prmData"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.prmData">[docs]</a><span class="k">class</span> <span class="nc">prmData</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	CLASS pydarn.io.prmData</span>
+
+<span class="sd">	a dictionary class containing radar operating parameter data</span>
+<span class="sd">	</span>
+<span class="sd">	KEYS:</span>
+<span class="sd">		[&#39;cp&#39;,&#39;tfreq&#39;, ...]</span>
+<span class="sd">	VALUES:</span>
+<span class="sd">		[CP ID, T Freq, ...]</span>
+<span class="sd">	</span>
+<span class="sd">	EXAMPLES:</span>
+<span class="sd">	</span>
+<span class="sd">	DECLARATION: </span>
+<span class="sd">		myPrm = pydarn.io.prmData()</span>
+<span class="sd">		</span>
+<span class="sd">	ACCESS:</span>
+<span class="sd">		myPrm[&#39;tfreq&#39;] = tfreq</span>
+<span class="sd">	</span>
+<span class="sd">	Written by AJ 20120808</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="c">#self[&#39;radar.revision.major&#39;] = []</span>
+		<span class="c">#self[&#39;radar.revision.minor&#39;] = []</span>
+		<span class="c">#self[&#39;origin.code&#39;] = []</span>
+		<span class="c">#self[&#39;origin.time&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;origin.command&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>		<span class="c">#command used to generate file	</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;cp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>								<span class="c">#control prog id</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;stid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#station id</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#time of beam sounding</span>
+		<span class="c">#self[&#39;txpow&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;nave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#number of averages</span>
+		<span class="c">#self[&#39;atten&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;lagfr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#lag to first range in us</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;smsep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#sample separation in us</span>
+		<span class="c">#self[&#39;ercod&#39;] = []</span>
+		<span class="c">#self[&#39;stat.agc&#39;] = []</span>
+		<span class="c">#self[&#39;stat.lopwr&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;noise.search&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>			<span class="c">#clear freq search noise</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;noise.mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>				<span class="c">#avg of 10 quietest range gates</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;noise.sky&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>				<span class="c">#noise used for power calculation</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;noise.lag0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>				<span class="c">#?</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;noise.vel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>				<span class="c">#?</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>					<span class="c">#channel</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;bmnum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#beam number</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;bmazm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#beam azimuth</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#new scan flag</span>
+		<span class="c">#self[&#39;offset&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;rxrise&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#rec. rise time</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;intt.sc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>					<span class="c">#integration time in s</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;intt.us&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>					<span class="c">#integration time in us</span>
+		<span class="c">#self[&#39;txpl&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;mpinc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#basic lag time in us</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;mppul&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#number of pulses</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;mplgs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#number of lags</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;mplgexs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>					<span class="c">#number of tauscan lags</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;nrang&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#number of range gates</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;frang&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#distance to first range gate in km</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;rsep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#range gate separation in km</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;xcf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#xcf flag</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;tfreq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#tansmit frequency</span>
+		<span class="c">#self[&#39;mxpwr&#39;] = []</span>
+		<span class="c">#self[&#39;lvmax&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;ifmode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#ifmode flag</span>
+		<span class="c">#self[&#39;combf&#39;] = []</span>
+		<span class="c">#self[&#39;fitacf.revision.major&#39;] = []</span>
+		<span class="c">#self[&#39;fitacf.revision.minor&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;ptab&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#pulse table</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;ltab&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#lag table</span>
+		
+    </div>
+<div class="viewcode-block" id="fitData"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.fitData">[docs]</a><span class="k">class</span> <span class="nc">fitData</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	CLASS pydarn.io.fitData</span>
+
+<span class="sd">	a dictionary class containing fitted radar data</span>
+<span class="sd">	</span>
+<span class="sd">	EXAMPLES:</span>
+<span class="sd">	</span>
+<span class="sd">	DECLARATION: </span>
+<span class="sd">		myFit = pydarn.io.fitData()</span>
+<span class="sd">		</span>
+<span class="sd">	ACCESS:</span>
+<span class="sd">		#number of range gates with scatter:</span>
+<span class="sd">		myFit[&#39;npnts&#39;]</span>
+<span class="sd">		#first range gate with scatter</span>
+<span class="sd">		r = myFit[&#39;slist&#39;][0]</span>
+<span class="sd">		#velocity of range gate r</span>
+<span class="sd">		v = myFit[&#39;v&#39;][0]</span>
+<span class="sd">	</span>
+<span class="sd">	Written by AJ 20120808</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;pwr0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#lag 0 power array</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;slist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#list of range gates w/ scatter</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;npnts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>						  <span class="c">#number of gates w/ scatter</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;nlag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#number of good lags</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;qflg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#quality flag</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;gflg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#g scat flag</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;p_l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#lambda fit power</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;p_l_e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#lambda fit power error</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;p_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#sigma fit power</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;p_s_e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#sigma fit power error</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;v&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>								<span class="c">#Doppler velocity</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;v_e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#velocity error</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;w_l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#lambda fit width</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;w_l_e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#lambda fit width error</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;sd_l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#?</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;sd_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#?</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;sd_phi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#?</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;x_qflg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#?</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;x_gflg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#?</span>
+		<span class="c">#self[&#39;x_p_l&#39;] = []</span>
+		<span class="c">#self[&#39;x_p_l_e&#39;] = []</span>
+		<span class="c">#self[&#39;x_p_s&#39;] = []</span>
+		<span class="c">#self[&#39;x_p_s_e&#39;] = []</span>
+		<span class="c">#self[&#39;x_v&#39;] = []</span>
+		<span class="c">#self[&#39;x_v_e&#39;] = []</span>
+		<span class="c">#self[&#39;x_w_l&#39;] = []</span>
+		<span class="c">#self[&#39;x_w_l_e&#39;] = []</span>
+		<span class="c">#self[&#39;x_w_s&#39;] = []</span>
+		<span class="c">#self[&#39;x_w_s_e&#39;] = []</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;phi0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#phase shift from main to inter. array</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;phi0_e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#error on phase shift estimate</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;elv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#elevation angle</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;elv_low&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;elv_high&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="c">#self[&#39;x_sd_l&#39;] = []</span>
+		<span class="c">#self[&#39;x_sd_s&#39;] = []</span>
+		<span class="c">#self[&#39;x_sd_phi&#39;] = []</span>
+		
+        </div>
+<div class="viewcode-block" id="rawData"><a class="viewcode-back" href="../radDataTypes.html#radDataTypes.rawData">[docs]</a><span class="k">class</span> <span class="nc">rawData</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	CLASS pydarn.io.rawData</span>
+
+<span class="sd">	a dictionary class containing raw radar data</span>
+<span class="sd">	</span>
+<span class="sd">	EXAMPLES:</span>
+<span class="sd">	</span>
+<span class="sd">	DECLARATION: </span>
+<span class="sd">		myRaw = pydarn.io.rawData()</span>
+<span class="sd">		</span>
+<span class="sd">	ACCESS:</span>
+<span class="sd">			#acf for range gate r</span>
+<span class="sd">			acf = myRaw[&#39;acfd&#39;][r]</span>
+<span class="sd">			</span>
+<span class="sd">	Written by AJ 20120808</span>
+<span class="sd">	*******************************</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;slist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>						<span class="c">#list of range gates w/ ACFS (should be all nrang)</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;pwr0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#lag 0 powers</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;acfd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#calculated ACFs</span>
+		<span class="bp">self</span><span class="p">[</span><span class="s">&#39;xcfd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>							<span class="c">#claculated XCFs</span>
+
+        </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DaViTPy 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, VT SuperDARN Lab and Friends.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

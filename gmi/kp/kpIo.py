@@ -22,6 +22,7 @@ def readKpDay(myDate):
 		kpVals : a list of the Kp indices in string format, e.g. '3+'
 
 	Created by AJ
+	
 	*******************************
 	"""
 	import utils

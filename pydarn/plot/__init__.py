@@ -4,7 +4,6 @@
             PLOT
 *******************************
 This subpackage contains various plotting routines for DaViT-py
-DEV: functions/modules/classes with a * have not been developed yet
 
 This includes the following function(s):
 	*rti
@@ -27,6 +26,10 @@ This includes the following module(s):
 *******************************
 """
 
-import rti
 from rti import *
+from plotUtils import *
 from map import *
+from printRec import *
+from fan import *
+from pygridPlot import *
+import pygridPlot

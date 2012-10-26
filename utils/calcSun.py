@@ -54,6 +54,7 @@ This includes the following defs:
 
 Source: http://www.esrl.noaa.gov/gmd/grad/solcalc/
 Translated to Python by Sebastien de Larquier
+
 *******************************
 """
 import math
