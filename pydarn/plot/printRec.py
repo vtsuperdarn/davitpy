@@ -73,8 +73,8 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 	
 	if(summ == 1):
 		f.write('{0:10s} {1:3s} {2:7s}\n'.format(t.strftime("%Y-%m-%d"),radar.name,myData.ftype[1:]))
-		f.write('{0:9s} {11:6s} {1:>4s} {2:>5s} {3:>5s} {4:>4s} {5:>7s} {6:>5s} {7:>5s} {8:>5s} {9:>5s} {10:>4s}\n'.\
-		format('time','beam','npnts','nrang','cpid','channel','tfreq','lagfr','smsep','intt','scan','us'))
+		f.write('{0:9s} {11:6s} {1:>4s} {2:>5s} {3:>5s}  {12:4s}  {4:>4s} {5:>7s} {6:>5s} {7:>5s} {8:>5s} {9:>5s} {10:>4s}\n'.\
+		format('time','beam','npnts','nrang','cpid','channel','tfreq','lagfr','smsep','intt','scan','us','rsep'))
 			
 			
 	while(myData != None and myData['prm']['time'] <= datetime.datetime(yr,mo,dy,ehr,emt)):
@@ -115,11 +115,11 @@ def fitPrintRec(yr, mo, dy, shr, smt, ehr, emt, rad, outfile, fileType='fitex', 
 			
 		else:
 			
-				f.write('{0:9s} {11:6s} {1:>4d} {2:>5d} {3:>5d} {4:>4d} {5:>7d} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
+				f.write('{0:9s} {11:6s} {1:>4d} {2:>5d} {3:>5d} {12:>4d}  {4:>4d} {5:>7d} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
 				format(t.strftime("%H:%M:%S."),myData['prm']['bmnum'],len(myData['fit']['slist']),\
 				myData['prm']['nrang'],myData['prm']['cp'],myData['prm']['channel'],myData['prm']['tfreq'],\
 				myData['prm']['lagfr'],myData['prm']['smsep'],myData['prm']['intt.sc']+myData['prm']['intt.us']/1e6,\
-				myData['prm']['scan'],t.strftime("%f")))
+				myData['prm']['scan'],t.strftime("%f"),myData['prm']['rsep']))
 				
 		myData = pydarn.sdio.radDataReadRec(myFile)
 		if(myData == None): break
