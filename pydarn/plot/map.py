@@ -22,8 +22,10 @@ Created by Sebastien
 
 # *************************************************************
 def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
-		grid=True, fillContinents='grey', fillOceans='None', 
-		fillLakes='white', coastLineWidth=0.):
+		grid=True, gridLabels=True,
+		fillContinents='grey', fillOceans='None', 
+		fillLakes='white', coastLineWidth=0., 
+		coords='geo', datetime=None):
 	"""Create empty map    
 
 **INPUTS**:    
@@ -34,15 +36,20 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 	* **[grid]**: show/hide parallels and meridians grid    
 	* **[fill_continents]**: continent color. Default is 'grey'    
 	* **[fill_water]**: water color. Default is 'None'    
+	* **[coords]**: 'geo'
+
 **OUTPUTS**:    
-	* **map**: a Basemap object    
+	* **map**: a Basemap object  
+	
+**EXAMPLES**:     
 
 
 Written by Sebastien 2012-08    
 
 	"""
 	from mpl_toolkits.basemap import Basemap, pyproj
-	from numpy import arange
+	from pylab import text
+	from numpy import arange, ones
 	from math import sqrt
 	
 	# Set map projection limits and center point depending on hemisphere selection
@@ -79,9 +86,31 @@ Written by Sebastien 2012-08
 	
 	# draw parallels and meridians.
 	if grid:
-		out = map.drawparallels(arange(-80.,81.,20.))
-		out = map.drawmeridians(arange(-180.,181.,20.))
+		# draw parallels and meridians.
+		# labels = [left,right,top,bottom]
+		# label parallels on map
+		parallels = arange(-80.,81.,20.)
+		out = map.drawparallels(parallels)
+		if gridLabels: 
+			lablon = int(limits[1]/10)*10
+			x,y = map(lablon*ones(parallels.shape), parallels)
+			for ix,iy,ip in zip(x,y,parallels):
+				if not map.xmin <= ix <= map.xmax: continue
+				if not map.ymin <= iy <= map.ymax: continue
+				text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+					rotation=lablon-lon_0, va='center')
+		# label meridians on bottom and left
+		meridians = arange(-180.,181.,20.)
+		if gridLabels: 
+			merLabels = [True,False,False,True]
+		else: 
+			merLabels = [False,False,False,False]
+		out = map.drawmeridians(meridians,
+			labels=merLabels)
 	
+	# Save projection coordinates
+	map.projparams['coords'] = coords
+
 	return map
 	
 
@@ -98,7 +127,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	* **[names]**: a list of radar names to plot    
 	* **[dateTime]**: the date and time as a python datetime object    
 	* **[annotate]**: wether or not to show the radar(s) name(s)    
-	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)    
+	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yet)    
 	* **[all]**: set to true to plot all the radars (active ones)    
 	* **[zorder]**: the overlay order number    
 	* **[markerColor]**:     
@@ -200,7 +229,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	* **[ids]**: a list of radar IDs to plot
 	* **[names]**: a list of radar names to plot
 	* **[dateTime]**: the date and time as a python datetime object
-	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yest)
+	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yet)
 	* **[all]**: set to true to plot all the radars (active ones)
 	* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
 	* **[zorder]**: the overlay order number
@@ -238,13 +267,9 @@ Written by Sebastien 2012-09
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
-		try:
-			[c for c in codes]
-		except:
-			codes = [codes]
-		finally:
-			nradars = len(codes)
-			input = {'meth': 'code', 'vals': codes}
+		if isinstance(codes, str): codes = [codes]
+		nradars = len(codes)
+		input = {'meth': 'code', 'vals': codes}
 	elif ids:
 		try:
 			[c for c in ids]
@@ -254,13 +279,9 @@ Written by Sebastien 2012-09
 			nradars = len(ids)
 			input = {'meth': 'id', 'vals': ids}
 	elif names:
-		try:
-			[c for c in names]
-		except:
-			names = [names]
-		finally:
-			nradars = len(names)
-			input = {'meth': 'name', 'vals': names}
+		if isinstance(names, str): names = [names]
+		nradars = len(names)
+		input = {'meth': 'name', 'vals': names}
 	elif fovObj == None:
 		print 'overlayRadar: no radars to plot'
 		return

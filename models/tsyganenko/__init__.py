@@ -201,15 +201,15 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
         self.xTrace = zeros((len(lat),2*lmax))
         self.yTrace = self.xTrace.copy()
         self.zTrace = self.xTrace.copy()
-        self.xGsw = []
-        self.yGsw = []
-        self.zGsw = []
-        self.latNH = []
-        self.lonNH = []
-        self.rhoNH = []
-        self.latSH = []
-        self.lonSH = []
-        self.rhoSH = []
+        self.xGsw = self.l.copy()
+        self.yGsw = self.l.copy()
+        self.zGsw = self.l.copy()
+        self.latNH = self.l.copy()
+        self.lonNH = self.l.copy()
+        self.rhoNH = self.l.copy()
+        self.latSH = self.l.copy()
+        self.lonSH = self.l.copy()
+        self.rhoSH = self.l.copy()
 
         # And now iterate through the desired points
         for ip in xrange(len(lat)):
@@ -228,9 +228,9 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
                                                             xgeo, ygeo, zgeo,
                                                             0. ,0. ,0. ,
                                                             1)
-            self.xGsw.append(xgsw)
-            self.yGsw.append(ygsw)
-            self.zGsw.append(zgsw)
+            self.xGsw[ip] = xgsw
+            self.yGsw[ip] = ygsw
+            self.zGsw[ip] = zgsw
 
             # Trace field line
             inmod = 'IGRF_GSW_08'
@@ -256,13 +256,13 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
 
                 # Get coordinates of traced point
                 if mapto == 1:
-                    self.latSH.append( 90. - degrees(geoColat) )
-                    self.lonSH.append( degrees(geoLon) )
-                    self.rhoSH.append( geoR*Re )
+                    self.latSH[ip] = 90. - degrees(geoColat)
+                    self.lonSH[ip] = degrees(geoLon)
+                    self.rhoSH[ip] = geoR*Re
                 elif mapto == -1:
-                    self.latNH.append( 90. - degrees(geoColat) )
-                    self.lonNH.append( degrees(geoLon) )
-                    self.rhoNH.append( geoR*Re )
+                    self.latNH[ip] = 90. - degrees(geoColat)
+                    self.lonNH[ip] = degrees(geoLon)
+                    self.rhoNH[ip] = geoR*Re
                     
                 # Store trace
                 if mapto == -1:

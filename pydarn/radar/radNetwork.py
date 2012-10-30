@@ -151,17 +151,19 @@ Get a specific radar from its name/code/id
 		"""
 Get a list of all active radar codes
 		"""
-		from datetime import datetime
+		from datetime import datetime as dt
 		
-		if not datetime: datetime = datetime.utcnow()
+		if not datetime: datetime = dt.utcnow()
 		
 		codes = []
 		for iRad in xrange( self.nradar ):
 			tcod = self.info[iRad].getSiteByDate(datetime)
-			if tcod and self.info[iRad].status == 1: 
-				if(hemi == None or \
+			if (tcod) and (self.info[iRad].status == 1) \
+			and (self.info[iRad].stTime <= datetime <= self.info[iRad].edTime):
+				if (hemi == None) or \
 				(hemi.lower() == 'south' and tcod.geolat < 0) or \
-				(hemi.lower() == 'north' and tcod.geolat >= 0)): codes.append(self.info[iRad].code[0])
+				(hemi.lower() == 'north' and tcod.geolat >= 0): 
+					codes.append(self.info[iRad].code[0])
 				
 		
 		return codes
@@ -172,7 +174,7 @@ class radar(network):
 	"""
 Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
 	"""
-	__maxSites = 32
+	__maxSites__ = 32
 	#__slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator', 'hdwfname', 'stTime', 'edTime', 'snum', 'site')
 	def __init__(self):
 		self.id = 0
@@ -186,7 +188,7 @@ Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
 		self.edTime = 0.0
 		self.snum = 0
 		self.site = []
-		for isit in range(self.__maxSites):
+		for isit in range(self.__maxSites__):
 			tsite = site()
 			self.site.append(tsite)
 			
@@ -228,18 +230,14 @@ Object string representation
 Get a specific radar site at a given date (as a python datetime object)
 		"""
 		found = False
-		for iSit in range( self.__maxSites ):
+		for iSit in range( self.__maxSites__ ):
 			if self.site[iSit].tval == -1:
 				found = True
 				return self.site[iSit]
 				break
 			elif self.site[iSit].tval >= datetime:
-				if iSit > 0: 
-					found = True
-					return self.site[iSit-1]
-				else:
-					return found
-				break
+				found = True
+				return self.site[iSit]
 		if not found:
 			print 'getSiteByDate: could not get SITE for date {}'.format(datetime)
 			return found
@@ -323,12 +321,12 @@ Reads radar.dat file
 	
 	# Read file
 	try:
-		file_net = open(os.environ['RSTPATH']+'/tables/superdarn/radar.dat', 'r')
+		file_net = open(os.environ['SD_RADAR'], 'r')
 		data = file_net.readlines()
 		file_net.close()
 		err = 0
 	except:
-		print 'radarRead: cannot read '+os.environ['RSTPATH']+'/tables/superdarn/radar.dat'
+		print 'radarRead: cannot read '+os.environ['SD_RADAR']
 		err = -1
 		return None
 	
@@ -375,11 +373,11 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name (path exc
 	
 	# Read hardware file FNAME
 	try:
-		file_hdw = open(os.environ['RSTPATH']+'/tables/superdarn/hdw/'+fname, 'r')
+		file_hdw = open(os.environ['SD_HDWPATH']+'/'+fname, 'r')
 		data = file_hdw.readlines()
 		file_hdw.close()
 	except:
-		print 'hdwRead: cannot read '+os.environ['RSTPATH']+'/tables/superdarn/hdw/'+fname
+		print 'hdwRead: cannot read '+os.environ['SD_HDWPATH']+'/'+fname
 		return None
 	
 	# Site placeholder

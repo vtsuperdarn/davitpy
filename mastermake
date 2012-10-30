@@ -1,0 +1,7 @@
+cd ${DAVITPY}/pydarn/dmapio
+make clean
+make
+
+cd ${DAVITPY}/models/aacgm
+make clean
+make
