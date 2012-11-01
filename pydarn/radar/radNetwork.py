@@ -94,7 +94,11 @@ Object string representation
 			else:
 				status = '{}'.format(self.info[iRad].status)
 			hemi = 'South' if self.info[iRad].site[0].geolat < 0 else 'North'
-			outstring += '\n\t\t({}) - [{:d}][{}] {} ({})'.format(hemi, self.info[iRad].id, self.info[iRad].code[0], self.info[iRad].name, status)
+			outstring += '\n\t\t({}) - [{:d}][{}] {} ({})'.format(hemi, 
+																self.info[iRad].id, 
+																self.info[iRad].code[0], 
+																self.info[iRad].name, 
+																status)
 		return outstring
 		
 	def getRadarById(self, id):
@@ -119,13 +123,21 @@ Get a specific radar from its 3-letter code
 		return radar
 		
 	def getRadarBy(self, radN, by):
-		"""
-Get a specific radar from its name/code/id
+		"""Get a specific radar from its name/code/id
+This method is the underlying function behing getRadarByCode, getRadarByName and getRadarById
+
+**INPUTS**:
+	* **radN**: radar identifier (either code, name or id)
+	* **by**: look-up method: 'code', 'name', 'id'
+
+**OUTPUTS**:
+	* A radar object
+
 		"""
 		found = False
-		for iRad in range( self.nradar ):
+		for iRad in xrange( self.nradar ):
 			if by.lower() == 'code':
-				for ic in range(self.info[iRad].cnum):
+				for ic in xrange(self.info[iRad].cnum):
 					if self.info[iRad].code[ic].lower() == radN.lower():
 						found = True
 						return self.info[iRad]
@@ -146,6 +158,56 @@ Get a specific radar from its name/code/id
 		if not found:
 			print 'getRadarBy: could not find radar {}: {}'.format(by, radN)
 			return found
+		
+	def getRadarsByPosition(self, lat, lon, alt, distMax=4000., datetime=None):
+		"""Get a list of radars able to see a given point 
+
+**INPUTS**:
+	* **lat**: latitude of given point in geographic coordinates
+	* **lon**: longitude of given point in geographic coordinates
+	* **alt**: altitude of point above the Earth's surface in km
+	* **[distMax]**: maximum distance of given point from radar
+	* **[datetime]**: python datetime object
+**OUTPUTS**:
+	* A dictionnary with keys:
+		* 'radars': a list of radar objects
+		* 'dist': a list of distance from radar to given point (1 per radar)
+		* 'beam': a list of beams (1 per radar) seeing the given point
+
+		"""
+		from datetime import datetime as dt
+		from utils import geoPack as geo
+		
+		if not datetime: datetime = dt.utcnow()
+
+		found = False
+		out = {'radars': [], 
+				'dist': [], 
+				'beam': []}
+		for iRad in xrange( self.nradar ):
+			site = self.info[iRad].getSiteByDate(datetime)
+			# Skip if radar inactive at date
+			if (not site) and (self.info[iRad].status != 1): continue
+			if not (self.info[iRad].stTime <= datetime <= self.info[iRad].edTime): continue
+			# Skip if radar in other hemisphere
+			if site.geolat*lat < 0.: continue
+			distPnt = geo.calcDistPnt(site.geolat, site.geolon, site.alt, 
+							distLat=lat, distLon=lon, distAlt=300.)
+			# Skip if radar too far
+			if distPnt['dist'] > distMax: continue
+			minAz = site.boresite-site.bmsep*site.maxbeam/2
+			maxAz = site.boresite+site.bmsep*site.maxbeam/2
+			# Skip if out of azimuth range
+			if not minAz <= distPnt['az'] <= maxAz: continue
+			beam = int( site.maxbeam/2 + round( (distPnt['az']-site.boresite)/site.bmsep ) )
+			# Update output
+			found = True
+			out['radars'].append(self.info[iRad])
+			out['dist'].append(distPnt['dist'])
+			out['beam'].append(beam)
+
+		if found: return out
+		else: return found
 		
 	def getAllCodes(self, datetime=None, hemi=None):
 		"""
@@ -249,7 +311,6 @@ class site(radar):
 	"""
 Reads hdw.dat for a given radar and fills a SITE structure
 	"""
-	#__slots__ = ('tval', 'geolat', 'geolon', 'alt', 'boresite', 'bmsep', 'vdir', 'atten', 'tdif', 'phidiff', 'interfer', 'recrise', 'maxatten', 'maxgate', 'maxbeam')
 	def __init__(self):
 		self.tval = 0.0
 		self.geolat = 0.0
