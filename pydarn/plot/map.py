@@ -23,7 +23,7 @@ Created by Sebastien
 # *************************************************************
 def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
 		grid=True, gridLabels=True,
-		fillContinents='grey', fillOceans='None', 
+		fillContinents='.8', fillOceans='None', 
 		fillLakes='white', coastLineWidth=0., 
 		coords='geo', datetime=None):
 	"""Create empty map    
@@ -90,7 +90,7 @@ Written by Sebastien 2012-08
 		# labels = [left,right,top,bottom]
 		# label parallels on map
 		parallels = arange(-80.,81.,20.)
-		out = map.drawparallels(parallels)
+		out = map.drawparallels(parallels, color='.6')
 		if gridLabels: 
 			lablon = int(limits[1]/10)*10
 			x,y = map(lablon*ones(parallels.shape), parallels)
@@ -106,7 +106,7 @@ Written by Sebastien 2012-08
 		else: 
 			merLabels = [False,False,False,False]
 		out = map.drawmeridians(meridians,
-			labels=merLabels)
+			labels=merLabels, color='.6')
 	
 	# Save projection coordinates
 	map.projparams['coords'] = coords
@@ -198,10 +198,10 @@ Written by Sebastien 2012-08
 		# Now add radar name
 		if annotate:
 			# If any of the other radar is too close...
-			if rad.code[0] in ['aiw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze']:
+			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze']:
 				xOff = width*.005 if not xOffset else xOffset
 				ha = 'left'
-			elif rad.code[0] in ['aie', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw']:
+			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw']:
 				xOff = -width*.005 if not xOffset else xOffset
 				ha = 'right'
 			else: 
