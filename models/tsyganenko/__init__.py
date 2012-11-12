@@ -367,7 +367,7 @@ bzimf={:3.0f}                       [nT]
         self.rhoSH = obj.rhoSH
 
 
-    def plot(self, proj='xz', color='b', showPts=False, 
+    def plot(self, proj='xz', color='b', onlyPts=None, showPts=False, 
         subplot=111, showEarth=True, disp=True, **kwargs):
         """
 |   Generate a 2D plot of the trace projected onto a given plane
@@ -376,6 +376,7 @@ bzimf={:3.0f}                       [nT]
 |   **INPUTS**:
 |       **plane**: the projection plane in GSW coordinates
 |       **subplot**: subplot position
+|       **onlyPts**: if the trace countains multiple point, only show the specified indices (list)
 |       **showEarth**: Toggle Earth disk visibility on/off
 |       **showPts**: Toggle start points visibility on/off
 |       **disp**: invoke pylab.show()
@@ -401,11 +402,20 @@ bzimf={:3.0f}                       [nT]
 
         # First plot a nice disk for the Earth
         if showEarth:
-            circ = Circle(xy=(0,0), radius=1, facecolor='0.8', edgecolor='k', alpha=.5, zorder=-1)
+            circ = Circle(xy=(0,0), radius=1, facecolor='0.8', edgecolor='k', alpha=.5, zorder=0)
             ax.add_patch(circ)
 
+        # Select indices to show
+        if onlyPts is None:
+            inds = xrange(len(self.lat))
+        else:
+            try:
+                inds = [ip for ip in onlyPts]
+            except:
+                inds = [onlyPts]
+
         # Then plot the traced field line
-        for ip in xrange(len(self.lat)):
+        for ip in inds:
             # Select projection plane
             if proj[0] == 'x':
                 xx = self.xTrace[ip,0:self.l[ip]]
@@ -431,17 +441,20 @@ bzimf={:3.0f}                       [nT]
                 yy = self.zTrace[ip,0:self.l[ip]]
                 ypt = self.zGsw[ip]
                 ax.set_ylabel(r'$Z_{GSW}$')
+            if 'x' not in proj: zz = self.xGsw[ip]
+            if 'y' not in proj: zz = self.yGsw[ip]
+            if 'z' not in proj: zz = self.zGsw[ip]
             # Plot
-            ax.plot(xx, yy, c=color, **kwargs)
+            ax.plot(xx, yy, c=color, zorder=zz, **kwargs)
             if showPts:
-                ax.scatter(xpt, ypt, c='k')
+                ax.scatter(xpt, ypt, c='k', s=40, zorder=zz)
 
         if disp: show()
 
         return ax
 
 
-    def plot3d(self, subplot=111, showEarth=True, showPts=False, disp=True, 
+    def plot3d(self, subplot=111, onlyPts=None, showEarth=True, showPts=False, disp=True, 
         xyzlim=None, zorder=1, linewidth=2, color='b', **kwargs):
         """
 |   Generate a 3D plot of the trace
@@ -449,6 +462,7 @@ bzimf={:3.0f}                       [nT]
 |   
 |   **INPUTS**:
 |       **subplot**: subplot position
+|       **onlyPts**: if the trace countains multiple point, only show the specified indices (list)
 |       **showEarth**: Toggle Earth sphere visibility on/off
 |       **showPts**: Toggle start points visibility on/off
 |       **disp**: invoke pylab.show()
@@ -479,8 +493,18 @@ bzimf={:3.0f}                       [nT]
             tz = outer(ones(size(u)), cos(v))
             ax.plot_surface(tx,ty,tz,rstride=10, cstride=10, color='grey', alpha=.5, zorder=0, linewidth=0.5)
 
+
+        # Select indices to show
+        if onlyPts is None:
+            inds = xrange(len(self.lat))
+        else:
+            try:
+                inds = [ip for ip in onlyPts]
+            except:
+                inds = [onlyPts]
+
         # Then plot the traced field line
-        for ip in xrange(len(self.lat)):
+        for ip in inds:
             ax.plot3D(  self.xTrace[ip,0:self.l[ip]],
                         self.yTrace[ip,0:self.l[ip]],
                         self.zTrace[ip,0:self.l[ip]], 
