@@ -1,4 +1,10 @@
-program		rayDARN
+subroutine rayDARN(txlat, txlon, &
+					azimbeg, azimend, azimstp, &
+					elevbeg, elevend, elevstp, &
+					year, mmdd, &
+					hourbeg, hourend, hourstp, &
+					freq, nhop, &
+					hmf2, nmf2)
 
 ! ***********************************************************************************
 ! ***********************************************************************************
@@ -8,11 +14,11 @@ program		rayDARN
 ! Inputs:
 !	- txlat, txlon: latitude, longitude of transmitter (in geographic coordinates)
 !	- azimbeg, azimend, azimstp: look direction (in degrees East)
-!	- freq: operating frequency (in MHz)
 !	- elevbeg, elevend, elevstp: elevation angle beginning, end and step (in degrees)
 !	- year, mmdd: year, month+date
-! 	- nhop: number of hops to be considered (default is 1)
 ! 	- hourbeg, hour end, hourstp: hour (+25 for UT)
+!	- freq: operating frequency (in MHz)
+! 	- nhop: number of hops to be considered (default is 1)
 !
 ! Outputs (files):
 ! 	- edens.dat: electron densities from transmitter along given azimuth (from 60km to 560km altitude over 2500km distance)\
@@ -29,14 +35,22 @@ program		rayDARN
 	use constants
 	use MPIutils
 	implicit none
+! INPUTS
+	real*4,intent(in)::		txlat, txlon
+	real*4,intent(in)::		azimbeg, azimend, azimstp
+	real*4,intent(in)::		elevbeg, elevend, elevstp
+	real*4,intent(in)::		freq
+	integer,intent(in)::	nhop
+	integer,intent(in)::	year, mmdd
+	real*4,intent(in)::		hourbeg, hourend, hourstp
+	real*4,intent(in)::		hmf2, nmf2
+! Misc.
 	real*4::	elev, azim, hour, hrbase, elev_0, azim_0, hour_0
-	integer::	iaz, iel, ihr, nelev, nazim, nhour, nextday
-	character::	filename*100
+	integer::	iaz, iel, ihr, nelev, nazim, nhour, nextday, mday
+	character:: filename*100
 ! IRI
 	real*4::	edensARR(500,500), edens
 	real*4::	edensPOS(500,2), dip(500,2), edensTHT(500)
-! Inputs
-	type(prm)::	params
 ! MPI
 	integer::		hfrays, hfranges, hfedens, hfionos		! File handles
 	integer::		type_vec, type_param					! New data types
@@ -57,13 +71,6 @@ program		rayDARN
 	CALL MPI_TYPE_SIZE(type_vec, mpi_size_vec, code)
 
 
-	! Read parameters
-	if (rank.eq.0) CALL READ_INP(params)
-! 	if (rank.eq.0) print*, params
-	! Bcast parameters
-	CALL MPI_BCAST(params, 1, type_param, 0, MPI_COMM_WORLD, code)
-
-
 	! Creates output files
 	WRITE(filename, '("/tmp/rays.dat")')
 	CALL MPI_FILE_OPEN(MPI_COMM_WORLD, filename, MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, hfrays, code)
@@ -76,12 +83,11 @@ program		rayDARN
 
 
 	! Write initial run settings
-	nelev = nint((params%elevend - params%elevbeg)/params%elevstp)+1
-	nazim = nint((params%azimend - params%azimbeg)/params%azimstp)+1
-	nhour = nint((params%hourend - params%hourbeg)/params%hourstp)+1
-	if (params%hourend.eq.params%hourbeg) nhour = nint(24./params%hourstp)+1
+	nelev = nint((elevend - elevbeg)/elevstp)+1
+	nazim = nint((azimend - azimbeg)/azimstp)+1
+	nhour = nint((hourend - hourbeg)/hourstp)+1
+	if (hourend.eq.hourbeg) nhour = nint(24./hourstp)+1
 	if (rank.eq.0) then
-		CALL MPI_FILE_WRITE_SHARED(hfrays, params, 1, type_param, status, code)
 		CALL MPI_FILE_WRITE_SHARED(hfrays, (/nhour, nazim, nelev/), 3, MPI_INTEGER, status, code)
 	endif
 
@@ -90,30 +96,30 @@ program		rayDARN
 	if (nhour.ge.nprocs) then
 		slice = nhour/nprocs
 		nhour = slice
-		hour_0 = rank*slice*params%hourstp + params%hourbeg
-		azim_0 = params%azimbeg
-		elev_0 = params%elevbeg
+		hour_0 = rank*slice*hourstp + hourbeg
+		azim_0 = azimbeg
+		elev_0 = elevbeg
 	else if (nazim.ge.nprocs) then
 		slice = nazim/nprocs
 		nazim = slice
-		hour_0 = params%hourbeg
-		azim_0 = rank*slice*params%azimstp + params%azimbeg
-		elev_0 = params%elevbeg
+		hour_0 = hourbeg
+		azim_0 = rank*slice*azimstp + azimbeg
+		elev_0 = elevbeg
 	else if (nelev.ge.nprocs) then
 		slice = nelev/nprocs
 		nelev = slice
-		hour_0 = params%hourbeg
-		azim_0 = params%azimbeg
-		elev_0 = rank*slice*params%elevstp + params%elevbeg
+		hour_0 = hourbeg
+		azim_0 = azimbeg
+		elev_0 = rank*slice*elevstp + elevbeg
 	else
 		print*, 'Not enough calculations to parallelize...'
-		hour_0 = params%hourbeg
-		azim_0 = params%azimbeg
-		elev_0 = params%elevbeg
+		hour_0 = hourbeg
+		azim_0 = azimbeg
+		elev_0 = elevbeg
 	endif
 
 	! Determine if hours are in LT or UT
-	if (params%hourbeg.ge.25.) then
+	if (hourbeg.ge.25.) then
 		hrbase = 49.
 	else
 		hrbase = 24.
@@ -124,6 +130,7 @@ program		rayDARN
 	!**********************************************************
 	! Time loop
 	nextday = 0
+	mday = mmdd
 	hour = hour_0
 	do ihr=1,nhour
 ! 		print*, rank, 'hour',hour
@@ -134,7 +141,8 @@ program		rayDARN
 		do iaz=1,nazim
 ! 			print*, rank, 'azim',hour,azim
 			! Generate electron density background
-			CALL IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
+			CALL IRI_ARR(txlat, txlon, nmf2, hmf2, year, mday, &
+						hour, azim, edensARR, edensPOS, edensTHT, dip)
 			CALL MPI_FILE_WRITE_SHARED(hfedens, (/hour, azim, &
 											edensPOS, &
 											edensTHT, &
@@ -147,12 +155,13 @@ program		rayDARN
 			elev = elev_0
 			do iel=1,nelev
 ! 				print*, rank, 'elev',hour,azim,elev
-					CALL TRACE_RKCK(params, hour, azim, elev, edensARR, edensTHT, dip, hfrays, hfranges, hfionos, &
+					CALL TRACE_RKCK(txlat, txlon, nhop, freq, &
+								hour, azim, elev, edensARR, edensTHT, dip, hfrays, hfranges, hfionos, &
 								mpi_size_int, mpi_size_real)
 
 				! Increment elevation value
-				elev = elev + params%elevstp
-				if (elev.gt.params%elevend) elev = params%elevend
+				elev = elev + elevstp
+				if (elev.gt.elevend) elev = elevend
 
 			enddo
 			! End elevation loop
@@ -162,9 +171,9 @@ program		rayDARN
 			if (rank.eq.0) print('("Time in elev loop ",I3,": ",f6.3, " s")'), iaz, time
 
 			! Increment azimuth value
-			azim = azim + params%azimstp
-			if (azim.gt.max(params%azimbeg,params%azimend)) azim = params%azimend
-			if (azim.lt.min(params%azimbeg,params%azimend)) azim = params%azimend
+			azim = azim + azimstp
+			if (azim.gt.max(azimbeg,azimend)) azim = azimend
+			if (azim.lt.min(azimbeg,azimend)) azim = azimend
 		enddo
 		! End azimuth loop
 		!**********************************************************
@@ -173,14 +182,14 @@ program		rayDARN
 		if (rank.eq.0) print('("Time in azim loop ",I3,": ",f10.3, " s")'), ihr, time
 
 		! Increment time value (but if a process reaches the last value, don't let him go over it)
-		hour = hour + params%hourstp
+		hour = hour + hourstp
 		! If hour goes to the next day, then asjust accordingly
 		if (hour.ge.hrbase) then
 			hour = hour - 24.
-			params%mmdd = params%mmdd + 1
-                        nextday = 1
+			mday = mday + 1
+            nextday = 1
 		endif
-		if (nextday.eq.1.and.hour.gt.params%hourend) hour = params%hourend
+		if (nextday.eq.1.and.hour.gt.hourend) hour = hourend
 	enddo
 	! End time loop
 	!**********************************************************
@@ -209,21 +218,20 @@ program		rayDARN
 	! Initialize MPI environment
 	CALL MPI_FINALIZE(code)
 
-end program
+end SUBROUTINE rayDARN
 
 
 ! *************************************************************************
 ! Creates MPI data types specific to ray tracing stuff
 ! *************************************************************************
-SUBROUTINE MPI_RAYTYPES_INIT(type_vec, type_param)
+SUBROUTINE MPI_RAYTYPES_INIT(type_vec)
 
 	use MPIutils
 	use constants
 	implicit none
-	integer,intent(out)::	type_vec, type_param		! New data types
+	integer,intent(out)::	type_vec		! New data types
 
 	integer::											i
-	type(prm)::											tparams
 	integer,dimension(3)::								types, lblocks
 	integer(kind=MPI_ADDRESS_KIND),dimension(3)::		disp, addr
 
@@ -231,82 +239,21 @@ SUBROUTINE MPI_RAYTYPES_INIT(type_vec, type_param)
 	CALL MPI_TYPE_CONTIGUOUS(500, MPI_REAL, type_vec, code)
 	CALL MPI_TYPE_COMMIT(type_vec, code)
 
-	! Parameters type
-	types = (/MPI_REAL, MPI_INTEGER, MPI_REAL/)
-	lblocks = (/9, 3, 5/)
-
-	CALL MPI_GET_ADDRESS(tparams%txlat, addr(1), code)
-	CALL MPI_GET_ADDRESS(tparams%nhop, addr(2), code)
-	CALL MPI_GET_ADDRESS(tparams%hourbeg, addr(3), code)
-
-	do i=1,3
-		disp(i) = addr(i) - addr(1)
-	end do
-
-	CALL MPI_TYPE_CREATE_STRUCT(3, lblocks, disp, types, type_param, code)
-	CALL MPI_TYPE_COMMIT(type_param, code)
-
 END SUBROUTINE MPI_RAYTYPES_INIT
 
 
 ! *************************************************************************
 ! Creates MPI data types specific to ray tracing stuff
 ! *************************************************************************
-SUBROUTINE MPI_RAYTYPES_FREE(type_vec, type_param)
+SUBROUTINE MPI_RAYTYPES_FREE(type_vec)
 
 	use MPIutils
 	implicit none
-	integer,intent(out)::	type_vec, type_param		! New data types
+	integer,intent(out)::	type_vec		! New data types
 
 	CALL MPI_TYPE_FREE(type_vec, code)
-	CALL MPI_TYPE_FREE(type_param, code)
 
 END SUBROUTINE MPI_RAYTYPES_FREE
-
-
-! *************************************************************************
-! Reads input file for ray-tracing
-! *************************************************************************
-SUBROUTINE READ_INP(params)
-
-	use constants
-	implicit none
-	type(prm),intent(out)::	params
-
-	character(len=80)::		filename, dumA
-
-	! read input file name
-	read(*,'(A)') filename
-
-	! Skip first 2 lines
-	open(10, file=filename, status='old')
-	read(10, '(A)') dumA
-	read(10, '(A)') dumA
-
-	! Read settings
-	read(10, 100) params%txlat
-	read(10, 100) params%txlon
-	read(10, 100) params%azimbeg
-	read(10, 100) params%azimend
-	read(10, 100) params%azimstp
-	read(10, 100) params%elevbeg
-	read(10, 100) params%elevend
-	read(10, 100) params%elevstp
-	read(10, 100) params%freq
-	read(10, 101) params%nhop
-	read(10, 101) params%year
-	read(10, 101) params%mmdd
-	read(10, 100) params%hourbeg
-	read(10, 100) params%hourend
-	read(10, 100) params%hourstp
-	read(10, 100) params%hmf2
-	read(10, 100) params%nmf2
-100		format(10X,F10.2)
-101		format(10X,I10)
-
-	close(10)
-
-END SUBROUTINE READ_INP
 
 
 ! *************************************************************************
@@ -314,16 +261,17 @@ END SUBROUTINE READ_INP
 ! adaptative stepsize Runge-Kutta method
 ! The error is calculated on Q only for simplicity
 ! *************************************************************************
-SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip, hfrays, hfranges, hfionos, &
-						mpi_size_intin, mpi_size_realin)
+SUBROUTINE TRACE_RKCK(txlat, txlon, nhop, freq, &
+				rayhour, rayazim, rayelev, edensARR, edensTHT, dip, hfrays, hfranges, hfionos, &
+				mpi_size_intin, mpi_size_realin)
 
 	use constants
 	use MPIutils
 	implicit none
-	type(prm),intent(in)::		params
+	real*4,intent(in)::			txlat, txlon, freq
 	real*4,intent(in)::			rayelev, rayazim, rayhour
 	real*4,intent(in)::			edensARR(500,500), edensTHT(500), dip(500,2)
-	integer,intent(in)::		hfrays, hfranges, hfionos, mpi_size_intin, mpi_size_realin
+	integer,intent(in)::		hfrays, hfranges, hfionos, mpi_size_intin, mpi_size_realin, nhop
 
 	real*4::		latiin, longiin, latiout, longiout
 	real*4::		edens, edensUP, vedens, nr2, dnr2dr, edensMax
@@ -378,15 +326,15 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 	nrsave(1) = sqrt(nr2)
 
 	! Initialize position
-	latiout = params%txlat
-	longiout = params%txlon
+	latiout = txlat
+	longiout = txlon
 
 
 	! Loops until ray describes the desired number of hops
 	ihop = 0		! hop counter
 	nrstep = 2		! number of steps per ray counter
 	naspstep = 1	! number of ionospheric scatter occurence counter
-	do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.theta.lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
+	do while (ihop.lt.nhop.and.r.lt.(Rav + 500.)*1e3.and.theta.lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
 		! Current position
 		latiin = latiout
 		longiin = longiout
@@ -407,7 +355,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 			if ((thetatmp-theta).eq.0.) thetatmp = theta + h / r
 			ranelev = asin( (rtmp*cos(thetatmp-theta) - r) / h)*radeg
 			! Calculate new position, index of refraction, and index gradient
-			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, params%freq, rtmp, ranelev, h, &
+			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, freq, rtmp, ranelev, h, &
 											nr2, dnr2dr)
 			! Calculate derivatives
 			call DERIV(rtmp, thetatmp, Qtmp, nr2, dnr2dr, rk(2), thetak(2), Qk(2))
@@ -421,7 +369,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 			if ((thetatmp-theta).eq.0.) thetatmp = theta + h / r
 			ranelev = asin( (rtmp*cos(thetatmp-theta) - r) / h)*radeg
 			! Calculate new position, index of refraction, and index gradient
-			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, params%freq, rtmp, ranelev, h, &
+			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, freq, rtmp, ranelev, h, &
 											nr2, dnr2dr)
 			! Calculate derivatives
 			call DERIV(rtmp, thetatmp, Qtmp, nr2, dnr2dr, rk(3), thetak(3), Qk(3))
@@ -435,7 +383,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 			if ((thetatmp-theta).eq.0.) thetatmp = theta + h / r
 			ranelev = asin( (rtmp*cos(thetatmp-theta) - r) / h)*radeg
 			! Calculate new position, index of refraction, and index gradient
-			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, params%freq, rtmp, ranelev, h, &
+			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, freq, rtmp, ranelev, h, &
 											nr2, dnr2dr)
 			! Calculate derivatives
 			call DERIV(rtmp, thetatmp, Qtmp, nr2, dnr2dr, rk(4), thetak(4), Qk(4))
@@ -449,7 +397,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 			if ((thetatmp-theta).eq.0.) thetatmp = theta + h / r
 			ranelev = asin( (rtmp*cos(thetatmp-theta) - r) / h)*radeg
 			! Calculate new position, index of refraction, and index gradient
-			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, params%freq, rtmp, ranelev, h, &
+			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, freq, rtmp, ranelev, h, &
 											nr2, dnr2dr)
 			! Calculate derivatives
 			call DERIV(rtmp, thetatmp, Qtmp, nr2, dnr2dr, rk(5), thetak(5), Qk(5))
@@ -463,7 +411,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 			if ((thetatmp-theta).eq.0.) thetatmp = theta + h / r
 			ranelev = asin( (rtmp*cos(thetatmp-theta) - r) / h)*radeg
 			! Calculate new position, index of refraction, and index gradient
-			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, params%freq, rtmp, ranelev, h, &
+			CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, freq, rtmp, ranelev, h, &
 											nr2, dnr2dr)
 			! Calculate derivatives
 			call DERIV(rtmp, thetatmp, Qtmp, nr2, dnr2dr, rk(6), thetak(6), Qk(6))
@@ -532,7 +480,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 		ranelev = asin( (rtmp*cos(thetatmp-theta) - r) / h)*radeg
 
 		! Calculate new position, index of refraction, and index gradient
-		CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, params%freq, rtmp, ranelev, h, &
+		CALL CALC_INDEX(thetatmp, edensTHT, edensARR, rayazim, freq, rtmp, ranelev, h, &
 										nr2, dnr2dr)
 
 		! Search current ray step for good aspect conditions
@@ -866,16 +814,18 @@ END SUBROUTINE CALC_ASPECT
 !	- from 60 to 560 km in 1km steps
 !	- over 2500km surface distance in 5km steps
 ! *************************************************************************
-SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
+SUBROUTINE IRI_ARR(txlat, txlon, nmf2, hmf2, year, mmdd, &
+			hour, azim, edensARR, edensPOS, edensTHT, dip)
 
 	use constants
 	use MPI
 	implicit none
 	real*4,intent(in)::							azim, hour
-	type(prm),intent(in)::						params
-	real*4,dimension(500,500),intent(out)::	edensARR
+	real*4,intent(in)::							txlat, txlon, nmf2, hmf2
+	integer,intent(in)::						year, mmdd
+	real*4,dimension(500,500),intent(out)::		edensARR
 	real*4,dimension(500,2),intent(out)::		edensPOS, dip
-	real*4,dimension(500),intent(out)::		edensTHT
+	real*4,dimension(500),intent(out)::			edensTHT
 
 	real*4::					old_hour, vbeg, vend, vstp
 	real*4::					lonDeg, latDeg, thtmp
@@ -893,12 +843,12 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 	vstp = (vend-vbeg)/500.
 
 	! adjust to have latitude between -90 and 90
-	edensPOS(1,1) = params%txlat
+	edensPOS(1,1) = txlat
 	IF(edensPOS(1,1).gt.90.OR.edensPOS(1,1).lt.-90)THEN
 		edensPOS(1,1) = sign(modulo(-abs(edensPOS(1,1)), 90.), edensPOS(1,1))
 	ENDIF
 	! adjust to have tongitude between 0 and 360E
-	edensPOS(1,2) = params%txlon
+	edensPOS(1,2) = txlon
 	IF(edensPOS(1,2).lt.0)THEN
 		edensPOS(1,2) = modulo(edensPOS(1,2), 360.)
 	ENDIF
@@ -908,13 +858,13 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 	do n=1,50
 	   jf(n) = .true.
 	enddo
-	if (params%hmf2.gt.0.) then
+	if (hmf2.gt.0.) then
 		jf(9) = .false.
-		oar(2) = params%hmf2
+		oar(2) = hmf2
 	endif
-	if (params%nmf2.gt.0.) then
+	if (nmf2.gt.0.) then
 		jf(8) = .false.
-		oar(1) = 10.**(params%nmf2)
+		oar(1) = 10.**(nmf2)
 	endif
 	jf(2) = .false.               ! no temperatures
 	jf(3) = .false.               ! no ion composition
@@ -930,7 +880,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 	jf(35) = .false.              ! no foE storm updating
 
 ! Calling IRI subroutine
-	call IRI_SUB(jf,0,edensPOS(1,1),edensPOS(1,2),params%year,params%mmdd,hour, &
+	call IRI_SUB(jf,0,edensPOS(1,1),edensPOS(1,2),year,mmdd,hour, &
                vbeg,vend,vstp,outf,oar)
 
 	do j=1,500
@@ -948,7 +898,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 							cos((edensPOS(n,2) - edensPOS(1,2))*PI/180.) &
 					+ sin(edensPOS(1,1)*PI/180.)*sin(edensPOS(n,1)*PI/180.))
 		! Calculates electron density and magnetic dip and dec at current position and time
-		call IRI_SUB(jf,0,edensPOS(n,1),edensPOS(n,2),params%year,params%mmdd,hour, &
+		call IRI_SUB(jf,0,edensPOS(n,1),edensPOS(n,2),year,mmdd,hour, &
 		           vbeg,vend,vstp,outf,oar)
 		! Altitude loop (pass output of IRI_SUB to the proper matrix)
 		do j=1,500
