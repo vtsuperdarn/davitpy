@@ -41,7 +41,7 @@ Creates NETWORK object
 		if not radarF: 
 			print 'network(object): No radars found in radar.dat'
 		self.nradar = len(radarF['id'])
-		for irad in range( self.nradar ):
+		for irad in xrange( self.nradar ):
 			tRadar = radar()
 			tRadar.id = radarF['id'][irad]
 			tRadar.status = radarF['status'][irad]
@@ -56,7 +56,7 @@ Creates NETWORK object
 			siteF = hdwRead(tRadar.hdwfname)
 			if not siteF: continue
 			tsnum = 0
-			for isit in range( len(siteF['tval']) ):
+			for isit in xrange( len(siteF['tval']) ):
 				tRadar.site[isit].tval = siteF['tval'][isit]
 				tRadar.site[isit].geolat = siteF['geolat'][isit]
 				tRadar.site[isit].geolon = siteF['geolon'][isit]
