@@ -23,3 +23,4 @@ import tsyganenko
 import igrf
 #import aacgm
 import iri
+import msis

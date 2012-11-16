@@ -1,29 +1,14 @@
-# 
-FC := mpif90
-FFLAGS := -w -O2 -fbacktrace
-
-EXEC := raydarn
-
-IRIDIR := ../iri/
-IRIOBJS := $(IRIDIR)irisub.o $(IRIDIR)irifun.o $(IRIDIR)iritec.o $(IRIDIR)iridreg.o $(IRIDIR)iriflip.o $(IRIDIR)cira.o $(IRIDIR)igrf.o
-RTOBJS := constants.o MPIutils.o
-
-%.o: %.for
-	$(FC) $(FFLAGS) -g -fno-automatic -c $< -o $@
-
-%.o: %.f90
-	$(FC) $(FFLAGS) -g -fno-automatic -c $< -o $@
-
-all: 	$(EXEC)
-
-raydarn: $(IRIOBJS) $(IGRFOBJS) $(RTOBJS) raytrace_mpi.o
-
-$(EXEC):
-	$(FC) -o $@ $^
+#!/bin/bash
+# Compile with f2py
 
 
-.PHONY: all clean
+all:
+	f2py *.f90 -m raydarn -h raydarn.pyf
+	gfortran -w -O2 -fbacktrace -fno-automatic -fPIC -c ../iri/*.for
+	mpif90 -w -O2 -fbacktrace -fno-automatic -fPIC -c *.f90
+	f2py --f90flags="-w" --f77flags="-w" --f90exec=mpif90 --f77exec=gfortran -c raydarn.pyf *.f90 ../iri/*.for
 
 clean:
-	find . -name "*~" -o -name "*.o" -name "*.mod" | xargs rm -f $(EXEC)
-	find ../iri -name "*~" -o -name "*.o" | xargs rm -f $(EXEC)
+	find . -type f -name "*.o" | xargs rm -f
+	find . -type f -name "*.so" | xargs rm -f
+	find . -type f -name "*.pyf" | xargs rm -f

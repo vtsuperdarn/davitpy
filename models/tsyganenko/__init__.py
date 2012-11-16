@@ -145,7 +145,6 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
 |
 |   Written by Sebastien 2012-10
         """
-        from models.tsyganenko import tsygFort
         from numpy import radians, degrees, zeros
 
         # Store existing values of class attributes in case something is wrong
@@ -368,14 +367,13 @@ bzimf={:3.0f}                       [nT]
 
 
     def plot(self, proj='xz', color='b', onlyPts=None, showPts=False, 
-        subplot=111, showEarth=True, disp=True, **kwargs):
+        showEarth=True, disp=True, **kwargs):
         """
 |   Generate a 2D plot of the trace projected onto a given plane
 |   Graphic keywords apply to the plot method for the field lines
 |   
 |   **INPUTS**:
 |       **plane**: the projection plane in GSW coordinates
-|       **subplot**: subplot position
 |       **onlyPts**: if the trace countains multiple point, only show the specified indices (list)
 |       **showEarth**: Toggle Earth disk visibility on/off
 |       **showPts**: Toggle start points visibility on/off
@@ -388,16 +386,16 @@ bzimf={:3.0f}                       [nT]
 |
 |   Written by Sebastien 2012-10
         """
-        from pylab import gcf, show
+        from pylab import gcf, gca, show
         from matplotlib.patches import Circle
-        from numpy import pi, linspace, outer, ones, size, cos, sin, radians
+        from numpy import pi, linspace, outer, ones, size, cos, sin, radians, cross
 
         assert (len(proj) == 2) or \
             (proj[0] in ['x','y','z'] and proj[1] in ['x','y','z']) or \
             (proj[0] != proj[1]), 'Invalid projection plane'
 
         fig = gcf()
-        ax = fig.add_subplot(subplot)
+        ax = fig.gca()
         ax.set_aspect('equal')
 
         # First plot a nice disk for the Earth
@@ -421,29 +419,36 @@ bzimf={:3.0f}                       [nT]
                 xx = self.xTrace[ip,0:self.l[ip]]
                 xpt = self.xGsw[ip]
                 ax.set_xlabel(r'$X_{GSW}$')
+                xdir = [1,0,0]
             elif proj[0] == 'y':
                 xx = self.yTrace[ip,0:self.l[ip]]
                 xpt = self.yGsw[ip]
                 ax.set_xlabel(r'$Y_{GSW}$')
+                xdir = [0,1,0]
             elif proj[0] == 'z':
                 xx = self.zTrace[ip,0:self.l[ip]]
                 xpt = self.zGsw[ip]
                 ax.set_xlabel(r'$Z_{GSW}$')
+                xdir = [0,0,1]
             if proj[1] == 'x':
                 yy = self.xTrace[ip,0:self.l[ip]]
                 ypt = self.xGsw[ip]
                 ax.set_ylabel(r'$X_{GSW}$')
+                ydir = [1,0,0]
             elif proj[1] == 'y':
                 yy = self.yTrace[ip,0:self.l[ip]]
                 ypt = self.yGsw[ip]
                 ax.set_ylabel(r'$Y_{GSW}$')
+                ydir = [0,1,0]
             elif proj[1] == 'z':
                 yy = self.zTrace[ip,0:self.l[ip]]
                 ypt = self.zGsw[ip]
                 ax.set_ylabel(r'$Z_{GSW}$')
-            if 'x' not in proj: zz = self.xGsw[ip]
-            if 'y' not in proj: zz = self.yGsw[ip]
-            if 'z' not in proj: zz = self.zGsw[ip]
+                ydir = [0,0,1]
+            sign = 1 if -1 not in cross(xdir,ydir) else -1
+            if 'x' not in proj: zz = sign*self.xGsw[ip]
+            if 'y' not in proj: zz = sign*self.yGsw[ip]
+            if 'z' not in proj: zz = sign*self.zGsw[ip]
             # Plot
             ax.plot(xx, yy, c=color, zorder=zz, **kwargs)
             if showPts:
@@ -454,14 +459,13 @@ bzimf={:3.0f}                       [nT]
         return ax
 
 
-    def plot3d(self, subplot=111, onlyPts=None, showEarth=True, showPts=False, disp=True, 
+    def plot3d(self, onlyPts=None, showEarth=True, showPts=False, disp=True, 
         xyzlim=None, zorder=1, linewidth=2, color='b', **kwargs):
         """
 |   Generate a 3D plot of the trace
 |   Graphic keywords apply to the plot3d method for the field lines
 |   
 |   **INPUTS**:
-|       **subplot**: subplot position
 |       **onlyPts**: if the trace countains multiple point, only show the specified indices (list)
 |       **showEarth**: Toggle Earth sphere visibility on/off
 |       **showPts**: Toggle start points visibility on/off
@@ -479,10 +483,10 @@ bzimf={:3.0f}                       [nT]
         """
         from mpl_toolkits.mplot3d import proj3d
         from numpy import pi, linspace, outer, ones, size, cos, sin, radians
-        from pylab import gcf, show
+        from pylab import gca, gcf, show
 
         fig = gcf()
-        ax = fig.add_subplot(subplot, projection='3d')
+        ax = fig.gca(projection='3d')
 
         # First plot a nice sphere for the Earth
         if showEarth:
