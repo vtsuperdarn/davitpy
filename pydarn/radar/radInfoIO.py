@@ -146,6 +146,7 @@ def updateHdf5():
 update local radar.hdf5 from remote SQL database. Currently, the remote 
 database is housed on the VT servers.
 	"""
+	from os import remove
 	import sqlalchemy as sqla
 	import h5py
 
@@ -165,12 +166,12 @@ database is housed on the VT servers.
 	# Date format
 	dtfmt = '%Y-%m-%d %H:%M:%S'
 	# Remove file (if it exists)
-	try:
-		os.remove(radar.__path__[0]+'/radars.hdf5')
+	rad_path = __file__.split('radInfoIO.py')[0]
+	remove(rad_path+'/radars.hdf5')
 
 	try:
 		# Open file
-		f = h5py.File(radar.__path__[0]+'/radars.hdf5','w')
+		f = h5py.File(rad_path+'/radars.hdf5','w')
 
 		# Write RADAR info
 		radar_grp = f.create_group("radar")

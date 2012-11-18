@@ -43,48 +43,49 @@ Creates NETWORK object
 		from numpy import where
 
 		# Date format
-		dtfmt = '%Y-%m-%d %H:%M:%S'
+		dtfmt = "%Y-%m-%d %H:%M:%S"
 
-        self.info = []
-        # Open file
-        f = h5py.File(__path__[0]+'/radars.hdf5','r')
-        radarF = f['/radar']
-        self.nradar = len(radarF['id'])
-        for irad in range( self.nradar ):
-            tRadar = radar.radar()
-            tRadar.id = radarF['id'][irad]
-            tRadar.status = radarF['status'][irad]
-            tRadar.cnum = radarF['cnum'][irad]
-            tRadar.stTime = datetime.strptime(radarF['stTime'][irad], dtfmt)
-            tRadar.edTime = datetime.strptime(radarF['edTime'][irad], dtfmt)
-            tRadar.name = radarF['name'][irad]
-            tRadar.operator = radarF['operator'][irad]
-            tRadar.hdwfname = radarF['hdwfname'][irad]
-            tRadar.code = radarF['code'][irad]
-            siteF = f['/hdw']
-            siteInds = where( siteF['id'][:] == tRadar.id )[0]
-            if siteInds == []: continue
-            tsnum = 0
-            for ist,isit in enumerate(siteInds):
-                tRadar.site[ist].tval = datetime.strptime(siteF['tval'][isit], dtfmt)
-                tRadar.site[ist].geolat = siteF['geolat'][isit]
-                tRadar.site[ist].geolon = siteF['geolon'][isit]
-                tRadar.site[ist].alt = siteF['alt'][isit]
-                tRadar.site[ist].boresite = siteF['boresite'][isit]
-                tRadar.site[ist].bmsep = siteF['bmsep'][isit]
-                tRadar.site[ist].vdir = siteF['vdir'][isit]
-                tRadar.site[ist].atten = siteF['atten'][isit]
-                tRadar.site[ist].tdiff = siteF['tdiff'][isit]
-                tRadar.site[ist].phidiff = siteF['phidiff'][isit]
-                tRadar.site[ist].interfer = siteF['interfer'][isit]
-                tRadar.site[ist].recrise = siteF['recrise'][isit]
-                tRadar.site[ist].maxatten = siteF['maxatten'][isit]
-                tRadar.site[ist].maxgate = siteF['maxgate'][isit]
-                tRadar.site[ist].maxbeam = siteF['maxbeam'][isit]
-                tsnum += 1
-            tRadar.snum = tsnum
-            self.info.append(tRadar)
-        f.close()
+		self.info = []
+		# Open file
+		rad_path = __file__.split('__init__.py')[0]
+		f = h5py.File(rad_path+'/radars.hdf5','r')
+		radarF = f['/radar']
+		self.nradar = len(radarF['id'])
+		for irad in range( self.nradar ):
+			tRadar = radar.radar()
+			tRadar.id = radarF['id'][irad]
+			tRadar.status = radarF['status'][irad]
+			tRadar.cnum = radarF['cnum'][irad]
+			tRadar.stTime = datetime.strptime(radarF['stTime'][irad], dtfmt)
+			tRadar.edTime = datetime.strptime(radarF['edTime'][irad], dtfmt)
+			tRadar.name = radarF['name'][irad]
+			tRadar.operator = radarF['operator'][irad]
+			tRadar.hdwfname = radarF['hdwfname'][irad]
+			tRadar.code = radarF['code'][irad]
+			siteF = f['/hdw']
+			siteInds = where( siteF['id'][:] == tRadar.id )[0]
+			if siteInds == []: continue
+			tsnum = 0
+			for ist,isit in enumerate(siteInds):
+				tRadar.site[ist].tval = datetime.strptime(siteF['tval'][isit], dtfmt)
+				tRadar.site[ist].geolat = siteF['geolat'][isit]
+				tRadar.site[ist].geolon = siteF['geolon'][isit]
+				tRadar.site[ist].alt = siteF['alt'][isit]
+				tRadar.site[ist].boresite = siteF['boresite'][isit]
+				tRadar.site[ist].bmsep = siteF['bmsep'][isit]
+				tRadar.site[ist].vdir = siteF['vdir'][isit]
+				tRadar.site[ist].atten = siteF['atten'][isit]
+				tRadar.site[ist].tdiff = siteF['tdiff'][isit]
+				tRadar.site[ist].phidiff = siteF['phidiff'][isit]
+				tRadar.site[ist].interfer = siteF['interfer'][isit]
+				tRadar.site[ist].recrise = siteF['recrise'][isit]
+				tRadar.site[ist].maxatten = siteF['maxatten'][isit]
+				tRadar.site[ist].maxgate = siteF['maxgate'][isit]
+				tRadar.site[ist].maxbeam = siteF['maxbeam'][isit]
+				tsnum += 1
+			tRadar.snum = tsnum
+			self.info.append(tRadar)
+		f.close()
 			
 	def __len__(self):
 		"""
