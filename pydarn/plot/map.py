@@ -140,7 +140,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 Written by Sebastien 2012-08 
 	
 	"""
-	from ..radar.radNetwork import network
+	from pydarn.radar import network
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.pyplot as plt
@@ -246,8 +246,8 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 Written by Sebastien 2012-09
 	
 	"""
-	from ..radar.radNetwork import network
-	from ..radar.radFov import fov
+	from pydarn.radar import network
+	from pydarn.radar.radFov import fov
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.cm as cm

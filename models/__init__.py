@@ -18,9 +18,23 @@ This module contains the following functions:
 
 *******************************
 """
-
-import tsyganenko
-import igrf
-#import aacgm
-import iri
-import msis
+try:
+    import tsyganenko
+except:
+    print __file__+' -> tsyganenko: import error'
+try:
+    import igrf
+except:
+    print __file__+' -> igrf: import error'
+try:
+    import aacgm
+except:
+    print __file__+' -> aacgm: import error'
+try:
+    import iri
+except:
+    print __file__+' -> iri: import error'
+try:
+    import msis
+except:
+    print __file__+' -> msis: import error'

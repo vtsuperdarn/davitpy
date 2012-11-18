@@ -151,7 +151,7 @@ database is housed on the VT servers.
 	import h5py
 
 	try:
-		engine = sqla.create_engine("postgresql://sd_dbread:@sd-work8.ece.vt.edu:5432/radarInfo?sslmode=require")
+		engine = sqla.create_engine("postgresql://sd_dbread:@sd-data.ece.vt.edu:5432/radarInfo?sslmode=require")
 		meta = sqla.MetaData(engine)
 
 		radartb = sqla.Table("radars", meta, autoload=True)
