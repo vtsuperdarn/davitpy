@@ -39,6 +39,7 @@ Created by Sebastien - Aug. 2012
 		"""
 Creates NETWORK object
 		"""
+		import h5py
 		from datetime import datetime
 		from numpy import where
 
@@ -52,7 +53,7 @@ Creates NETWORK object
 		radarF = f['/radar']
 		self.nradar = len(radarF['id'])
 		for irad in range( self.nradar ):
-			tRadar = radar.radar()
+			tRadar = radar()
 			tRadar.id = radarF['id'][irad]
 			tRadar.status = radarF['status'][irad]
 			tRadar.cnum = radarF['cnum'][irad]
