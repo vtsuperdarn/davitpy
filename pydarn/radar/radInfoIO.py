@@ -13,12 +13,8 @@ This module contains the following functions
 		reads hdw.dat files
 	* **radarRead**
 		reads radar.dat
-	* **hdwToSqlLite**
-		update radar.db with content of hdw.dat file
-	* **radarToSqlLite**
-		update radar.db with content of radar.dat file
-	* **updateDb**
-		update local radar.db from remote SQL database
+	* **updateHdf5**
+		update local radar.hdf5 from remote SQL database
 
 Created by Sebastien
 
@@ -144,27 +140,78 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name
 	return siteF
 
 
-def hdwToSqlLite(fname, path=None):
+# *************************************************************
+def updateHdf5():
 	"""
-Reads hdw.dat files for given radar specified by its hdw.dat file name and path
-and write its information to the local sqllite database.
-(path defaults to RST environment variable SD_HDWPATH)
-	"""
-	pass
-
-
-def radarToSqlLite(path=None):
-	"""
-Reads radar.dat file given its path (including file name) and writes its content 
-to the local sqllite database. 
-(path defaults to RST environment variable SD_RADAR)
-	"""
-	pass
-
-
-def updateDb():
-	"""
-update local radar.db from remote SQL database. Currently, the remote 
+update local radar.hdf5 from remote SQL database. Currently, the remote 
 database is housed on the VT servers.
 	"""
-	pass
+	import sqlalchemy as sqla
+	import h5py
+
+	try:
+		engine = sqla.create_engine("postgresql://sd_dbread:@sd-work8.ece.vt.edu:5432/radarInfo?sslmode=require")
+		meta = sqla.MetaData(engine)
+
+		radartb = sqla.Table("radars", meta, autoload=True)
+		hdwtb = sqla.Table("hdw", meta, autoload=True)
+
+		radarsSel = radartb.select().execute().fetchall()
+		hdwSel = hdwtb.select().execute().fetchall()
+	except:
+		print 'Could not connect to remote DB, using local files for radar.dat and hdw.dat'
+		return False
+
+	# Date format
+	dtfmt = '%Y-%m-%d %H:%M:%S'
+	# Remove file (if it exists)
+	try:
+		os.remove(radar.__path__[0]+'/radars.hdf5')
+
+	try:
+		# Open file
+		f = h5py.File(radar.__path__[0]+'/radars.hdf5','w')
+
+		# Write RADAR info
+		radar_grp = f.create_group("radar")
+		radar_grp.create_dataset(name='id', data=[rad['id'] for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='cnum', data=[rad['cnum'] for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='code', data=[[str(c) for c in rad['code']] for rad in radarsSel], maxshape=(None,None))
+		radar_grp.create_dataset(name='name', data=[str(rad['name']) for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='operator', data=[str(rad['operator']) for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='hdwfname', data=[str(rad['hdwfname']) for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='status', data=[rad['status'] for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='stTime', data=[rad['stTime'].strftime(dtfmt) for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='edTime', data=[rad['edTime'].strftime(dtfmt) for rad in radarsSel], maxshape=(None,))
+		radar_grp.create_dataset(name='snum', data=[rad['snum'] for rad in radarsSel], maxshape=(None,))
+
+		# Write HDW info
+		hdw_grp = f.create_group("hdw")
+		hdw_grp.create_dataset(name='id', data=[site['id'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='tval', 
+		    data=['{}-{}-{} {}:{}:{}'.format(site['tval'].year,site['tval'].month,site['tval'].day,
+		                                     site['tval'].hour,site['tval'].minute,site['tval'].second) for site in hdwSel], 
+		    maxshape=(None,))
+		hdw_grp.create_dataset(name='geolat', data=[site['geolat'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='geolon', data=[site['geolon'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='alt', data=[site['alt'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='boresite', data=[site['boresite'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='bmsep', data=[site['bmsep'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='vdir', data=[site['vdir'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='atten', data=[site['atten'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='tdiff', data=[site['tdiff'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='phidiff', data=[site['phidiff'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='recrise', data=[site['recrise'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='maxatten', data=[site['maxatten'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='maxgate', data=[site['maxgate'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='maxbeam', data=[site['maxbeam'] for site in hdwSel], maxshape=(None,))
+		hdw_grp.create_dataset(name='interfer', data=[site['interfer'] for site in hdwSel], maxshape=(None,None))
+
+		# Close file
+		f.close()
+	except:
+		print 'Problem updating HDF5 file'
+		raise
+
+	return True
+

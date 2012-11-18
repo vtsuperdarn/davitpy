@@ -24,6 +24,10 @@ from radFov import *
 from radUtils import *
 from radInfoIO import *
 
+# Update local HDF5
+out = updateHdf5()
+
+
 # *************************************************************
 class network(object):
 	"""
@@ -35,46 +39,52 @@ Created by Sebastien - Aug. 2012
 		"""
 Creates NETWORK object
 		"""
-		self.info = []
-		# First, load info from radar.dat file
-		radarF = radarRead()
-		if not radarF: 
-			print 'network(object): No radars found in radar.dat'
-		self.nradar = len(radarF['id'])
-		for irad in xrange( self.nradar ):
-			tRadar = radar()
-			tRadar.id = radarF['id'][irad]
-			tRadar.status = radarF['status'][irad]
-			tRadar.cnum = radarF['cnum'][irad]
-			tRadar.stTime = radarF['stTime'][irad]
-			tRadar.edTime = radarF['edTime'][irad]
-			tRadar.name = radarF['name'][irad]
-			tRadar.operator = radarF['operator'][irad]
-			tRadar.hdwfname = radarF['hdwfname'][irad]
-			tRadar.code = radarF['code'][irad]
-			# Then, load info from hdw.dat file
-			siteF = hdwRead(tRadar.hdwfname)
-			if not siteF: continue
-			tsnum = 0
-			for isit in xrange( len(siteF['tval']) ):
-				tRadar.site[isit].tval = siteF['tval'][isit]
-				tRadar.site[isit].geolat = siteF['geolat'][isit]
-				tRadar.site[isit].geolon = siteF['geolon'][isit]
-				tRadar.site[isit].alt = siteF['alt'][isit]
-				tRadar.site[isit].boresite = siteF['boresite'][isit]
-				tRadar.site[isit].bmsep = siteF['bmsep'][isit]
-				tRadar.site[isit].vdir = siteF['vdir'][isit]
-				tRadar.site[isit].atten = siteF['atten'][isit]
-				tRadar.site[isit].tdiff = siteF['tdiff'][isit]
-				tRadar.site[isit].phidiff = siteF['phidiff'][isit]
-				tRadar.site[isit].interfer = siteF['interfer'][isit]
-				tRadar.site[isit].recrise = siteF['recrise'][isit]
-				tRadar.site[isit].maxatten = siteF['maxatten'][isit]
-				tRadar.site[isit].maxgate = siteF['maxgate'][isit]
-				tRadar.site[isit].maxbeam = siteF['maxbeam'][isit]
-				tsnum += 1
-			tRadar.snum = tsnum
-			self.info.append(tRadar)
+		from datetime import datetime
+		from numpy import where
+
+		# Date format
+		dtfmt = '%Y-%m-%d %H:%M:%S'
+
+        self.info = []
+        # Open file
+        f = h5py.File(__path__[0]+'/radars.hdf5','r')
+        radarF = f['/radar']
+        self.nradar = len(radarF['id'])
+        for irad in range( self.nradar ):
+            tRadar = radar.radar()
+            tRadar.id = radarF['id'][irad]
+            tRadar.status = radarF['status'][irad]
+            tRadar.cnum = radarF['cnum'][irad]
+            tRadar.stTime = datetime.strptime(radarF['stTime'][irad], dtfmt)
+            tRadar.edTime = datetime.strptime(radarF['edTime'][irad], dtfmt)
+            tRadar.name = radarF['name'][irad]
+            tRadar.operator = radarF['operator'][irad]
+            tRadar.hdwfname = radarF['hdwfname'][irad]
+            tRadar.code = radarF['code'][irad]
+            siteF = f['/hdw']
+            siteInds = where( siteF['id'][:] == tRadar.id )[0]
+            if siteInds == []: continue
+            tsnum = 0
+            for ist,isit in enumerate(siteInds):
+                tRadar.site[ist].tval = datetime.strptime(siteF['tval'][isit], dtfmt)
+                tRadar.site[ist].geolat = siteF['geolat'][isit]
+                tRadar.site[ist].geolon = siteF['geolon'][isit]
+                tRadar.site[ist].alt = siteF['alt'][isit]
+                tRadar.site[ist].boresite = siteF['boresite'][isit]
+                tRadar.site[ist].bmsep = siteF['bmsep'][isit]
+                tRadar.site[ist].vdir = siteF['vdir'][isit]
+                tRadar.site[ist].atten = siteF['atten'][isit]
+                tRadar.site[ist].tdiff = siteF['tdiff'][isit]
+                tRadar.site[ist].phidiff = siteF['phidiff'][isit]
+                tRadar.site[ist].interfer = siteF['interfer'][isit]
+                tRadar.site[ist].recrise = siteF['recrise'][isit]
+                tRadar.site[ist].maxatten = siteF['maxatten'][isit]
+                tRadar.site[ist].maxgate = siteF['maxgate'][isit]
+                tRadar.site[ist].maxbeam = siteF['maxbeam'][isit]
+                tsnum += 1
+            tRadar.snum = tsnum
+            self.info.append(tRadar)
+        f.close()
 			
 	def __len__(self):
 		"""
@@ -233,7 +243,8 @@ Get a list of all active radar codes
 				
 		
 		return codes
-			
+
+
 
 # *************************************************************
 class radar(network):
@@ -377,3 +388,5 @@ Object string representation
 											self.maxgate, \
 											self.maxbeam)
 		return outstring
+
+
