@@ -212,7 +212,7 @@ database is housed on the VT servers.
 		f.close()
 	except:
 		print 'Problem updating HDF5 file'
-		raise
+		return False
 
 	return True
 
