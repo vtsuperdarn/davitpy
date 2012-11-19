@@ -167,11 +167,11 @@ database is housed on the VT servers.
 	dtfmt = '%Y-%m-%d %H:%M:%S'
 	# Remove file (if it exists)
 	rad_path = __file__.split('radInfoIO.py')[0]
-	remove(rad_path+'/radars.hdf5')
+	# remove(rad_path+'radars.hdf5')
 
 	try:
 		# Open file
-		f = h5py.File(rad_path+'/radars.hdf5','w')
+		f = h5py.File(rad_path+'radars.hdf5','w')
 
 		# Write RADAR info
 		radar_grp = f.create_group("radar")
