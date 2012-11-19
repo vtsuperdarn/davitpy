@@ -211,11 +211,11 @@ This method is the underlying function behing getRadarByCode, getRadarByName and
 							distLat=lat, distLon=lon, distAlt=300.)
 			# Skip if radar too far
 			if distPnt['dist'] > distMax: continue
-			minAz = site.boresite-site.bmsep*site.maxbeam/2
-			maxAz = site.boresite+site.bmsep*site.maxbeam/2
+			minAz = (site.boresite % 360.)-abs(site.bmsep)*site.maxbeam/2
+			maxAz = (site.boresite % 360.)+abs(site.bmsep)*site.maxbeam/2
 			# Skip if out of azimuth range
-			if not minAz <= distPnt['az'] <= maxAz: continue
-			beam = int( site.maxbeam/2 + round( (distPnt['az']-site.boresite)/site.bmsep ) )
+			if not minAz <= (distPnt['az'] % 360.) <= maxAz: continue
+			beam = int( site.maxbeam/2 + round( ((distPnt['az'] % 360.)-(site.boresite % 360.))/site.bmsep ) )
 			# Update output
 			found = True
 			out['radars'].append(self.info[iRad])
