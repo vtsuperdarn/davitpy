@@ -116,7 +116,7 @@ Written by Sebastien 2012-08
 
 # *************************************************************
 def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
-				annotate=True, coords='geo', all=False,
+				annotate=True, coords='geo', all=False, hemi=None,
 				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
 	"""Overlay radar position(s) and name(s) on map    
 
@@ -128,7 +128,8 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	* **[dateTime]**: the date and time as a python datetime object    
 	* **[annotate]**: wether or not to show the radar(s) name(s)    
 	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yet)    
-	* **[all]**: set to true to plot all the radars (active ones)    
+	* **[all]**: set to true to plot all the radars (active ones) 
+	* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere   
 	* **[zorder]**: the overlay order number    
 	* **[markerColor]**:     
 	* **[markerSize]**: [point]    
@@ -154,11 +155,7 @@ Written by Sebastien 2012-08
 	
 	# If all radars are to be plotted, create the list
 	if all:
-		codes = []
-		for irad in range( len(NetworkObj) ):
-			if (NetworkObj.info[irad].status != 0 and \
-				NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime):
-				codes.append(NetworkObj.info[irad].code[0])
+		codes = NetworkObj.getAllCodes(datetime=dateTime, hemi=hemi)
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
@@ -177,6 +174,11 @@ Written by Sebastien 2012-08
 	# Map width and height
 	width = Basemap.urcrnrx - Basemap.llcrnrx
 	height = Basemap.urcrnry - Basemap.llcrnry
+
+	if hemi is None:
+		hemiInt = 0
+	else:
+		hemiInt = 1 if hemi.lower()[0]=='n' else -1
 	
 	# iterates through radars to be plotted
 	for radN in input['vals']:
@@ -184,6 +186,8 @@ Written by Sebastien 2012-08
 		if not rad: continue
 		site = rad.getSiteByDate(dateTime)
 		if not site: continue
+		# Check for hemisphere specification
+		if site.geolat*hemiInt < 0: continue
 		# Get radar coordinates in map projection
 		if(coords == 'geo'):
 			x,y = Basemap(site.geolon, site.geolat)

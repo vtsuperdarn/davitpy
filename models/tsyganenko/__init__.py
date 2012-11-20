@@ -389,6 +389,7 @@ bzimf={:3.0f}                       [nT]
         from pylab import gcf, gca, show
         from matplotlib.patches import Circle
         from numpy import pi, linspace, outer, ones, size, cos, sin, radians, cross
+        from numpy.ma import masked_array
 
         assert (len(proj) == 2) or \
             (proj[0] in ['x','y','z'] and proj[1] in ['x','y','z']) or \
@@ -446,11 +447,22 @@ bzimf={:3.0f}                       [nT]
                 ax.set_ylabel(r'$Z_{GSW}$')
                 ydir = [0,0,1]
             sign = 1 if -1 not in cross(xdir,ydir) else -1
-            if 'x' not in proj: zz = sign*self.xGsw[ip]
-            if 'y' not in proj: zz = sign*self.yGsw[ip]
-            if 'z' not in proj: zz = sign*self.zGsw[ip]
+            if 'x' not in proj: 
+                zz = sign*self.xGsw[ip]
+                indMask = sign*self.xTrace[ip,0:self.l[ip]] < 0
+            if 'y' not in proj: 
+                zz = sign*self.yGsw[ip]
+                indMask = sign*self.yTrace[ip,0:self.l[ip]] < 0
+            if 'z' not in proj: 
+                zz = sign*self.zGsw[ip]
+                indMask = sign*self.zTrace[ip,0:self.l[ip]] < 0
             # Plot
-            ax.plot(xx, yy, c=color, zorder=zz, **kwargs)
+            ax.plot(masked_array(xx, mask=~indMask), 
+                    masked_array(yy, mask=~indMask), 
+                    zorder=-1, color='b', **kwargs)
+            ax.plot(masked_array(xx, mask=indMask), 
+                    masked_array(yy, mask=indMask), 
+                    zorder=1, color='b', **kwargs)
             if showPts:
                 ax.scatter(xpt, ypt, c='k', s=40, zorder=zz)
 
