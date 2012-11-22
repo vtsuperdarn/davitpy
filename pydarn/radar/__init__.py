@@ -25,7 +25,7 @@ from radUtils import *
 from radInfoIO import *
 
 # Update local HDF5
-out = updateHdf5()
+_ = updateHdf5()
 
 
 # *************************************************************

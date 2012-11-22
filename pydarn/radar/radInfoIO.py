@@ -141,85 +141,170 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name
 
 
 # *************************************************************
-def updateHdf5():
+class updateHdf5(object):
 	"""
 update local radar.hdf5 from remote SQL database. Currently, the remote 
 database is housed on the VT servers.
 	"""
-	import os
-	import sys
-	import sqlalchemy as sqla
-	import h5py
 
-	# Date format
-	dtfmt = '%Y-%m-%d %H:%M:%S'
-	# Remove file (if it exists)
-	rad_path = os.path.abspath( __file__.split('radInfoIO.py')[0] )
+	def __init__(self):
+		import os, sys
+		from datetime import datetime
+		from numpy import dtype
+		import h5py
 
-	try:
-		engine = sqla.create_engine("postgresql://sd_dbread:@sd-data.ece.vt.edu:5432/radarInfo?sslmode=require")
-		meta = sqla.MetaData(engine)
+		# Date format
+		dtfmt = '%Y-%m-%d %H:%M:%S'
+		dttest = datetime.utcnow().strftime(dtfmt)
+		# File path
+		self.h5_path = os.path.abspath( __file__.split('radInfoIO.py')[0] )
+		self.h5_file = 'radars.hdf5'
+		# SQL server
+		self.sql_user = 'sd_dbread'
+		self.sql_host = 'sd-data.ece.vt.edu'
+		self.sql_port = 5432
 
-		radartb = sqla.Table("radars", meta, autoload=True)
-		hdwtb = sqla.Table("hdw", meta, autoload=True)
+		# Declare custom data types
+		self.dtype_rad = dtype([('id', 'i'), 
+		                         ('cnum', 'i'),
+		                         ('code', 'S3', (2,)),
+		                         ('name', h5py.new_vlen(str) ), 
+		                         ('operator', h5py.new_vlen(str) ), 
+		                         ('hdwfname', h5py.new_vlen(str) ), 
+		                         ('status', 'i'), 
+		                         ('stTime', 'S{}'.format(len(dttest))), 
+		                         ('edTime', 'S{}'.format(len(dttest))), 
+		                         ('snum', 'i') ])
+		self.dtype_hdw = dtype([('id', 'i'), 
+		                         ('tval', 'S{}'.format(len(dttest))),
+		                         ('geolat', 'float'),
+		                         ('geolon', 'float'),
+		                         ('alt', 'float'),
+		                         ('boresite', 'float'),
+		                         ('bmsep', 'float'),
+		                         ('vdir', 'i'),
+		                         ('tdiff', 'float'),
+		                         ('phidiff', 'float'),
+		                         ('recrise', 'float'),
+		                         ('atten', 'float'),
+		                         ('maxatten', 'float'),
+		                         ('maxgate', 'i'),
+		                         ('maxbeam', 'i'),
+		                         ('interfer', 'float', (3,)) ])
+		self.dtype_info = dtype([('var', h5py.new_vlen(str)),
+		                          ('description', h5py.new_vlen(str)) ])
 
-		radarsSel = radartb.select().execute().fetchall()
-		hdwSel = hdwtb.select().execute().fetchall()
-	except:
-		print 'Could not connect to remote DB, using local files for radar.dat and hdw.dat'
-		return False
+		# Try to connect to DB
+		conn = self.sqlConnect()
+		# If it worked, try to update HDF5 file
+		if conn: self.h5Update()
 
 
-	try:
-		# Remove file first (because!)
+	def sqlConnect(self):
+		'''
+Try to establish a connection to remote sql database
+		'''
+		import sqlalchemy as sqla
+		import sys
+
 		try:
-			os.remove(rad_path+'/radars.hdf5')
-		except OSError:
-			pass
-		# Open file
-		f = h5py.File(rad_path+'/radars.hdf5','w')
+			engine = sqla.create_engine("postgresql://{}:@{}:{}/radarInfo?sslmode=require".\
+										format(self.sql_user,
+											self.sql_host, 
+											self.sql_port))
+			meta = sqla.MetaData(engine)
 
-		# Write RADAR info
-		radar_grp = f.create_group("radar")
-		radar_grp.create_dataset(name='id', data=[rad['id'] for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='cnum', data=[rad['cnum'] for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='code', data=[[str(c) for c in rad['code']] for rad in radarsSel], maxshape=(None,None))
-		radar_grp.create_dataset(name='name', data=[str(rad['name']) for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='operator', data=[str(rad['operator']) for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='hdwfname', data=[str(rad['hdwfname']) for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='status', data=[rad['status'] for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='stTime', data=[rad['stTime'].strftime(dtfmt) for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='edTime', data=[rad['edTime'].strftime(dtfmt) for rad in radarsSel], maxshape=(None,))
-		radar_grp.create_dataset(name='snum', data=[rad['snum'] for rad in radarsSel], maxshape=(None,))
+			tbSel = lambda tbName: sqla.Table(tbName, meta, autoload=True).select().execute().fetchall()
 
-		# Write HDW info
-		hdw_grp = f.create_group("hdw")
-		hdw_grp.create_dataset(name='id', data=[site['id'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='tval', 
-		    data=['{}-{}-{} {}:{}:{}'.format(site['tval'].year,site['tval'].month,site['tval'].day,
-		                                     site['tval'].hour,site['tval'].minute,site['tval'].second) for site in hdwSel], 
-		    maxshape=(None,))
-		hdw_grp.create_dataset(name='geolat', data=[site['geolat'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='geolon', data=[site['geolon'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='alt', data=[site['alt'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='boresite', data=[site['boresite'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='bmsep', data=[site['bmsep'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='vdir', data=[site['vdir'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='atten', data=[site['atten'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='tdiff', data=[site['tdiff'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='phidiff', data=[site['phidiff'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='recrise', data=[site['recrise'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='maxatten', data=[site['maxatten'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='maxgate', data=[site['maxgate'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='maxbeam', data=[site['maxbeam'] for site in hdwSel], maxshape=(None,))
-		hdw_grp.create_dataset(name='interfer', data=[site['interfer'] for site in hdwSel], maxshape=(None,None))
+			self.sql_select = {'rad': tbSel("radars"), 'hdw': tbSel("hdw"), 'inf': tbSel("info")}
+			return True
+		except:
+			print 'Could not connect to remote DB: ', sys.exc_info()[0]
+			return False
 
-		# Close file
-		f.close()
-		print 'Updated radar information [HDF5 file]'
-	except:
-		print 'Problem updating HDF5 file: ', sys.exc_info()[0]
-		return False
 
-	return True
+	def h5Init(self):
+		'''
+Initialize HDF5 file (only if file does not already exists)
+		'''
+		import h5py, os
+
+		fname = os.path.join(self.h5_path, self.h5_file)
+		try:
+			with open(fname,'r+') as f: pass
+		except IOError:
+			# Open file
+			f = h5py.File(radar.__path__[0]+'/radars.hdf5','w')
+
+			rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad)
+			hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw)
+			info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info)
+
+			# Close file
+			f.close()
+
+
+	def h5Update(self):
+		'''
+Update HDF5 file with provided SQL selections (if possible).
+		'''
+		import h5py, os, sys
+
+		self.h5Init()
+
+		fname = os.path.join(self.h5_path, self.h5_file)
+
+		arr_rad = self.__sqlaToArr(self.sql_select['rad'], self.dtype_rad)
+		arr_hdw = self.__sqlaToArr(self.sql_select['hdw'], self.dtype_hdw)
+		arr_inf = self.__sqlaToArr(self.sql_select['inf'], self.dtype_info)
+
+		try:
+			f = h5py.File(fname,'r+')
+
+			# Update each dataset
+			self.__h5UpdateDset(f['radar'], arr_rad, 'id')
+			self.__h5UpdateDset(f['hdw'], arr_hdw, 'id')
+			self.__h5UpdateDset(f['metadata'], arr_inf, 'var')
+
+			# Close file
+			f.close()
+			print 'Updated radar information [HDF5 file]'
+		except:
+			print 'Problem updating HDF5 file: ', sys.exc_info()[0]
+			return False
+
+		return True
+
+
+	def __h5UpdateDset(self, dset, arr, key):
+		'''
+Update dataset (scan existing rows and update if necessary)
+		'''
+		from numpy import where
+
+		for row in arr:
+			inds = where( dset[:,key]==row[key] )
+			# Try to overwrite if exist, else grow the dataset and insert
+			try:
+				dset[inds[0][0]] = row
+			except IndexError:
+				dset.resize((dset.shape[0]+1,))
+				dset[dset.shape[0]-1] = row
+
+
+	def __sqlaToArr(self, sel, dtype=None):
+		'''
+Create a compound array out of SQLAlchemy row objects.
+This is used to write in HDF5 datasets.
+		'''
+		import numpy
+
+		arr = numpy.empty(len(sel), dtype=dtype)
+		for ir,row in enumerate(sel):
+			for k,v in row.items():
+				try:
+					arr[ir][k] = v
+				except (ValueError, TypeError):
+					arr[ir][k][:] = v
+		return arr
 
