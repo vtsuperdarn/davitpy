@@ -13,6 +13,8 @@ This module contains the following functions
 		reads hdw.dat files
 	* **radarRead**
 		reads radar.dat
+
+This module contains the following objects
 	* **updateHdf5**
 		update local radar.hdf5 from remote SQL database
 
@@ -233,15 +235,20 @@ Initialize HDF5 file (only if file does not already exists)
 		try:
 			with open(fname,'r+') as f: pass
 		except IOError:
-			# Open file
-			f = h5py.File(radar.__path__[0]+'/radars.hdf5','w')
+			try:
+				# Open file
+				f = h5py.File(fname,'w')
 
-			rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad)
-			hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw)
-			info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info)
+				rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad)
+				hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw)
+				info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info)
 
-			# Close file
-			f.close()
+				# Close file
+				f.close()
+				return True
+			except IOError:
+				print 'Cannot initialize HDF5 file for updates. Changing nothing.'
+				return False
 
 
 	def h5Update(self):
@@ -250,7 +257,8 @@ Update HDF5 file with provided SQL selections (if possible).
 		'''
 		import h5py, os, sys
 
-		self.h5Init()
+		isInit = self.h5Init()
+		if not isInit: return False
 
 		fname = os.path.join(self.h5_path, self.h5_file)
 
