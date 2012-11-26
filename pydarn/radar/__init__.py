@@ -110,7 +110,7 @@ Object string representation
 			else:
 				status = '{}'.format(self.info[iRad].status)
 			hemi = 'South' if self.info[iRad].site[0].geolat < 0 else 'North'
-			outstring += '\n\t\t({}) - [{:d}][{}] {} ({})'.format(hemi, 
+			outstring += '\n\t\t({}) - [{}][{}] {} ({})'.format(hemi, 
 																self.info[iRad].id, 
 																self.info[iRad].code[0], 
 																self.info[iRad].name, 
@@ -283,17 +283,17 @@ Object length
 		"""
 Object string representation
 		"""
-		outstring = 'id: {0:d} \
-					\nstatus: {1:d} \
-					\ncnum: {2:d} \
+		outstring = 'id: {0} \
+					\nstatus: {1} \
+					\ncnum: {2} \
 					\ncode: {3} \
 					\nname: {4} \
 					\noperator: {5} \
 					\nhdwfname: {6} \
 					\nstTime: {7} \
 					\nedTime: {8} \
-					\nsnum: {9:d} \
-					\nsite: {10:d} elements'.format(self.id, \
+					\nsnum: {9} \
+					\nsite: {10} elements'.format(self.id, \
 										self.status, \
 										self.cnum, \
 										self.code[0], \
@@ -372,9 +372,9 @@ Object string representation
 					\nphidiff: {9:3.1f} \
 					\ninterfer: [{10:5.2f}, {11:5.2f}, {12:5.2f}] \
 					\nrecrise: {13:5.3f} \
-					\nmaxatten: {14:d} \
-					\nmaxgate: {15:d} \
-					\nmaxbeam: {16:d}'.format(self.tval, \
+					\nmaxatten: {14} \
+					\nmaxgate: {15} \
+					\nmaxbeam: {16}'.format(self.tval, \
 											self.geolat, \
 											self.geolon, \
 											self.alt, \
