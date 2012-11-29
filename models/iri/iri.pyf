@@ -99,6 +99,24 @@ python module iri ! in
             common /qtop/ y05,h05top,qf,xnetop,xm3000,hhalf,tau
             common /block8/ hs,tnhs,xsm,mm,dti,mxsm
         end subroutine iri_sub
+        subroutine iri_web(jmag,jf,alati,along,iyyyy,mmdd,iut,dhour,height,h_tec_max,ivar,vbeg,vend,vstp,a,b) ! in :iri:irisub.for
+            integer intent(in) :: jmag
+            logical dimension(50),intent(in) :: jf
+            real intent(in) :: alati
+            real intent(in) :: along
+            integer intent(in) :: iyyyy
+            integer intent(in) :: mmdd
+            integer intent(in) :: iut
+            real intent(in) :: dhour
+            real intent(in) :: height
+            real intent(in) :: h_tec_max
+            integer intent(in) :: ivar
+            real intent(in) :: vbeg
+            real intent(in) :: vend
+            real intent(in) :: vstp
+            real dimension(20,1000),intent(out) :: a
+            real dimension(100,1000),intent(in,out) :: b
+        end subroutine iri_web
     end interface 
 end python module iri
 
