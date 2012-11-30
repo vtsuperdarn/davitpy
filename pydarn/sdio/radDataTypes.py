@@ -1,4 +1,6 @@
 import pydarn 
+alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+
 
 class radData(dict):
 	"""
@@ -29,7 +31,6 @@ class radData(dict):
 		self._dict = {}
 		self.times = []
 		self.nrecs = 0
-		self.ftype = 'no data'
 		
 	def getTimes(self):
 		"""
@@ -83,7 +84,7 @@ class radData(dict):
 		myData = pydarn.sdio.radData()
 		
 		for k in self.iterkeys():
-			if(self[k]['prm']['bmnum'] == bmnum):
+			if(self[k].prm.bmnum == bmnum):
 				myData[k] = self[k]
 			
 		myData.times = myData.getTimes()
@@ -119,13 +120,13 @@ class radData(dict):
 		myData = pydarn.io.radData()
 		
 		for k in self.iterkeys():
-			if((self[k]['prm']['channel'] == 0 or self[k]['prm']['channel'] == 1) and chn == 'a'):
+			if((self[k].prm.channel == 0 or self[k].prm.channel == 1) and chn == 'a'):
 				myData[k] = self[k]
-			if(self[k]['prm']['channel'] == 2 and chn == 'b'):
+			if(self[k].prm.channel == 2 and chn == 'b'):
 				myData[k] = self[k]
-			if(self[k]['prm']['channel'] == 3 and chn == 'c'):
+			if(self[k].prm.channel == 3 and chn == 'c'):
 				myData[k] = self[k]
-			if(self[k]['prm']['channel'] == 4 and chn == 'd'):
+			if(self[k].prm.channel == 4 and chn == 'd'):
 				myData[k] = self[k]
 				
 		myData.times = myData.getTimes()
@@ -133,7 +134,7 @@ class radData(dict):
 		myData.ftype = self.ftype
 		return myData  
 		
-class beam(dict):
+class beamD(dict):
 	"""
 	*******************************
 	CLASS pydarn.io.beam
@@ -160,7 +161,7 @@ class beam(dict):
 	def __init__(self):
 		self._dict = {}
 
-class prmData(dict):
+class prmDataD(dict):
 	"""
 	*******************************
 	CLASS pydarn.io.prmData
@@ -234,7 +235,7 @@ class prmData(dict):
 		self['ltab'] = []							#lag table
 		
     
-class fitData(dict):
+class fitDataD(dict):
 	"""
 	*******************************
 	CLASS pydarn.io.fitData
@@ -298,7 +299,7 @@ class fitData(dict):
 		self['x_sd_phi'] = []
 		
         
-class rawData(dict):
+class rawDataD(dict):
 	"""
 	*******************************
 	CLASS pydarn.io.rawData

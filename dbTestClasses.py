@@ -7,8 +7,6 @@ from sqlalchemy.orm import backref, mapper, relation, sessionmaker
 from pydarn.sdio import *
 import numpy
 
-alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-
 Base = declarative_base()
 
 class Beam(Base):
