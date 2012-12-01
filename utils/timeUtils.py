@@ -152,5 +152,5 @@ def datetimeToEpoch(myDate):
 	
 	import datetime,calendar
 	
-	return calendar.timegm(myDate.timetuple())
+	return calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
 

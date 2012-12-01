@@ -18,7 +18,7 @@ This includes the following submodules:
 *******************************
 """
 
-#import dmapio 
+import dmapio 
 import radar 
 import sdio 
 import plot 
