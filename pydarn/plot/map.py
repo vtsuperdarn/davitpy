@@ -23,7 +23,7 @@ Created by Sebastien
 # *************************************************************
 def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
 		grid=True, gridLabels=True,
-		fillContinents='grey', fillOceans='None', 
+		fillContinents='.8', fillOceans='None', 
 		fillLakes='white', coastLineWidth=0., 
 		coords='geo', datetime=None):
 	"""Create empty map    
@@ -90,7 +90,7 @@ Written by Sebastien 2012-08
 		# labels = [left,right,top,bottom]
 		# label parallels on map
 		parallels = arange(-80.,81.,20.)
-		out = map.drawparallels(parallels)
+		out = map.drawparallels(parallels, color='.6')
 		if gridLabels: 
 			lablon = int(limits[1]/10)*10
 			x,y = map(lablon*ones(parallels.shape), parallels)
@@ -106,7 +106,7 @@ Written by Sebastien 2012-08
 		else: 
 			merLabels = [False,False,False,False]
 		out = map.drawmeridians(meridians,
-			labels=merLabels)
+			labels=merLabels, color='.6')
 	
 	# Save projection coordinates
 	map.projparams['coords'] = coords
@@ -116,7 +116,7 @@ Written by Sebastien 2012-08
 
 # *************************************************************
 def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
-				annotate=True, coords='geo', all=False,
+				annotate=True, coords='geo', all=False, hemi=None,
 				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
 	"""Overlay radar position(s) and name(s) on map    
 
@@ -128,7 +128,8 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	* **[dateTime]**: the date and time as a python datetime object    
 	* **[annotate]**: wether or not to show the radar(s) name(s)    
 	* **[coords]**: 'geo' (default), 'mag', 'mlt' (not implemented yet)    
-	* **[all]**: set to true to plot all the radars (active ones)    
+	* **[all]**: set to true to plot all the radars (active ones) 
+	* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere   
 	* **[zorder]**: the overlay order number    
 	* **[markerColor]**:     
 	* **[markerSize]**: [point]    
@@ -140,7 +141,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 Written by Sebastien 2012-08 
 	
 	"""
-	from ..radar.radNetwork import network
+	from pydarn.radar import network
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.pyplot as plt
@@ -154,11 +155,7 @@ Written by Sebastien 2012-08
 	
 	# If all radars are to be plotted, create the list
 	if all:
-		codes = []
-		for irad in range( len(NetworkObj) ):
-			if (NetworkObj.info[irad].status != 0 and \
-				NetworkObj.info[irad].stTime <= dateTime <= NetworkObj.info[irad].edTime):
-				codes.append(NetworkObj.info[irad].code[0])
+		codes = NetworkObj.getAllCodes(datetime=dateTime, hemi=hemi)
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
@@ -177,6 +174,11 @@ Written by Sebastien 2012-08
 	# Map width and height
 	width = Basemap.urcrnrx - Basemap.llcrnrx
 	height = Basemap.urcrnry - Basemap.llcrnry
+
+	if hemi is None:
+		hemiInt = 0
+	else:
+		hemiInt = 1 if hemi.lower()[0]=='n' else -1
 	
 	# iterates through radars to be plotted
 	for radN in input['vals']:
@@ -184,6 +186,8 @@ Written by Sebastien 2012-08
 		if not rad: continue
 		site = rad.getSiteByDate(dateTime)
 		if not site: continue
+		# Check for hemisphere specification
+		if site.geolat*hemiInt < 0: continue
 		# Get radar coordinates in map projection
 		if(coords == 'geo'):
 			x,y = Basemap(site.geolon, site.geolat)
@@ -198,10 +202,10 @@ Written by Sebastien 2012-08
 		# Now add radar name
 		if annotate:
 			# If any of the other radar is too close...
-			if rad.code[0] in ['aiw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze']:
+			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze']:
 				xOff = width*.005 if not xOffset else xOffset
 				ha = 'left'
-			elif rad.code[0] in ['aie', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw']:
+			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw']:
 				xOff = -width*.005 if not xOffset else xOffset
 				ha = 'right'
 			else: 
@@ -246,8 +250,8 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 Written by Sebastien 2012-09
 	
 	"""
-	from ..radar.radNetwork import network
-	from ..radar.radFov import fov
+	from pydarn.radar import network
+	from pydarn.radar.radFov import fov
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.cm as cm
