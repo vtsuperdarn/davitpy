@@ -23,9 +23,9 @@ read_dmap_rec(PyObject *self, PyObject *args)
 		return NULL;
 	else
 	{
-		PyObject *rawData = PyDict_New();
+		PyObject *beamData = PyDict_New();
 		int c,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang,chn;
-		double epoch;
+		double epoch, tmpus;
 		struct DataMap *ptr;
 		struct DataMapScalar *s;
 		struct DataMapArray *a;
@@ -46,7 +46,6 @@ read_dmap_rec(PyObject *self, PyObject *args)
 		
 		else
 		{
-			PyObject *beamData = PyDict_New();
 			
 			/*first, parse all of the scalars in the file*/
 			for (c=0;c<ptr->snum;c++) 
@@ -381,21 +380,21 @@ read_dmap_rec(PyObject *self, PyObject *args)
 					Py_DECREF(myList);
 				}
 			}
-			
-			/*convert time to epoch time (key)*/
-			if(chn > 1) us += chn-1;
+			/*convert time to epoch time (key)
+			if(chn > 1)
+			{
+				tmpus = us*1e-6;
+				tmpus += 1e-6*(chn-1);
+				us = (int)(tmpus*1e6);
+			}*/
 			epoch = TimeYMDHMSToEpoch(yr,mo,dy,hr,mt,(double)sc+us/1.e6);
 			
-			/*add the beam to the radData dict*/
-			PyDict_SetItem(rawData,Py_BuildValue("d", epoch), beamData);
-			
-			/*free beam data object*/
-			Py_DECREF(beamData);
-			
+			PyDict_SetItem(beamData,Py_BuildValue("s", "time"), Py_BuildValue("d", epoch));
+
 			DataMapFree(ptr);
 
 		}
-		return rawData;
+		return beamData;
 	}
 }
 

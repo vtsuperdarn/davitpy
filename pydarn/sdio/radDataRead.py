@@ -1,7 +1,6 @@
 import os,datetime,glob,math,shutil,string,time,pydarn,numpy,utils
 from utils.timeUtils import *
 from pydarn.sdio.radDataTypes import *
-import pydarn.sdio.radDataTypes
 """
 *******************************
 MODULE: pydarn.sdio.radDataRead
@@ -160,42 +159,32 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 		redo = 0
 		dfile = pydarn.dmapio.readDmapRec(myFile)
 		if(dfile == None): return None
-		if(beam != -1 and dfile[dfile.keys()[0]]['bmnum'] != beam): redo = 1
+		if(beam != -1 and dfile['bmnum'] != beam): redo = 1
 		elif(channel != None):
-			if((channel == 'a' and (dfile[dfile.keys()[0]]['channel'] != 0 and dfile[dfile.keys()[0]]['channel'] != 1)) or \
-			(channel == 'b' and dfile[dfile.keys()[0]]['channel'] != 2) or \
-			(channel == 'c' and dfile[dfile.keys()[0]]['channel'] != 3) or \
-			(channel == 'd' and dfile[dfile.keys()[0]]['channel'] != 4)): redo = 1
-
-
-	#iterate through the available times from the file
-	epochT = dfile.keys()[0]
-
-	dateT = datetime.datetime.utcfromtimestamp(epochT)
-
+			if((channel == 'a' and (dfile['channel'] != 0 and dfile['channel'] != 1)) and \
+					dfile['channel']-1 != alpha.index(channel)): redo = 1
+	
+	
+	fileName, fileExtension = os.path.splitext(myFile.name)
+	#if(fileExtension == 'fitex'): fileExtension = 'fitex2'
+	
 	#verbose output
 	if(vb):
-		print dateT
-
+		print datetime.datetime.utcfromtimestamp(dfile['time'])
+		
 	#create a beam object
-	myBeam = pydarn.sdio.radDataTypes.beam()
-
+	myBeam = pydarn.sdio.beamData(beamDict=dfile)
+	
 	#parse the parameters
-	myPrmData = parseDmap(dfile[epochT],prmData())
-	myBeam['prm'] = myPrmData
-	myBeam['prm']['time'] = dateT
+	myBeam.prm = pydarn.sdio.prmData(prmDict=dfile)
 	
-	#parse the fit data
-	myFitData = parseDmap(dfile[epochT],fitData())
-	myBeam['fit'] = myFitData
-
-	#parse the raw data
-	myRawData = parseDmap(dfile[epochT],rawData())
-	myBeam['raw'] = myRawData
-
-	fileName, fileExtension = os.path.splitext(myFile.name)
-	
-	myBeam.ftype = fileExtension
+	if(fileExtension[1:] == 'fitex' or fileExtension[1:] == 'lmfit' or fileExtension[1:] == 'fitacf'):
+		#parse the fit data
+		myBeam.fit = pydarn.sdio.fitData(fitDict=dfile)
+		myBeam.fit.proctype = fileExtension[1:]
+		myBeam.allfits.append(myBeam.fit)
+	elif(fileExtension[1:] == 'rawacf'):
+		myBeam.raw = pydarn.sdio.rawData(rawDict=dfile)
 	
 	return myBeam
 	
