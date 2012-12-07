@@ -193,6 +193,8 @@ This method is the underlying function behing getRadarByCode, getRadarByName and
 		"""
 		from datetime import datetime as dt
 		from utils import geoPack as geo
+		from numpy import sin, cos, arccos, dot, cross, sign
+		from math import radians, degrees
 		
 		if not datetime: datetime = dt.utcnow()
 
@@ -211,11 +213,15 @@ This method is the underlying function behing getRadarByCode, getRadarByName and
 							distLat=lat, distLon=lon, distAlt=300.)
 			# Skip if radar too far
 			if distPnt['dist'] > distMax: continue
-			minAz = (site.boresite % 360.)-abs(site.bmsep)*site.maxbeam/2
-			maxAz = (site.boresite % 360.)+abs(site.bmsep)*site.maxbeam/2
+			# minAz = (site.boresite % 360.)-abs(site.bmsep)*site.maxbeam/2
+			# maxAz = (site.boresite % 360.)+abs(site.bmsep)*site.maxbeam/2
+			extFov = abs(site.bmsep)*site.maxbeam/2
+			ptBo = [cos(radians(site.boresite)), sin(radians(site.boresite))]
+			ptAz = [cos(radians(distPnt['az'])), sin(radians(distPnt['az']))]
+			deltAz = degrees( arccos( dot(ptBo, ptAz) ) )
 			# Skip if out of azimuth range
-			if not minAz <= (distPnt['az'] % 360.) <= maxAz: continue
-			beam = int( site.maxbeam/2 + round( ((distPnt['az'] % 360.)-(site.boresite % 360.))/site.bmsep ) )
+			if not abs(deltAz) <= extFov: continue
+			beam = int( site.maxbeam/2 + sign(cross(ptBo, ptAz))*round( deltAz/site.bmsep ) )
 			# Update output
 			found = True
 			out['radars'].append(self.info[iRad])
