@@ -5,3 +5,19 @@ make
 cd ${DAVITPY}/models/aacgm
 make clean
 make
+
+cd ${DAVITPY}/models/iri
+make clean
+make
+
+cd ${DAVITPY}/models/igrf
+make clean
+make
+
+cd ${DAVITPY}/models/msis
+make clean
+make
+
+cd ${DAVITPY}/models/tsyganenko
+make clean
+make
