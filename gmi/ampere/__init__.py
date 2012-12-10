@@ -11,7 +11,7 @@ Contains:
 def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     '''
 |	**PACKAGE**: gmi.ampere.ampereDownloadData
-|	**FUNCTION**: ampereDownloadData( date_given, move_to_sddata = False )
+|	**FUNCTION**: ampereDownloadData( Date_Dwl, move_to_sddata = False )
 |	**PURPOSE**: Downloads AMPERE data (both hemispheres) of a given date and saves it in the current working directory
 |
 |	**INPUTS**:
@@ -63,7 +63,7 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     
     
     # Get the data for the northern hemisphere
-    file_Amp_North = str( date_given ) + ".ampere.north.netcdf"
+    file_Amp_North = Date_Dwl.strftime('%Y%m%d') + ".ampere.north.netcdf"
     
     Amp_Response_North = urllib.urlopen( Amp_DwnldUrl_North )
     
@@ -96,7 +96,7 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     
         
     # Do the same for the southern hemisphere...
-    file_Amp_South = str( date_given ) + ".ampere.south.netcdf"
+    file_Amp_South = Date_Dwl.strftime('%Y%m%d') + ".ampere.south.netcdf"
     
     Amp_Response_South = urllib.urlopen( Amp_DwnldUrl_South )
     
