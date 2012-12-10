@@ -14,5 +14,7 @@ bin/profile_davitpy/security/kernel*
 *.log
 *.xcworkspace
 *.sublime-workspace
+*.sublime-project
 *.orig
 bharat
+models/aacgm/build

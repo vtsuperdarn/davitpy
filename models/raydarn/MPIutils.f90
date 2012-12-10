@@ -9,9 +9,9 @@ MODULE MPIutils
 	integer(kind=MPI_OFFSET_KIND):: 		offset
 	integer,dimension(MPI_STATUS_SIZE):: 	status
 
-	integer::							mpi_size_int, mpi_size_real, mpi_size_vec, mpi_size_param
-	integer::							mpi_file_disp
-	real(kind=8)::						time_init, time_end, time, timeel, timeaz, timehr
+	integer::		mpi_size_int, mpi_size_real, mpi_size_vec, mpi_size_param
+	integer::		mpi_file_disp
+	real(kind=8)::	time_init, time_end, time, timeel, timeaz, timehr
 	
 
 
