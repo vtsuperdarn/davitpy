@@ -8,14 +8,14 @@ Contains:
 '''
 
 
-def ampereDownloadData( date_given, move_to_sddata = False ) :
+def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     '''
 |	**PACKAGE**: gmi.ampere.ampereDownloadData
 |	**FUNCTION**: ampereDownloadData( date_given, move_to_sddata = False )
 |	**PURPOSE**: Downloads AMPERE data (both hemispheres) of a given date and saves it in the current working directory
 |
 |	**INPUTS**:
-|	**date_given**: Date in yyyymmdd format
+|	**Date_Dwl**: Date in python datetime format
 |	**move_to_sddata**: set this to True to move the downloaded data into sd-data (this is for VT-SuperDARNERS)
 |
 |	**OUTPUTS**:
@@ -36,13 +36,7 @@ def ampereDownloadData( date_given, move_to_sddata = False ) :
     
     #Need to convert the given date into a date time object..!
     #Get the year, month and day from the date
-    year_of_date = int( date_given/10000 )
-    month_of_date = int( ( date_given - year_of_date*10000 )/100 )
-    day_of_date = int( ( date_given - year_of_date*10000 - month_of_date*100 ) )
-    
-    
-    # Since at this point we download data for the entire day we start at zero hours and minutes
-    Date_Dwl = datetime.datetime( year_of_date, month_of_date, day_of_date, 0, 0 )
+    year_of_date = Date_Dwl.year
     
     #Get the UNIX time stamp for the given date
     Unix_Date_Stamp = calendar.timegm(Date_Dwl.utctimetuple())
@@ -69,7 +63,7 @@ def ampereDownloadData( date_given, move_to_sddata = False ) :
     
     
     # Get the data for the northern hemisphere
-    file_Amp_North = "/" + str( date_given ) + ".ampere.north.netcdf"
+    file_Amp_North = str( date_given ) + ".ampere.north.netcdf"
     
     Amp_Response_North = urllib.urlopen( Amp_DwnldUrl_North )
     
@@ -102,7 +96,7 @@ def ampereDownloadData( date_given, move_to_sddata = False ) :
     
         
     # Do the same for the southern hemisphere...
-    file_Amp_South = "/" + str( date_given ) + ".ampere.south.netcdf"
+    file_Amp_South = str( date_given ) + ".ampere.south.netcdf"
     
     Amp_Response_South = urllib.urlopen( Amp_DwnldUrl_South )
     
