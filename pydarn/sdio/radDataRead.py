@@ -126,31 +126,29 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	
 def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	"""
-	*******************************
-
-	PACKAGE: pydarn.sdio.radDataRead
-
-	FUNCTION: radDataReadRec(myFile,vb=0)
-
-	PURPOSE: reads a single record from a dmap file
-
-	INPUTS:
-		myFile: the file object we are reading from.  This object must be
-			created using the dmapOpen() function.
-		[vb]: flag to indicate verbose output.  default = 0
-		[beam]: read only records from this beam, a value of -1 will read
-			all beams.  default = -1
-		[channel]: read only records from this channel.  a value of None
-			will read all channels.  Default = None
-
-	OUTPUTS:
-		myBeam: a radar beam object containign keys of 'prm','fit','raw'
-		
-	EXAMPLES:
-		myBeam = radDataReadRec(myFile)
-		
-	Written by AJ 20120928
-
+|	*******************************
+|	PACKAGE: pydarn.sdio.radDataRead
+|
+|	FUNCTION: radDataReadRec(myFile,vb=0)
+|
+|	PURPOSE: reads a single record from a dmap file
+|	NOTE: to use this, you must first open the file with dmapopen
+|
+|	INPUTS:
+|		myFile: the file object we are reading from.  This object must be
+|			created using the dmapOpen() function.
+|		[vb]: flag to indicate verbose output.  default = 0
+|		[beam]: read only records from this beam, a value of -1 will read
+|			all beams.  default = -1
+|		[channel]: read only records from this channel.  a value of None
+|			will read all channels.  Default = None
+|	OUTPUTS:
+|		myBeam: a radar beam object containign keys of 'prm','fit','raw'
+|		
+|	EXAMPLES:
+|		myBeam = radDataReadRec(myFile)
+|		
+|	Written by AJ 20120928
 	"""
 	
 	#read the datamap file
@@ -177,15 +175,18 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	
 	#parse the parameters
 	myBeam.prm = pydarn.sdio.prmData(prmDict=dfile)
-	
+
 	if(fileExtension[1:] == 'fitex' or fileExtension[1:] == 'lmfit' or fileExtension[1:] == 'fitacf'):
 		#parse the fit data
-		myBeam.fit = pydarn.sdio.fitData(fitDict=dfile)
+		setattr(myBeam,fileExtension[1:],pydarn.sdio.fitData(fitDict=dfile))
+		myBeam.fit = getattr(myBeam,fileExtension[1:])
 		myBeam.fit.proctype = fileExtension[1:]
-		myBeam.allfits.append(myBeam.fit)
+		if(fileExtension[1:] == 'fitex'): myBeam.exflg = 1
+		elif(fileExtension[1:] == 'lmfit'): myBeam.lmflg = 1
+		elif(fileExtension[1:] == 'fitacf'): myBeam.acflg = 1
 	elif(fileExtension[1:] == 'rawacf'):
 		myBeam.raw = pydarn.sdio.rawData(rawDict=dfile)
-	
+		
 	return myBeam
 	
 def dmapRead(dateStr,rad,times,fileType,filter=0):
@@ -314,7 +315,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 	Written by AJ 20120928
 
 	"""
-	
+	t = datetime.datetime.now()
 	
 	#read the datamap file
 	dfile,fileType = dmapRead(dateStr,rad,time,fileType,filter=filter)
@@ -332,6 +333,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 	else:
 		etime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[1]/100.)),minute=int((time[1]-int(math.floor(time[1]/100.))*100)))
 		
+	print datetime.datetime.now()-t
 	#iterate through the available times from the file
 	for epochT in dfile.keys():
 
@@ -349,7 +351,7 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 				continue
 			
 			#create a beam object
-			myBeam = pydarn.sdio.radDataTypes.beam()
+			myBeam = pydarn.sdio.radDataTypes.beamData()
 		
 			#parse the parameters
 			myPrmData = parseDmap(dfile[epochT],prmData())

@@ -82,9 +82,9 @@ read_dmap_rec(PyObject *self, PyObject *args)
 				if ((strcmp(s->name,"smsep")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "smsep"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"noise.search")==0) && (s->type==DATAFLOAT))
-					PyDict_SetItem(beamData,Py_BuildValue("s", "noise.search"), Py_BuildValue("d", *(s->data.fptr)));
+					PyDict_SetItem(beamData,Py_BuildValue("s", "noisesearch"), Py_BuildValue("d", *(s->data.fptr)));
 				if ((strcmp(s->name,"noise.mean")==0) && (s->type==DATAFLOAT))
-					PyDict_SetItem(beamData,Py_BuildValue("s", "noise.mean"), Py_BuildValue("d", *(s->data.fptr)));
+					PyDict_SetItem(beamData,Py_BuildValue("s", "noisemean"), Py_BuildValue("d", *(s->data.fptr)));
 				if ((strcmp(s->name,"channel")==0) && (s->type==DATASHORT))
 				{
 					PyDict_SetItem(beamData,Py_BuildValue("s", "channel"), Py_BuildValue("i", *(s->data.sptr)));
@@ -99,9 +99,9 @@ read_dmap_rec(PyObject *self, PyObject *args)
 				if ((strcmp(s->name,"rxrise")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "rxrise"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"intt.sc")==0) && (s->type==DATASHORT))
-					PyDict_SetItem(beamData,Py_BuildValue("s", "intt.sc"), Py_BuildValue("i", *(s->data.sptr)));
+					PyDict_SetItem(beamData,Py_BuildValue("s", "inttsc"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"intt.us")==0) && (s->type==DATAINT))
-					PyDict_SetItem(beamData,Py_BuildValue("s", "intt.us"), Py_BuildValue("i", *(s->data.iptr)));
+					PyDict_SetItem(beamData,Py_BuildValue("s", "inttus"), Py_BuildValue("i", *(s->data.iptr)));
 				if ((strcmp(s->name,"mpinc")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "mpinc"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"mppul")==0) && (s->type==DATASHORT))
@@ -125,7 +125,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
 				if ((strcmp(s->name,"xcf")==0) && (s->type==DATASHORT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "xcf"), Py_BuildValue("i", *(s->data.sptr)));
 				if ((strcmp(s->name,"noise.sky")==0) && (s->type==DATAFLOAT))
-					PyDict_SetItem(beamData,Py_BuildValue("s", "noise.sky"), Py_BuildValue("d", *(s->data.fptr)));
+					PyDict_SetItem(beamData,Py_BuildValue("s", "noisesky"), Py_BuildValue("d", *(s->data.fptr)));
 				if ((strcmp(s->name,"noise.lag0")==0) && (s->type==DATAFLOAT))
 					PyDict_SetItem(beamData,Py_BuildValue("s", "noise.lag0"), Py_BuildValue("d", *(s->data.fptr)));
 				if ((strcmp(s->name,"noise.vel")==0) && (s->type==DATAFLOAT))

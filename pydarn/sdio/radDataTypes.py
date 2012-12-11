@@ -6,139 +6,73 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, mapper, relationship, sessionmaker
 from pydarn.sdio import *
 import numpy, pydarn, datetime
-Base = declarative_base()
-
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-class radData(dict):
-	"""
-	*******************************
-	CLASS pydarn.io.radData
-
-	a dictionary class containing a time sequence of
-	radar data in beam structures
+class baseData():
 	
-	KEYS:
-		[datetime1, datetime2, ...]
-	VALUES:
-		[beam1, beam2, ...]
-		
-	EXAMPLES:
-	
-	DECLARATION: 
-		myData = pydarn.io.radData()
-		
-	ACCESS:
-		myData[datetime] = beam
-	
-	Written by AJ 20120808
-	*******************************
-	"""
-	
-	def __init__(self):
-		self._dict = {}
-		self.times = []
-		self.nrecs = 0
-		
-	def getTimes(self):
+	def dictToObj(self,aDict):
+		for key, val in aDict.iteritems():
+			#if the value is a dictionary, make a recursive call
+			if(isinstance(val,dict)): 
+				getattr(self, key).dictToObj(val)
+			#otherwise, copy the value
+			else: setattr(self,attr,val)
+			
+	def objToDict(self):
+		aDict = {}
+		for attr, val in self.__dict__.iteritems():
+			#if the value is a class, recursively convert to dict
+			if(isinstance(val,baseData)): aDict[attr] = val.objToDict()
+			#otherwise, copy the value
+			else: aDict[attr] = val
+		return aDict
+			
+	def updateValsFromDict(self, aDict):
 		"""
-		*******************************
-		FUNCTION radData.getTimes():
+	|	*******************************
+	|	FUNCTION updateValsFromDict
+	|
+	|	BELONGS TO: pydarn.sdio.radDataTypes.prmData
+	|
+	|	this is created mainly to fill a radar params structure 
+	|		with the data in a dictionary that is returned from the
+	|		reading of a dmap file
+	|	
+	|	INPUTS:
+	|		prmDict -- the dictionary containing the radar data
+	|
+	|	OUTPUTS: 
+	|		None
+	|	
+	|	Written by AJ 20121130
+	|	*******************************
+		"""
 		
-		returns a sorted list of the datetime keys belonging
-		to a radData object
+		import datetime as dt
 		
-		BELONGS TO: class pydarn.io.radData
+		#iterate through prmData's attributes
+		for attr, value in self.__dict__.iteritems():
+			#check for special params
+			if(attr == 'time'):
+				#convert from epoch to datetime
+				if(aDict.has_key(attr) and isinstance(aDict[attr], float)): 
+					setattr(self,attr,dt.datetime.utcfromtimestamp(aDict[attr]))
+				continue
+			elif(attr == 'channel'):
+				if(aDict.has_key('channel')): 
+					if(isinstance(aDict.has_key('channel'), int)):
+						if(aDict['channel'] < 2): self.channel = 'a'
+						else: self.channel = alpha[aDict['channel']-1]
+					else: self.channel = aDict['channel']
+				else: self.channel = 'a'
+				continue
+			try:
+				setattr(self,attr,aDict[attr])
+			except:
+				#else put in a default value
+				setattr(self,attr,None)
 
-		INPUTS:
-			NONE
-		OUTPUTS:
-			k: a sorted list of datetime keys for a radData obect
-			
-		EXAMPLE:
-			timelist = myRadData.getTimes()
-			
-		Written by AJ 20120808
-		*******************************
-		"""
-	
-		k = self.keys()
-		k.sort()
-		return k
-		
-	def getBeam(self,bmnum):
-		"""
-		*******************************
-		FUNCTION radData.getBeam(bmnum):
-		
-		returns a radData object containing only data from a specified beam
-		
-		BELONGS TO: class pydarn.io.radData
-
-		INPUTS:
-			bmnum: the desired beam number
-		OUTPUTS:
-			myData: a new radData structure containing only beams of bmnum
-			
-		EXAMPLE:
-			myRadarData = inRadData.getBeam(7)
-			
-		Written by AJ 20120811
-		*******************************
-		"""
-
-		assert(isinstance(bmnum,int)),"bmnum must be integer"
-		
-		myData = pydarn.sdio.radData()
-		
-		for k in self.iterkeys():
-			if(self[k].prm.bmnum == bmnum):
-				myData[k] = self[k]
-			
-		myData.times = myData.getTimes()
-		myData.nrecs = len(myData.times)
-		myData.ftype = self.ftype
-		
-		return myData
-		
-		
-	def getChannel(self,chn):
-		"""
-		*******************************
-		FUNCTION radData.getChannel(bmnum):
-		
-		returns a radData object containing only data from a specified channel
-		
-		BELONGS TO: class pydarn.io.radData
-
-		INPUTS:
-			chn: the desired channel letter, e.g. 'a'
-		OUTPUTS:
-			myData: a new radData structure containing only data from channel chn
-			
-		EXAMPLE:
-			myRadarData = inRadData.getChannel('a')
-			
-		Written by AJ 20120814
-		*******************************
-		"""
-		
-		assert(isinstance(chn,str)),"channel must be character"
-		
-		myData = pydarn.io.radData()
-		
-		for k in self.iterkeys():
-			if(self[k].prm.channel == 0 and chn == 'a'):
-				myData[k] = self[k]
-			elif(alpha[self[k].prm.channel-1] == chn):
-				myData[k] = self[k]
-				
-		myData.times = myData.getTimes()
-		myData.nrecs = len(myData.times)
-		myData.ftype = self.ftype
-		return myData  
-		
-class beamData(Base):
+class beamData(baseData):
 	"""
 |	*******************************
 |	CLASS pydarn.sdio.beamData
@@ -165,113 +99,31 @@ class beamData(Base):
 |	Written by AJ 20121130
 |	*******************************
 	"""
-	
-	#SQL table name
-	__tablename__ = "beam"
-	
-	#SQL columns in beam table
-	beam_id = Column(Integer, primary_key=True, unique=True)
-	cp = Column(SmallInteger, primary_key=True)
-	stid = Column(SmallInteger, primary_key=True)
-	time = Column(DateTime, primary_key=True)
-	channel= Column(CHAR, primary_key=True)
-	bmnum = Column(SmallInteger, primary_key=True)
-	
-	#children in SQL table
-	prm = relationship("prmData", uselist=False, backref="beam")
-	allfits = relationship("fitData", backref="beam")
-	
-	#when we are ready to implement these on the db
-	raw = relationship("rawData", uselist=False, backref="beam")
-	#iq = relationship("iqData", uselist=False, backref="beam")
-	
 	def __init__(self, beamDict=None, myBeam=None, proctype=None):
 		#initialize the attr values
-		self.cp = -1
-		self.stid = -1
-		self.time = datetime.datetime(2001,1,1)
-		self.bmnum = -1
-		self.channel = 'a'
-		self.fit = fitData()
-		self.raw=rawData()
+		self.cp = None
+		self.stid = None
+		self.time = None
+		self.bmnum = None
+		self.channel = None
+		self.exflg = None
+		self.lmflg = None
+		self.acflg = None
+		self.fitex=None
+		self.fitacf=None
+		self.lmfit=None
+		self.fit = None
+		self.raw = None
+		self.prm = None
 		
 		#if we are intializing from an object, do that
 		if(beamDict != None): self.updateValsFromDict(beamDict)
-		if(myBeam != None): self.updateVals(myBeam)
-		
-	def updateValsFromDict(self, beamDict):
-		"""
-	|	*******************************
-	|	FUNCTION updateValsFromDict
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.beamData
-	|
-	|	this is creAted mainly to fill a radar beam structure 
-	|		with the data in a dictionary that is returned from the
-	|		reading of a dmap file
-	|	
-	|	INPUTS:
-	|		beamDict -- the dictionary containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|	
-	|	Written by AJ 20121130
-	|	*******************************
-		"""
-		
-		if(beamDict.has_key('channel')): 
-			if(beamDict['channel'] < 2): self.channel = 'a'
-			else: self.channel = alpha[beamDict['channel']-1]
-		else: self.channel = 'a'
-			
-		#itterate through the attributes
-		for attr, value in self.__dict__.iteritems():
-			#this is an alchemy attribute
-			if(attr == '_sa_instance_state' or attr == 'channel'): continue
-			#check for time attribute
-			if(attr == 'time'):
-				#convert from epoch to datetime
-				if(beamDict.has_key(attr)): 
-					setattr(self,attr,datetime.datetime.utcfromtimestamp(beamDict[attr]))
-				continue
-			#any other attribute, copy the value
-			try: setattr(self,attr,beamDict[attr])
-			except: 
-				if(isinstance(value,int)):
-					(setattr(self,attr,-1))
-					
-	def updateVals(self, myBeam):
-		"""
-	|	*******************************
-	|	FUNCTION updateVals
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.beamData
-	|
-	|	this is created mainly to deep copy a radar beam stricutre
-	|	
-	|	INPUTS:
-	|		myBeam -- the object containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|		
-	|	
-	|	Written by AJ 20121130
-	|	*******************************
-			"""
-		#iterate through the attributes
-		for attr, value in self.__dict__.iteritems():
-			#this is an alchemy attribute
-			if(attr == '_sa_instance_state' or attr == 'beam_id'): continue
-			#copy the attribute value
-			try: setattr(self,attr,object.__getattribute__(myBeam, attr))
-			except: setattr(self,attr,-1)
+		#if(myBeam != None): self.updateVals(myBeam)
 			
 	def __repr__(self):
 		return "<Beam("+str(self.time)+", '%d', '%d','%d', '%s')>" % (self.cp, self.stid, self.bmnum, self.channel)
 		
-class prmData(Base):
+class prmData(baseData):
 	"""
 |	*******************************
 |	PACKAGE: pydarn.sdio.radDataTypes
@@ -310,146 +162,39 @@ class prmData(Base):
 |
 |	Written by AJ 20121130
 |	"""
-	
-	#SQL table name
-	__tablename__ = "prm"
-	
-	#SQL columns
-	prm_id = Column(Integer, primary_key=True)
-	beam_id = Column(Integer, ForeignKey('beam.beam_id'))
-	smsep = Column(SmallInteger)
-	noisesearch = Column(Float)
-	nave = Column(SmallInteger)
-	lagfr = Column(SmallInteger)
-	smsep = Column(SmallInteger)
-	noisesearch = Column(Float)
-	noisemean = Column(Float)
-	noisesky = Column(Float)
-	bmazm = Column(Float)
-	scan = Column(SmallInteger)
-	rxrise = Column(SmallInteger)
-	inttsc = Column(SmallInteger)
-	inttus = Column(Integer)
-	mpinc = Column(SmallInteger)
-	mppul = Column(SmallInteger)
-	mplgs = Column(SmallInteger)
-	mplgexs = Column(SmallInteger)
-	nrang = Column(SmallInteger)
-	frang = Column(SmallInteger)
-	rsep = Column(SmallInteger)
-	xcf = Column(SmallInteger)
-	tfreq	 = Column(SmallInteger)
-	ifmode = Column(SmallInteger)
-	ptab = Column(pg.ARRAY(SmallInteger))
-	ltab = Column(pg.ARRAY(SmallInteger))
-
 
 	#initialize the struct
 	def __init__(self, prmDict=None, myPrm=None):
 		#set default values
-		self.nave = -1				#number of averages
-		self.lagfr = -1				#lag to first range in us
-		self.smsep = -1				#sample separation in us
-		self.bmazm = -1				#beam azimuth
-		self.scan = -1				#new scan flag
-		self.rxrise = -1			#receiver rise time
-		self.inttsc = -1			#integeration time (sec)
-		self.inttus = -1			#integration time (us)
-		self.mpinc = -1				#multi pulse increment (tau, basic lag time) in us
-		self.mppul = -1				#number of pulses
-		self.mplgs = -1				#number of lags
-		self.mplgexs = -1			#number of lags (tauscan)
-		self.nrang = -1				#number of range gates
-		self.frang = -1				#first range gate (km)
-		self.rsep = -1				#range gate separation in km
-		self.xcf = -1					#xcf flag
-		self.tfreq = -1				#transmit freq in kHz
-		self.ifmode = -1			#if mode flag
-		self.ptab = []				#pulse table
-		self.ltab = []				#lag table
-		self.noisemean = -1		#mean noise level
-		self.noisesky = -1		#sky noise level
-		self.noisesearch = -1#freq search noise level
+		self.nave = None				#number of averages
+		self.lagfr = None				#lag to first range in us
+		self.smsep = None				#sample separation in us
+		self.bmazm = None				#beam azimuth
+		self.scan = None				#new scan flag
+		self.rxrise = None			#receiver rise time
+		self.inttsc = None			#integeration time (sec)
+		self.inttus = None			#integration time (us)
+		self.mpinc = None				#multi pulse increment (tau, basic lag time) in us
+		self.mppul = None				#number of pulses
+		self.mplgs = None				#number of lags
+		self.mplgexs = None			#number of lags (tauscan)
+		self.nrang = None				#number of range gates
+		self.frang = None				#first range gate (km)
+		self.rsep = None				#range gate separation in km
+		self.xcf = None					#xcf flag
+		self.tfreq = None				#transmit freq in kHz
+		self.ifmode = None			#if mode flag
+		self.ptab = None				#pulse table
+		self.ltab = None				#lag table
+		self.noisemean = None		#mean noise level
+		self.noisesky = None		#sky noise level
+		self.noisesearch = None#freq search noise level
 		
 		#if we are copying a structure, do that
 		if(prmDict != None): self.updateValsFromDict(prmDict)
-		if(myPrm != None): self.updateVals(myPrm)
-		
-	def updateValsFromDict(self, prmDict):
-		"""
-	|	*******************************
-	|	FUNCTION updateValsFromDict
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.prmData
-	|
-	|	this is created mainly to fill a radar params structure 
-	|		with the data in a dictionary that is returned from the
-	|		reading of a dmap file
-	|	
-	|	INPUTS:
-	|		prmDict -- the dictionary containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|	
-	|	Written by AJ 20121130
-	|	*******************************
-		"""
-		#iterate through prmData's attributes
-		for attr, value in self.__dict__.iteritems():
-			#check for special attributes
-			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'prm_id'): continue
-			#try to copy the value
-			try: setattr(self,attr,prmDict[attr])
-			except:
-				#check for attibutes we need to rename
-				if(attr == 'noisesearch'):
-					try: self.noisesearch = prmDict['noise.search']
-					except: pass
-				elif(attr == 'noisemean'):
-					try: self.noisemean = prmDict['noise.mean']
-					except: pass
-				elif(attr == 'noisesky'):
-					try: self.noisesky = prmDict['noise.sky']
-					except: pass
-				elif(attr == 'inttus'):
-					try: self.inttus = prmDict['intt.us']
-					except: pass
-				elif(attr == 'inttsc'): 
-					try: self.inttsc = prmDict['intt.sc']
-					except: pass
-				#else put in a default value
-				elif(isinstance(value,list)): setattr(self,attr,[])
-				else: setattr(self,attr,-1)
-		
-	def updateVals(self, myPrm):
-		"""
-	|	*******************************
-	|	FUNCTION updateVals
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.prmData
-	|
-	|	this is created mainly to deep copy a radar prmData stricutre
-	|	
-	|	INPUTS:
-	|		myPrm -- the object containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|		
-	|	Written by AJ 20121130
-	|	*******************************
-		"""
-		for attr, value in self.__dict__.iteritems():
-			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'prm_id'): continue
-			try: 
-				setattr(self,attr,object.__getattribute__(myPrm, attr))
-			except:
-				if(isinstance(value,list)): setattr(self,attr,[])
-				elif(isinstance(value,String)): setattr(self,attr,'')
-				else: setattr(self,attr,-1)
+		#if(myPrm != None): self.updateVals(myPrm)
 
-class fitData(Base):
+class fitData(baseData):
 	"""
 |	*******************************
 |	CLASS pydarn.sdio.fitData
@@ -485,99 +230,34 @@ class fitData(Base):
 |	*******************************
 |	"""
 
-	
-	#create the sql table
-	__tablename__ = "allfits"
-	
-	#create the SQL columns
-	fit_id = Column(Integer, primary_key=True)
-	proctype = Column(String, primary_key=True)
-	beam_id = Column(Integer, ForeignKey('beam.beam_id'))
-	pwr0 = Column(pg.ARRAY(Float))
-	slist = Column(pg.ARRAY(SmallInteger))
-	npnts = Column(SmallInteger)
-	nlag = Column(pg.ARRAY(SmallInteger))
-	qflg = Column(pg.ARRAY(SmallInteger))
-	gflg = Column(pg.ARRAY(SmallInteger))
-	p_l = Column(pg.ARRAY(Float))
-	p_l_e	 = Column(pg.ARRAY(Float))
-	p_s = Column(pg.ARRAY(Float))
-	p_s_e	 = Column(pg.ARRAY(Float))
-	v = Column(pg.ARRAY(Float))
-	v_e	 = 	Column(pg.ARRAY(Float))
-	w_l	 = 	Column(pg.ARRAY(Float))
-	w_l_e	 = 	Column(pg.ARRAY(Float))
-	w_s	 = 	Column(pg.ARRAY(Float))
-	w_s_e	 = 	Column(pg.ARRAY(Float))
-	phi0	 = 	Column(pg.ARRAY(Float))
-	phi0_e = 		Column(pg.ARRAY(Float))
-	elv	 = 	Column(pg.ARRAY(Float))
-
 
 	#initialize the struct
 	def __init__(self, fitDict=None, myFit=None):
-		self.proctype = 'null'	#processing type
-		self.pwr0 = []			#lag 0 power
-		self.slist = []			# list of range gates with backscatter
-		self.npnts = 0			#number of range gates with scatter
-		self.nlag = []			#number of good lags
-		self.qflg = []			#quality flag
-		self.gflg = []			#ground scatter flag
-		self.p_l = []				#lambda power
-		self.p_l_e = []			#lambda power error
-		self.p_s = []				#sigma power
-		self.p_s_e = []			#sigma power error
-		self.v = []					#velocity
-		self.v_e = []				#velocity error
-		self.w_l = []				#lambda spectral width
-		self.w_l_e = []			#lambda width error
-		self.w_s = []				#sigma spectral width
-		self.w_s_e = []			#sigma width error
-		self.phi0 = []			#phi 0
-		self.phi0_e = []		#phi 0 error
-		self.elv = []				#elevation angle
+		self.proctype = None	#processing type
+		self.pwr0 = None			#lag 0 power
+		self.slist = None			# list of range gates with backscatter
+		self.npnts = None			#number of range gates with scatter
+		self.nlag = None			#number of good lags
+		self.qflg = None			#quality flag
+		self.gflg = None			#ground scatter flag
+		self.p_l = None				#lambda power
+		self.p_l_e = None			#lambda power error
+		self.p_s = None				#sigma power
+		self.p_s_e = None			#sigma power error
+		self.v = None					#velocity
+		self.v_e = None				#velocity error
+		self.w_l = None				#lambda spectral width
+		self.w_l_e = None			#lambda width error
+		self.w_s = None				#sigma spectral width
+		self.w_s_e = None			#sigma width error
+		self.phi0 = None			#phi 0
+		self.phi0_e = None		#phi 0 error
+		self.elv = None				#elevation angle
 		
 		if(fitDict != None): self.updateValsFromDict(fitDict)
-		if(myFit != None): self.updateVals(myFit)
-		
-	def updateValsFromDict(self, fitDict):
-		"""
-	|	*******************************
-	|	FUNCTION updateValsFromDict
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.fitData
-	|
-	|	this is created mainly to fill a radar fit structure 
-	|		with the data in a dictionary that is returned from the
-	|		reading of a dmap file
-	|	
-	|	INPUTS:
-	|		prmDict -- the dictionary containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|	
-	|	Written by AJ 20121130
-	|	*******************************
-		"""
-		for attr, value in self.__dict__.iteritems():
-			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'fit_id'): continue
-			try:
-				setattr(self,attr,fitDict[attr])
-			except:
-				if(isinstance(value,int)): setattr(self,attr,0)
-				elif(isinstance(value,list)): setattr(self,attr,[])
+		#if(myFit != None): self.updateVals(myFit)
 				
-	def updateVals(self, myFit):
-		for attr, value in self.__dict__.iteritems():
-			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'fit_id'): continue
-			try: setattr(self,attr,object.__getattribute__(myFit, attr))
-			except:
-				if(isinstance(value,list)): setattr(self,attr,[])
-				elif(isinstance(value,String)): setattr(self,attr,'')
-				else: setattr(self,attr,-1)
-				
-class rawData(Base):
+class rawData(baseData):
 	"""
 |	*******************************
 |	CLASS pydarn.sdio.rawData
@@ -602,8 +282,8 @@ class rawData(Base):
 	#create the SQL columns
 	raw_id = Column(Integer, primary_key=True)
 	beam_id = Column(Integer, ForeignKey('beam.beam_id'))
-	acfd = Column(pg.ARRAY(Float))
-	xcfd = Column(pg.ARRAY(Float))
+	acfd = Column(pg.ARRAY(Float(precision=4)))
+	xcfd = Column(pg.ARRAY(Float(precision=4)))
 	
 	#initialize the struct
 	def __init__(self, rawDict=None, myRaw=None):
@@ -633,14 +313,7 @@ class rawData(Base):
 	|	Written by AJ 20121130
 	|	*******************************
 		"""
-		for attr, value in self.__dict__.iteritems():
-			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'raw_id'): continue
-			try:
-				setattr(self,attr,rawDict[attr])
-			except:
-				if(isinstance(value,int)): setattr(self,attr,0)
-				elif(isinstance(value,list)): setattr(self,attr,[])
-				
+		
 	def updateVals(self, myRaw):
 		for attr, value in self.__dict__.iteritems():
 			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'raw_id'): continue
@@ -838,5 +511,134 @@ class rawDataD(dict):
 		self['pwr0'] = []							#lag 0 powers
 		self['acfd'] = []							#calculated ACFs
 		self['xcfd'] = []							#claculated XCFs
+		
+class radData(dict):
+	"""
+	*******************************
+	CLASS pydarn.io.radData
+
+	a dictionary class containing a time sequence of
+	radar data in beam structures
+	
+	KEYS:
+		[datetime1, datetime2, ...]
+	VALUES:
+		[beam1, beam2, ...]
+		
+	EXAMPLES:
+	
+	DECLARATION: 
+		myData = pydarn.io.radData()
+		
+	ACCESS:
+		myData[datetime] = beam
+	
+	Written by AJ 20120808
+	*******************************
+	"""
+	
+	def __init__(self):
+		self._dict = {}
+		self.times = []
+		self.nrecs = 0
+		
+	def getTimes(self):
+		"""
+		*******************************
+		FUNCTION radData.getTimes():
+		
+		returns a sorted list of the datetime keys belonging
+		to a radData object
+		
+		BELONGS TO: class pydarn.io.radData
+
+		INPUTS:
+			NONE
+		OUTPUTS:
+			k: a sorted list of datetime keys for a radData obect
+			
+		EXAMPLE:
+			timelist = myRadData.getTimes()
+			
+		Written by AJ 20120808
+		*******************************
+		"""
+	
+		k = self.keys()
+		k.sort()
+		return k
+		
+	def getBeam(self,bmnum):
+		"""
+		*******************************
+		FUNCTION radData.getBeam(bmnum):
+		
+		returns a radData object containing only data from a specified beam
+		
+		BELONGS TO: class pydarn.io.radData
+
+		INPUTS:
+			bmnum: the desired beam number
+		OUTPUTS:
+			myData: a new radData structure containing only beams of bmnum
+			
+		EXAMPLE:
+			myRadarData = inRadData.getBeam(7)
+			
+		Written by AJ 20120811
+		*******************************
+		"""
+
+		assert(isinstance(bmnum,int)),"bmnum must be integer"
+		
+		myData = pydarn.sdio.radData()
+		
+		for k in self.iterkeys():
+			if(self[k].prm.bmnum == bmnum):
+				myData[k] = self[k]
+			
+		myData.times = myData.getTimes()
+		myData.nrecs = len(myData.times)
+		myData.ftype = self.ftype
+		
+		return myData
+		
+		
+	def getChannel(self,chn):
+		"""
+		*******************************
+		FUNCTION radData.getChannel(bmnum):
+		
+		returns a radData object containing only data from a specified channel
+		
+		BELONGS TO: class pydarn.io.radData
+
+		INPUTS:
+			chn: the desired channel letter, e.g. 'a'
+		OUTPUTS:
+			myData: a new radData structure containing only data from channel chn
+			
+		EXAMPLE:
+			myRadarData = inRadData.getChannel('a')
+			
+		Written by AJ 20120814
+		*******************************
+		"""
+		
+		assert(isinstance(chn,str)),"channel must be character"
+		
+		myData = pydarn.io.radData()
+		
+		for k in self.iterkeys():
+			if(self[k].prm.channel == 0 and chn == 'a'):
+				myData[k] = self[k]
+			elif(alpha[self[k].prm.channel-1] == chn):
+				myData[k] = self[k]
+				
+		myData.times = myData.getTimes()
+		myData.nrecs = len(myData.times)
+		myData.ftype = self.ftype
+		return myData  
+		
 
         
