@@ -68,7 +68,7 @@ def yyyymmddToDate(dateStr):
 	"""
 	
 	from datetime import datetime
-	
+	import sys
 	#check input type
 	if isinstance(dateStr,str):
 		#try to make the date object

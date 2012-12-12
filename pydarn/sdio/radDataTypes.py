@@ -6,10 +6,30 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, mapper, relationship, sessionmaker
 from pydarn.sdio import *
 import numpy, pydarn, datetime
+from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+
+#we need to use this cipher in order to shorten variable names on the DB
+#this allows us to save space as well as reduce transfer time
+cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','raw':'r','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd'})
 
 class baseData():
 	
+	def dbDictToObj(self,aDict):
+		for key, val in aDict.iteritems():
+			if(key == '_id'): continue
+			elif(key == 'it'):
+				self.inttsc = int(val)
+				self.inttus = val-int(val)
+			#if the value is a dictionary, make a recursive call
+			elif(isinstance(val,dict)): 
+				if(cipher[key] == 'fitex' or cipher[key] == 'lmfit' or cipher[key] == 'fitacf'):
+					self.fit.dictToObj(val)
+				else: getattr(self, cipher[key]).dbDictToObj(val)
+			#otherwise, copy the value
+			else: setattr(self,cipher[key],val)
+			
+			
 	def dictToObj(self,aDict):
 		for key, val in aDict.iteritems():
 			#if the value is a dictionary, make a recursive call
@@ -20,13 +40,16 @@ class baseData():
 			#otherwise, copy the value
 			else: setattr(self,key,val)
 			
-	def objToDict(self):
+	def toDbDict(self):
 		aDict = {}
 		for attr, val in self.__dict__.iteritems():
+			#check for things we dont want to save
+			if(attr=='proctype' or attr=='inttus' or attr.rfind('_s') != -1): continue
+			elif(attr == 'inttsc'): aDict['it'] = self.inttsc + self.inttus*1e-6
 			#if the value is a class, recursively convert to dict
-			if(isinstance(val,baseData)): aDict[attr] = val.objToDict()
+			elif(isinstance(val,baseData)): aDict[cipher[attr]] = val.toDbDict()
 			#otherwise, copy the value
-			else: aDict[attr] = val
+			else: aDict[cipher[attr]] = val
 		return aDict
 			
 	def updateValsFromDict(self, aDict):
@@ -277,16 +300,6 @@ class rawData(baseData):
 |	*******************************
 |	"""
 
-	
-	#create the sql table
-	__tablename__ = "raw"
-	
-	#create the SQL columns
-	raw_id = Column(Integer, primary_key=True)
-	beam_id = Column(Integer, ForeignKey('beam.beam_id'))
-	acfd = Column(pg.ARRAY(Float(precision=4)))
-	xcfd = Column(pg.ARRAY(Float(precision=4)))
-	
 	#initialize the struct
 	def __init__(self, rawDict=None, myRaw=None):
 		self.acfd = []			#lag 0 power

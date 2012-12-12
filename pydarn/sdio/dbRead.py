@@ -3,14 +3,21 @@ from pydarn.sdio import *
 import pydarn, datetime
 
 #b.group(['cp'],{},{'count':0},'function(obj,prev) { prev.count++; }'
-
-def getDataConnection(username='sd_dbread',password='5d'):
+#beams.group([c['cp']],{},{'count':0,'sum':0},'function(obj,prev) { prev.count++;prev.sum=obj.it/60.}')
+def getServerConn(username='sd_dbread',password='5d'):
 	#establish a connection to the server
-	conn = MongoClient('mongodb://'+username+':'+password+'@sd-work9.ece.vt.edu:27017')
+	return MongoClient('mongodb://'+username+':'+password+'@sd-work9.ece.vt.edu:27017')
+	
+def getDbConn(username='sd_dbread',password='5d',dbname='radData',conn=None):
+	if(conn == None): conn = getServerConn(username=username,password=password)
 	#connect to the database
-	db=conn.radData
+	return getattr(conn, dbname)
+	
+def getDataConn(username='sd_dbread',password='5d',dbname='radData',collname='beams'):
+	conn = getServerConn(username=username,password=password)
+	db = getDbConn(dbname=dbname,conn=conn)
 	#get the collection of beams
-	return db.beams
+	return getattr(db, collname)
 	
 def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None, cp=None, fileType='fitex',exactFlg=False):
 	
@@ -26,23 +33,23 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 	#******************************************
 	
 	#if a start time is not provided, use a default
-	if(startTime == None): startTime = dt.datetime(2011,1,1)
+	if(startTime == None): startTime = dt.datetime(2011,1,3)
 	#if we want only a single exact time (useful for filling/updating database)
 	if(exactFlg): qryList.append({"time": startTime})
 	else:
 		#if endtime is not provided, use a default
-		if(endTime == None): endTime = startTime+dt.timedelta(days=1)
+		if(endTime == None): endTime = startTime+dt.timedelta(hours=1)
 		#query for time later than start time and less than end time
-		qryList.append({"time": {"$lt": endTime}})
-		qryList.append({"time": {"$gt": startTime}})
+		qryList.append({cipher["time"]: {"$lt": endTime}})
+		qryList.append({cipher["time"]: {"$gt": startTime}})
 		
 	#if other arguments are provided, query for those
-	if(stid != None): qryList.append({"stid": stid})
-	if(channel != None): qryList.append({"channel": channel})
-	if(bmnum != None): qryList.append({"bmnum": bmnum})
-	if(cp != None): qryList.append({"cp": cp})
+	if(stid != None): qryList.append({cipher["stid"]: stid})
+	if(channel != None): qryList.append({cipher["channel"]: channel})
+	if(bmnum != None): qryList.append({cipher["bmnum"]: bmnum})
+	if(cp != None): qryList.append({cipher["cp"]: cp})
 	
-	beams = getDataConnection()
+	beams = getDataConn()
 	
 	#some arrays for dealing with data types
 	if(fileType == 'fitex'): arr = ['exflg','acflg','lmflg']
@@ -59,7 +66,7 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 		except: pass
 		
 		#append the current file type to the query
-		qryList.append({ftype:1})
+		qryList.append({cipher[ftype]:1})
 		#construct the final query definition
 		qryDict = {'$and': qryList}
 		
@@ -92,9 +99,9 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 		myBeam.prm = prmData()
 		if(fileType.rfind('fit') != -1): myBeam.fit = fitData()
 		elif(fileType == 'rawacf'): myBeam.raw = rawData()
-		myBeam.dictToObj(s)
+		myBeam.dbDictToObj(s)
 		x.append(myBeam)
-		
+		#x.append(s)
 	print dt.datetime.now() - t
 	return x
 		
