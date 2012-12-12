@@ -21,7 +21,7 @@ import radDataRead
 from radDataRead import *
 import pygridIo
 from pygridIo import *
-import dbUtils
-from dbUtils import *
+#import dbUtils
+#from dbUtils import *
 import dbRead
 from dbRead import *

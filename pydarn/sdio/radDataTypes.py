@@ -14,9 +14,11 @@ class baseData():
 		for key, val in aDict.iteritems():
 			#if the value is a dictionary, make a recursive call
 			if(isinstance(val,dict)): 
-				getattr(self, key).dictToObj(val)
+				if(key == 'fitex' or key == 'lmfit' or key == 'fitacf'):
+					self.fit.dictToObj(val)
+				else: getattr(self, key).dictToObj(val)
 			#otherwise, copy the value
-			else: setattr(self,attr,val)
+			else: setattr(self,key,val)
 			
 	def objToDict(self):
 		aDict = {}

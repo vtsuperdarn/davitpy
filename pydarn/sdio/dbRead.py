@@ -2,6 +2,15 @@ from pymongo import MongoClient
 from pydarn.sdio import *
 import pydarn, datetime
 
+#b.group(['cp'],{},{'count':0},'function(obj,prev) { prev.count++; }'
+
+def getDataConnection(username='sd_dbread',password='5d'):
+	#establish a connection to the server
+	conn = MongoClient('mongodb://'+username+':'+password+'@sd-work9.ece.vt.edu:27017')
+	#connect to the database
+	db=conn.radData
+	#get the collection of beams
+	return db.beams
 	
 def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None, cp=None, fileType='fitex',exactFlg=False):
 	
@@ -22,7 +31,7 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 	if(exactFlg): qryList.append({"time": startTime})
 	else:
 		#if endtime is not provided, use a default
-		if(endTime == None): endTime = startTime+dt.timedelta(hours=1)
+		if(endTime == None): endTime = startTime+dt.timedelta(days=1)
 		#query for time later than start time and less than end time
 		qryList.append({"time": {"$lt": endTime}})
 		qryList.append({"time": {"$gt": startTime}})
@@ -33,12 +42,7 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 	if(bmnum != None): qryList.append({"bmnum": bmnum})
 	if(cp != None): qryList.append({"cp": cp})
 	
-	#establish a connection to the server
-	conn = MongoClient('mongodb://sd_dbread:5d@sd-work9.ece.vt.edu:27017')
-	#connect to the database
-	db=conn.radData
-	#get the collection of beams
-	beams=db.beams
+	beams = getDataConnection()
 	
 	#some arrays for dealing with data types
 	if(fileType == 'fitex'): arr = ['exflg','acflg','lmflg']
@@ -82,12 +86,17 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 		return None
 		
 	x=[]
-	
+
 	for s in qry:
-		x.append(s)
+		myBeam = beamData()
+		myBeam.prm = prmData()
+		if(fileType.rfind('fit') != -1): myBeam.fit = fitData()
+		elif(fileType == 'rawacf'): myBeam.raw = rawData()
+		myBeam.dictToObj(s)
+		x.append(myBeam)
 		
 	print dt.datetime.now() - t
-	return x,qry
+	return x
 		
 		
 	
