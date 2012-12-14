@@ -51,7 +51,7 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	Written by AJ 20120928
 
 	"""
-	
+	import subprocess as sub	
 	#get the year of the file
 	myDate = utils.yyyymmddToDate(dateStr)
 	
@@ -108,10 +108,15 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	#concatenate the files into a single file
 	tmpName = tmpDir+str(int(datetimeToEpoch(datetime.datetime.now())))+'.'+rad+'.'+fileType
 	print 'cat '+string.join(filelist)+' > '+tmpName
-	os.system('cat '+string.join(filelist)+' > '+tmpName)
-
+	#os.system('cat '+string.join(filelist)+' > '+tmpName)
+	subp = sub.Popen(['cat '+string.join(filelist)+' > '+tmpName],shell=True,stdout=sub.PIPE)
+	print subp.communicate()[0]
+	subp.wait
+	#print output
 	#delete the individual files
-	for filename in filelist: os.system('rm '+filename)
+	for filename in filelist:
+		print 'rm'+filename 
+		os.system('rm '+filename)
 		
 	#filter(if desired) and open the file
 	if(filter == 0): f = open(tmpName,'r')
@@ -121,6 +126,7 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 		os.system('rm '+tmpName)
 		f = open(tmpName+'f','r')
 		
+	
 	#return the file object
 	return f
 	
@@ -150,19 +156,26 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 |		
 |	Written by AJ 20120928
 	"""
-	
+	import string
 	#read the datamap file
 	redo = 1
 	while(redo == 1):
 		redo = 0
 		dfile = pydarn.dmapio.readDmapRec(myFile)
-		if(dfile == None): return None
-		if(beam != -1 and dfile['bmnum'] != beam): redo = 1
+		if(dfile == None):
+			del dfile 
+			return None
+		if(beam != -1 and dfile['bmnum'] != beam): 
+			del dfile
+			redo = 1
 		elif(channel != None):
 			if((channel == 'a' and (dfile['channel'] != 0 and dfile['channel'] != 1)) and \
 					dfile['channel']-1 != alpha.index(channel)): redo = 1
 	
-	
+	keys = dfile.keys()
+	for k in keys:
+		dfile[string.replace(k,'.','')] = dfile[k]
+		
 	fileName, fileExtension = os.path.splitext(myFile.name)
 	#if(fileExtension == 'fitex'): fileExtension = 'fitex2'
 	
@@ -187,6 +200,7 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	elif(fileExtension[1:] == 'rawacf'):
 		myBeam.raw = pydarn.sdio.rawData(rawDict=dfile)
 		
+	del dfile
 	return myBeam
 	
 def dmapRead(dateStr,rad,times,fileType,filter=0):

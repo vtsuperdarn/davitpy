@@ -33,12 +33,12 @@ def readFromDb(startTime=None, endTime=None, stid=None, channel=None, bmnum=None
 	#******************************************
 	
 	#if a start time is not provided, use a default
-	if(startTime == None): startTime = dt.datetime(2011,1,3)
+	if(startTime == None): startTime = dt.datetime(2011,1,7)
 	#if we want only a single exact time (useful for filling/updating database)
 	if(exactFlg): qryList.append({"time": startTime})
 	else:
 		#if endtime is not provided, use a default
-		if(endTime == None): endTime = startTime+dt.timedelta(hours=1)
+		if(endTime == None): endTime = startTime+dt.timedelta(hours=24)
 		#query for time later than start time and less than end time
 		qryList.append({cipher["time"]: {"$lt": endTime}})
 		qryList.append({cipher["time"]: {"$gt": startTime}})
