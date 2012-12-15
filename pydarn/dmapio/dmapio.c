@@ -24,15 +24,14 @@ read_dmap_rec(PyObject *self, PyObject *args)
 	else
 	{
 		PyObject *beamData = PyDict_New();
-		int c,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang,chn,len,mplgs;
-		double epoch, tmpus;
+		int c,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang,len,mplgs;
+		double epoch;
 		struct DataMap *ptr;
 		struct DataMapScalar *s;
 		struct DataMapArray *a;
 		FILE * fp = PyFile_AsFile(f);
 		
-		fprintf(stderr,"in\n");
-		nrang=0,chn=0;
+		nrang=0;
 		Py_BEGIN_ALLOW_THREADS
 		PyFile_IncUseCount(f);
 		ptr = DataMapRead(fileno(fp));
@@ -40,9 +39,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
 		Py_END_ALLOW_THREADS
 		
 		if(ptr == NULL)
-		{
 			return Py_None;
-		}
 		
 		else
 		{
@@ -52,9 +49,6 @@ read_dmap_rec(PyObject *self, PyObject *args)
 				s=ptr->scl[c];
 				if ((strcmp(s->name,"nrang")==0) && (s->type==DATASHORT))
 					nrang = *(s->data.sptr);
-				if ((strcmp(s->name,"channel")==0) && (s->type==DATASHORT))
-					chn = *(s->data.sptr);
-				
 				if ((strcmp(s->name,"time.yr")==0) && (s->type==DATASHORT))
 					yr=*(s->data.sptr);
 				else if ((strcmp(s->name,"time.mo")==0) && (s->type==DATASHORT))
@@ -72,16 +66,43 @@ read_dmap_rec(PyObject *self, PyObject *args)
 				else
 				{
 					PyObject *myStr = Py_BuildValue("s", s->name);
-					PyObject * myNum;
-					if(s->type==DATASHORT) myNum = Py_BuildValue("i", *(s->data.sptr));
-					else if(s->type==DATAINT) myNum = Py_BuildValue("i", *(s->data.iptr));
-					else if(s->type==DATASTRING) myNum = Py_BuildValue("s", *((char **) s->data.vptr));
-					else if(s->type==DATAFLOAT) myNum = Py_BuildValue("d", *(s->data.fptr));
-					else if(s->type==DATACHAR) myNum = Py_BuildValue("c", *(s->data.cptr));
-					else continue;
-					PyDict_SetItem(beamData,myStr,myNum);
-					Py_DECREF(myStr);
-					Py_DECREF(myNum);
+					if(s->type==DATASHORT) 
+					{
+						PyObject *myNum = Py_BuildValue("i", *(s->data.sptr));
+						PyDict_SetItem(beamData,myStr,myNum);
+						Py_CLEAR(myNum);
+					}
+					else if(s->type==DATAINT)
+					{
+						PyObject *myNum = Py_BuildValue("i", *(s->data.iptr));
+						PyDict_SetItem(beamData,myStr,myNum);
+						Py_CLEAR(myNum);
+					}
+					else if(s->type==DATASTRING) 
+					{
+						PyObject *myNum = Py_BuildValue("s", *((char **) s->data.vptr));
+						PyDict_SetItem(beamData,myStr,myNum);
+						Py_CLEAR(myNum);
+					}
+					else if(s->type==DATAFLOAT) 
+					{
+						PyObject *myNum = Py_BuildValue("d", *(s->data.fptr));
+						PyDict_SetItem(beamData,myStr,myNum);
+						Py_CLEAR(myNum);
+					}
+					else if(s->type==DATACHAR) 
+					{
+						PyObject *myNum = Py_BuildValue("c", *(s->data.cptr));
+						PyDict_SetItem(beamData,myStr,myNum);
+						Py_CLEAR(myNum);
+					}
+					else
+					{
+						PyObject *myNum = Py_BuildValue("i", -1);
+						PyDict_SetItem(beamData,myStr,myNum);
+						Py_CLEAR(myNum);
+					}
+					Py_CLEAR(myStr);
 				}
 			}
 			/*now, parse the arrays*/
@@ -89,19 +110,19 @@ read_dmap_rec(PyObject *self, PyObject *args)
 			{
 				a=ptr->arr[c];
 				PyObject *myStr = Py_BuildValue("s", a->name);
-				if ((strcmp(a->name,"ltab")==0) && (a->type==DATASHORT) && (a->dim==2)) 
+				if ((strcmp(a->name,"ltab")==0) && (a->type==DATASHORT) && (a->dim==2))
 				{
-					PyObject *myList = PyList_New(a->rng[1]-1);
+					PyObject *myList = PyList_New(0);
 					for(i=0;i<a->rng[1]-1;i++)
 					{
 						PyObject *myNum = Py_BuildValue("[i,i]", a->data.sptr[i*2], a->data.sptr[i*2+1]);
-						PyList_SetItem(myList,i,myNum);
-						Py_DECREF(myNum);
+						PyList_Append(myList,myNum);
+						Py_CLEAR(myNum);
 					}
-					PyDict_SetItem(beamData,myStr, myList);
-					Py_DECREF(myList);
+					PyDict_SetItem(beamData,Py_BuildValue("s", "ltab"), myList);
+					Py_CLEAR(myList);
 				}
-				if ((strcmp(a->name,"acfd")==0) && (a->type==DATAFLOAT) && (a->dim==3))
+				else if((strcmp(a->name,"acfd")==0) && (a->type==DATAFLOAT) && (a->dim==3))
 				{
 					mplgs = a->rng[1];
 					PyObject *myList = PyList_New(nrang*mplgs*2);
@@ -109,14 +130,14 @@ read_dmap_rec(PyObject *self, PyObject *args)
 						for(j=0;j<mplgs;j++)
 							for(k=0;k<2;k++)
 							{
-								PyObject *myNum = Py_BuildValue("d", a->data.fptr[(i*mplgs+j)*2+k]);
+								PyObject *myNum = Py_BuildValue("f", a->data.fptr[(i*mplgs+j)*2+k]);
 								PyList_SetItem(myList,(i*mplgs+j)*2+k,myNum);
-								Py_DECREF(myNum);
+								Py_CLEAR(myNum);
 							}
 					PyDict_SetItem(beamData,myStr, myList);
-					Py_DECREF(myList);
+					Py_CLEAR(myList);
 				}
-				if ((strcmp(a->name,"xcfd")==0) && (a->type==DATAFLOAT) && (a->dim==3))
+				else if((strcmp(a->name,"xcfd")==0) && (a->type==DATAFLOAT) && (a->dim==3))
 				{
 					mplgs = a->rng[1];
 					PyObject *myList = PyList_New(nrang*mplgs*2);
@@ -124,52 +145,66 @@ read_dmap_rec(PyObject *self, PyObject *args)
 						for(j=0;j<mplgs;j++)
 							for(k=0;k<2;k++)
 							{
-								PyObject *myNum = Py_BuildValue("d", a->data.fptr[(i*mplgs+j)*2+k]);
+								PyObject *myNum = Py_BuildValue("f", a->data.fptr[(i*mplgs+j)*2+k]);
 								PyList_SetItem(myList,(i*mplgs+j)*2+k,myNum);
-								Py_DECREF(myNum);
+								Py_CLEAR(myNum);
 							}
 					PyDict_SetItem(beamData,myStr, myList);
-					Py_DECREF(myList);
+					Py_CLEAR(myList);
 				}
 				else
 				{
-					len = a->rng[0];
-					PyObject *myList = PyList_New(len);
-					for(i=0;i<len;i++)
+					PyObject *myList = PyList_New(0);
+					for(i=0;i<a->rng[0];i++)
 					{
-						PyObject *myNum = NULL;
-						if(s->type==DATASHORT) myNum = Py_BuildValue("i", a->data.sptr[i]);
-						else if(s->type==DATAINT) myNum = Py_BuildValue("i", a->data.iptr[i]);
-						else if(s->type==DATAFLOAT) myNum = Py_BuildValue("d", a->data.fptr[i]);
-						else if(s->type==DATACHAR) myNum = Py_BuildValue("c", a->data.cptr[i]);
-						else if(s->type==DATASTRING) myNum = Py_BuildValue("s", *((char **) s->data.vptr[i]));
-						PyList_SetItem(myList,i,myNum);
-						Py_DECREF(myNum);
+						if(a->type==DATASHORT)
+						{
+							PyObject *myNum = Py_BuildValue("i", a->data.sptr[i]);
+							PyList_Append(myList,myNum);
+							Py_CLEAR(myNum);
+						}
+						else if(a->type==DATAINT) 
+						{
+							PyObject *myNum = Py_BuildValue("i", a->data.iptr[i]);
+							PyList_Append(myList,myNum);
+							Py_CLEAR(myNum);
+						}
+						else if(a->type==DATAFLOAT)
+						{
+							PyObject *myNum = Py_BuildValue("f", a->data.fptr[i]);
+							PyList_Append(myList,myNum);
+							Py_CLEAR(myNum);
+						}
+						else if(a->type==DATACHAR)
+						{
+							PyObject *myNum = Py_BuildValue("c", a->data.cptr[i]);
+							PyList_Append(myList,myNum);
+							Py_CLEAR(myNum);
+						}
+						else
+						{
+							PyObject *myNum = Py_BuildValue("i",-1);
+							PyList_Append(myList,myNum);
+							Py_CLEAR(myNum);
+						}
 					}
-					PyDict_SetItem(beamData,myStr, myList);
-					Py_DECREF(myList);
+					PyDict_SetItem(beamData,myStr,myList);
+					Py_CLEAR(myList);
 				}
-				Py_DECREF(myStr);
+				Py_CLEAR(myStr);
 			
 			}
-			/*convert time to epoch time (key)
-			if(chn > 1)
-			{
-				tmpus = us*1e-6;
-				tmpus += 1e-6*(chn-1);
-				us = (int)(tmpus*1e6);
-			}*/
+			
 			epoch = TimeYMDHMSToEpoch(yr,mo,dy,hr,mt,(double)sc+us/1.e6);
 			
 			PyObject *myStr = Py_BuildValue("s", "time");
 			PyObject *myNum = Py_BuildValue("d", epoch);
-			PyDict_SetItem(beamData,myStr, myNum);
-			Py_DECREF(myStr);
-			Py_DECREF(myNum);
+			PyDict_SetItem(beamData,myStr,myNum);
+			Py_CLEAR(myStr);
+			Py_CLEAR(myNum);
 			
 			DataMapFree(ptr);
 		}
-		fprintf(stderr,"out\n");
 		return beamData;
 	}
 }
