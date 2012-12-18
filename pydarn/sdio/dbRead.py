@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pydarn.sdio import *
 import pydarn, datetime
-
+#b.group(['c'],{},{ 'count': 0, 'sum': 0 },'function(doc, out) { out.count++; out.sum += doc.p.it/3600.; }')
 #b.group(['cp'],{},{'count':0},'function(obj,prev) { prev.count++; }'
 #beams.group([c['cp']],{},{'count':0,'sum':0},'function(obj,prev) { prev.count++;prev.sum=obj.it/60.}')
 def getServerConn(username='sd_dbread',password='5d'):
