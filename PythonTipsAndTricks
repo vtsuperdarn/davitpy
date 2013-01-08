@@ -1,3 +1,7 @@
+Some pymongo aggregation examples
+
+beams=pydarn.sdio.getDataConn()
+beams.group([pydarn.sdio.cipher['cp']],{},{'count':0,'sum':0},'function(obj,prev) { prev.count++;prev.sum=obj.it/60.}')
 
 **********************************************************************************************************
 
