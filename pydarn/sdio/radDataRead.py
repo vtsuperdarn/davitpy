@@ -2,6 +2,7 @@ import os,datetime,glob,math,shutil,string,time,pydarn,numpy,utils
 from utils.timeUtils import *
 from pydarn.sdio.radDataTypes import *
 import pydarn.sdio.radDataTypes
+from pydarn.dmapio import *
 """
 *******************************
 MODULE: pydarn.sdio.radDataRead
