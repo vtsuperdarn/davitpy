@@ -34,8 +34,7 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     
 
     
-    #Need to convert the given date into a date time object..!
-    #Get the year, month and day from the date
+    #Get the year from the date
     year_of_date = Date_Dwl.year
     
     #Get the UNIX time stamp for the given date
@@ -44,8 +43,8 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     # We download data for the entire day
     Secs_Day_Dwnld = 24 * 60 * 60
     
-    # The min Time Res goes for 10 min(600 sec) for some reason...need to check it again
-    Time_Res_Sec = 10 * 60
+    # The min Time Res goes for 2 min(600 sec) for some reason...need to check it again
+    Time_Res_Sec = 2 * 60
     
     #Construct the required URLs
     Amp_Base_Url = "http://ampere.jhuapl.edu"
@@ -103,7 +102,8 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
     # Now we have the Url where the data is stored...need to download the data from that URL
     Amp_getData_Url_South =  Amp_Base_Url + Amp_Response_South.read()
     Amp_fldr_sd_data_south = "/sd-data/ampere/" + str( year_of_date ) + "/south/"
-    
+    print Amp_fldr_sd_data_south
+    print Amp_fldr_sd_data_north
     try:
        urllib2.urlopen(Amp_getData_Url_South)
        check_url_Amp = 'yes'
