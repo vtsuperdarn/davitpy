@@ -58,10 +58,7 @@ Translated to Python by Sebastien de Larquier
 *******************************
 """
 import math
-from numpy import array	
-from numpy import zeros	
-from numpy import linspace
-from numpy import argmin
+import numpy
 
 def calcTimeJulianCent( jd ):
 	"""
@@ -103,10 +100,10 @@ def calcSunEqOfCenter( t ):
 	"""
 Calculate the equation of center for the sun (in degrees)
 	"""
-	mrad = math.radians(calcGeomMeanAnomalySun(t))
-	sinm = math.sin(mrad)
-	sin2m = math.sin(mrad+mrad)
-	sin3m = math.sin(mrad+mrad+mrad)
+	mrad = numpy.radians(calcGeomMeanAnomalySun(t))
+	sinm = numpy.sin(mrad)
+	sin2m = numpy.sin(mrad+mrad)
+	sin3m = numpy.sin(mrad+mrad+mrad)
 	C = sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin2m * (0.019993 - 0.000101 * t) + sin3m * 0.000289
 	return C # in degrees
 
@@ -137,7 +134,7 @@ Calculate the distance to the sun in AU (in degrees)
 	"""
 	v = calcSunTrueAnomaly(t)
 	e = calcEccentricityEarthOrbit(t)
-	R = (1.000001018 * (1. - e * e)) / ( 1. + e * math.cos( math.radians(v) ) )
+	R = (1.000001018 * (1. - e * e)) / ( 1. + e * numpy.cos( numpy.radians(v) ) )
 	return R # n AUs
 
 
@@ -147,7 +144,7 @@ Calculate the apparent longitude of the sun (in degrees)
 	"""
 	o = calcSunTrueLong(t)
 	omega = 125.04 - 1934.136 * t
-	SunLong = o - 0.00569 - 0.00478 * math.sin(math.radians(omega))
+	SunLong = o - 0.00569 - 0.00478 * numpy.sin(numpy.radians(omega))
 	return SunLong # in degrees
 
 
@@ -166,7 +163,7 @@ Calculate the corrected obliquity of the ecliptic (in degrees)
 	"""
 	e0 = calcMeanObliquityOfEcliptic(t)
 	omega = 125.04 - 1934.136 * t
-	e = e0 + 0.00256 * math.cos(math.radians(omega))
+	e = e0 + 0.00256 * numpy.cos(numpy.radians(omega))
 	return e # in degrees
 
 
@@ -176,9 +173,9 @@ Calculate the right ascension of the sun (in degrees)
 	"""
 	e = calcObliquityCorrection(t)
 	SunLong = calcSunApparentLong(t)
-	tananum = ( math.cos(math.radians(e)) * math.sin(math.radians(SunLong)) )
-	tanadenom = math.cos(math.radians(SunLong))
-	alpha = math.degrees(amath.atan2(tananum, tanadenom))
+	tananum = ( numpy.cos(numpy.radians(e)) * numpy.sin(numpy.radians(SunLong)) )
+	tanadenom = numpy.cos(numpy.radians(SunLong))
+	alpha = numpy.degrees(anumpy.arctan2(tananum, tanadenom))
 	return alpha # in degrees
 
 
@@ -188,8 +185,8 @@ Calculate the declination of the sun (in degrees)
 	"""
 	e = calcObliquityCorrection(t)
 	SunLong = calcSunApparentLong(t)
-	sint = math.sin(math.radians(e)) * math.sin(math.radians(SunLong))
-	theta = math.degrees(math.asin(sint))
+	sint = numpy.sin(numpy.radians(e)) * numpy.sin(numpy.radians(SunLong))
+	theta = numpy.degrees(numpy.arcsin(sint))
 	return theta # in degrees
 
 
@@ -201,27 +198,27 @@ Calculate the difference between true solar time and mean solar time (output: eq
 	l0 = calcGeomMeanLongSun(t)
 	e = calcEccentricityEarthOrbit(t)
 	m = calcGeomMeanAnomalySun(t)
-	y = math.tan(math.radians(epsilon/2.0))
+	y = numpy.tan(numpy.radians(epsilon/2.0))
 	y *= y
 
-	sin2l0 = math.sin(math.radians(2.0 * l0))
-	sinm   = math.sin(math.radians(m))
-	cos2l0 = math.cos(math.radians(2.0 * l0))
-	sin4l0 = math.sin(math.radians(4.0 * l0))
-	sin2m  = math.sin(math.radians(2.0 * m))
+	sin2l0 = numpy.sin(numpy.radians(2.0 * l0))
+	sinm   = numpy.sin(numpy.radians(m))
+	cos2l0 = numpy.cos(numpy.radians(2.0 * l0))
+	sin4l0 = numpy.sin(numpy.radians(4.0 * l0))
+	sin2m  = numpy.sin(numpy.radians(2.0 * m))
 
 	Etime = y * sin2l0 - 2.0 * e * sinm + 4.0 * e * y * sinm * cos2l0 - 0.5 * y * y * sin4l0 - 1.25 * e * e * sin2m
-	return math.degrees(Etime*4.0) # in minutes of time
+	return numpy.degrees(Etime*4.0) # in minutes of time
 
 
 def calcHourAngleSunrise( lat, solarDec ):
 	"""
 Calculate the hour angle of the sun at sunrise for the latitude (in radians)
 	"""
-	latRad = math.radians(lat)
-	sdRad  = math.radians(solarDec)
-	HAarg = math.cos(math.radians(90.833)) / ( math.cos(latRad)*math.cos(sdRad) ) - math.tan(latRad) * math.tan(sdRad)
-	HA = math.acos(HAarg);
+	latRad = numpy.radians(lat)
+	sdRad  = numpy.radians(solarDec)
+	HAarg = numpy.cos(numpy.radians(90.833)) / ( numpy.cos(latRad)*numpy.cos(sdRad) ) - numpy.tan(latRad) * numpy.tan(sdRad)
+	HA = numpy.arccos(HAarg);
 	return HA # in radians (for sunset, use -HA)
 
 
@@ -243,23 +240,23 @@ Calculate sun azimuth and zenith angle
 	if hourAngle < -180.: 
 		hourAngle += 360.0
 
-	haRad = math.radians(hourAngle)
-	csz = math.sin(math.radians(latitude)) * math.sin(math.radians(theta)) + math.cos(math.radians(latitude)) * math.cos(math.radians(theta)) * math.cos(haRad)
+	haRad = numpy.radians(hourAngle)
+	csz = numpy.sin(numpy.radians(latitude)) * numpy.sin(numpy.radians(theta)) + numpy.cos(numpy.radians(latitude)) * numpy.cos(numpy.radians(theta)) * numpy.cos(haRad)
 	if csz > 1.0: 
 		csz = 1.0 
 	elif csz < -1.0: 
 		csz = -1.0
-	zenith = math.degrees(math.acos(csz))
-	azDenom = math.cos(math.radians(latitude)) * math.sin(math.radians(zenith))
+	zenith = numpy.degrees(numpy.arccos(csz))
+	azDenom = numpy.cos(numpy.radians(latitude)) * numpy.sin(numpy.radians(zenith))
 	if abs(azDenom) > 0.001: 
-		azRad = (( math.sin(math.radians(latitude)) * math.cos(math.radians(zenith)) ) - math.sin(math.radians(theta))) / azDenom
+		azRad = (( numpy.sin(numpy.radians(latitude)) * numpy.cos(numpy.radians(zenith)) ) - numpy.sin(numpy.radians(theta))) / azDenom
 		if abs(azRad) > 1.0: 
 			if azRad < 0.: 
 				azRad = -1.0 
 			else:
 				azRad = 1.0
 		
-		azimuth = 180.0 - math.degrees(math.acos(azRad))
+		azimuth = 180.0 - numpy.degrees(numpy.arccos(azRad))
 		if hourAngle > 0.0: 
 			azimuth = -azimuth
 	else:
@@ -275,7 +272,7 @@ Calculate sun azimuth and zenith angle
 	if exoatmElevation > 85.0: 
 		refractionCorrection = 0.0
 	else:
-		te = math.tan(math.radians(exoatmElevation))
+		te = numpy.tan(numpy.radians(exoatmElevation))
 		if exoatmElevation > 5.0: 
 			refractionCorrection = 58.1 / te - 0.07 / (te*te*te) + 0.000086 / (te*te*te*te*te) 
 		elif exoatmElevation > -0.575: 
@@ -320,11 +317,11 @@ Calculate sunrise/sunset the given day at the given location on earth (in minute
 	solarDec = calcSunDeclination(t)
 	hourAngle = calcHourAngleSunrise(latitude, solarDec)
 	# Rise time
-	delta = longitude + math.degrees(hourAngle)
+	delta = longitude + numpy.degrees(hourAngle)
 	riseTimeUTC = 720. - (4.0 * delta) - eqTime # in minutes
 	# Set time
 	hourAngle = -hourAngle
-	delta = longitude + math.degrees(hourAngle)
+	delta = longitude + numpy.degrees(hourAngle)
 	setTimeUTC = 720. - (4.0 * delta) - eqTime # in minutes
 	return riseTimeUTC, setTimeUTC
 
@@ -366,16 +363,16 @@ Note that for plotting only, basemap has a built-in terminator
 	t = calcTimeJulianCent(jd)
 	ut = ( jd - (int(jd - 0.5) + 0.5) )*1440.
 	npoints = 100
-	zen = zeros((npoints,npoints))
-	lats = linspace(latitudes[0], latitudes[1], num=npoints)
-	lons = linspace(longitudes[0], longitudes[1], num=npoints)
+	zen = numpy.zeros((npoints,npoints))
+	lats = numpy.linspace(latitudes[0], latitudes[1], num=npoints)
+	lons = numpy.linspace(longitudes[0], longitudes[1], num=npoints)
 	for ilat in range(npoints):
 		for ilon in range(npoints):
 			az,el = calcAzEl(t, ut, lats[ilat], lons[ilon], 0.)
 			zen[ilat,ilon] = el
-	zmin = argmin(abs(90.-zen), axis=0)
+	zmin = numpy.argmin(abs(90.-zen), axis=0)
 	inds = (zmin != 0) & (zmin != len(zmin)-1)
-	term = zeros((len(zmin[inds]),2))
+	term = numpy.zeros((len(zmin[inds]),2))
 	term[:,0] = lats[zmin[inds]]
 	term[:,1] = lons[inds]
 	return lats, lons, zen, term
@@ -389,8 +386,8 @@ Calculate julian date for given day, month and year
 		date.year -= 1
 		date.month += 12
 
-	A = math.floor(date.year/100.)
-	B = 2. - A + math.floor(A/4.)
-	jd = math.floor(365.25*(date.year + 4716.)) + math.floor(30.6001*(date.month+1)) + date.day + B - 1524.5
+	A = numpy.floor(date.year/100.)
+	B = 2. - A + numpy.floor(A/4.)
+	jd = numpy.floor(365.25*(date.year + 4716.)) + numpy.floor(30.6001*(date.month+1)) + date.day + B - 1524.5
 	jd = jd + date.hour/24.0 + date.minute/1440.0 + date.second/86400.0
 	return jd
