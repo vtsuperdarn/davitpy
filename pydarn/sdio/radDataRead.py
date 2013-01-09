@@ -22,7 +22,7 @@ This module contains the following functions:
 """
 
 	
-def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
+def radDataOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0, src=None):
 	"""
 	*******************************
 
@@ -51,23 +51,30 @@ def dmapOpen(dateStr,rad,time=[0,2400],fileType='fitex',filter=0):
 	Written by AJ 20120928
 
 	"""
-	import subprocess as sub	
+	import subprocess as sub
 	#get the year of the file
 	myDate = utils.yyyymmddToDate(dateStr)
-	
 	#we need to get the start and end hours of the request
-	#becasue of how the files are named
+	#because of how the files are named
 	hr1,hr2 = int(math.floor(time[0]/100./2.)*2),int(math.floor(time[1]/100./2.)*2)
 	min1 = int(time[0]-int(math.floor(time[0]/100.)*100))
-	#move back a little in time because files often start at 2 mins
-	#after the hour
 	stime = myDate.replace(hour=hr1,minute=min1)
-	stime = stime-datetime.timedelta(minutes=4)
 	if(hr2 == 24):
 		etime = myDate+datetime.timedelta(days=1)
 	else:
 		etime = myDate.replace(hour=hr2)
+	
+	#FIRST, CHECK IF THE DATA EXISTS IN THE DATABASE
+	if(src == None or src == 'db'):
+		readFromDb(startTime=stime, endTime=etime, stid=None, channel=None, bmnum=None, cp=None, fileType='fitex',exactFlg=False)
 
+	
+	#move back a little in time because files often start at 2 mins
+	#after the hour
+	stime = myDate.replace(hour=hr1,minute=min1)
+	stime = stime-datetime.timedelta(minutes=4)
+	
+	
 	#a temporary directory to store a temporary file
 	tmpDir = '/tmp/fit/'
 	d = os.path.dirname(tmpDir)
@@ -203,101 +210,7 @@ def radDataReadRec(myFile,vb=0,beam=-1,channel=None):
 	del dfile
 	return myBeam
 	
-def dmapRead(dateStr,rad,times,fileType,filter=0):
-	"""
-	*******************************
-
-	PACKAGE: pydarn.sdio.radDataRead
-
-	FUNCTION: dmapRead(dateStr,rad,times,fileType,filter=0)
-
-	PURPOSE: reads a large chunk of a dmap file
-
-	INPUTS:
-		dateStr : a string containing the target date in yyyymmdd format
-		rad: the 3 letter radar code, e.g. 'bks'
-		times: the range of times for which the file should be read
-		fileType: the file type to open.  Valid inputs are 'fitex', 'fitacf',
-			'lmfit', and 'rawacf'
-		[filter]: 1 to boxcar filter, 0 for raw data.  default = 0
-
-	OUTPUTS:
-		dfile: a dictionary containing the contents of a dmap file
-		
-	EXAMPLES:
-		dfile = dmapRead('20110101','bks',[0,2400],'fitex',filter=1)
-		
-	Written by AJ 20120928
-
-	"""
-	
-	#get the year of the file
-	myDate = utils.yyyymmddToDate(dateStr)
-	
-	#we need to get the start and end hours of the request
-	#becasue of how the files are named
-	hr1,hr2 = int(math.floor(times[0]/100./2.)*2),int(math.floor(times[1]/100./2.)*2)
-	min1 = int(times[0]-int(math.floor(times[0]/100.)*100))
-
-	stime = myDate.replace(hour=hr1,minute=min1)
-	stime = stime-datetime.timedelta(minutes=4)
-
-	if(hr2 == 24):
-		etime = myDate+datetime.timedelta(days=1)
-	else:
-		etime = myDate.replace(hour=hr2)
-
-	#a temporary directory to store a temporary file
-	tmpDir = '/tmp/fit/'
-	d = os.path.dirname(tmpDir)
-	if not os.path.exists(d):
-		os.makedirs(d)
-	tmpName = tmpDir+str(int(time.time()))+'.'+fileType
-
-	#iterate through all of the hours in the request
-	#ie, iterate through all possible file names
-	filelist=[]
-	ctime = stime.replace(minute=0)
-	if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-	while ctime <= etime:
-		#directory on the data server
-		myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+fileType+'/'+rad+'/'
-		hrStr = ctime.strftime("%H")
-		dateStr = ctime.strftime("%Y%m%d")
-		#iterate through all of the files which begin in this hour
-		for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
-			outname = string.replace(filename,myDir,tmpDir)
-			
-			#unzip the compressed file
-			if(string.find(filename,'.bz2') != -1):
-				outname = string.replace(outname,'.bz2','')
-				print 'bunzip2 -c '+filename+' > '+outname+'\n'
-				os.system('bunzip2 -c '+filename+' > '+outname)
-			else:
-				outname = string.replace(outname,'.gz','')
-				print 'gunzip -c '+filename+' > '+outname+'\n'
-				os.system('gunzip -c '+filename+' > '+outname)
-				
-			filelist.append(outname)
-			
-		ctime = ctime+datetime.timedelta(hours=1)
-
-	if(filter == 0): dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
-	else:
-		if(len(filelist) > 0):
-			print 'cat '+' '.join(filelist)+' > '+tmpName
-			os.system('cat '+' '.join(filelist)+' > '+tmpName)
-			print 'fitexfilter '+tmpName+' > '+tmpName+'.f'
-			os.system('fitexfilter '+tmpName+' > '+tmpName+'.f')
-			dfile = pydarn.dmapio.readDmap(1,[tmpName+'.f'])
-		else: dfile = pydarn.dmapio.readDmap(len(filelist),filelist)
-	
-	for filename in filelist:
-		os.system('rm '+filename)
-		
-	return dfile,'.'+fileType
-
-def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0):
+def radDataOpen(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0):
 	"""
 	*******************************
 
@@ -329,104 +242,50 @@ def radDataRead(dateStr,rad,time=[0,2400],fileType='fitex',vb=0,beam=-1,filter=0
 	Written by AJ 20120928
 
 	"""
-	t = datetime.datetime.now()
-	
+	import string
 	#read the datamap file
-	dfile,fileType = dmapRead(dateStr,rad,time,fileType,filter=filter)
-	print 'done read'
+	redo = 1
+	while(redo == 1):
+		redo = 0
+		dfile = pydarn.dmapio.readDmapRec(myFile)
+		if(dfile == None):
+			del dfile 
+			return None
+		if(beam != -1 and dfile['bmnum'] != beam): 
+			del dfile
+			redo = 1
+		elif(channel != None):
+			if((channel == 'a' and (dfile['channel'] != 0 and dfile['channel'] != 1)) and \
+					dfile['channel']-1 != alpha.index(channel)): redo = 1
 	
-	#create radData object
-	myRadData = radData()
-	
-	
-	#calculate start and end times
-	stime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[0]/100.)),minute=int((time[0]-int(math.floor(time[0]/100.))*100)))
-	
-	if(time[1] == 2400):
-		etime = utils.yyyymmddToDate(dateStr)+datetime.timedelta(days=1)
-	else:
-		etime = utils.yyyymmddToDate(dateStr).replace(hour=int(math.floor(time[1]/100.)),minute=int((time[1]-int(math.floor(time[1]/100.))*100)))
+	keys = dfile.keys()
+	for k in keys:
+		dfile[string.replace(k,'.','')] = dfile[k]
 		
-	print datetime.datetime.now()-t
-	#iterate through the available times from the file
-	for epochT in dfile.keys():
-
-		dateT = datetime.datetime.utcfromtimestamp(epochT)
-
-		#check that we are in the target time interval
-		if(dateT >= stime and dateT <= etime):
-			
-			#verbose output
-			if(vb):
-				print dateT
-				
-			#check the requested beam
-			if(beam != -1 and dfile[epochT]['bmnum'] != beam):
-				continue
-			
-			#create a beam object
-			myBeam = pydarn.sdio.radDataTypes.beamData()
+	fileName, fileExtension = os.path.splitext(myFile.name)
+	#if(fileExtension == 'fitex'): fileExtension = 'fitex2'
+	
+	#verbose output
+	if(vb):
+		print datetime.datetime.utcfromtimestamp(dfile['time'])
 		
-			#parse the parameters
-			myPrmData = parseDmap(dfile[epochT],prmData())
-			myBeam['prm'] = myPrmData
-			myBeam['prm']['time'] = dateT
-			
-			#parse the fit data
-			if(fileType == '.fitex' or fileType == '.fitacf' or fileType == '.lmfit'):
-				myFitData = parseDmap(dfile[epochT],fitData())
-				myBeam['fit'] = myFitData
-
-			
-			#parse the raw data
-			if(fileType == '.rawacf'):
-				myRawData = parseDmap(dfile[epochT],rawData())
-				myBeam['raw'] = myRawData
-				
-			myBeam.ftype=fileType
-			
-			myRadData[dateT] = myBeam
-			
-	print 'done copy'
+	#create a beam object
+	myBeam = pydarn.sdio.beamData(beamDict=dfile)
 	
-	myRadData.times = myRadData.getTimes()
-	myRadData.nrecs = len(myRadData.times)
-	myRadData.ftype = fileType
-	
-	return myRadData
+	#parse the parameters
+	myBeam.prm = pydarn.sdio.prmData(prmDict=dfile)
 
-
-def parseDmap(myRec,myData):
-	"""
-	*******************************
-
-	PACKAGE: pydarn.sdio.radDataRead
-
-	FUNCTION: parseDmap(myRec,myData)
-
-	PURPOSE: parses a dfile dictionary into a radData structure
-
-	INPUTS:
-		myRec: the record from the dmap file
-		myData: the radData structure tp be filled
-
-	OUTPUTS:
-		myData: the filles radData structure
+	if(fileExtension[1:] == 'fitex' or fileExtension[1:] == 'lmfit' or fileExtension[1:] == 'fitacf'):
+		#parse the fit data
+		setattr(myBeam,fileExtension[1:],pydarn.sdio.fitData(fitDict=dfile))
+		myBeam.fit = getattr(myBeam,fileExtension[1:])
+		myBeam.fit.proctype = fileExtension[1:]
+		if(fileExtension[1:] == 'fitex'): myBeam.exflg = 1
+		elif(fileExtension[1:] == 'lmfit'): myBeam.lmflg = 1
+		elif(fileExtension[1:] == 'fitacf'): myBeam.acflg = 1
+	elif(fileExtension[1:] == 'rawacf'):
+		myBeam.raw = pydarn.sdio.rawData(rawDict=dfile)
 		
-	EXAMPLES:
-		myData = parseDmap(dfile,myData)
-		
-	Written by AJ 20120928
-
-	"""
-	for k in myData.iterkeys():
-		if(myRec.has_key(k)):
-			if(isinstance(myRec[k],list)):
-				myData[k] = numpy.array(myRec[k])
-			else:
-				myData[k] = myRec[k]
-	
-	return myData
-	
-	
+	del dfile
+	return myBeam
 
