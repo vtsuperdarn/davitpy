@@ -13,6 +13,17 @@ alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r'
 #this allows us to save space as well as reduce transfer time
 cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd'})
 
+class radDataPtr():
+	def __init__(self,ptr=None,sTime=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None):
+		self.ptr = ptr
+		self.sTime = sTime
+		self.eTime = eTime
+		self.stid = stid
+		self.channel = channel
+		self.bmnum = bmnum
+		self.cp = cp
+		self.dType = None
+
 class baseData():
 	"""
 |	*******************************
@@ -111,8 +122,9 @@ class baseData():
 			try:
 				setattr(self,attr,aDict[attr])
 			except:
-				#else put in a default value
-				setattr(self,attr,None)
+				#put in a default value if not another object
+				if(not isinstance(getattr(self,attr),baseData)):
+					setattr(self,attr,None)
 
 class beamData(baseData):
 	"""
@@ -154,9 +166,10 @@ class beamData(baseData):
 		self.fitex=None
 		self.fitacf=None
 		self.lmfit=None
-		self.fit = None
-		self.rawacf = None
-		self.prm = None
+		self.fit = fitData()
+		self.rawacf = rawData()
+		self.prm = prmData()
+		#self.iqdat = iqData()
 		
 		#if we are intializing from an object, do that
 		if(beamDict != None): self.updateValsFromDict(beamDict)
@@ -318,12 +331,12 @@ class rawData(baseData):
 	"""
 
 	#initialize the struct
-	def __init__(self, rawDict=None, myRaw=None):
+	def __init__(self, rawDict=None):
 		self.acfd = []			#lag 0 power
 		self.xcfd = []			# list of range gates with backscatter
 		
 		if(rawDict != None): self.updateValsFromDict(rawDict)
-		if(myRaw != None): self.updateVals(myRaw)
+		#if(myRaw != None): self.updateVals(myRaw)
 		
 	def updateValsFromDict(self, rawDict):
 		"""

@@ -60,3 +60,11 @@ then
 	echo "export SDDB='sd-work9.ece.vt.edu:27017'" >> ~/.bashrc
 	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
 fi
+
+# Set SFTP DATABASE
+if [ '' == "${VTDB}" ]
+then
+	echo "#sftp server address" >> ~/.bashrc
+	echo "export VTDB='sd-data.ece.vt.edu'" >> ~/.bashrc
+	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
+fi
