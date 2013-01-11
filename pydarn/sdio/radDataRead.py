@@ -31,38 +31,38 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |		sftp's over to the VT data server.
 |
 |	**INPUTS**:
-|		sTime: a datetime object specifying the beginning time
+|		**sTime**: a datetime object specifying the beginning time
 |			for which you want data
-|		rad: the 3-letter radar code for which you want data
-|		[eTime]: a dateTime object specifying the last time that
+|		**rad**: the 3-letter radar code for which you want data
+|		**[eTime]**: a dateTime object specifying the last time that
 |			you want data for.  if this is set to None, it will be 
 |			set to 1 day after sTime.  default = None
-|		[channel]: the 1-letter code for what channel you want
+|		**[channel]**: the 1-letter code for what channel you want
 |			data from, eg 'a','b',...  if this is set to None,
 |			data from ALL channels will be read. default = None
-|		[bmnum]: the beam number which you want data for.  If
+|		**[bmnum]**: the beam number which you want data for.  If
 |			this is set to None, data from all beams will be read.
 |			default = None
-|		[cp]: the control program which you want data for.  If this is
+|		**[cp]**: the control program which you want data for.  If this is
 |			set to None, data from all cp's will be read.  default = None
-|		[fileType]:  The type of data you want to read.  valid inputs
+|		**[fileType]**:  The type of data you want to read.  valid inputs
 |			are: 'fitex','fitacf','lmfit','rawacf' ('iqdat' coming in the
 |			future).  if you choose a fit file format and the specified one
 |			isn't found, we will search for one of the others.  Beware:
 |			if you ask for rawacf data, these files are large and the data
 |			transfer might take a long time.  default = 'fitex'
-|		[filter]: a boolean specifying whether you want the fit data to
+|		**[filter]**: a boolean specifying whether you want the fit data to
 |			be boxcar filtered.  ONLY VALID FOR FIT.  default = False
-|		[src]: the source of the data.  valid inputs are 'mongo'
+|		**[src]**: the source of the data.  valid inputs are 'mongo'
 |			'local' 'sftp'.  if this is set to None, it will try all
 |			possibilites sequentially.  default = None
-|	OUTPUTS:
-|		myPtr: a radDataPtr object which contains a link to the data
+|	**OUTPUTS**:
+|		**myPtr**: a radDataPtr object which contains a link to the data
 |			to be read.  this can then be passed to radDataReadRec
 |			in order to actually read the data.
 |		
-|	EXAMPLES:
-|		myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
+|	**EXAMPLES**:
+|		myPtr*= radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
 |												bmnum=7,cp=153,fileType='fitex',filter=False, src=None):
 |		
 |	Written by AJ 20130110
@@ -215,11 +215,12 @@ def radDataReadRec(myPtr):
 |	**NOTE**: to use this, you must first open a connection with radDataOpen 
 |
 |	**INPUTS**:
-|		myPtr: a pydarn.sdio.radDataTypes.radDataPtr object.  this
+|		**myPtr**: a pydarn.sdio.radDataTypes.radDataPtr object.  this
 |			contains the connection to the data we are after
-|	OUTPUTS:
-|		myBeam: a pydarn.sdio.radDataTypes.beamData object, filled
+|	**OUTPUTS**:
+|		**myBeam**: a pydarn.sdio.radDataTypes.beamData object, filled
 |			with the data we are after
+|		**NOTE**: will return None when finished reading
 |		
 |	EXAMPLES:
 |		myBeam = radDataReadRec(myPtr)

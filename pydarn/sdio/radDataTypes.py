@@ -14,6 +14,28 @@ alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r'
 cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd'})
 
 class radDataPtr():
+	"""
+|	*******************************
+|
+|	**CLASS**: pydarn.sdio.radDataPtr
+|	**PURPOSE**: a class which contains a pipeline to a data source
+|	
+|	**ATTRS**:
+|		ptr: the data pointer (different depending on mongodo or dmap)
+|		sTime: start time of the request
+|		eTime: end time of the request
+|		stid: station id of the request
+|		channel: channel of the request
+|		bmnum: beam number of the request
+|		cp: control prog id of the request
+|		dType: the data type, 'mongo' or 'dmap'
+|	
+|	**METHODS**:
+|		NONE
+|		
+|	Written by AJ 20130108
+|	*******************************
+	"""
 	def __init__(self,ptr=None,sTime=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None):
 		self.ptr = ptr
 		self.sTime = sTime
@@ -163,9 +185,9 @@ class beamData(baseData):
 		self.exflg = None
 		self.lmflg = None
 		self.acflg = None
-		self.fitex=None
-		self.fitacf=None
-		self.lmfit=None
+		self.fitex = None
+		self.fitacf = None
+		self.lmfit= None
 		self.fit = fitData()
 		self.rawacf = rawData()
 		self.prm = prmData()
@@ -173,7 +195,6 @@ class beamData(baseData):
 		
 		#if we are intializing from an object, do that
 		if(beamDict != None): self.updateValsFromDict(beamDict)
-		#if(myBeam != None): self.updateVals(myBeam)
 			
 	def __repr__(self):
 		return "<Beam("+str(self.time)+", '%d', '%d','%d', '%s')>" % (self.cp, self.stid, self.bmnum, self.channel)
@@ -247,7 +268,6 @@ class prmData(baseData):
 		
 		#if we are copying a structure, do that
 		if(prmDict != None): self.updateValsFromDict(prmDict)
-		#if(myPrm != None): self.updateVals(myPrm)
 
 class fitData(baseData):
 	"""
@@ -310,7 +330,6 @@ class fitData(baseData):
 		self.elv = None				#elevation angle
 		
 		if(fitDict != None): self.updateValsFromDict(fitDict)
-		#if(myFit != None): self.updateVals(myFit)
 				
 class rawData(baseData):
 	"""
@@ -336,7 +355,6 @@ class rawData(baseData):
 		self.xcfd = []			# list of range gates with backscatter
 		
 		if(rawDict != None): self.updateValsFromDict(rawDict)
-		#if(myRaw != None): self.updateVals(myRaw)
 		
 	def updateValsFromDict(self, rawDict):
 		"""
