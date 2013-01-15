@@ -212,7 +212,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 			os.system('rm '+filename)
 			
 		#filter(if desired) and open the file
-		if(filter): myPtr.ptr = open(tmpName,'r')
+		if(~filter): myPtr.ptr = open(tmpName,'r')
 		else:
 			print 'fitexfilter '+tmpName+' > '+tmpName+'f'
 			os.system('fitexfilter '+tmpName+' > '+tmpName+'f')

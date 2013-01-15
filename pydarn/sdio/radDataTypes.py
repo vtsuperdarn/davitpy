@@ -98,7 +98,7 @@ class baseData():
 		aDict = {}
 		for attr, val in self.__dict__.iteritems():
 			#check for things we dont want to save
-			if(attr=='proctype' or attr=='inttus' or attr.rfind('_s') != -1): continue
+			if(attr=='inttus' or attr.rfind('_s') != -1): continue
 			elif(attr == 'inttsc'): aDict['it'] = self.inttsc + self.inttus*1e-6
 			#if the value is a class, recursively convert to dict
 			elif(isinstance(val,baseData)): aDict[cipher[attr]] = val.toDbDict()
@@ -179,6 +179,12 @@ class beamData(baseData):
 |		lmflg -- a flag indicating the presence of lmfit data.
 |			this is useful for database operation, can
 |			generally be ignored by users
+|		rawflg -- a flag indicating the presence of rawacf data.
+|			this is useful for database operation, can
+|			generally be ignored by users
+|		iqflg -- a flag indicating the presence of iqdat data.
+|			this is useful for database operation, can
+|			generally be ignored by users
 |		fType: the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
 |
 |		* = not implemented yet
@@ -200,6 +206,8 @@ class beamData(baseData):
 		self.exflg = None
 		self.lmflg = None
 		self.acflg = None
+		self.rawflg = None
+		self.iqflg = None
 		self.fitex = None
 		self.fitacf = None
 		self.lmfit= None
