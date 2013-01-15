@@ -129,7 +129,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
 						for(j=0;j<a->rng[1];j++)
 							for(k=0;k<2;k++)
 							{
-								PyObject *myNum = Py_BuildValue("f", a->data.fptr[(i*mplgs+j)*2+k]);
+								PyObject *myNum = Py_BuildValue("f", a->data.fptr[(i*a->rng[1]+j)*2+k]);
 								PyList_Append(myList,myNum);
 								Py_CLEAR(myNum);
 							}
@@ -143,7 +143,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
 						for(j=0;j<a->rng[1];j++)
 							for(k=0;k<2;k++)
 							{
-								PyObject *myNum = Py_BuildValue("f", a->data.fptr[(i*mplgs+j)*2+k]);
+								PyObject *myNum = Py_BuildValue("f", a->data.fptr[(i*a->rng[1]+j)*2+k]);
 								PyList_Append(myList,myNum);
 								Py_CLEAR(myNum);
 							}

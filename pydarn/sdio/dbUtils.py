@@ -357,6 +357,8 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
 			#check for verbose output
 			if(vb): print dmapBeam.time,dmapBeam.stid
 			del dmapBeam.fType
+			del dmapBeam.fit
+			del dmapBeam.rawacf.parent
 			#convert the dmap dict to a db dictionary
 			dmapDict = dmapBeam.toDbDict()
 			

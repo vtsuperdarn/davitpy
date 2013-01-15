@@ -118,7 +118,7 @@ class baseData():
 	|		reading of a dmap file
 	|	
 	|	INPUTS:
-	|		prmDict -- the dictionary containing the radar data
+	|		aDict -- the dictionary containing the radar data
 	|
 	|	OUTPUTS: 
 	|		None
@@ -144,6 +144,19 @@ class baseData():
 						else: self.channel = alpha[aDict['channel']-1]
 					else: self.channel = aDict['channel']
 				else: self.channel = 'a'
+				continue
+			elif(attr == 'acfd' or attr == 'xcfd'):
+				if(aDict.has_key(attr)): 
+					setattr(self,attr,[])
+					for i in range(0,self.parent.prm.nrang):
+						rec = []
+						for j in range(0,self.parent.prm.mplgs):
+							samp = []
+							for k in range(0,2):
+								samp.append(aDict[attr][(i*self.parent.prm.mplgs+j)*2+k])
+							rec.append(samp)
+						getattr(self, attr).append(rec)
+				else: setattr(self,attr,[])
 				continue
 			try:
 				setattr(self,attr,aDict[attr])
@@ -212,7 +225,7 @@ class beamData(baseData):
 		self.fitacf = None
 		self.lmfit= None
 		self.fit = fitData()
-		self.rawacf = rawData()
+		self.rawacf = rawData(parent=self)
 		self.prm = prmData()
 		#self.iqdat = iqData()
 		self.fType = None
@@ -376,9 +389,10 @@ class rawData(baseData):
 	"""
 
 	#initialize the struct
-	def __init__(self, rawDict=None):
+	def __init__(self, rawDict=None, parent=None):
 		self.acfd = []			#acf data
 		self.xcfd = []			#xcf data
+		self.parent = parent #reference to parent beam
 		
 		if(rawDict != None): self.updateValsFromDict(rawDict)
 		
