@@ -11,7 +11,9 @@ alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r'
 
 #we need to use this cipher in order to shorten variable names on the DB
 #this allows us to save space as well as reduce transfer time
-cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd'})
+cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd','rawflg':'rf','iqflg':'iqf'})
+
+refArr = twoWayDict({'exflg':'fitex','acflg':'fitacf','lmflg':'lmfit','rawflg':'rawacf','iqflg':'iqdat'})
 
 class radDataPtr():
 	"""
@@ -29,6 +31,7 @@ class radDataPtr():
 |		bmnum: beam number of the request
 |		cp: control prog id of the request
 |		dType: the data type, 'mongo' or 'dmap'
+|		fType: the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
 |	
 |	**METHODS**:
 |		NONE
@@ -45,6 +48,7 @@ class radDataPtr():
 		self.bmnum = bmnum
 		self.cp = cp
 		self.dType = None
+		self.fType = None
 
 class baseData():
 	"""
@@ -151,22 +155,33 @@ class baseData():
 class beamData(baseData):
 	"""
 |	*******************************
-|	CLASS pydarn.sdio.beamData
+|	**CLASS**: pydarn.sdio.beamData
 |
-|	a class to contain the data from a radar beam sounding
+|	**PURPOSE**: a class to contain the data 
+|		from a radar beam sounding
 |	
-|	ATTRS:
+|	**ATTRS**:
 |		cp -- radar control program id number
 |		stid -- radar station id number
 |		time -- timestamp of beam sounding
-|		channel -- radar operating channel
+|		channel -- radar operating channel, eg 'a', 'b', ...
 |		bmnum -- beam number
-|		prm -- radar operating params
-|		fit[] -- a list radar fit data (list for fitex, fitex2, lmfit)
-|		raw -- radar rawacf data
-|		iq -- radar iqdat data
-|	
-|		** = not implemented yet
+|		prm -- a prmData object with oper. params
+|		fit -- a fitData object with the fitted params
+|		rawacf -- a rawData object with radar rawacf data
+|		*iq -- radar iqdat data (not yet implemented)
+|		exflg -- a flag indicating the presence of fitex data.
+|			this is useful for database operation, can
+|			generally be ignored by users
+|		acflg -- a flag indicating the presence of acflg data.
+|			this is useful for database operation, can
+|			generally be ignored by users
+|		lmflg -- a flag indicating the presence of lmfit data.
+|			this is useful for database operation, can
+|			generally be ignored by users
+|		fType: the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+|
+|		* = not implemented yet
 |
 |	DECLARATION: 
 |		myBeam = pydarn.sdio.radBeam()
@@ -192,6 +207,7 @@ class beamData(baseData):
 		self.rawacf = rawData()
 		self.prm = prmData()
 		#self.iqdat = iqData()
+		self.fType = None
 		
 		#if we are intializing from an object, do that
 		if(beamDict != None): self.updateValsFromDict(beamDict)
@@ -264,7 +280,7 @@ class prmData(baseData):
 		self.ltab = None				#lag table
 		self.noisemean = None		#mean noise level
 		self.noisesky = None		#sky noise level
-		self.noisesearch = None#freq search noise level
+		self.noisesearch = None	#freq search noise level
 		
 		#if we are copying a structure, do that
 		if(prmDict != None): self.updateValsFromDict(prmDict)
@@ -272,12 +288,12 @@ class prmData(baseData):
 class fitData(baseData):
 	"""
 |	*******************************
-|	CLASS pydarn.sdio.fitData
+|	**CLASS** pydarn.sdio.fitData
 |
-|	a class to contain the fit data from a radar beam sounding
+|	**PURPOSE** a class to contain the fitted params of
+|		a radar beam sounding
 |	
-|	ATTRS:
-|		proctype -- 	fitting processing type
+|	**ATTRS**:
 |		pwr0  --			lag 0 power
 |		slist  --			list of range gates with backscatter
 |		npnts --			number of range gates with scatter
@@ -298,17 +314,15 @@ class fitData(baseData):
 |		phi0_e  --		phi 0 error
 |		elv  --				elevation angle
 |	
-|	DECLARATION: 
+|	**DECLARATION**: 
 |		myFit = pydarn.sdio.fitData()
 |		
 |	Written by AJ 20121130
 |	*******************************
 |	"""
 
-
 	#initialize the struct
 	def __init__(self, fitDict=None, myFit=None):
-		self.proctype = None	#processing type
 		self.pwr0 = None			#lag 0 power
 		self.slist = None			# list of range gates with backscatter
 		self.npnts = None			#number of range gates with scatter
@@ -339,8 +353,12 @@ class rawData(baseData):
 |	a class to contain the fit data from a radar beam sounding
 |	
 |	ATTRS:
-|		acf -- 	acf data
-|		xcf -- xcf data
+|		acf -- acf data as a list.  the size is nrang*mplgs*2.
+|			the format is [i00,q00,i01,q01,i02,q02,...] where i
+|			is the real part of the acf, q is the imaginary,
+|			the first index digit references the range gate,
+|			and the second digit references the lag number
+|		xcf -- xcf data, same format as acf data
 |	
 |	DECLARATION: 
 |		myRaw = pydarn.sdio.rawData()
@@ -351,38 +369,9 @@ class rawData(baseData):
 
 	#initialize the struct
 	def __init__(self, rawDict=None):
-		self.acfd = []			#lag 0 power
-		self.xcfd = []			# list of range gates with backscatter
+		self.acfd = []			#acf data
+		self.xcfd = []			#xcf data
 		
 		if(rawDict != None): self.updateValsFromDict(rawDict)
 		
-	def updateValsFromDict(self, rawDict):
-		"""
-	|	*******************************
-	|	FUNCTION updateValsFromDict
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.rawData
-	|
-	|	this is created mainly to fill a radar raw structure 
-	|		with the data in a dictionary that is returned from the
-	|		reading of a dmap file
-	|	
-	|	INPUTS:
-	|		rawDict -- the dictionary containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|	
-	|	Written by AJ 20121130
-	|	*******************************
-		"""
-		
-	def updateVals(self, myRaw):
-		for attr, value in self.__dict__.iteritems():
-			if(attr == '_sa_instance_state' or attr == 'beam_id' or attr == 'raw_id'): continue
-			try: setattr(self,attr,object.__getattribute__(myRaw, attr))
-			except:
-				if(isinstance(value,list)): setattr(self,attr,[])
-				elif(isinstance(value,String)): setattr(self,attr,'')
-				else: setattr(self,attr,-1)
         

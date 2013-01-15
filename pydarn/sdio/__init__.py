@@ -39,4 +39,4 @@ except: print 'problem importing pygridIo'
 try:
 	import dbUtils
 	from dbUtils import *
-except: print 'problem importing dbutils'
+except: print 'problem importing dbUtils'

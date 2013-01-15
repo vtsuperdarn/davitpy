@@ -62,7 +62,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |			in order to actually read the data.
 |		
 |	**EXAMPLES**:
-|		myPtr*= radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
+|		myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
 |												bmnum=7,cp=153,fileType='fitex',filter=False, src=None):
 |		
 |	Written by AJ 20130110
@@ -75,110 +75,132 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	#create a datapoint object
 	myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id),channel=channel,bmnum=bmnum,cp=cp)
 	
-	#FIRST, CHECK IF THE DATA EXISTS IN THE DATABASE
-	if(src == None or src == 'mongo'):
-		print 'Looking for data on the mongodb database...'
-		myPtr.ptr = pydarn.sdio.readFromDb(sTime=myPtr.sTime, eTime=myPtr.eTime, stid=myPtr.stid, \
-								channel=myPtr.channel, bmnum=myPtr.bmnum, cp=myPtr.cp, \
-								fileType=fileType,exactFlg=False)
-		if(myPtr.ptr != None): myPtr.dType = 'mongo'
-	#otherwise, set up to look in files
-	if(myPtr.ptr == None):
-		#move back a little in time because files often start at 2 mins after the hour
-		sTime = sTime-dt.timedelta(minutes=4)
-		#a temporary directory to store a temporary file
-		tmpDir = '/tmp/fit/'
-		d = os.path.dirname(tmpDir)
-		if not os.path.exists(d):
-			os.makedirs(d)
-			
 	filelist = []
-	
-	if((src == None or src == 'local') and myPtr.ptr == None):
-		print '\nLooking locally for files'
-		#iterate through all of the hours in the request
-		#ie, iterate through all possible file names
-		ctime = sTime.replace(minute=0)
-		if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-		while ctime <= eTime:
-			#directory on the data server
-			##################################################################
-			### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
-			### TO MATCH YOUR DIRECTORY STRUCTURE
-			##################################################################
-			myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+fileType+'/'+rad+'/'
-			hrStr = ctime.strftime("%H")
-			dateStr = ctime.strftime("%Y%m%d")
-			#iterate through all of the files which begin in this hour
-			for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
-				outname = string.replace(filename,myDir,tmpDir)
-				
-				#unzip the compressed file
-				if(string.find(filename,'.bz2') != -1):
-					outname = string.replace(outname,'.bz2','')
-					print 'bunzip2 -c '+filename+' > '+outname+'\n'
-					os.system('bunzip2 -c '+filename+' > '+outname)
-				else:
-					outname = string.replace(outname,'.gz','')
-					print 'gunzip -c '+filename+' > '+outname+'\n'
-					os.system('gunzip -c '+filename+' > '+outname)
-				
-				filelist.append(outname)
-			##################################################################
-			### END SECTION YOU WILL HAVE TO CHANGE
-			##################################################################
-			ctime = ctime+dt.timedelta(hours=1)
-			
-	#finally, check the VT sftp server if we have not yet found files
-	if((src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0):
-		print '\nLooking on the remote SFTP server for files'
-		#create a transport object for use in sftp-ing
-		transport = p.Transport((os.environ['VTDB'], 22))
-		transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
-		sftp = p.SFTPClient.from_transport(transport)
-		
-		#iterate through all of the hours in the request
-		#ie, iterate through all possible file names
-		ctime = sTime.replace(minute=0)
-		if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-		oldyr = ''
-		while ctime <= eTime:
-			#directory on the data server
-			myDir = '/data/'+ctime.strftime("%Y")+'/'+fileType+'/'+rad+'/'
-			hrStr = ctime.strftime("%H")
-			dateStr = ctime.strftime("%Y%m%d")
-			if(ctime.strftime("%Y") != oldyr):
-				#get a list of all the files in the directory
-				allFiles = sftp.listdir(myDir)
-				oldyr = ctime.strftime("%Y")
-			#create a regular expression to find files of this day, at this hour
-			regex = re.compile(dateStr+'.'+hrStr)
-			#go thorugh all the fiels in the directory
-			for aFile in allFiles:
-				#if we have a file match between a file and our regex
-				if(regex.match(aFile)): 
-					print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
-					filename = tmpDir+aFile
-					#download the file via sftp
-					sftp.get(myDir+aFile,filename)
+	if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
+	elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
+	elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
+	else: arr = [fileType]
+	#move back a little in time because files often start at 2 mins after the hour
+	sTime = sTime-dt.timedelta(minutes=4)
+	#a temporary directory to store a temporary file
+	tmpDir = '/tmp/fit/'
+	d = os.path.dirname(tmpDir)
+	if not os.path.exists(d):
+		os.makedirs(d)
+
+	#FIRST, LOOK LOCALLY FOR FILES
+	if(src == None or src == 'local'):
+		for ftype in arr:
+			print '\nLooking locally for',ftype,'files'
+			#iterate through all of the hours in the request
+			#ie, iterate through all possible file names
+			ctime = sTime.replace(minute=0)
+			if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+			while ctime <= eTime:
+				#directory on the data server
+				##################################################################
+				### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
+				### TO MATCH YOUR DIRECTORY STRUCTURE
+				##################################################################
+				myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+				hrStr = ctime.strftime("%H")
+				dateStr = ctime.strftime("%Y%m%d")
+				#iterate through all of the files which begin in this hour
+				for filename in glob.glob(myDir+dateStr+'.'+hrStr+'*'):
+					outname = string.replace(filename,myDir,tmpDir)
 					#unzip the compressed file
 					if(string.find(filename,'.bz2') != -1):
-						outname = string.replace(filename,'.bz2','')
+						outname = string.replace(outname,'.bz2','')
 						print 'bunzip2 -c '+filename+' > '+outname+'\n'
 						os.system('bunzip2 -c '+filename+' > '+outname)
-					elif(string.find(filename,'.gz') != -1):
-						outname = string.replace(filename,'.gz','')
+					else:
+						outname = string.replace(outname,'.gz','')
 						print 'gunzip -c '+filename+' > '+outname+'\n'
 						os.system('gunzip -c '+filename+' > '+outname)
-					else:
-						print 'It seems we have downloaded an uncompressed file :/'
-						print 'Strange things might happen from here on out...'
-						
+					
 					filelist.append(outname)
+				##################################################################
+				### END SECTION YOU WILL HAVE TO CHANGE
+				##################################################################
+				ctime = ctime+dt.timedelta(hours=1)
+			if(len(filelist) > 0):
+				print 'found',ftype,'data in local files'
+				myPtr.fType,myPtr.dType = ftype,'dmap'
+				break
+			else:
+				print  'could not find',ftype,'data in local files'
 				
-			ctime = ctime+dt.timedelta(hours=1)
+	#NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
+	if((src == None or src == 'mongo') and len(filelist) == 0):
+		for ftype in arr:
+			print '\nLooking on mongodb for',ftype,'data'
+			myPtr.ptr = pydarn.sdio.readFromDb(sTime=myPtr.sTime, eTime=myPtr.eTime, stid=myPtr.stid, \
+									channel=myPtr.channel, bmnum=myPtr.bmnum, cp=myPtr.cp, \
+									fileType=fileType,exactFlg=False)
+			if(myPtr.ptr != None): 
+				print 'found',ftype,'data on mongodb'
+				myPtr.dType,myPtr.fType = 'mongo',ftype
+				break
+			else:
+				print  'could not find',ftype,'data on mongodb'
+				
+	#finally, check the VT sftp server if we have not yet found files
+	if((src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0):
+		for ftype in arr:
+			print '\nLooking on the remote SFTP server for',ftype,'files'
+			#create a transport object for use in sftp-ing
+			transport = p.Transport((os.environ['VTDB'], 22))
+			transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
+			sftp = p.SFTPClient.from_transport(transport)
 			
-	#if we have local files, lets use those
+			#iterate through all of the hours in the request
+			#ie, iterate through all possible file names
+			ctime = sTime.replace(minute=0)
+			if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+			oldyr = ''
+			while ctime <= eTime:
+				#directory on the data server
+				myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+				hrStr = ctime.strftime("%H")
+				dateStr = ctime.strftime("%Y%m%d")
+				if(ctime.strftime("%Y") != oldyr):
+					#get a list of all the files in the directory
+					allFiles = sftp.listdir(myDir)
+					oldyr = ctime.strftime("%Y")
+				#create a regular expression to find files of this day, at this hour
+				regex = re.compile(dateStr+'.'+hrStr)
+				#go thorugh all the fiels in the directory
+				for aFile in allFiles:
+					#if we have a file match between a file and our regex
+					if(regex.match(aFile)): 
+						print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
+						filename = tmpDir+aFile
+						#download the file via sftp
+						sftp.get(myDir+aFile,filename)
+						#unzip the compressed file
+						if(string.find(filename,'.bz2') != -1):
+							outname = string.replace(filename,'.bz2','')
+							print 'bunzip2 -c '+filename+' > '+outname+'\n'
+							os.system('bunzip2 -c '+filename+' > '+outname)
+						elif(string.find(filename,'.gz') != -1):
+							outname = string.replace(filename,'.gz','')
+							print 'gunzip -c '+filename+' > '+outname+'\n'
+							os.system('gunzip -c '+filename+' > '+outname)
+						else:
+							print 'It seems we have downloaded an uncompressed file :/'
+							print 'Strange things might happen from here on out...'
+							
+						filelist.append(outname)
+					
+				ctime = ctime+dt.timedelta(hours=1)
+			if(len(filelist) > 0):
+				print 'found',ftype,'data on sftp server'
+				myPtr.fType,myPtr.dType = ftype,'dmap'
+				break
+			else:
+				print  'could not find',ftype,'data on sftp server'
+				
+	#check if we have found files
 	if(len(filelist) != 0):
 		#concatenate the files into a single file
 		print 'Concatenating all the files in to one'
@@ -252,8 +274,9 @@ def radDataReadRec(myPtr):
 					(myPtr.cp == None or myPtr.cp == rec[cipher['cp']])):
 				#fill the beamData object
 				myBeam.dbDictToObj(rec)
+				myBeam.fType = myPtr.fType
+				setattr(myBeam,refArr[myPtr.fType],1)
 				return myBeam
-				
 		#check if we're reading from a dmap file
 		elif(myPtr.dType == 'dmap'):
 			#read the next record from the dmap file
@@ -280,6 +303,8 @@ def radDataReadRec(myPtr):
 				myBeam.prm.updateValsFromDict(dfile)
 				myBeam.rawacf.updateValsFromDict(dfile)
 				#myBeam.iqdat.updateValsFromDict(dfile)
+				myBeam.fType = myPtr.fType
+				setattr(myBeam,refArr[myPtr.fType],1)
 				return myBeam
 		else: 
 			print 'error, unrecognized data type'
