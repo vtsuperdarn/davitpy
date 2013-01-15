@@ -374,11 +374,7 @@ class rawData(baseData):
 |	a class to contain the fit data from a radar beam sounding
 |	
 |	ATTRS:
-|		acf -- acf data as a list.  the size is nrang*mplgs*2.
-|			the format is [i00,q00,i01,q01,i02,q02,...] where i
-|			is the real part of the acf, q is the imaginary,
-|			the first index digit references the range gate,
-|			and the second digit references the lag number
+|		acf -- acf data as a 3-d list.  the size is [nrang][mplgs][2]
 |		xcf -- xcf data, same format as acf data
 |	
 |	DECLARATION: 

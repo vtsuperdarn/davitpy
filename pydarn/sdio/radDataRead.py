@@ -111,51 +111,57 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 
 	#FIRST, LOOK LOCALLY FOR FILES
 	if(src == None or src == 'local'):
-		for ftype in arr:
-			print '\nLooking locally for',ftype,'files'
-			#deal with UAF naming convention
-			fnames = ['??.??.???.'+ftype+'.*']
-			if(channel == None): fnames.append('??.??.???.a.*')
-			else: fnames.append('??.??.???.'+channel+'.*')
-			for form in fnames:
-				#iterate through all of the hours in the request
-				#ie, iterate through all possible file names
-				ctime = sTime.replace(minute=0)
-				if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-				while ctime <= eTime:
-					#directory on the data server
-					##################################################################
-					### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
-					### TO MATCH YOUR DIRECTORY STRUCTURE
-					##################################################################
-					myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
-					hrStr = ctime.strftime("%H")
-					dateStr = ctime.strftime("%Y%m%d")
-					#iterate through all of the files which begin in this hour
-					for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
-						outname = string.replace(filename,myDir,tmpDir)
-						#unzip the compressed file
-						if(string.find(filename,'.bz2') != -1):
-							outname = string.replace(outname,'.bz2','')
-							print 'bunzip2 -c '+filename+' > '+outname+'\n'
-							os.system('bunzip2 -c '+filename+' > '+outname)
-						else:
-							outname = string.replace(outname,'.gz','')
-							print 'gunzip -c '+filename+' > '+outname+'\n'
-							os.system('gunzip -c '+filename+' > '+outname)
-						
-						filelist.append(outname)
-					##################################################################
-					### END SECTION YOU WILL HAVE TO CHANGE
-					##################################################################
-					ctime = ctime+dt.timedelta(hours=1)
-				if(len(filelist) > 0):
-					print 'found',ftype,'data in local files'
-					myPtr.fType,myPtr.dType = ftype,'dmap'
-					break
-			if(len(filelist) > 0): break
-			else:
-				print  'could not find',ftype,'data in local files'
+		try:
+			for ftype in arr:
+				print '\nLooking locally for',ftype,'files'
+				#deal with UAF naming convention
+				fnames = ['??.??.???.'+ftype+'.*']
+				if(channel == None): fnames.append('??.??.???.a.*')
+				else: fnames.append('??.??.???.'+channel+'.*')
+				for form in fnames:
+					#iterate through all of the hours in the request
+					#ie, iterate through all possible file names
+					ctime = sTime.replace(minute=0)
+					if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+					while ctime <= eTime:
+						#directory on the data server
+						##################################################################
+						### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
+						### TO MATCH YOUR DIRECTORY STRUCTURE
+						##################################################################
+						myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+						hrStr = ctime.strftime("%H")
+						dateStr = ctime.strftime("%Y%m%d")
+						#iterate through all of the files which begin in this hour
+						for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
+							outname = string.replace(filename,myDir,tmpDir)
+							#unzip the compressed file
+							if(string.find(filename,'.bz2') != -1):
+								outname = string.replace(outname,'.bz2','')
+								print 'bunzip2 -c '+filename+' > '+outname+'\n'
+								os.system('bunzip2 -c '+filename+' > '+outname)
+							else:
+								outname = string.replace(outname,'.gz','')
+								print 'gunzip -c '+filename+' > '+outname+'\n'
+								os.system('gunzip -c '+filename+' > '+outname)
+							
+							filelist.append(outname)
+						##################################################################
+						### END SECTION YOU WILL HAVE TO CHANGE
+						##################################################################
+						ctime = ctime+dt.timedelta(hours=1)
+					if(len(filelist) > 0):
+						print 'found',ftype,'data in local files'
+						myPtr.fType,myPtr.dType = ftype,'dmap'
+						break
+				if(len(filelist) > 0): break
+				else:
+					print  'could not find',ftype,'data in local files'
+		except:
+			print 'problem reading local data, perhaps you are not at VT?'
+			print 'you probably have to edit radDataRead.py'
+			print 'I will try to read from other sources'
+			src=None
 				
 	#NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
 	if((src == None or src == 'mongo') and len(filelist) == 0):
