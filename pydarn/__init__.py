@@ -18,8 +18,18 @@ This includes the following submodules:
 *******************************
 """
 
-#import dmapio 
-import radar 
-import sdio 
-import plot 
-import proc 
+try: import dmapio 
+except: 'problem importing dmapio'
+
+try: import radar 
+except: 'problem importing radar'
+
+try: import sdio 
+except: 'problem importing sdio'
+
+try: import plot 
+except: 'problem importing plot'
+
+try: import proc 
+except: 'problem importing proc'
+
