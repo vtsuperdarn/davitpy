@@ -11,7 +11,7 @@ alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r'
 
 #we need to use this cipher in order to shorten variable names on the DB
 #this allows us to save space as well as reduce transfer time
-cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd','rawflg':'rf','iqflg':'iqf'})
+cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm','rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba','scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp','mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x','tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns','noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q','gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve','w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e','acfd':'ad','xcfd':'xd','rawflg':'rf','iqflg':'iqf','seqnum':'sq','chnnum':'cm','smpnum':'sp','btnum':'bt','tatten':'ta','tnoise':'tn','toff':'to','tsze':'ts','tbadtr':'tbr','badtr':'br','mainData':'md','intData':'id','skpnum':'sk'})
 
 refArr = twoWayDict({'exflg':'fitex','acflg':'fitacf','lmflg':'lmfit','rawflg':'rawacf','iqflg':'iqdat'})
 
@@ -103,9 +103,11 @@ class baseData():
 			#check for things we dont want to save
 			if(attr=='inttus' or attr=='tus' or attr.rfind('_s') != -1): continue
 			elif(attr == 'inttsc'): 
-				print self.inttsc,self.inttus
-				aDict['it'] = self.inttsc + self.inttus*1e-6
-			elif(attr == 'tsc'): aDict['tt'] = self.tsc + self.tus*1e-6
+				try: aDict['it'] = self.inttsc + self.inttus*1e-6
+				except: aDict['it'] = None
+			elif(attr == 'tsc'): 
+				try: aDict['tt'] = self.tsc + self.tus*1e-6
+				except: aDict['tt'] = None
 			#if the value is a class, recursively convert to dict
 			elif(isinstance(val,baseData)): aDict[cipher[attr]] = val.toDbDict()
 			#otherwise, copy the value
