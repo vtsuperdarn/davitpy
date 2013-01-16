@@ -1,11 +1,3 @@
-from sqlalchemy import *
-from sqlalchemy.dialects import postgresql as pg
-from sqlalchemy import Column, Integer, String, ForeignKey, SmallInteger, CHAR
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import backref, mapper, relationship, sessionmaker
-from pydarn.sdio import *
-import numpy, pydarn, datetime
 from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 

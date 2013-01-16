@@ -1,23 +1,23 @@
 def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	"""
-	*******************************
-	PACKAGE: pydarn.io.gridIo
-	FUNCTION: readPygridRec(myFile):
-	
-	reads pygrid records from sEpoch to eEpoch into a grid structure
-	
-	INPUTS:
-		myFile: the pygrid file to read from
-		myGrid: the pydarn.proc.pygridLib.pygrid object to be filled
-		sEpoch: read times >= this time (in epoch)
-		eEpoch: read times < this time (in epoch)
-			NOTE: if eEpoch <= sEpoch, only the first record after 
-			sEpoch will be read
-	OUTPUTS:
-		outGrid: the pygrid object that has been filled
-		
-	Written by AJ 201209118
-	*******************************
+|	*******************************
+|	PACKAGE: pydarn.io.gridIo
+|	FUNCTION: readPygridRec(myFile):
+|	
+|	reads pygrid records from sEpoch to eEpoch into a grid structure
+|	
+|	INPUTS:
+|		myFile: the pygrid file to read from
+|		myGrid: the pydarn.proc.pygridLib.pygrid object to be filled
+|		sEpoch: read times >= this time (in epoch)
+|		eEpoch: read times < this time (in epoch)
+|			NOTE: if eEpoch <= sEpoch, only the first record after 
+|			sEpoch will be read
+|	OUTPUTS:
+|		outGrid: the pygrid object that has been filled
+|		
+|	Written by AJ 201209118
+|	*******************************
 	"""
 	import math,numpy,pydarn,datetime
 	
@@ -73,20 +73,20 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 	
 def writePygridRec(myFile,myGrid):
 	"""
-	*******************************
-	PACKAGE: pydarn.io.pygridIo
-	FUNCTION: writePygridRec(myFile,myGrid):
-	
-	writes a single grid record to a pygrid file
-	
-	INPUTS:
-		myFile: the pygrid file to write to
-		myGrid: the pydarn.proc.gridLib.grid object to be written
-	OUTPUTS:
-		None
-		
-	Written by AJ 20120914
-	*******************************
+|	*******************************
+|	PACKAGE: pydarn.io.pygridIo
+|	FUNCTION: writePygridRec(myFile,myGrid):
+|	
+|	writes a single grid record to a pygrid file
+|	
+|	INPUTS:
+|		myFile: the pygrid file to write to
+|		myGrid: the pydarn.proc.gridLib.grid object to be written
+|	OUTPUTS:
+|		None
+|		
+|	Written by AJ 20120914
+|	*******************************
 	"""
 	import utils,numpy
 	
@@ -180,20 +180,20 @@ def writePygridRec(myFile,myGrid):
 	
 def openPygrid(fileName,action):
 	"""
-	*******************************
-	PACKAGE: pydarn.io.pygridIo
-	FUNCTION: openPygrid(dateStr,rad,action):
-	
-	opens a pygrid file for reading or writing or appending
-	
-	INPUTS:
-		fileName: the file to open
-		action: the action to be done, e.g. 'w', 'a', etc.
-	OUTPUTS:
-		myFile: an h5py file instance
-		
-	Written by AJ 20120914
-	*******************************
+|	*******************************
+|	PACKAGE: pydarn.io.pygridIo
+|	FUNCTION: openPygrid(dateStr,rad,action):
+|	
+|	opens a pygrid file for reading or writing or appending
+|	
+|	INPUTS:
+|		fileName: the file to open
+|		action: the action to be done, e.g. 'w', 'a', etc.
+|	OUTPUTS:
+|		myFile: an h5py file instance
+|		
+|	Written by AJ 20120914
+|	*******************************
 	"""
 	import h5py
 	
@@ -203,40 +203,40 @@ def openPygrid(fileName,action):
 		
 def closePygrid(myFile):
 	"""
-	*******************************
-	PACKAGE: pydarn.proc.pygridIo
-	FUNCTION: closePygrid(dateStr,rad,action):
-	
-	closes a pygrid file
-	
-	INPUTS:
-		myFile: the file to be closed
-	OUTPUTS:
-		NONE
-		
-	Written by AJ 20120914
-	*******************************
+|	*******************************
+|	PACKAGE: pydarn.proc.pygridIo
+|	FUNCTION: closePygrid(dateStr,rad,action):
+|	
+|	closes a pygrid file
+|	
+|	INPUTS:
+|		myFile: the file to be closed
+|	OUTPUTS:
+|		NONE
+|		
+|	Written by AJ 20120914
+|	*******************************
 	"""
 	
 	myFile.close()
 	
 def locatePygridFile(dateStr,ext):
 	"""
-	*******************************
-	PACKAGE: pydarn.proc.pygridIo
-	FUNCTION: locatePygridFile(dateStr,ext):
-	
-	locates a pygrid file for the given dateStr and ext
-	
-	INPUTS:
-		dateStr: the date in the file title, eg '20110101'
-		ext: the extension in the filename, eg 'bks', 'cve', 'north', etc.
-	OUTPUTS:
-		fileName: the complete filename (including path) of the
-			pygrid file
-		
-	Written by AJ 20120919
-	*******************************
+|	*******************************
+|	PACKAGE: pydarn.proc.pygridIo
+|	FUNCTION: locatePygridFile(dateStr,ext):
+|	
+|	locates a pygrid file for the given dateStr and ext
+|	
+|	INPUTS:
+|		dateStr: the date in the file title, eg '20110101'
+|		ext: the extension in the filename, eg 'bks', 'cve', 'north', etc.
+|	OUTPUTS:
+|		fileName: the complete filename (including path) of the
+|			pygrid file
+|		
+|	Written by AJ 20120919
+|	*******************************
 	"""
 	import os,string
 	

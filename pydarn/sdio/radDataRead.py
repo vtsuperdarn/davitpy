@@ -1,10 +1,3 @@
-import os,datetime as dt,glob,math,shutil,string,time,pydarn,numpy,utils
-from utils.timeUtils import *
-from pydarn.sdio.radDataTypes import *
-import pydarn.sdio.radDataTypes
-from pydarn.dmapio import *
-from pydarn.sdio import *
-from pydarn.radar import *
 """
 |*******************************
 |MODULE: pydarn.sdio.radDataRead
@@ -70,7 +63,11 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |		
 |	Written by AJ 20130110
 	"""
-	import subprocess as sub, paramiko as p, re
+	import subprocess as sub, paramiko as p, re, string
+	import datetime as dt, os, pydarn.sdio, glob
+	from pydarn.sdio import radDataPtr
+	from pydarn.radar import network
+	from utils.timeUtils import datetimeToEpoch
 	
 	#check inputs
 	assert(isinstance(sTime,dt.datetime)), \
@@ -96,7 +93,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	if(eTime == None):
 		eTime = sTime+dt.timedelta(days=1)
 		
-	#create a datapoint object
+	#create a datapointer object
 	myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id),channel=channel,bmnum=bmnum,cp=cp)
 	
 	filelist = []
@@ -160,7 +157,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 				if(len(filelist) > 0): break
 				else:
 					print  'could not find',ftype,'data in local files'
-		except:
+		except Exception, e:
+			print e
 			print 'problem reading local data, perhaps you are not at VT?'
 			print 'you probably have to edit radDataRead.py'
 			print 'I will try to read from other sources'
@@ -291,6 +289,9 @@ def radDataReadRec(myPtr):
 |		
 |	Written by AJ 20130110
 	"""
+	from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
+		rawData, iqData, refArr, alpha
+	import pydarn, datetime as dt
 	
 	#check input
 	assert(isinstance(myPtr,radDataPtr)),\
