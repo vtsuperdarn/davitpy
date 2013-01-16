@@ -1,8 +1,8 @@
 from pydarn.sdio import *
 import datetime as dt
 
-st = dt.datetime(2011,6,3,0,0,0)
-et = dt.datetime(2011,6,3,8,0,0)
+st = dt.datetime(2011,6,3,16,0,0)
+et = dt.datetime(2011,6,3,23,0,0)
 rad='fhe'
 channel='a'
 bmnum=7

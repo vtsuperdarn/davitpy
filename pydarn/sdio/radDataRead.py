@@ -52,10 +52,10 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |		**[cp]**: the control program which you want data for.  If this is
 |			set to None, data from all cp's will be read.  default = None
 |		**[fileType]**:  The type of data you want to read.  valid inputs
-|			are: 'fitex','fitacf','lmfit','rawacf' ('iqdat' coming in the
-|			future).  if you choose a fit file format and the specified one
+|			are: 'fitex','fitacf','lmfit','rawacf','iqdat'.  
+|			if you choose a fit file format and the specified one
 |			isn't found, we will search for one of the others.  Beware:
-|			if you ask for rawacf data, these files are large and the data
+|			if you ask for rawacf/iq data, these files are large and the data
 |			transfer might take a long time.  default = 'fitex'
 |		**[filter]**: a boolean specifying whether you want the fit data to
 |			be boxcar filtered.  ONLY VALID FOR FIT.  default = False
@@ -89,8 +89,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	assert(cp == None or isinstance(cp,int)), \
 		'error, cp must be an int or None'
 	assert(fileType == 'rawacf' or fileType == 'fitacf' or \
-		fileType == 'fitex' or fileType == 'lmfit'), \
-		'error, fileType must be one of: rawacf,fitacf,fitex,lmfit'
+		fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
+		'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
 	assert(isinstance(filter,bool)), \
 		'error, filter must be True of False'
 	assert(src == None or src == 'mongo' or src == 'local' or src == 'sftp'), \
@@ -117,51 +117,57 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 
 	#FIRST, LOOK LOCALLY FOR FILES
 	if(src == None or src == 'local'):
-		for ftype in arr:
-			print '\nLooking locally for',ftype,'files'
-			#deal with UAF naming convention
-			fnames = ['??.??.???.'+ftype+'.*']
-			if(channel == None): fnames.append('??.??.???.a.*')
-			else: fnames.append('??.??.???.'+channel+'.*')
-			for form in fnames:
-				#iterate through all of the hours in the request
-				#ie, iterate through all possible file names
-				ctime = sTime.replace(minute=0)
-				if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-				while ctime <= eTime:
-					#directory on the data server
-					##################################################################
-					### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
-					### TO MATCH YOUR DIRECTORY STRUCTURE
-					##################################################################
-					myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
-					hrStr = ctime.strftime("%H")
-					dateStr = ctime.strftime("%Y%m%d")
-					#iterate through all of the files which begin in this hour
-					for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
-						outname = string.replace(filename,myDir,tmpDir)
-						#unzip the compressed file
-						if(string.find(filename,'.bz2') != -1):
-							outname = string.replace(outname,'.bz2','')
-							print 'bunzip2 -c '+filename+' > '+outname+'\n'
-							os.system('bunzip2 -c '+filename+' > '+outname)
-						else:
-							outname = string.replace(outname,'.gz','')
-							print 'gunzip -c '+filename+' > '+outname+'\n'
-							os.system('gunzip -c '+filename+' > '+outname)
-						
-						filelist.append(outname)
-					##################################################################
-					### END SECTION YOU WILL HAVE TO CHANGE
-					##################################################################
-					ctime = ctime+dt.timedelta(hours=1)
-				if(len(filelist) > 0):
-					print 'found',ftype,'data in local files'
-					myPtr.fType,myPtr.dType = ftype,'dmap'
-					break
-			if(len(filelist) > 0): break
-			else:
-				print  'could not find',ftype,'data in local files'
+		try:
+			for ftype in arr:
+				print '\nLooking locally for',ftype,'files'
+				#deal with UAF naming convention
+				fnames = ['??.??.???.'+ftype+'.*']
+				if(channel == None): fnames.append('??.??.???.a.*')
+				else: fnames.append('??.??.???.'+channel+'.*')
+				for form in fnames:
+					#iterate through all of the hours in the request
+					#ie, iterate through all possible file names
+					ctime = sTime.replace(minute=0)
+					if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+					while ctime <= eTime:
+						#directory on the data server
+						##################################################################
+						### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
+						### TO MATCH YOUR DIRECTORY STRUCTURE
+						##################################################################
+						myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+						hrStr = ctime.strftime("%H")
+						dateStr = ctime.strftime("%Y%m%d")
+						#iterate through all of the files which begin in this hour
+						for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
+							outname = string.replace(filename,myDir,tmpDir)
+							#unzip the compressed file
+							if(string.find(filename,'.bz2') != -1):
+								outname = string.replace(outname,'.bz2','')
+								print 'bunzip2 -c '+filename+' > '+outname+'\n'
+								os.system('bunzip2 -c '+filename+' > '+outname)
+							else:
+								outname = string.replace(outname,'.gz','')
+								print 'gunzip -c '+filename+' > '+outname+'\n'
+								os.system('gunzip -c '+filename+' > '+outname)
+							
+							filelist.append(outname)
+						##################################################################
+						### END SECTION YOU WILL HAVE TO CHANGE
+						##################################################################
+						ctime = ctime+dt.timedelta(hours=1)
+					if(len(filelist) > 0):
+						print 'found',ftype,'data in local files'
+						myPtr.fType,myPtr.dType = ftype,'dmap'
+						break
+				if(len(filelist) > 0): break
+				else:
+					print  'could not find',ftype,'data in local files'
+		except:
+			print 'problem reading local data, perhaps you are not at VT?'
+			print 'you probably have to edit radDataRead.py'
+			print 'I will try to read from other sources'
+			src=None
 				
 	#NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
 	if((src == None or src == 'mongo') and len(filelist) == 0):
@@ -207,7 +213,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 						oldyr = ctime.strftime("%Y")
 					#create a regular expression to find files of this day, at this hour
 					regex = re.compile(dateStr+'.'+hrStr+form)
-					#go thorugh all the fiels in the directory
+					#go thorugh all the files in the directory
 					for aFile in allFiles:
 						#if we have a file match between a file and our regex
 						if(regex.match(aFile)): 
@@ -346,7 +352,7 @@ def radDataReadRec(myPtr):
 				myBeam.fit.updateValsFromDict(dfile)
 				myBeam.prm.updateValsFromDict(dfile)
 				myBeam.rawacf.updateValsFromDict(dfile)
-				#myBeam.iqdat.updateValsFromDict(dfile)
+				myBeam.iqdat.updateValsFromDict(dfile)
 				myBeam.fType = myPtr.fType
 				setattr(myBeam,refArr[myPtr.fType],1)
 				if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):

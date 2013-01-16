@@ -76,6 +76,9 @@ class baseData():
 			elif(key == 'it'):
 				self.inttsc = int(val)
 				self.inttus = val-int(val)
+			elif(key == 'tt'):
+				self.tsc = int(val)
+				self.tus = val-int(val)
 			#if the value is a dictionary, make a recursive call
 			elif(isinstance(val,dict)): 
 				if(cipher[key] == 'fitex' or cipher[key] == 'lmfit' or cipher[key] == 'fitacf'):
@@ -98,8 +101,9 @@ class baseData():
 		aDict = {}
 		for attr, val in self.__dict__.iteritems():
 			#check for things we dont want to save
-			if(attr=='inttus' or attr.rfind('_s') != -1): continue
+			if(attr=='inttus' or attr=='tus' or attr.rfind('_s') != -1): continue
 			elif(attr == 'inttsc'): aDict['it'] = self.inttsc + self.inttus*1e-6
+			elif(attr == 'tsc'): aDict['tt'] = self.tsc + self.tus*1e-6
 			#if the value is a class, recursively convert to dict
 			elif(isinstance(val,baseData)): aDict[cipher[attr]] = val.toDbDict()
 			#otherwise, copy the value
@@ -148,12 +152,42 @@ class baseData():
 			elif(attr == 'acfd' or attr == 'xcfd'):
 				if(aDict.has_key(attr)): 
 					setattr(self,attr,[])
-					for i in range(0,self.parent.prm.nrang):
+					for i in range(self.parent.prm.nrang):
 						rec = []
-						for j in range(0,self.parent.prm.mplgs):
+						for j in range(self.parent.prm.mplgs):
 							samp = []
-							for k in range(0,2):
+							for k in range(2):
 								samp.append(aDict[attr][(i*self.parent.prm.mplgs+j)*2+k])
+							rec.append(samp)
+						getattr(self, attr).append(rec)
+				else: setattr(self,attr,[])
+				continue
+			elif(attr == 'mainData'):
+				if(aDict.has_key('data')): 
+					if(len(aDict['data']) == aDict['smpnum']*aDict['seqnum']*2*2): fac = 2
+					else: fac = 1
+					setattr(self,attr,[])
+					for i in range(aDict['seqnum']):
+						rec = []
+						for j in range(aDict['smpnum']):
+							samp = []
+							for k in range(2):
+								samp.append(aDict['data'][(i*fac*aDict['smpnum']+j)*2+k])
+							rec.append(samp)
+						getattr(self, attr).append(rec)
+				else: setattr(self,attr,[])
+				continue
+			elif(attr == 'intData'):
+				if(aDict.has_key('data')): 
+					if(len(aDict['data']) == aDict['smpnum']*aDict['seqnum']*2*2): fac = 2
+					else: continue
+					setattr(self,attr,[])
+					for i in range(aDict['seqnum']):
+						rec = []
+						for j in range(aDict['smpnum']):
+							samp = []
+							for k in range(2):
+								samp.append(aDict['data'][((i*fac+1)*aDict['smpnum']+j)*2+k])
 							rec.append(samp)
 						getattr(self, attr).append(rec)
 				else: setattr(self,attr,[])
@@ -182,7 +216,7 @@ class beamData(baseData):
 |		prm -- a prmData object with oper. params
 |		fit -- a fitData object with the fitted params
 |		rawacf -- a rawData object with radar rawacf data
-|		*iq -- radar iqdat data (not yet implemented)
+|		iqdat -- radar iqdat data (not yet implemented)
 |		exflg -- a flag indicating the presence of fitex data.
 |			this is useful for database operation, can
 |			generally be ignored by users
@@ -199,8 +233,6 @@ class beamData(baseData):
 |			this is useful for database operation, can
 |			generally be ignored by users
 |		fType: the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
-|
-|		* = not implemented yet
 |
 |	DECLARATION: 
 |		myBeam = pydarn.sdio.radBeam()
@@ -227,7 +259,7 @@ class beamData(baseData):
 		self.fit = fitData()
 		self.rawacf = rawData(parent=self)
 		self.prm = prmData()
-		#self.iqdat = iqData()
+		self.iqdat = iqData()
 		self.fType = None
 		
 		#if we are intializing from an object, do that
@@ -369,19 +401,15 @@ class fitData(baseData):
 class rawData(baseData):
 	"""
 |	*******************************
-|	CLASS pydarn.sdio.rawData
+|	**CLASS**: pydarn.sdio.rawData
 |
-|	a class to contain the fit data from a radar beam sounding
+|	**PURPOSE**: a class to contain the rawacf data from a radar beam sounding
 |	
-|	ATTRS:
-|		acf -- acf data as a list.  the size is nrang*mplgs*2.
-|			the format is [i00,q00,i01,q01,i02,q02,...] where i
-|			is the real part of the acf, q is the imaginary,
-|			the first index digit references the range gate,
-|			and the second digit references the lag number
+|	**ATTRS**:
+|		acf -- acf data as a 3-d list.  the size is [nrang][mplgs][2]
 |		xcf -- xcf data, same format as acf data
 |	
-|	DECLARATION: 
+|	**DECLARATION**: 
 |		myRaw = pydarn.sdio.rawData()
 |		
 |	Written by AJ 20121130
@@ -396,4 +424,56 @@ class rawData(baseData):
 		
 		if(rawDict != None): self.updateValsFromDict(rawDict)
 		
+class iqData(baseData):
+	"""
+|	*******************************
+|	**CLASS**: pydarn.sdio.iqData
+|
+|	**PURPOSE**: a class to contain the iq data from a radar beam sounding
+|	**NOTE**: I'm not sure what all of the attributes mean
+|
+|	**ATTRS**:
+|		chnnum -- number of channels?
+|		smpnum -- number of samples per beam sounding
+|		skpnum -- number of samples to skip at the 
+|			beginning of a pulse sequence?
+|		seqnum -- number of pulse sequences
+|		tbadtr -- time of bad tr samples?
+|		tval -- ?
+|		atten -- ?
+|		noise -- ?
+|		offset -- ?
+|		size -- ?
+|		badtr -- bad tr samples?
+|		mainData -- the actual iq samples (main array)
+|			seqnum x smpnum x 2 list
+|		intData -- the actual iq samples (interferometer)
+|			seqnum x smpnum x 2 list
+|	
+|	**DECLARATION**: 
+|		myIq = pydarn.sdio.iqData()
+|		
+|	Written by AJ 20130116
+|	*******************************
+	"""
+
+	#initialize the struct
+	def __init__(self, iqDict=None, parent=None):
+		self.seqnum = None
+		self.chnnum = None
+		self.smpnum = None
+		self.skpnum = None
+		self.btnum = None
+		self.tsc = None
+		self.tus = None
+		self.tatten = None
+		self.tnoise = None
+		self.toff = None
+		self.tsze = None
+		self.tbadtr = None
+		self.badtr = None
+		self.mainData = []
+		self.intData = []
+		
+		if(iqDict != None): self.updateValsFromDict(iqDict)
         

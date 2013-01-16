@@ -202,7 +202,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None, cp=N
 |		**[cp]**: the control program for which to read data.  if this is None,
 |			data from all control programs will be read.  default = None
 |		**[fileType]**: the filetype for which to read data.  valid inputs are:
-|			'fitex' [default], 'fitacf', 'lmfit', 'rawacf'.  if a fit file 
+|			'fitex' [default], 'fitacf', 'lmfit', 'rawacf', 'iqdat'.  if a fit file 
 |			type is specified but data is not found, the program will search for another
 |			fit type.
 |		**[exactFlg]**: a flag to indicate the we only want a record with EXACTLY
@@ -293,7 +293,7 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
 |		**[time]**: the time range to perform the operation in REDUCED
 |			hhmm format, ie [28,652] instead of [0028,0652].  default = [0,2400]
 |		**[fileType]**: the file type for which to perform the operation.
-|			valid inputs are 'fitex' [default], 'fitacf', 'lmfit', 'rawacf' 
+|			valid inputs are 'fitex' [default], 'fitacf', 'lmfit', 'rawacf' , 'iqdat'
 |		**[vb]**: a flag for verbose output.  default = 0
 |
 |	**OUTPUTS**:
@@ -348,6 +348,8 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
 	beams.ensure_index(cipher['exflg'])
 	beams.ensure_index(cipher['acflg'])
 	beams.ensure_index(cipher['lmflg'])
+	beams.ensure_index(cipher['iqflg'])
+	beams.ensure_index(cipher['rawflg'])
 	
 	#go until the end of file
 	while(dmapBeam != None):
