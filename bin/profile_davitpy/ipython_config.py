@@ -11,7 +11,8 @@ c.InteractiveShellApp.exec_lines = [
 	'%autoreload 2',
 	'import pydarn',
 	'import utils',
-	'import models'
+	'import models',
+	'from datetime import *'
 ]
 # c.InteractiveShellApp.exec_files = []
 c.InteractiveShell.autoindent = True
