@@ -335,7 +335,7 @@ OUTPUTS:
 	import numpy
 	
 	# If all the input parameters (keywords) are set to 0, show a warning, and default to fint distance/azimuth/elevation
-	if not dist and not el and not az:
+	if dist is None and el is None and az is None:
 		assert None not in [distLat, distLon, distAlt], 'calcDistPnt: Warning: Not enough keywords.'
 
 		# Convert point of origin from geodetic to geocentric
@@ -352,7 +352,7 @@ OUTPUTS:
 		(lat, lon, Re, az, el) = geodToGeocAzEl(gcLat, gcLon, gaz, gel, into='geod')
 		dist = sqrt( dX**2 + dY**2 + dZ**2 )
 
-	elif not distLat and not distLon and not distAlt:
+	elif distLat is None and distLon is None and distAlt is None:
 		assert None not in [dist, el, az], 'calcDistPnt: Warning: Not enough keywords.'
 
 		# convert pointing azimuth and elevation to geocentric
@@ -368,7 +368,7 @@ OUTPUTS:
 		distAlt = rho - Re
 		distRe = Re
 
-	elif not dist and not distAlt and not az:
+	elif dist is None and distAlt is None and az is None:
 		assert None not in [distLat, distLon, el], 'calcDistPnt: Warning: Not enough keywords.'
 
 		# Convert point of origin from geodetic to geocentric
@@ -394,7 +394,7 @@ OUTPUTS:
 		distAlt -= distRe - origRe
 		dist = Dref*numpy.sin(theta)/numpy.cos(theta+numpy.radians(gel))
 
-	elif not distLat and not distLon and not dist:
+	elif distLat is None and distLon is None and dist is None:
 		assert None not in [distAlt, el, az], 'calcDistPnt: Warning: Not enough keywords.'
 
 		# convert pointing azimuth and elevation to geocentric
