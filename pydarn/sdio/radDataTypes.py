@@ -102,7 +102,9 @@ class baseData():
 		for attr, val in self.__dict__.iteritems():
 			#check for things we dont want to save
 			if(attr=='inttus' or attr=='tus' or attr.rfind('_s') != -1): continue
-			elif(attr == 'inttsc'): aDict['it'] = self.inttsc + self.inttus*1e-6
+			elif(attr == 'inttsc'): 
+				print self.inttsc,self.inttus
+				aDict['it'] = self.inttsc + self.inttus*1e-6
 			elif(attr == 'tsc'): aDict['tt'] = self.tsc + self.tus*1e-6
 			#if the value is a class, recursively convert to dict
 			elif(isinstance(val,baseData)): aDict[cipher[attr]] = val.toDbDict()
@@ -148,6 +150,14 @@ class baseData():
 						else: self.channel = alpha[aDict['channel']-1]
 					else: self.channel = aDict['channel']
 				else: self.channel = 'a'
+				continue
+			elif(attr == 'inttus'):
+				if(aDict.has_key('intt.us')): 
+					self.inttus = aDict['intt.us']
+				continue
+			elif(attr == 'inttsc'):
+				if(aDict.has_key('intt.sc')): 
+					self.inttsc = aDict['intt.sc']
 				continue
 			elif(attr == 'acfd' or attr == 'xcfd'):
 				if(aDict.has_key(attr)): 
