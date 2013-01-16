@@ -1,13 +1,10 @@
 import os,datetime as dt,glob,math,shutil,string,time,pydarn,numpy,utils
 from utils.timeUtils import *
-<<<<<<< HEAD
 from pydarn.sdio.radDataTypes import *
 import pydarn.sdio.radDataTypes
 from pydarn.dmapio import *
-=======
 from pydarn.sdio import *
 from pydarn.radar import *
->>>>>>> ajdb
 """
 |*******************************
 |MODULE: pydarn.sdio.radDataRead
