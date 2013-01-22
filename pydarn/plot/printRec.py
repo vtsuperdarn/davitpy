@@ -1,12 +1,12 @@
 """
-|*******************************
-|MODULE: pydarn.plot.printRec
-|*******************************
-|
-|This module contains the following functions:
-|
-|  fitPrintRec
-|	
+*******************************
+MODULE: pydarn.plot.printRec
+*******************************
+
+This module contains the following functions:
+
+	fitPrintRec
+
 """
 
 def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
