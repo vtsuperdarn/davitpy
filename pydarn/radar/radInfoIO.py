@@ -31,19 +31,20 @@ Reads radar.dat file
 (path defaults to RST environment variable SD_RADAR)
 	"""
 	import shlex
-	import os
+	import os, sys
 	from datetime import datetime
 	from utils import parseDate
 	
 	# Read file
 	try:
-		file_net = open(os.environ['SD_RADAR'], 'r')
+		if path: pathOpen = os.path.join(path, 'radar.dat')
+		else: pathOpen = os.environ['SD_RADAR']
+		file_net = open(pathOpen, 'r')
 		data = file_net.readlines()
 		file_net.close()
-		err = 0
 	except:
-		print 'radarRead: cannot read '+os.environ['SD_RADAR']
-		err = -1
+		print 'radarRead: cannot read {}: {}'.format(pathOpen,
+													 sys.exc_info()[0])
 		return None
 	
 	# Initialize placeholder dictionary of lists
@@ -90,11 +91,14 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name
 	
 	# Read hardware file FNAME
 	try:
-		file_hdw = open(os.environ['SD_HDWPATH']+'/'+fname, 'r')
+		if path: pathOpen = os.path.join(path, fname)
+		else: pathOpen = os.path.join(os.environ['SD_HDWPATH'], fname)
+		file_hdw = open(pathOpen, 'r')
 		data = file_hdw.readlines()
 		file_hdw.close()
-	except IOError as errTmp:
-		print 'hdwRead: cannot read '+os.environ['SD_HDWPATH']+'/'+fname+': {}'.format(errTmp.strerror)
+	except:
+		print 'hdwRead: cannot read {}: {}'.format(pathOpen, 
+												   sys.exc_info()[0])
 		return
 	
 	# Site placeholder

@@ -15,3 +15,4 @@ This includes the following submodules:
 """
 
 import kp
+import ampere
