@@ -153,6 +153,18 @@ class baseData():
 				if(aDict.has_key('intt.sc')): 
 					self.inttsc = aDict['intt.sc']
 				continue
+			elif(attr == 'noisesky'):
+				if(aDict.has_key('noise.sky')): 
+					self.noisesky = aDict['noise.sky']
+				continue
+			elif(attr == 'noisesearch'):
+				if(aDict.has_key('noise.search')): 
+					self.noisesearch = aDict['noise.search']
+				continue
+			elif(attr == 'noisemean'):
+				if(aDict.has_key('noise.mean')): 
+					self.noisemean = aDict['noise.mean']
+				continue
 			elif(attr == 'acfd' or attr == 'xcfd'):
 				if(aDict.has_key(attr)): 
 					setattr(self,attr,[])
