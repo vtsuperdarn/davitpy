@@ -32,7 +32,6 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
 |		fitPrintRec(datetime(2011,1,1,1,0),datetime(2011,1,1,2,0),'bks','myoutfile.txt',summ=1)
 |		
 |	Written by AJ 20121003
-
 	"""
 	import pydarn
 	
@@ -45,7 +44,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
 	
 	radar = pydarn.radar.network().getRadarByCode(rad)
 	site = radar.getSiteByDate(myData.time)
-	myFov = pydarn.radar.radFov.fov(site=site,rsep=myData.prm.rsep)
+	myFov = pydarn.radar.radFov.fov(site=site,rsep=myData.prm.rsep,ngates=myData.prm.nrang)
 	
 	
 	f = open(outfile, 'w')
