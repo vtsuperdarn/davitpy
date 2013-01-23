@@ -58,7 +58,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |			in order to actually read the data.
 |		
 |	**EXAMPLES**:
-|		myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
+		>>> myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
 |												bmnum=7,cp=153,fileType='fitex',filter=False, src=None):
 |		
 |	Written by AJ 20130110
