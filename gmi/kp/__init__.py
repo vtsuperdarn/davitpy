@@ -17,6 +17,6 @@ This includes the following functions:
 *******************************
 """
 
-from kpIo import *
-from kpDay import *
+import kp
+from kp import *
 

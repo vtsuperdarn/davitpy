@@ -175,7 +175,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
 						}
 						else if(a->type==DATACHAR)
 						{
-							PyObject *myNum = Py_BuildValue("c", a->data.cptr[i]);
+							PyObject *myNum = Py_BuildValue("i", a->data.cptr[i]);
 							PyList_Append(myList,myNum);
 							Py_CLEAR(myNum);
 						}

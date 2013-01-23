@@ -58,7 +58,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |			in order to actually read the data.
 |		
 |	**EXAMPLES**:
-|		myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
+		>>> myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
 |												bmnum=7,cp=153,fileType='fitex',filter=False, src=None):
 |		
 |	Written by AJ 20130110
@@ -324,6 +324,8 @@ def radDataReadRec(myPtr):
 				myBeam.dbDictToObj(rec)
 				myBeam.fType = myPtr.fType
 				setattr(myBeam,refArr[myPtr.fType],1)
+				if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
+					if(myBeam.fit.slist == None): myBeam.fit.slist = []
 				return myBeam
 		#check if we're reading from a dmap file
 		elif(myPtr.dType == 'dmap'):
@@ -355,6 +357,7 @@ def radDataReadRec(myPtr):
 				setattr(myBeam,refArr[myPtr.fType],1)
 				if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
 					setattr(myBeam,myPtr.fType,myBeam.fit)
+					if(myBeam.fit.slist == None): myBeam.fit.slist = []
 				return myBeam
 		else: 
 			print 'error, unrecognized data type'

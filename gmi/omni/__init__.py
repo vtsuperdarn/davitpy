@@ -1,28 +1,17 @@
 # Overall module for gmi (Geo Magnetic Indices)
 """
 *******************************
-            GMI
+            OMNI
 *******************************
-Module with libraries for dealing with gmi
+Module with libraries for dealing with omni
 
 This includes the following submodules:
-	kp
-	
-	ampere
-
 	omni
+		omni index tools
+
 
 *******************************
 """
-
-try: import kp
-except Exception,e: print e
-
-try: from kp import *
-except Exception,e: print e
-
-try: import ampere
-except Exception,e: print e
 
 try: import omni
 except Exception,e: print e
