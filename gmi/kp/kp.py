@@ -23,7 +23,7 @@ class kpDay:
 		* **date** (datetime): a python datetime object identifying which day these data are for
 		* **kp** (list): a list of the 8 3-hour kp values fora single day.  The values are in string form, e.g. '3-', '7+', etc.
 		* **kpSum** (int): the sum of the 8 3-hour kp averages
-		* **ap** (list): a list of the 8 3-hour ap values fora single day.  The values are in string form, e.g. '3-', '7+', etc.
+		* **ap** (list): a list of the 8 3-hour ap values fora single day.
 		* **apMean** (int): the mean of the 8 3-hour ap averages
 		* **sunspot** (int): the international sunspot number
 		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
@@ -35,12 +35,15 @@ class kpDay:
 		* :func:`parseDb`
 		* :func:`toDbDict`
 		* :func:`parseFtp`
-	Example:
+	**Example**:
 		>>> emptyKpObj = gmi.kp.kpDay()
+		
+	written by AJ, 20130123
 	"""
 	def parseDb(self,dbDict):
 		"""This method is used to parse a dictionary of kp data from the mongodb into a :class:`kpDay` object.  In general, users will not need to use this.
 		
+		**Belongs to**: :class:`kpDay`
 		**Args**: 
 			* **dbDict** (dict): the dictionary from the mongodb
 		**Returns**:
@@ -69,6 +72,7 @@ class kpDay:
 	def toDbDict(self):
 		"""This method is used to convert a :class:`kpDay` object into a mongodb kp data dictionary.  In general, users will not need to worry about this
 		
+		**Belongs to**: :class:`kpDay`
 		**Args**: 
 			* Nothing.
 		**Returns**:
@@ -96,6 +100,7 @@ class kpDay:
 	def parseFtp(self,line,yr):
 		"""This method is used to convert a line of kp data read from the GFZ-Potsdam FTP site into a :class:`kpDay` object.  In general, users will not need to worry about this.
 		
+		**Belongs to**: :class:`kpDay`
 		**Args**: 
 			* **line** (str): the ASCII line from the FTP server
 			* **yr**: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year.  y2k much?
@@ -130,6 +135,7 @@ class kpDay:
 	def __init__(self, ftpLine=None, year=None, dbDict=None):
 		"""the intialization fucntion for a :class:`kpDay` object.  In general, users will not need to worry about this.
 		
+		**Belongs to**: :class:`kpDay`
 		**Args**: 
 			* [**ftpLine**] (str): an ASCII line from the FTP server, must be provided in conjunction with year.  if this is provided, the object is initialized from it.
 			* [**year**]: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year
@@ -260,6 +266,10 @@ def readKpFtp(sTime, eTime=None):
 		>>> import datetime as dt
 		>>> kpList = gmi.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
 		
+		.. warning::
+
+			You should not be using this function.  use readKp instead.
+			
 	written by AJ, 20130123
 	"""
 	from ftplib import FTP
