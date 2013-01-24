@@ -292,6 +292,7 @@ def radDataReadRec(myPtr):
 	from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
 		rawData, iqData, refArr, alpha
 	import pydarn, datetime as dt
+	from pydarn.sdio.radDataTypes import cipher
 	
 	#check input
 	assert(isinstance(myPtr,radDataPtr)),\
