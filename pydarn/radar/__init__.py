@@ -372,7 +372,7 @@ Object string representation
 					\nalt: {3:6.2f} \
 					\nboresite: {4:5.2f} \
 					\nbmsep: {5:5.2f} \
-					\nvdir: {6:3.1f} \
+					\nvdir: {6} \
 					\natten: {7:5.2f} \
 					\ntdiff: {8:6.4f} \
 					\nphidiff: {9:3.1f} \
