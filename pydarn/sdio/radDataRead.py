@@ -12,14 +12,14 @@
 |*******************************
 """
 
-def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filter=False, src=None):
+def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filtered=False, src=None):
 	"""
 |	*******************************
 |	**PACKAGE**: pydarn.sdio.radDataRead
 |
 |	**FUNCTION**: radDataOpen(sTime,rad,[eTime=None],[channel=None],
 |														[bmnum=None],[cp=None],[fileType='fitex'],
-|														[filter=FALSE], [src=None]):
+|														[filtered=FALSE], [src=None]):
 |
 |	**PURPOSE**: establishes a pipeline through which 
 |		we can read radar data.  first it tries the mongodb,
@@ -47,7 +47,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |			isn't found, we will search for one of the others.  Beware:
 |			if you ask for rawacf/iq data, these files are large and the data
 |			transfer might take a long time.  default = 'fitex'
-|		**[filter]**: a boolean specifying whether you want the fit data to
+|		**[filtered]**: a boolean specifying whether you want the fit data to
 |			be boxcar filtered.  ONLY VALID FOR FIT.  default = False
 |		**[src]**: the source of the data.  valid inputs are 'mongo'
 |			'local' 'sftp'.  if this is set to None, it will try all
@@ -59,7 +59,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 |		
 |	**EXAMPLES**:
 		>>> myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
-|												bmnum=7,cp=153,fileType='fitex',filter=False, src=None):
+|												bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
 |		
 |	Written by AJ 20130110
 	"""
@@ -85,8 +85,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	assert(fileType == 'rawacf' or fileType == 'fitacf' or \
 		fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
 		'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
-	assert(isinstance(filter,bool)), \
-		'error, filter must be True of False'
+	assert(isinstance(filtered,bool)), \
+		'error, filtered must be True of False'
 	assert(src == None or src == 'mongo' or src == 'local' or src == 'sftp'), \
 		'error, src must be one of None,local,mongo,sftp'
 		
@@ -252,7 +252,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 			os.system('rm '+filename)
 			
 		#filter(if desired) and open the file
-		if(~filter): myPtr.ptr = open(tmpName,'r')
+		if(not filtered): myPtr.ptr = open(tmpName,'r')
 		else:
 			print 'fitexfilter '+tmpName+' > '+tmpName+'f'
 			os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
@@ -297,6 +297,9 @@ def radDataReadRec(myPtr):
 	#check input
 	assert(isinstance(myPtr,radDataPtr)),\
 		'error, input must be of type radDataPtr'
+	if(myPtr.ptr == None):
+		print 'error, your pointer does not point to any data'
+		return None
 	
 	myBeam = beamData()
 	
