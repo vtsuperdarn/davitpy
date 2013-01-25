@@ -1,67 +1,39 @@
 """
-|*******************************
-|MODULE: pydarn.sdio.radDataRead
-|*******************************
-|
-|This module contains the following functions:
-|
-|	radDataOpen
-|  
-|	radDataReadRec  
-|	
-|*******************************
+.. module:: radDataRead
+   :synopsis: A module for reading radar data
+
+.. moduleauthor:: AJ, 20130110
+
+************************************
+**Module**: pydarn.sdio.radDataRead
+************************************
+
+**Functions**:
+	* :func:`radDataOpen`
+	* :func:`radDataReadRec`
 """
 
 def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filtered=False, src=None):
-	"""
-|	*******************************
-|	**PACKAGE**: pydarn.sdio.radDataRead
-|
-|	**FUNCTION**: radDataOpen(sTime,rad,[eTime=None],[channel=None],
-|														[bmnum=None],[cp=None],[fileType='fitex'],
-|														[filtered=FALSE], [src=None]):
-|
-|	**PURPOSE**: establishes a pipeline through which 
-|		we can read radar data.  first it tries the mongodb,
-|		then it tries to find local files, and lastly it 
-|		sftp's over to the VT data server.
-|
-|	**INPUTS**:
-|		**sTime**: a datetime object specifying the beginning time
-|			for which you want data
-|		**rad**: the 3-letter radar code for which you want data
-|		**[eTime]**: a dateTime object specifying the last time that
-|			you want data for.  if this is set to None, it will be 
-|			set to 1 day after sTime.  default = None
-|		**[channel]**: the 1-letter code for what channel you want
-|			data from, eg 'a','b',...  if this is set to None,
-|			data from ALL channels will be read. default = None
-|		**[bmnum]**: the beam number which you want data for.  If
-|			this is set to None, data from all beams will be read.
-|			default = None
-|		**[cp]**: the control program which you want data for.  If this is
-|			set to None, data from all cp's will be read.  default = None
-|		**[fileType]**:  The type of data you want to read.  valid inputs
-|			are: 'fitex','fitacf','lmfit','rawacf','iqdat'.  
-|			if you choose a fit file format and the specified one
-|			isn't found, we will search for one of the others.  Beware:
-|			if you ask for rawacf/iq data, these files are large and the data
-|			transfer might take a long time.  default = 'fitex'
-|		**[filtered]**: a boolean specifying whether you want the fit data to
-|			be boxcar filtered.  ONLY VALID FOR FIT.  default = False
-|		**[src]**: the source of the data.  valid inputs are 'mongo'
-|			'local' 'sftp'.  if this is set to None, it will try all
-|			possibilites sequentially.  default = None
-|	**OUTPUTS**:
-|		**myPtr**: a radDataPtr object which contains a link to the data
-|			to be read.  this can then be passed to radDataReadRec
-|			in order to actually read the data.
-|		
-|	**EXAMPLES**:
-		>>> myPtr = radDataOpen(aDatetime,'bks',eTime=anotherDatetime,channel='a',
-|												bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-|		
-|	Written by AJ 20130110
+	"""A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
+
+	**Args**:
+		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the beginning time for which you want data
+		* **rad** (str): the 3-letter radar code for which you want data
+		* **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): the last time that you want data for.  if this is set to None, it will be set to 1 day after sTime.  default = None
+		* **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',...  if this is set to None, data from ALL channels will be read. default = None
+		* **[bmnum]** (int): the beam number which you want data for.  If this is set to None, data from all beams will be read. default = None
+		* **[cp]** (int): the control program which you want data for.  If this is set to None, data from all cp's will be read.  default = None
+		* **[fileType]** (str):  The type of data you want to read.  valid inputs are: 'fitex','fitacf','lmfit','rawacf','iqdat'.   if you choose a fit file format and the specified one isn't found, we will search for one of the others.  Beware: if you ask for rawacf/iq data, these files are large and the data transfer might take a long time.  default = 'fitex'
+		* **[filtered]** (boolean): a boolean specifying whether you want the fit data to be boxcar filtered.  ONLY VALID FOR FIT.  default = False
+		* **[src]** (str): the source of the data.  valid inputs are 'mongo' 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
+	**Returns**:
+		* **myPtr** (:class:`radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
+		
+	**Example**:
+		>>> import datetime as dt
+		>>> myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+		
+	Written by AJ 20130110
 	"""
 	import subprocess as sub, paramiko as p, re, string
 	import datetime as dt, os, pydarn.sdio, glob
@@ -267,27 +239,22 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 		return None
 	
 def radDataReadRec(myPtr):
-	"""
-|	*******************************
-|	**PACKAGE**: pydarn.sdio.radDataRead
-|
-|	**FUNCTION**: radDataReadRec(myPtr)
-|
-|	**PURPOSE**: reads a single record of radar data
-|	**NOTE**: to use this, you must first open a connection with radDataOpen 
-|
-|	**INPUTS**:
-|		**myPtr**: a pydarn.sdio.radDataTypes.radDataPtr object.  this
-|			contains the connection to the data we are after
-|	**OUTPUTS**:
-|		**myBeam**: a pydarn.sdio.radDataTypes.beamData object, filled
-|			with the data we are after
-|		**NOTE**: will return None when finished reading
-|		
-|	EXAMPLES:
-|		myBeam = radDataReadRec(myPtr)
-|		
-|	Written by AJ 20130110
+	"""A function to read a single record of radar data from a :class:`radDataTypes.radDataPtr` object
+	
+	.. note::
+		to use this, you must first create a :class:`radDataTypes.radDataPtr` object with :func:`radDataOpen` 
+
+	**Args**:
+		* **myPtr** (:class:`radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+	**Returns**:
+		* **myBeam** (:class:`radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
+		
+	**Example**:
+		>>> import datetime as dt
+		>>> myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+		>> myBeam = radDataReadRec(myPtr)
+		
+	Written by AJ 20130110
 	"""
 	from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
 		rawData, iqData, refArr, alpha
