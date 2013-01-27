@@ -20,6 +20,12 @@ then
 	echo "export PATH=\${DAVITPY}/bin:\${PATH}" >> ~/.bashrc
 	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
 fi
+# Set path to DAVITPY
+if [ "" == "${PYTHONPATH}" ]
+then
+	echo "export PTHONPATH=$PYTHONPATH:$DAVITPY" >> ~/.bashrc
+	echo "You can now check ~/.bash_profile to make sure the path has been updated, then restart your terminal."
+fi
 # Set RSTPATH
 if [ "" == "${RSTPATH}" ]
 then
