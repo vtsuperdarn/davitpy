@@ -20,15 +20,14 @@ class kpDay:
 	"""a class to represent a day of kp data.  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
 	
 	**Members**: 
-		* **date** (datetime): a python datetime object identifying which day these data are for
+		* **date** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which day these data are for
 		* **kp** (list): a list of the 8 3-hour kp values fora single day.  The values are in string form, e.g. '3-', '7+', etc.
 		* **kpSum** (int): the sum of the 8 3-hour kp averages
 		* **ap** (list): a list of the 8 3-hour ap values fora single day.
 		* **apMean** (int): the mean of the 8 3-hour ap averages
 		* **sunspot** (int): the international sunspot number
 		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
-	.. warning::
-
+	.. note::
 		If any of the members have a value of None, this means that they could not be read for that specific date
    
 	**Methods**:
@@ -165,8 +164,8 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 	"""This function reads kp data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the GFZ ftp server using :func:`readKpFtp`
 	
 	**Args**: 
-		* [**sTime**] (datetime or None): the earliest time you want data for.  if this is None, start time will be the earliest record found
-		* [**eTime**] (datetime or None): the latest time you want data for.  if this is None, end Time will be latest record found
+		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for.  if this is None, start time will be the earliest record found
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be latest record found
 		* [**kpMin**] (int or None): specify this to only return data from dates with a 3-hour kp value of minimum kpMin.  if this is none, it will be ignored.
 		* [**apMin**] (int or None): specify this to only return data from dates with a 3-hour ap value of minimum apMin.  if this is none, it will be ignored.
 		* [**kpSum**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with kpSum values in the range [a,b] will be returned.  if this is None, it will be ignored.
@@ -258,8 +257,8 @@ def readKpFtp(sTime, eTime=None):
 	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection.  In general, you should not use this. Use the general function :func:`readKp` instead.  This cannot read across year boundaries.
 	
 	**Args**: 
-		* **sTime** (datetime): the earliest time you want data for
-		* [**eTime**] (datetime or None): the latest time you want data for.  if this is None, eTime will be the end of the year of sTime
+		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be the end of the year of sTime
 	**Returns**:
 		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
 	**Example**:

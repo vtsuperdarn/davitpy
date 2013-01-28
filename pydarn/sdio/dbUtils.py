@@ -304,6 +304,8 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
 |		
 |	Written by AJ 20130108
 	"""
+	import utils
+	import math
 	
 	#parse the dateStr into a datetime object
 	myDate = utils.yyyymmddToDate(dateStr)

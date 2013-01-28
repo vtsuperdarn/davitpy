@@ -1,3 +1,21 @@
+"""
+.. module:: radDataTypes
+   :synopsis: the classes needed for reading, writing, and storing radar data
+.. moduleauthor:: AJ, 20130108
+*********************
+**Module**: pydarn.sdio.radDataTypes
+*********************
+**Classes**:
+	* :class:`radDataPtr`
+	* :class:`baseData`
+	* :class:`beamData`
+	* :class:`prmData`
+	* :class:`fitData`
+	* :class:`rawData`
+	* :class:`iqData`
+"""
+
+
 from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
@@ -8,28 +26,22 @@ cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch','ex
 refArr = twoWayDict({'exflg':'fitex','acflg':'fitacf','lmflg':'lmfit','rawflg':'rawacf','iqflg':'iqdat'})
 
 class radDataPtr():
-	"""
-|	*******************************
-|
-|	**CLASS**: pydarn.sdio.radDataPtr
-|	**PURPOSE**: a class which contains a pipeline to a data source
-|	
-|	**ATTRS**:
-|		ptr: the data pointer (different depending on mongodo or dmap)
-|		sTime: start time of the request
-|		eTime: end time of the request
-|		stid: station id of the request
-|		channel: channel of the request
-|		bmnum: beam number of the request
-|		cp: control prog id of the request
-|		dType: the data type, 'mongo' or 'dmap'
-|		fType: the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
-|	
-|	**METHODS**:
-|		NONE
-|		
-|	Written by AJ 20130108
-|	*******************************
+	"""A class which contains a pipeline to a data source
+	
+	**Attrs**:
+		* **ptr** (file or mongodb query object): the data pointer (different depending on mongodo or dmap)
+		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
+		* **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
+		* **stid** (int): station id of the request
+		* **channel** (str): channel of the request
+		* **bmnum** (int): beam number of the request
+		* **cp** (int): control prog id of the request
+		* **dType** (str): the data type, 'mongo' or 'dmap'
+		* **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+	**Methods**:
+		* Nothing.
+		
+	Written by AJ 20130108
 	"""
 	def __init__(self,ptr=None,sTime=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None):
 		self.ptr = ptr
@@ -43,26 +55,33 @@ class radDataPtr():
 		self.fType = None
 
 class baseData():
-	"""
-|	*******************************
-|
-|	**CLASS**: pydarn.sdio.baseData
-|	**PURPOSE**: a base class for the radar data types.  This allows
-|		for single definition of common routines
-|	
-|	**ATTRS**:
-|		None
-|	
-|	**METHODS**:
-|		dbDictToObj: converts a mongodb dictionary to a baseData object
-|		dictToObj: comverts a dmap dictionary to a baseData object
-|		toDbDict(): converts a baseData object to a mongodb dictionaty
-|		
-|	Written by AJ 20130108
-|	*******************************
+	"""a base class for the radar data types.  This allows for single definition of common routines
+	
+	**ATTRS**:
+		* Nothing.
+	**METHODS**:
+		* :func:`dbDictToObj`: converts a mongodb dictionary to a baseData object
+		* :func:`toDbDict`: converts a baseData object to a mongodb dictionaty
+		* :func:`updateValsFromDict`: converts a dict from a dmap file to baseData
+		
+	Written by AJ 20130108
 	"""
 	
 	def dbDictToObj(self,aDict):
+		"""This method is used to parse a dictionary of radar data from the mongodb into a :class:`baseData` object.  
+		
+		.. note::
+			In general, users will not need to use this.
+			
+		**Args**: 
+			* **aDict** (dict): the dictionary from the mongodb
+		**Returns**:
+			* Nothing.
+		**Example**:
+			>>> myBaseData.dbDictToObj(mongoDbDict)
+			
+		written by AJ, 20130123
+		"""
 		for key, val in aDict.iteritems():
 			if(key == '_id'): continue
 			elif(key == 'it'):
@@ -79,17 +98,44 @@ class baseData():
 			#otherwise, copy the value
 			else: setattr(self,cipher[key],val)
 			
-	def dictToObj(self,aDict):
-		for key, val in aDict.iteritems():
-			#if the value is a dictionary, make a recursive call
-			if(isinstance(val,dict)): 
-				if(key == 'fitex' or key == 'lmfit' or key == 'fitacf'):
-					self.fit.dictToObj(val)
-				else: getattr(self, key).dictToObj(val)
-			#otherwise, copy the value
-			else: setattr(self,key,val)
+	#def dictToObj(self,aDict):
+		#"""This method is used to parse a dictionary of radar data from a dmap file into a :class:`baseData` object.
+		#.. note::
+			#In general, users will not need to use this.
+		
+		#**Args**: 
+			#* **aDict** (dict): the dictionary from the dmap file
+		#**Returns**:
+			#* Nothing.
+		#**Example**:
+			#>>> myBaseData.dictToObj(dmapDict)
+			
+		#written by AJ, 20130123
+		#"""
+		#for key, val in aDict.iteritems():
+			##if the value is a dictionary, make a recursive call
+			#if(isinstance(val,dict)): 
+				#if(key == 'fitex' or key == 'lmfit' or key == 'fitacf'):
+					#self.fit.dictToObj(val)
+				#else: getattr(self, key).dictToObj(val)
+			##otherwise, copy the value
+			#else: setattr(self,key,val)
 			
 	def toDbDict(self):
+		"""This method is used to convert a :class:`baseData` object into a mongodb radData data dictionary.  
+		
+		.. note::
+			In general, users will not need to worry about this.
+			
+		**Args**: 
+			* Nothing.
+		**Returns**:
+			* **aDict** (dict): a dictionary in the correct format for writing to the radData mongodb
+		**Example**:
+			>>> mongoDbDict = aBaseDataObj.todbDict()
+			
+		written by AJ, 20130123
+		"""
 		aDict = {}
 		for attr, val in self.__dict__.iteritems():
 			#check for things we dont want to save
@@ -107,24 +153,17 @@ class baseData():
 		return aDict
 			
 	def updateValsFromDict(self, aDict):
-		"""
-	|	*******************************
-	|	FUNCTION updateValsFromDict
-	|
-	|	BELONGS TO: pydarn.sdio.radDataTypes.prmData
-	|
-	|	this is created mainly to fill a radar params structure 
-	|		with the data in a dictionary that is returned from the
-	|		reading of a dmap file
-	|	
-	|	INPUTS:
-	|		aDict -- the dictionary containing the radar data
-	|
-	|	OUTPUTS: 
-	|		None
-	|	
-	|	Written by AJ 20121130
-	|	*******************************
+		"""A function to to fill a radar params structure with the data in a dictionary that is returned from the reading of a dmap file
+		
+		.. note::
+			In general, users will not need to us this.
+			
+		**Args**:
+			* **aDict (dict):** the dictionary containing the radar data
+		**Returns**
+			* nothing.
+			
+		Written by AJ 20121130
 		"""
 		
 		import datetime as dt
@@ -216,46 +255,32 @@ class baseData():
 					setattr(self,attr,None)
 
 class beamData(baseData):
-	"""
-|	*******************************
-|	**CLASS**: pydarn.sdio.beamData
-|
-|	**PURPOSE**: a class to contain the data 
-|		from a radar beam sounding
-|	
-|	**ATTRS**:
-|		cp -- radar control program id number
-|		stid -- radar station id number
-|		time -- timestamp of beam sounding
-|		channel -- radar operating channel, eg 'a', 'b', ...
-|		bmnum -- beam number
-|		prm -- a prmData object with oper. params
-|		fit -- a fitData object with the fitted params
-|		rawacf -- a rawData object with radar rawacf data
-|		iqdat -- radar iqdat data (not yet implemented)
-|		exflg -- a flag indicating the presence of fitex data.
-|			this is useful for database operation, can
-|			generally be ignored by users
-|		acflg -- a flag indicating the presence of acflg data.
-|			this is useful for database operation, can
-|			generally be ignored by users
-|		lmflg -- a flag indicating the presence of lmfit data.
-|			this is useful for database operation, can
-|			generally be ignored by users
-|		rawflg -- a flag indicating the presence of rawacf data.
-|			this is useful for database operation, can
-|			generally be ignored by users
-|		iqflg -- a flag indicating the presence of iqdat data.
-|			this is useful for database operation, can
-|			generally be ignored by users
-|		fType: the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
-|
-|	DECLARATION: 
-|		myBeam = pydarn.sdio.radBeam()
-|		
-|	
-|	Written by AJ 20121130
-|	*******************************
+	"""a class to contain the data from a radar beam sounding, extends class :class:`baseData`
+	
+	**Attrs**:
+		* **cp** (int): radar control program id number
+		* **stid** (int): radar station id number
+		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): timestamp of beam sounding
+		* **channel** (str): radar operating channel, eg 'a', 'b', ...
+		* **bmnum** (int): beam number
+		* **prm** (:class:`prmData`): operating params
+		* **fit** (:class:`fitData`): fitted params
+		* **rawacf** (:class:`rawData`): rawacf data
+		* **iqdat** (:class:`iqData`): iqdat data
+		* **fitex** (:class:`fitData`): fitted params from fitex file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
+		* **fitacf** (:class:`fitData`): fitted params from fitacf file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
+		* **lmfit** (:class:`fitData`): fitted params from lmfit file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
+		* **exflg** (int): a flag indicating the presence of fitex data. this is useful for database operation, can enerally be ignored by users
+		* **acflg** (int): a flag indicating the presence of acflg data. this is useful for database operation, can generally be ignored by users
+		* **lmflg** (int): a flag indicating the presence of lmfit data. this is useful for database operation, can generally be ignored by users
+		* **rawflg** (int): a flag indicating the presence of rawacf data. this is useful for database operation, can generally be ignored by users
+		* **iqflg** (int): a flag indicating the presence of iqdat data. this is useful for database operation, can generally be ignored by users
+		* **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+
+	**Example**: 
+		>>> myBeam = pydarn.sdio.radBeam()
+		
+	Written by AJ 20121130
 	"""
 	def __init__(self, beamDict=None, myBeam=None, proctype=None):
 		#initialize the attr values
@@ -285,44 +310,35 @@ class beamData(baseData):
 		return "<Beam("+str(self.time)+", '%d', '%d','%d', '%s')>" % (self.cp, self.stid, self.bmnum, self.channel)
 		
 class prmData(baseData):
+	"""A class to represent radar operating parameters, extends :class:`baseData`
+
+	**Attrs**:
+		* **nave**  (int): number of averages
+		* **lagfr**  (int): lag to first range in us
+		* **smsep**  (int): sample separation in us
+		* **bmazm**  (float): beam azimuth
+		* **scan**  (int): new scan flag
+		* **rxrise**  (int): receiver rise time
+		* **inttsc**  (int): integeration time (sec)
+		* **inttus**  (int): integration time (us)
+		* **mpinc**  (int): multi pulse increment (tau, basic lag time) in us
+		* **mppul**  (int): number of pulses
+		* **mplgs**  (int): number of lags
+		* **mplgexs**  (int): number of lags (tauscan)
+		* **nrang**  (int): number of range gates
+		* **frang**  (int): first range gate (km)
+		* **rsep**  (int): range gate separation in km
+		* **xcf**  (int): xcf flag
+		* **tfreq**  (int): transmit freq in kHz
+		* **ifmode**  (int): if mode flag
+		* **ptab**  (mppul length list): pulse table
+		* **ltab**  (mplgs x 2 length list): lag table
+		* **noisemean**  (float): mean noise level
+		* **noisesky**  (float): sky noise level
+		* **noisesearch**  (float): freq search noise level
+
+	Written by AJ 20121130
 	"""
-|	*******************************
-|	PACKAGE: pydarn.sdio.radDataTypes
-|
-|	CLASS: radPrm
-|
-|	PURPOSE: represent radar operating parameters
-|
-|	DECLARATION: 
-|		myprm = Prm(radarPrm)
-|
-|	ATTRS:
-|		nave  --				number of averages
-|		lagfr  --				lag to first range in us
-|		smsep  --				sample separation in us
-|		bmazm  --				beam azimuth
-|		scan  --				new scan flag
-|		rxrise  --			receiver rise time
-|		inttsc  --			integeration time (sec)
-|		inttus  --			integration time (us)
-|		mpinc  --				multi pulse increment (tau, basic lag time) in us
-|		mppul  --				number of pulses
-|		mplgs  --				number of lags
-|		mplgexs  --			number of lags (tauscan)
-|		nrang  --				number of range gates
-|		frang  --				first range gate (km)
-|		rsep  --				range gate separation in km
-|		xcf  --					xcf flag
-|		tfreq  --				transmit freq in kHz
-|		ifmode  --			if mode flag
-|		ptab  -- 				pulse table
-|		ltab  -- 				lag table
-|		noisemean  --		mean noise level
-|		noisesky  --		sky noise level
-|		noisesearch  --	freq search noise level
-|
-|	Written by AJ 20121130
-|	"""
 
 	#initialize the struct
 	def __init__(self, prmDict=None, myPrm=None):
@@ -355,40 +371,34 @@ class prmData(baseData):
 		if(prmDict != None): self.updateValsFromDict(prmDict)
 
 class fitData(baseData):
+	"""a class to contain the fitted params of a radar beam sounding, extends :class:`baseData`
+	
+	**Attrs**:
+		* **pwr0**  (prm.nrang length list): lag 0 power
+		* **slist**  (npnts length list): list of range gates with backscatter
+		* **npnts** (int): number of range gates with scatter
+		* **nlag**  (npnts length list): number of good lags
+		* **qflg**  (npnts length list): quality flag
+		* **gflg**  (npnts length list): ground scatter flag
+		* **p_l**  (npnts length list): lambda power
+		* **p_l_e**  (npnts length list): lambda power error
+		* **p_s**  (npnts length list): sigma power
+		* **p_s_e**  (npnts length list): sigma power error
+		* **v**  (npnts length list): velocity
+		* **v_e**  (npnts length list): velocity error
+		* **w_l**  (npnts length list): lambda spectral width
+		* **w_l_e**  (npnts length list): lambda width error
+		* **w_s**  (npnts length list): sigma spectral width
+		* **w_s_e**  (npnts length list): sigma width error
+		* **phi0**  (npnts length list): phi 0
+		* **phi0_e**  (npnts length list): phi 0 error
+		* **elv**  (npnts length list): elevation angle
+	
+	**Example**: 
+		>>> myFit = pydarn.sdio.fitData()
+		
+	Written by AJ 20121130
 	"""
-|	*******************************
-|	**CLASS** pydarn.sdio.fitData
-|
-|	**PURPOSE** a class to contain the fitted params of
-|		a radar beam sounding
-|	
-|	**ATTRS**:
-|		pwr0  --			lag 0 power
-|		slist  --			list of range gates with backscatter
-|		npnts --			number of range gates with scatter
-|		nlag  --			number of good lags
-|		qflg  --			quality flag
-|		gflg  --			ground scatter flag
-|		p_l  --				lambda power
-|		p_l_e  --			lambda power error
-|		p_s  --				sigma power
-|		p_s_e  --			sigma power error
-|		v  --					velocity
-|		v_e  --				velocity error
-|		w_l  --				lambda spectral width
-|		w_l_e  --			lambda width error
-|		w_s  --				sigma spectral width
-|		w_s_e  --			sigma width error
-|		phi0  --			phi 0
-|		phi0_e  --		phi 0 error
-|		elv  --				elevation angle
-|	
-|	**DECLARATION**: 
-|		myFit = pydarn.sdio.fitData()
-|		
-|	Written by AJ 20121130
-|	*******************************
-|	"""
 
 	#initialize the struct
 	def __init__(self, fitDict=None, myFit=None):
@@ -415,21 +425,16 @@ class fitData(baseData):
 		if(fitDict != None): self.updateValsFromDict(fitDict)
 				
 class rawData(baseData):
-	"""
-|	*******************************
-|	**CLASS**: pydarn.sdio.rawData
-|
-|	**PURPOSE**: a class to contain the rawacf data from a radar beam sounding
-|	
-|	**ATTRS**:
-|		acf -- acf data as a 3-d list.  the size is [nrang][mplgs][2]
-|		xcf -- xcf data, same format as acf data
-|	
-|	**DECLARATION**: 
-|		myRaw = pydarn.sdio.rawData()
-|		
-|	Written by AJ 20121130
-|	*******************************
+	"""a class to contain the rawacf data from a radar beam sounding, extends :class:`basedata`
+	
+	**Attrs**:
+		* **acfd** (nrang x mplgs x 2 length list): acf data
+		* **xcfd** (nrang x mplgs x 2 length list): xcf data
+	
+	**Example**: 
+		>>> myRaw = pydarn.sdio.rawData()
+		
+	Written by AJ 20130125
 	"""
 
 	#initialize the struct
@@ -441,36 +446,30 @@ class rawData(baseData):
 		if(rawDict != None): self.updateValsFromDict(rawDict)
 		
 class iqData(baseData):
-	"""
-|	*******************************
-|	**CLASS**: pydarn.sdio.iqData
-|
-|	**PURPOSE**: a class to contain the iq data from a radar beam sounding
-|	**NOTE**: I'm not sure what all of the attributes mean
-|
-|	**ATTRS**:
-|		chnnum -- number of channels?
-|		smpnum -- number of samples per beam sounding
-|		skpnum -- number of samples to skip at the 
-|			beginning of a pulse sequence?
-|		seqnum -- number of pulse sequences
-|		tbadtr -- time of bad tr samples?
-|		tval -- ?
-|		atten -- ?
-|		noise -- ?
-|		offset -- ?
-|		size -- ?
-|		badtr -- bad tr samples?
-|		mainData -- the actual iq samples (main array)
-|			seqnum x smpnum x 2 list
-|		intData -- the actual iq samples (interferometer)
-|			seqnum x smpnum x 2 list
-|	
-|	**DECLARATION**: 
-|		myIq = pydarn.sdio.iqData()
-|		
-|	Written by AJ 20130116
-|	*******************************
+	""" a class to contain the iq data from a radar beam sounding, extends :class:`baseData`
+	
+	.. warning::
+		I'm not sure what all of the attributes mean.  if somebody knows what these are, please help!
+
+	**Attrs**:
+		* **chnnum** (int): number of channels?
+		* **smpnum** (int): number of samples per pulse sequence
+		* **skpnum** (int): number of samples to skip at the beginning of a pulse sequence?
+		* **seqnum** (int): number of pulse sequences
+		* **tbadtr** (? length list): time of bad tr samples?
+		* **tval** (? length list): ?
+		* **atten** (? length list): ?
+		* **noise** (? length list): ?
+		* **offset** (? length list): ?
+		* **size** (? length list): ?
+		* **badtr** (? length list): bad tr samples?
+		* **mainData** (seqnum x smpnum x 2 length list): the actual iq samples (main array)
+		* **intData** (seqnum x smpnum x 2 length list): the actual iq samples (interferometer)
+	
+	**Example**: 
+		>>> myIq = pydarn.sdio.iqData()
+		
+	Written by AJ 20130116
 	"""
 
 	#initialize the struct
