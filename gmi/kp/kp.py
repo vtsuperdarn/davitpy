@@ -40,9 +40,13 @@ class kpDay:
 	written by AJ, 20130123
 	"""
 	def parseDb(self,dbDict):
-		"""This method is used to parse a dictionary of kp data from the mongodb into a :class:`kpDay` object.  In general, users will not need to use this.
+		"""This method is used to parse a dictionary of kp data from the mongodb into a :class:`kpDay` object.  
+		
+		.. note::
+			In general, users will not need to use this.
 		
 		**Belongs to**: :class:`kpDay`
+		
 		**Args**: 
 			* **dbDict** (dict): the dictionary from the mongodb
 		**Returns**:
@@ -72,6 +76,7 @@ class kpDay:
 		"""This method is used to convert a :class:`kpDay` object into a mongodb kp data dictionary.  In general, users will not need to worry about this
 		
 		**Belongs to**: :class:`kpDay`
+		
 		**Args**: 
 			* Nothing.
 		**Returns**:
@@ -100,6 +105,7 @@ class kpDay:
 		"""This method is used to convert a line of kp data read from the GFZ-Potsdam FTP site into a :class:`kpDay` object.  In general, users will not need to worry about this.
 		
 		**Belongs to**: :class:`kpDay`
+		
 		**Args**: 
 			* **line** (str): the ASCII line from the FTP server
 			* **yr**: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year.  y2k much?
@@ -135,10 +141,11 @@ class kpDay:
 		"""the intialization fucntion for a :class:`kpDay` object.  In general, users will not need to worry about this.
 		
 		**Belongs to**: :class:`kpDay`
+		
 		**Args**: 
-			* [**ftpLine**] (str): an ASCII line from the FTP server, must be provided in conjunction with year.  if this is provided, the object is initialized from it.
-			* [**year**]: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year
-			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.
+			* [**ftpLine**] (str): an ASCII line from the FTP server, must be provided in conjunction with year.  if this is provided, the object is initialized from it.  default=None
+			* [**year**]: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year.  default=None
+			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default=None
 		**Returns**:
 			* Nothing.
 		**Example**:
@@ -146,8 +153,10 @@ class kpDay:
 			
 		written by AJ, 20130123
 		"""
+		
+		#initialize the data
 		#note about where data came from
-		self.info = 'These data were downloaded from the GFZ-Potsdam'
+		self.info = 'These data were downloaded from the GFZ-Potsdam.  *Please be courteous and give credit to data providers when credit is due.*'
 		self.kp = []
 		self.ap = []
 		self.date = None
@@ -159,18 +168,24 @@ class kpDay:
 		
 		if(dbDict != None): self.parseDb(dbDict)
 		
+	def __repr__(self):
+		import datetime as dt
+		myStr = 'Kp record FROM: '+str(self.date)+'\n'
+		for key,var in self.__dict__.iteritems():
+			myStr += key+' = '+str(var)+'\n'
+		return myStr
 		
 def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,sunspot=None):
 	"""This function reads kp data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the GFZ ftp server using :func:`readKpFtp`
 	
 	**Args**: 
-		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for.  if this is None, start time will be the earliest record found
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be latest record found
-		* [**kpMin**] (int or None): specify this to only return data from dates with a 3-hour kp value of minimum kpMin.  if this is none, it will be ignored.
-		* [**apMin**] (int or None): specify this to only return data from dates with a 3-hour ap value of minimum apMin.  if this is none, it will be ignored.
-		* [**kpSum**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with kpSum values in the range [a,b] will be returned.  if this is None, it will be ignored.
-		* [**apMean**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with apMean values in the range [a,b] will be returned.  if this is None, it will be ignored.
-		* [**sunspot**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with sunspot values in the range [a,b] will be returned.  if this is None, it will be ignored.
+		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for.  if this is None, start time will be the earliest record found.  default=None
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be latest record found.  default=None
+		* [**kpMin**] (int or None): specify this to only return data from dates with a 3-hour kp value of minimum kpMin.  if this is none, it will be ignored.  default=None
+		* [**apMin**] (int or None): specify this to only return data from dates with a 3-hour ap value of minimum apMin.  if this is none, it will be ignored.  default=None
+		* [**kpSum**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with kpSum values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
+		* [**apMean**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with apMean values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
+		* [**sunspot**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with sunspot values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
 	**Returns**:
 		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
 	**Example**:
@@ -254,20 +269,19 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 			return None
 	
 def readKpFtp(sTime, eTime=None):
-	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection.  In general, you should not use this. Use the general function :func:`readKp` instead.  This cannot read across year boundaries.
+	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection.  This cannot read across year boundaries.
+	
+	.. warning::
+		You should not be using this function.  use readKp instead.
 	
 	**Args**: 
 		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be the end of the year of sTime
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be the end of the year of sTime.  default=None
 	**Returns**:
-		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
+		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.  default=None
 	**Example**:
 		>>> import datetime as dt
 		>>> kpList = gmi.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
-		
-		.. warning::
-
-			You should not be using this function.  use readKp instead.
 			
 	written by AJ, 20130123
 	"""
@@ -320,11 +334,14 @@ def readKpFtp(sTime, eTime=None):
 		return None
 	
 def mapKpMongo(sYear,eYear=None):
-	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection and maps it to the mongodb.  In general, nobody except the database admins will need to use this function
+	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection and maps it to the mongodb.  
+	
+	.. warning::
+		In general, nobody except the database admins will need to use this function
 	
 	**Args**: 
 		* **sYear** (int): the year to begin mapping data
-		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
+		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear.  default=None
 	**Returns**:
 		* Nothing.
 	**Example**:

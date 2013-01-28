@@ -305,9 +305,13 @@ class beamData(baseData):
 		
 		#if we are intializing from an object, do that
 		if(beamDict != None): self.updateValsFromDict(beamDict)
-			
+		
 	def __repr__(self):
-		return "<Beam("+str(self.time)+", '%d', '%d','%d', '%s')>" % (self.cp, self.stid, self.bmnum, self.channel)
+		import datetime as dt
+		myStr = 'Beam record FROM: '+str(self.time)+'\n'
+		for key,var in self.__dict__.iteritems():
+			myStr += key+' = '+str(var)+'\n'
+		return myStr
 		
 class prmData(baseData):
 	"""A class to represent radar operating parameters, extends :class:`baseData`
@@ -425,7 +429,7 @@ class fitData(baseData):
 		if(fitDict != None): self.updateValsFromDict(fitDict)
 				
 class rawData(baseData):
-	"""a class to contain the rawacf data from a radar beam sounding, extends :class:`basedata`
+	"""a class to contain the rawacf data from a radar beam sounding, extends :class:`baseData`
 	
 	**Attrs**:
 		* **acfd** (nrang x mplgs x 2 length list): acf data
