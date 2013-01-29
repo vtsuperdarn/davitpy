@@ -4,9 +4,8 @@
 
 .. moduleauthor:: AJ, 20130128
 
-*********************
-**Module**: gmi.omni.omni
-*********************
+**Module**: gme.omni.omni
+*************************
 **Classes**:
 	* :class:`omniRec`
 **Functions**:
@@ -14,9 +13,9 @@
 	* :func:`readOmniFtp`
 	* :func:`mapOmniMongo`
 """
-
-class omniRec:
-	"""a class to represent a record of omni data.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
+import gme
+class omniRec(gme.base.gmeBase.gmeData):
+	"""a class to represent a record of omni data.  Extends gmeData.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
 	
 	.. warning::
 		AE,AL,AU,SYM/H,SYM/D,ASYM/H,and ASYM/D are included in the omni files and thus are read into this class.  I cannot verify the quality of these indices distributed with Omni data.  For quality assurance on these indices, use the functions in the gmi.mag.indices module.
@@ -54,8 +53,6 @@ class omniRec:
 		If any of the members have a value of None, this means that they could not be read for that specific time
    
 	**Methods**:
-		* :func:`parseDb`
-		* :func:`toDbDict`
 		* :func:`parseFtp`
 	**Example**:
 		::
@@ -64,63 +61,6 @@ class omniRec:
 		
 	written by AJ, 20130128
 	"""
-	
-	def parseDb(self,dbDict):
-		"""This method is used to parse a dictionary of omni data from the mongodb into a :class:`omniRec` object.  
-		
-		.. note:: 
-			In general, users will not need to use this.
-		
-		**Belongs to**: :class:`omniRec`
-		
-		**Args**: 
-			* **dbDict** (dict): the dictionary from the mongodb
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myOmniObj.parseDb(mongoDbOmniDict)
-			
-		written by AJ, 20130128
-		"""
-		#iterate over the mongo dict
-		for attr, val in dbDict.iteritems():
-			#check for mongo _id attribute
-			if(attr == '_id'): pass
-			else:
-				#assign the value to our object
-				try: setattr(self,attr,val)
-				except Exception,e:
-					print e
-					print 'problem assigning',attr
-					
-					
-	def toDbDict(self):
-		"""This method is used to convert a :class:`omniRec` object into a mongodb omni data dictionary.
-		
-		.. note::
-			In general, users will not need to worry about this
-		
-		**Belongs to**: :class:`omniRec`
-		
-		**Args**: 
-			* Nothing.
-		**Returns**:
-			* **dbDict** (dict): a dictionary in the correct format for writing to the omni mongodb
-		**Example**:
-			::
-			
-				mongoDbOmniDict = myOmniObj.todbDict()
-			
-		written by AJ, 20130128
-		"""
-		#initialize a new dictionary
-		dbDict = {}
-		#create dictionary entries for all out our attributes
-		for attr, val in self.__dict__.iteritems():
-			dbDict[attr] = val
-		return dbDict
 		
 	def parseFtp(self,line):
 		"""This method is used to convert a line of omni data read from the MASA SPDF FTP site into a :class:`omniRec` object.
@@ -189,9 +129,9 @@ class omniRec:
 		"""
 		#initialize the attributes
 		#note about where data came from
+		self.dataSet = 'Omni'
 		self.info = 'These data were downloaded from NASA SPDF.  *Please be courteous and give credit to data providers when credit is due.*'
 		self.res = res
-		self.time = None
 		self.timeshift = None
 		self.bMagAvg = None
 		self.bx = None
@@ -219,13 +159,6 @@ class omniRec:
 		#if we're initializing from an object, do it!
 		if(ftpLine != None): self.parseFtp(ftpLine)
 		if(dbDict != None): self.parseDb(dbDict)
-		
-	def __repr__(self):
-		import datetime as dt
-		myStr = 'Omni record FROM: '+str(self.time)+' TO: '+str(self.time+dt.timedelta(minutes=self.res))+'\n'
-		for key,var in self.__dict__.iteritems():
-			myStr += key+' = '+str(var)+'\n'
-		return myStr
 	
 def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,pDyn=None,ae=None,symh=None):
 	"""This function reads omni data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the NASA SPDF FTP server using :func:`readOmniFtp`
