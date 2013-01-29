@@ -35,7 +35,9 @@ class kpDay:
 		* :func:`toDbDict`
 		* :func:`parseFtp`
 	**Example**:
-		>>> emptyKpObj = gmi.kp.kpDay()
+		::
+		
+			emptyKpObj = gmi.kp.kpDay()
 		
 	written by AJ, 20130123
 	"""
@@ -52,7 +54,9 @@ class kpDay:
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myKpDayObj.parseDb(mongoDbKpDict)
+			::
+			
+				myKpDayObj.parseDb(mongoDbKpDict)
 			
 		written by AJ, 20130123
 		"""
@@ -82,7 +86,9 @@ class kpDay:
 		**Returns**:
 			* **dbDict** (dict): a dictionary in the correct format for writing to the kp mongodb
 		**Example**:
-			>>> mongoDbKpDict = myKpDayObj.todbDict()
+			::
+			
+				mongoDbKpDict = myKpDayObj.todbDict()
 			
 		written by AJ, 20130123
 		"""
@@ -112,7 +118,9 @@ class kpDay:
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myKpDayObj.parseFtp(ftpLine,2009)
+			::
+			
+				myKpDayObj.parseFtp(ftpLine,2009)
 			
 		written by AJ, 20130123
 		"""
@@ -149,7 +157,9 @@ class kpDay:
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
+			::
+			
+				myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
 			
 		written by AJ, 20130123
 		"""
@@ -189,8 +199,10 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 	**Returns**:
 		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
 	**Example**:
-		>>> import datetime as dt
-		>>> kpList = gmi.kp.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
+		::
+		
+			import datetime as dt
+			kpList = gmi.kp.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
 		
 	written by AJ, 20130123
 	"""
@@ -280,8 +292,10 @@ def readKpFtp(sTime, eTime=None):
 	**Returns**:
 		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.  default=None
 	**Example**:
-		>>> import datetime as dt
-		>>> kpList = gmi.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
+		::
+		
+			import datetime as dt
+			kpList = gmi.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
 			
 	written by AJ, 20130123
 	"""
@@ -345,7 +359,9 @@ def mapKpMongo(sYear,eYear=None):
 	**Returns**:
 		* Nothing.
 	**Example**:
-		>>> gmi.kp.mapKpMongo(1985,eTime=1986)
+		::
+		
+			gmi.kp.mapKpMongo(1985,eTime=1986)
 		
 	written by AJ, 20130123
 	"""

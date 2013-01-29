@@ -58,7 +58,9 @@ class omniRec:
 		* :func:`toDbDict`
 		* :func:`parseFtp`
 	**Example**:
-		>>> emptyOmniObj = gmi.omni.omniRec()
+		::
+		
+			emptyOmniObj = gmi.omni.omniRec()
 		
 	written by AJ, 20130128
 	"""
@@ -76,7 +78,9 @@ class omniRec:
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myOmniObj.parseDb(mongoDbOmniDict)
+			::
+			
+				myOmniObj.parseDb(mongoDbOmniDict)
 			
 		written by AJ, 20130128
 		"""
@@ -105,7 +109,9 @@ class omniRec:
 		**Returns**:
 			* **dbDict** (dict): a dictionary in the correct format for writing to the omni mongodb
 		**Example**:
-			>>> mongoDbOmniDict = myOmniObj.todbDict()
+			::
+			
+				mongoDbOmniDict = myOmniObj.todbDict()
 			
 		written by AJ, 20130128
 		"""
@@ -129,7 +135,9 @@ class omniRec:
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myOmniObj.parseFtp(ftpLine)
+			::
+			
+				myOmniObj.parseFtp(ftpLine)
 			
 		written by AJ, 20130123
 		"""
@@ -173,7 +181,9 @@ class omniRec:
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myOmniObj = omniRec(ftpLine=aftpLine)
+			::
+			
+				myOmniObj = omniRec(ftpLine=aftpLine)
 			
 		written by AJ, 20130128
 		"""
@@ -236,8 +246,10 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 	**Returns**:
 		* **omniList** (list or None): if data is found, a list of :class:`omniRec` objects matching the input parameters is returned.  If no data is found, None is returned.
 	**Example**:
-		>>> import datetime as dt
-		>>> kpList = gmi.omni.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
+		::
+		
+			import datetime as dt
+			kpList = gmi.omni.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
 		
 	written by AJ, 20130128
 	"""
@@ -261,6 +273,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 	qryList = []
 	#if arguments are provided, query for those
 	qryList.append({'time':{'$gte':sTime}})
+	qryList.append({'res':res})
 	if(eTime != None): qryList.append({'time':{'$lte':eTime}})
 	var = locals()
 	for name in ['bx','bye','bze','bym','bzm','pDyn','ae','symh']:
@@ -270,7 +283,6 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 			
 	#construct the final query definition
 	qryDict = {'$and': qryList}
-	print qryDict
 	#connect to the database
 	omniData = db.getDataConn(dbName='gmi',collName='omni')
 	
@@ -311,8 +323,10 @@ def readOmniFtp(sTime,eTime=None,res=5):
 	**Returns**:
 		* **omniList** (list or None): if data is found, a list of :class:`omniRec` objects matching the input parameters is returned.  If no data is found, None is returned.
 	**Example**:
-		>>> import datetime as dt
-		>>> omniList = gmi.omni.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
+		::
+		
+			import datetime as dt
+			omniList = gmi.omni.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
 		
 	written by AJ, 20130128
 	"""
@@ -382,7 +396,9 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	**Returns**:
 		* Nothing.
 	**Example**:
-		>>> gmi.omni.mapOmniMongo(1997,res=1)
+		::
+		
+			gmi.omni.mapOmniMongo(1997,res=1)
 		
 	written by AJ, 20130123
 	"""
