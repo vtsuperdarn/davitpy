@@ -68,14 +68,13 @@ class gmeData:
 			dbDict[attr] = val
 		return dbDict
 		
-		def __repr__(self):
-		import datetime as dt
+	def __repr__(self):
 		myStr = self.dataSet+' record FROM: '+str(self.time)+'\n'
 		for key,var in self.__dict__.iteritems():
 			myStr += key+' = '+str(var)+'\n'
 		return myStr
-		
-	def __init__:
+	
+	def __init__():
 		self.time = None
 		self.dataSet = None
 		self.info = None
