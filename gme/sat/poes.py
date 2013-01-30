@@ -5,7 +5,7 @@
 .. moduleauthor:: AJ, 20130129
 
 *********************
-**Module**: gmi.sat.poes
+**Module**: gme.sat.poes
 *********************
 **Classes**:
 	* :class:`poesRec`
@@ -17,7 +17,7 @@
 
 import gme
 class poesRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of poes data.  Extends gmeData.  Insight on the class members can be obtained from `the NOAA NGDC site <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>`_.  Note that Poes data is available from 1998-present day (or whatever the latest NOAA has uploaded is).
+	"""a class to represent a record of poes data.  Extends :class:`gme.gmeData`.  Insight on the class members can be obtained from `the NOAA NGDC site <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>`_.  Note that Poes data is available from 1998-present day (or whatever the latest NOAA has uploaded is).  The data are the 16-second averages
 	"""
 	
 	def parseFtp(self,line, header):
@@ -26,10 +26,8 @@ class poesRec(gme.base.gmeBase.gmeData):
 		#split the line into cols
 		cols = line.split()
 		head = header.split()
-		
-		##print line
-		#print cols
-		self.time = dt.datetime(int(cols[0]), int(cols[1]), int(cols[2]), int(cols[3]),int(cols[4]))
+		self.time = dt.datetime(int(cols[0]), int(cols[1]), int(cols[2]), int(cols[3]),int(cols[4]), \
+														int(float(cols[5])),int(round((float(cols[5])-int(float(cols[5])))*1e6)))
 		
 		for key in self.__dict__.iterkeys():
 			if(key == 'dataSet' or key == 'info' or key == 'satnum' or key == 'time'): continue
@@ -84,6 +82,66 @@ class poesRec(gme.base.gmeBase.gmeData):
 		if(ftpLine != None): self.parseFtp(ftpLine,header)
 		if(dbDict != None): self.parseDb(dbDict)
 		
+def readPoes(sTime,eTime=None,satnum=None,folat=None,folon=None,ted=None,echar=None,pchar=None):
+	"""This function reads poes data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the NOAA NGDC FTP server using :func:`readPoesFtp`
+	written by AJ, 20130130
+	"""
+	import datetime as dt
+	import pydarn.sdio.dbUtils as db
+	
+	#check all the inputs for validity
+	assert(isinstance(sTime,dt.datetime)), \
+		'error, sTime must be a datetime object'
+	assert(eTime == None or isinstance(eTime,dt.datetime)), \
+		'error, eTime must be either None or a datetime object'
+	assert(satnum == None or isinstance(satnum,int)), 'error, satnum must be an int'
+	var = locals()
+	for name in ['folat','folon','ted','echar','pchar']:
+		assert(var[name] == None or (isinstance(var[name],list) and \
+			isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
+			'error,'+name+' must None or a list of 2 numbers'
+		
+	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
+	qryList = []
+	#if arguments are provided, query for those
+	qryList.append({'time':{'$gte':sTime}})
+	if(eTime != None): qryList.append({'time':{'$lte':eTime}})
+	if(satnum != None): qryList.append({'satnum':satnum})
+	var = locals()
+	for name in ['folat','folon','ted','echar','pchar']:
+		if(var[name] != None): 
+			qryList.append({name:{'$gte':min(var[name])}})
+			qryList.append({name:{'$lte':max(var[name])}})
+			
+	#construct the final query definition
+	qryDict = {'$and': qryList}
+	#connect to the database
+	poesData = db.getDataConn(dbName='gme',collName='poes')
+	
+	#do the query
+	if(qryList != []): qry = poesData.find(qryDict)
+	else: qry = poesData.find()
+	if(qry.count() > 0):
+		poesList = []
+		for rec in qry.sort('time'):
+			poesList.append(poesRec(dbDict=rec))
+		print '\nreturning a list with',len(poesList),'records of poes data'
+		return poesList
+	#if we didn't find anything on the mongodb
+	else:
+		print '\ncould not find requested data in the mongodb'
+		print 'we will look on the ftp server, but your conditions will be (mostly) ignored'
+		
+		#read from ftp server
+		poesList = readPoesFtp(sTime, eTime)
+		
+		if(poesList != None):
+			print '\nreturning a list with',len(poesList),'recs of poes data'
+			return poesList
+		else:
+			print '\n no data found on FTP server, returning None...'
+			return None
+			
 def readPoesFtp(sTime,eTime=None):
 	"""This function reads poes data from the NOAA NGDC server via anonymous FTP connection.
 	"""
@@ -92,7 +150,7 @@ def readPoesFtp(sTime,eTime=None):
 	import datetime as dt
 	
 	assert(isinstance(sTime,dt.datetime)),'error, sTime must be datetime'
-	if(eTime == None): eTime=sTime
+	if(eTime == None): eTime=sTime+dt.timedelta(days=1)
 	assert(isinstance(eTime,dt.datetime)),'error, eTime must be datetime'
 	assert(eTime >= sTime), 'error, end time greater than start time'
 	
@@ -112,7 +170,7 @@ def readPoesFtp(sTime,eTime=None):
 		
 	myPoes = []
 	#get the poes data
-	myTime = sTime
+	myTime = dt.datetime(sTime.year,sTime.month,sTime.day)
 	while(myTime <= eTime):
 		#go to the data directory
 		try: ftp.cwd('/sem/poes/data/avg/txt/'+str(myTime.year))
@@ -143,7 +201,9 @@ def readPoesFtp(sTime,eTime=None):
 			#skip first (header) line
 			for line in lines[1:]:
 				cols = line.split()
-				myPoes.append(poesRec(ftpLine=line,satnum=int(satnum),header=lines[0]))
+				t = dt.datetime(int(cols[0]), int(cols[1]), int(cols[2]), int(cols[3]),int(cols[4]))
+				if(sTime <= t <= eTime):
+					myPoes.append(poesRec(ftpLine=line,satnum=int(satnum),header=lines[0]))
 				
 		#increment myTime
 		myTime += dt.timedelta(days=1)
@@ -164,11 +224,11 @@ def mapPoesMongo(sYear,eYear=None):
 	
 	#get data connection
 	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gmi',collName='poes')
+								dbAddress=os.environ['SDDB'],dbName='gme',collName='poes')
 	
 	#set up all of the indices
 	mongoData.ensure_index('time')
-	mongoData.ensure_index('ssnum')
+	mongoData.ensure_index('satnum')
 	mongoData.ensure_index('folat')
 	mongoData.ensure_index('folon')
 	mongoData.ensure_index('ted')
@@ -176,12 +236,15 @@ def mapPoesMongo(sYear,eYear=None):
 	mongoData.ensure_index('pchar')
 		
 	#read the poes data from the FTP server
-	for yr in range(sYear,eYear+1):
-		templist = readPoesFtp(dt.datetime(yr,1,1), dt.datetime(yr,12,31,23,59,59,99999))
+	myTime = dt.datetime(sYear,1,1)
+	while(myTime < dt.datetime(eYear+1,1,1)):
+		#1 day at a time, to not fill up RAM
+		templist = readPoesFtp(myTime,myTime+dt.timedelta(days=1))
+		if(templist == None): continue
 		for rec in templist:
 			#check if a duplicate record exists
 			qry = mongoData.find({'$and':[{'time':rec.time},{'satnum':rec.satnum}]})
-			print rec.time
+			print rec.time, rec.satnum
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
 			#if this is a new record, insert it
@@ -197,5 +260,6 @@ def mapPoesMongo(sYear,eYear=None):
 			else:
 				print 'strange, there is more than 1 record for',rec.time
 		del templist
-	
+		myTime += dt.timedelta(days=1)
+
 	

@@ -11,7 +11,6 @@
 	* :class:`gmeData`
 """
 class gmeData:
-	
 	def parseDb(self,dbDict):
 		"""This method is used to parse a dictionary of gme data from the mongodb into a :class:`gmeData` object.  
 		
@@ -35,6 +34,14 @@ class gmeData:
 		for attr, val in dbDict.iteritems():
 			#check for mongo _id attribute
 			if(attr == '_id'): pass
+			elif(attr == 'kp'):
+				for i in range(len(dbDict['kp'])):
+					num = str(int(dbDict['kp'][i]))
+					mod = dbDict['kp'][i] - int(dbDict['kp'][i])
+					if(mod == .3): mod = '-'
+					elif(mod == .7): mod = '+'
+					else: mod = ''
+					self.kp.append(num+mod) 
 			else:
 				#assign the value to our object
 				try: setattr(self,attr,val)
@@ -65,7 +72,16 @@ class gmeData:
 		dbDict = {}
 		#create dictionary entries for all out our attributes
 		for attr, val in self.__dict__.iteritems():
-			dbDict[attr] = val
+			if(attr == 'kp'):
+				dbDict['kp'] = []
+				for i in range(len(self.kp)):
+					num = int(self.kp[i][0:1])
+					mod = self.kp[i][1:2]
+					if(mod == '+'): num += .7
+					elif(mod == '-'): num += .3
+					else: num += .5
+					dbDict['kp'].append(num)
+			else: dbDict[attr] = val
 		return dbDict
 		
 	def __repr__(self):

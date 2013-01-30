@@ -19,3 +19,14 @@ try: import omni
 except Exception, e: print e
 try: from omni import *
 except Exception, e: print e
+
+
+try: import dst
+except Exception, e: print e
+try: from dst import *
+except Exception, e: print e
+
+try: import ae
+except Exception, e: print e
+try: from ae import *
+except Exception, e: print e

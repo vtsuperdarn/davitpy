@@ -5,7 +5,7 @@
 .. moduleauthor:: AJ, 20130123
 
 *********************
-**Module**: gmi.kp.kp
+**Module**: gme.kp.kp
 *********************
 **Classes**:
 	* :class:`kpDay`
@@ -15,12 +15,12 @@
 	* :func:`mapKpMongo`
 """
 
-
-class kpDay:
-	"""a class to represent a day of kp data.  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
+import gme
+class kpDay(gme.base.gmeBase.gmeData):
+	"""a class to represent a day of kp data.  Extends :class:`gme.base.gmeBase.gmeData`  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
 	
 	**Members**: 
-		* **date** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which day these data are for
+		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which day these data are for
 		* **kp** (list): a list of the 8 3-hour kp values fora single day.  The values are in string form, e.g. '3-', '7+', etc.
 		* **kpSum** (int): the sum of the 8 3-hour kp averages
 		* **ap** (list): a list of the 8 3-hour ap values fora single day.
@@ -37,75 +37,10 @@ class kpDay:
 	**Example**:
 		::
 		
-			emptyKpObj = gmi.kp.kpDay()
+			emptyKpObj = gme.kp.kpDay()
 		
 	written by AJ, 20130123
 	"""
-	def parseDb(self,dbDict):
-		"""This method is used to parse a dictionary of kp data from the mongodb into a :class:`kpDay` object.  
-		
-		.. note::
-			In general, users will not need to use this.
-		
-		**Belongs to**: :class:`kpDay`
-		
-		**Args**: 
-			* **dbDict** (dict): the dictionary from the mongodb
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myKpDayObj.parseDb(mongoDbKpDict)
-			
-		written by AJ, 20130123
-		"""
-		for attr, val in dbDict.iteritems():
-			if(attr == '_id'): pass
-			elif(attr == 'kp'):
-				for i in range(len(dbDict['kp'])):
-					num = str(int(dbDict['kp'][i]))
-					mod = dbDict['kp'][i] - int(dbDict['kp'][i])
-					if(mod == .3): mod = '-'
-					elif(mod == .7): mod = '+'
-					else: mod = ''
-					self.kp.append(num+mod)
-			else:
-				try: setattr(self,attr,val)
-				except Exception,e:
-					print e
-					print 'problem assigning',attr
-					
-	def toDbDict(self):
-		"""This method is used to convert a :class:`kpDay` object into a mongodb kp data dictionary.  In general, users will not need to worry about this
-		
-		**Belongs to**: :class:`kpDay`
-		
-		**Args**: 
-			* Nothing.
-		**Returns**:
-			* **dbDict** (dict): a dictionary in the correct format for writing to the kp mongodb
-		**Example**:
-			::
-			
-				mongoDbKpDict = myKpDayObj.todbDict()
-			
-		written by AJ, 20130123
-		"""
-		dbDict = {}
-		for attr, val in self.__dict__.iteritems():
-			if(attr == 'kp'):
-				dbDict['kp'] = []
-				for i in range(len(self.kp)):
-					num = int(self.kp[i][0:1])
-					mod = self.kp[i][1:2]
-					if(mod == '+'): num += .7
-					elif(mod == '-'): num += .3
-					else: num += .5
-					dbDict['kp'].append(num)
-			else:
-				dbDict[attr] = val
-		return dbDict
 		
 	def parseFtp(self,line,yr):
 		"""This method is used to convert a line of kp data read from the GFZ-Potsdam FTP site into a :class:`kpDay` object.  In general, users will not need to worry about this.
@@ -126,7 +61,7 @@ class kpDay:
 		"""
 		import datetime as dt
 		
-		self.date = dt.datetime(yr,int(line[2:4]),int(line[4:6]))
+		self.time = dt.datetime(yr,int(line[2:4]),int(line[4:6]))
 		for i in range(8):
 			#store the kp vals
 			num = line[12+i*2:12+i*2+1]
@@ -169,7 +104,7 @@ class kpDay:
 		self.info = 'These data were downloaded from the GFZ-Potsdam.  *Please be courteous and give credit to data providers when credit is due.*'
 		self.kp = []
 		self.ap = []
-		self.date = None
+		self.time = None
 		self.kpSum = None
 		self.apMean = None
 		self.sunspot = None
@@ -180,7 +115,7 @@ class kpDay:
 		
 	def __repr__(self):
 		import datetime as dt
-		myStr = 'Kp record FROM: '+str(self.date)+'\n'
+		myStr = 'Kp record FROM: '+str(self.time)+'\n'
 		for key,var in self.__dict__.iteritems():
 			myStr += key+' = '+str(var)+'\n'
 		return myStr
@@ -202,7 +137,7 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 		::
 		
 			import datetime as dt
-			kpList = gmi.kp.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
+			kpList = gme.kp.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
 		
 	written by AJ, 20130123
 	"""
@@ -230,8 +165,8 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 	
 	qryList = []
 	#if arguments are provided, query for those
-	if(sTime != None): qryList.append({'date':{'$gte':sTime}})
-	if(eTime != None): qryList.append({'date':{'$lte':eTime}})
+	if(sTime != None): qryList.append({'time':{'$gte':sTime}})
+	if(eTime != None): qryList.append({'time':{'$lte':eTime}})
 	if(kpMin != None): qryList.append({'kp':{'$gte':kpMin}})
 	if(apMin != None): qryList.append({'ap':{'$gte':kpMin}})
 	if(kpSum != None): qryList.append({'kpSum':{'$gte':min(kpSum)}})
@@ -245,14 +180,14 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 	qryDict = {'$and': qryList}
 	
 	#connect to the database
-	kpData = db.getDataConn(dbName='gmi',collName='kp')
+	kpData = db.getDataConn(dbName='gme',collName='kp')
 	
 	#do the query
 	if(qryList != []): qry = kpData.find(qryDict)
 	else: qry = kpData.find()
 	if(qry.count() > 0):
 		kpList = []
-		for rec in qry.sort('date'):
+		for rec in qry.sort('time'):
 			kpList.append(kpDay(dbDict=rec))
 		print '\nreturning a list with',len(kpList),'days of kp data'
 		return kpList
@@ -295,7 +230,7 @@ def readKpFtp(sTime, eTime=None):
 		::
 		
 			import datetime as dt
-			kpList = gmi.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
+			kpList = gme.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
 			
 	written by AJ, 20130123
 	"""
@@ -334,7 +269,10 @@ def readKpFtp(sTime, eTime=None):
 	lines = []
 	#get the data
 	print 'RETR kp'+str(sTime.year)+'.wdc'
-	ftp.retrlines('RETR kp'+str(sTime.year)+'.wdc',lines.append)
+	try:	ftp.retrlines('RETR kp'+str(sTime.year)+'.wdc',lines.append)
+	except Exception,e:
+		print e
+		print 'couldnt retrieve kp file'
 	
 	#convert the ascii lines into a list of kpDay objects
 	myKp = []
@@ -361,7 +299,7 @@ def mapKpMongo(sYear,eYear=None):
 	**Example**:
 		::
 		
-			gmi.kp.mapKpMongo(1985,eTime=1986)
+			gme.kp.mapKpMongo(1985,eTime=1986)
 		
 	written by AJ, 20130123
 	"""
@@ -372,10 +310,10 @@ def mapKpMongo(sYear,eYear=None):
 	assert(eYear >= sYear), 'error, end year greater than start year'
 	
 	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gmi',collName='kp')
+								dbAddress=os.environ['SDDB'],dbName='gme',collName='kp')
 	
 	#set up all of the indices
-	mongoData.ensure_index('date')
+	mongoData.ensure_index('time')
 	mongoData.ensure_index('kp')
 	mongoData.ensure_index('ap')
 	mongoData.ensure_index('kpSum')
@@ -385,10 +323,11 @@ def mapKpMongo(sYear,eYear=None):
 	#read the kp data from the FTP server
 	datalist = []
 	for yr in range(sYear,eYear+1):
-		templist = readKpFtp(dt.datetime(yr,1,1), dt.datetime(yr,12,31))
+		templist = readKpFtp(dt.datetime(yr,1,1), dt.datetime(yr+1,1,1))
+		if(templist == None): continue
 		for rec in templist:
 			#check if a duplicate record exists
-			qry = mongoData.find({'date':rec.date})
+			qry = mongoData.find({'time':rec.time})
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
 			#if this is a new record, insert it
@@ -402,5 +341,5 @@ def mapKpMongo(sYear,eYear=None):
 				dbDict['_id'] = temp
 				mongoData.save(dbDict)
 			else:
-				print 'strange, there is more than 1 record for',rec.date
+				print 'strange, there is more than 1 record for',rec.time
 	

@@ -5,9 +5,9 @@ gme
 Module with libraries for dealing with Geo-Magnetic Environment (gme)
 
 This includes the following submodules:
-	* **base**
-	* **ind**
-	* **sat**
+	* **base**: basic things for the gme package
+	* **ind**: indices; ie anything that isn't satellite data
+	* **sat**: satellite data
 	* **ampere**
 """
 

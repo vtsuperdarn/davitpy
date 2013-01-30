@@ -18,7 +18,7 @@ class omniRec(gme.base.gmeBase.gmeData):
 	"""a class to represent a record of omni data.  Extends gmeData.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
 	
 	.. warning::
-		AE,AL,AU,SYM/H,SYM/D,ASYM/H,and ASYM/D are included in the omni files and thus are read into this class.  I cannot verify the quality of these indices distributed with Omni data.  For quality assurance on these indices, use the functions in the gmi.mag.indices module.
+		AE,AL,AU,SYM/H,SYM/D,ASYM/H,and ASYM/D are included in the omni files and thus are read into this class.  I cannot verify the quality of these indices distributed with Omni data.  For quality assurance on these indices, use the functions in the gme.mag.indices module.
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
@@ -57,7 +57,7 @@ class omniRec(gme.base.gmeBase.gmeData):
 	**Example**:
 		::
 		
-			emptyOmniObj = gmi.omni.omniRec()
+			emptyOmniObj = gme.omni.omniRec()
 		
 	written by AJ, 20130128
 	"""
@@ -182,7 +182,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 		::
 		
 			import datetime as dt
-			kpList = gmi.omni.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
+			kpList = gme.omni.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
 		
 	written by AJ, 20130128
 	"""
@@ -217,7 +217,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 	#construct the final query definition
 	qryDict = {'$and': qryList}
 	#connect to the database
-	omniData = db.getDataConn(dbName='gmi',collName='omni')
+	omniData = db.getDataConn(dbName='gme',collName='omni')
 	
 	#do the query
 	if(qryList != []): qry = omniData.find(qryDict)
@@ -259,7 +259,7 @@ def readOmniFtp(sTime,eTime=None,res=5):
 		::
 		
 			import datetime as dt
-			omniList = gmi.omni.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
+			omniList = gme.omni.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
 		
 	written by AJ, 20130128
 	"""
@@ -331,7 +331,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	**Example**:
 		::
 		
-			gmi.omni.mapOmniMongo(1997,res=1)
+			gme.omni.mapOmniMongo(1997,res=1)
 		
 	written by AJ, 20130123
 	"""
@@ -348,7 +348,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	
 	#get data connection
 	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gmi',collName='omni')
+								dbAddress=os.environ['SDDB'],dbName='gme',collName='omni')
 	
 	#set up all of the indices
 	mongoData.ensure_index('time')
@@ -364,24 +364,26 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 		
 	#read the omni data from the FTP server
 	for yr in range(sYear,eYear+1):
-		templist = readOmniFtp(dt.datetime(yr,1,1), dt.datetime(yr,12,31,23,59,59,99999),res=res)
-		for rec in templist:
-			#check if a duplicate record exists
-			qry = mongoData.find({'$and':[{'time':rec.time},{'res':rec.res}]})
-			print rec.time
-			tempRec = rec.toDbDict()
-			cnt = qry.count()
-			#if this is a new record, insert it
-			if(cnt == 0): mongoData.insert(tempRec)
-			#if this is an existing record, update it
-			elif(cnt == 1):
-				print 'foundone!!'
-				dbDict = qry.next()
-				temp = dbDict['_id']
-				dbDict = tempRec
-				dbDict['_id'] = temp
-				mongoData.save(dbDict)
-			else:
-				print 'strange, there is more than 1 record for',rec.time
+		for mon in range(1,13):
+			templist = readOmniFtp(dt.datetime(yr,mon,1),dt.datetime(yr,mon,1)+dt.timedelta(days=31),res=res)
+			if(templist == None): continue
+			for rec in templist:
+				#check if a duplicate record exists
+				qry = mongoData.find({'$and':[{'time':rec.time},{'res':rec.res}]})
+				print rec.time
+				tempRec = rec.toDbDict()
+				cnt = qry.count()
+				#if this is a new record, insert it
+				if(cnt == 0): mongoData.insert(tempRec)
+				#if this is an existing record, update it
+				elif(cnt == 1):
+					print 'foundone!!'
+					dbDict = qry.next()
+					temp = dbDict['_id']
+					dbDict = tempRec
+					dbDict['_id'] = temp
+					mongoData.save(dbDict)
+				else:
+					print 'strange, there is more than 1 record for',rec.time
 	
 	
