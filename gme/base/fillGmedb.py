@@ -1,4 +1,4 @@
-def fillGmeDb(time='recent')
+def fillGmeDb(time='recent'):
 	import gme, os
 	import pydarn.sdio.dbUtils as dbu
 	from multiprocessing import Process
@@ -8,6 +8,7 @@ def fillGmeDb(time='recent')
 	if(time == 'recent'): sYear = now.year-1
 	else: 
 		sYear=1980
+		db = dbu.getDbConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],dbName='gme')
 		db.command('repairDatabase')
 		db.poes.remove()
 		db.omni.remove()

@@ -17,3 +17,9 @@ except Exception,e: print e
 
 try: from gmeBase import *
 except Exception,e: print e
+
+try: import fillGmedb
+except Exception,e: print e
+
+try: from fillGmedb import *
+except Exception,e: print e
