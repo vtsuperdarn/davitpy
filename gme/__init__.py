@@ -1,19 +1,14 @@
-# Overall module for gmi (Geo Magnetic Indices)
+# Overall module for gme (Geo Magnetic Environment)
 """
-*******************************
-            GME
-*******************************
+gme
+***
 Module with libraries for dealing with Geo-Magnetic Environment (gme)
 
 This includes the following submodules:
 	* **base**
-	* **kp**
+	* **ind**
+	* **sat**
 	* **ampere**
-	* **omni**
-	
-	
-
-*******************************
 """
 
 try: import base
@@ -21,16 +16,18 @@ except Exception,e: print e
 try: from base import *
 except Exception,e: print e
 
-try: import kp
+try: import ind
 except Exception,e: print e
-try: from kp import *
+try: from ind import *
+except Exception,e: print e
 
+try: import sat
 except Exception,e: print e
+try: from sat import *
+except Exception,e: print e
+
+
 try: import ampere
 except Exception,e: print e
 
-try: import omni
-except Exception,e: print e
-try: from omni import *
-except Exception,e: print e
 
