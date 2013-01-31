@@ -11,6 +11,25 @@
 	* :class:`gmeData`
 """
 class gmeData:
+		"""a class to represent a a record of gme data.  Other classes will extend this class
+		
+	**Members**: 
+		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
+		* **dataSet** (str): a string indicating the dataset
+		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
+	.. note::
+		If any of the members have a value of None, this means that they could not be read for that specific time
+   
+	**Methods**:
+		* :func:`parseDb`
+		* :func:`toDbDict`
+	**Example**:
+		::
+		
+			emptyObj = gme.base.gmeData()
+		
+	written by AJ, 20130131
+	"""
 	def parseDb(self,dbDict):
 		"""This method is used to parse a dictionary of gme data from the mongodb into a :class:`gmeData` object.  
 		

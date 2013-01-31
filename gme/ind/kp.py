@@ -5,7 +5,7 @@
 .. moduleauthor:: AJ, 20130123
 
 *********************
-**Module**: gme.kp.kp
+**Module**: gme.ind.kp
 *********************
 **Classes**:
 	* :class:`kpDay`
@@ -37,7 +37,7 @@ class kpDay(gme.base.gmeBase.gmeData):
 	**Example**:
 		::
 		
-			emptyKpObj = gme.kp.kpDay()
+			emptyKpObj = gme.ind.kpDay()
 		
 	written by AJ, 20130123
 	"""
@@ -137,7 +137,7 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 		::
 		
 			import datetime as dt
-			kpList = gme.kp.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
+			kpList = gme.ind.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
 		
 	written by AJ, 20130123
 	"""
@@ -230,7 +230,7 @@ def readKpFtp(sTime, eTime=None):
 		::
 		
 			import datetime as dt
-			kpList = gme.kp.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
+			kpList = gme.ind.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
 			
 	written by AJ, 20130123
 	"""
@@ -299,7 +299,7 @@ def mapKpMongo(sYear,eYear=None):
 	**Example**:
 		::
 		
-			gme.kp.mapKpMongo(1985,eTime=1986)
+			gme.ind.mapKpMongo(1985,eTime=1986)
 		
 	written by AJ, 20130123
 	"""

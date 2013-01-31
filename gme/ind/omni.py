@@ -4,7 +4,7 @@
 
 .. moduleauthor:: AJ, 20130128
 
-**Module**: gme.omni.omni
+**Module**: gme.ind.omni
 *************************
 **Classes**:
 	* :class:`omniRec`
@@ -22,6 +22,7 @@ class omniRec(gme.base.gmeBase.gmeData):
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
+		* **dataSet** (str): the name of the data set
 		* **res** (int): the time resolution of the data, in minutes
 		* **timeshift** (int): timeshift from ACE to bowshock
 		* **bMagAvg** (float): average IMF B magnitude, nT
@@ -57,13 +58,13 @@ class omniRec(gme.base.gmeBase.gmeData):
 	**Example**:
 		::
 		
-			emptyOmniObj = gme.omni.omniRec()
+			emptyOmniObj = gme.ind.omniRec()
 		
 	written by AJ, 20130128
 	"""
 		
 	def parseFtp(self,line):
-		"""This method is used to convert a line of omni data read from the MASA SPDF FTP site into a :class:`omniRec` object.
+		"""This method is used to convert a line of omni data read from the NASA SPDF FTP site into a :class:`omniRec` object.
 		
 		.. note::
 			In general, users will not need to worry about this.
@@ -182,7 +183,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 		::
 		
 			import datetime as dt
-			kpList = gme.omni.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
+			omniList = gme.ind.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
 		
 	written by AJ, 20130128
 	"""
@@ -259,7 +260,7 @@ def readOmniFtp(sTime,eTime=None,res=5):
 		::
 		
 			import datetime as dt
-			omniList = gme.omni.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
+			omniList = gme.ind.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
 		
 	written by AJ, 20130128
 	"""
@@ -298,7 +299,7 @@ def readOmniFtp(sTime,eTime=None,res=5):
 		if(res == 1): fname = 'omni_min'+str(yr)+'.asc'
 		else: fname = 'omni_5min'+str(yr)+'.asc'
 		print 'RETR '+fname
-		try: ftp.retrlines('RETR '+fname,lines.append)
+		try: ftp.retrlines('omni: RETR '+fname,lines.append)
 		except Exception,e:
 			print e
 			print 'error retrieving',fname
@@ -317,7 +318,7 @@ def readOmniFtp(sTime,eTime=None,res=5):
 		return None
 		
 def mapOmniMongo(sYear,eYear=None,res=5):
-	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection and maps it to the mongodb.  
+	"""This function reads omni data from the NASA SPDF FTP server via anonymous FTP connection and maps it to the mongodb.  
 	
 	.. warning::
 		In general, nobody except the database admins will need to use this function
@@ -331,7 +332,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	**Example**:
 		::
 		
-			gme.omni.mapOmniMongo(1997,res=1)
+			gme.ind.mapOmniMongo(1997,res=1)
 		
 	written by AJ, 20130123
 	"""

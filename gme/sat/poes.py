@@ -17,10 +17,81 @@
 
 import gme
 class poesRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of poes data.  Extends :class:`gme.gmeData`.  Insight on the class members can be obtained from `the NOAA NGDC site <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>`_.  Note that Poes data is available from 1998-present day (or whatever the latest NOAA has uploaded is).  The data are the 16-second averages
+	"""a class to represent a record of poes data.  Extends :class:`gme.gmeData`.  Insight on the class members can be obtained from `the NOAA NGDC site <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>`_.  Note that Poes data is available from 1998-present day (or whatever the latest NOAA has uploaded is).  **The data are the 16-second averages**
+	
+	**Members**: 
+		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
+		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
+		* **dataSet** (str): the name of the data set
+		* **satnum** (ind): the noaa satellite number
+		* **sslat** (float): Geographic Latitude of sub-satellite point, degrees
+		* **sslon** (float): Geographic Longitude of sub-satellite point, degrees
+		* **folat** (float): Geographic Latitude of foot-of-field-line, degrees
+		* **folon** (float): Geographic Longitude of foot-of-field-line, degrees
+		* **lval** (float): L-value
+		* **mlt** (float): Magnetic local time of foot-of-field-line, degrees
+		* **pas0** (float): MEPED-0 pitch angle at satellite, degrees
+		* **pas90** (float): MEPED-90 pitch angle at satellite, degrees
+		* **mep0e1** (float): MEPED-0 > 30 keV electrons, counts/sec
+		* **mep0e2** (float): MEPED-0 > 100 keV electrons, counts/sec
+		* **mep0e3** (float): MEPED-0 > 300 keV electrons, counts/sec
+		* **mep0p1** (float):MEPED-0 30 keV to 80 keV protons, counts/sec
+		* **mep0p2** (float): MEPED-0 80 keV to 240 keV protons, counts/sec
+		* **mep0p3** (float): 240 kev to 800 keV protons, counts/sec
+		* **mep0p4** (float): MEPED-0 800 keV to 2500 keV protons, counts/sec
+		* **mep0p5** (float): MEPED-0 2500 keV to 6900 keV protons, counts/sec
+		* **mep0p6** (float): MEPED-0 > 6900 keV protons, counts/sec,
+		* **mep90e1** (float): MEPED-90 > 30 keV electrons, counts/sec,
+		* **mep90e2** (float): MEPED-90 > 100 keV electrons, counts/sec
+		* **mep90e3** (float): MEPED-90 > 300 keV electrons, counts/sec
+		* **mep90p1** (float): MEPED-90 30 keV to 80 keV protons, counts/sec
+		* **mep90p2** (float): MEPED-90 80 keV to 240 keV protons, counts/sec
+		* **mep90p3** (float): MEPED-90 240 kev to 800 keV protons, counts/sec,
+		* **mep90p4** (float): MEPED-90 800 keV to 2500 keV protons, counts/sec
+		* **mep90p5** (float): MEPED-90 2500 keV to 6900 keV protons, counts/sec
+		* **mep90p6** (float):MEPED-90 > 6900 keV protons, counts/sec
+		* **mepomp6** (float): MEPED omni-directional > 16 MeV protons, counts/sec
+		* **mepomp7** (float): MEPED omni-directional > 36 Mev protons, counts/sec
+		* **mepomp8** (float): MEPED omni-directional > 70 MeV protons, counts/sec
+		* **mepomp9** (float): MEPED omni-directional >= 140 MeV protons
+		* **ted** (float): TED, Total Energy Detector Average, ergs/cm2/sec
+		* **echar** (float): TED characteristic energy of electrons, eV
+		* **pchar** (float): TED characteristic energy of protons, eV
+		* **econtr** (float): TED electron contribution, Electron Energy/Total Energy
+		
+		
+	.. note::
+		If any of the members have a value of None, this means that they could not be read for that specific time
+   
+	**Methods**:
+		* :func:`parseFtp`
+	**Example**:
+		::
+		
+			emptyPoesObj = gme.sat.poesRec()
+		
+	written by AJ, 20130131
 	"""
 	
 	def parseFtp(self,line, header):
+		"""This method is used to convert a line of poes data read from the NOAA NGDC FTP site into a :class:`poesRec` object.
+		
+		.. note::
+			In general, users will not need to worry about this.
+		
+		**Belongs to**: :class:`poesRec`
+		
+		**Args**: 
+			* **line** (str): the ASCII line from the FTP server
+		**Returns**:
+			* Nothing.
+		**Example**:
+			::
+			
+				myPoesObj.parseFtp(ftpLine)
+			
+		written by AJ, 20130131
+		"""
 		import datetime as dt
 		
 		#split the line into cols
@@ -39,6 +110,27 @@ class poesRec(gme.base.gmeBase.gmeData):
 			if(cols[ind] != -999.): setattr(self,key,float(cols[ind]))
 	
 	def __init__(self, ftpLine=None, dbDict=None, satnum=None, header=None):
+		"""the intialization fucntion for a :class:`omniRec` object.  
+		
+		.. note::
+			In general, users will not need to worry about this.
+		
+		**Belongs to**: :class:`omniRec`
+		
+		**Args**: 
+			* [**ftpLine**] (str): an ASCII line from the FTP server. if this is provided, the object is initialized from it.  header must be provided in conjunction with this.  default=None
+			* [**header**] (str): the header from the ASCII FTP file.  default=None
+			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default = None
+			* [**satnum**] (int): the satellite nuber.  default=None
+		**Returns**:
+			* Nothing.
+		**Example**:
+			::
+			
+				myPoesObj = poesRec(ftpLine=aftpLine)
+			
+		written by AJ, 20130131
+		"""
 		#note about where data came from
 		self.dataSet = 'Poes'
 		self.info = 'These data were downloaded from NASA SPDF.  *Please be courteous and give credit to data providers when credit is due.*'
@@ -83,9 +175,30 @@ class poesRec(gme.base.gmeBase.gmeData):
 		if(dbDict != None): self.parseDb(dbDict)
 		
 def readPoes(sTime,eTime=None,satnum=None,folat=None,folon=None,ted=None,echar=None,pchar=None):
-	"""This function reads poes data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the NOAA NGDC FTP server using :func:`readPoesFtp`
-	written by AJ, 20130130
+	"""This function reads poes data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the NOAA NGDC FTP server using :func:`readPoesFtp`.  The data are 16-second averages
+
+	**Args**: 
+		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
+		* [**satnum**] (int): the satellite you want data for.  eg 17 for noaa17.  if this is None, data for all satellites will be returned.  default = None
+		* [**satnum**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bx values in the range [a,b] will be returned.  default = None
+		* [**folat**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bx values in the range [a,b] will be returned.  default = None
+		* [**folon**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bye values in the range [a,b] will be returned.  default = None
+		* [**ted**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bze values in the range [a,b] will be returned.  default = None
+		* [**echar**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bym values in the range [a,b] will be returned.  default = None
+		* [**pchar**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bzm values in the range [a,b] will be returned.  default = None
+		
+	**Returns**:
+		* **poesList** (list or None): if data is found, a list of :class:`poesRec` objects matching the input parameters is returned.  If no data is found, None is returned.
+	**Example**:
+		::
+		
+			import datetime as dt
+			poesList = gme.sat.readPoes(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),folat=[60,80])
+		
+	written by AJ, 20130131
 	"""
+	
 	import datetime as dt
 	import pydarn.sdio.dbUtils as db
 	
@@ -144,6 +257,22 @@ def readPoes(sTime,eTime=None,satnum=None,folat=None,folon=None,ted=None,echar=N
 			
 def readPoesFtp(sTime,eTime=None):
 	"""This function reads poes data from the NOAA NGDC server via anonymous FTP connection.
+	
+	.. warning::
+		You should not use this. Use the general function :func:`readPoes` instead.
+	
+	**Args**: 
+		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal 1 day after sTime.  default = None
+	**Returns**:
+		* **poesList** (list or None): if data is found, a list of :class:`poesRec` objects matching the input parameters is returned.  If no data is found, None is returned.
+	**Example**:
+		::
+		
+			import datetime as dt
+			poesList = gme.sat.readpoesFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
+		
+	written by AJ, 20130128
 	"""
 	
 	from ftplib import FTP
@@ -158,14 +287,14 @@ def readPoesFtp(sTime,eTime=None):
 	try: ftp = FTP('satdat.ngdc.noaa.gov')	
 	except Exception,e:
 		print e
-		print 'problem connecting to SPDF server'
+		print 'problem connecting to NOAA server'
 		return None
 		
 	#login as anonymous
 	try: l=ftp.login()
 	except Exception,e:
 		print e
-		print 'problem logging in to SPDF server'
+		print 'problem logging in to NOAA server'
 		return None
 		
 	myPoes = []
@@ -188,7 +317,7 @@ def readPoesFtp(sTime,eTime=None):
 			#chege to file directory
 			ftp.cwd('/sem/poes/data/avg/txt/'+str(myTime.year)+'/'+dire)
 			fname = 'poes_n'+satnum+'_'+myTime.strftime("%Y%m%d")+'.txt'
-			print 'RETR '+fname
+			print 'poes: RETR '+fname
 			#list to hold the lines
 			lines = []
 			#get the data
@@ -213,6 +342,23 @@ def readPoesFtp(sTime,eTime=None):
 	
 
 def mapPoesMongo(sYear,eYear=None):
+	"""This function reads poes data from the NOAA NGDC FTP server via anonymous FTP connection and maps it to the mongodb.  
+	
+	.. warning::
+		In general, nobody except the database admins will need to use this function
+	
+	**Args**: 
+		* **sYear** (int): the year to begin mapping data
+		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
+	**Returns**:
+		* Nothing.
+	**Example**:
+		::
+		
+			gme.sat.mapPoesMongo(2004)
+		
+	written by AJ, 20130131
+	"""
 	import pydarn.sdio.dbUtils as db
 	import os, datetime as dt
 	
