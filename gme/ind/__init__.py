@@ -30,3 +30,8 @@ try: import ae
 except Exception, e: print e
 try: from ae import *
 except Exception, e: print e
+
+try: import symasy
+except Exception, e: print e
+try: from symasy import *
+except Exception, e: print e

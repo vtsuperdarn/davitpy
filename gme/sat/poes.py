@@ -238,8 +238,8 @@ def mapPoesMongo(sYear,eYear=None):
 	#read the poes data from the FTP server
 	myTime = dt.datetime(sYear,1,1)
 	while(myTime < dt.datetime(eYear+1,1,1)):
-		#1 day at a time, to not fill up RAM
-		templist = readPoesFtp(myTime,myTime+dt.timedelta(days=1))
+		#10 day at a time, to not fill up RAM
+		templist = readPoesFtp(myTime,myTime+dt.timedelta(days=10))
 		if(templist == None): continue
 		for rec in templist:
 			#check if a duplicate record exists
@@ -260,6 +260,6 @@ def mapPoesMongo(sYear,eYear=None):
 			else:
 				print 'strange, there is more than 1 record for',rec.time
 		del templist
-		myTime += dt.timedelta(days=1)
+		myTime += dt.timedelta(days=10)
 
 	

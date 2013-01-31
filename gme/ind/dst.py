@@ -140,7 +140,7 @@ def mapDstMongo(sYear,eYear=None):
 	mongoData.ensure_index('dst')
 	
 	for yr in range(sYear,eYear+1):
-		#1 day at a time, to not fill up RAM
+		#1 year at a time, to not fill up RAM
 		templist = readDstWeb(dt.datetime(yr,1,1),dt.datetime(yr,12,31))
 		for rec in templist:
 			#check if a duplicate record exists
