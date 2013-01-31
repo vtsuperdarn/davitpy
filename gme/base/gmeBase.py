@@ -10,8 +10,9 @@
 **Classes**:
 	* :class:`gmeData`
 """
+
 class gmeData:
-		"""a class to represent a a record of gme data.  Other classes will extend this class
+	"""a class to represent a a record of gme data.  Other classes will extend this class
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for

@@ -15,7 +15,7 @@
 """
 import gme
 class omniRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of omni data.  Extends gmeData.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
+	"""a class to represent a record of omni data.  Extends :class:`gmeBase.gmeData`.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
 	
 	.. warning::
 		AE,AL,AU,SYM/H,SYM/D,ASYM/H,and ASYM/D are included in the omni files and thus are read into this class.  I cannot verify the quality of these indices distributed with Omni data.  For quality assurance on these indices, use the functions in the gme.mag.indices module.

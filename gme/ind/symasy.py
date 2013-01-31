@@ -17,7 +17,7 @@
 
 import gme
 class symAsyRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of sym/asy data.  Extends :class:`gme.base.gmeBase.gmeData` . Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
+	"""a class to represent a record of sym/asy data.  Extends :class:`gmeBase.gmeData`. Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
