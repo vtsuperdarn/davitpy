@@ -30,8 +30,10 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 		* **myPtr** (:class:`radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
 		
 	**Example**:
-		>>> import datetime as dt
-		>>> myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+		::
+		
+			import datetime as dt
+			myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
 		
 	Written by AJ 20130110
 	"""
@@ -250,9 +252,11 @@ def radDataReadRec(myPtr):
 		* **myBeam** (:class:`radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
 		
 	**Example**:
-		>>> import datetime as dt
-		>>> myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-		>> myBeam = radDataReadRec(myPtr)
+		::
+		
+			import datetime as dt
+			myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+			myBeam = radDataReadRec(myPtr)
 		
 	Written by AJ 20130110
 	"""

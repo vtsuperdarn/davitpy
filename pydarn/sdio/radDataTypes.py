@@ -78,7 +78,9 @@ class baseData():
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myBaseData.dbDictToObj(mongoDbDict)
+			::
+			
+				myBaseData.dbDictToObj(mongoDbDict)
 			
 		written by AJ, 20130123
 		"""
@@ -98,29 +100,6 @@ class baseData():
 			#otherwise, copy the value
 			else: setattr(self,cipher[key],val)
 			
-	#def dictToObj(self,aDict):
-		#"""This method is used to parse a dictionary of radar data from a dmap file into a :class:`baseData` object.
-		#.. note::
-			#In general, users will not need to use this.
-		
-		#**Args**: 
-			#* **aDict** (dict): the dictionary from the dmap file
-		#**Returns**:
-			#* Nothing.
-		#**Example**:
-			#>>> myBaseData.dictToObj(dmapDict)
-			
-		#written by AJ, 20130123
-		#"""
-		#for key, val in aDict.iteritems():
-			##if the value is a dictionary, make a recursive call
-			#if(isinstance(val,dict)): 
-				#if(key == 'fitex' or key == 'lmfit' or key == 'fitacf'):
-					#self.fit.dictToObj(val)
-				#else: getattr(self, key).dictToObj(val)
-			##otherwise, copy the value
-			#else: setattr(self,key,val)
-			
 	def toDbDict(self):
 		"""This method is used to convert a :class:`baseData` object into a mongodb radData data dictionary.  
 		
@@ -132,7 +111,9 @@ class baseData():
 		**Returns**:
 			* **aDict** (dict): a dictionary in the correct format for writing to the radData mongodb
 		**Example**:
-			>>> mongoDbDict = aBaseDataObj.todbDict()
+			::
+			
+				mongoDbDict = aBaseDataObj.todbDict()
 			
 		written by AJ, 20130123
 		"""
@@ -278,7 +259,9 @@ class beamData(baseData):
 		* **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
 
 	**Example**: 
-		>>> myBeam = pydarn.sdio.radBeam()
+		::
+		
+			myBeam = pydarn.sdio.radBeam()
 		
 	Written by AJ 20121130
 	"""
@@ -399,7 +382,9 @@ class fitData(baseData):
 		* **elv**  (npnts length list): elevation angle
 	
 	**Example**: 
-		>>> myFit = pydarn.sdio.fitData()
+		::
+		
+			myFit = pydarn.sdio.fitData()
 		
 	Written by AJ 20121130
 	"""
@@ -436,7 +421,9 @@ class rawData(baseData):
 		* **xcfd** (nrang x mplgs x 2 length list): xcf data
 	
 	**Example**: 
-		>>> myRaw = pydarn.sdio.rawData()
+		::
+		
+			myRaw = pydarn.sdio.rawData()
 		
 	Written by AJ 20130125
 	"""
@@ -471,7 +458,9 @@ class iqData(baseData):
 		* **intData** (seqnum x smpnum x 2 length list): the actual iq samples (interferometer)
 	
 	**Example**: 
-		>>> myIq = pydarn.sdio.iqData()
+		::
+		
+			myIq = pydarn.sdio.iqData()
 		
 	Written by AJ 20130116
 	"""

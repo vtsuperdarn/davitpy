@@ -1,3 +1,21 @@
+"""
+.. module:: dbUtils
+   :synopsis: the classes needed for manipulating the mongodb
+   
+.. moduleauthor:: AJ, 20130108
+*********************
+**Module**: pydarn.sdio.dbUtils
+*********************
+**Functions**:
+	* :func:`getServerConn`
+	* :func:`getDbConn`
+	* :func:`getDataConn`
+	* :func:`updateDbDict`
+	* :func:`readFromDb`
+	* :func:`mapDbFit`
+"""
+
+
 from pymongo import MongoClient
 from pydarn.sdio import *
 from pydarn.sdio.radDataTypes import *
