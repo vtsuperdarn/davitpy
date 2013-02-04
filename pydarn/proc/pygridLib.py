@@ -33,7 +33,7 @@ from pydarn.sdio.radDataRead import *
 from utils.timeUtils import *
 from utils.geoPack import *
 
-def makePygridBatch(sDateStr,eDateStr=None,hemi='both',interval=120,merge=1,vb=0,filter=1):
+def makePygridBatch(sTime,eTime=None,hemi='both',interval=120,merge=1,vb=0,filter=1):
 	"""
 
 	PACKAGE: pydarn.proc.pygridLib
@@ -64,45 +64,46 @@ def makePygridBatch(sDateStr,eDateStr=None,hemi='both',interval=120,merge=1,vb=0
 
 	"""
 	
-	import datetime,pydarn
+	import datetime as dt,pydarn
 	#check for valie date input
-	assert(isinstance(sDateStr,str) and len(sDateStr) == 8),\
-	'error, sDateStr must be a date in yyyymmdd format'
-	sDate = yyyymmddToDate(sDateStr)
-	if(eDateStr == None): eDate = sDate
+	assert(isinstance(sTime,dt.datetime)),\
+		'error, sTime must be a datetime object'
+	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
 	else:
-		assert(isinstance(eDateStr,str) and len(eDateStr) == 8),\
-		'error, eDateStr must be a date in yyyymmdd format'
-		eDate = yyyymmddToDate(eDateStr)
+		assert(isinstance(eTime,dt.datetime)),\
+			'error, eTime must be None or a datetime object'
 	#check for valid hemi input
 	if(hemi != None):
 		assert(hemi == 'north' or hemi == 'south' or hemi == 'both'),\
-		"error, acceptable values for hemi are 'north', 'south', or 'both'"
+			"error, acceptable values for hemi are 'north', 'south', or 'both'"
 		#get 3 letter radar codes
 		if(hemi == 'both'):
 			rads = pydarn.radar.network().getAllCodes()
 		else:
 			rads = pydarn.radar.network().getAllCodes(hemi=hemi)
 		#iterate from start to end date
-		cDate = sDate
-		while(cDate <= eDate):
+		cDate = dt.datetime(sTime.year,sTime.month,sTime.day)
+		while(cDate <= dt.datetime(eTime.year,eTime.month,eTime.day)):
 			#iterate through the radars
 			for r in rads:
 				if(vb == 1): print r, cDate
-				#make the pygrid files
-				makePygrid(dateToYyyymmdd(cDate),r,vb=vb,interval=interval,filter=filter)
+				##make the pygrid files
+				#if(dt.datetime(sTime.year,sTime.month,sTime.day) < dt.datetime(eTime.year,eTime.month,eTime.day)):
+					#makePygrid(sTime,r,eTime=eTime,vb=vb,interval=interval,filter=filter)
+				#else: 
+					#makePygrid(sTime,r,eTime=eTime,vb=vb,interval=interval,filter=filter)
 			#merge the pygrid files if desired
 			if(merge == 1):
 				if(hemi == 'both'):
-					mergePygrid(dateToYyyymmdd(cDate),hemi='north',vb=vb,interval=interval)
-					mergePygrid(dateToYyyymmdd(cDate),hemi='south',vb=vb,interval=interval)
+					mergePygrid(cDate,hemi='north',vb=vb,interval=interval)
+					mergePygrid(cDate,hemi='south',vb=vb,interval=interval)
 				else:
-					mergePygrid(dateToYyyymmdd(cDate),hemi=hemi,vb=vb,interval=interval)
+					mergePygrid(cDate,hemi=hemi,vb=vb,interval=interval)
 			#increment current datetime by 1 day
-			cDate += datetime.timedelta(days=1)
+			cDate += dt.timedelta(days=1)
 	
 	
-def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
+def mergePygrid(sTime,hemi='north',eTime=None,interval=120,vb=0):
 	"""
 
 	PACKAGE: pydarn.proc.pygridLib
@@ -129,24 +130,16 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 	Written by AJ 20120807
 
 	"""
-	import datetime,pydarn,os,string,math
+	import datetime as dt,pydarn,os,string,math
 	
 	#convert date string, start time, end time to datetime
-	myDate = yyyymmddToDate(dateStr)
-	hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
-	min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
-	stime = myDate.replace(hour=hr1,minute=min1)
-	if(hr2 == 24):
-		etime = myDate+datetime.timedelta(days=1)
-	else:
-		etime = myDate.replace(hour=hr2,minute=min2)
+	if(eTime == None): eTime = sTime + dt.timedelta(days=1)
 		
 	baseDir = os.environ['DATADIR']+'/pygrid'
 	codes = pydarn.radar.network().getAllCodes(hemi=hemi)
 	myFiles,fileNames = [],[]
 	for c in codes:
-
-		fileName = locatePygridFile(dateStr,c)
+		fileName = locatePygridFile(sTime.strftime("%Y%m%d"),c)
 		if(fileName == None): continue
 		print 'opening: '+fileName
 		fileNames.append(fileName)
@@ -158,28 +151,26 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 	d = baseDir+'/'+hemi
 	if not os.path.exists(d):
 		os.makedirs(d)
-	outName = d+'/'+dateStr+'.'+hemi+'.pygrid.hdf5'
+	outName = d+'/'+sTime.strftime("%Y%m%d")+'.'+hemi+'.pygrid.hdf5'
 	outFile = openPygrid(outName,'w')
 	
 	g = pygrid()
-	ctime = stime
+	cTime = sTime
 	#until we reach the designated end time
-	while ctime < etime:
+	while cTime < eTime:
 		#boundary time
-		bndT = ctime+datetime.timedelta(seconds=interval)
+		bndT = cTime+dt.timedelta(seconds=interval)
 		#remove vectors from the grid object
 		g.delVecs()
 		#verbose option
-		if(vb==1): print ctime
-
-		
+		if(vb==1): print cTime
 		for f in myFiles:
-			readPygridRec(f,g,datetimeToEpoch(ctime),\
-			datetimeToEpoch(bndT))
+			readPygridRec(f,g,datetimeToEpoch(cTime),\
+											datetimeToEpoch(bndT))
 			
 		if(g.nVecs > 0):
-			g.stime = ctime
-			g.etime = bndT
+			g.sTime = cTime
+			g.eTime = bndT
 			g.mergeVecs()
 			g.nVecs = 0
 			for l in g.lats:
@@ -189,7 +180,7 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 			writePygridRec(outFile,g)
 		
 		#reassign the current time we are at
-		ctime = bndT
+		cTime = bndT
 	
 	#close the files
 	closePygrid(outFile)
@@ -200,7 +191,7 @@ def mergePygrid(dateStr,hemi='north',time=[0,2400],interval=120,vb=0):
 		os.system('bzip2 '+f)
 		
 
-def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filter=1):
+def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=120,vb=0,filter=1):
 	
 	"""
 
@@ -227,73 +218,64 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 	Written by AJ 20120807
 
 	"""
-	import pydarn,math,datetime,models.aacgm as aacgm,os
+	import pydarn,math,datetime as dt,models.aacgm as aacgm,os
 
 	
-	#convert date string, start time, end time to datetime
-	myDate = yyyymmddToDate(dateStr)
-	hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
-	min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
-	stime = myDate.replace(hour=hr1,minute=min1)
-	if(hr2 == 24):
-		etime = myDate+datetime.timedelta(days=1)
-	else:
-		etime = myDate.replace(hour=hr2,minute=min2)
+	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
 	
 	#read the radar data
-	myFile = dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
-	if(myFile == None): return None
+	myFile = radDataOpen(sTime,rad,eTime=eTime,fileType=fileType,filtered=True,src='local')
+	if(myFile == None): 
+		print 'could not find data requested, returning None'
+		return None
 	
 	#get a radar site object
-	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(stime)
+	site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(sTime)
 
 	#a list for all the grid objects
 	myGrids = []
 	#create a pygrid object
 	g = pygrid()
 	#initialize start time
-	ctime = stime
+	cTime = sTime
 	lastInd = 0
 
 
 	d = os.environ['DATADIR']+'/pygrid/'+rad
 	if not os.path.exists(d):
 		os.makedirs(d)
-	fileName = d+'/'+dateStr+'.'+rad+'.pygrid.hdf5'
+	fileName = d+'/'+sTime.strftime("%Y%m%d")+'.'+rad+'.pygrid.hdf5'
 	#open a pygrid file
 	gFile = openPygrid(fileName,'w')
 	
 
 	
 	oldCpid = -999999999999999
-	myBeam = radDataReadRec(myFile,channel='a')
-	while(myBeam['prm']['time'] < stime and myBeam != None):
-		myBeam = radDataReadRec(myFile,channel='a')
+	myBeam = radDataReadRec(myFile)
 
 	#until we reach the designated end time
-	while ctime < etime:
+	while cTime < eTime:
 		if(myBeam == None): break
 		
 		#boundary time
-		bndT = ctime+datetime.timedelta(seconds=interval)
+		bndT = cTime+dt.timedelta(seconds=interval)
 		#remove vectors from the grid object
 		g.delVecs()
 		#verbose option
-		if(vb==1): print ctime
+		if(vb==1): print cTime
 		#iterate through the radar data
-		
-		while(myBeam['prm']['time'] < bndT):
+		while(myBeam.time < bndT):
 			
 			#current time of radar data
-			t = myBeam['prm']['time'] 
+			t = myBeam.time
 			
 			#check for a control program change
-			if(myBeam['prm']['cp'] != oldCpid and myBeam['prm']['channel'] < 2):
+			if(myBeam.cp != oldCpid and myBeam.channel == 'a'):
 				#get possibly new ngates
-				ngates = max([site.maxgate,myBeam['prm']['nrang']])
+				ngates = max([site.maxgate,myBeam.prm.nrang])
 				#gereate a new FOV
-				myFov = pydarn.radar.radFov.fov(site=site,rsep=myBeam['prm']['rsep'],\
-				ngates=ngates+1,nbeams=site.maxbeam)
+				myFov = pydarn.radar.radFov.fov(site=site,rsep=myBeam.prm.rsep,\
+					ngates=ngates+1,nbeams=site.maxbeam)
 				#create a 2D list to hold coords of RB cells
 				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
 				#generate new coordsList
@@ -303,37 +285,35 @@ def makePygrid(dateStr,rad,time=[0,2400],fileType='fitex',interval=120,vb=0,filt
 						arr2=aacgm.aacgmConv(myFov.latCenter[ii][jj+1],myFov.lonCenter[ii][jj+1],300,0)
 						azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
 						coordsList[ii][jj] = [arr1[0],arr1[1],azm]
-				oldCpid = myBeam['prm']['cp']
+				oldCpid = myBeam.cp
 				
 			#are we in the target time interval?
-			if(ctime < t <= bndT): 
+			if(cTime < t <= bndT): 
 				#enter the radar data into the grid
 				g.enterData(myBeam,coordsList)
 				
 			#read the next record
-			myBeam = radDataReadRec(myFile,channel='a')
+			myBeam = radDataReadRec(myFile)
 			
 			if(myBeam == None): break
 
 		#if we have > 0 gridded vector
 		if(g.nVecs > 0):
 			#record some information
-			g.stime = ctime
-			g.etime = bndT
+			g.sTime = cTime
+			g.eTime = bndT
 			#average is LOS vectors
 			g.averageVecs()
 			#write to the hdf5 file
 			writePygridRec(gFile,g)
 			
 		#reassign the current time we are at
-		ctime = bndT
+		cTime = bndT
 		
 		
 	closePygrid(gFile)
 	if(os.path.exists(fileName+'.bz2')): os.system('rm '+fileName+'.bz2')
 	os.system('bzip2 '+fileName)
-	
-	myFile.close()
 			
 	
 class pygridVec(object):
@@ -375,7 +355,7 @@ class pygridVec(object):
 		self.rng = rng
 		
 		
-class mergeVec(object):
+class mergeVec:
 	"""
 	
 	PACKAGE: pydarn.proc.pygridLib
@@ -408,7 +388,7 @@ class mergeVec(object):
 		self.azm = azm
 		
 		
-class pygridCell(object):
+class pygridCell:
 	"""
 
 	PACKAGE: pydarn.proc.pygridLib
@@ -457,7 +437,7 @@ class pygridCell(object):
 		self.mrgVec = None
 		
 		
-class latCell(object):
+class latCell:
 	"""
 
 	PACKAGE: pydarn.proc.pygridLib
@@ -498,8 +478,6 @@ class latCell(object):
 		#iterate over all longitudinal cells
 		for i in range(0,self.nCells):
 			#calculate left and right mlt boundaries for this pygridCell
-			#mlt1 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*i)
-			#mlt2 = aacgm.mltFromYmdhms(2012,1,1,0,0,0,self.delLon*(i+1))
 			mlt1=i*24./self.nCells
 			mlt2=(i+1)*24./self.nCells
 			#create a new pygridCell object and append it to the list
@@ -542,8 +520,8 @@ class pygrid(object):
 		#latitude step size
 		self.delLat = 90./self.nLats
 		
-		self.stime = None
-		self.etime = None
+		self.sTime = None
+		self.eTime = None
 		
 		#for all the latitude steps
 		for i in range(0,self.nLats):
@@ -714,24 +692,24 @@ class pygrid(object):
 		import math,models.aacgm as aacgm,time
 		
 		#go through all scatter points on this beam
-		for i in range(myData['fit']['npnts']):
+		for i in range(len(myData.fit.slist)):
 			
 			#check for good ionospheric scatter
-			if(myData['fit']['gflg'][i] == 0 and myData['fit']['v'][i] != 0.0):
+			if(myData.fit.gflg[i] == 0 and myData.fit.v[i] != 0.0):
 				
 				#range gate number
-				rng = myData['fit']['slist'][i]
+				rng = myData.fit.slist[i]
 				#get coords of r-b cell
-				myPos = coordsList[myData['prm']['bmnum']][rng]
+				myPos = coordsList[myData.bmnum][rng]
 				#latitudinal index
 				latInd = int(math.floor(myPos[0]/self.delLat))
 				
 				#convert coords to mlt
-				mlt1 = aacgm.mltFromEpoch(datetimeToEpoch(myData['prm']['time']),myPos[1])
+				mlt1 = aacgm.mltFromEpoch(datetimeToEpoch(myData.time),myPos[1])
 				
 				#print myData['fit']['v'][i],myPos[2]
 				#compensate for neg. direction is away from radar
-				if(myData['fit']['v'][i] > 0.): azm = (myPos[2]+180+360)%360
+				if(myData.fit.v[i] > 0.): azm = (myPos[2]+180+360)%360
 				else: azm = (myPos[2]+360)%360
 				#print abs(myData['fit']['v'][i]),azm
 				#print ""
@@ -739,8 +717,8 @@ class pygrid(object):
 				lonInd = int(math.floor(mlt1/self.lats[latInd].delMlt))
 				
 				#create a pygridVec object and append it to the list of pygridCells
-				self.lats[latInd].cells[lonInd].allVecs.append(pygridVec(abs(myData['fit']['v'][i]),myData['fit']['w_l'][i],\
-				myData['fit']['p_l'][i],myData['prm']['stid'],myData['prm']['time'],myData['prm']['bmnum'],rng,azm))
+				self.lats[latInd].cells[lonInd].allVecs.append(pygridVec(abs(myData.fit.v[i]),myData.fit.w_l[i],\
+				myData.fit.p_l[i],myData.stid,myData.time,myData.bmnum,rng,azm))
 				
 				#increment number of vectors in grid cell and pygrid object
 				self.lats[latInd].cells[lonInd].nVecs += 1

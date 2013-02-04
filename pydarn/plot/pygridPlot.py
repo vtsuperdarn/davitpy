@@ -74,22 +74,16 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interva
 
 	"""
 	
-	import os,math
+	import os,math,datetime as dt,random
 	from matplotlib.backends.backend_pdf import PdfPages
+	import multiprocessing as mp
 	
 	
 	d = os.environ['PYPLOTS']+'/pygrid'
 	if not os.path.exists(d):
 		os.makedirs(d)
-	pp = PdfPages(d+'/'+dateStr+'.'+plot+'.pdf')
-	
-	#create a pygrid item
-	myGrid = pygrid()
-	#create a MPL figure
-	myFig = plt.figure()
-
-	#draw a map
-	myMap = drawPygridMap(myFig,myGrid,grid=grid)
+	fnamebase = str(int((random.random()*1e9)))
+	nt = mp.cpu_count()
 		
 	#check for a dateStr
 	if(dateStr != None):
@@ -144,44 +138,31 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interva
 			print 'opening: '+f
 			myFiles.append(openPygrid(f,'r'))
 		
+		tlist=[]
 		ctime = stime
 		while ctime <= etime:
-			
-			myGrid.delVecs()
-			
-			print ctime
-			print 'plotting'
-			#read the files we have opened
-			for f in myFiles:
-				print 'reading'
-				#read a record
-				readPygridRec(f,myGrid,datetimeToEpoch(ctime),-1)
-				
-			#get the vectors
-			print 'drawing'
-			
-			circs,lines,intensities = drawPygridVecs(myGrid,myMap,plot=plot,vmax=vmax)
-
-			#add the collection of vectors to the figure
-			ccoll = plt.scatter(circs[0],circs[1],s=.5,c='k')
-			lcoll = LineCollection(numpy.array(lines),linewidths=vwidth,zorder=10)
-			lcoll.set_array(numpy.array(intensities))
-			myFig.gca().add_collection(lcoll)
-			
-			#do the colormapping
-			pydarn.plot.plotUtils.genCmap(myMap,lcoll,'grid',[0,vmax],colors='aj',map=1)
-			
-			ctime += datetime.timedelta(minutes = interval)
-			
-			txt = plt.figtext(.5,.95,ctime.strftime("%Y/%m/%d  %H:%M:%S"),weight=550,size='large',ha='center')
-	
-			myFig.savefig(pp, format='pdf')
-			
-			ccoll.remove()
-			lcoll.remove()
-			myFig.texts.remove(txt)
+			tlist.append(ctime)
+			ctime += dt.timedelta(minutes=interval)
+		div = len(tlist)/nt
+		args = []
+		jobs = []
+		for i in range(nt-1):
+			p = mp.Process(target=plotLoop, args=(myFiles,fnamebase,tlist[i*div:(i+1)*div],grid,plot,vmax,vwidth,d,dateStr))
+			jobs.append(p)
+			p.start()
+		p = mp.Process(target=plotLoop, args=(myFiles,fnamebase,tlist[(nt-1)*div:],grid,plot,vmax,vwidth,d,dateStr))
+		jobs.append(p)
+		p.start()
 		
-		pp.close()
+		for j in jobs:
+			j.join()
+			del j
+		
+		#args = zip([myFiles]*nt,[fnamebase]*nt,tsplit,[grid]*nt)
+		#print args
+		
+		#pool = mp.Pool(processes=nt)
+		#pool.map(plotLoop, args)
 		
 		#close all our open files and zip them
 		for f in myFiles: closePygrid(f)
@@ -190,7 +171,54 @@ def plotPygrid(dateStr=None,plot='all',rads=None,hemi='north',time=[0,0],interva
 			os.system('bzip2 '+f)
 			
 	
+def plotLoop(myFiles,fbase,tlist,grid,plot,vmax,vwidth,d,dateStr):
+	import datetime as dt
+	#print args
+	#myFiles,fbase,tlist,grid = args
+	#create a pygrid item
+	myGrid = pygrid()
+	#create a MPL figure
+	myFig = plt.figure()
+	print tlist
+	#draw a map
+	myMap = drawPygridMap(myFig,myGrid,grid=grid)
+	for ctime in tlist:
+		
+		myGrid.delVecs()
+		print ctime
+		print 'plotting'
+		#read the files we have opened
+		for f in myFiles:
+			#print 'reading'
+			#read a record
+			print ctime
+			readPygridRec(f,myGrid,datetimeToEpoch(ctime),-1)
+			
+		t1=dt.datetime.now()
+		#get the vectors
+		print 'drawing'
+		
+		circs,lines,intensities = drawPygridVecs(myGrid,myMap,plot=plot,vmax=vmax)
 
+		#add the collection of vectors to the figure
+		ccoll = plt.scatter(circs[0],circs[1],s=.5,c='k')
+		lcoll = LineCollection(numpy.array(lines),linewidths=vwidth,zorder=10)
+		lcoll.set_array(numpy.array(intensities))
+		myFig.gca().add_collection(lcoll)
+		
+		#do the colormapping
+		pydarn.plot.plotUtils.genCmap(myMap,lcoll,'grid',[0,vmax],colors='aj',map=1)
+		
+		txt = plt.figtext(.5,.95,ctime.strftime("%Y/%m/%d  %H:%M:%S"),weight=550,size='large',ha='center')
+		t2 = dt.datetime.now()
+		myFig.savefig(d+'/'+str(int(datetimeToEpoch(ctime)))+'.'+fbase+'.'+plot+'.svg', bbox_inches=0)
+		t3 = dt.datetime.now()
+		print 'drawing took', t2-t1
+		print 'saving took',t3-t2
+		ccoll.remove()
+		lcoll.remove()
+		myFig.texts.remove(txt)
+		
 def drawPygridVecs(myGrid,myMap,plot='all',vmax=500):
 	"""
 	*******************************

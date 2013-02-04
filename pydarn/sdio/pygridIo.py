@@ -20,17 +20,18 @@ def readPygridRec(myFile,myGrid,sEpoch,eEpoch):
 |	*******************************
 	"""
 	import math,numpy,pydarn,datetime
-	
-	keys = numpy.array(myFile.keys()).astype('i')
+	keys = []
+	for k in myFile.keys():
+		keys.append(int(float(k)))
+	keys=numpy.array(keys)
 	keys = keys[sEpoch <= keys]
 	keys.sort()
 	if(eEpoch > sEpoch):
 		keys = keys[keys < eEpoch]
 	else:
 		keys = keys[0:1]
-	
 	for k in keys:
-		k=str(k)
+		k=str(int(k))+'.0'
 		for r in myFile[k].keys():
 			if(r == 'allVecs'):
 				for v in myFile[k]['allVecs']:
@@ -91,7 +92,7 @@ def writePygridRec(myFile,myGrid):
 	import utils,numpy
 	
 	#convert the start time to epoch time
-	epoch = utils.datetimeToEpoch(myGrid.stime)
+	epoch = utils.datetimeToEpoch(myGrid.sTime)
 	
 	#create a group in the file with a key value of epoch
 	myFile.create_group(str(epoch))  
@@ -100,7 +101,7 @@ def writePygridRec(myFile,myGrid):
 	myFile[str(epoch)].attrs['nVecs'] = myGrid.nVecs
 	myFile[str(epoch)].attrs['nAvg'] = myGrid.nAvg
 	myFile[str(epoch)].attrs['stime'] = epoch
-	myFile[str(epoch)].attrs['etime'] =  utils.datetimeToEpoch(myGrid.etime)
+	myFile[str(epoch)].attrs['etime'] =  utils.datetimeToEpoch(myGrid.eTime)
 	
 	#check if we have data
 	if(myGrid.nVecs == 0 and myGrid.nAvg == 0 and myGrid.nMrg == 0): return
