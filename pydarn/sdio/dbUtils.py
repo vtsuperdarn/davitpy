@@ -289,7 +289,11 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None, cp=N
 	#do the actual query
 	qry = beams.find(qryDict,exDict)
 	#check if we have any results
-	count = qry.count()
+	try:
+		count = qry.count()
+	except Exception,e:
+		print e
+		count = 0
 	if(count > 0):
 		return qry
 	else:
