@@ -6,7 +6,7 @@ def fillGmeDb(time='recent'):
 	now = dt.datetime.now()
 	
 	if(time == 'recent'):
-		sYear = dt.datetime.now().year-1
+		sYear = dt.datetime.now().year-5
 		#fill the omni database
 		p0 = Process(target=gme.mapOmniMongo, args=(sYear,now.year,1))
 		#fill the omni database

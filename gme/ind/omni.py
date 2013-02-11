@@ -298,8 +298,8 @@ def readOmniFtp(sTime,eTime=None,res=5):
 	for yr in range(sTime.year,eTime.year+1):
 		if(res == 1): fname = 'omni_min'+str(yr)+'.asc'
 		else: fname = 'omni_5min'+str(yr)+'.asc'
-		print 'RETR '+fname
-		try: ftp.retrlines('omni: RETR '+fname,lines.append)
+		print 'omni: RETR '+fname
+		try: ftp.retrlines('RETR '+fname,lines.append)
 		except Exception,e:
 			print e
 			print 'error retrieving',fname
