@@ -53,6 +53,12 @@ class radDataPtr():
 		self.cp = cp
 		self.dType = None
 		self.fType = None
+		
+	def __repr__(self):
+		myStr = 'radDataPtr\n'
+		for key,var in self.__dict__.iteritems():
+			myStr += key+' = '+str(var)+'\n'
+		return myStr
 
 class baseData():
 	"""a base class for the radar data types.  This allows for single definition of common routines
@@ -234,6 +240,17 @@ class baseData():
 				#put in a default value if not another object
 				if(not isinstance(getattr(self,attr),baseData)):
 					setattr(self,attr,None)
+					
+	#def __repr__(self):
+		#myStr = ''
+		#for key,var in self.__dict__.iteritems():
+			#if(isinstance(var,baseData) and key != 'parent'):
+				#print key
+				#myStr += key+'\n'
+				#myStr += str(var)
+			#else:
+				#myStr += key+' = '+str(var)+'\n'
+		#return myStr
 
 class beamData(baseData):
 	"""a class to contain the data from a radar beam sounding, extends class :class:`baseData`
