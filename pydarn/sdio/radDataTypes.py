@@ -53,6 +53,12 @@ class radDataPtr():
 		self.cp = cp
 		self.dType = None
 		self.fType = None
+		
+	def __repr__(self):
+		myStr = 'radDataPtr\n'
+		for key,var in self.__dict__.iteritems():
+			myStr += key+' = '+str(var)+'\n'
+		return myStr
 
 class baseData():
 	"""a base class for the radar data types.  This allows for single definition of common routines
@@ -78,7 +84,9 @@ class baseData():
 		**Returns**:
 			* Nothing.
 		**Example**:
-			>>> myBaseData.dbDictToObj(mongoDbDict)
+			::
+			
+				myBaseData.dbDictToObj(mongoDbDict)
 			
 		written by AJ, 20130123
 		"""
@@ -98,29 +106,6 @@ class baseData():
 			#otherwise, copy the value
 			else: setattr(self,cipher[key],val)
 			
-	#def dictToObj(self,aDict):
-		#"""This method is used to parse a dictionary of radar data from a dmap file into a :class:`baseData` object.
-		#.. note::
-			#In general, users will not need to use this.
-		
-		#**Args**: 
-			#* **aDict** (dict): the dictionary from the dmap file
-		#**Returns**:
-			#* Nothing.
-		#**Example**:
-			#>>> myBaseData.dictToObj(dmapDict)
-			
-		#written by AJ, 20130123
-		#"""
-		#for key, val in aDict.iteritems():
-			##if the value is a dictionary, make a recursive call
-			#if(isinstance(val,dict)): 
-				#if(key == 'fitex' or key == 'lmfit' or key == 'fitacf'):
-					#self.fit.dictToObj(val)
-				#else: getattr(self, key).dictToObj(val)
-			##otherwise, copy the value
-			#else: setattr(self,key,val)
-			
 	def toDbDict(self):
 		"""This method is used to convert a :class:`baseData` object into a mongodb radData data dictionary.  
 		
@@ -132,7 +117,9 @@ class baseData():
 		**Returns**:
 			* **aDict** (dict): a dictionary in the correct format for writing to the radData mongodb
 		**Example**:
-			>>> mongoDbDict = aBaseDataObj.todbDict()
+			::
+			
+				mongoDbDict = aBaseDataObj.todbDict()
 			
 		written by AJ, 20130123
 		"""
@@ -253,6 +240,17 @@ class baseData():
 				#put in a default value if not another object
 				if(not isinstance(getattr(self,attr),baseData)):
 					setattr(self,attr,None)
+					
+	#def __repr__(self):
+		#myStr = ''
+		#for key,var in self.__dict__.iteritems():
+			#if(isinstance(var,baseData) and key != 'parent'):
+				#print key
+				#myStr += key+'\n'
+				#myStr += str(var)
+			#else:
+				#myStr += key+' = '+str(var)+'\n'
+		#return myStr
 
 class beamData(baseData):
 	"""a class to contain the data from a radar beam sounding, extends class :class:`baseData`
@@ -278,7 +276,9 @@ class beamData(baseData):
 		* **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
 
 	**Example**: 
-		>>> myBeam = pydarn.sdio.radBeam()
+		::
+		
+			myBeam = pydarn.sdio.radBeam()
 		
 	Written by AJ 20121130
 	"""
@@ -305,9 +305,13 @@ class beamData(baseData):
 		
 		#if we are intializing from an object, do that
 		if(beamDict != None): self.updateValsFromDict(beamDict)
-			
+		
 	def __repr__(self):
-		return "<Beam("+str(self.time)+", '%d', '%d','%d', '%s')>" % (self.cp, self.stid, self.bmnum, self.channel)
+		import datetime as dt
+		myStr = 'Beam record FROM: '+str(self.time)+'\n'
+		for key,var in self.__dict__.iteritems():
+			myStr += key+' = '+str(var)+'\n'
+		return myStr
 		
 class prmData(baseData):
 	"""A class to represent radar operating parameters, extends :class:`baseData`
@@ -395,7 +399,9 @@ class fitData(baseData):
 		* **elv**  (npnts length list): elevation angle
 	
 	**Example**: 
-		>>> myFit = pydarn.sdio.fitData()
+		::
+		
+			myFit = pydarn.sdio.fitData()
 		
 	Written by AJ 20121130
 	"""
@@ -425,14 +431,16 @@ class fitData(baseData):
 		if(fitDict != None): self.updateValsFromDict(fitDict)
 				
 class rawData(baseData):
-	"""a class to contain the rawacf data from a radar beam sounding, extends :class:`basedata`
+	"""a class to contain the rawacf data from a radar beam sounding, extends :class:`baseData`
 	
 	**Attrs**:
 		* **acfd** (nrang x mplgs x 2 length list): acf data
 		* **xcfd** (nrang x mplgs x 2 length list): xcf data
 	
 	**Example**: 
-		>>> myRaw = pydarn.sdio.rawData()
+		::
+		
+			myRaw = pydarn.sdio.rawData()
 		
 	Written by AJ 20130125
 	"""
@@ -467,7 +475,9 @@ class iqData(baseData):
 		* **intData** (seqnum x smpnum x 2 length list): the actual iq samples (interferometer)
 	
 	**Example**: 
-		>>> myIq = pydarn.sdio.iqData()
+		::
+		
+			myIq = pydarn.sdio.iqData()
 		
 	Written by AJ 20130116
 	"""

@@ -13,7 +13,7 @@
 	* :func:`radDataReadRec`
 """
 
-def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filtered=False, src=None):
+def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filtered=False, src=None,fileName=None,custType='fitex'):
 	"""A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
 	**Args**:
@@ -26,12 +26,16 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 		* **[fileType]** (str):  The type of data you want to read.  valid inputs are: 'fitex','fitacf','lmfit','rawacf','iqdat'.   if you choose a fit file format and the specified one isn't found, we will search for one of the others.  Beware: if you ask for rawacf/iq data, these files are large and the data transfer might take a long time.  default = 'fitex'
 		* **[filtered]** (boolean): a boolean specifying whether you want the fit data to be boxcar filtered.  ONLY VALID FOR FIT.  default = False
 		* **[src]** (str): the source of the data.  valid inputs are 'mongo' 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
+		* **[fileName]** (str): the name of a specific file which you want to open.  default=None
+		* **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
 	**Returns**:
 		* **myPtr** (:class:`radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
 		
 	**Example**:
-		>>> import datetime as dt
-		>>> myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+		::
+		
+			import datetime as dt
+			myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
 		
 	Written by AJ 20130110
 	"""
@@ -57,6 +61,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	assert(fileType == 'rawacf' or fileType == 'fitacf' or \
 		fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
 		'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
+	assert(fileName == None or isinstance(fileName,str)), \
+		'error, fileName must be None or a string'
 	assert(isinstance(filtered,bool)), \
 		'error, filtered must be True of False'
 	assert(src == None or src == 'mongo' or src == 'local' or src == 'sftp'), \
@@ -81,8 +87,32 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	if not os.path.exists(d):
 		os.makedirs(d)
 
-	#FIRST, LOOK LOCALLY FOR FILES
-	if(src == None or src == 'local'):
+	#FIRST, check if a specific filename was given
+	if(fileName != None):
+		try:
+			if(not os.path.isfile(fileName)):
+				print 'problem reading',fileName,':file does not exist'
+				return None
+			outname = tmpDir+str(int(datetimeToEpoch(dt.datetime.now())))
+			if(string.find(fileName,'.bz2') != -1):
+				outname = string.replace(fileName,'.bz2','')
+				print 'bunzip2 -c '+fileName+' > '+outname+'\n'
+				os.system('bunzip2 -c '+fileName+' > '+outname)
+			elif(string.find(fileName,'.gz') != -1):
+				outname = string.replace(fileName,'.gz','')
+				print 'gunzip -c '+fileName+' > '+outname+'\n'
+				os.system('gunzip -c '+fileName+' > '+outname)
+			else:
+				os.system('cp '+fileName+' '+outname)
+				print 'cp '+fileName+' '+outname
+			filelist.append(outname)
+			myPtr.fType,myPtr.dType = custType,'dmap'
+		except Exception, e:
+			print e
+			print 'problem reading file',fileName
+			return None
+	#Next, LOOK LOCALLY FOR FILES
+	if((src == None or src == 'local') and fileName == None):
 		try:
 			for ftype in arr:
 				print '\nLooking locally for',ftype,'files'
@@ -137,7 +167,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 			src=None
 				
 	#NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
-	if((src == None or src == 'mongo') and len(filelist) == 0):
+	if((src == None or src == 'mongo') and len(filelist) == 0 and fileName == None):
 		for ftype in arr:
 			print '\nLooking on mongodb for',ftype,'data'
 			myPtr.ptr = pydarn.sdio.readFromDb(sTime=myPtr.sTime, eTime=myPtr.eTime, stid=myPtr.stid, \
@@ -151,7 +181,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 				print  'could not find',ftype,'data on mongodb'
 				
 	#finally, check the VT sftp server if we have not yet found files
-	if((src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0):
+	if((src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0 and fileName == None):
 		for ftype in arr:
 			print '\nLooking on the remote SFTP server for',ftype,'files'
 			#deal with UAF naming convention
@@ -220,7 +250,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 		print 'cat '+string.join(filelist)+' > '+tmpName
 		os.system('cat '+string.join(filelist)+' > '+tmpName)
 		for filename in filelist:
-			print 'rm'+filename
+			print 'rm '+filename
 			os.system('rm '+filename)
 			
 		#filter(if desired) and open the file
@@ -250,9 +280,11 @@ def radDataReadRec(myPtr):
 		* **myBeam** (:class:`radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
 		
 	**Example**:
-		>>> import datetime as dt
-		>>> myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-		>> myBeam = radDataReadRec(myPtr)
+		::
+		
+			import datetime as dt
+			myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+			myBeam = radDataReadRec(myPtr)
 		
 	Written by AJ 20130110
 	"""

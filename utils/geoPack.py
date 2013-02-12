@@ -452,7 +452,7 @@ def greatCircleAzm(lat1,lon1,lat2,lon2):
 	y = numpy.sin(lon2-lon1) * numpy.cos(lat2)
 	x = numpy.cos(lat1)*numpy.sin(lat2) - numpy.sin(lat1)*numpy.cos(lat2)*numpy.cos(lon2-lon1)
 	
-	azm = numpy.atan2(y,x)
+	azm = numpy.arctan2(y,x)
 
 	return numpy.degrees(azm)
 

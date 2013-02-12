@@ -12,7 +12,7 @@ c.InteractiveShellApp.exec_lines = [
 	'import pydarn',
 	'import utils',
 	'import models',
-	'import gmi',
+	'import gme',
 	'from datetime import *'
 ]
 # c.InteractiveShellApp.exec_files = []
