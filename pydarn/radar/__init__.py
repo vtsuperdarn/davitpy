@@ -221,7 +221,10 @@ This method is the underlying function behing getRadarByCode, getRadarByName and
 			deltAz = degrees( arccos( dot(ptBo, ptAz) ) )
 			# Skip if out of azimuth range
 			if not abs(deltAz) <= extFov: continue
-			beam = int( site.maxbeam/2 + sign(cross(ptBo, ptAz))*round( deltAz/site.bmsep ) )
+			if sign(cross(ptBo, ptAz)) >= 0:
+				beam = int( site.maxbeam/2 + round( deltAz/site.bmsep ) - 1 )
+			else:
+				beam = int( site.maxbeam/2 - round( deltAz/site.bmsep ) )
 			# Update output
 			found = True
 			out['radars'].append(self.info[iRad])
