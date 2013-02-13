@@ -1,34 +1,35 @@
 """
-*******************************
-pydarn.radar.radInfoIO
-*******************************
+*********************
+**Module**: pydarn.radar.radInfoIO
+*********************
 Input/Output for radar information (location, boresight, interferometer position...) is 
-read from a local SQLlite database (radar.db). The functions in this module provide tools 
+read from a local dblite database (radar.db). The functions in this module provide tools 
 to populate/update said database (from hdw.dat and radar.dat files), or simply read hdw.dat 
 and radar.dat files. It also provide a function to manually update the local radar.db database 
-using the remote SQL database (requires an active internet connection).
+using the remote db database (requires an active internet connection).
 
-This module contains the following functions
-	* **hdwRead**
-		reads hdw.dat files
-	* **radarRead**
-		reads radar.dat
-
-This module contains the following objects
-	* **updateHdf5**
-		update local radar.hdf5 from remote SQL database
-
-Created by Sebastien
-
-*******************************
+**Classes**:
+	* :class:`updateHdf5`
+**Functions**:
+	* :func:`hdwRead`: reads hdw.dat files
+	* :func:`radarRead`: reads radar.dat file
 """
 		
 
 # *************************************************************
 def radarRead(path=None):
-	"""
-Reads radar.dat file
-(path defaults to RST environment variable SD_RADAR)
+	"""Reads radar.dat file
+	
+	**Args**: 
+		* [**path**] (str): path to radar.dat file; defaults to RST environment variable SD_RADAR
+	**Returns**:
+		* A dictionary with keys matching the radar.dat variables each containing values of length #radars.
+	**Example**:
+		::
+
+			radars = pydarn.radar.radarRead()
+			
+	written by Sebastien, 2012-09
 	"""
 	import shlex
 	import os, sys
@@ -80,9 +81,19 @@ Reads radar.dat file
 
 # *************************************************************
 def hdwRead(fname, path=None):
-	"""
-Reads hdw.dat files for given radar specified by its hdw.dat file name 
-(path defaults to RST environment variable SD_HDWPATH)
+	"""Reads hdw.dat files for given radar specified by its hdw.dat file name
+	
+	**Args**: 
+		* **fname** (str): hdw.dat file name
+		* [**path**] (str): path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
+	**Returns**:
+		* A dictionary with keys matching the hdw.dat variables each containing values of length #site updates.
+	**Example**:
+		::
+
+			hdw = pydarn.radar.hdwRead('hdw.dat.bks')
+			
+	written by Sebastien, 2012-09
 	"""
 	import os
 	import shlex
@@ -148,9 +159,23 @@ Reads hdw.dat files for given radar specified by its hdw.dat file name
 
 # *************************************************************
 class updateHdf5(object):
-	"""
-update local radar.hdf5 from remote SQL database. Currently, the remote 
+	"""update local radar.hdf5 from remote db database. Currently, the remote 
 database is housed on the VT servers.
+	
+	**Members**: 
+		* **h5_path** (str): path to hdf5 file
+		* **h5_file** (str): hdf5 file name
+	**Methods**:
+		* :func:`h5Init`
+		* :func:`h5Update`
+		* :func:`dbConnect`
+
+	Example:
+		::
+
+			obj = pydarn.radar.updateHdf5()
+
+	written by Sebastien, 2012-10
 	"""
 
 	def __init__(self):
@@ -165,10 +190,11 @@ database is housed on the VT servers.
 		# File path
 		self.h5_path = os.path.abspath( __file__.split('radInfoIO.py')[0] )
 		self.h5_file = 'radars.hdf5'
-		# SQL server
-		self.sql_user = 'sd_dbread'
-		self.sql_host = 'sd-data.ece.vt.edu'
-		self.sql_port = 5432
+		# MongoDB server
+		self.db_user = 'sd_dbread'
+		self.db_pswd = '5d'
+		self.db_host = 'sd-work9.ece.vt.edu'
+		self.db_name = 'radarInfo'
 
 		# Declare custom data types
 		self.dtype_rad = dtype([('id', 'i'), 
@@ -200,44 +226,69 @@ database is housed on the VT servers.
 		self.dtype_info = dtype([('var', h5py.new_vlen(str)),
 		                          ('description', h5py.new_vlen(str)) ])
 
-		# Try to connect to DB
-		conn = self.sqlConnect()
-		# If it worked, try to update HDF5 file
-		if conn: self.h5Update()
+		self.h5Update()
 
 
-	def sqlConnect(self):
-		'''
-Try to establish a connection to remote sql database
-		'''
-		import sqlalchemy as sqla
+	def dbConnect(self):
+		"""Try to establish a connection to remote db database
+		
+		**Belongs to**: :class:`updateHdf5`
+		**Args**: 
+			* **None**
+		**Returns**:
+			* **isConnected** (bool): True if the connection was successfull
+		**Example**:
+			::
+
+			obj.dbConnect()
+					
+		written by Sebastien, 2012-10
+		"""
+		from pymongo import MongoClient
 		import sys
 
 		try:
-			engine = sqla.create_engine("postgresql://{}:@{}:{}/radarInfo?sslmode=require".\
-										format(self.sql_user,
-											self.sql_host, 
-											self.sql_port))
-			meta = sqla.MetaData(engine)
+			conn = MongoClient( 'mongodb://{}:{}@{}/{}'.format(self.db_user,
+																	   self.db_pswd, 
+																	   self.db_host,
+																	   self.db_name) )
 
-			tbSel = lambda tbName: sqla.Table(tbName, meta, autoload=True).select().execute().fetchall()
-
-			self.sql_select = {'rad': tbSel("radars"), 'hdw': tbSel("hdw"), 'inf': tbSel("info")}
-			return True
+			dba = conn[self.db_name]
 		except:
 			print 'Could not connect to remote DB: ', sys.exc_info()[0]
 			return False
 
+		try:
+			colSel = lambda colName: dba[colName].find()
+
+			self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
+			return True
+		except:
+			print 'Could not get data from remote DB: ', sys.exc_info()[0]
+			return False
+
 
 	def h5Init(self):
-		'''
-Initialize HDF5 file (only if file does not already exists)
-		'''
+		"""Initialize HDF5 file (only if file does not already exists)
+		
+		**Belongs to**: :class:`updateHdf5`
+		**Args**: 
+			* **None**
+		**Returns**:
+			* **isConnected** (bool): True if hdf5 file already exists or was sussessfully created
+		**Example**:
+			::
+
+			obj.h5Init()
+					
+		written by Sebastien, 2012-10
+		"""
 		import h5py, os
 
 		fname = os.path.join(self.h5_path, self.h5_file)
 		try:
 			with open(fname,'r+') as f: pass
+			return True
 		except IOError:
 			try:
 				# Open file
@@ -256,19 +307,35 @@ Initialize HDF5 file (only if file does not already exists)
 
 
 	def h5Update(self):
-		'''
-Update HDF5 file with provided SQL selections (if possible).
-		'''
+		"""Update HDF5 file with provided db selections (if possible).
+		
+		**Belongs to**: :class:`updateHdf5`
+		**Args**: 
+			* **None**
+		**Returns**:
+			* **isConnected** (bool): True if hdf5 file update was successfull
+		**Example**:
+			::
+
+			obj.h5Update()
+					
+		written by Sebastien, 2012-10
+		"""
 		import h5py, os, sys
 
+		# Try to connect to DB
+		conn = self.dbConnect()
+		if not conn: return False
+
+		# Try to open hdf5 file
 		isInit = self.h5Init()
 		if not isInit: return False
 
 		fname = os.path.join(self.h5_path, self.h5_file)
 
-		arr_rad = self.__sqlaToArr(self.sql_select['rad'], self.dtype_rad)
-		arr_hdw = self.__sqlaToArr(self.sql_select['hdw'], self.dtype_hdw)
-		arr_inf = self.__sqlaToArr(self.sql_select['inf'], self.dtype_info)
+		arr_rad = self.__makeCompArr(self.db_select['rad'], self.dtype_rad)
+		arr_hdw = self.__makeCompArr(self.db_select['hdw'], self.dtype_hdw)
+		arr_inf = self.__makeCompArr(self.db_select['inf'], self.dtype_info)
 
 		try:
 			f = h5py.File(fname,'r+')
@@ -280,7 +347,7 @@ Update HDF5 file with provided SQL selections (if possible).
 
 			# Close file
 			f.close()
-			print 'Updated radar information [HDF5 file]'
+			print 'Updated radar information in {}'.format( os.path.join(self.h5_path, self.h5_file) )
 		except:
 			print 'Problem updating HDF5 file: ', sys.exc_info()[0]
 			return False
@@ -289,9 +356,19 @@ Update HDF5 file with provided SQL selections (if possible).
 
 
 	def __h5UpdateDset(self, dset, arr, key):
-		'''
-Update dataset (scan existing rows and update if necessary)
-		'''
+		"""Update dataset (scan existing rows and update if necessary).
+		This method is hidden and used internatlly by :func:`h5Update`.
+		
+		**Belongs to**: :class:`updateHdf5`
+		**Args**: 
+			* **dset** (hdf5 dataset): an hdf5 dataset from an hdf5 file object
+			* **arr** (numpy.dtype): compound array
+			* **key** (str): primary key to hdf5 dataset
+		**Returns**:
+			* **None**
+					
+		written by Sebastien, 2012-10
+		"""
 		from numpy import where
 
 		for row in arr:
@@ -304,16 +381,25 @@ Update dataset (scan existing rows and update if necessary)
 				dset[dset.shape[0]-1] = row
 
 
-	def __sqlaToArr(self, sel, dtype=None):
-		'''
-Create a compound array out of SQLAlchemy row objects.
-This is used to write in HDF5 datasets.
-		'''
+	def __makeCompArr(self, sel, dtype=None):
+		"""Create a compound array out of db output. This is used to write in HDF5 datasets.
+		This method is hidden and used internatlly by :func:`h5Update`.
+		
+		**Belongs to**: :class:`updateHdf5`
+		**Args**: 
+			* **sel** (pymongo Ptr)
+			* [**dtype**] (numpy.dtype): the numpy.dtype of the compound array
+		**Returns**:
+			* **None**
+					
+		written by Sebastien, 2012-10
+		"""
 		import numpy
 
-		arr = numpy.empty(len(sel), dtype=dtype)
+		arr = numpy.empty(sel.count(), dtype=dtype)
 		for ir,row in enumerate(sel):
 			for k,v in row.items():
+				if k == '_id': continue
 				try:
 					arr[ir][k] = v
 				except (ValueError, TypeError):
