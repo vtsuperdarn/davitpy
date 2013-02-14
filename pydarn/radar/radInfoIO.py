@@ -181,6 +181,7 @@ class updateHdf5(object):
 		"""Default class constructor
 		
 		**Belongs to**: :class:`updateHdf5`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -243,6 +244,7 @@ class updateHdf5(object):
 		"""Try to establish a connection to remote db database
 		
 		**Belongs to**: :class:`updateHdf5`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -278,6 +280,7 @@ class updateHdf5(object):
 		"""Initialize HDF5 file (only if file does not already exists)
 		
 		**Belongs to**: :class:`updateHdf5`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -312,6 +315,7 @@ class updateHdf5(object):
 		"""Update HDF5 file with provided db selections (if possible).
 		
 		**Belongs to**: :class:`updateHdf5`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -358,6 +362,7 @@ class updateHdf5(object):
 		This method is hidden and used internatlly by :func:`h5Update`.
 		
 		**Belongs to**: :class:`updateHdf5`
+		
 		**Args**: 
 			* **dset** (hdf5 dataset): an hdf5 dataset from an hdf5 file object
 			* **arr** (numpy.dtype): compound array
@@ -384,6 +389,7 @@ class updateHdf5(object):
 		This method is hidden and used internatlly by :func:`h5Update`.
 		
 		**Belongs to**: :class:`updateHdf5`
+		
 		**Args**: 
 			* **sel** (pymongo Ptr)
 			* [**dtype**] (numpy.dtype): the numpy.dtype of the compound array

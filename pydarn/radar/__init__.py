@@ -38,9 +38,7 @@ class network(object):
 
 			obj = pydarn.radar.network()
 
-	.. note:: To add your own radar information to this class you can use the 
-	:func:`radInfoIO.radarRead` and the :func:`radInfoIO.hdwRead`. Then, manually 
-	append the output of these functions to this object.
+	.. note:: To add your own radar information to this class you can use the :func:`radInfoIO.radarRead` and the :func:`radInfoIO.hdwRead`. Then, manually append the output of these functions to this object.
 
 	written by Sebastien, 2012-08
 	"""
@@ -49,6 +47,7 @@ class network(object):
 		"""Default class constructor
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -77,6 +76,7 @@ class network(object):
 		"""Object length (number of radars)
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -94,6 +94,7 @@ class network(object):
 		"""Object string representation
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -128,6 +129,7 @@ class network(object):
 		"""Get a specific radar from its ID
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **id** (int): radar ID
 		**Returns**:
@@ -147,6 +149,7 @@ class network(object):
 		"""Get a specific radar from its name
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **name** (str): radar full name
 		**Returns**:
@@ -166,6 +169,7 @@ class network(object):
 		"""Get a specific radar from its 3-letter code
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **code** (str): radar 3-letter code
 		**Returns**:
@@ -187,6 +191,7 @@ class network(object):
 		getRadarByName and getRadarById
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **radN** (str/int): radar identifier (either code, name or id)
 			* **by** (str): look-up method: 'code', 'name', 'id'
@@ -224,6 +229,7 @@ class network(object):
 		"""Get a list of radars able to see a given point on Earth
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **lat**: latitude of given point in geographic coordinates
 			* **lon**: longitude of given point in geographic coordinates
@@ -289,6 +295,7 @@ class network(object):
 		"""Get a list of all active radar codes
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **[datetime]**: python datetime object (defaults to today)
 			* **[hemi]**: 'north' or 'south' defaults to both
@@ -346,14 +353,14 @@ class radar(object):
 		If no argument is passed, the object is initialized to 0
 		
 		**Belongs to**: :class:`radar`
+		
 		**Args**: 
 			* [**code**] (str): 3-letter radar code
 			* [**radId**] (int): radar ID
 		**Returns**:
 			* **radar** (:class:`radar`)
 
-		.. note:: 
-			you should provide either **code** OR **radId**, not both
+		.. note:: you should provide either **code** OR **radId**, not both
 					
 		written by Sebastien, 2012-08
 		"""
@@ -386,6 +393,7 @@ class radar(object):
 		"""fill radar structure from hdf5 dataset
 		
 		**Belongs to**: :class:`radar`
+		
 		**Args**: 
 			* **radID** (int): radar ID
 			* **dset** (h5py.dset): hdf5 radar dataset
@@ -430,6 +438,7 @@ class radar(object):
 		"""Object string representation
 		
 		**Belongs to**: :class:`radar`
+		
 		**Args**: 
 			* **None**
 		**Returns**:
@@ -468,6 +477,7 @@ class radar(object):
 		"""Get a specific radar site at a given date
 		
 		**Belongs to**: :class:`network`
+		
 		**Args**: 
 			* **datetime** (datetime.datetime)
 		**Returns**:
@@ -527,6 +537,7 @@ class site(object):
 		"""Default class constructor
 		
 		**Belongs to**: :class:`site`
+		
 		**Args**: 
 			* [**radId**] (int): radar ID
 			* [**code**] (str): 3-letter radar code
@@ -534,8 +545,7 @@ class site(object):
 		**Returns**:
 			* **site** (:class:`site`)
 
-		.. note:: 
-			you should provide either **code** OR **radId**, not both
+		.. note:: you should provide either **code** OR **radId**, not both
 					
 		written by Sebastien, 2012-08
 		"""
@@ -569,6 +579,7 @@ class site(object):
 		"""fill site structure from hdf5 dataset
 		
 		**Belongs to**: :class:`site`
+		
 		**Args**: 
 			* **radID** (int): radar ID
 			* **dset** (h5py.dset): hdf5 dataset
