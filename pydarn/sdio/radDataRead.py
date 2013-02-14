@@ -184,63 +184,67 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
 	if((src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0 and fileName == None):
 		for ftype in arr:
 			print '\nLooking on the remote SFTP server for',ftype,'files'
-			#deal with UAF naming convention
-			fnames = ['..........'+ftype]
-			if(channel == None): fnames.append('..\...\....\.a\.')
-			else: fnames.append('..........'+channel+'.'+ftype)
-			for form in fnames:
-				#create a transport object for use in sftp-ing
-				transport = p.Transport((os.environ['VTDB'], 22))
-				transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
-				sftp = p.SFTPClient.from_transport(transport)
-				
-				#iterate through all of the hours in the request
-				#ie, iterate through all possible file names
-				ctime = sTime.replace(minute=0)
-				if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-				oldyr = ''
-				while ctime <= eTime:
-					#directory on the data server
-					myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
-					hrStr = ctime.strftime("%H")
-					dateStr = ctime.strftime("%Y%m%d")
-					if(ctime.strftime("%Y") != oldyr):
-						#get a list of all the files in the directory
-						allFiles = sftp.listdir(myDir)
-						oldyr = ctime.strftime("%Y")
-					#create a regular expression to find files of this day, at this hour
-					regex = re.compile(dateStr+'.'+hrStr+form)
-					#go thorugh all the files in the directory
-					for aFile in allFiles:
-						#if we have a file match between a file and our regex
-						if(regex.match(aFile)): 
-							print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
-							filename = tmpDir+aFile
-							#download the file via sftp
-							sftp.get(myDir+aFile,filename)
-							#unzip the compressed file
-							if(string.find(filename,'.bz2') != -1):
-								outname = string.replace(filename,'.bz2','')
-								print 'bunzip2 -c '+filename+' > '+outname+'\n'
-								os.system('bunzip2 -c '+filename+' > '+outname)
-							elif(string.find(filename,'.gz') != -1):
-								outname = string.replace(filename,'.gz','')
-								print 'gunzip -c '+filename+' > '+outname+'\n'
-								os.system('gunzip -c '+filename+' > '+outname)
-							else:
-								print 'It seems we have downloaded an uncompressed file :/'
-								print 'Strange things might happen from here on out...'
-								
-							filelist.append(outname)
-						
-					ctime = ctime+dt.timedelta(hours=1)
-				if(len(filelist) > 0):
-					print 'found',ftype,'data on sftp server'
-					myPtr.fType,myPtr.dType = ftype,'dmap'
-					break
-			if(len(filelist) > 0): break
-			else:
-				print  'could not find',ftype,'data on sftp server'
+			try:
+				#deal with UAF naming convention
+				fnames = ['..........'+ftype]
+				if(channel == None): fnames.append('..\...\....\.a\.')
+				else: fnames.append('..........'+channel+'.'+ftype)
+				for form in fnames:
+					#create a transport object for use in sftp-ing
+					transport = p.Transport((os.environ['VTDB'], 22))
+					transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
+					sftp = p.SFTPClient.from_transport(transport)
+					
+					#iterate through all of the hours in the request
+					#ie, iterate through all possible file names
+					ctime = sTime.replace(minute=0)
+					if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+					oldyr = ''
+					while ctime <= eTime:
+						#directory on the data server
+						myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+						hrStr = ctime.strftime("%H")
+						dateStr = ctime.strftime("%Y%m%d")
+						if(ctime.strftime("%Y") != oldyr):
+							#get a list of all the files in the directory
+							allFiles = sftp.listdir(myDir)
+							oldyr = ctime.strftime("%Y")
+						#create a regular expression to find files of this day, at this hour
+						regex = re.compile(dateStr+'.'+hrStr+form)
+						#go thorugh all the files in the directory
+						for aFile in allFiles:
+							#if we have a file match between a file and our regex
+							if(regex.match(aFile)): 
+								print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
+								filename = tmpDir+aFile
+								#download the file via sftp
+								sftp.get(myDir+aFile,filename)
+								#unzip the compressed file
+								if(string.find(filename,'.bz2') != -1):
+									outname = string.replace(filename,'.bz2','')
+									print 'bunzip2 -c '+filename+' > '+outname+'\n'
+									os.system('bunzip2 -c '+filename+' > '+outname)
+								elif(string.find(filename,'.gz') != -1):
+									outname = string.replace(filename,'.gz','')
+									print 'gunzip -c '+filename+' > '+outname+'\n'
+									os.system('gunzip -c '+filename+' > '+outname)
+								else:
+									print 'It seems we have downloaded an uncompressed file :/'
+									print 'Strange things might happen from here on out...'
+									
+								filelist.append(outname)
+							
+						ctime = ctime+dt.timedelta(hours=1)
+					if(len(filelist) > 0):
+						print 'found',ftype,'data on sftp server'
+						myPtr.fType,myPtr.dType = ftype,'dmap'
+						break
+				if(len(filelist) > 0): break
+				else:
+					print  'could not find',ftype,'data on sftp server'
+			except Exception,e:
+				print e
+				print 'problem reading from sftp server'
 				
 	#check if we have found files
 	if(len(filelist) != 0):

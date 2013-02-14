@@ -56,7 +56,8 @@ def getServerConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADP
 	try:
 		sConn = MongoClient('mongodb://'+username+':'+password+'@'+dbAddress)
 	#check for error
-	except:
+	except Exception,e:
+		print e
 		print 'problem getting connection to server',dbAddress
 		sConn = None
 		

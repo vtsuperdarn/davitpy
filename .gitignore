@@ -3,7 +3,7 @@
 .DS_store
 history.sqlite
 *.o
-
+*sphinx*
 *minute*
 *.swp
 *-swp
