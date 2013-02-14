@@ -40,5 +40,4 @@ try:
 	import dbUtils
 	from dbUtils import *
 except Exception,e: 
-	print e
-	print 'problem importing dbUtils'
+	print 'problem importing dbUtils: ', e

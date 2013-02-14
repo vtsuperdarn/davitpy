@@ -160,7 +160,7 @@ def hdwRead(fname, path=None):
 # *************************************************************
 class updateHdf5(object):
 	"""update local radar.hdf5 from remote db database. Currently, the remote 
-database is housed on the VT servers.
+	database is housed on the VT servers.
 	
 	**Members**: 
 		* **h5_path** (str): path to hdf5 file
@@ -169,8 +169,7 @@ database is housed on the VT servers.
 		* :func:`h5Init`
 		* :func:`h5Update`
 		* :func:`dbConnect`
-
-	Example:
+	**Example**:
 		::
 
 			obj = pydarn.radar.updateHdf5()
@@ -179,6 +178,17 @@ database is housed on the VT servers.
 	"""
 
 	def __init__(self):
+		"""Default class constructor
+		
+		**Belongs to**: :class:`updateHdf5`
+		**Args**: 
+			* **None**
+		**Returns**:
+			* **updateHdf5** (obj)
+					
+		written by Sebastien, 2012-10
+		"""
+
 		import os, sys
 		from datetime import datetime
 		from numpy import dtype
@@ -237,10 +247,6 @@ database is housed on the VT servers.
 			* **None**
 		**Returns**:
 			* **isConnected** (bool): True if the connection was successfull
-		**Example**:
-			::
-
-			obj.dbConnect()
 					
 		written by Sebastien, 2012-10
 		"""
@@ -276,10 +282,6 @@ database is housed on the VT servers.
 			* **None**
 		**Returns**:
 			* **isConnected** (bool): True if hdf5 file already exists or was sussessfully created
-		**Example**:
-			::
-
-			obj.h5Init()
 					
 		written by Sebastien, 2012-10
 		"""
@@ -314,10 +316,6 @@ database is housed on the VT servers.
 			* **None**
 		**Returns**:
 			* **isConnected** (bool): True if hdf5 file update was successfull
-		**Example**:
-			::
-
-			obj.h5Update()
 					
 		written by Sebastien, 2012-10
 		"""
