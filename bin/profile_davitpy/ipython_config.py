@@ -15,6 +15,7 @@ c.InteractiveShellApp.exec_lines = [
 	'import gme',
 	'from datetime import *'
 ]
+
 # c.InteractiveShellApp.exec_files = []
 c.InteractiveShell.autoindent = True
 c.InteractiveShell.colors = 'LightBG'
@@ -33,5 +34,7 @@ c.PrefilterManager.multi_line_specials = True
 c.AliasManager.user_aliases = [
  ('la', 'ls -al')
 ]
+
+print '\nDaViT-Py Copyright (C) 2012 VT SuperDARN Lab\nThis program comes with ABSOLUTELY NO WARRANTY; for details see LICENSE.txt.\nThis is free software, and you are welcome to redistribute it\nunder certain conditions; for details see LICENSE.txt\n'
 
 

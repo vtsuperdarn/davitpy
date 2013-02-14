@@ -1,9 +1,10 @@
 *~
+*.rst
 *.pyc
 .DS_store
 history.sqlite
 *.o
-*sphinx*
+sphinx/
 *minute*
 *.swp
 *-swp
