@@ -17,7 +17,7 @@
 
 import gme
 class aeRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of ae data.  Extends :class:`gmeBase.gmeData` . Note that Ae data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
+	"""a class to represent a record of ae data.  Extends :class:`gmeBase.gmeData` . Note that Ae data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
@@ -186,45 +186,44 @@ def readAeWeb(sTime,eTime=None):
 	import mechanize
 	
 	assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
-	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
+	if(eTime == None): eTime = sTime
 	assert(isinstance(eTime,dt.datetime)),'error, eTime must be a datetime object'
 	assert(eTime >= sTime), 'error, eTime < eTime'
-	delt = eTime-sTime
-	assert(delt.days <= 366), 'error, cant read more than 366 days'
 	
-	tens = (sTime.year)/10
-	year = sTime.year-tens*10
-	month = sTime.strftime("%m")
-	dtens = sTime.day/10
-	day = sTime.day-dtens*10
-	htens = sTime.hour/10
-	hour = sTime.hour-htens*10
-	ddtens = delt.days/10
-	dday = delt.days - ddtens*10
+	sCent = sTime.year/100
+	sTens = (sTime.year - sCent*100)/10
+	sYear = sTime.year-sCent*100-sTens*10
+	sMonth = sTime.strftime("%m")
+	eCent = eTime.year/100
+	eTens = (eTime.year - eCent*100)/10
+	eYear = eTime.year-eCent*100-eTens*10
+	eMonth = eTime.strftime("%m")
+	
 	br = mechanize.Browser()
 	br.set_handle_robots(False)   # no robots
 	br.set_handle_refresh(False)  # can sometimes hang without this
 	br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-	br.open('http://wdc.kugi.kyoto-u.ac.jp/aeasy/index.html')
+	br.open('http://wdc.kugi.kyoto-u.ac.jp/dstae/index.html')
 	
 	br.form = list(br.forms())[0]
 	
-	br.form.find_control('Tens').value = [str(tens)]
-	br.form.find_control('Year').value = [str(year)]
-	br.form.find_control('Month').value = [str(month)]
-	br.form.find_control('Day_Tens').value = [str(dtens)]
-	br.form.find_control('Days').value = [str(day)]
-	br.form.find_control('Hour_Tens').value = [str(htens)]
-	br.form.find_control('Hour').value = [str(hour)]
-	if(ddtens < 9): ddtens = '0'+str(ddtens)
-	br.form.find_control('Dur_Day_Tens').value = [str(ddtens)]
-	br.form.find_control('Dur_Day').value = [str(dday)]
+	#fill out the page fields
+	br.form.find_control('SCent').value = [str(sCent)]
+	br.form.find_control('STens').value = [str(sTens)]
+	br.form.find_control('SYear').value = [str(sYear)]
+	br.form.find_control('SMonth').value = [sMonth]
+	br.form.find_control('ECent').value = [str(eCent)]
+	br.form.find_control('ETens').value = [str(eTens)]
+	br.form.find_control('EYear').value = [str(eYear)]
+	br.form.find_control('EMonth').value = [eMonth]
+	
 	br.form.find_control('Output').value = ['AE']
 	br.form.find_control('Out format').value = ['IAGA2002']
 	br.form.find_control('Email').value = "vt.sd.sw@gmail.com"
 	
 	response = br.submit()
 	
+	#get the data
 	lines = response.readlines()
 
 	aeList = []
@@ -235,7 +234,7 @@ def readAeWeb(sTime,eTime=None):
 		try: aeList.append(aeRec(webLine=l))
 		except Exception,e:
 			print e
-			print 'problemm initializing ae object'
+			print 'problemm assigning initializing dst object'
 		
 	if(aeList != []): return aeList
 	else: return None
@@ -265,7 +264,7 @@ def mapAeMongo(sYear,eYear=None):
 	assert(isinstance(sYear,int)),'error, sYear must be int'
 	if(eYear == None): eYear=sYear
 	assert(isinstance(eYear,int)),'error, sYear must be None or int'
-	assert(eYear >= sYear), 'error, end year greater than start year'
+	assert(eYear >= sYear), 'error, end year less than than start year'
 	
 	#get data connection
 	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
