@@ -18,3 +18,5 @@ bin/profile_davitpy/security/kernel*
 *.sublime-project
 *.orig
 models/aacgm/build
+/docs/sphinx/*
+/docs.sphinx
