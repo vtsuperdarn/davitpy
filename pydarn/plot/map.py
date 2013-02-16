@@ -6,9 +6,6 @@ pydarn.plot.map
 Plot maps in polar projections 
 
 This includes the following function(s):
-	* **plot**
-		Create an empty map
-
 	* **overlayRadar**
 		Overlay radar position and name on a map
 
@@ -20,99 +17,6 @@ Created by Sebastien
 *******************************
 """
 
-# *************************************************************
-def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
-		grid=True, gridLabels=True,
-		fillContinents='.8', fillOceans='None', 
-		fillLakes='white', coastLineWidth=0., 
-		coords='geo', datetime=None):
-	"""Create empty map    
-
-**INPUTS**:    
-	* **[limits]**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
-	* **[lon_0]**: center meridian (default is -70E)    
-	* **[hemi]**: 'north' (default) or 'south'    
-	* **[boundingLat]**: bounding latitude (default it +/-20)    
-	* **[grid]**: show/hide parallels and meridians grid    
-	* **[fill_continents]**: continent color. Default is 'grey'    
-	* **[fill_water]**: water color. Default is 'None'    
-	* **[coords]**: 'geo'
-
-**OUTPUTS**:    
-	* **map**: a Basemap object  
-	
-**EXAMPLES**:     
-
-
-Written by Sebastien 2012-08    
-
-	"""
-	from mpl_toolkits.basemap import Basemap, pyproj
-	from pylab import text
-	from numpy import arange, ones
-	from math import sqrt
-	
-	# Set map projection limits and center point depending on hemisphere selection
-	if hemi.lower() == 'north':
-		sgn = 1
-		# Map origin
-		lat_0 = sgn*90.
-	elif hemi.lower() == 'south':
-		sgn = -1
-		# Map origin
-		lat_0 = sgn*90.
-	# Map limits
-	if not limits:
-		# Set bounding latitude and calculate corner latitudes
-		if not boundingLat:
-			boundingLat = sgn*20.
-		# This is a bit tricky, but this is how you get the proper corner coordinates to satisfy boundingLat value
-		projparams = {'lon_0': lon_0, 'lat_ts': lat_0, 'R': 6370997.0, 'proj': 'stere', 'units': 'm', 'lat_0': lat_0}
-		proj = pyproj.Proj(projparams)
-		x,y = proj(lon_0,boundingLat)
-		lon,llcLat = proj(sqrt(2.)*y,0., inverse=True)
-		urcLat = llcLat
-		# Finally, set limits for an isotropic map plot
-		limits = [llcLat, lon_0-sgn*45., urcLat, lon_0+sgn*135.]
-	
-	# Draw map
-	map = Basemap(projection='stere', resolution='l', \
-				llcrnrlat=limits[0], llcrnrlon=limits[1], \
-				urcrnrlat=limits[2], urcrnrlon=limits[3], \
-				lat_0=lat_0, lon_0=lon_0)
-	map.drawcoastlines(linewidth=coastLineWidth)
-	map.drawmapboundary(fill_color=fillOceans)
-	map.fillcontinents(color=fillContinents, lake_color=fillLakes)
-	
-	# draw parallels and meridians.
-	if grid:
-		# draw parallels and meridians.
-		# labels = [left,right,top,bottom]
-		# label parallels on map
-		parallels = arange(-80.,81.,20.)
-		out = map.drawparallels(parallels, color='.6')
-		if gridLabels: 
-			lablon = int(limits[1]/10)*10
-			x,y = map(lablon*ones(parallels.shape), parallels)
-			for ix,iy,ip in zip(x,y,parallels):
-				if not map.xmin <= ix <= map.xmax: continue
-				if not map.ymin <= iy <= map.ymax: continue
-				text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-					rotation=lablon-lon_0, va='center')
-		# label meridians on bottom and left
-		meridians = arange(-180.,181.,20.)
-		if gridLabels: 
-			merLabels = [True,False,False,True]
-		else: 
-			merLabels = [False,False,False,False]
-		out = map.drawmeridians(meridians,
-			labels=merLabels, color='.6')
-	
-	# Save projection coordinates
-	map.projparams['coords'] = coords
-
-	return map
-	
 
 # *************************************************************
 def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 

@@ -3,7 +3,6 @@
 **Module**: pydarn.radar
 *********************
 This subpackage contains various radar information/routines for DaViT-py
-DEV: functions/modules/classes with a * have not been developed yet
 
 **Classes**:
 	* :class:`network`: radar.dat and hdw.dat information from all the radars
