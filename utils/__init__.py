@@ -19,9 +19,11 @@ This includes the following functions:
 from parseDate import parseDate
 from parseTime import parseTime
 from timeUtils import *
+from plotUtils import *
 import geoPack
 import calcSun
 import profileUtils
+import plotUtils
 
 
 # *************************************************************
