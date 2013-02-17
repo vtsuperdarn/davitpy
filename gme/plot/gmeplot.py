@@ -21,82 +21,111 @@ MODULE: gme.plot.gmeplot
 
 This module contains the following functions:
 
-  plotAe
+  plotGMI
   
-  plotDst
 *******************************
 """
 
-import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
-import matplotlib.pyplot as plot
-import matplotlib.lines as lines
-from matplotlib.ticker import MultipleLocator
-from matplotlib.collections import PolyCollection
-from utils.timeUtils import *
-from pydarn.sdio import *
+#import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+import matplotlib.pyplot as mp
+import matplotlib.dates as md
 
+def get_iterable(x):
+  if isinstance(x, str):
+    return [x]
+  else:
+    return x
 
-def plotAe(myFig,aeList,parameter=['ae'],sTime=None,eTime=None,ylim=None,pos=None):
+def plotGMI(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None):
 	"""
 	*******************************
 
 	PACKAGE: gme.plot.gmeplot
 
-	FUNCTION: plotAe(myFig,aeList,parameter='ae',sTime=None,eTime=None,ylim=None,pos=None)
+	FUNCTION: plotGMI(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None)
 
-	PURPOSE: plots AE/AL/AU/AO indices at panel pos
+	PURPOSE: plots ground magnetic indicies, including AE,SYMH,ASYMH, and DST.
 
 	INPUTS:
-		myFig: the MPL figure we are plotting on
-                aeList: aeList data returned from ae.readAe()
-                [parameter]: List of AE parameters to plot. Valid values are
-                  ['ae','al','au','ao']
+                gmiList: gmiList object returned from ae.readAe(), symAsy.readSymAsy(), or dst.readDst()
+                [parameter]: List of parameters to plot. Valid values are
+                  aeList:     ['ae','al','au','ao'] (Defaults to 'ae')
+                  symAsyList: ['symh','symd','asymh','asymd'] (Defaults to 'symh')
+                  dstList:    ['dst']
                 [sTime]: datetime.datetime object for start of plotting.  If not given, earliest data availble from aeList is used.
                 [eTime]: datetime.datetime object for end of plotting.  If not given, latest data availble from aeList is used.
-                [ylim]: Y-Axis limits
-		[pos]: position of the panel
+                [ymin]: Y-Axis minimum limit
+                [ymax]: Y-Axis maximum limit
+                [NoX]:  Suppress X-Axis Titles and Ticks
+                [NoY]:  Suppress Y-Axis Titles and Ticks
+                [NoCredit]: Suppress printing source of data on plot
+                [NoLegend]: Suppress a legend if more than one parameter is plotted
+                [legendSize]: Character size of the legend
 
 	OUTPUTS:
 		NONE
+
+        NOTES:  If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
 		
 	EXAMPLES:
 			
 	Written by Nathaniel Frissell 20130216
 
 	"""
-		
-	ax = myFig.add_axes(pos)
-#	ax.yaxis.tick_left()
-#	ax.yaxis.set_tick_params(direction='out')
-#	ax.set_ylim(bottom=10,top=16)
-#	ax.yaxis.set_minor_locator(MultipleLocator())
-#	ax.yaxis.set_tick_params(direction='out',which='minor')
-#	
-#	for f in freq:
-#		if(f > 16): f = 16
-#		if(f < 10): f = 10
-#		
-#	ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
-#	tz=None, xdate=True, ydate=False,markersize=2)
-#	
-#	loc,lab = plot.xticks()
-#	plot.xticks(loc,(' '))
-#	#customize yticks
-#	plot.yticks([10,16],(' '))
-#	
-#	xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
-#	xrng = (xmax-xmin)
-#	inter = int(round(xrng/6.*86400.))
-#	inter2 = int(round(xrng/24.*86400.))
-#	#format the x axis
-#	ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
-#	ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
-#	plot.xticks(size=9)
-#	
-#	plot.figtext(pos[0]-.01,pos[1],'10',ha='right',va='bottom',size=8)
-#	plot.figtext(pos[0]-.01,pos[1]+pos[3]-.003,'16',ha='right',va='top',size=8)
-#	plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
-#	plot.figtext(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
-#	l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
-#	transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
-#	ax.add_line(l)
+        
+        times = [gmiList[x].time for x in range(len(gmiList))]
+        dataSet = (gmiList[0]).dataSet
+        if dataSet == 'AE':
+          ae    = [gmiList[x].ae   for x in range(len(gmiList))]
+          al    = [gmiList[x].al   for x in range(len(gmiList))]
+          au    = [gmiList[x].au   for x in range(len(gmiList))]
+          ao    = [gmiList[x].ao   for x in range(len(gmiList))]
+          data  = {'ae': ae,'al':al,'au':au,'ao':ao}
+          if parameter == None: parameter = ['ae']
+        elif dataSet == 'Sym/Asy':
+          symh  = [gmiList[x].symh for x in range(len(gmiList))]
+          symd  = [gmiList[x].symd for x in range(len(gmiList))]
+          asyh  = [gmiList[x].asyh for x in range(len(gmiList))]
+          asyd  = [gmiList[x].asyd for x in range(len(gmiList))]
+          data  = {'symh':symh, 'symd':symd, 'asyh':asyh, 'asyd': asyd}
+          if parameter == None: parameter = ['symh']
+        elif dataset == 'Dst':
+          dst   = [gmiList[x].dst  for x in range(len(gmiList))]
+          if parameter == None: parameter = ['dst']
+
+        parameter = get_iterable(parameter)
+
+        figure = mp.gcf()
+        if figure == None: figure = mp.figure()
+
+        for param in parameter:
+          if data.has_key(param.lower()) == False: continue
+          mp.plot(times,data[param.lower()],label=param.upper())
+
+        mp.ylim(ymin,ymax)
+        mp.xlim(sTime,eTime)
+
+        ax = mp.gca()
+
+        if NoY == False:
+          if len(parameter) == 1:
+            ylabel = (parameter[0]).upper() + ' [nT]'
+          else:
+            ylabel = ','.join([x.upper() for x in parameter]) + ' [nT]'
+            if NoLegend == False: ax.legend(prop={'size':legendSize})
+          mp.ylabel(ylabel)
+        else:
+          ax.set_yticklabels([]) 
+
+        if NoX == False:
+          ax.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
+          mp.xlabel('Time [UT]')
+          figure.autofmt_xdate()
+        else:
+          ax.set_xticklabels([]) 
+
+        if NoCredit == False:
+          s = 'Source: Kyoto WDC'
+          xpos = 0.01
+          ypos = 0.91
+          ax.annotate(s,xy=(xpos,ypos),xycoords="axes fraction",horizontalalignment="left",fontsize='x-small')
