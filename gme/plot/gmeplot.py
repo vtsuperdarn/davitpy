@@ -89,8 +89,9 @@ def plotGMI(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX
           asyd  = [gmiList[x].asyd for x in range(len(gmiList))]
           data  = {'symh':symh, 'symd':symd, 'asyh':asyh, 'asyd': asyd}
           if parameter == None: parameter = ['symh']
-        elif dataset == 'Dst':
+        elif dataSet == 'Dst':
           dst   = [gmiList[x].dst  for x in range(len(gmiList))]
+          data  = {'dst':dst}
           if parameter == None: parameter = ['dst']
 
         parameter = get_iterable(parameter)
