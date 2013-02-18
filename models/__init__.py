@@ -1,40 +1,41 @@
-# Ionospheric and ray tracing models module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: models
-*******************************
+*********************
+**Module**: models
+*********************
 
-This module contains the following functions:
+**Modules**:
+    * :mod:`aacgm`: corrected geomagnetic model
+    * :mod:`tsyganenko`: T96
+    * :mod:`iri`: International Reference Ionosphere 2012
+    * :mod:`igrf`: International Geomagnetic Reference Field 2011
+    * :mod:`msis`: Neutral atmosphere model (NRLMSISE-00)
+    * :mod:`raydarn`: SuperDARN ray tracing code coupled with IRI
 
-	raydarn: SuperDARN ray tracing code coupled with IRI
-	
-	IRI: International Reference Ionosphere 2012
-	
-	IGRF: International Geomagnetic Reference Field 2011
-	
-	MSIS: Neutral atmosphere model (NRLMSISE-00)
-	
-	HWM: Horizontal Wind Model 2007
-
-*******************************
 """
 try:
     import tsyganenko
-except:
-    print __file__+' -> tsyganenko: import error'
+except Exception, e:
+    print __file__+' -> tsyganenko: ', e
+
 try:
     import igrf
-except:
-    print __file__+' -> igrf: import error'
+except Exception, e:
+    print __file__+' -> igrf: ', e
+
 try:
     import aacgm
-except:
-    print __file__+' -> aacgm: import error'
+except Exception, e:
+    print __file__+' -> aacgm: ', e
+
 try:
     import iri
-except:
-    print __file__+' -> iri: import error'
+except Exception, e:
+    print __file__+' -> iri: ', e
+
 try:
     import msis
-except:
-    print __file__+' -> msis: import error'
+except Exception, e:
+    print __file__+' -> msis: ', e
+

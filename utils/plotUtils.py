@@ -2,16 +2,133 @@
 # Full license can be found in LICENSE.txt
 """
 *********************
-**Module**: utils.plot
+**Module**: utils.plotUtils
 *********************
 Basic plotting tools
 
 **Functions**:
-	* :func:`map`: Create empty map 
-"""
+	* :func:`plotUtils.map`: Create empty map 
+	* :func:`plotUtils.genCmap`: 
 
-# *************************************************************
-def map(limits=None, lon_0=290., hemi='north', boundingLat=None, 
+"""
+from mpl_toolkits import basemap
+
+
+################################################################################
+################################################################################
+class testMap(basemap.Basemap):
+
+	def __init__(self, datetime=None, coords='geo', 
+		projection='stere', resolution='l', 
+		lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
+		fillContinents='.8', fillOceans='None', fillLakes='white', coastLineWidth=0., 
+		grid=True, gridLabels=True, **kwargs):
+		from models import aacgm
+		import numpy as np
+		from pylab import text
+
+		coordDict = {'mag': 'AACGM',
+					 'geo': 'Geographic',
+					 'mlt': 'MLT'}
+
+		# Add an extra member to the Basemap class
+		self.coords = coords
+
+		# Set map projection limits and center point depending on hemisphere selection
+		if not lat_0: 
+			lat_0 = 90.
+			if self.coords == 'mag': 
+				lat_0, _, _ = aacgm.aacgmConv(lat_0, 0., 0., 0)
+		if not lon_0: 
+			lon_0 = -100.
+			if self.coords == 'mag': 
+				_, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., 0)
+		print lat_0, lon_0
+		if boundinglat:
+			width = height = 2*111e3*( abs(lat_0 - boundinglat) )
+
+		# Initialize map
+		basemap.Basemap.__init__(self, projection=projection, resolution=resolution, 
+				lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
+
+		# Add continents
+		self.drawcoastlines(linewidth=coastLineWidth)
+		self.drawmapboundary(fill_color=fillOceans)
+		self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+
+		# Add coordinate spec
+		text(self.urcrnrx, self.urcrnry, coordDict[coords]+' coordinates', 
+				rotation=-90., va='top', fontsize=8)
+
+		# draw parallels and meridians.
+		if grid:
+			# draw parallels and meridians.
+			# labels = [left,right,top,bottom]
+			# label parallels on map
+			parallels = np.arange(-80.,81.,20.)
+			out = self.drawparallels(parallels, color='.6')
+			if gridLabels: 
+				lablon = int(self.llcrnrlon/10)*10
+				x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+				for ix,iy,ip in zip(x,y,parallels):
+					if not self.xmin <= ix <= self.xmax: continue
+					if not self.ymin <= iy <= self.ymax: continue
+					text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+							rotation=lablon-lon_0, va='center')
+			# label meridians on bottom and left
+			meridians = np.arange(-180.,181.,20.)
+			if gridLabels: 
+				merLabels = [True,False,False,True]
+			else: 
+				merLabels = [False,False,False,False]
+			out = self.drawmeridians(meridians, labels=merLabels, color='.6')
+    
+	def __call__(self,x,y,inverse=False):
+		from models import aacgm
+		from copy import deepcopy
+		import numpy as np
+		import inspect
+
+		callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
+
+		if self.coords is 'geo':
+			return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+		elif self.coords is 'mag':
+			frm = inspect.stack()[1]
+			mod = inspect.getmodule(frm[0])
+			if (mod and mod.__name__ == 'mpl_toolkits.basemap'):
+				if not inverse:
+					try:
+						nx, ny = len(x), len(y)
+						yout, xout, _ = aacgm.aacgmConvArr(list(y), list(x), [0.]*nx, 0)
+						if isinstance(x, np.ndarray): xout = np.array(xout)
+						if isinstance(y, np.ndarray): yout = np.array(yout)
+					except TypeError:
+						yout, xout, _ = aacgm.aacgmConv(y, x, 0., 0)
+					return basemap.Basemap.__call__(self, xout, yout, inverse=inverse)
+				else:
+					xout, yout = basemap.Basemap.__call__(self, x, y, inverse=inverse)
+					# try:
+					# 	nx, ny = len(xout), len(yout)
+					# 	yout, xout, _ = aacgm.aacgmConvArr(list(yout), list(xout), [0.]*nx, 1)
+					# except TypeError:
+					# 	yout, xout, _ = aacgm.aacgmConv(yout, xout, 0., 1)
+					# if isinstance(x, np.ndarray): xout = np.array(xout)
+					# if isinstance(y, np.ndarray): yout = np.array(yout)
+					return xout, yout
+			else:
+				return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+		elif self.coords is 'mlt':
+		    pass
+
+
+
+################################################################################
+################################################################################
+def map(limits=None, hemi='north', boundingLat=None, 
+		width = None, height=None, lat_0=None, lon_0=290., 
 		grid=True, gridLabels=True,
 		fillContinents='.8', fillOceans='None', 
 		fillLakes='white', coastLineWidth=0., 
@@ -20,7 +137,9 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 	
 	**Args**: 
 		* **[limits]**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
+		* **[width, height]**: width and height in m from the (lat_0, lon_0) center
 		* **[lon_0]**: center meridian (default is -70E)    
+		* **[lat_0]**: center latitude (default is -90E)    
 		* **[hemi]**: 'north' (default) or 'south'    
 		* **[boundingLat]**: bounding latitude (default it +/-20)    
 		* **[grid]**: show/hide parallels and meridians grid    
@@ -28,11 +147,11 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 		* **[fill_water]**: water color. Default is 'None'    
 		* **[coords]**: 'geo'
 	**Returns**:
-		* **map**: a Basemap object 
+		* **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
 	**Example**:
 		::
 
-			radars = pydarn.radar.radarRead()
+			myMap = map(boundingLat=30.)
 			
 	written by Sebastien, 2012-08
 	"""
@@ -42,16 +161,17 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 	from math import sqrt
 	
 	# Set map projection limits and center point depending on hemisphere selection
+	if not lat_0: lat_0 = 90.
 	if hemi.lower() == 'north':
 		sgn = 1
 		# Map origin
-		lat_0 = sgn*90.
+		lat_0 = sgn*abs(lat_0)
 	elif hemi.lower() == 'south':
 		sgn = -1
 		# Map origin
-		lat_0 = sgn*90.
+		lat_0 = sgn*abs(lat_0)
 	# Map limits
-	if not limits:
+	if not limits and None in [width, height]:
 		# Set bounding latitude and calculate corner latitudes
 		if not boundingLat:
 			boundingLat = sgn*20.
@@ -65,10 +185,15 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 		limits = [llcLat, lon_0-sgn*45., urcLat, lon_0+sgn*135.]
 	
 	# Draw map
-	map = Basemap(projection='stere', resolution='l', \
-				llcrnrlat=limits[0], llcrnrlon=limits[1], \
-				urcrnrlat=limits[2], urcrnrlon=limits[3], \
-				lat_0=lat_0, lon_0=lon_0)
+	if limits:
+		map = Basemap(projection='stere', resolution='l', \
+					llcrnrlat=limits[0], llcrnrlon=limits[1], \
+					urcrnrlat=limits[2], urcrnrlon=limits[3], \
+					lat_0=lat_0, lon_0=lon_0)
+	elif None not in [width, height]:
+		map = Basemap(projection='stere', resolution='l', \
+					width=width, height=height, \
+					lat_0=lat_0, lon_0=lon_0)
 	map.drawcoastlines(linewidth=coastLineWidth)
 	map.drawmapboundary(fill_color=fillOceans)
 	map.fillcontinents(color=fillContinents, lake_color=fillLakes)
@@ -81,7 +206,7 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 		parallels = arange(-80.,81.,20.)
 		out = map.drawparallels(parallels, color='.6')
 		if gridLabels: 
-			lablon = int(limits[1]/10)*10
+			lablon = int(map.llcrnrlon/10)*10
 			x,y = map(lablon*ones(parallels.shape), parallels)
 			for ix,iy,ip in zip(x,y,parallels):
 				if not map.xmin <= ix <= map.xmax: continue
@@ -103,33 +228,26 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 	return map
 
 
-def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0,gflg=0):
-
-	"""
-	******************************
-	genCmap(fig,coll,param,scale,pos,[colors]):
+################################################################################
+################################################################################
+def genCmap(fig, coll, param, scale, pos=[0,0,1,1], colors='lasse', map=0, gflg=0):
+	"""Generates a colormap and plots a colorbar
 	
-	generates a colormap and plots a colorbar
+	**Args**: 
+		* **fig**: the parent figure
+		* **coll**: the collection of items (e.g. polygons) being mapped to this colormap
+		* **param**: the parameter being plotted, valid for 'velocity', 'power', 'width', 'elevation', 'phi0'
+		* **scale**: the max and min values of the color scale in list form
+		* **pos**: the position of the parent plot, NOT of the COLORBAR
+		* **[colors]**: a string indicating which colorbar to use, valid inputs are 'lasse', 'aj' default: 'lasse'
+	**Returns**:
+		* **None**
+	**Example**:
+		::
 
-	INPUTS:
-		fig: the parent figure
-		coll: the collection of items (e.g. polygons) being mapped 
-			to this colormap
-		param: the parameter being plotted, valid for 'velocity',
-			'power', 'width', 'elevation', 'phi0'
-		scale: the max and min values of the color scale in list form
-		pos: the position of the parent plot, NOT of the COLORBAR
-		[colors]: a string indicating which colorbar to use, valid 
-			inputs are 'lasse', 'aj'
-			default: 'lasse'
-	OUTPUTS:
-
-	EXAMPLE:
-		genCmap(myFig,polyCollection,'velocity',[-200,200],pos)
-		
-	Written by AJ 20120820
-	
-	*******************************
+			genCmap(myFig, polyCollection, 'velocity', [-200,200], pos)
+			
+	written by AJ, 20120820
 	"""
 	import matplotlib,numpy
 	import matplotlib.pyplot as plot
@@ -252,6 +370,9 @@ def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0,gflg=0):
 	
 	return
 
+
+################################################################################
+################################################################################
 def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
 	import matplotlib,numpy
 	import matplotlib.pyplot as plot

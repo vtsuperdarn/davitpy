@@ -17,26 +17,21 @@ This includes the following submodules:
 
 try: import dmapio 
 except Exception, e: 
-	print e
-	'problem importing dmapio'
+	print 'problem importing dmapio: ', e
 
 try: import radar 
 except Exception, e: 
-	print e
-	'problem importing radar'
+	print 'problem importing radar: ', e
 
 try: import sdio 
 except Exception, e: 
-	print e
-	'problem importing sdio'
+	print 'problem importing sdio: ', e
 
 try: import plot 
 except Exception, e: 
-	print e
-	'problem importing plot'
+	print 'problem importing plot: ', e
 
 try: import proc 
 except Exception, e: 
-	print e
-	'problem importing proc'
+	print 'problem importing proc: ', e
 

@@ -11,29 +11,74 @@
 #include "rtime.h"
 #include "aacgm.h"
 #include "mlt.h"
-#include "invmag.h"
+// #include "invmag.h"
 #include "AstAlg.h"
+#include "radar.h"
+#include "rpos.h"
 
 static PyObject *
 aacgm_wrap(PyObject *self, PyObject *args)
 {
-	double inLat,inLon,height,outLat,outLon,r; 
+	
+	double inlat, inlon, height, outLat, outLon, r; 
 	int flg;
 	
-	if(!PyArg_ParseTuple(args, "dddi", &inLat,&inLon,&height,&flg))
+	if(!PyArg_ParseTuple(args, "dddi", &inlat,&inlon,&height,&flg))
 		return NULL;
 	else
 	{
-		/* get inlat from the list*/
-		AACGMConvert(inLat,inLon,height,&outLat,&outLon,&r,flg);
-		
-		PyObject *outList = PyList_New(0);
-		
-		PyList_Append(outList,PyFloat_FromDouble(outLat)); 
-		PyList_Append(outList,PyFloat_FromDouble(outLon));
-		PyList_Append(outList,PyFloat_FromDouble(height)); 
+		inlon = fmod(inlon, 360.d);
+		AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 		 
-		return outList;
+		return Py_BuildValue("ddd", outLat, outLon, r);
+	}
+	
+}
+
+static PyObject *
+aacgm_arr_wrap(PyObject *self, PyObject *args)
+{
+	
+	PyObject *latList;
+	PyObject *lonList;
+	PyObject *heightList;
+	double inlat, inlon, height, outLat, outLon, r; 
+	int flg;
+	Py_ssize_t nElem, i;
+	
+	if(!PyArg_ParseTuple(args, "OOOi", &latList,&lonList,&heightList,&flg))
+		return NULL;
+	else
+	{
+		/* get the number of lines passed to us */
+		nElem = PyList_Size(latList);
+		/* should raise an error here. */
+		if (nElem < 0)	return NULL; /* Not a list */
+
+		
+		PyObject *latOut = PyList_New(0);
+		PyObject *lonOut = PyList_New(0);
+		PyObject *heightOut = PyList_New(0);
+
+		for (i=0; i<nElem; i++) {
+			inlat = PyFloat_AsDouble( PyList_GetItem(latList, i) );
+			inlon = PyFloat_AsDouble( PyList_GetItem(lonList, i) );
+			inlon = fmod(inlon, 360.d);
+			height = PyFloat_AsDouble( PyList_GetItem(heightList, i) );
+			AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
+
+			PyList_Append(latOut, PyFloat_FromDouble(outLat)); 
+			PyList_Append(lonOut, PyFloat_FromDouble(outLon));
+			PyList_Append(heightOut, PyFloat_FromDouble(height)); 
+		}
+		
+		// PyObject *outList = PyList_New(0);
+		
+		// PyList_Append(outList,PyFloat_FromDouble(outLat)); 
+		// PyList_Append(outList,PyFloat_FromDouble(outLon));
+		// PyList_Append(outList,PyFloat_FromDouble(height)); 
+		 
+		return Py_BuildValue("OOO", latOut, lonOut, heightOut);
 	}
 	
 }
@@ -84,7 +129,7 @@ MLTConvertYrsec_wrap(PyObject *self, PyObject *args)
 	}
 
 }
-
+/*
 static PyObject * 
 rposazm_wrap(PyObject *self, PyObject *args)
 {
@@ -163,15 +208,16 @@ rposazm_wrap(PyObject *self, PyObject *args)
 	}
 
 }
-
+*/
 static PyMethodDef aacgmMethods[] = 
 {
-	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: [lat,lon,alt]=aacgmConv(inLat,inLon,height,flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
+	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, alt = aacgmConv(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
+	{"aacgmConvArr",  aacgm_arr_wrap, METH_VARARGS, "convert to aacgm coords when inputs are lists\nformat: lat, lon, alt = aacgmConvArr(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
  	{"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
 	{"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
  	{"mltFromYrsec", MLTConvertYrsec_wrap , METH_VARARGS, "calculate mlt from yr seconds and mag lon\nformat:mlt=mltFromEpoch(year,yrsec,mLon)"},
- 	{"rPosAzm",  rposazm_wrap, METH_VARARGS, "wraper for rpos, MAY NOT be right\nformat:pos=rPosAzm(bm,rng,stid,eTime,frang,rsep,rx,height,magflg)"},
-  {NULL, NULL, 0, NULL}        /* Sentinel */
+// 	{"rPosAzm",  rposazm_wrap, METH_VARARGS, "wraper for rpos, MAY NOT be right\nformat:pos=rPosAzm(bm,rng,stid,eTime,frang,rsep,rx,height,magflg)"},
+	{NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
 PyMODINIT_FUNC
