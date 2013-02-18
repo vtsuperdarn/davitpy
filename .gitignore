@@ -20,3 +20,4 @@ bin/profile_davitpy/security/kernel*
 models/aacgm/build
 /docs/sphinx/*
 /docs.sphinx
+radars.hdf5*
