@@ -407,5 +407,374 @@ def mapPoesMongo(sYear,eYear=None):
 				print 'strange, there is more than 1 record for',rec.time
 		del templist
 		myTime += dt.timedelta(days=10)
+		
+		
+def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 'geo', hemi = 1, folat = [45., 90.], satNum = None ) :
+	"""This function overlays POES TED data onto a map object.
+
+	**Args**: 
+        * **baseMapObj** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the map object you want data to be overlayed on.
+        * **axisHandle** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the Axis Handle used.
+	* **startTime** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the starttime you want data for. If endTime is not given overlays data from satellites with in +/- 45 min of the startTime
+	* [**endTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, data from satellites with in +/- 45 min of the startTime is overlayed.  default = None
+	* [**satnum**] (int): the satellite you want data for.  eg 17 for noaa17.  if this is None, data for all satellites will be returned.  default = None
+	* [**coords**] (list or None): Coordinates of the map object on which you want data to be overlayed on. Default 'geo'
+	* [**hemi**] (list or None): Hemisphere of the map object on which you want data to be overlayed on. Value is 1 for northern hemisphere and -1 for the southern hemisphere.Default 1
+	* [**folat**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with latitude values in the range [a,b] will be returned.  default = None
+		
+	**Returns**:
+		POES TED data is overlayed on the map object. If no data is found, None is returned.
+	**Example**:
+		::
+		
+			import datetime as dt
+			poesList = gme.sat.overlayPoesTed(MapObj, sTime=dt.datetime(2011,3,4,4))
+		
+	written by Bharat Kunduri, 20130216
+	"""
+	
+	import utils
+	import matplotlib as mp
+	import datetime
+	import numpy
+	import matplotlib.pyplot as plt
+	import gme.sat.poes as Poes
+	import math
+	import matplotlib.cm as cm
+	from scipy import optimize	
+
+
+    #check all the inputs for validity
+	assert(isinstance(startTime,datetime.datetime)), \
+		'error, sTime must be a datetime object'
+	assert(endTime == None or isinstance(endTime,datetime.datetime)), \
+		'error, eTime must be either None or a datetime object'
+	
+	var = locals()
+	
+	assert(var['satNum'] == None or (isinstance(var['satNum'],list) )), \
+		'error, satNum must None or a list of satellite (integer) numbers'
+	
+	if satNum != None :
+		assert( len(satNum) <= 5 ), \
+		'error, there are only 5 POES satellites in operation (atleast when I wrote this code)'
+	
+	
+	assert(var['folat'] == None or (isinstance(var['folat'],list) and \
+		isinstance(var['folat'][0],(int,float)) and isinstance(var['folat'][1],(int,float)))), \
+		'error, folat must None or a list of 2 numbers'
+		
+	# Check the hemisphere and get the appropriate folat
+	folat = [ math.fabs( folat[0] ) * hemi, math.fabs( folat[1] ) * hemi ]
+		
+	
+	# Check if the endTime is given in which case the user wants a specific time interval to search for
+	# If not we'll give him the best available passes for the selected start time...
+	
+	if ( endTime != None ) :
+		timeRange = numpy.array( [ startTime, endTime ] )
+	else :
+		timeRange = None
+	
+	pltTimeInterval = numpy.array( datetime.timedelta( minutes = 45 ) )
+	
+	# check if the timeRange is set... if not set the timeRange to +/- pltTimeInterval of the startTime
+	if ( timeRange == None ) :
+		timeRange = numpy.array( [ startTime - pltTimeInterval, startTime + pltTimeInterval ] )
+	
+	
+		
+	# SatNums - currently operational POES satellites are 15, 16, 17, 18, 19
+	if satNum == None :
+		satNum = [ 15, 16, 17, 18, 19 ]
+	# If any particular satellite number is not chosen by user loop through all the available one's 
+	satNum = numpy.array( satNum ) # I like numpy arrays better that's why I'm converting the satNum list to a numpy array
+	
+	latPoesAll = [[] for j in range(len(satNum))]
+	lonPoesAll = [[] for j in range(len(satNum))]
+	tedPoesAll = [[] for j in range(len(satNum))]
+	timePoesAll = [[] for j in range(len(satNum))]
+	lenDataAll = [[] for j in range(len(satNum))]
+	
+	for sN in range( len(satNum) ) :
+		currPoesList = Poes.readPoes( timeRange[0], eTime = timeRange[1], satnum = int(satNum[sN]), folat = folat )
+
+		# Check if the data is loaded...
+		if currPoesList == None :
+			print 'No data found'
+			return None
+
+		# Loop through the list and store the data into arrays    
+		lenDataAll.append( len( currPoesList ) )
+		
+		
+		for l in range( lenDataAll[-1] ) :
+		# Store our data in arrays
+			latPoesAll[sN].append( currPoesList[l].folat )
+			lonPoesAll[sN].append( currPoesList[l].folon )
+			tedPoesAll[sN].append( math.log10(currPoesList[l].ted) )
+			timePoesAll[sN].append( currPoesList[l].time )
+		
+	
+	latPoesAll = numpy.array( latPoesAll ) 
+	lonPoesAll = numpy.array( lonPoesAll )
+	tedPoesAll = numpy.array( tedPoesAll )
+	timePoesAll = numpy.array( timePoesAll )
+	lenDataAll = numpy.array( lenDataAll )
+	
+	poesTicks = [ -3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5 ]
+	
+	# get the axis of the figure...
+	ax = axisHandle
+	
+	for nn in range( len(satNum) ) :
+		x, y = baseMapObj(lonPoesAll[nn], latPoesAll[nn])
+		bpltpoes = baseMapObj.scatter( x,y,c=tedPoesAll[nn], vmin=-3., vmax=0.5, alpha = 0.7, cmap=cm.jet, zorder = 5., edgecolor='none' )
+		timeCurr = timePoesAll[nn]
+		for aa in range( len(latPoesAll[nn]) ) :
+			if aa % 10 == 0:
+				str_curr = str(timeCurr[aa].hour)+':'+str(timeCurr[aa].minute)
+				ax.annotate( str_curr, xy =( x[aa], y[aa] ), size = 5, zorder = 6. )
+		
+	#cbar = colorbar(bpltpoes, ticks = poesTicks, orientation='vertical')
+	#cbar.ax.set_xticklabels(poesTicks)
+	#cbar.set_label(r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]")
+    
+    
+    
+def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1, equBnd = True, polBnd = False ) :
+	"""This function reads POES TED data with in +/- 45min of the given time, fits the auroral oval boundaries and overlays them on a map object. The poleward boundary is not accurate all the times due to lesser number of satellite passes identifying it.
+
+	**Args**: 
+        * **baseMapObj** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the map object you want data to be overlayed on.
+        * **axisHandle** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the Axis Handle used.
+	* **startTime** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the starttime you want data for. If endTime is not given overlays data from satellites with in +/- 45 min of the startTime
+	* [**coords**] (list or None): Coordinates of the map object on which you want data to be overlayed on. Default 'geo'
+	* [**hemi**] (list or None): Hemisphere of the map object on which you want data to be overlayed on. Value is 1 for northern hemisphere and -1 for the southern hemisphere.Default 1
+	* [**equBnd**] (list or None): If this is True the equatorward auroral oval boundary fit from the TED data is overlayed on the map object. Default True
+        * [**polBnd**] (list or None): If this is True the poleward auroral oval boundary fit from the TED data is overlayed on the map object. Default False
+		
+	**Returns**:
+		POES TED data is overlayed on the map object. If no data is found, None is returned.
+	**Example**:
+		::
+		
+			import datetime as dt
+			poesList = gme.sat.overlayPoesTed(MapObj, sTime=dt.datetime(2011,3,4,4))
+		
+	written by Bharat Kunduri, 20130216
+	"""
+
+	import utils
+	import matplotlib as mp
+	import datetime
+	import numpy
+	import matplotlib.pyplot as plt
+	import gme.sat.poes as Poes
+	import math
+	import matplotlib.cm as cm
+	from scipy import optimize
+
+	#check all the inputs for validity
+	assert(isinstance(startTime,datetime.datetime)), \
+		'error, sTime must be a datetime object'
+		
+	
+	# Check the hemisphere and get the appropriate folat
+	folat = [ 45. * hemi, 90. * hemi ]
+	
+	# Get the time range we choose +/- 45 minutes....
+	pltTimeInterval = numpy.array( datetime.timedelta( minutes = 45 ) )
+	timeRange = numpy.array( [ startTime - pltTimeInterval, startTime + pltTimeInterval ] )
+	
+	satNum = [ 15, 16, 17, 18, 19 ]
+	
+	# We set the TED cut-off value to -0.75,
+	# From observed cases this appeared to do well...
+	# though fails sometimes especially during geomagnetically quiet times...
+	# However this is version 1.0 and there always is room for improvement
+	equBndCutoffVal = -0.75
+	
+	# If any particular satellite number is not chosen by user loop through all the available one's 
+	satNum = numpy.array( satNum ) # I like numpy arrays better that's why I'm converting the satNum list to a numpy array
+	
+	latPoesAll = [[] for j in range(len(satNum))]
+	lonPoesAll = [[] for j in range(len(satNum))]
+	tedPoesAll = [[] for j in range(len(satNum))]
+	timePoesAll = [[] for j in range(len(satNum))]
+	lenDataAll = [[] for j in range(len(satNum))]
+	
+	for sN in range( len(satNum) ) :
+		currPoesList = Poes.readPoes( timeRange[0], eTime = timeRange[1], satnum = int(satNum[sN]), folat = folat )
+
+		# Check if the data is loaded...
+		if currPoesList == None :
+			print 'No data found'
+			return None
+
+		# Loop through the list and store the data into arrays    
+		lenDataAll.append( len( currPoesList ) )
+		
+		
+		for l in range( lenDataAll[-1] ) :
+		# Store our data in arrays if the TED data value is > than the cutoff value
+			if ( math.log10(currPoesList[l].ted ) > equBndCutoffVal ) :
+				latPoesAll[sN].append( currPoesList[l].folat )
+				lonPoesAll[sN].append( currPoesList[l].folon )
+				tedPoesAll[sN].append( math.log10(currPoesList[l].ted) )
+				timePoesAll[sN].append( currPoesList[l].time )
+			
+		
+	
+	latPoesAll = numpy.array( latPoesAll ) 
+	lonPoesAll = numpy.array( lonPoesAll )
+	tedPoesAll = numpy.array( tedPoesAll )
+	timePoesAll = numpy.array( timePoesAll )
+	lenDataAll = numpy.array( lenDataAll )
+	
+	
+	# Now to identify the boundaries...
+	# Also need to check if the boundary is equatorward or poleward..
+	# When satellite is moving from high-lat to low-lat decrease in flux would mean equatorward boundary
+	# When satellite is moving from low-lat to high-lat increase in flux would mean equatorward boundary
+	# that is what we are trying to check here
+
+	eqBndLats = []
+	eqBndLons = []
+	poBndLats = []
+	poBndLons = []    
+	
+	
+	for n1 in range( len(satNum) ) :
+		currSatLats = latPoesAll[n1]
+		currSatLons = lonPoesAll[n1]
+		currSatTeds = tedPoesAll[n1]
+		
+		testLatArrLtoh = []
+		testLonArrLtoh = []
+		testLatArrHtol = []
+		testLonArrHtol = []
+		
+		testLatArrLtohP = []
+		testLonArrLtohP = []
+		testLatArrHtolP = []
+		testLonArrHtolP = []
+		
+		for n2 in range( len(currSatLats)-1 ) :
+		
+		
+			#Check if the satellite is moving form low-lat to high-lat or otherwise
+			
+			if ( math.fabs( currSatLats[n2] ) < math.fabs( currSatLats[n2+1] ) ) :
+				
+				if ( currSatTeds[n2] < currSatTeds[n2+1] ) :
+					testLatArrLtoh.append( currSatLats[n2] )
+					testLonArrLtoh.append( currSatLons[n2] )
+				
+				if ( currSatTeds[n2] > currSatTeds[n2+1] ) :
+					testLatArrLtohP.append( currSatLats[n2] )
+					testLonArrLtohP.append( currSatLons[n2] )
+				
+				
+				
+			if ( math.fabs( currSatLats[n2] ) > math.fabs( currSatLats[n2+1] ) ) :
+				if ( currSatTeds[n2] > currSatTeds[n2+1] ) :
+					testLatArrHtol.append( currSatLats[n2] )
+					testLonArrHtol.append( currSatLons[n2] )
+				
+				if ( currSatTeds[n2] < currSatTeds[n2+1] ) :
+					testLatArrHtolP.append( currSatLats[n2] )
+					testLonArrHtolP.append( currSatLons[n2] )
+			
+		
+		
+		# I do this to find the index of the min lat...
+		
+		if ( testLatArrLtoh != [] ) :
+			testLatArrLtoh = numpy.array( testLatArrLtoh )
+			testLonArrLtoh = numpy.array( testLonArrLtoh )
+			VarEqLat1 = testLatArrLtoh[ numpy.where( testLatArrLtoh == min(testLatArrLtoh) ) ]
+			VarEqLon1 = testLonArrLtoh[ numpy.where( testLatArrLtoh == min(testLatArrLtoh) ) ]
+			eqBndLats.append( VarEqLat1[0] )
+			eqBndLons.append( VarEqLon1[0] )
+		
+		
+		if ( testLatArrHtol != [] ) :
+			testLatArrHtol = numpy.array( testLatArrHtol )
+			testLonArrHtol = numpy.array( testLonArrHtol )
+			VarEqLat2 = testLatArrHtol[ numpy.where( testLatArrHtol == min(testLatArrHtol) ) ]
+			VarEqLon2 = testLonArrHtol[ numpy.where( testLatArrHtol == min(testLatArrHtol) ) ]
+			eqBndLats.append( VarEqLat2[0] )
+			eqBndLons.append( VarEqLon2[0] )
+		
+		
+		if ( testLatArrLtohP != [] ) :
+			testLatArrLtohP = numpy.array( testLatArrLtohP )
+			testLonArrLtohP = numpy.array( testLonArrLtohP )
+			VarEqLatP1 = testLatArrLtohP[ numpy.where( testLatArrLtohP == min(testLatArrLtohP) ) ]
+			VarEqLonP1 = testLonArrLtohP[ numpy.where( testLatArrLtohP == min(testLatArrLtohP) ) ]
+			if VarEqLatP1[0] > 64. :
+				poBndLats.append( VarEqLatP1[0] )
+				poBndLons.append( VarEqLonP1[0] )
+		
+		
+		if ( testLatArrHtolP != [] ) :
+			testLatArrHtolP = numpy.array( testLatArrHtolP )
+			testLonArrHtolP = numpy.array( testLonArrHtolP )
+			VarEqLatP2 = testLatArrHtolP[ numpy.where( testLatArrHtolP == min(testLatArrHtolP) ) ]
+			VarEqLonP2 = testLonArrHtolP[ numpy.where( testLatArrHtolP == min(testLatArrHtolP) ) ]
+			if VarEqLatP2[0] > 64 :
+				poBndLats.append( VarEqLatP2[0] )
+				poBndLons.append( VarEqLonP2[0] )
+		
+		
+	eqBndLats = numpy.array( eqBndLats )
+	eqBndLons = numpy.array( eqBndLons )
+	poBndLats = numpy.array( poBndLats )
+	poBndLons = numpy.array( poBndLons )
+
+	#get the axis Handle used
+	ax = axisHandle
+	
+	# Now we do the fitting part...
+	
+	fitfunc = lambda p, x: p[0] + p[1]*numpy.cos(2*math.pi*(x/360.)+p[2]) # Target function
+	errfunc = lambda p, x, y: fitfunc(p, x) - y # Distance to the target function
+	
+	
+	# Initial guess for the parameters
+	# Equatorward boundary
+	p0Equ = [ 1., 1., 1.]
+	p1Equ, successEqu = optimize.leastsq(errfunc, p0Equ[:], args=(eqBndLons, eqBndLats))  
+	if polBnd == True :
+		p0Pol = [ 1., 1., 1.]
+		p1Pol, successPol = optimize.leastsq(errfunc, p0Pol[:], args=(poBndLons, poBndLats))   
+	
+	allPlotLons = numpy.linspace(0., 360., 25.)
+	allPlotLons[-1] = 0.
+	eqPlotLats = []
+	if polBnd == True :
+		poPlotLats = []
+	for xx in allPlotLons :
+		if equBnd == True :
+			eqPlotLats.append( p1Equ[0] + p1Equ[1]*numpy.cos(2*math.pi*(xx/360.)+p1Equ[2] ) )
+		if polBnd == True :
+			poPlotLats.append( p1Pol[0] + p1Pol[1]*numpy.cos(2*math.pi*(xx/360.)+p1Pol[2] ) )
+		
+	xEqu, yEqu = baseMapObj(allPlotLons, eqPlotLats)
+	bpltpoes = baseMapObj.plot( xEqu,yEqu, zorder = 7., color = 'b' )
+	
+	if polBnd == True :
+		xPol, yPol = baseMapObj(allPlotLons, poPlotLats)
+		bpltpoes = baseMapObj.plot( xPol,yPol, zorder = 7., color = 'r' )
+    
+        
+  
+        
+
+
+
+
+		
 
 	
