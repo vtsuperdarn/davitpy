@@ -104,7 +104,6 @@ def map(limits=None, lon_0=290., hemi='north', boundingLat=None,
 
 
 def genCmap(fig,coll,param,scale,pos=[0,0,1,1],colors='lasse',map=0,gflg=0):
-
 	"""
 	******************************
 	genCmap(fig,coll,param,scale,pos,[colors]):
