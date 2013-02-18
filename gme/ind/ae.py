@@ -33,7 +33,7 @@
 
 import gme
 class aeRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of ae data.  Extends :class:`gmeBase.gmeData` . Note that Ae data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
+	"""a class to represent a record of ae data.  Extends :class:`gmeBase.gmeData` . Note that Ae data is available from 1990-present day (or whatever the latest WDC has uploaded is).  **We have 1 hour and 1 minute values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
@@ -43,6 +43,7 @@ class aeRec(gme.base.gmeBase.gmeData):
 		* **au** (float): auroral upper
 		* **ae** (float): auroral lower
 		* **ao** (float): mean of al and au
+		* **res** (int): the time resolution of the data in minutes
 	.. note::
 		If any of the members have a value of None, this means that they could not be read for that specific time
    
@@ -84,7 +85,7 @@ class aeRec(gme.base.gmeBase.gmeData):
 		if(float(cols[5]) != 99999.0): self.al = float(cols[5])
 		if(float(cols[6]) != 99999.0): self.ao = float(cols[6])
 		
-	def __init__(self, webLine=None, dbDict=None):
+	def __init__(self, webLine=None, dbDict=None, res=None):
 		"""the intialization fucntion for a :class:`aeRec` object.  
 		
 		.. note::
@@ -112,17 +113,19 @@ class aeRec(gme.base.gmeBase.gmeData):
 		self.au = None
 		self.al = None
 		self.ao = None
+		self.res = res
 		
 		#if we're initializing from an object, do it!
 		if(webLine != None): self.parseWeb(webLine)
 		if(dbDict != None): self.parseDb(dbDict)
 		
-def readAe(sTime=None,eTime=None,ae=None,al=None,au=None,ao=None):
+def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
 	"""This function reads ae data from the mongodb.  **The data are 1-minute values**
 	
 	**Args**: 
 		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for, default=None
 		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
+		* [**res**] (int): the time resolution desired in minutes.  Valid inputs are 1 and 60.  default = 60
 		* [**ae**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with ae values in the range [a,b] will be returned.  default = None
 		* [**al**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with al values in the range [a,b] will be returned.  default = None
 		* [**au**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with au values in the range [a,b] will be returned.  default = None
@@ -133,7 +136,7 @@ def readAe(sTime=None,eTime=None,ae=None,al=None,au=None,ao=None):
 		::
 		
 			import datetime as dt
-			aeList = gme.ind.readAe(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),ao=[-50,50])
+			aeList = gme.ind.readAe(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),res=60,ao=[-50,50])
 		
 	written by AJ, 20130131
 	"""
@@ -145,6 +148,7 @@ def readAe(sTime=None,eTime=None,ae=None,al=None,au=None,ao=None):
 		'error, sTime must be a datetime object'
 	assert(eTime == None or isinstance(eTime,dt.datetime)), \
 		'error, eTime must be either None or a datetime object'
+	assert(res == 60 or res ==1), 'error, res must be 1 or 60'
 	var = locals()
 	for name in ['ae','al','au','ao']:
 		assert(var[name] == None or (isinstance(var[name],list) and \
@@ -156,6 +160,7 @@ def readAe(sTime=None,eTime=None,ae=None,al=None,au=None,ao=None):
 	#if arguments are provided, query for those
 	if(sTime != None): qryList.append({'time':{'$gte':sTime}})
 	if(eTime != None): qryList.append({'time':{'$lte':eTime}})
+	qryList.append({'res':res})
 	var = locals()
 	for name in ['ae','al','au','ao']:
 		if(var[name] != None): 
@@ -181,7 +186,7 @@ def readAe(sTime=None,eTime=None,ae=None,al=None,au=None,ao=None):
 		print '\ncould not find requested data in the mongodb'
 		return None
 			
-def readAeWeb(sTime,eTime=None):
+def readAeWeb(sTime,eTime=None,res=60):
 	"""This function reads ae data from the WDC kyoto website
 	
 	.. warning::
@@ -189,7 +194,8 @@ def readAeWeb(sTime,eTime=None):
 	
 	**Args**: 
 		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal to sTime.  default = None
+		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal to sTime.  eTime must not be more than 366 days after sTime.  default = None
+		* [**res**] (int): the time resolution desired, either 1 or 60 minutes.  default=60
 	**Example**:
 		::
 		
@@ -205,38 +211,73 @@ def readAeWeb(sTime,eTime=None):
 	if(eTime == None): eTime = sTime
 	assert(isinstance(eTime,dt.datetime)),'error, eTime must be a datetime object'
 	assert(eTime >= sTime), 'error, eTime < eTime'
-	
-	sCent = sTime.year/100
-	sTens = (sTime.year - sCent*100)/10
-	sYear = sTime.year-sCent*100-sTens*10
-	sMonth = sTime.strftime("%m")
-	eCent = eTime.year/100
-	eTens = (eTime.year - eCent*100)/10
-	eYear = eTime.year-eCent*100-eTens*10
-	eMonth = eTime.strftime("%m")
+	assert(res == 1 or res == 60), 'error, res must be 1 or 60'
+	delt = eTime-sTime
+	assert(delt.days <= 366), 'error, cant read more than 366 days'
 	
 	br = mechanize.Browser()
 	br.set_handle_robots(False)   # no robots
 	br.set_handle_refresh(False)  # can sometimes hang without this
 	br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-	br.open('http://wdc.kugi.kyoto-u.ac.jp/dstae/index.html')
 	
-	br.form = list(br.forms())[0]
-	
-	#fill out the page fields
-	br.form.find_control('SCent').value = [str(sCent)]
-	br.form.find_control('STens').value = [str(sTens)]
-	br.form.find_control('SYear').value = [str(sYear)]
-	br.form.find_control('SMonth').value = [sMonth]
-	br.form.find_control('ECent').value = [str(eCent)]
-	br.form.find_control('ETens').value = [str(eTens)]
-	br.form.find_control('EYear').value = [str(eYear)]
-	br.form.find_control('EMonth').value = [eMonth]
-	
-	br.form.find_control('Output').value = ['AE']
-	br.form.find_control('Out format').value = ['IAGA2002']
-	br.form.find_control('Email').value = "vt.sd.sw@gmail.com"
-	
+	if(res == 60):
+		sCent = sTime.year/100
+		sTens = (sTime.year - sCent*100)/10
+		sYear = sTime.year-sCent*100-sTens*10
+		sMonth = sTime.strftime("%m")
+		eCent = eTime.year/100
+		eTens = (eTime.year - eCent*100)/10
+		eYear = eTime.year-eCent*100-eTens*10
+		eMonth = eTime.strftime("%m")
+		
+		br.open('http://wdc.kugi.kyoto-u.ac.jp/dstae/index.html')
+		
+		br.form = list(br.forms())[0]
+		
+		#fill out the page fields
+		br.form.find_control('SCent').value = [str(sCent)]
+		br.form.find_control('STens').value = [str(sTens)]
+		br.form.find_control('SYear').value = [str(sYear)]
+		br.form.find_control('SMonth').value = [sMonth]
+		br.form.find_control('ECent').value = [str(eCent)]
+		br.form.find_control('ETens').value = [str(eTens)]
+		br.form.find_control('EYear').value = [str(eYear)]
+		br.form.find_control('EMonth').value = [eMonth]
+		
+		br.form.find_control('Output').value = ['AE']
+		br.form.find_control('Out format').value = ['IAGA2002']
+		br.form.find_control('Email').value = "vt.sd.sw@gmail.com"
+		
+	else:
+		tens = (sTime.year)/10
+		year = sTime.year-tens*10
+		month = sTime.strftime("%m")
+		dtens = sTime.day/10
+		day = sTime.day-dtens*10
+		htens = sTime.hour/10
+		hour = sTime.hour-htens*10
+		ddtens = delt.days/10
+		dday = delt.days - ddtens*10
+		
+		br.open('http://wdc.kugi.kyoto-u.ac.jp/aeasy/index.html')
+		
+		br.form = list(br.forms())[0]
+		
+		#fill out the fields
+		br.form.find_control('Tens').value = [str(tens)]
+		br.form.find_control('Year').value = [str(year)]
+		br.form.find_control('Month').value = [str(month)]
+		br.form.find_control('Day_Tens').value = [str(dtens)]
+		br.form.find_control('Days').value = [str(day)]
+		br.form.find_control('Hour_Tens').value = [str(htens)]
+		br.form.find_control('Hour').value = [str(hour)]
+		if(ddtens < 9): ddtens = '0'+str(ddtens)
+		br.form.find_control('Dur_Day_Tens').value = [str(ddtens)]
+		br.form.find_control('Dur_Day').value = [str(dday)]
+		br.form.find_control('Output').value = ['AE']
+		br.form.find_control('Out format').value = ['IAGA2002']
+		br.form.find_control('Email').value = "vt.sd.sw@gmail.com"
+		
 	response = br.submit()
 	
 	#get the data
@@ -247,15 +288,15 @@ def readAeWeb(sTime,eTime=None):
 		#check for headers
 		if(l[0] == ' ' or l[0:4] == 'DATE'): continue
 		cols=l.split()
-		try: aeList.append(aeRec(webLine=l))
+		try: aeList.append(aeRec(webLine=l,res=res))
 		except Exception,e:
 			print e
-			print 'problemm assigning initializing dst object'
+			print 'problem assigning initializing dst object'
 		
 	if(aeList != []): return aeList
 	else: return None
 
-def mapAeMongo(sYear,eYear=None):
+def mapAeMongo(sYear,eYear=None,res=60):
 	"""This function reads ae data from wdc and puts it in mongodb
 	
 	.. warning::
@@ -264,6 +305,7 @@ def mapAeMongo(sYear,eYear=None):
 	**Args**: 
 		* **sYear** (int): the year to begin mapping data
 		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
+		* [**res**] (int): the time resolution desired.  either 1 or 60 minutes.  default=60.
 	**Returns**:
 		* Nothing.
 	**Example**:
@@ -292,14 +334,15 @@ def mapAeMongo(sYear,eYear=None):
 	mongoData.ensure_index('al')
 	mongoData.ensure_index('au')
 	mongoData.ensure_index('ao')
+	mongoData.ensure_index('res')
 	
 	for yr in range(sYear,eYear+1):
 		#1 day at a time, to not fill up RAM
-		templist = readAeWeb(dt.datetime(yr,1,1),dt.datetime(yr,1,1)+dt.timedelta(days=366))
+		templist = readAeWeb(dt.datetime(yr,1,1),dt.datetime(yr,1,1)+dt.timedelta(days=366),res=res)
 		if(templist == None): continue
 		for rec in templist:
 			#check if a duplicate record exists
-			qry = mongoData.find({'time':rec.time})
+			qry = mongoData.find({'$and':[{'time': rec.time}, {'res': rec.res}]})
 			print rec.time
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
