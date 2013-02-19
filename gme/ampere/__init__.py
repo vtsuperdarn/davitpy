@@ -25,7 +25,7 @@ Contains:
 
 
 def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
-    """
+	"""
 	|	**PACKAGE**: gmi.ampere.ampereDownloadData
 	|	**FUNCTION**: ampereDownloadData( Date_Dwl, move_to_sddata = False )
 	|	**PURPOSE**: Downloads AMPERE data (both hemispheres) of a given date and saves it in the current working directory
@@ -41,12 +41,12 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
 	|	ampereDownloadData( 20121231, move_to_sddata = False )
 	|	
 	|	Written by Bharat Kunduri 20121210
-    """
-    import datetime
-    import calendar
-    import urllib
-    import urllib2
-    import os 
+	"""
+	import datetime
+	import calendar
+	import urllib
+	import urllib2
+	import os 
     
 
     
