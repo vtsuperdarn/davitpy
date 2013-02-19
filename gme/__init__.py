@@ -42,8 +42,8 @@ except Exception,e: print e
 try: from sat import *
 except Exception,e: print e
 
-
 try: import ampere
 except Exception,e: print e
 
-
+try: import plot
+except Exception,e: print e
