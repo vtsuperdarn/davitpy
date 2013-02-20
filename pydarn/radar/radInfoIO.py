@@ -301,9 +301,9 @@ class updateHdf5(object):
 				# Open file
 				f = h5py.File(fname,'w')
 
-				rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad)
-				hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw)
-				info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info)
+				rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad, chunks=True)
+				hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw, chunks=True)
+				info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info, chunks=True)
 
 				# Close file
 				f.close()
@@ -345,9 +345,9 @@ class updateHdf5(object):
 			f = h5py.File(fname,'r+')
 
 			# Update each dataset
-			self.__h5UpdateDset(f['radar'], arr_rad, 'id')
-			self.__h5UpdateDset(f['hdw'], arr_hdw, 'id')
-			self.__h5UpdateDset(f['metadata'], arr_inf, 'var')
+			self.__h5UpdateDset(f['radar'], arr_rad, ('id',))
+			self.__h5UpdateDset(f['hdw'], arr_hdw, ('id', 'tval'))
+			self.__h5UpdateDset(f['metadata'], arr_inf, ('var',))
 
 			# Close file
 			f.close()
@@ -374,14 +374,25 @@ class updateHdf5(object):
 					
 		written by Sebastien, 2012-10
 		"""
+		import sys
 		from numpy import where
 
+		if dset.shape[0] == 1: 
+			dset[0] = arr[0]
+
 		for row in arr:
-			inds = where( dset[:,key]==row[key] )
+			inds = range( len(dset[:,key[0]]) )
+			for k in list(key):
+				tinds = where( dset[:,k]==row[k] )
+				if len(tinds[0]) > 0: 
+					inds = [t for t in tinds[0] if t in inds]
+				else: 
+					inds = [dset.shape[0]]
+					break
 			# Try to overwrite if exist, else grow the dataset and insert
 			try:
-				dset[inds[0][0]] = row
-			except IndexError:
+				dset[inds[0]] = row
+			except:
 				dset.resize((dset.shape[0]+1,))
 				dset[dset.shape[0]-1] = row
 

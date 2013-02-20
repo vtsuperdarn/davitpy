@@ -1,74 +1,52 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-# pydarn/radar/radFov.py
 """
-*******************************
-		radFov
-*******************************
-This module contains the following class:
-	* **fov**
-		field of view position
-	* **fieldPnt**
-		field of view point
-		
-This module contains the following functions
-	* **slantRange**
-		Calculate slant range
-	* **calcAzOffBore**
-		Calculate off-array-normal azimuth
-	* **calcFieldPnt**
-		Calculate field point projection
+*********************
+**Module**: pydarn.radar.radFov
+*********************
+This module handles generating field-of-view projctions
+
+**Classes**:
+	* :class:`fov`: field of view position
+
+**Functions**:
+	* :func:`slantRange`: Calculate slant range
+	* :func:`calcAzOffBore`: Calculate off-array-normal azimuth
+	* :func:`calcFieldPnt`: Calculate field point projection
 
 Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
-Created by Sebastien
-
-*******************************
 """
 
 # *************************************************************
 class fov(object):
 	""" This class calculates and stores field-of-view coordinates. 
-Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object. Parameters from the input-set 
-will always take precedence over parameters from the SITE object.Make sure to provide frang and rsep, 
-the default values are not always applicable. The full projection gives the coordinates at each corner 
-of each gate, in the following order: looking in the beam direction, lower-left, lower-right, 
-upper-right, upper-left.
+	Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object. Parameters from the input-set 
+	will always take precedence over parameters from the SITE object.Make sure to provide frang and rsep, 
+	the default values are not always applicable. The full projection gives the coordinates at each corner 
+	of each gate, in the following order: looking in the beam direction, lower-left, lower-right, 
+	upper-right, upper-left.
 
-**INPUTS**:
-	* **site**: site structure for a given radar and date-time
-	* **frang**: first range gate position [km] (defaults to 180 km) (scalar or ndarray(nbeams))
-	* **rsep**: range gate separation [km] (defaults to 45 km) (scalar or ndarray(nbeams))
-	* **nbeams**: number of beams (use site information if not provided)
-	* **ngates**: number of gates (use site information if not provided)
-	* **bmsep**: beam separation [degree] (use site information if not provided)
-	* **siteLat**: geographic latitude of radar [degree] (use site information if not provided)
-	* **siteLon**: geographic longitude of radar [degree] (use site information if not provided)
-	* **siteAlt**: altitude of radar site [m] (use site information if not provided)
-	* **siteBore**: radar boresite [degree] (use site information if not provided)
-	* **recrise**: receiver rise time [us] (use site information if not provided) (scalar or ndarray(nbeams))
-	* **elevation**: elevation angle [degree] (if not provided, is evaluated using 'model') (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
-	* **altitude**: altitude [km] (if not provided, set to 300 km) (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
-	* **model**: 
-		* **'IS'**: for ionopsheric scatter projection model (default)
-		* **'GS'**: for ground scatter projection model
-		* **None**: if you are really confident in your elevation or altitude values
-		* ... more to come
-	* **coords**: 'geo', 'mag'
+	**INPUTS**:
+		* **site**: site structure for a given radar and date-time
+		* **frang**: first range gate position [km] (defaults to 180 km) (scalar or ndarray(nbeams))
+		* **rsep**: range gate separation [km] (defaults to 45 km) (scalar or ndarray(nbeams))
+		* **nbeams**: number of beams (use site information if not provided)
+		* **ngates**: number of gates (use site information if not provided)
+		* **bmsep**: beam separation [degree] (use site information if not provided)
+		* **siteLat**: geographic latitude of radar [degree] (use site information if not provided)
+		* **siteLon**: geographic longitude of radar [degree] (use site information if not provided)
+		* **siteAlt**: altitude of radar site [m] (use site information if not provided)
+		* **siteBore**: radar boresite [degree] (use site information if not provided)
+		* **recrise**: receiver rise time [us] (use site information if not provided) (scalar or ndarray(nbeams))
+		* **elevation**: elevation angle [degree] (if not provided, is evaluated using 'model') (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
+		* **altitude**: altitude [km] (if not provided, set to 300 km) (scalar or ndarray(ngates) or ndarray(nbeams,ngates))
+		* **model**: 
+			* **'IS'**: for ionopsheric scatter projection model (default)
+			* **'GS'**: for ground scatter projection model
+			* **None**: if you are really confident in your elevation or altitude values
+			* ... more to come
+		* **coords**: 'geo', 'mag'
 
 	"""
 	def __init__(self, \
@@ -215,8 +193,8 @@ upper-right, upper-left.
 							elevation=tElev, altitude=tAlt, model=model)
 							
 				if(coords == 'mag'):
-					[latC,lonC,alt] = aacgm.aacgmlib.aacgmConv(latC,lonC,tAlt,0)
-					[latE,lonE,lt] = aacgm.aacgmlib.aacgmConv(latE,lonE,tAlt,0)
+					latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,tAlt,0)
+					latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,tAlt,0)
 					
 				# Save into output arrays
 				latCenter[ib, ig] = latC

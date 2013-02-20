@@ -54,7 +54,6 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 		nElem = PyList_Size(latList);
 		/* should raise an error here. */
 		if (nElem < 0)	return NULL; /* Not a list */
-
 		
 		PyObject *latOut = PyList_New(0);
 		PyObject *lonOut = PyList_New(0);

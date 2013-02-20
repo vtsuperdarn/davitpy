@@ -14,36 +14,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Overall module for gme (Geo Magnetic Environment)
+# Plot module __init__.py
 """
-gme
-***
-Module with libraries for dealing with Geo-Magnetic Environment (gme)
+*******************************
+            PLOT
+*******************************
+This subpackage contains various plotting routines for DaViT-py
 
-This includes the following submodules:
-	* **base**: basic things for the gme package
-	* **ind**: indices; ie anything that isn't satellite data
-	* **sat**: satellite data
-	* **ampere**
+This includes the following function(s):
+	*rti
+		rti data plots
+	*scan
+		scan data plots
+	*freq
+		frequency plot
+	*noise
+		noise plot
+	
+This includes the following module(s):
+	*map
+		empty maps in polar projections with the following function(s):
+			*overlay_radar
+			*overlay_fov
+			*overlay_terminator
+			*overlay_daynight
+
+*******************************
 """
 
-try: import base
-except Exception,e: print e
-try: from base import *
-except Exception,e: print e
+from gmeplot import *
 
-try: import ind
-except Exception,e: print e
-try: from ind import *
-except Exception,e: print e
-
-try: import sat
-except Exception,e: print e
-try: from sat import *
-except Exception,e: print e
-
-try: import ampere
-except Exception,e: print e
-
-try: import plot
-except Exception,e: print e
+#from rti import *
+#from plotUtils import *
+#from map import *
+#from printRec import *
+#from fan import *
+#from pygridPlot import *
+#import pygridPlot

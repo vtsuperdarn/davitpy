@@ -16,34 +16,89 @@ from mpl_toolkits import basemap
 
 ################################################################################
 ################################################################################
-class testMap(basemap.Basemap):
+class mapObj(basemap.Basemap):
+	"""This class wraps arround :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
+	
+	**Members**: 
+		* **coords** (str): map coordinate system ('geo', 'mag', 'mlt').
+		* all members of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>) 
+	**Methods**:
+		* all methods of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
+	**Example**:
+		::
+
+			# Create the map
+			myMap = utils.mapObj(boundinglat=30, coords='mag')
+			# Plot the geographic and geomagnetic North Poles
+			# First convert from lat/lon to map projection coordinates...
+			x, y = myMap(0., 90., coords='geo')
+			# ...then plot
+			myMap.scatter(x, y, zorder=2, color='r')
+			# Convert to map projection...
+			x, y = myMap(0., 90., coords='mag')
+			# ...and plot
+			myMap.scatter(x, y, zorder=2, color='g')
+
+	.. note:: Once the map is created, all plotting calls will be assumed to already be in the map's declared coordinate system given by **coords**.
+
+	"""
 
 	def __init__(self, datetime=None, coords='geo', 
-		projection='stere', resolution='l', 
+		projection='stere', resolution='l', dateTime=None, 
 		lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
 		fillContinents='.8', fillOceans='None', fillLakes='white', coastLineWidth=0., 
 		grid=True, gridLabels=True, **kwargs):
+		"""Create empty map 
+		
+		**Args**: 
+			* **[limits]**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
+			* **[width, height]**: width and height in m from the (lat_0, lon_0) center
+			* **[lon_0]**: center meridian (default is -70E)    
+			* **[lat_0]**: center latitude (default is -90E)
+			* **[boundingLat]**: bounding latitude (default it +/-20)    
+			* **[grid]**: show/hide parallels and meridians grid    
+			* **[fill_continents]**: continent color. Default is 'grey'    
+			* **[fill_water]**: water color. Default is 'None'    
+			* **[coords]**: 'geo'
+			* **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
+			* **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
+		**Returns**:
+			* **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
+		**Example**:
+			::
+
+				myMap = mapObj(lat_0=50, lon_0=-95, width=111e3*60, height=111e3*60)
+				
+		written by Sebastien, 2013-02
+		"""
 		from models import aacgm
 		import numpy as np
 		from pylab import text
+		import math
+		from copy import deepcopy
 
-		coordDict = {'mag': 'AACGM',
-					 'geo': 'Geographic',
-					 'mlt': 'MLT'}
+		self._coordsDict = {'mag': 'AACGM',
+							'geo': 'Geographic',
+							'mlt': 'MLT'}
+
+		if coords is 'mlt':				
+			print 'MLT coordinates not implemented yet.'
+			return
 
 		# Add an extra member to the Basemap class
+		if coords is not None and coords not in self._coordsDict:
+			print 'Invalid coordinate system given in coords ({}): setting "geo"'.format(coords)
+			coords = 'geo'
 		self.coords = coords
 
 		# Set map projection limits and center point depending on hemisphere selection
 		if not lat_0: 
 			lat_0 = 90.
-			if self.coords == 'mag': 
-				lat_0, _, _ = aacgm.aacgmConv(lat_0, 0., 0., 0)
+			if boundinglat: lat_0 = math.copysign(lat_0, boundinglat)
 		if not lon_0: 
 			lon_0 = -100.
 			if self.coords == 'mag': 
 				_, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., 0)
-		print lat_0, lon_0
 		if boundinglat:
 			width = height = 2*111e3*( abs(lat_0 - boundinglat) )
 
@@ -52,180 +107,117 @@ class testMap(basemap.Basemap):
 				lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
 		# Add continents
-		self.drawcoastlines(linewidth=coastLineWidth)
-		self.drawmapboundary(fill_color=fillOceans)
-		self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+		if coords is not 'mlt' or dateTime is not None:
+			self.drawcoastlines(linewidth=coastLineWidth)
+			# self.drawmapboundary(fill_color=fillOceans)
+			self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
 		# Add coordinate spec
-		text(self.urcrnrx, self.urcrnry, coordDict[coords]+' coordinates', 
+		text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
 				rotation=-90., va='top', fontsize=8)
 
 		# draw parallels and meridians.
 		if grid:
-			# draw parallels and meridians.
-			# labels = [left,right,top,bottom]
-			# label parallels on map
 			parallels = np.arange(-80.,81.,20.)
 			out = self.drawparallels(parallels, color='.6')
+			# label parallels on map
 			if gridLabels: 
 				lablon = int(self.llcrnrlon/10)*10
+				rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
 				x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
 				for ix,iy,ip in zip(x,y,parallels):
 					if not self.xmin <= ix <= self.xmax: continue
 					if not self.ymin <= iy <= self.ymax: continue
 					text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-							rotation=lablon-lon_0, va='center')
+							rotation=rotate_label, va='center', ha='center')
 			# label meridians on bottom and left
 			meridians = np.arange(-180.,181.,20.)
 			if gridLabels: 
 				merLabels = [True,False,False,True]
 			else: 
 				merLabels = [False,False,False,False]
+			# draw meridians
 			out = self.drawmeridians(meridians, labels=merLabels, color='.6')
+
     
-	def __call__(self,x,y,inverse=False):
+	def __call__(self, x, y, inverse=False, coords=None):
 		from models import aacgm
 		from copy import deepcopy
 		import numpy as np
 		import inspect
 
-		callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
+		if coords is not None and coords not in self._coordsDict:
+			print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
+			coords = None
+
+		if coords and coords != self.coords:
+			trans = coords+'-'+self.coords
+			if trans in ['geo-mag','mag-geo']:
+				flag = 0 if trans == 'geo-mag' else 1
+				try:
+					nx, ny = len(x), len(y)
+					xt = np.array(x)
+					yt = np.array(y)
+					shape = xt.shape	
+					y, x, _ = aacgm.aacgmConvArr(list(yt.flatten()), list(xt.flatten()), [0.]*nx, flag)
+					x = np.array(x).reshape(shape)
+					y = np.array(y).reshape(shape)
+				except TypeError as e:
+					y, x, _ = aacgm.aacgmConv(y, x, 0., flag)
+
 
 		if self.coords is 'geo':
 			return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
 		elif self.coords is 'mag':
-			frm = inspect.stack()[1]
-			mod = inspect.getmodule(frm[0])
-			if (mod and mod.__name__ == 'mpl_toolkits.basemap'):
+			try:
+				callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
+			except: 
+				return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+			if isinstance(y, float) and abs(y) == 90.:
+				return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+			if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
 				if not inverse:
 					try:
 						nx, ny = len(x), len(y)
-						yout, xout, _ = aacgm.aacgmConvArr(list(y), list(x), [0.]*nx, 0)
-						if isinstance(x, np.ndarray): xout = np.array(xout)
-						if isinstance(y, np.ndarray): yout = np.array(yout)
+						x = np.array(x)
+						y = np.array(y)
+						shape = x.shape
+						yout, xout, _ = aacgm.aacgmConvArr(list(y.flatten()), list(x.flatten()), [0.]*nx, 0)
+						xout = np.array(xout).reshape(shape)
+						yout = np.array(yout).reshape(shape)
 					except TypeError:
 						yout, xout, _ = aacgm.aacgmConv(y, x, 0., 0)
 					return basemap.Basemap.__call__(self, xout, yout, inverse=inverse)
 				else:
-					xout, yout = basemap.Basemap.__call__(self, x, y, inverse=inverse)
-					# try:
-					# 	nx, ny = len(xout), len(yout)
-					# 	yout, xout, _ = aacgm.aacgmConvArr(list(yout), list(xout), [0.]*nx, 1)
-					# except TypeError:
-					# 	yout, xout, _ = aacgm.aacgmConv(yout, xout, 0., 1)
-					# if isinstance(x, np.ndarray): xout = np.array(xout)
-					# if isinstance(y, np.ndarray): yout = np.array(yout)
-					return xout, yout
+					return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 			else:
 				return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
 		elif self.coords is 'mlt':
-		    pass
+			callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
 
 
+	def _readboundarydata(self, name, as_polygons=False):
+		from models import aacgm
+		from copy import deepcopy
+		import _geoslib
+		import numpy as np
 
-################################################################################
-################################################################################
-def map(limits=None, hemi='north', boundingLat=None, 
-		width = None, height=None, lat_0=None, lon_0=290., 
-		grid=True, gridLabels=True,
-		fillContinents='.8', fillOceans='None', 
-		fillLakes='white', coastLineWidth=0., 
-		coords='geo', datetime=None):
-	"""Create empty map 
-	
-	**Args**: 
-		* **[limits]**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
-		* **[width, height]**: width and height in m from the (lat_0, lon_0) center
-		* **[lon_0]**: center meridian (default is -70E)    
-		* **[lat_0]**: center latitude (default is -90E)    
-		* **[hemi]**: 'north' (default) or 'south'    
-		* **[boundingLat]**: bounding latitude (default it +/-20)    
-		* **[grid]**: show/hide parallels and meridians grid    
-		* **[fill_continents]**: continent color. Default is 'grey'    
-		* **[fill_water]**: water color. Default is 'None'    
-		* **[coords]**: 'geo'
-	**Returns**:
-		* **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
-	**Example**:
-		::
-
-			myMap = map(boundingLat=30.)
-			
-	written by Sebastien, 2012-08
-	"""
-	from mpl_toolkits.basemap import Basemap, pyproj
-	from pylab import text
-	from numpy import arange, ones
-	from math import sqrt
-	
-	# Set map projection limits and center point depending on hemisphere selection
-	if not lat_0: lat_0 = 90.
-	if hemi.lower() == 'north':
-		sgn = 1
-		# Map origin
-		lat_0 = sgn*abs(lat_0)
-	elif hemi.lower() == 'south':
-		sgn = -1
-		# Map origin
-		lat_0 = sgn*abs(lat_0)
-	# Map limits
-	if not limits and None in [width, height]:
-		# Set bounding latitude and calculate corner latitudes
-		if not boundingLat:
-			boundingLat = sgn*20.
-		# This is a bit tricky, but this is how you get the proper corner coordinates to satisfy boundingLat value
-		projparams = {'lon_0': lon_0, 'lat_ts': lat_0, 'R': 6370997.0, 'proj': 'stere', 'units': 'm', 'lat_0': lat_0}
-		proj = pyproj.Proj(projparams)
-		x,y = proj(lon_0,boundingLat)
-		lon,llcLat = proj(sqrt(2.)*y,0., inverse=True)
-		urcLat = llcLat
-		# Finally, set limits for an isotropic map plot
-		limits = [llcLat, lon_0-sgn*45., urcLat, lon_0+sgn*135.]
-	
-	# Draw map
-	if limits:
-		map = Basemap(projection='stere', resolution='l', \
-					llcrnrlat=limits[0], llcrnrlon=limits[1], \
-					urcrnrlat=limits[2], urcrnrlon=limits[3], \
-					lat_0=lat_0, lon_0=lon_0)
-	elif None not in [width, height]:
-		map = Basemap(projection='stere', resolution='l', \
-					width=width, height=height, \
-					lat_0=lat_0, lon_0=lon_0)
-	map.drawcoastlines(linewidth=coastLineWidth)
-	map.drawmapboundary(fill_color=fillOceans)
-	map.fillcontinents(color=fillContinents, lake_color=fillLakes)
-	
-	# draw parallels and meridians.
-	if grid:
-		# draw parallels and meridians.
-		# labels = [left,right,top,bottom]
-		# label parallels on map
-		parallels = arange(-80.,81.,20.)
-		out = map.drawparallels(parallels, color='.6')
-		if gridLabels: 
-			lablon = int(map.llcrnrlon/10)*10
-			x,y = map(lablon*ones(parallels.shape), parallels)
-			for ix,iy,ip in zip(x,y,parallels):
-				if not map.xmin <= ix <= map.xmax: continue
-				if not map.ymin <= iy <= map.ymax: continue
-				text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-					rotation=lablon-lon_0, va='center')
-		# label meridians on bottom and left
-		meridians = arange(-180.,181.,20.)
-		if gridLabels: 
-			merLabels = [True,False,False,True]
+		if self.coords is 'mag':
+			nPts = len(self._boundarypolyll.boundary[:, 0])
+			lats, lons, _ = aacgm.aacgmConvArr(list(self._boundarypolyll.boundary[:, 1]), 
+							list(self._boundarypolyll.boundary[:, 0]), 
+							[0.]*nPts, 1)
+			b = np.asarray([lons,lats]).T
+			oldgeom = deepcopy(self._boundarypolyll)
+			newgeom = _geoslib.Polygon(b).fix()
+			self._boundarypolyll = newgeom
+			out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+			self._boundarypolyll = oldgeom
+			return out
 		else: 
-			merLabels = [False,False,False,False]
-		out = map.drawmeridians(meridians,
-			labels=merLabels, color='.6')
-	
-	# Save projection coordinates
-	map.projparams['coords'] = coords
-
-	return map
+			return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 
 
 ################################################################################
