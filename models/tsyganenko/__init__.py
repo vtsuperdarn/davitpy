@@ -459,10 +459,10 @@ bzimf={:3.0f}                       [nT]
             # Plot
             ax.plot(masked_array(xx, mask=~indMask), 
                     masked_array(yy, mask=~indMask), 
-                    zorder=-1, color='b', **kwargs)
+                    zorder=-1, color=color, **kwargs)
             ax.plot(masked_array(xx, mask=indMask), 
                     masked_array(yy, mask=indMask), 
-                    zorder=1, color='b', **kwargs)
+                    zorder=1, color=color, **kwargs)
             if showPts:
                 ax.scatter(xpt, ypt, c='k', s=40, zorder=zz)
 

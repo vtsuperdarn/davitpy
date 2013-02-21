@@ -92,7 +92,10 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		# Check for hemisphere specification
 		if site.geolat*hemiInt < 0: continue
 		# Get radar coordinates in map projection
-		x,y = Basemap(site.geolon, site.geolat, coords='geo')
+		if not hasattr(Basemap, 'coords'): 
+			x,y = Basemap(site.geolon, site.geolat)
+		else:
+			x,y = Basemap(site.geolon, site.geolat, coords='geo')
 		if not Basemap.xmin <= x <= Basemap.xmax: continue
 		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot radar position
@@ -206,8 +209,10 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			if not site: continue
 			# Set number of gates to be plotted
 			eGate = site.maxgate-1 if not maxGate else maxGate
-			if not hasattr(Basemap, 'coords'): Basemap.coords = 'geo'
-			radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords)
+			if not hasattr(Basemap, 'coords'): 
+				radFov = fov(site=site, ngates=eGate+1)
+			else:
+				radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords)
 		else:
 			radFov = fovObj
 			eGate = len(fovObj.gates)
