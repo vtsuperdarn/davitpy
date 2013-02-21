@@ -411,20 +411,20 @@ def mapPoesMongo(sYear,eYear=None):
 		myTime += dt.timedelta(days=10)
 		
 		
-def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 'geo', hemi = 1, folat = [45., 90.], satNum = None, param='ted' ) :
+def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 'geo', \
+										hemi = 1, folat = [45., 90.], satNum = None, param='ted', scMin=-3.,scMax=0.5) :
 	"""This function overlays POES TED data onto a map object.
-
+	
 	**Args**: 
-        * **baseMapObj** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the map object you want data to be overlayed on.
-        * **axisHandle** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the Axis Handle used.
-	* **startTime** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the starttime you want data for. If endTime is not given overlays data from satellites with in +/- 45 min of the startTime
-	* [**endTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, data from satellites with in +/- 45 min of the startTime is overlayed.  default = None
-	* [**satnum**] (int): the satellite you want data for.  eg 17 for noaa17.  if this is None, data for all satellites will be returned.  default = None
-	* [**coords**] (list or None): Coordinates of the map object on which you want data to be overlayed on. Default 'geo'
-	* [**hemi**] (list or None): Hemisphere of the map object on which you want data to be overlayed on. Value is 1 for northern hemisphere and -1 for the southern hemisphere.Default 1
-	* [**folat**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with latitude values in the range [a,b] will be returned.  default = None
-	* [**param**] (str): the name of the poes parameter to be plotted.  default='ted'
-		
+		* **baseMapObj** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the map object you want data to be overlayed on.
+		* **axisHandle** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the Axis Handle used.
+		* **startTime** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the starttime you want data for. If endTime is not given overlays data from satellites with in +/- 45 min of the startTime
+		* [**endTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, data from satellites with in +/- 45 min of the startTime is overlayed.  default = None
+		* [**satnum**] (int): the satellite you want data for.  eg 17 for noaa17.  if this is None, data for all satellites will be returned.  default = None
+		* [**coords**] (list or None): Coordinates of the map object on which you want data to be overlayed on. Default 'geo'
+		* [**hemi**] (list or None): Hemisphere of the map object on which you want data to be overlayed on. Value is 1 for northern hemisphere and -1 for the southern hemisphere.Default 1
+		 [**folat**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with latitude values in the range [a,b] will be returned.  default = None
+		* [**param**] (str): the name of the poes parameter to be plotted.  default='ted'
 	**Returns**:
 		POES TED data is overlayed on the map object. If no data is found, None is returned.
 	**Example**:
@@ -500,6 +500,7 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 	timePoesAll = [[] for j in range(len(satNum))]
 	lenDataAll = [[] for j in range(len(satNum))]
 	
+	goodFlg=False
 	
 	for sN in range( len(satNum) ) :
 		
@@ -514,8 +515,10 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 			continue
 			#return None
 
+		else:
+			goodFlg=True
 		# Loop through the list and store the data into arrays    
-		lenDataAll.append( len( currPoesList ) )
+		lenDataAll.append(len(currPoesList))
 		
 				
 		for l in currPoesList :
@@ -528,6 +531,8 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 			except Exception,e:
 				print e
 				print 'could not get parameter for time',l.time
+	
+	if(not goodFlg): return None
 	
 	latPoesAll = numpy.array( latPoesAll ) 
 	lonPoesAll = numpy.array( lonPoesAll )
@@ -543,17 +548,17 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 	for nn in range( len(satNum) ) :
 		
 		x, y = baseMapObj(lonPoesAll[nn], latPoesAll[nn])
-		bpltpoes = baseMapObj.scatter( x,y,c=tedPoesAll[nn], vmin=-3., vmax=0.5, alpha = 0.7, cmap=cm.jet, zorder = 5., edgecolor='none' )
+		bpltpoes = baseMapObj.scatter(x,y,c=tedPoesAll[nn], vmin=scMin, vmax=scMax, alpha = 0.7, cmap=cm.jet, zorder = 7., edgecolor='none')
 		timeCurr = timePoesAll[nn]
 		for aa in range( len(latPoesAll[nn]) ) :
 			if aa % 10 == 0:
 				str_curr = str(timeCurr[aa].hour)+':'+str(timeCurr[aa].minute)
 				ax.annotate( str_curr, xy =( x[aa], y[aa] ), size = 5, zorder = 6. )
 		
-	cbar = plt.colorbar(bpltpoes, ticks = poesTicks, orientation='horizontal')
-	cbar.ax.set_xticklabels(poesTicks)
-	cbar.set_label(r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]")
-    
+	#cbar = plt.colorbar(bpltpoes, ticks = poesTicks, orientation='horizontal')
+	#cbar.ax.set_xticklabels(poesTicks)
+	#cbar.set_label(r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]")
+	return bpltpoes
     
     
 def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1, equBnd = True, polBnd = False ) :

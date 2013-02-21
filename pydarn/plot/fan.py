@@ -37,10 +37,12 @@ from matplotlib.collections import PolyCollection,LineCollection
 from mpl_toolkits.basemap import Basemap, pyproj
 from utils.timeUtils import *
 from pydarn.sdio.radDataRead import *
+import matplotlib.cm as cm
 
 def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',filtered=False ,\
 		scale=[],channel='a',coords='geo',colors='lasse',gsct=0,fov=1,edgeColors='face',gflg=0,fill=True,\
-		velscl=1000.,legend=1,poesparam='ted'):
+		velscl=1000.,legend=1,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
+		poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False,output='gui'):
 	"""A function to make fan plots
 	
 	**Args**:
@@ -86,11 +88,12 @@ def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',f
 	Written by AJ 20121004
 
 	"""
+
 	
-	import datetime as dt, gme
+	import datetime as dt, gme, pickle
 	from matplotlib.backends.backend_pdf import PdfPages
-	import models.aacgm as aacgm, os
-	import gme
+	import models.aacgm as aacgm, os, copy
+	tt = dt.datetime.now()
 	
 	#check the inputs
 	assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
@@ -120,12 +123,15 @@ def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',f
 	if not os.path.exists(d):
 		os.makedirs(d)
 		
-	pp = PdfPages(d+'/'+sTime.strftime("%Y%m%d")+'.fan.pdf')
+	fbase = d+'/'+sTime.strftime("%Y%m%d")+'.fan.'
 		
+	cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors,gflg=gflg)
+	
+	
 	#open the data files
 	myFiles = []
 	for r in rad:
-		f = radDataOpen(sTime,r,eTime+datetime.timedelta(minutes=interval),fileType=fileType,filtered=filtered,channel=channel)
+		f = radDataOpen(sTime,r,eTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
 		if(f != None): myFiles.append(f)
 
 	assert(myFiles != []),'error, no data available for this period'
@@ -170,6 +176,7 @@ def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',f
 	#do some stuff in map projection coords to get necessary width and height of map
 	#lon_0 = (xmin+xmax)/2.
 	#lat_0 = (ymin+ymax)/2.
+	t1=dt.datetime.now()
 	lonFull,latFull = (numpy.array(lonFull)+360.)%360.,numpy.array(latFull)
 	tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=numpy.mean(lonFull))
 	x,y = tmpmap(lonFull,latFull)
@@ -197,10 +204,13 @@ def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',f
 		myMap.fillcontinents(color='w', lake_color='w')
 	#overlay fields of view, if desired
 	if(fov == 1):
+		ty = dt.datetime.now()
 		for r in rad:
 			pydarn.plot.overlayRadar(myMap, codes=r, dateTime=sTime, coords=coords)
 			pydarn.plot.overlayFov(myMap, codes=r, dateTime=sTime,coords=coords)
-				
+		print 'overlays',dt.datetime.now()-ty
+	
+	print dt.datetime.now()-t1
 	#manually draw the legend
 	if((not fill) and legend):
 		#draw the box
@@ -225,15 +235,17 @@ def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',f
 				y=LineCollection(numpy.array([((xctr-dist/2.,y[1]*(.98-w*.025)),(xctr+dist/2.,y[1]*(.98-w*.025)))]),linewidths=.5,zorder=15,color='k')
 				myFig.gca().add_collection(y)
 				
+	pickle.dump(myFig,open('map.pickle','wb'),-1)
+	
 	bbox = myFig.gca().get_axes().get_position()
+	first = True
+	pnum,stot = 0,dt.timedelta(seconds=0)
+	axes = AxesSequence()
 	#now, loop through desired time interval
 	while(cTime <= eTime):
+		tz = dt.datetime.now()
+		cols = []
 		bndTime = cTime + datetime.timedelta(seconds=interval)
-
-		gs_flg,lines = [],[]
-		if(fill == 1): verts,intensities = [],[]
-		
-		else: verts,intensities = [[],[]],[[],[]]
 		
 		ft = 'None'
 		#go though all files
@@ -241,106 +253,165 @@ def plotFan(sTime,rad,eTime=None,interval=60,fileType='fitex',param='velocity',f
 			scans = [[] for j in range(len(myFiles))]
 			#check that we have good data at this time
 			if(myFiles[i] == None or allBeams[i] == None): continue
-			
 			ft = allBeams[i].fType
-			
 			#until we reach the end of the time window
 			while(allBeams[i] != None and allBeams[i].time < bndTime):
 				scans[i].append(allBeams[i])
 				#read the next record
 				allBeams[i] = radDataReadRec(myFiles[i])
-			overlayFan(scans[i],myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],\
-										intensities=intensities,gs_flg=gs_flg,fill=fill,velscl=velscl,\
-										lines=lines,dist=dist)
-										
-		#if we are filling rb cells
-		#if(fill == 1):
-			###if we have data
-			##if(verts != []):
-				##if(gsct == 0):
-					##inx = numpy.arange(len(verts))
-				##else:
-					##inx = numpy.where(numpy.array(gs_flg)==0)
-					##x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',linewidths=0,alpha=.5,zorder=5)
-					##myFig.gca().add_collection(x, autolim=True)
-					
-				##pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors=edgeColors,linewidths=0,closed=False,zorder=10,rasterized=True)
-				###set color array to intensities
-				##pcoll.set_array(numpy.array(intensities)[inx])
-				##myFig.gca().add_collection(pcoll, autolim=True)
-				##generate color map
-				##pydarn.plot.plotUtils.genCmap(myMap,pcoll,param,scale,colors=colors,map=1,gflg=gflg)
-		##if we are plotting points and vectors
-		#else:
-			##if we have data
-			#if(verts != [[],[]]):
-				#if(gsct == 0):
-					#inx = numpy.arange(len(verts[0]))
-				#else:
-					#inx = numpy.where(numpy.array(gs_flg)==0)
-					##plot the ground scatter as open circles
-					#x = plot.scatter(numpy.array(verts[0])[numpy.where(numpy.array(gs_flg)==1)],\
-							#numpy.array(verts[1])[numpy.where(numpy.array(gs_flg)==1)],\
-							#s=.1*numpy.array(intensities[1])[numpy.where(numpy.array(gs_flg)==1)],\
-							#zorder=5,marker='o',linewidths=.5,facecolors='w',edgecolors='k')
-					#myFig.gca().add_collection(x, autolim=True)
-					
-				##plot the i-s as filled circles
-				#ccoll = myFig.gca().scatter(numpy.array(verts[0])[inx],numpy.array(verts[1])[inx],\
-								#s=.1*numpy.array(intensities[1])[inx],zorder=10,marker='o',linewidths=.5,edgecolors='face')
+			intensities, pcoll = overlayFan(scans[i],myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],\
+																				fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
+																				
+																				
+		
+		if(first):
+			cbar = plot.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+		
+			l = []
+			#define the colorbar labels
+			for i in range(0,len(bounds)):
+				if(param == 'phi0'):
+					ln = 4
+					if(bounds[i] == 0): ln = 3
+					elif(bounds[i] < 0): ln = 5
+					l.append(str(bounds[i])[:ln])
+					continue
+				if((i == 0 and param == 'velocity') or i == len(bounds)-1):
+					l.append(' ')
+					continue
+				l.append(str(int(bounds[i])))
+			cbar.ax.set_yticklabels(l)
+			cbar.ax.tick_params(axis='y',direction='out')
+			#set colorbar ticklabel size
+			for ti in cbar.ax.get_yticklabels():
+				ti.set_fontsize(7)
+			if(param == 'velocity'): 
+				cbar.set_label('Velocity [m/s]',size=10)
+				cbar.extend='max'
 				
-				##set color array to intensities
-				#ccoll.set_array(numpy.array(intensities[0])[inx])
-				##generate color map
-				#pydarn.plot.plotUtils.genCmap(myMap,ccoll,param,scale,colors=colors,map=1,gflg=gflg)
-				#myFig.gca().add_collection(ccoll)
-				##plot the velocity vectors
-				#lcoll = LineCollection(numpy.array(lines)[inx],linewidths=.5,zorder=12)
-				#lcoll.set_array(numpy.array(intensities[0])[inx])
-				#pydarn.plot.plotUtils.genCmap(myMap,lcoll,param,scale,colors=colors,map=1,gflg=gflg)
-				#myFig.gca().add_collection(lcoll)
-
+			if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=10)
+			if(param == 'power'): cbar.set_label('Power [dB]',size=10)
+			if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=10)
+			if(param == 'elevation'): cbar.set_label('Elev [deg]',size=10)
+			if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=10)
+		
 		#myFig.gca().set_rasterized(True)
 		#label the plot
-		tx1 = plot.figtext((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%d/%m/%Y'),ha='center',size=14,weight=550)
+		tx1 = plot.figtext((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%Y/%m/%d'),ha='center',size=14,weight=550)
 		tx2 = plot.figtext(bbox.x1,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
 					bndTime.strftime('%H:%M      '),ha='right',size=13,weight=550)
 		tx3 = plot.figtext(bbox.x0,bbox.y1+.02,'['+ft+']',ha='left',size=13,weight=550)
 		
-		gme.poes.overlayPoesTed(myMap, myFig.gca(), cTime, param=poesparam)
-		gme.poes.overlayPoesBnd(myMap, myFig.gca(), cTime)
-		
-		#save plot to pdf
-		myFig.savefig(pp, format='pdf', dpi=300,orientation='landscape')
-		#myFig.show()
-		#return myFig,ccoll
-		#ccoll.remove()
-		#lcoll.remove()
-		if(verts != [[],[]] and verts != []):
-			if(fill == 1): 
-				pcoll.remove()
-			else: 
-				ccoll.set_paths([])
-				lcoll.remove()
-			
-			if(gsct == 1): x.remove()
-			
-		myFig.texts.remove(tx1)
-		myFig.texts.remove(tx2)
-		myFig.texts.remove(tx3)
-		#increment time by interval
-		cTime = bndTime
-	#close the pdf
-	pp.close()
-		
-	print 'file is at: '+d+'/'+sTime.strftime("%Y%m%d")+'.fan.pdf'
+		if(overlayPoes):
+			pcols = gme.poes.overlayPoesTed(myMap, myFig.gca(), cTime, param=poesparam, scMin=poesMin, scMax=poesMax)
+			if(pcols != None and first):
+				cols.append(pcols)
+				pTicks = numpy.linspace(poesMin,poesMax,8)#[-3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5]
+				cbar = plot.colorbar(pcols,ticks=pTicks,orientation='vertical',shrink=0.65,fraction=.1)
+				cbar.ax.set_yticklabels(pTicks)
+				cbar.set_label(poesLabel,size=10)
+				cbar.ax.tick_params(axis='y',direction='out')
+				#set colorbar ticklabel size
+				for ti in cbar.ax.get_yticklabels():
+					ti.set_fontsize(7)
+				
+		if(overlayBnd):
+			gme.poes.overlayPoesBnd(myMap, myFig.gca(), cTime)
 
+		t1 = dt.datetime.now()
+		#myFig.savefig(pp, format='pdf', dpi=300,orientation='landscape')
+		if(output == 'gui'): axes.axes.append(myFig.gca())
+		else: myFig.savefig(fbase+str(pnum)+'.svg', orientation='landscape')
+		tsave=dt.datetime.now()-t1
+		print 'save',tsave
+		stot+=tsave
+		#myFig.show()
+		
+		#try:
+			##if(fill == 1): 
+				##pcoll.remove()
+			##else: 
+				##ccoll.set_paths([])
+				##lcoll.remove()
+			#for c in cols:
+				#c.remove()
+				#del c
+			
+			##if(gsct == 1): x.remove()
+		#except: pass
+		
+		#myFig.texts.remove(tx1)
+		#myFig.texts.remove(tx2)
+		#myFig.texts.remove(tx3)
+
+		cTime = bndTime
+		first = False
+		pnum += 1
+		myFig.clf()
+		myFig = pickle.load(open('map.pickle','rb'))
+		print 'plot loop',dt.datetime.now()-tz
+		
+	
+	if(output != 'gui'): print 'file[s] is[are] at: '+d+'/'+sTime.strftime("%Y%m%d")+'.fan.%n.pdf'
+	else: axes.show()
+	print dt.datetime.now()-tt
+	print stot/pnum
+
+class AxesSequence(object):
+	"""Creates a series of axes in a figure where only one is displayed at any
+	given time. Which plot is displayed is controlled by the arrow keys."""
+	def __init__(self):
+		self.fig=plot.figure()
+		self.axes = []
+		self._i = 0 # Currently displayed axes index
+		self._n = 0 # Last created axes index
+		self.fig.canvas.mpl_connect('key_press_event', self.on_keypress)
+
+	def __iter__(self):
+		while True:
+			yield self.new()
+
+	def new(self):
+		# The label needs to be specified so that a new axes will be created
+		# instead of "add_axes" just returning the original one.
+		ax = self.fig.add_axes([0.15, 0.1, 0.8, 0.8], 
+														visible=False, label=self._n)
+		self._n += 1
+		self.axes.append(ax)
+		return ax
+
+	def on_keypress(self, event):
+		if event.key == 'right':
+			self.next_plot()
+		elif event.key == 'left':
+			self.prev_plot()
+		else:
+			return
+		self.fig.canvas.draw()
+
+	def next_plot(self):
+		if self._i < len(self.axes):
+			self.axes[self._i].set_visible(False)
+			self.axes[self._i+1].set_visible(True)
+			self._i += 1
+
+	def prev_plot(self):
+		if self._i > 0:
+			self.axes[self._i].set_visible(False)
+			self.axes[self._i-1].set_visible(True)
+			self._i -= 1
+
+	def show(self):
+		self.axes[0].set_visible(True)
+		plot.show()
+        
 def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
-		intensities=[],fov=None,gs_flg=[],fill=True,velscl=1000.,lines=[],dist=1000.):
+								fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
+								cmap=None,norm=None):
 	"""A function of overlay radar scan data on a map
 
 	**Args**:
-		* **myData (:class:`radDataTypes.scanData` or list)**: a radar scanData object, or simply a list of radar beams
+		* **myData (:class:`radDataTypes.scanData` or :class:`radDataTypes.beamData` or list)**: a radar beam object, a radar scanData object, or simply a list of radar beams
 		* **myMap**: the map we are plotting on
 		* **[param]**: the parameter we are plotting
 		* **[coords]**: the coordinates we are plotting in
@@ -368,6 +439,7 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
 
 	Written by AJ 20121004
 	"""
+	
 	if(site == None):
 		site = pydarn.radar.network().getRadarById(myData[0].stid).getSiteByDate(myData[0].time)
 	if(fov == None):
@@ -375,6 +447,12 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
 		ngates=myData.prm.nrang+1,nbeams= site.maxbeam,coords=coords)	
 	
 	verts = []
+	
+	if(isinstance(myData,pydarn.sdio.beamData)): myData = [myData]
+	
+	gs_flg,lines = [],[]
+	if(fill == 1): verts,intensities = [],[]
+	else: verts,intensities = [[],[]],[[],[]]
 	
 	#loop through gates with scatter
 	for myBeam in myData:
@@ -418,9 +496,9 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
 				
 				if(myBeam.fit.p_l[k] > 0): intensities[1].append(myBeam.fit.p_l[k])
 				else: intensities[1].append(0.)
-
 			if(gsct): gs_flg.append(myBeam.fit.gflg[k])
-			#return intensities,pcoll,ccoll
+			
+	#do the actual overlay
 	if(fill):
 		#if we have data
 		if(verts != []):
@@ -428,13 +506,39 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
 				inx = numpy.arange(len(verts))
 			else:
 				inx = numpy.where(numpy.array(gs_flg)==0)
-				x=PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',linewidths=0,alpha=.5,zorder=5)
+				x = PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',linewidths=0,alpha=.5,zorder=5)
 				myFig.gca().add_collection(x, autolim=True)
 				
-			pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors='face',linewidths=0,closed=False,zorder=4)
+			pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors='face',linewidths=0,closed=False,zorder=4,cmap=cmap,norm=norm)
 			#set color array to intensities
 			pcoll.set_array(numpy.array(intensities)[inx])
 			myFig.gca().add_collection(pcoll, autolim=True)
 			return intensities,pcoll
 		else:
-			return None
+			#if we have data
+			if(verts != [[],[]]):
+				if(gsct == 0):
+					inx = numpy.arange(len(verts[0]))
+				else:
+					inx = numpy.where(numpy.array(gs_flg)==0)
+					#plot the ground scatter as open circles
+					x = plot.scatter(numpy.array(verts[0])[numpy.where(numpy.array(gs_flg)==1)],\
+							numpy.array(verts[1])[numpy.where(numpy.array(gs_flg)==1)],\
+							s=.1*numpy.array(intensities[1])[numpy.where(numpy.array(gs_flg)==1)],\
+							zorder=5,marker='o',linewidths=.5,facecolors='w',edgecolors='k')
+					myFig.gca().add_collection(x, autolim=True)
+					
+				#plot the i-s as filled circles
+				ccoll = myFig.gca().scatter(numpy.array(verts[0])[inx],numpy.array(verts[1])[inx],\
+								s=.1*numpy.array(intensities[1])[inx],zorder=10,marker='o',linewidths=.5,edgecolors='face')
+				
+				#set color array to intensities
+				ccoll.set_array(numpy.array(intensities[0])[inx])
+				#generate color map
+				pydarn.plot.plotUtils.genCmap(myMap,ccoll,param,scale,colors=colors,map=1,gflg=gflg)
+				myFig.gca().add_collection(ccoll)
+				#plot the velocity vectors
+				lcoll = LineCollection(numpy.array(lines)[inx],linewidths=.5,zorder=12)
+				lcoll.set_array(numpy.array(intensities[0])[inx])
+				pydarn.plot.plotUtils.genCmap(myMap,lcoll,param,scale,colors=colors,map=1,gflg=gflg)
+				myFig.gca().add_collection(lcoll)
