@@ -217,7 +217,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			radFov = fovObj
 			eGate = len(fovObj.gates)
 		# Get radar coordinates in map projection
-		x, y = Basemap(radFov.lonFull, radFov.latFull)
+		x, y = Basemap(radFov.lonFull, radFov.latFull, coords=radFov.coords)
 		# Plot field of view
 		# Create contour
 		contourX = concatenate( (x[0,0:eGate], 
@@ -238,9 +238,13 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			gca().add_patch(patch)
 		# Beams fill
 		if beams:
+			try:
+				[b for b in beams]
+			except:
+				beams = [beams]
 			for ib in beams:
-				if not (0 <= ib <= site.maxbeam): continue
-				bCol = ib/float(site.maxbeam)
+				if not (0 <= ib <= x.shape[0]): continue
+				bCol = ib/float(x.shape[0])
 				contourX = concatenate( (x[ib,0:eGate+1], 
 										 x[ib:ib+2,eGate],
 										 x[ib+1,eGate::-1],

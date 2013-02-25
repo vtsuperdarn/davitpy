@@ -76,12 +76,13 @@ C
       integer totpts
       INTEGER NPTS                                                              ! Edit SdL
       integer ITYPE,IFL                                                         ! Edit SdL
-      real DATE,ALT                                                             ! Edit SdL
-      real XLTI,XLTF,XLTD                                                       ! Edit SdL
-      real XLNI,XLNF,XLND                                                       ! Edit SdL
-      real,DIMENSION(totpts) :: aLat,aLon                                       ! Edit SdL
-      real,DIMENSION(totpts) :: aD,aS,aH                                        ! Edit SdL
-      real,DIMENSION(totpts) :: aX,aY,aZ,aF                                     ! Edit SdL
+      real date                                                                 ! Edit SdL
+      real*8 ALT                                                                ! Edit SdL
+      real*8 XLTI,XLTF,XLTD                                                     ! Edit SdL
+      real*8 XLNI,XLNF,XLND                                                     ! Edit SdL
+      real*8,DIMENSION(totpts) :: aLat,aLon                                     ! Edit SdL
+      real*8,DIMENSION(totpts) :: aD,aS,aH                                      ! Edit SdL
+      real*8,DIMENSION(totpts) :: aX,aY,aZ,aF                                   ! Edit SdL
 Cf2py intent(in) ITYPE,IFL,DATE,ALT
 Cf2py intent(in) XLTI,XLTF,XLTD
 Cf2py intent(in) XLNI,XLNF,XLND
@@ -384,7 +385,6 @@ C
       IY = NINT(Y)
       IZ = NINT(Z)
       NF = NINT(F)
-      print*, NPTS
       aLAT(NPTS+1) = LT/1000.
       aLON(NPTS+1) = LN/1000.
       aD(NPTS+1) = D
@@ -1018,7 +1018,7 @@ c
      2        ' but may be of reduced accuracy'/)
       if (date.ge.2010.0) go to 1
       t     = 0.2*(date - 1900.0)                                             
-      ll    = t
+      ll    = INT(t)
       one   = ll
       t     = t - one
 c
@@ -1032,7 +1032,7 @@ c
       else
        nmx   = 13
        nc    = nmx*(nmx+2)
-       ll    = 0.2*(date - 1995.0)
+       ll    = INT( 0.2*(date - 1995.0) )
 c
 c     19 is the number of SH models that extend to degree 10
 c

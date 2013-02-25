@@ -6,23 +6,23 @@ python module igrf ! in
         subroutine igrf11(itype,date,alt,ifl,xlti,xltf,xltd,xlni,xlnf,xlnd,alat,alon,ad,as,ah,ax,ay,az,af,totpts) ! in :igrf:igrf11.f90
             integer intent(in) :: itype
             real intent(in) :: date
-            real intent(in) :: alt
+            real*8 intent(in) :: alt
             integer intent(in) :: ifl
-            real intent(in) :: xlti
-            real intent(in) :: xltf
-            real intent(in) :: xltd
-            real intent(in) :: xlni
-            real intent(in) :: xlnf
-            real intent(in) :: xlnd
-            real dimension(totpts),intent(out),depend(totpts) :: alat
-            real dimension(totpts),intent(out),depend(totpts) :: alon
-            real dimension(totpts),intent(out),depend(totpts) :: ad
-            real dimension(totpts),intent(out),depend(totpts) :: as
-            real dimension(totpts),intent(out),depend(totpts) :: ah
-            real dimension(totpts),intent(out),depend(totpts) :: ax
-            real dimension(totpts),intent(out),depend(totpts) :: ay
-            real dimension(totpts),intent(out),depend(totpts) :: az
-            real dimension(totpts),intent(out),depend(totpts) :: af
+            real*8 intent(in) :: xlti
+            real*8 intent(in) :: xltf
+            real*8 intent(in) :: xltd
+            real*8 intent(in) :: xlni
+            real*8 intent(in) :: xlnf
+            real*8 intent(in) :: xlnd
+            real*8 dimension(totpts),intent(out),depend(totpts) :: alat
+            real*8 dimension(totpts),intent(out),depend(totpts) :: alon
+            real*8 dimension(totpts),intent(out),depend(totpts) :: ad
+            real*8 dimension(totpts),intent(out),depend(totpts) :: as
+            real*8 dimension(totpts),intent(out),depend(totpts) :: ah
+            real*8 dimension(totpts),intent(out),depend(totpts) :: ax
+            real*8 dimension(totpts),intent(out),depend(totpts) :: ay
+            real*8 dimension(totpts),intent(out),depend(totpts) :: az
+            real*8 dimension(totpts),intent(out),depend(totpts) :: af
             integer, optional,intent(hide),depend(xlti,xltf,xltd,xlni,xlnf,xlnd) :: totpts=(abs(xltf-xlti)/xltd+1)*(abs(xlnf-xlni)/xlnd+1)
         end subroutine igrf11
         subroutine dmddec(i,m,x) ! in :igrf:igrf11.f90

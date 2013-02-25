@@ -167,3 +167,31 @@ def datetimeToEpoch(myDate):
 	import datetime,calendar
 	return calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
 
+	from datetime import datetime as dt
+	import time
+
+def dateToDecYear(date):
+	"""Convert :class:`datetime.datetime` object to decimal year
+	
+	**Args**: 
+		* **date** (datetime.datetime): date and time
+	**Returns**:
+		* **dyear** (float): decimal year
+			
+	written by Sebastien, 2013-02
+	"""
+	from datetime import datetime as dt
+	import time
+	
+	# returns seconds since epoch
+	sE = lambda date: time.mktime(date.timetuple())
+
+	year = date.year
+	startOfThisYear = dt(year=year, month=1, day=1)
+	startOfNextYear = dt(year=year+1, month=1, day=1)
+
+	yearElapsed = sE(date) - sE(startOfThisYear)
+	yearDuration = sE(startOfNextYear) - sE(startOfThisYear)
+	fraction = yearElapsed/yearDuration
+
+	return date.year + fraction

@@ -193,8 +193,8 @@ class fov(object):
 							elevation=tElev, altitude=tAlt, model=model)
 							
 				if(coords == 'mag'):
-					latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,tAlt,0)
-					latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,tAlt,0)
+					latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,0.,0)
+					latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,0.,0)
 					
 				# Save into output arrays
 				latCenter[ib, ig] = latC
