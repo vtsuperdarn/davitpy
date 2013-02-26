@@ -146,9 +146,10 @@ def ampereDownload(sTime, move_to_sddata = False):
 	import datetime as dt, time, os
 	from selenium import webdriver
 	from PIL import Image
+	import selenium.webdriver.common.alert as alert
 	
 	#login
-	driver = webdriver.Firefox()
+	driver = webdriver.Chrome()
 	driver.get('http://ampere.jhuapl.edu/dataget/index.html')
 	x=driver.find_element_by_id("register.div")
 	y=x.find_element_by_id('register.logon')
@@ -187,34 +188,48 @@ def ampereDownload(sTime, move_to_sddata = False):
 	sels[5].find_elements_by_tag_name('option')[7].click()
 	sels[6].find_elements_by_tag_name('option')[0].click()
 	
-	imgs=driver.find_elements_by_tag_name('img')
-	
-	i = imgs[24]
-	
-	addr = i.get_attribute('src')
-	bin = addr[22:]
-	
-	fh = open("code.png", "wb")
-	fh.write(bin.decode('base64'))
-	fh.close()
-	
-	img = Image.open("code.png")
-	r, g, b, a = img.split()
-	img = Image.merge("RGB", (r, g, b))
-	img.save("code.bmp")
-	
-	os.system('convert code.bmp -negate code.inv.bmp')
-	os.system('mogrify -resize 800x200 code.inv.bmp')
-	im = Image.open('code.inv.bmp')
-	text = image_to_string(im)
-	
-	dl=m.find_element_by_id('download')
-	rt=dl.find_element_by_class_name('rTool')
-	div=rt.find_element_by_tag_name('div')
-	sp=div.find_element_by_tag_name('span')
-	ip=sp.find_element_by_tag_name('input')
-	ip.send_keys(text)
-	
-	return driver
-	
-	
+	while(1):
+		imgs=driver.find_elements_by_tag_name('img')
+		i = imgs[24]
+		
+		addr = i.get_attribute('src')
+		bin = addr[22:]
+		
+		fh = open("code.png", "wb")
+		fh.write(bin.decode('base64'))
+		fh.close()
+		
+		img = Image.open("code.png")
+		r, g, b, a = img.split()
+		img = Image.merge("RGB", (r, g, b))
+		img.save("code.bmp")
+		
+		os.system('convert code.bmp -negate code.inv.bmp')
+		os.system('mogrify -resize 800x200 code.inv.bmp')
+		im = Image.open('code.inv.bmp')
+		text = image_to_string(im)
+		
+		dl=m.find_element_by_id('download')
+		rt=dl.find_element_by_class_name('rTool')
+		div=rt.find_element_by_tag_name('div')
+		sp=div.find_element_by_tag_name('span')
+		ip=sp.find_element_by_tag_name('input')
+		ip.send_keys(text)
+		ips=div.find_elements_by_tag_name('input')
+		ips[2].click()
+		al = alert.Alert(driver)
+		al.accept()
+		st = m.find_element_by_id('status')
+		divs=st.find_elements_by_class_name('rTool')
+		rt2=divs[4]
+		if(rt2.is_displayed()):
+			divs2=rt2.find_elements_by_tag_name('div')
+			divs2[1].find_element_by_tag_name('input').click()
+			continue
+		else:
+			break
+	rt2=divs[1]
+	a=rt2.find_element_by_tag_name('a')
+	print a.text
+	a.click()
+	#al = alert.Alert(driver)
