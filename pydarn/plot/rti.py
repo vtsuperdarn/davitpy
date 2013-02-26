@@ -46,8 +46,8 @@ from utils.timeUtils import *
 from pydarn.sdio import *
 
 
-def plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
-scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0):
+def plotRti(sTime,rad,eTime,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
+scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,lowGray=False,svg=0,png=0,filtered=False):
 	"""
 	*******************************
 	
@@ -109,13 +109,22 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 	Written by AJ 20121002
 
 	"""
+	import os
+	
+	#check for plotting directory, create if does not exist
+	d = os.environ['PYPLOTS']+'/rti'
+	if not os.path.exists(d):
+		os.makedirs(d)
+		
+		
+		
 	t1 = datetime.datetime.now()
 	#check the inputs
-	assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
-	assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
+	#assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
+	#assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
 	assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or coords == 'mag'),\
 	"error, coords must be one of 'gate','rng','geo','mag"
-	assert(isinstance(beam,int)),'error, beam must be integer'
+	assert(isinstance(bmnum,int)),'error, beam must be integer'
 	assert(0 < len(params) < 6),'error, must input between 1 and 5 params in LIST form'
 	for i in range(0,len(params)):
 		assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width' or \
@@ -139,60 +148,57 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 	scales = tscales
 			
 	#convert date string, start time, end time to datetime
-	myDate = yyyymmddToDate(dateStr)
-	hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
-	min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
-	stime = myDate.replace(hour=hr1,minute=min1)
-	if(hr2 == 24):
-		etime = myDate+datetime.timedelta(days=1)
-	else:
-		etime = myDate.replace(hour=hr2,minute=min2)
+	#myDate = yyyymmddToDate(dateStr)
+	#hr1,hr2 = int(math.floor(time[0]/100.)),int(math.floor(time[1]/100.))
+	#min1,min2 = int(time[0]-hr1*100),int(time[1]-hr2*100)
+	#stime = myDate.replace(hour=hr1,minute=min1)
+	#if(hr2 == 24):
+		#etime = myDate+datetime.timedelta(days=1)
+	#else:
+		#etime = myDate.replace(hour=hr2,minute=min2)
 		
 	#open the file
-	myFile = dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
-	
+	#myFile = dmapOpen(dateStr,rad,time=time,fileType=fileType,filter=filter)
+	myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
 	assert(myFile != None),'error, no data available for the requested time/radar/filetype combination'
-	myBeam = radDataReadRec(myFile,beam=beam,channel=channel)
+	myBeam = radDataReadRec(myFile)
 	assert(myBeam != None),'error, no data available for the requested time/radar/filetype combination'
 	
-	vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
+	vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
 	
 	while(myBeam != None):
-		if(myBeam['prm']['time'] > etime): break
-		if(myBeam['prm']['bmnum'] == beam and (stime <= myBeam['prm']['time'])):
-			times.append(myBeam['prm']['time'])
-			cpid.append(myBeam['prm']['cp'])
-			nave.append(myBeam['prm']['nave'])
-			nsky.append(myBeam['prm']['noise.sky'])
-			rsep.append(myBeam['prm']['rsep'])
-			nrang.append(myBeam['prm']['nrang'])
-			frang.append(myBeam['prm']['frang'])
-			nsch.append(myBeam['prm']['noise.search'])
-			freq.append(myBeam['prm']['tfreq']/1e3)
-			slist.append(myBeam['fit']['slist'])
-			mode.append(myBeam['prm']['ifmode'])
-			if('velocity' in params): vel.append(myBeam['fit']['v'])
-			if('power' in params): pow.append(myBeam['fit']['p_l'])
-			if('width' in params): wid.append(myBeam['fit']['w_l'])
-			if('elevation' in params): elev.append(myBeam['fit']['elv'])
-			if('phi0' in params): phi0.append(myBeam['fit']['phi0'])
+		if(myBeam.time > eTime): break
+		if(myBeam.bmnum == bmnum and (sTime <= myBeam.time)):
+			times.append(myBeam.time)
+			cpid.append(myBeam.cp)
+			nave.append(myBeam.prm.nave)
+			nsky.append(myBeam.prm.noisesky)
+			rsep.append(myBeam.prm.rsep)
+			nrang.append(myBeam.prm.nrang)
+			frang.append(myBeam.prm.frang)
+			nsch.append(myBeam.prm.noisesearch)
+			freq.append(myBeam.prm.tfreq/1e3)
+			slist.append(myBeam.fit.slist)
+			mode.append(myBeam.prm.ifmode)
+			if('velocity' in params): vel.append(myBeam.fit.v)
+			if('power' in params): pow.append(myBeam.fit.p_l)
+			if('width' in params): wid.append(myBeam.fit.w_l)
+			if('elevation' in params): elev.append(myBeam.fit.elv)
+			if('phi0' in params): phi0.append(myBeam.fit.phi0)
+			gsflg.append(myBeam.fit.gflg)
 			
-
-		myBeam = radDataReadRec(myFile,beam=beam,channel=channel)
+		myBeam = radDataReadRec(myFile)
 		
-	myFile.close()
 	
 	rtiFig = plot.figure()
 
-	rtiTitle(dateStr,rad,fileType,beam)
+	rtiTitle(sTime,rad,fileType,bmnum)
 	
 	plotNoise(rtiFig,times,nsky,nsch)
 	
 	plotFreq(rtiFig,times,freq,nave)
 	
 	plotCpid(rtiFig,times,cpid,mode)
-	
-	
 	
 	figtop = .77
 	figheight = .72/len(params)
@@ -204,10 +210,9 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 		elif(params[p] == 'phi0'): pArr = phi0
 		pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
 		
-		ax = drawAxes(rtiFig,times,rad,cpid,beam,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
-		pos=pos)
-			
-
+		ax = drawAxes(rtiFig,times,rad,cpid,bmnum,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
+									pos=pos)
+		
 		if(pArr == []): continue
 		
 		rmax = max(nrang)
@@ -226,31 +231,60 @@ scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0
 			if(pArr[i] == []): continue
 			
 			for j in range(len(slist[i])):
-				data[tcnt][slist[i][j]] = pArr[i][j]
+				if(not gsct or gsflg[i][j] == 0):
+					data[tcnt][slist[i][j]] = pArr[i][j]
 				
 		if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
 		elif(coords == 'rng'): y = numpy.linspace(frang[0],rmax*rsep[0],rmax+1)
 		else:
 			site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[0])
 			myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,nbeams=site.maxbeam,rsep=rsep[0],coords=coords)
-			y =  myFov.latFull[beam]
+			y =  myFov.latFull[bmnum]
 			
 		X, Y = numpy.meshgrid(x[:tcnt], y)
 		
 
+		cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
 		
 		#data = numpy.ma.masked_where(data == 100000., data)
-		pcoll = plot.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True)
+		pcoll = plot.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
 		
+		cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=pos)
+		
+		l = []
+		#define the colorbar labels
+		for i in range(0,len(bounds)):
+			if(params[p] == 'phi0'):
+				ln = 4
+				if(bounds[i] == 0): ln = 3
+				elif(bounds[i] < 0): ln = 5
+				l.append(str(bounds[i])[:ln])
+				continue
+			if((i == 0 and params[p] == 'velocity') or i == len(bounds)-1):
+				l.append(' ')
+				continue
+			l.append(str(int(bounds[i])))
+		cb.ax.set_yticklabels(l)
 			
-		pydarn.plot.plotUtils.genCmap(rtiFig,pcoll,params[p],scales[p],pos=pos,colors=colors,gflg=gflg)
-			
+		#set colorbar ticklabel size
+		for t in cb.ax.get_yticklabels():
+			t.set_fontsize(9)
+		
+		#set colorbar label
+		if(params[p] == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
+		if(params[p] == 'grid'): cb.set_label('Velocity [m/s]',size=10)
+		if(params[p] == 'power'): cb.set_label('Power [dB]',size=10)
+		if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
+		if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
+		if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
+		
 	print 'done plot'
 	
 
-
-	if(pdf):
-		rtiFig.savefig('/home/miker/temp.png',orientation='landscape', papertype='letter',dpi=300)
+	if(png):
+		rtiFig.savefig(d+'/'+sTime.strftime("%Y%m%d")+'.png',dpi=300)
+	elif(svg):
+		rtiFig.savefig(d+'/'+sTime.strftime("%Y%m%d")+'.svg')
 	else:
 		rtiFig.show()
 		
@@ -366,7 +400,7 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 
 	return ax
 		
-def rtiTitle(dateStr,rad,fileType,beam,xmin=.1,xmax=.86):
+def rtiTitle(d,rad,fileType,beam,xmin=.1,xmax=.86):
 	"""
 	*******************************
 
@@ -397,7 +431,6 @@ def rtiTitle(dateStr,rad,fileType,beam,xmin=.1,xmax=.86):
 	
 	plot.figtext(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
 	
-	d = utils.yyyymmddToDate(dateStr)
 	plot.figtext((xmin+xmax)/2.,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
 	weight=550,size='large',ha='center')
 	
