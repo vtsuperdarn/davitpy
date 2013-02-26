@@ -11,6 +11,7 @@
 **Functions**:
 	* :func:`radDataOpen`
 	* :func:`radDataReadRec`
+	* :func:`radDataReadScan`
 """
 
 def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filtered=False, src=None,fileName=None,custType='fitex'):
@@ -370,3 +371,117 @@ def radDataReadRec(myPtr):
 			print 'error, unrecognized data type'
 			return None
 			
+def radDataReadScan(myPtr):
+	"""A function to read a full scan of data from a :class:`radDataTypes.radDataPtr` object
+	
+	.. note::
+		to use this, you must first create a :class:`radDataTypes.radDataPtr` object with :func:`radDataOpen`
+		
+	.. note::
+		This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
+
+	**Args**:
+		* **myPtr** (:class:`radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+	**Returns**:
+		* **myScan** (:class:`radDataTypes.scanData): an object filled with the data we are after.  *will return None when finished reading*
+		
+	**Example**:
+		::
+		
+			import datetime as dt
+			myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+			myBeam = radDataReadScan(myPtr)
+		
+	Written by AJ 20130110
+	"""
+	from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
+		rawData, iqData, refArr, alpha, scanData
+	import pydarn, datetime as dt
+	from pydarn.sdio.radDataTypes import cipher
+	
+	#check input
+	assert(isinstance(myPtr,radDataPtr)),\
+		'error, input must be of type radDataPtr'
+	if(myPtr.ptr == None):
+		print 'error, your pointer does not point to any data'
+		return None
+	
+	myScan = scanData()
+	if(myPtr.fBeam != None): myScan.append(myPtr.fBeam)
+	else: firstflg = True
+	if(myPtr.channel == None): tmpchn = 'a'
+	else: tmpchn = myPtr.channel
+	
+	#do this until we reach the requested start time
+	#and have a parameter match
+	while(1):
+		#check for a mongodb query object
+		if(myPtr.dType == 'mongo'):
+			#get the next record from the database
+			rec = next(myPtr.ptr,None)
+			#check for valid data
+			if(rec == None or rec[cipher['time']] > myPtr.eTime):
+				#if we dont have valid data, clean up, get out
+				print '\nreached end of data'
+				try: myPtr.ptr.collection.database.connection.disconnect()
+				except: pass
+				return None
+			#check that we're in the time window, and that we have a 
+			#match for our params
+			if(rec[cipher['time']] >= myPtr.sTime and rec[cipher['time']] <= myPtr.eTime and \
+					(myPtr.stid == None or myPtr.stid == rec[cipher['stid']]) and
+					(tmpchn == rec[cipher['channel']]) and
+					(myPtr.cp == None or myPtr.cp == rec[cipher['cp']])):
+				myBeam = beamData()
+				#fill the beamData object
+				myBeam.dbDictToObj(rec)
+				myBeam.fType = myPtr.fType
+				setattr(myBeam,refArr[myPtr.fType],1)
+				if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
+					if(myBeam.fit.slist == None): myBeam.fit.slist = []
+				if(myBeam.prm.scan == 0 or firstflg):
+					myScan.append(myBeam)
+					firstflg = False
+				else:
+					myPtr.fBeam = myBeam
+					return myScan
+		#check if we're reading from a dmap file
+		elif(myPtr.dType == 'dmap'):
+			#read the next record from the dmap file
+			dfile = pydarn.dmapio.readDmapRec(myPtr.ptr)
+			#check for valid data
+			if(dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > myPtr.eTime):
+				#if we dont have valid data, clean up, get out
+				print '\nreached end of data'
+				myPtr.ptr.close()
+				return None
+			#check that we're in the time window, and that we have a 
+			#match for the desired params
+			if(dfile['channel'] < 2): channel = 'a'
+			else: channel = alpha[dfile['channel']-1]
+			if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
+					dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
+					(myPtr.stid == None or myPtr.stid == dfile['stid']) and
+					(tmpchn == channel) and
+					(myPtr.cp == None or myPtr.cp == dfile['cp'])):
+				#fill the beamdata object
+				myBeam = beamData()
+				myBeam.updateValsFromDict(dfile)
+				myBeam.fit.updateValsFromDict(dfile)
+				myBeam.prm.updateValsFromDict(dfile)
+				myBeam.rawacf.updateValsFromDict(dfile)
+				myBeam.iqdat.updateValsFromDict(dfile)
+				myBeam.fType = myPtr.fType
+				setattr(myBeam,refArr[myPtr.fType],1)
+				if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
+					setattr(myBeam,myPtr.fType,myBeam.fit)
+					if(myBeam.fit.slist == None): myBeam.fit.slist = []
+				if(myBeam.prm.scan == 0 or firstflg):
+					myScan.append(myBeam)
+					firstflg = False
+				else:
+					myPtr.fBeam = myBeam
+					return myScan
+		else: 
+			print 'error, unrecognized data type'
+			return None

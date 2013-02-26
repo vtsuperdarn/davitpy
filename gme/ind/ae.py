@@ -291,7 +291,7 @@ def readAeWeb(sTime,eTime=None,res=60):
 		try: aeList.append(aeRec(webLine=l,res=res))
 		except Exception,e:
 			print e
-			print 'problem assigning initializing dst object'
+			print 'problem assigning initializing ae object'
 		
 	if(aeList != []): return aeList
 	else: return None

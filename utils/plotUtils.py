@@ -150,6 +150,7 @@ class mapObj(basemap.Basemap):
 			print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
 			coords = None
 
+<<<<<<< HEAD
 		if coords and coords != self.coords:
 			trans = coords+'-'+self.coords
 			if trans in ['geo-mag','mag-geo']:
@@ -219,27 +220,32 @@ class mapObj(basemap.Basemap):
 		else: 
 			return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 
-
-################################################################################
-################################################################################
-def genCmap(fig, coll, param, scale, pos=[0,0,1,1], colors='lasse', map=0, gflg=0):
-	"""Generates a colormap and plots a colorbar
+def genCmap(param,scale,colors='lasse',gflg=False):
+	"""
+	******************************
+	genCmap(fig,coll,param,scale,pos,[colors]):
 	
-	**Args**: 
-		* **fig**: the parent figure
-		* **coll**: the collection of items (e.g. polygons) being mapped to this colormap
-		* **param**: the parameter being plotted, valid for 'velocity', 'power', 'width', 'elevation', 'phi0'
-		* **scale**: the max and min values of the color scale in list form
-		* **pos**: the position of the parent plot, NOT of the COLORBAR
-		* **[colors]**: a string indicating which colorbar to use, valid inputs are 'lasse', 'aj' default: 'lasse'
-	**Returns**:
-		* **None**
-	**Example**:
-		::
+	generates a colormap and plots a colorbar
 
-			genCmap(myFig, polyCollection, 'velocity', [-200,200], pos)
-			
-	written by AJ, 20120820
+	INPUTS:
+		fig: the parent figure
+		coll: the collection of items (e.g. polygons) being mapped 
+			to this colormap
+		param: the parameter being plotted, valid for 'velocity',
+			'power', 'width', 'elevation', 'phi0'
+		scale: the max and min values of the color scale in list form
+		pos: the position of the parent plot, NOT of the COLORBAR
+		[colors]: a string indicating which colorbar to use, valid 
+			inputs are 'lasse', 'aj'
+			default: 'lasse'
+	OUTPUTS:
+
+	EXAMPLE:
+		genCmap(myFig,polyCollection,'velocity',[-200,200],pos)
+		
+	Written by AJ 20120820
+	
+	*******************************
 	"""
 	import matplotlib,numpy
 	import matplotlib.pyplot as plot
@@ -253,7 +259,7 @@ def genCmap(fig, coll, param, scale, pos=[0,0,1,1], colors='lasse', map=0, gflg=
 		
 		#check for what color scale we want to use
 		if(colors == 'aj'):
-			if(gflg == 0):
+			if(not gflg):
 				#define our discrete colorbar
 				cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),\
 				cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
@@ -261,7 +267,7 @@ def genCmap(fig, coll, param, scale, pos=[0,0,1,1], colors='lasse', map=0, gflg=
 				cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),'.6',\
 				cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
 		else:
-			if(gflg == 0):
+			if(not gflg):
 				#define our discrete colorbar
 				cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),\
 				cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
@@ -271,7 +277,7 @@ def genCmap(fig, coll, param, scale, pos=[0,0,1,1], colors='lasse', map=0, gflg=
 				
 		#define the boundaries for color assignments
 		bounds = numpy.round(numpy.linspace(scale[0],scale[1],7))
-		if(gflg == 1):
+		if(gflg):
 			bounds[3] = -15.
 			bounds = numpy.insert(bounds,4,15.)
 		bounds = numpy.insert(bounds,0,-50000.)
@@ -332,39 +338,38 @@ def genCmap(fig, coll, param, scale, pos=[0,0,1,1], colors='lasse', map=0, gflg=
 	cmap.set_over('w',1.0)
 	#cmap.set_under('w',1.0)
 
-	cb = drawCB(fig,coll,cmap,norm,map=map,pos=pos)
-	l = []
-	#define the colorbar labels
-	for i in range(0,len(bounds)):
-		if(param == 'phi0'):
-			ln = 4
-			if(bounds[i] == 0): ln = 3
-			elif(bounds[i] < 0): ln = 5
-			l.append(str(bounds[i])[:ln])
-			continue
-		if((i == 0 and param == 'velocity') or i == len(bounds)-1):
-			l.append(' ')
-			continue
-		l.append(str(int(bounds[i])))
-	cb.ax.set_yticklabels(l)
+	return cmap,norm,bounds
+	
+	#cb = drawCB(fig,coll,cmap,norm,map=map,pos=pos)
+	#l = []
+	##define the colorbar labels
+	#for i in range(0,len(bounds)):
+		#if(param == 'phi0'):
+			#ln = 4
+			#if(bounds[i] == 0): ln = 3
+			#elif(bounds[i] < 0): ln = 5
+			#l.append(str(bounds[i])[:ln])
+			#continue
+		#if((i == 0 and param == 'velocity') or i == len(bounds)-1):
+			#l.append(' ')
+			#continue
+		#l.append(str(int(bounds[i])))
+	#cb.ax.set_yticklabels(l)
 		
-	#set colorbar ticklabel size
-	for t in cb.ax.get_yticklabels():
-		t.set_fontsize(9)
+	##set colorbar ticklabel size
+	#for t in cb.ax.get_yticklabels():
+		#t.set_fontsize(9)
 	
-	#set colorbar label
-	if(param == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
-	if(param == 'grid'): cb.set_label('Velocity [m/s]',size=10)
-	if(param == 'power'): cb.set_label('Power [dB]',size=10)
-	if(param == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
-	if(param == 'elevation'): cb.set_label('Elev [deg]',size=10)
-	if(param == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
+	##set colorbar label
+	#if(param == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
+	#if(param == 'grid'): cb.set_label('Velocity [m/s]',size=10)
+	#if(param == 'power'): cb.set_label('Power [dB]',size=10)
+	#if(param == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
+	#if(param == 'elevation'): cb.set_label('Elev [deg]',size=10)
+	#if(param == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
 	
-	return
+	#return
 
-
-################################################################################
-################################################################################
 def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
 	import matplotlib,numpy
 	import matplotlib.pyplot as plot
@@ -396,3 +401,4 @@ def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
 	
 	cb.ax.tick_params(axis='y',direction='out')
 	return cb
+	
