@@ -217,7 +217,10 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			radFov = fovObj
 			eGate = len(fovObj.gates)
 		# Get radar coordinates in map projection
-		x, y = Basemap(radFov.lonFull, radFov.latFull, coords=radFov.coords)
+		if hasattr(Basemap, 'coords'): 
+			x, y = Basemap(radFov.lonFull, radFov.latFull, coords=radFov.coords)
+		else:
+			x, y = Basemap(radFov.lonFull, radFov.latFull)
 		# Plot field of view
 		# Create contour
 		contourX = concatenate( (x[0,0:eGate], 

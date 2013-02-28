@@ -1,20 +1,17 @@
-# TSYGANENKO module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: tsyganenko
-*******************************
+*********************
+**Module**: models.tsyganenko
+*********************
+Geomagnetic field model wrapper
 
-This modules containes the following object(s):
+**Class**:
+    * :class:`tsygTrace`: Wraps fortran subroutines in one convenient object
 
-  tsygTrace: Wraps fortran subroutines in one convenient class
-  
-This module contains the following module(s):
+**Module**:
+    * :mod:`tsygFort`: Fortran subroutines
 
-  tsygFort: Fortran subroutines
- 
-Written by Sebastien de Larquier 2012-10
-    
-*******************************
 """
 
 import tsygFort
