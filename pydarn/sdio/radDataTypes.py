@@ -38,6 +38,7 @@ class radDataPtr():
 		* **cp** (int): control prog id of the request
 		* **dType** (str): the data type, 'mongo' or 'dmap'
 		* **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+		* **fBeam** (:class:`beamData`): the first beam of the next scan, useful for when reading into scan objects
 	**Methods**:
 		* Nothing.
 		
@@ -53,6 +54,7 @@ class radDataPtr():
 		self.cp = cp
 		self.dType = None
 		self.fType = None
+		self.fBeam = None
 		
 	def __repr__(self):
 		myStr = 'radDataPtr\n'
@@ -251,7 +253,23 @@ class baseData():
 			#else:
 				#myStr += key+' = '+str(var)+'\n'
 		#return myStr
+		
+class scanData(list):
+	"""a class to contain a radar scan.  Extends list.  Basically just a list of :class:`beamData` objects
+	
+	**Attrs**:
+		Nothing.
+	**Example**: 
+		::
+		
+			myBeam = pydarn.sdio.scanData()
+		
+	Written by AJ 20121130
+	"""
 
+	def __init__(self):
+		pass
+	
 class beamData(baseData):
 	"""a class to contain the data from a radar beam sounding, extends class :class:`baseData`
 	
