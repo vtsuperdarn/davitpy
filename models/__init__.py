@@ -39,3 +39,8 @@ try:
 except Exception, e:
     print __file__+' -> msis: ', e
 
+try:
+    import hwm
+except Exception, e:
+    print __file__+' -> hwm: ', e
+

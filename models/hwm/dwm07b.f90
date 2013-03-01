@@ -193,8 +193,16 @@ subroutine loaddwm(datafile)
     character(128),intent(in)   :: datafile
 
     external vsh_basis_init
+    
+    character(128)           :: defaultdatapath
+    character(512)           :: filen
 
-    open(unit=23,file=trim(datafile),form='unformatted')
+    call get_environment_variable('DAVITPY', defaultdatapath)
+    defaultdatapath = trim(defaultdatapath) // '/models/hwm/'
+
+    filen = trim(defaultdatapath) // trim(datafile)
+
+    open(unit=23,file=trim(filen),form='unformatted')
 
     if (allocated(termarr)) deallocate(termarr,coeff)
     read(23) nterm, maxmd, maxld

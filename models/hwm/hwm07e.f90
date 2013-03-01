@@ -52,6 +52,8 @@ subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
     real(4),intent(in)      :: sec,alt,glat,glon,stl,f107a,f107
     real(4),intent(in)      :: ap(2)
     real(4),intent(out)     :: w(2)
+!f2py intent(in) iyd,sec,alt,glat,glon,stl,f107a,f107,ap
+!f2py intent(out) w
 
     real(4)                 :: qw(2),dw(2)
 
@@ -147,6 +149,27 @@ subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W)
     
     use NEWmodel
     implicit none
+
+    INTERFACE
+        subroutine HWMupdate(input,last,fs,fl,fm,vbar,wbar,ebz,ebm,zwght,lev,u,v)
+            use NEWmodel
+            real(8),intent(in)              :: input(5) ! jday,utsec,glon,glat,alt
+            real(8),intent(inout)           :: last(5)
+            real(8),intent(inout)           :: fs(0:maxs,2)
+            real(8),intent(inout)           :: fm(0:maxm,2)
+            real(8),intent(inout)           :: fl(0:maxl,2)
+            
+            real(8),intent(inout)           :: vbar(0:maxn,0:maxo)
+            real(8),intent(inout)           :: wbar(0:maxn,0:maxo)
+            real(8),intent(inout),target    :: ebz(nbf,0:p)
+            real(8),intent(inout),target    :: ebm(nbf,0:p)
+
+            real(8),intent(inout)           :: zwght(0:p)
+            integer,intent(inout)           :: lev
+           
+            real(8),intent(out)             :: u,v
+        end subroutine HWMupdate
+    END INTERFACE
 
     INTEGER,intent(in)      :: IYD
     REAL(4),intent(in)      :: SEC,ALT,GLAT,GLON,STL,F107A,F107
@@ -548,13 +571,21 @@ subroutine loadmodel(datafile)
     
     integer                     :: i,j
     integer                     :: ncomp
+    character(128)              :: defaultdatapath
+    character(512)              :: filen
+
+    call get_environment_variable('DAVITPY', defaultdatapath)
+    defaultdatapath = trim(defaultdatapath) // '/models/hwm/'
 
     if (allocated(vnode)) then
         deallocate(order,nb,vnode,mparm)
         deallocate(gfs,gfm,gfl,gvbar,gwbar,gzwght,gbz,gbm)
     endif
 
-    open(unit=23,file=trim(datafile),form='unformatted')
+    filen = trim(defaultdatapath) // trim(datafile)
+    print*, trim(filen)
+
+    open(unit=23,file=trim(filen),form='unformatted')
     read(23) nbf,maxs,maxm,maxl,maxn,ncomp
     read(23) nlev,p
     nnode = nlev + p

@@ -72,8 +72,14 @@ subroutine apxrda()
     implicit none
     
     integer(4) :: i
+    character(128)           :: defaultdatapath
+    character(512)           :: filen
 
-    open(unit=77,file='apexgrid.dat',form='unformatted')
+    call get_environment_variable('DAVITPY', defaultdatapath)
+    defaultdatapath = trim(defaultdatapath) // '/models/hwm/'
+
+    filen = trim(defaultdatapath) // 'apexgrid.dat'
+    open(unit=77,file=trim(filen),form='unformatted')
     
     read(77) kgma,glalmn,glalmx,nla,nlo,nal, &
         lbx,lby,lbz,lbv,lla,llo,lal
