@@ -356,8 +356,14 @@ c     &   /BLOTN/XSM1,TEXOS,TLBDH,SIGMA /BLOTE/AHH,ATE1,STTE,DTE
 
       EXTERNAL          XE1,XE2,XE3_1,XE4_1,XE5,XE6,FMODIP
 
+        character(128) :: defaultdatapath
+        character(512) :: defaultfile
+
         save
-        
+
+        call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+
         nummax=1000
         DO 7397 KI=1,20
         do 7397 kk=1,nummax
@@ -972,9 +978,11 @@ c-binary-104   FORMAT('ccir',I2,'.bin')
 c-web- special for web-version:
 ! 104   FORMAT('/usr/local/etc/httpd/cgi-bin/models/IRI/ccir',I2,'.asc')
 c-davit- special for davit-version:
-104   FORMAT('/davitpy/models/iri/ccir',I2,'.asc')
+104   FORMAT('ccir',I2,'.asc')
 c
-        OPEN(IUCCIR,FILE=FILNAM,STATUS='OLD',ERR=8448,
+		
+        defaultfile = trim(defaultdatapath) // FILNAM
+        OPEN(IUCCIR,FILE=trim(defaultfile),STATUS='OLD',ERR=8448,
      &          FORM='FORMATTED')
 c-binary- if binary files than use:
 c-binary-     &          FORM='UNFORMATTED')
@@ -995,11 +1003,12 @@ C
 c-web- special for web-version:
 ! 1144  FORMAT('/usr/local/etc/httpd/cgi-bin/models/IRI/ursi',I2,'.asc')
 c-davit- special for davit-version:
-1144   FORMAT('/davitpy/models/iri/ursi',I2,'.asc')
+1144   FORMAT('ursi',I2,'.asc')
 c-binary- if binary files than use:
 c-binary-1144          FORMAT('ursi',I2,'.bin')
 
-          OPEN(IUCCIR,FILE=FILNAM,STATUS='OLD',ERR=8448,
+        defaultfile = trim(defaultdatapath) // FILNAM
+          OPEN(IUCCIR,FILE=trim(defaultfile),STATUS='OLD',ERR=8448,
      &         FORM='FORMATTED')
 c-binary- if binary files than use:
 c-binary-     &         FORM='UNFORMATTED')
@@ -1023,7 +1032,8 @@ c first CCIR ..............................................
 c
 
         WRITE(FILNAM,104) NMONTH+10
-        OPEN(IUCCIR,FILE=FILNAM,STATUS='OLD',ERR=8448,
+        defaultfile = trim(defaultdatapath) // FILNAM
+        OPEN(IUCCIR,FILE=trim(defaultfile),STATUS='OLD',ERR=8448,
      &          FORM='FORMATTED')
 c-binary- if binary files than use:
 c-binary-     &          FORM='unFORMATTED')
@@ -1039,7 +1049,8 @@ C then URSI if chosen .....................................
 C
         if(URSIF2) then
           WRITE(FILNAM,1144) NMONTH+10
-          OPEN(IUCCIR,FILE=FILNAM,STATUS='OLD',ERR=8448,
+          defaultfile = trim(defaultdatapath) // FILNAM
+          OPEN(IUCCIR,FILE=trim(defaultfile),STATUS='OLD',ERR=8448,
      &         FORM='FORMATTED')
 c-binary- if binary files than use:
 c-binary-     &         FORM='unFORMATTED')

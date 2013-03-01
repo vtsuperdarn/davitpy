@@ -692,7 +692,13 @@
                                                                                 
         CHARACTER  FSPEC*(*), FOUT*100, davitpydir*20
         DIMENSION       GH(196) 
+        character(128) :: defaultdatapath
+        character(512) :: defaultfile
         COMMON/iounit/konsol        
+
+        call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+
         do 1 j=1,196  
 1          GH(j)=0.0
 
@@ -700,11 +706,14 @@
 !       Open coefficient file. Read past first header record.        
 !       Read degree and order of model and Earth's radius.           
 ! ---------------------------------------------------------------
-        WRITE(FOUT,667) FSPEC
+!        WRITE(FOUT,667) FSPEC
 !  667    FORMAT(A13)
 !  667    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/',A13)
- 667    FORMAT('/davitpy/models/iri/',A13)
-        OPEN (IU, FILE=FOUT, STATUS='OLD', IOSTAT=IER, ERR=999)     
+! 667    FORMAT(defaultdatapath,A13)
+
+        FOUT = trim(defaultdatapath) // FSPEC
+
+        OPEN (IU, FILE=trim(FOUT), STATUS='OLD', IOSTAT=IER, ERR=999)
         READ (IU, *, IOSTAT=IER, ERR=999)                            
         READ (IU, *, IOSTAT=IER, ERR=999) NMAX, ERAD, XMYEAR 
         nm=nmax*(nmax+2)                

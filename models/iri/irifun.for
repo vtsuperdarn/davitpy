@@ -7254,6 +7254,8 @@ c----------------------------------------------------------------
            integer      imst,iymend
            real         ionoindx(722),indrz(722)
            real         ig(3),rz(3)
+           character(128) :: defaultdatapath
+           character(512) :: defaultfile
 
            common /iounit/konsol
 
@@ -7290,8 +7292,12 @@ c the file) and onward the indices are therefore based on indices
 c predictions.
 c
         if(iflag.eq.0) then
-      
-          open(unit=12,file='/davitpy/models/iri/ig_rz.dat',
+
+          call getenv('DAVITPY', defaultdatapath)
+          defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+          defaultfile = trim(defaultdatapath) // 'ig_rz.dat'
+
+          open(unit=12,file=trim(defaultfile),
      &          status='old')
 c-web- special for web version
 c          open(unit=12,file=
@@ -7424,6 +7430,9 @@ c If date is outside the range of the Ap indices file than iap(1)=-5
 c--------------------------------------------------------------------
 
         DIMENSION iiap(8),iap(13),lm(12)
+        character(128) :: defaultdatapath
+        character(512) :: defaultfile
+
 
         common /iounit/konsol
 
@@ -7437,7 +7446,11 @@ c--------------------------------------------------------------------
 
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
-        Open(13,FILe='/davitpy/models/iri/apf107.dat',
+        call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultfile = trim(defaultdatapath) // 'apf107.dat'
+
+        Open(13,FILe=trim(defaultfile),
 c -web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')
@@ -7531,6 +7544,8 @@ c--------------------------------------------------------------------
 
 		REAL IAPO
         DIMENSION iiap(8),iap(21),lm(12),iapo(7)
+        character(128) :: defaultdatapath
+        character(512) :: defaultfile
 
         common /iounit/konsol
 
@@ -7547,7 +7562,11 @@ c--------------------------------------------------------------------
 
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
-        Open(13,FILe='/davitpy/models/iri/apf107.dat',
+        call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultfile = trim(defaultdatapath) // 'apf107.dat'
+
+        Open(13,FILe=trim(defaultfile),
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')
@@ -7671,6 +7690,8 @@ c If date is outside the range of indices file than F107D=F107_81=-11.1
 c--------------------------------------------------------------------
 
         DIMENSION iiap(8),lm(12)
+        character(128) :: defaultdatapath
+        character(512) :: defaultfile
 
         common /iounit/konsol
 
@@ -7679,7 +7700,11 @@ c--------------------------------------------------------------------
         IYBEG=1958
         if(iyyyy.lt.IYBEG) goto 21   ! APF107.DAT starts at Jan 1, 1958
 
-        Open(13,FILe='/davitpy/models/iri/apf107.dat',
+        call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultfile = trim(defaultdatapath) // 'apf107.dat'
+
+        Open(13,FILe=trim(defaultfile),
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
      *    ACCESS='DIRECT',RECL=55,FORM='FORMATTED',STATUS='OLD')

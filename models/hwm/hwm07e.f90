@@ -56,6 +56,9 @@ subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
 !f2py intent(out) w
 
     real(4)                 :: qw(2),dw(2)
+    print*, '#### Running HWM07 ####'
+    print*, 'Input: '
+    print*, iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 
     call hwmqt(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,qw)
     
