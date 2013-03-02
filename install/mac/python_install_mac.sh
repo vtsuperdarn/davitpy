@@ -16,3 +16,4 @@ port install py${ver}-zmq
 port install py${ver}-pil
 port install py${ver}-sqlalchemy
 port install py${ver}-psycopg2
+port install py${ver}-pymongo
