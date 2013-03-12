@@ -167,9 +167,6 @@ def datetimeToEpoch(myDate):
 	import datetime,calendar
 	return calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
 
-	from datetime import datetime as dt
-	import time
-
 def dateToDecYear(date):
 	"""Convert :class:`datetime.datetime` object to decimal year
 	

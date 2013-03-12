@@ -42,6 +42,6 @@ setup (name = "dmapio",
                                 library_dirs = [
                                      "/usr/local/lib64/",
                                      rst+"/lib/"],
-				libraries=["m","z","rtime.1","dmap.1", "rcnv.1"]),]
+				libraries=["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
        )
 
