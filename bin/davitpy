@@ -20,4 +20,4 @@ export IPYTHONDIR=${DAVITPY}/bin
 ############################
 
 #start ipython
-ipython --profile=davitpy
+ipython --profile=davitpy --pylab
