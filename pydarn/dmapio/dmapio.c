@@ -35,7 +35,7 @@
 #include "structmember.h"
 #include "rprm.h"
 #include "fitdata.h"
- #include "fitwrite.h"
+#include "fitwrite.h"
 
 /*
 void parsePyPrm(struct RadarParm *prm, PyObject *pyprm)

@@ -4,8 +4,6 @@
 
 PYTHON = python`python -c 'import sys; print "%d.%d" % sys.version_info[:2]'`
 PYTHONINCLUDE = /usr/include/$(PYTHON)
-DATADIR=/usr/share/pydmap
-PYDIR=${PYTHONLIBDIR}/pydmap
 ARCH := $(patsubst i%86,i386,$(shell uname -m))
 ARCH := $(patsubst sparc%,sparc,$(ARCH))
 

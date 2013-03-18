@@ -18,30 +18,30 @@ from distutils.core import setup, Extension
 import os
 
 rst = os.environ['RSTPATH']
-setup (name = "dmapio",
-       version = "0.2",
-       description = "lib to read dmap files",
-       author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
-       author_email = "ribeiro@vt.edu",
-       url = "",
-       long_description =
-"""
-""",
-       classifiers=[
-  ],
-
-       ext_modules = [Extension("dmapio",
-                                sources=["dmapio.c"],
-                                include_dirs = [
-                                     "/usr/local/include/pydarn",
-                                     rst+"/include/superdarn",
-                                     rst+"/include/analysis",
-                                     rst+"/include/base",
-                                     rst+"/include/general",
-                                     ],
-                                library_dirs = [
-                                     "/usr/local/lib64/",
-                                     rst+"/lib/"],
-				libraries=["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
-       )
+setup(
+  name = "dmapio",
+  version = "0.2",
+  description = "lib to read dmap files",
+  author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
+  author_email = "ribeiro@vt.edu",
+  url = "",
+  long_description = """ """,
+  classifiers=[],
+  ext_modules = [
+    Extension(
+      "dmapio",
+      sources = ["dmapio.c"],
+      include_dirs = [
+        os.path.join(rst, "include/superdarn"),
+        os.path.join(rst, "include/analysis"),
+        os.path.join(rst, "include/base"),
+        os.path.join(rst, "include/general"),
+      ],
+      library_dirs = [
+        os.path.join(rst, "lib"),
+      ],
+      libraries = ["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]
+    )
+  ]
+)
 
