@@ -18,6 +18,7 @@ from distutils.core import setup, Extension
 import os
 
 rst = os.environ['RSTPATH']
+<<<<<<< HEAD
 setup (name = "dmapio",
        version = "0.2",
        description = "lib to read dmap files",
@@ -41,4 +42,32 @@ setup (name = "dmapio",
                                 library_dirs = [rst+"/lib/"],
 				libraries=["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
        )
+=======
+setup(
+  name = "dmapio",
+  version = "0.2",
+  description = "lib to read dmap files",
+  author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
+  author_email = "ribeiro@vt.edu",
+  url = "",
+  long_description = """ """,
+  classifiers=[],
+  ext_modules = [
+    Extension(
+      "dmapio",
+      sources = ["dmapio.c"],
+      include_dirs = [
+        os.path.join(rst, "include/superdarn"),
+        os.path.join(rst, "include/analysis"),
+        os.path.join(rst, "include/base"),
+        os.path.join(rst, "include/general"),
+      ],
+      library_dirs = [
+        os.path.join(rst, "lib"),
+      ],
+      libraries = ["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]
+    )
+  ]
+)
+>>>>>>> 7187a1df82f80d740deba9ae5a603208fdead297
 

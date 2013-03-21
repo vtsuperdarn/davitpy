@@ -16,14 +16,16 @@
 
 # Overall module for gme (Geo Magnetic Environment)
 """
-gme
-***
+*********************
+**Module**: gme
+*********************
 Module with libraries for dealing with Geo-Magnetic Environment (gme)
 
 This includes the following submodules:
 	* **base**: basic things for the gme package
 	* **ind**: indices; ie anything that isn't satellite data
 	* **sat**: satellite data
+    * **rbsp**: rbsp footpoints
 	* **ampere**
 """
 
@@ -46,4 +48,7 @@ try: import ampere
 except Exception,e: print e
 
 try: import plot
+except Exception,e: print e
+
+try: import rbsp
 except Exception,e: print e
