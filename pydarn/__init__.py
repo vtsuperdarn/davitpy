@@ -35,3 +35,7 @@ try: import proc
 except Exception, e: 
 	print 'problem importing proc: ', e
 
+try: import tools 
+except Exception, e: 
+	print 'problem importing proc: ', e
+

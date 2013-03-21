@@ -27,8 +27,7 @@ setup (name = "dmapio",
        long_description =
 """
 """,
-       classifiers=[
-  ],
+       classifiers=[],
 
        ext_modules = [Extension("dmapio",
                                 sources=["dmapio.c"],
@@ -39,9 +38,7 @@ setup (name = "dmapio",
                                      rst+"/include/base",
                                      rst+"/include/general",
                                      ],
-                                library_dirs = [
-                                     "/usr/local/lib64/",
-                                     rst+"/lib/"],
+                                library_dirs = [rst+"/lib/"],
 				libraries=["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
        )
 

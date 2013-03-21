@@ -14,7 +14,10 @@
   * :func:`radDataReadScan`
 """
 
-def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='fitex',filtered=False, src=None,fileName=None,custType='fitex'):
+def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
+                fileType='fitex',filtered=False, src=None,fileName=None, \
+                custType='fitex'):
+
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
   **Args**:
@@ -73,7 +76,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None,fileType='f
     eTime = sTime+dt.timedelta(days=1)
     
   #create a datapointer object
-  myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id),channel=channel,bmnum=bmnum,cp=cp)
+  myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id), 
+                      channel=channel,bmnum=bmnum,cp=cp)
   
   filelist = []
   if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']

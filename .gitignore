@@ -22,4 +22,4 @@ models/aacgm/build
 /docs.sphinx
 radars.hdf5*
 radars.hdf5
-
+*.so
