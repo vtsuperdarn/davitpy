@@ -213,11 +213,11 @@ class mapObj(basemap.Basemap):
 			oldgeom = deepcopy(self._boundarypolyll)
 			newgeom = _geoslib.Polygon(b).fix()
 			self._boundarypolyll = newgeom
-			out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+			out = basemap.Basemap._readboundarydata(self, name)#, as_polygons=as_polygons)
 			self._boundarypolyll = oldgeom
 			return out
 		else: 
-			return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+			return basemap.Basemap._readboundarydata(self, name)#, as_polygons=as_polygons)
 
 def genCmap(param,scale,colors='lasse',lowGray=False):
 	"""
