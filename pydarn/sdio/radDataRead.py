@@ -441,7 +441,7 @@ def radDataReadScan(myPtr):
         myBeam.dbDictToObj(rec)
         myBeam.fType = myPtr.fType
         setattr(myBeam,refArr[myPtr.fType],1)
-        if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
+        if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
           if(myBeam.fit.slist == None): myBeam.fit.slist = []
         if(myBeam.prm.scan == 0 or firstflg):
           myScan.append(myBeam)
@@ -477,7 +477,7 @@ def radDataReadScan(myPtr):
         myBeam.iqdat.updateValsFromDict(dfile)
         myBeam.fType = myPtr.fType
         setattr(myBeam,refArr[myPtr.fType],1)
-        if(myPtr.fType == 'fitex' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
+        if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
           setattr(myBeam,myPtr.fType,myBeam.fit)
           if(myBeam.fit.slist == None): myBeam.fit.slist = []
         if(myBeam.prm.scan == 0 or firstflg):
