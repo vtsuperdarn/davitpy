@@ -154,11 +154,17 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   if fileName == None:
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
   else:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered, 
+    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
                           fileName=fileName,custType=custType)
-  assert(myFile != None),'error, no data available for the requested time/radar/filetype combination'
+
+  print channel,bmnum,filtered, fileName, custType
+  if myFile == None:
+    print 'error, no files available for the requested time/radar/filetype combination'
+    return None
   myBeam = radDataReadRec(myFile)
-  assert(myBeam != None),'error, no data available for the requested time/radar/filetype combination'
+  if myBeam == None:
+    print 'error, no data available for the requested time/radar/filetype combination'
+    return None
   
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
         [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
