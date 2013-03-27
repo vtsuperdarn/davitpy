@@ -210,7 +210,7 @@ rposazm_wrap(PyObject *self, PyObject *args)
 */
 static PyMethodDef aacgmMethods[] = 
 {
-	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, alt = aacgmConv(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
+	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, alt = aacgmConv(inLat, inLon, height, flg)\nheight in km; flg=0: geo to aacgm; flg=1: aacgm to geo"},
 	{"aacgmConvArr",  aacgm_arr_wrap, METH_VARARGS, "convert to aacgm coords when inputs are lists\nformat: lat, lon, alt = aacgmConvArr(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
  	{"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
 	{"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
