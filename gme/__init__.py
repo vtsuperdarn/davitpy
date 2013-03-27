@@ -30,25 +30,25 @@ This includes the following submodules:
 """
 
 try: import base
-except Exception,e: print e
-try: from base import *
-except Exception,e: print e
+except Exception,e: 
+    print __file__+' -> gme.base: ', e
 
 try: import ind
-except Exception,e: print e
-try: from ind import *
-except Exception,e: print e
+except Exception,e: 
+    print __file__+' -> gme.ind: ', e
 
 try: import sat
-except Exception,e: print e
-try: from sat import *
-except Exception,e: print e
+except Exception,e: 
+    print __file__+' -> gme.sat: ', e
 
 try: import ampere
-except Exception,e: print e
+except Exception,e: 
+    print __file__+' -> gme.ampere: ', e
 
 try: import plot
-except Exception,e: print e
+except Exception,e: 
+    print __file__+' -> gme.plot: ', e
 
-try: import rbsp
-except Exception,e: print e
+try: import isr
+except Exception, e:
+    print __file__+' -> isr: ', e
