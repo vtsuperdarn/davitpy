@@ -269,7 +269,7 @@ evaluated to accomodate altitude and range.
 	from utils import Re, geoPack
 	
 	# Make sure we have enough input stuff
-	if (not model) and (not elevation or not altitude): model = 'IS'
+	# if (not model) and (not elevation or not altitude): model = 'IS'
 	
 	# Now let's get to work
 	# Classic Ionospheric/Ground scatter projection model
@@ -328,10 +328,13 @@ evaluated to accomodate altitude and range.
 	# No projection model (i.e., the elevation or altitude is so good that it gives you the proper projection by simple geometric considerations)
 	elif not model:
 		# Using no models simply means tracing based on trustworthy elevation or altitude
-		if not elevation:
+		if not altitude:
 			altitude = sqrt( Re**2 + slantRange**2 + 2. * slantRange * Re * sin( radians(elevation) ) ) - Re
+		if not elevation:
+			if(slantRange < altitude): altitude = slantRange - 10
+			elevation = degrees( asin( ((Re+altitude)**2 - (Re+tAlt)**2 - slantRange**2) / (2. * (Re+tAlt) * slantRange) ) )
 		# The tracing is done by calcDistPnt
-		dict = calcDistPnt(tGeoLat, tGeoLon, tAlt, dist=slantRange, el=elevation, az=boreSight+boreOffset, distAlt=altitude)
+		dict = geoPack.calcDistPnt(tGeoLat, tGeoLon, tAlt, dist=slantRange, el=elevation, az=boreSight+boreOffset)
 		return dict['distLat'], dict['distLon']
 	
 
