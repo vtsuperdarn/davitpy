@@ -181,9 +181,9 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
       f.write('  channel = '+myData.channel)
       f.write('  cpid = '+str(myData.cp)+'\n')
       
-      f.write('{0:>4s}  {1:>8s} / {2:<5s} {3:>8s}  {4:>5s} {5:>8s} {6:>8s} {7:>8s} {8:>8s} {9:>8s} {10:>8s} {11:>8s} {12:>8s}\n'.format \
-      ('gate','pwr_lag0','pwr_l','vel','gscat','vel_err','width_l','geo_lat','geo_lon','geo_azm',
-        'mag_lat','mag_lon','mag_azm'))
+      f.write('{0:>4s} {13:>5s} {1:>5s} / {2:<5s} {3:>8s} {4:>3s} {5:>8s} {6:>8s} {7:>8s} {8:>8s} {9:>8s} {10:>8s} {11:>8s} {12:>8s}\n'.format \
+      ('gate','pwr_0','pwr_l','vel','gsf','vel_err','width_l','geo_lat','geo_lon','geo_azm',
+        'mag_lat','mag_lon','mag_azm','range'))
       
       for i in range(len(myData.fit.slist)):
 
@@ -205,11 +205,12 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
 
         mazm = d['az']
 
-        f.write('{0:4d}  {1:>8.1f} / {2:<5.1f} {3:>8.1f}  {4:>5d} {5:>8.1f} {6:>8.1f} {7:>8.2f} {8:>8.2f} {9:>8.2f} {10:>8.2f} {11:>8.2f} {12:>8.2f}\n'.format \
+        f.write('{0:4d} {13:5d} {1:>5.1f} / {2:<5.1f} {3:>8.1f} {4:>3d} {5:>8.1f} {6:>8.1f} {7:>8.2f} {8:>8.2f} {9:>8.2f} {10:>8.2f} {11:>8.2f} {12:>8.2f}\n'.format \
                   (myData.fit.slist[i],myData.fit.pwr0[i],myData.fit.p_l[i],\
                   myData.fit.v[i],myData.fit.gflg[i],myData.fit.v_e[i],\
                   myData.fit.w_l[i],myFov.latFull[myData.bmnum][myData.fit.slist[i]],\
-                  myFov.lonFull[myData.bmnum][myData.fit.slist[i]], gazm, mlat, mlon, mazm))
+                  myFov.lonFull[myData.bmnum][myData.fit.slist[i]], gazm, mlat, mlon, mazm, \
+                  myData.prm.frang+myData.fit.slist[i]*myData.prm.rsep))
           
       f.write('\n')
       
