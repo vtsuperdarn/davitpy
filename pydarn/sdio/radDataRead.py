@@ -355,7 +355,7 @@ def radDataReadRec(myPtr):
       else: channel = alpha[dfile['channel']-1]
       if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
           dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
-          (myPtr.stid == None or myPtr.stid == dfile['stid']) and
+          (myPtr.stid == None or dfile['stid'] == 0 or myPtr.stid == dfile['stid']) and
           (myPtr.channel == None or myPtr.channel == channel) and
           (myPtr.bmnum == None or myPtr.bmnum == dfile['bmnum']) and
           (myPtr.cp == None or myPtr.cp == dfile['cp'])):
