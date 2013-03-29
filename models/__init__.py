@@ -17,30 +17,30 @@
 try:
     import tsyganenko
 except Exception, e:
-    print __file__+' -> tsyganenko: ', e
+    print __file__+' -> models.tsyganenko: ', e
 
 try:
     import igrf
 except Exception, e:
-    print __file__+' -> igrf: ', e
+    print __file__+' -> models.igrf: ', e
 
 try:
     import aacgm
 except Exception, e:
-    print __file__+' -> aacgm: ', e
+    print __file__+' -> models.aacgm: ', e
 
 try:
     import iri
 except Exception, e:
-    print __file__+' -> iri: ', e
+    print __file__+' -> models.iri: ', e
 
 try:
     import msis
 except Exception, e:
-    print __file__+' -> msis: ', e
+    print __file__+' -> models.msis: ', e
 
 try:
     import hwm
 except Exception, e:
-    print __file__+' -> hwm: ', e
+    print __file__+' -> models.hwm: ', e
 
