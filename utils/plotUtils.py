@@ -335,7 +335,7 @@ def genCmap(param,scale,colors='lasse',lowGray=False):
 
 	cmap.set_bad('w',1.0)
 	cmap.set_over('w',1.0)
-	#cmap.set_under('w',1.0)
+	cmap.set_under('.6',1.0)
 
 	return cmap,norm,bounds
 	

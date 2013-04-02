@@ -243,6 +243,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
     rmax = max(nrang)
     data=numpy.zeros((len(times)*2,rmax))+100000
+    if gsct: gsdata=numpy.zeros((len(times)*2,rmax))+100000
     x=numpy.zeros(len(times)*2)
     tcnt = 0
     #x = matplotlib.dates.date2num(times)
@@ -259,6 +260,9 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       for j in range(len(slist[i])):
         if(not gsct or gsflg[i][j] == 0):
           data[tcnt][slist[i][j]] = pArr[i][j]
+        elif gsct and gsflg[i][j] == 1:
+          data[tcnt][slist[i][j]] = -100000.
+
         
     if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
     elif(coords == 'rng'): y = numpy.linspace(frang[0],rmax*rsep[0],rmax+1)

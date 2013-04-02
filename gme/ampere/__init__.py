@@ -23,7 +23,7 @@ Contains:
 
 '''
 
-from pytesser import *
+# from pytesser import *
 
 def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
 	"""
@@ -141,97 +141,97 @@ def ampereDownloadData( Date_Dwl , move_to_sddata = False ) :
 		print 'Error - Data could not be retrieved'
 		
 		
-def ampereDownload(sTime, move_to_sddata = False):
+# def ampereDownload(sTime, move_to_sddata = False):
 
-	import datetime as dt, time, os
-	from selenium import webdriver
-	from PIL import Image
-	import selenium.webdriver.common.alert as alert
+# 	import datetime as dt, time, os
+# 	from selenium import webdriver
+# 	from PIL import Image
+# 	import selenium.webdriver.common.alert as alert
 	
-	#login
-	driver = webdriver.Chrome()
-	driver.get('http://ampere.jhuapl.edu/dataget/index.html')
-	x=driver.find_element_by_id("register.div")
-	y=x.find_element_by_id('register.logon')
-	z=y.find_element_by_id('logon')
-	z.send_keys('ribeiro')
-	z=y.find_element_by_id('submit')
-	z.click()
+# 	#login
+# 	driver = webdriver.Chrome()
+# 	driver.get('http://ampere.jhuapl.edu/dataget/index.html')
+# 	x=driver.find_element_by_id("register.div")
+# 	y=x.find_element_by_id('register.logon')
+# 	z=y.find_element_by_id('logon')
+# 	z.send_keys('username')
+# 	z=y.find_element_by_id('submit')
+# 	z.click()
 	
-	#set the date
-	m=driver.find_element_by_id('main')
-	t=m.find_element_by_id('tool')
-	rts=t.find_elements_by_class_name('rTool')
-	rt=rts[1]
+# 	#set the date
+# 	m=driver.find_element_by_id('main')
+# 	t=m.find_element_by_id('tool')
+# 	rts=t.find_elements_by_class_name('rTool')
+# 	rt=rts[1]
 	
-	sels=rt.find_elements_by_tag_name('select')
+# 	sels=rt.find_elements_by_tag_name('select')
 	
-	dates = sels[0].find_elements_by_tag_name('option')
-	for d in dates:
-		if(d.text == str(sTime.day)):
-			d.click()
+# 	dates = sels[0].find_elements_by_tag_name('option')
+# 	for d in dates:
+# 		if(d.text == str(sTime.day)):
+# 			d.click()
 			
-	months = sels[1].find_elements_by_tag_name('option')
-	for mt in months:
-		if(mt.text == sTime.strftime("%B")):
-			mt.click()
-			break
+# 	months = sels[1].find_elements_by_tag_name('option')
+# 	for mt in months:
+# 		if(mt.text == sTime.strftime("%B")):
+# 			mt.click()
+# 			break
 			
 			
-	years = sels[2].find_elements_by_tag_name('option')
-	for d in years:
-		if(d.text == str(sTime.year)):
-			d.click()
+# 	years = sels[2].find_elements_by_tag_name('option')
+# 	for d in years:
+# 		if(d.text == str(sTime.year)):
+# 			d.click()
 			
-	sels[3].find_elements_by_tag_name('option')[0].click()
-	sels[4].find_elements_by_tag_name('option')[0].click()
-	sels[5].find_elements_by_tag_name('option')[7].click()
-	sels[6].find_elements_by_tag_name('option')[0].click()
+# 	sels[3].find_elements_by_tag_name('option')[0].click()
+# 	sels[4].find_elements_by_tag_name('option')[0].click()
+# 	sels[5].find_elements_by_tag_name('option')[7].click()
+# 	sels[6].find_elements_by_tag_name('option')[0].click()
 	
-	while(1):
-		imgs=driver.find_elements_by_tag_name('img')
-		i = imgs[24]
+# 	while(1):
+# 		imgs=driver.find_elements_by_tag_name('img')
+# 		i = imgs[24]
 		
-		addr = i.get_attribute('src')
-		bin = addr[22:]
+# 		addr = i.get_attribute('src')
+# 		bin = addr[22:]
 		
-		fh = open("code.png", "wb")
-		fh.write(bin.decode('base64'))
-		fh.close()
+# 		fh = open("code.png", "wb")
+# 		fh.write(bin.decode('base64'))
+# 		fh.close()
 		
-		img = Image.open("code.png")
-		r, g, b, a = img.split()
-		img = Image.merge("RGB", (r, g, b))
-		img.save("code.bmp")
+# 		img = Image.open("code.png")
+# 		r, g, b, a = img.split()
+# 		img = Image.merge("RGB", (r, g, b))
+# 		img.save("code.bmp")
 		
-		os.system('convert code.bmp -negate code.inv.bmp')
-		os.system('mogrify -resize 800x200 code.inv.bmp')
-		im = Image.open('code.inv.bmp')
-		text = image_to_string(im)
+# 		os.system('convert code.bmp -negate code.inv.bmp')
+# 		os.system('mogrify -resize 800x200 code.inv.bmp')
+# 		im = Image.open('code.inv.bmp')
+# 		text = image_to_string(im)
 		
-		dl=m.find_element_by_id('download')
-		rt=dl.find_element_by_class_name('rTool')
-		div=rt.find_element_by_tag_name('div')
-		sp=div.find_element_by_tag_name('span')
-		ip=sp.find_element_by_tag_name('input')
-		ip.send_keys(text)
-		ips=div.find_elements_by_tag_name('input')
-		ips[2].click()
-		al = alert.Alert(driver)
-		al.accept()
-		st = m.find_element_by_id('status')
-		divs=st.find_elements_by_class_name('rTool')
-		rt2=divs[4]
-		if(rt2.is_displayed()):
-			divs2=rt2.find_elements_by_tag_name('div')
-			divs2[1].find_element_by_tag_name('input').click()
-			continue
-		else:
-			break
-	rt2=divs[1]
-	a=rt2.find_element_by_tag_name('a')
-	print a.text
-	a.click()
+# 		dl=m.find_element_by_id('download')
+# 		rt=dl.find_element_by_class_name('rTool')
+# 		div=rt.find_element_by_tag_name('div')
+# 		sp=div.find_element_by_tag_name('span')
+# 		ip=sp.find_element_by_tag_name('input')
+# 		ip.send_keys(text)
+# 		ips=div.find_elements_by_tag_name('input')
+# 		ips[2].click()
+# 		al = alert.Alert(driver)
+# 		al.accept()
+# 		st = m.find_element_by_id('status')
+# 		divs=st.find_elements_by_class_name('rTool')
+# 		rt2=divs[4]
+# 		if(rt2.is_displayed()):
+# 			divs2=rt2.find_elements_by_tag_name('div')
+# 			divs2[1].find_element_by_tag_name('input').click()
+# 			continue
+# 		else:
+# 			break
+# 	rt2=divs[1]
+# 	a=rt2.find_element_by_tag_name('a')
+# 	print a.text
+# 	a.click()
 	
-	os.system('convert code.bmp -negate code.inv.bmp')
-	#al = alert.Alert(driver)
+# 	os.system('convert code.bmp -negate code.inv.bmp')
+# 	#al = alert.Alert(driver)

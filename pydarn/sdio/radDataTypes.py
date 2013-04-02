@@ -88,6 +88,29 @@ class baseData():
   Written by AJ 20130108
   """
   
+  def copyData(self,obj):
+    """This method is used to recursively copy all of the contents from ont object to self
+    
+    .. note::
+      In general, users will not need to use this.
+      
+    **Args**: 
+      * **obj** (:class:`baseData`): the object to be copied
+    **Returns**:
+      * Nothing.
+    **Example**:
+      ::
+      
+        myBaseData.copyData(baseDataObj)
+      
+    written by AJ, 20130402
+    """
+    for key, val in obj.__dict__.iteritems():
+      if isinstance(val, baseData):
+        getattr(self, key).copyData(val)
+      else:
+        setattr(self,key,val)
+
   def dbDictToObj(self,aDict):
     """This method is used to parse a dictionary of radar data from the mongodb into a :class:`baseData` object.  
     

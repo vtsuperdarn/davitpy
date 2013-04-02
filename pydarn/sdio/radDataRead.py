@@ -353,6 +353,7 @@ def radDataReadRec(myPtr):
       #match for the desired params
       if(dfile['channel'] < 2): channel = 'a'
       else: channel = alpha[dfile['channel']-1]
+      if myPtr.bmnum == dfile['bmnum']: print dt.datetime.utcfromtimestamp(dfile['time'])
       if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
           dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
           (myPtr.stid == None or dfile['stid'] == 0 or myPtr.stid == dfile['stid']) and
