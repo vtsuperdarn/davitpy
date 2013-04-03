@@ -1,4 +1,5 @@
 *~
+*.mod
 *.rst
 *.pyc
 .DS_store
