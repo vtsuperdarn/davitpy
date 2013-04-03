@@ -370,6 +370,7 @@ class rays(object):
             * [**step**]: step between each plotted ray (in number of ray steps)
             * [**showrefract**]: show refractive index along ray paths (supersedes raycolor)
             * [**nr_cmap**]: color map name for refractive index coloring
+            * [**nr_lim**]: refractive index plotting limits
             * [**raycolor**]: color of ray paths
             * [**rect**]: subplot spcification
             * [**fig**]: A pylab.figure object (default to gcf)
