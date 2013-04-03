@@ -7,7 +7,10 @@
 This module runs the raytracing code
 
 **Class**:
-    * :class:`rtRun`: runs the code
+    * :class:`rt.rtRun`: run the code
+    * :class:`rt.rays`: store and process individual rays
+
+.. note:: The ray tracing requires mpi to run. You can adjust the number of processors, but be wise about it and do not assign more than you have
 
 """
 
@@ -32,8 +35,18 @@ class rtRun(object):
         * [**debug**] (bool): print some diagnostics of the fortran run and output processing
         * [**fext**] (str): output file id, max 10 character long (mostly used for multiple users environments, like a website)
         * [**loadFrom**] (str): file name where a pickled instance of rtRun was saved (supersedes all other args)
+        * [**nprocs**] (int): number of processes to use with MPI
     **Returns**:
         * **rtRun** (:class:`rtRun`)
+    **Example**:
+        ::
+
+            # Run a 2-hour ray trace from Blackstone on a random day
+            sTime = dt.datetime(2012, 11, 18, 5)
+            eTime = sTime + dt.timedelta(hours=2)
+            radar = 'bks'
+            # Save the results to your /tmp directory
+            rto = raydarn.rtRun(sTime, eTime, rCode=radar, outDir='/tmp')
 
     """
     def __init__(self, sTime=None, eTime=None, 
@@ -45,7 +58,8 @@ class rtRun(object):
         outDir=None, 
         debug=False, 
         fext=None, 
-        loadFrom=None):
+        loadFrom=None, 
+        nprocs=4):
         import datetime as dt
         from os import path
         from pydarn import radar
@@ -81,7 +95,7 @@ class rtRun(object):
                 print 'No start time. Using now.'
                 sTime = dt.datetime.utcnow()
             if not eTime:
-                eTime = sTime
+                eTime = sTime + dt.timedelta(minutes=1)
             if eTime > sTime + dt.timedelta(days=1):
                 print 'The time interval requested if too large. Reducing to 1 day.'
                 eTime = sTime + dt.timedelta(days=1)
@@ -109,7 +123,7 @@ class rtRun(object):
             inputFile = self._genInput()
             
             # Run the ray tracing
-            success = self._execute(inputFile, debug=debug)
+            success = self._execute(nprocs, inputFile, debug=debug)
 
 
     def _genInput(self):
@@ -145,14 +159,14 @@ class rtRun(object):
         return fname
         
 
-    def _execute(self, inputFileName, debug=False):
+    def _execute(self, nprocs, inputFileName, debug=False):
         """Execute raytracing command
         """
         import subprocess as subp
         from os import path
 
-        command = ['mpiexec', '-n', '4', 
-            path.join(path.abspath( __file__.split('rt.py')[0] ), 'raydarn'), 
+        command = ['mpiexec', '-n', '{}'.format(nprocs), 
+            path.join(path.abspath( __file__.split('rt.py')[0] ), 'rtFort'), 
             inputFileName, 
             self.outDir, 
             self.fExt]
@@ -190,7 +204,7 @@ class rtRun(object):
         # Initialize rays output
         self.rays = rays(fName, site=self.site, saveToAscii=saveToAscii, debug=debug)
         # Remove Input file
-        # subp.call(['rm',fName])
+        subp.call(['rm',fName])
 
 
     def save(self, filename):
@@ -213,14 +227,39 @@ class rtRun(object):
                 self.__dict__[k] = v
 
 
+    def __enter__(self):
+        return self
+
+
+    def __exit__(self, type, value, traceback):
+        self.clean()
+
+
+    def clean(self):
+        '''Clean-up files
+        '''
+        import subprocess as subp
+        from os import path
+
+        files = ['rays', 'edens', 'ranges', 'ionos']
+        for f in files:
+            fName = path.join(self.outDir, '{}.{}.dat'.format(f, self.fExt))
+            subp.call(['rm', fName])
+
+
 class rays(object):
-    """docstring for rays"""
+    """Store and process individual rays after ray tracing
+
+    **Args**:
+        * **readFrom** (str): rays.dat file to read the rays from
+        * [**site**] (:class:`pydarn.radar.site): 
+    """
     def __init__(self, readFrom, site=None, saveToAscii=None, debug=False):
         self.readFrom = readFrom
         self.paths = {}
 
         # Read rays
-        self.readRays(site=site)
+        self.readRays(site=site, debug=debug)
 
         # If required, save to ascii
         if saveToAscii:
@@ -240,7 +279,7 @@ class rays(object):
         import datetime as dt
         from collections import OrderedDict
         import os
-        from numpy import round
+        from numpy import round, array
 
         # Declare header parameters
         params = ('nhour', 'nazim', 'nelev', 
@@ -258,8 +297,8 @@ class rays(object):
             self.header['outdir'] = unpack('100s', f.read(100))[0].strip()
             # Only print header if in debug mode
             if debug:
-                print fName+' header: '
-                for k, v in header.items(): print '{:10s} :: {}'.format(k,v)
+                print self.readFrom+' header: '
+                for k, v in self.header.items(): print '{:10s} :: {}'.format(k,v)
             self.header.pop('fext'); self.header.pop('outdir')
             # Then read ray data, one ray at a time
             while True:
@@ -281,12 +320,12 @@ class rays(object):
                 if raz not in self.paths[rtime].keys(): self.paths[rtime][raz] = {}
                 self.paths[rtime][raz][rel] = {}
                 # Read and write to rays dict
-                self.paths[rtime][raz][rel]['r'] = unpack('{}f'.format(nrstep), f.read(nrstep*4))
-                self.paths[rtime][raz][rel]['th'] = unpack('{}f'.format(nrstep), f.read(nrstep*4))
-                self.paths[rtime][raz][rel]['gran'] = unpack('{}f'.format(nrstep), f.read(nrstep*4))
-                self.paths[rtime][raz][rel]['pran'] = unpack('{}f'.format(nrstep), f.read(nrstep*4))
-                self.paths[rtime][raz][rel]['nr'] = unpack('{}f'.format(nrstep), f.read(nrstep*4))
-
+                self.paths[rtime][raz][rel]['nrstep'] = nrstep
+                self.paths[rtime][raz][rel]['r'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['th'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['gran'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['pran'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['nr'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
 
     def writeToAscii(self, fname):
         """Save rays to ASCII file (limited use)
@@ -309,3 +348,106 @@ class rays(object):
                     f.write('--Beam/Azimuth: {}\n'.format(kb))
                     for ke in sorted(self.paths[kt][kb].keys()):
                         f.write('----Elevation: {:4.2f}\n'.format(ke))
+                        f.write('------r\n')
+                        [f.write('{:10.3f}\t'.format(r*1e-3)) for r in self.paths[kt][kb][ke]['r']]
+                        f.write('\n')
+                        f.write('------theta\n')
+                        [f.write('{:10.5f}\t'.format(th)) for th in self.paths[kt][kb][ke]['th']]
+                        f.write('\n')
+
+
+    def plot(self, time, beam=None, maxground=2000, maxalt=500, step=1,
+        showrefract=False, nr_cmap='jet_r', nr_lim=[0.8, 1.], 
+        raycolor='0.4',  
+        fig=None, rect=111):
+        """Plot ray paths
+        
+        **Args**: 
+            * **time** (datetime.datetime): time of rays
+            * [**beam**]: beam number
+            * [**maxground**]: maximum ground range [km]
+            * [**maxalt**]: highest altitude limit [km]
+            * [**step**]: step between each plotted ray (in number of ray steps)
+            * [**showrefract**]: show refractive index along ray paths (supersedes raycolor)
+            * [**nr_cmap**]: color map name for refractive index coloring
+            * [**raycolor**]: color of ray paths
+            * [**rect**]: subplot spcification
+            * [**fig**]: A pylab.figure object (default to gcf)
+        **Returns**:
+            * **ax**: matplotlib.axes object containing formatting
+            * **aax**: matplotlib.axes object containing data
+            * **cbax**: matplotlib.axes object containing colorbar
+        **Example**:
+            ::
+
+                # Show ray paths with colored refractive index along path
+                import datetime as dt
+                from models import raydarn
+                sTime = dt.datetime(2012, 11, 18, 5)
+                rto = raydarn.rtRun(sTime, rCode='bks', beam=12)
+                rto.readRays() # read rays into memory
+                ax, aax, cbax = rto.rays.plot(sTime, step=2, showrefract=True, nr_lim=[.85,1])
+                ax.grid()
+                
+        written by Sebastien, 2013-04
+        """
+        from utils import plotUtils
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        from matplotlib.collections import LineCollection
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        ax, aax = plotUtils.curvedEarthAxes(fig=fig, rect=rect, 
+            maxground=maxground, maxalt=maxalt)
+
+        # make sure that the required time and beam are present
+        assert (time in self.paths.keys()), 'Unkown time %s' % time
+        if beam:
+            assert (beam in self.paths[time].keys()), 'Unkown beam %s' % beam
+        else:
+            beam = self.paths[time].keys()[0]
+        
+        for ir, (el, rays) in enumerate( sorted(self.paths[time][beam].items()) ):
+            if not ir % step:
+                if not showrefract:
+                    aax.plot(rays['th'], rays['r']*1e-3, c=raycolor, zorder=2)
+                else:
+                    points = np.array([rays['th'], rays['r']*1e-3]).T.reshape(-1, 1, 2)
+                    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+                    lcol = LineCollection( segments )
+                    lcol.set_cmap( nr_cmap )
+                    lcol.set_norm( plt.Normalize(*nr_lim) )
+                    lcol.set_array( rays['nr'] )
+                    aax.add_collection( lcol )
+        # Add a colorbar when plotting refractive index
+        if showrefract:
+            from mpl_toolkits.axes_grid1 import SubplotDivider, LocatableAxes, Size
+
+            fig1 = ax.get_figure()
+            divider = SubplotDivider(fig1, *ax.get_geometry(), aspect=True)
+
+            # axes for colorbar
+            cbax = LocatableAxes(fig1, divider.get_position())
+
+            h = [Size.AxesX(ax), # main axes
+                 Size.Fixed(0.1), # padding
+                 Size.Fixed(0.2)] # colorbar
+            v = [Size.AxesY(ax)]
+
+            divider.set_horizontal(h)
+            divider.set_vertical(v)
+
+            ax.set_axes_locator(divider.new_locator(nx=0, ny=0))
+            cbax.set_axes_locator(divider.new_locator(nx=2, ny=0))
+
+            fig1.add_axes(cbax)
+
+            cbax.axis["left"].toggle(all=False)
+            cbax.axis["top"].toggle(all=False)
+            cbax.axis["bottom"].toggle(all=False)
+            cbax.axis["right"].toggle(ticklabels=True, label=True)
+
+            plt.colorbar(lcol, cax=cbax)
+            cbax.set_ylabel("refractive index")
+
+        return ax, aax, cbax

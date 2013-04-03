@@ -146,14 +146,14 @@ program     rayDARN
     hour = hour_0
     do ihr=1,nhour
         if (hour.gt.params%hourend) exit
-!       print*, rank, 'hour',hour
-!       timeaz = MPI_WTIME()
+!        print*, rank, 'hour',hour
+        timeaz = MPI_WTIME()
         !**********************************************************
         ! Azimuth loop
         azim = azim_0
         do iaz=1,nazim
             if (azim.gt.params%azimend) exit
-!           print*, rank, 'azim',hour,azim
+!            print*, rank, 'azim',hour,azim
             ! Generate electron density background
             CALL IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
             CALL MPI_FILE_WRITE_SHARED(hfedens, (/hour, azim, &
@@ -162,13 +162,13 @@ program     rayDARN
                                             edensARR(::2,::2), &
                                             dip(::2,:)/), 2+255*250, MPI_REAL, status, code)
 
-!           timeel = MPI_WTIME()
+            timeel = MPI_WTIME()
             !**********************************************************
             ! Elevation loop
             elev = elev_0
             do iel=1,nelev
                 if (elev.gt.params%elevend) exit
-!               print*, rank, 'elev',hour,azim,elev
+!                print*, rank, 'elev',hour,azim,elev
                     CALL TRACE_RKCK(params, hour, azim, elev, edensARR, edensTHT, dip, hfrays, hfranges, hfionos, &
                                 mpi_size_int, mpi_size_real)
 
@@ -178,9 +178,9 @@ program     rayDARN
             enddo
             ! End elevation loop
             !**********************************************************
-!           timeel = ( MPI_WTIME() - timeel)
-!           CALL MPI_REDUCE (timeel,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
-!           if (rank.eq.0) print('("Time in elev loop ",I3,": ",f6.3, " s")'), iaz, time
+!            timeel = ( MPI_WTIME() - timeel)
+!            CALL MPI_REDUCE (timeel,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
+!            print('("Time in elev loop ",I3," (rank ",I3,"): ",f6.3, " s")'), iaz, rank, timeel
 
             ! Increment azimuth value
             azim = azim + dazim*params%azimstp
@@ -189,9 +189,9 @@ program     rayDARN
         enddo
         ! End azimuth loop
         !**********************************************************
-!       timeaz = ( MPI_WTIME() - timeaz)
-!       CALL MPI_REDUCE (timeaz,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
-!       if (rank.eq.0) print('("Time in azim loop ",I3,": ",f10.3, " s")'), ihr, time
+!        timeaz = ( MPI_WTIME() - timeaz)
+!        CALL MPI_REDUCE (timeaz,time,1, MPI_DOUBLE_PRECISION , MPI_MAX ,0, MPI_COMM_WORLD ,code)
+!        print('("Time in azim loop ",I3," (rank ",I3,"): ",f10.3, " s")'), ihr, rank, timeaz
 
         ! Increment time value (but if a process reaches the last value, don't let him go over it)
         hour = hour + dhour*params%hourstp
