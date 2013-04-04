@@ -325,7 +325,7 @@ bzimf={:3.0f}                       [nT]
         """
         import cPickle as pickle
 
-        with open( filename, "rb" ) as fileObj:
+        with open( filename, "wb" ) as fileObj:
             pickle.dump(self, fileObj)
 
 
