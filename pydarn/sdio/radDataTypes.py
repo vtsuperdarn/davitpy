@@ -107,7 +107,8 @@ class baseData():
     """
     for key, val in obj.__dict__.iteritems():
       if isinstance(val, baseData):
-        getattr(self, key).copyData(val)
+        try: getattr(self, key).copyData(val)
+        except: pass
       else:
         setattr(self,key,val)
 

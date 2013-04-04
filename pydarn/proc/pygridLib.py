@@ -275,7 +275,10 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=120,vb=0,filter=1)
 				ngates = max([site.maxgate,myBeam.prm.nrang])
 				#gereate a new FOV
 				myFov = pydarn.radar.radFov.fov(site=site,rsep=myBeam.prm.rsep,\
-					ngates=ngates+1,nbeams=site.maxbeam)
+					ngates=ngates,nbeams=site.maxbeam)
+				myFova = pydarn.radar.radFov.fov(site=site,rsep=myBeam.prm.rsep,\
+					ngates=ngates, model=None, altitude=300.)
+
 				#create a 2D list to hold coords of RB cells
 				coordsList = [[None]*ngates for _ in range(site.maxbeam)]
 				#generate new coordsList
@@ -283,7 +286,9 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=120,vb=0,filter=1)
 					for jj in range(ngates):
 						arr1=aacgm.aacgmConv(myFov.latCenter[ii][jj],myFov.lonCenter[ii][jj],300,0)
 						arr2=aacgm.aacgmConv(myFov.latCenter[ii][jj+1],myFov.lonCenter[ii][jj+1],300,0)
-						azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
+						arr3=aacgm.aacgmConv(myFova.latCenter[ii][jj],myFova.lonCenter[ii][jj],300,0)
+						arr4=aacgm.aacgmConv(myFova.latCenter[ii][jj+1],myFova.lonCenter[ii][jj+1],300,0)
+						azm = greatCircleAzm(arr3[0],arr3[1],arr4[0],arr4[1])
 						coordsList[ii][jj] = [arr1[0],arr1[1],azm]
 				oldCpid = myBeam.cp
 				
