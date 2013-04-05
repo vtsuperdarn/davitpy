@@ -2,7 +2,7 @@
 # Full license can be found in LICENSE.txt
 """
 *********************
-**Module**: pydarn.radar.radInfoIO
+**Module**: pydarn.radar.radInfoIo
 *********************
 Input/Output for radar information (location, boresight, interferometer position...) is 
 read from a local dblite database (radar.db). The functions in this module provide tools 
