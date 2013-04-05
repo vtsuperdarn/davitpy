@@ -1,16 +1,17 @@
-# IGRF module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: models.iri
-*******************************
+*********************
+**Module**: models.hwm
+*********************
 
-This module contains the following functions:
-
-  iri_sub
+**Modules**:
+    * :mod:`hwm07`: fortran subroutines
   
-Written by Sebastien 20120926
-    
-*******************************
+*********************
 """
 
-from hwm07 import *
+try:
+    from hwm07 import *
+except Exception as e:
+    print __file__+' -> models.hwm.hwm07: ', e

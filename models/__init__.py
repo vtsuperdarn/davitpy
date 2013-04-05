@@ -6,12 +6,12 @@
 *********************
 
 **Modules**:
-    * :mod:`aacgm`: corrected geomagnetic model
-    * :mod:`tsyganenko`: T96
-    * :mod:`iri`: International Reference Ionosphere 2012
-    * :mod:`igrf`: International Geomagnetic Reference Field 2011
-    * :mod:`msis`: Neutral atmosphere model (NRLMSISE-00)
-    * :mod:`raydarn`: SuperDARN ray tracing code coupled with IRI
+    * :mod:`models.aacgm`: corrected geomagnetic model
+    * :mod:`models.tsyganenko`: T96
+    * :mod:`models.iri`: International Reference Ionosphere 2012
+    * :mod:`models.igrf`: International Geomagnetic Reference Field 2011
+    * :mod:`models.msis`: Neutral atmosphere model (NRLMSISE-00)
+    * :mod:`models.raydarn`: SuperDARN ray tracing code coupled with IRI
 
 """
 try:

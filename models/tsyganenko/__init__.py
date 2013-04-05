@@ -1,19 +1,18 @@
-# TSYGANENKO module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: tsyganenko
-*******************************
+*********************
+**Module**: models.tsyganenko
+*********************
 
 This modules containes the following object(s):
 
-  tsygTrace: Wraps fortran subroutines in one convenient class
+    * :class:`models.tsyganenko.tsygTrace`: Wraps fortran subroutines in one convenient class
   
 This module contains the following module(s):
 
-  tsygFort: Fortran subroutines
+    * :mod:`models.tsyganenko.tsygFort`: Fortran subroutines
  
-Written by Sebastien de Larquier 2012-10
-    
 *******************************
 """
 

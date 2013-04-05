@@ -1,11 +1,12 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: models.msis
-*******************************
-
+*********************
+**Module**: models.msis
+*********************
 This module contains the following functions:
 
-  * gtd7
+  * :func:`models.msis.msisFort.gtd7`
     * **INPUTS**:
       * **IYD** - year and day as YYDDD (day of year from 1 to 365 (or 366)) (Year ignored in current model)
       * **SEC** - UT (SEC)
@@ -38,12 +39,12 @@ This module contains the following functions:
       * **T(1)** - exospheric temperature
       * **T(2)** - temperature at ALT
   
-Written by Sebastien 2012-11
-    
-*******************************
 """
 
-from msisFort import *
+try: 
+    from msisFort import *
+except Exception as e:
+    print __file__+' -> models.msis: ', e 
 
 def getF107Ap(mydatetime=None):
   """

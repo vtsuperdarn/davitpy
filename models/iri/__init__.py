@@ -1,16 +1,17 @@
-# IGRF module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: models.iri
-*******************************
+*********************
+**Module**: models.iri
+*********************
 
-This module contains the following functions:
-
-  iri_sub
-  
-Written by Sebastien 20120926
+**Modules**:
+    * :mod:`iri`: fortran subroutines 
     
 *******************************
 """
 
-from iri import *
+try:
+      from iri import *
+except Exception, e:
+      print __file__+' -> models.iri.iri: ', e

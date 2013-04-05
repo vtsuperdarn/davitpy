@@ -6,8 +6,8 @@
 *********************
 This module wraps the ray-tracing coupled with IRI and IGRF
 
-This includes the following submodules:
-    * **rt**: 
+**Modules**
+    * :mod:`models.raydarn.rt`: 
 
 """
 try: from rt import *
