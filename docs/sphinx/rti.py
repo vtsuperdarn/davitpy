@@ -1,1 +1,0 @@
-/davitpy/pydarn/plot/rti.py
