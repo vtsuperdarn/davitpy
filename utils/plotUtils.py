@@ -46,7 +46,7 @@ class mapObj(basemap.Basemap):
 	def __init__(self, datetime=None, coords='geo', 
 		projection='stere', resolution='l', dateTime=None, 
 		lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
-		fillContinents='.8', fillOceans='None', fillLakes='white', coastLineWidth=0., 
+		fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
 		grid=True, gridLabels=True, **kwargs):
 		"""Create empty map 
 		
@@ -213,11 +213,11 @@ class mapObj(basemap.Basemap):
 			oldgeom = deepcopy(self._boundarypolyll)
 			newgeom = _geoslib.Polygon(b).fix()
 			self._boundarypolyll = newgeom
-			out = basemap.Basemap._readboundarydata(self, name)#, as_polygons=as_polygons)
+			out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 			self._boundarypolyll = oldgeom
 			return out
 		else: 
-			return basemap.Basemap._readboundarydata(self, name)#, as_polygons=as_polygons)
+			return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 
 def genCmap(param,scale,colors='lasse',lowGray=False):
 	"""

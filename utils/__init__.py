@@ -14,22 +14,22 @@ This subpackage contains various utilities for DaViT-py
 
 """
 try:
-    import plotUtils
+    from plotUtils import *
 except Exception, e:
     print __file__+' -> utils.plotUtils: ', e
 
 try:
-    import geoPack
+    from geoPack import *
 except Exception, e:
     print __file__+' -> utils.geoPack: ', e
 
 try:
-    import timeUtils
+    from timeUtils import *
 except Exception, e:
     print __file__+' -> utils.timeUtils: ', e
 
 try:
-    import calcSun
+    from calcSun import *
 except Exception, e:
     print __file__+' -> utils.calcSun: ', e
 

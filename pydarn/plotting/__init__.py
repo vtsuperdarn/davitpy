@@ -2,7 +2,7 @@
 # Full license can be found in LICENSE.txt
 """
 *********************
-**Module**: pydarn.plot
+**Module**: pydarn.plotting
 *********************
 This subpackage contains various plotting routines for DaViT-py
 

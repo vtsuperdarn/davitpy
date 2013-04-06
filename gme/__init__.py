@@ -45,7 +45,7 @@ try: import ampere
 except Exception,e: 
     print __file__+' -> gme.ampere: ', e
 
-try: import plot
+try: import plotting
 except Exception,e: 
     print __file__+' -> gme.plot: ', e
 

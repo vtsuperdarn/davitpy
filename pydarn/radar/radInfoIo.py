@@ -201,7 +201,7 @@ class updateHdf5(object):
 		dtfmt = '%Y-%m-%d %H:%M:%S'
 		dttest = datetime.utcnow().strftime(dtfmt)
 		# File path
-		self.h5_path = os.path.abspath( __file__.split('radInfoIO.py')[0] )
+		self.h5_path = os.path.abspath( __file__.split('radInfoIo.py')[0] )
 		self.h5_file = 'radars.hdf5'
 		# MongoDB server
 		self.db_user = 'sd_dbread'
@@ -299,17 +299,14 @@ class updateHdf5(object):
 		except IOError:
 			try:
 				# Open file
-				f = h5py.File(fname,'w')
+				with h5py.File(fname,'w') as f:
+				    rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad, chunks=True)
+				    hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw, chunks=True)
+				    info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info, chunks=True)
 
-				rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad, chunks=True)
-				hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw, chunks=True)
-				info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info, chunks=True)
-
-				# Close file
-				f.close()
 				return True
-			except IOError:
-				print 'Cannot initialize HDF5 file for updates. Changing nothing.'
+			except IOError as e:
+				print 'Cannot initialize {} for updates. Changing nothing.'.format(fname)
 				return False
 
 

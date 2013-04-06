@@ -55,7 +55,7 @@ class network(object):
 
         self.radars = []
         # Open file
-        rad_path = __file__.split('__init__.py')[0]
+        rad_path = __file__.split('radStruct.py')[0]
         f = h5py.File(rad_path+'/radars.hdf5','r')
         radarF = f['/radar']
         siteF = f['/hdw']
@@ -374,7 +374,7 @@ class radar(object):
 
         # If a radar is requested...
         if code or radId:
-            rad_path = __file__.split('__init__.py')[0]
+            rad_path = __file__.split('radStruct.py')[0]
             f = h5py.File(rad_path+'/radars.hdf5','r')
             radarF = f['/radar']
             siteF = f['/hdw']
@@ -561,7 +561,7 @@ class site(object):
         self.maxgate = 0
         self.maxbeam = 0
         if radId or code: 
-            rad_path = __file__.split('__init__.py')[0]
+            rad_path = __file__.split('radStruct.py')[0]
             f = h5py.File(rad_path+'/radars.hdf5','r')
             siteF = f['/hdw']
             if code: radId = f['/radar']['id'][ where( f['/radar']['code'][:] == code )[0][0] ]
