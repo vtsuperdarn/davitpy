@@ -52,3 +52,7 @@ or
     davitpy-qtconsole
     
 And code away!
+
+### Notes
+
+* you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>
