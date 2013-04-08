@@ -24,11 +24,11 @@
 **Module**: gme.ind.ae
 *********************
 **Classes**:
-	* :class:`aeRec`
+	* :class:`gme.ind.ae.aeRec`
 **Functions**:
-	* :func:`readAe`
-	* :func:`readAeWeb`
-	* :func:`mapAeMongo`
+	* :func:`gme.ind.ae.readAe`
+	* :func:`gme.ind.ae.gme.ind.ae.readAeWeb`
+	* :func:`gme.ind.ae.mapAeMongo`
 """
 
 import gme
