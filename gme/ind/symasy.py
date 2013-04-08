@@ -24,16 +24,16 @@
 **Module**: gme.ind.symasy
 *********************
 **Classes**:
-	* :class:`symAsyRec`
+	* :class:`gme.ind.symasy.symAsyRec`
 **Functions**:
-	* :func:`readSymAsy`
-	* :func:`readSymAsyWeb`
-	* :func:`mapSymAsyMongo`
+	* :func:`gme.ind.symasy.readSymAsy`
+	* :func:`gme.ind.symasy.readSymAsyWeb`
+	* :func:`gme.ind.symasy.mapSymAsyMongo`
 """
 
 import gme
 class symAsyRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of sym/asy data.  Extends :class:`gmeBase.gmeData`. Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
+	"""a class to represent a record of sym/asy data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
@@ -62,7 +62,7 @@ class symAsyRec(gme.base.gmeBase.gmeData):
 		.. note::
 			In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`symAsyRec`
+		**Belongs to**: :class:`gme.ind.symasy.symAsyRec`
 		
 		**Args**: 
 			* **line** (str): the ASCII line from the WDC data file
@@ -85,12 +85,12 @@ class symAsyRec(gme.base.gmeBase.gmeData):
 		if(float(cols[6]) != 99999.0): self.symh = float(cols[6])
 		
 	def __init__(self, webLine=None, dbDict=None):
-		"""the intialization fucntion for a :class:`symAsyRec` object.  
+		"""the intialization fucntion for a :class:`gme.ind.symasy.symAsyRec` object.  
 		
 		.. note::
 			In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`symAsyRec`
+		**Belongs to**: :class:`gme.ind.symasy.symAsyRec`
 		
 		**Args**: 
 			* [**webLine**] (str): an ASCII line from the datafile from WDC. if this is provided, the object is initialized from it.  default=None
@@ -130,7 +130,7 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 		* [**asyh**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with asyh values in the range [a,b] will be returned.  default = None
 		* [**asyd**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with asyd values in the range [a,b] will be returned.  default = None
 	**Returns**:
-		* **symList** (list or None): if data is found, a list of :class:`symAsyRec` objects matching the input parameters is returned.  If no data is found, None is returned.
+		* **symList** (list or None): if data is found, a list of :class:`gme.ind.symasy.symAsyRec` objects matching the input parameters is returned.  If no data is found, None is returned.
 	**Example**:
 		::
 		
@@ -187,7 +187,7 @@ def readSymAsyWeb(sTime,eTime=None):
 	"""This function reads sym/asy data from the WDC kyoto website
 	
 	.. warning::
-		You should not use this. Use the general function :func:`readSymAsy` instead.
+		You should not use this. Use the general function :func:`gme.ind.symasy.readSymAsy` instead.
 	
 	**Args**: 
 		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
