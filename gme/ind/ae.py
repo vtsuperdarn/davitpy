@@ -37,7 +37,7 @@ class aeRec(gme.base.gmeBase.gmeData):
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
-		* **dataSet** (:class:`dst.dstRec`)): a string dicating the dataset this is from
+		* **dataSet** (:class:`gme.ind.dst.dstRec`)): a string dicating the dataset this is from
 		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
 		* **ae** (float): auroral electrojet
 		* **au** (float): auroral upper
