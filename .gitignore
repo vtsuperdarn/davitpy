@@ -1,4 +1,5 @@
 *~
+*.mod
 *.rst
 *.pyc
 .DS_store
@@ -17,10 +18,10 @@ bin/profile_davitpy/security/kernel*
 *.sublime-workspace
 *.sublime-project
 *.orig
-models/aacgm/build
-/docs/sphinx/*
-/docs.sphinx
+build
+_build
+sphinx
 radars.hdf5*
 radars.hdf5
 *.so
-
+rtFort

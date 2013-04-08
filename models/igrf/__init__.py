@@ -6,8 +6,8 @@
 *********************
 Basic plotting tools
 
-**Functions**:
-  * :func:`igrf11`: Create empty map
+**Modules**:
+  * :mod:`models.igrf`: fortran subroutines
 
 """
 

@@ -1,29 +1,37 @@
-# Utils module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-            UTILS
-*******************************
+*********************
+**Module**: utils
+*********************
 This subpackage contains various utilities for DaViT-py
-DEV: functions/modules/classes with a * have not been developed yet
 
-This includes the following modules:
-	calcSun
+**Modules**:
+    * :mod:`utils.plotUtils`: Basic plotting tools 
+    * :mod:`utils.geoPack`: geographic transformations
+    * :mod:`utils.timeUtils`: date/time manipulations 
+    * :mod:`utils.calcSun`: solar position calculator
 
-This includes the following functions:
-	parseDate
-	parseTime
-
-*******************************
 """
+try:
+    from plotUtils import *
+except Exception, e:
+    print __file__+' -> utils.plotUtils: ', e
 
-from parseDate import parseDate
-from parseTime import parseTime
-from timeUtils import *
-from plotUtils import *
-import geoPack
-import calcSun
-import profileUtils
-import plotUtils
+try:
+    from geoPack import *
+except Exception, e:
+    print __file__+' -> utils.geoPack: ', e
+
+try:
+    from timeUtils import *
+except Exception, e:
+    print __file__+' -> utils.timeUtils: ', e
+
+try:
+    from calcSun import *
+except Exception, e:
+    print __file__+' -> utils.calcSun: ', e
 
 
 # *************************************************************

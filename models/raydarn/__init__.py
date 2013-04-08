@@ -1,16 +1,15 @@
-# RAYDARN module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-MODULE: models.raydarn
-*******************************
+*********************
+**Module**: models.raydarn
+*********************
+This module wraps the ray-tracing coupled with IRI and IGRF
 
-This module contains the following functions:
+**Modules**
+    * :mod:`models.raydarn.rt`: 
 
-  raydarn
-  
-Written by Sebastien 20121001
-    
-*******************************
 """
-
-from raydarn import *
+try: from rt import *
+except Exception, e:
+    print __file__+' -> models.raydarn.rt: ', e

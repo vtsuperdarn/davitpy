@@ -6,41 +6,41 @@
 *********************
 
 **Modules**:
-    * :mod:`aacgm`: corrected geomagnetic model
-    * :mod:`tsyganenko`: T96
-    * :mod:`iri`: International Reference Ionosphere 2012
-    * :mod:`igrf`: International Geomagnetic Reference Field 2011
-    * :mod:`msis`: Neutral atmosphere model (NRLMSISE-00)
-    * :mod:`raydarn`: SuperDARN ray tracing code coupled with IRI
+    * :mod:`models.aacgm`: corrected geomagnetic model
+    * :mod:`models.tsyganenko`: T96
+    * :mod:`models.iri`: International Reference Ionosphere 2012
+    * :mod:`models.igrf`: International Geomagnetic Reference Field 2011
+    * :mod:`models.msis`: Neutral atmosphere model (NRLMSISE-00)
+    * :mod:`models.raydarn`: SuperDARN ray tracing code coupled with IRI
 
 """
 try:
     import tsyganenko
 except Exception, e:
-    print __file__+' -> tsyganenko: ', e
+    print __file__+' -> models.tsyganenko: ', e
 
 try:
     import igrf
 except Exception, e:
-    print __file__+' -> igrf: ', e
+    print __file__+' -> models.igrf: ', e
 
 try:
     import aacgm
 except Exception, e:
-    print __file__+' -> aacgm: ', e
+    print __file__+' -> models.aacgm: ', e
 
 try:
     import iri
 except Exception, e:
-    print __file__+' -> iri: ', e
+    print __file__+' -> models.iri: ', e
 
 try:
     import msis
 except Exception, e:
-    print __file__+' -> msis: ', e
+    print __file__+' -> models.msis: ', e
 
 try:
     import hwm
 except Exception, e:
-    print __file__+' -> hwm: ', e
+    print __file__+' -> models.hwm: ', e
 

@@ -27,9 +27,9 @@ try: import sdio
 except Exception, e: 
 	print 'problem importing sdio: ', e
 
-try: import plot 
+try: import plotting 
 except Exception, e: 
-	print 'problem importing plot: ', e
+	print 'problem importing plotting: ', e
 
 try: import proc 
 except Exception, e: 

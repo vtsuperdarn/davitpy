@@ -46,7 +46,7 @@ class mapObj(basemap.Basemap):
 	def __init__(self, datetime=None, coords='geo', 
 		projection='stere', resolution='l', dateTime=None, 
 		lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
-		fillContinents='.8', fillOceans='None', fillLakes='white', coastLineWidth=0., 
+		fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
 		grid=True, gridLabels=True, **kwargs):
 		"""Create empty map 
 		
@@ -213,11 +213,11 @@ class mapObj(basemap.Basemap):
 			oldgeom = deepcopy(self._boundarypolyll)
 			newgeom = _geoslib.Polygon(b).fix()
 			self._boundarypolyll = newgeom
-			out = basemap.Basemap._readboundarydata(self, name)#, as_polygons=as_polygons)
+			out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 			self._boundarypolyll = oldgeom
 			return out
 		else: 
-			return basemap.Basemap._readboundarydata(self, name)#, as_polygons=as_polygons)
+			return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 
 def genCmap(param,scale,colors='lasse',lowGray=False):
 	"""
@@ -401,3 +401,96 @@ def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
 	cb.ax.tick_params(axis='y',direction='out')
 	return cb
 	
+
+def curvedEarthAxes(rect=111, fig=None, maxground=2000, minalt=0, maxalt=500, Re=6371.):
+    """ Create curved axes in ground-range and altitude
+		
+	**Args**: 
+		* [**rect**]: subplot spcification
+		* [**fig**]: A pylab.figure object (default to gcf)
+		* [**maxground**]: maximum ground range [km]
+		* [**minalt**]: lowest altitude limit [km]
+		* [**maxalt**]: highest altitude limit [km]
+		* [**Re**]: Earth radius
+	**Returns**:
+		* **ax**: matplotlib.axes object containing formatting
+		* **aax**: matplotlib.axes object containing data
+	**Example**:
+		::
+
+			import numpy as np
+			from utils import plotUtils
+			ax, aax = plotUtils.curvedEarthAxes()
+			th = np.linspace(0, ax.maxground/ax.Re, 50)
+			r = np.linspace(ax.Re+ax.minalt, ax.Re+ax.maxalt, 20)
+			Z = exp( -(r - 300 - ax.Re)**2 / 100**2 ) * np.cos(th[:, np.newaxis]/th.max()*4*np.pi)
+			x, y = np.meshgrid(th, r)
+			im = aax.pcolormesh(x, y, Z.T)
+			ax.grid()
+
+			
+	written by Sebastien, 2013-04
+    """
+    from matplotlib.transforms import Affine2D, Transform
+    import mpl_toolkits.axisartist.floating_axes as floating_axes
+    from matplotlib.projections import polar
+    from mpl_toolkits.axisartist.grid_finder import FixedLocator, DictFormatter
+    import numpy as np
+    from pylab import gcf
+
+    ang = maxground / Re
+    angle_ticks = [(0, "0"),
+                   (.25*ang, "{:.0f}".format(maxground*.25)),
+                   (.5*ang, "{:.0f}".format(maxground*.5)),
+                   (.75*ang, "{:.0f}".format(maxground*.75))]
+    grid_locator1 = FixedLocator([v for v, s in angle_ticks])
+    tick_formatter1 = DictFormatter(dict(angle_ticks))
+
+    
+    altran = maxalt - minalt
+    alt_ticks = [(0, "0"),
+                   (.2*(altran)+Re, "{:.0f}".format((altran)*.2)),
+                   (.4*(altran)+Re, "{:.0f}".format((altran)*.4)),
+                   (.6*(altran)+Re, "{:.0f}".format((altran)*.6)),
+                   (.8*(altran)+Re, "{:.0f}".format((altran)*.8))]
+    grid_locator2 = FixedLocator([v for v, s in alt_ticks])
+    tick_formatter2 = DictFormatter(dict(alt_ticks))
+        
+    tr_rotate = Affine2D().rotate(np.pi/2-ang/2)
+    tr_shift = Affine2D().translate(0, Re)
+    tr = polar.PolarTransform() + tr_rotate
+
+    grid_helper = floating_axes.GridHelperCurveLinear(tr,
+                                        extremes=(0, ang, Re+minalt, Re+maxalt),
+                                        grid_locator1=grid_locator1,
+                                        grid_locator2=grid_locator2,
+                                        tick_formatter1=tick_formatter1,
+                                        tick_formatter2=tick_formatter2,
+                                        )
+
+    if not fig: fig = gcf()
+    ax1 = floating_axes.FloatingSubplot(fig, rect, grid_helper=grid_helper)
+
+    # adjust axis
+    ax1.axis["left"].label.set_text(r"ALt. [km]")
+    ax1.axis["bottom"].label.set_text(r"Ground range [km]")
+    ax1.invert_xaxis()
+
+    ax1.maxground = maxground
+    ax1.minalt = minalt
+    ax1.maxalt = maxalt
+    ax1.Re = Re
+    
+    fig.add_subplot(ax1, transform=tr)
+
+
+    # create a parasite axes whose transData in RA, cz
+    aux_ax = ax1.get_aux_axes(tr)
+
+    aux_ax.patch = ax1.patch # for aux_ax to have a clip path as in ax
+    ax1.patch.zorder=0.9 # but this has a side effect that the patch is
+                        # drawn twice, and possibly over some other
+                        # artists. So, we decrease the zorder a bit to
+                        # prevent this.
+
+    return ax1, aux_ax

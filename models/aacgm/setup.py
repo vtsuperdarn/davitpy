@@ -2,7 +2,6 @@ from distutils.core import setup, Extension
 import os
 
 rst = os.environ['RSTPATH']
-# rst = '/rstlite/RSTLite'
 setup (name = "aagcmlib",
        version = "0.1",
        description = "wrapper to call c AACGM code in RST3",
