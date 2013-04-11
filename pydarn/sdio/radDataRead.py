@@ -268,7 +268,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'fitexfilter '+tmpName+' > '+tmpName+'f'
       os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
       os.system('rm '+tmpName)
-      myPtr.ptr = open(tmpName+'f','r')
+      try:
+        myPtr.ptr = open(tmpName+'f','r')
+      except Exception,e:
+        print 'problem opening file'
+        print e
+        return None
       
   if(myPtr.ptr != None): 
     if(myPtr.dType == None): myPtr.dType = 'dmap'

@@ -1,32 +1,39 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
-*******************************
-MODULE: pydarn.proc.pygridLib
-*******************************
+.. module:: pygridLib
+   :synopsis: the classes and functions used for pygrid files
 
-This module contains the following functions:
-
-  makePygridBatch
-
-  mergePygrid
-  
-  makePygrid
-  
-  drawPygridMap
-
-This module contains the following classes:
-
-  pygrid
-  
-  latcell
-  
-  pygridCell
-  
-  mergeVec
-  
-  pygridVec
-  
-*******************************
+.. moduleauthor:: AJ, 20130410
+*********************
+**Module**: pydarn.proc.pygridLib
+*********************
+**Classes**:
+  * :func:`makePygridBatch`
+  * :func:`mergePygrid`
+  * :func:`makePygrid`
+  * :func:`drawPygridMap`
+  * :class:`pygrid`
+  * :class:`latcell`
+  * :class:`pygridCell`
+  * :class:`mergeVec`
+  * :class:`pygridVec`
 """
+
 
 from pydarn.sdio.pygridIo import *
 from pydarn.sdio.radDataRead import *
@@ -34,34 +41,25 @@ from utils.timeUtils import *
 from utils.geoPack import *
 
 def makePygridBatch(sTime,eTime=None,hemi='both',interval=120,merge=1,vb=0,filter=1):
-  """
+  """ performs makePygrid for a range of dates on several radars
 
-  PACKAGE: pydarn.proc.pygridLib
-
-  FUNCTION: makePygridBatch(sDateStr,eDateStr=None,hemi='both',merge=1,vb=0)
-
-  PURPOSE: performs makePygrid in a batch format
-
-  INPUTS:
-    sDateStr: a string containing the starting date in yyyymmdd format
-    [eDateStr] : a string containing the ending date in yyyymmdd format
-      If this equals None, eDateStr is assigned the value of sDateStr
-      default = None
-    [hemi]: the hemispheres for which to do the gridding, allowable values
-      are 'north', 'south', and 'both'.  default = 'both'
-    [interval]: the gridding interval in seconds, default = 120
-    [merge]: a flag indicating whether to merge the gridded data or not
-      default: 1
-    [vb]: a flag for verbose output.  default = 0
+  **Args**:
+    * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the start time
+    * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): the end time.  If this equals None, eDateStr is assigned the value of sDateStr.  default = None
+    * **[hemi]** (str): the hemispheres for which to do the gridding, allowable values are 'north', 'south', and 'both'.  default = 'both'
+    * **[interval]** (int): the gridding interval in seconds, default = 120
+    * **[merge]** (int): a flag indicating whether to merge the gridded data or not.  default: 1
+    * **[vb]** (int): a flag for verbose output.  default = 0
+  **Returns**:
+    * Nothing.
+    
+  **Example**:
+    ::
       
-  OUTPUTS:
-    NONE
-    
-  EXAMPLES:
-    
+      import datetime as dt
+      pydarn.proc.makePygridBatch(dt.datetime(2011,1,1))
     
   Written by AJ 20120925
-
   """
   
   import datetime as dt,pydarn
@@ -103,32 +101,25 @@ def makePygridBatch(sTime,eTime=None,hemi='both',interval=120,merge=1,vb=0,filte
       cDate += dt.timedelta(days=1)
   
   
-def mergePygrid(sTime,hemi='north',eTime=None,interval=120,vb=0):
-  """
+def mergePygrid(sTime,eTime=None,hemi='north',interval=120,vb=0):
+  """reads several grid files, combines them, and merges vectors where possible.
 
-  PACKAGE: pydarn.proc.pygridLib
+  **Args**:
+    * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the start time.
+    * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): the end time.  If this is None, it will be set to 1 day after sTime.  default = None
+    * **[hemi]** (str): the hemisphere you wish to work on.  valid inputs are 'north' and 'south'.  default = 'north'
+    * **[interval]** (int): the time interval at which to do the merging in seconds; default = 120
+  **Returns**:
+    * **Nothing**
 
-  FUNCTION: makePyrid(dateStr,rad,[time],[fileType],[interval],[vb],[filter],[plot]):
-
-  PURPOSE: reads in fitted radar data and puts it into a geospatial grid
-
-  INPUTS:
-    dateStr : a string containing the target date in yyyymmdd format
-    rad: the 3 letter radar code, e.g. 'bks'
-    [time]: the range of times for which the file should be read in
-      MINIMIZED hhmm format, ie [23,456], NOT [0023,0456]
-      default = [0,2400]
-    [interval]: the time interval at which to do the merging
-      in seconds; default = 120
+  **Example**:
+    ::
       
-  OUTPUTS:
-    NONE
-    
-  EXAMPLES:
+      import datetime as dt
+      pydarn.proc.mergePygrid(dt.datetime(2011,1,1),hemi='south')
     
     
   Written by AJ 20120807
-
   """
   import datetime as dt,pydarn,os,string,math
   
@@ -165,8 +156,7 @@ def mergePygrid(sTime,hemi='north',eTime=None,interval=120,vb=0):
     #verbose option
     if(vb==1): print cTime
     for f in myFiles:
-      readPygridRec(f,g,datetimeToEpoch(cTime),\
-                      datetimeToEpoch(bndT))
+      readPygridRec(f,g,datetimeToEpoch(cTime),datetimeToEpoch(bndT))
       
     if(g.nVecs > 0):
       g.sTime = cTime
@@ -669,9 +659,9 @@ class pygrid(object):
           #   if(tmpV[i] != []):
           #     v.append(numpy.mean(numpy.array(tmpV[i])))
           #     a.append(numpy.mean(numpy.array(tmpA[i])))
-          azm = math.atan2(numpy.mean(ve),numpy.mean(vn))
-          vel = math.sqrt(numpy.mean(ve)**2+numpy.mean(vn)**2)
-          c.avgVecs.append(pygridVec(vel,numpy.mean(w),numpy.mean(p),c.allVecs[0].stid,c.allVecs[0].time,-1,-1,azm))
+          azm = math.atan2(numpy.median(ve),numpy.median(vn))
+          vel = math.sqrt(numpy.median(ve)**2+numpy.median(vn)**2)
+          c.avgVecs.append(pygridVec(vel,numpy.median(w),numpy.median(p),c.allVecs[0].stid,c.allVecs[0].time,-1,-1,azm))
           self.nAvg += 1
           c.nAvg += 1
 
