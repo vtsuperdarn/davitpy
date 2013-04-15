@@ -48,7 +48,7 @@ from pydarn.sdio import *
 
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
-              svg=0,png=0,filtered=False,fileName=None,custType='fitex'):
+              svg=0,png=0,filtered=False,fileName=None,custType='fitex',overlayMask=False):
   """
   *******************************
   
@@ -157,7 +157,6 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
                           fileName=fileName,custType=custType)
 
-  print channel,bmnum,filtered, fileName, custType
   if myFile == None:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
@@ -165,7 +164,31 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   if myBeam == None:
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
-  
+
+  if overlayMask:
+    rtfile = open('/data/fit/rtmask/%s.%s.rt.mask' % (sTime.strftime("%Y%m%d"),str(pydarn.radar.radar(rad).id)))
+    print '/data/fit/rtmask/%s.%s.rt.mask' % (sTime.strftime("%Y%m%d"),str(pydarn.radar.radar(rad).id))
+    masks,rttimes,maskarr = [],[],[]
+    cnt = 0
+    rtbm = -1
+    for line in rtfile:
+      cols = line.split()
+      if len(cols) == 1:
+        if cnt == 0:
+          if maskarr != []:
+            masks.append(maskarr)
+            rttimes.append(rtt)
+          rtt=utils.timeUtils.julToDatetime(float(cols[0]))
+          maskarr = []
+        elif cnt == 2:
+          rtbm = int(float(cols[0]))
+        cnt += 1
+      else:
+        cnt = 0
+        if rtbm == bmnum:
+          maskarr.append(int(cols[2]))
+
+
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
         [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
   
@@ -220,6 +243,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
     rmax = max(nrang)
     data=numpy.zeros((len(times)*2,rmax))+100000
+    if gsct: gsdata=numpy.zeros((len(times)*2,rmax))+100000
     x=numpy.zeros(len(times)*2)
     tcnt = 0
     #x = matplotlib.dates.date2num(times)
@@ -236,6 +260,9 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       for j in range(len(slist[i])):
         if(not gsct or gsflg[i][j] == 0):
           data[tcnt][slist[i][j]] = pArr[i][j]
+        elif gsct and gsflg[i][j] == 1:
+          data[tcnt][slist[i][j]] = -100000.
+
         
     if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
     elif(coords == 'rng'): y = numpy.linspace(frang[0],rmax*rsep[0],rmax+1)
@@ -246,12 +273,36 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       
     X, Y = numpy.meshgrid(x[:tcnt], y)
     
-
     cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
     
     #data = numpy.ma.masked_where(data == 100000., data)
     pcoll = plot.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
     
+
+    if overlayMask:
+      data = numpy.zeros((len(rttimes)*2,rmax))
+
+      rmax = 70
+      x = numpy.zeros(len(rttimes)*2)
+      tcnt = 0      
+      for i in range(len(rttimes)):
+        x[tcnt] = matplotlib.dates.date2num(rttimes[i])
+        if(i < len(rttimes)-1):
+          if(matplotlib.dates.date2num(rttimes[i+1])-x[tcnt] > 35./1440.):
+            tcnt += 1
+            x[tcnt] = x[tcnt-1]+30./1440.
+        tcnt += 1
+            
+        if(pArr[i] == []): continue
+        
+        for j in range(4,len(masks[i])):
+          data[tcnt][j-4] = masks[i][j]
+        
+      X, Y = numpy.meshgrid(x[:tcnt], y)
+
+      data = numpy.ma.masked_where(data == 0., data)
+      plot.pcolormesh(X, Y, data[:tcnt][:].T, edgecolors='None',alpha=.5,facecolors='b')
+
     cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=pos)
     
     l = []

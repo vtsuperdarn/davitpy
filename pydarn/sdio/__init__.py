@@ -35,6 +35,13 @@ try:
 	import pygridIo
 	from pygridIo import *
 except: print 'problem importing pygridIo'
+
+try:
+	import fitexfilter
+	from fitexfilter import *
+except Exception,e: 
+	print e
+	print 'problem importing fitexfilter'
 	
 try:
 	import dbUtils
