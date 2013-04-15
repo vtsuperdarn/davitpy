@@ -89,7 +89,7 @@
       END
 !
 !
-      subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,ymodip)
+      subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,ymodip,dec)
 !-----------------------------------------------------------------------        
 !INPUT:
 !   xlat      geodatic latitude in degrees
@@ -101,6 +101,7 @@
 !   dip       magnetic inclination (dip) in degrees
 !   dipl      dip latitude in degrees
 !   ymodip    modified dip latitude = asin{dip/sqrt[dip^2+cos(LATI)]} 
+!   dec       magnetic declination
 !-----------------------------------------------------------------------        
 
       COMMON/IGRF1/     UMR,ERA,AQUAD,BQUAD
@@ -123,7 +124,7 @@
         if (ABS(dipdiv).GT.1.) dipdiv=SIGN(1.,dipdiv)
         SMODIP=ASIN(dipdiv)
         
-!      DEC=ASIN(BEAST/SQRT(BEAST*BEAST+BNORTH*BNORTH))/UMR
+       DEC=ASIN(BEAST/SQRT(BEAST*BEAST+BNORTH*BNORTH))/UMR
 !      DIPL1=ATAN(0.5*TAN(DIP))/UMR
 
       DIPL=ATAN(BDOWN/2.0/sqrt(BNORTH*BNORTH+BEAST*BEAST))/umr
@@ -942,7 +943,7 @@
 
         common/findRLAT/xlong,year
 
-      	call igrf_dip(xlat,xlong,year,300.,dip,dipl,ymodip)
+      	call igrf_dip(xlat,xlong,year,300.,dip,dipl,ymodip,dec)
       	fmodip=ymodip
 
       	return

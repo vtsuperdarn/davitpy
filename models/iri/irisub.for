@@ -759,7 +759,7 @@ C
            LONGI=ALONG
         ENDIF
         CALL GEODIP(IYEAR,LATI,LONGI,MLAT,MLONG,JMAG)
-        call igrf_dip(lati,longi,ryear,300.0,dip,magbr,modip)
+        call igrf_dip(lati,longi,ryear,300.0,dip,magbr,modip,dec)
         if(.not.jf(18)) then
         CALL FIELDG(LATI,LONGI,300.0,XMA,YMA,ZMA,BET,DIP,DEC,MODIP)
         	MAGBR=ATAN(0.5*TAN(DIP*UMR))/UMR
