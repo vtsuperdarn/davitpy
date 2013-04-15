@@ -7,8 +7,8 @@
 Basic plotting tools
 
 **Functions**:
-	* :func:`plotUtils.map`: Create empty map 
-	* :func:`plotUtils.genCmap`: 
+	* :func:`utils.plotUtils.mapObj`: Create empty map 
+	* :func:`utils.plotUtils.genCmap`: 
 
 """
 from mpl_toolkits import basemap
@@ -92,10 +92,10 @@ class mapObj(basemap.Basemap):
 		self.coords = coords
 
 		# Set map projection limits and center point depending on hemisphere selection
-		if not lat_0: 
+		if lat_0 is not None: 
 			lat_0 = 90.
 			if boundinglat: lat_0 = math.copysign(lat_0, boundinglat)
-		if not lon_0: 
+		if lon_0 is not None: 
 			lon_0 = -100.
 			if self.coords == 'mag': 
 				_, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., 0)
@@ -103,17 +103,17 @@ class mapObj(basemap.Basemap):
 			width = height = 2*111e3*( abs(lat_0 - boundinglat) )
 
 		# Initialize map
-		basemap.Basemap.__init__(self, projection=projection, resolution=resolution, 
+		_ = basemap.Basemap.__init__(self, projection=projection, resolution=resolution, 
 				lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
 		# Add continents
 		if coords is not 'mlt' or dateTime is not None:
-			self.drawcoastlines(linewidth=coastLineWidth)
+			_ = self.drawcoastlines(linewidth=coastLineWidth)
 			# self.drawmapboundary(fill_color=fillOceans)
-			self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+			_ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
 		# Add coordinate spec
-		text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
+		_ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
 				rotation=-90., va='top', fontsize=8)
 
 		# draw parallels and meridians.
@@ -128,7 +128,7 @@ class mapObj(basemap.Basemap):
 				for ix,iy,ip in zip(x,y,parallels):
 					if not self.xmin <= ix <= self.xmax: continue
 					if not self.ymin <= iy <= self.ymax: continue
-					text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+					_ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
 							rotation=rotate_label, va='center', ha='center')
 			# label meridians on bottom and left
 			meridians = np.arange(-180.,181.,20.)
@@ -218,6 +218,7 @@ class mapObj(basemap.Basemap):
 			return out
 		else: 
 			return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+
 
 def genCmap(param,scale,colors='lasse',lowGray=False):
 	"""
