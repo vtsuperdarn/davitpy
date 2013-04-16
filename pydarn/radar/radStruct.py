@@ -671,10 +671,7 @@ Object string representation
         **Returns**:
             * **azim** (float): beam azimuth
         '''
-        azim = self.boresite - (self.maxbeam/2. - beam)*self.bmsep
-        if not self.maxbeam % 2:
-            azim += self.bmsep/2.
-        return azim
+        return self.boresite - ((self.maxbeam-1)/2. - beam)*self.bmsep
 
 
     def azimToBeam(self, azim):
@@ -685,10 +682,10 @@ Object string representation
         **Returns**:
             * **beam** (int): beam number
         '''
-        from numpy import round
+        import numpy as np
 
-        beam = (azim%360 - self.boresite%360)
-        if abs(beam) > 180.:
-            beam = beam/abs(beam) * beam%180
-        beam = round(beam/self.bmsep) + self.maxbeam/2.
-        return int(beam)
+        saz = np.sin( np.radians(azim - self.boresite) )
+        caz = np.cos( np.radians(azim - self.boresite) )
+        delta = np.degrees( np.arctan2(saz, caz) )
+        beam = np.round( delta/self.bmsep + (self.maxbeam-1)/2. )
+        return np.int_(beam)

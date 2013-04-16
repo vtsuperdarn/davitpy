@@ -10,9 +10,9 @@ This module handles generating field-of-view projctions
 	* :class:`fov`: field of view position
 
 **Functions**:
-	* :func:`slantRange`: Calculate slant range
-	* :func:`calcAzOffBore`: Calculate off-array-normal azimuth
-	* :func:`calcFieldPnt`: Calculate field point projection
+	* :func:`pydarn.radar.radFov.slantRange`: Calculate slant range
+	* :func:`pydarn.radar.radFov.calcAzOffBore`: Calculate off-array-normal azimuth
+	* :func:`pydarn.radar.radFov.calcFieldPnt`: Calculate field point projection
 
 Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro

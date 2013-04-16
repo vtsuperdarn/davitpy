@@ -96,6 +96,12 @@ program     rayDARN
     if (rank.eq.0) then
         CALL MPI_FILE_WRITE_SHARED(hfrays, (/nhour, nazim, nelev/), 3, MPI_INTEGER, status, code)
         CALL MPI_FILE_WRITE_SHARED(hfrays, params, 1, type_param, status, code)
+        CALL MPI_FILE_WRITE_SHARED(hfedens, (/nhour, nazim, nelev/), 3, MPI_INTEGER, status, code)
+        CALL MPI_FILE_WRITE_SHARED(hfedens, params, 1, type_param, status, code)
+        CALL MPI_FILE_WRITE_SHARED(hfranges, (/nhour, nazim, nelev/), 3, MPI_INTEGER, status, code)
+        CALL MPI_FILE_WRITE_SHARED(hfranges, params, 1, type_param, status, code)
+        CALL MPI_FILE_WRITE_SHARED(hfionos, (/nhour, nazim, nelev/), 3, MPI_INTEGER, status, code)
+        CALL MPI_FILE_WRITE_SHARED(hfionos, params, 1, type_param, status, code)
     endif
 
 
@@ -157,10 +163,10 @@ program     rayDARN
             ! Generate electron density background
             CALL IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
             CALL MPI_FILE_WRITE_SHARED(hfedens, (/hour, azim, &
-                                            edensPOS(::2,:), &
+!                                            edensPOS(::2,:), &
                                             edensTHT(::2), &
                                             edensARR(::2,::2), &
-                                            dip(::2,:)/), 2+255*250, MPI_REAL, status, code)
+                                            dip(::2,:)/), 2+253*250, MPI_REAL, status, code)
 
             timeel = MPI_WTIME()
             !**********************************************************
@@ -197,9 +203,9 @@ program     rayDARN
         hour = hour + dhour*params%hourstp
         ! If hour goes to the next day, then asjust accordingly
         if (hour.ge.hrbase) then
-            hour = hour - 24.
-            params%mmdd = params%mmdd + 1
-                        nextday = 1
+!            hour = hour - 24.
+!            params%mmdd = params%mmdd + 1
+            nextday = 1
         endif
         if (nextday.eq.1.and.hour.gt.params%hourend) hour = params%hourend
     enddo
@@ -364,12 +370,12 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   real*4,dimension(9)::       ranout
   real*4,dimension(9,5000)::  ionosout
 
-  real*4,parameter::      alti = 0.               ! initial altitude [_km]
-  real*4,parameter::      htry = 10000.         ! initial step size [_m]
-  real*4,parameter::      eps = 1e-3              ! desired accuracy for the RKF integration
-  real*4,parameter::      pgrow = -0.2            ! growth exponent when step size too small
+  real*4,parameter::      alti = 0.           ! initial altitude [_km]
+  real*4,parameter::      htry = 10000.       ! initial step size [_m]
+  real*4,parameter::      eps = 1e-3          ! desired accuracy for the RKF integration
+  real*4,parameter::      pgrow = -0.2        ! growth exponent when step size too small
   real*4,parameter::      pshrink = -0.25     ! shrink exponent when step size too large
-  real*4,parameter::      Safety = 0.9            ! Safety parameter for step adjustments
+  real*4,parameter::      Safety = 0.9        ! Safety parameter for step adjustments
 
   ! Find max electron density
   edensMax = maxval(edensARR)

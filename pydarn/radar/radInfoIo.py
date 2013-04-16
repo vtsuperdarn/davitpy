@@ -11,10 +11,10 @@ and radar.dat files. It also provide a function to manually update the local rad
 using the remote db database (requires an active internet connection).
 
 **Classes**:
-	* :class:`updateHdf5`
+	* :class:`pydarn.radar.radInfoIo.updateHdf5`
 **Functions**:
-	* :func:`hdwRead`: reads hdw.dat files
-	* :func:`radarRead`: reads radar.dat file
+	* :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
+	* :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
 """
 		
 
