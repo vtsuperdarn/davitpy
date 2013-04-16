@@ -62,8 +62,8 @@ program     rayDARN
     ! Read parameters
     if (rank.eq.0) then 
         CALL READ_INP(params)
+        print*, params
     endif
-    if (rank.eq.0) print*, params
     ! Bcast parameters
     CALL MPI_BCAST(params, 1, type_param, 0, MPI_COMM_WORLD, code)
 
@@ -72,11 +72,11 @@ program     rayDARN
     CALL MPI_FILE_OPEN(MPI_COMM_WORLD, filename, &
         MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, hfrays, code)
 
-    filename = trim(params%outdir)//"ranges."//trim(params%filext)//".dat"
+    filename = trim(params%outdir)//"gscat."//trim(params%filext)//".dat"
     CALL MPI_FILE_OPEN(MPI_COMM_WORLD, filename, &
         MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, hfranges, code)
 
-    filename = trim(params%outdir)//"ionos."//trim(params%filext)//".dat"
+    filename = trim(params%outdir)//"iscat."//trim(params%filext)//".dat"
     CALL MPI_FILE_OPEN(MPI_COMM_WORLD, filename, &
         MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, hfionos, code)
 
@@ -331,8 +331,8 @@ SUBROUTINE READ_INP(params)
     read(10, 100) params%hourstp
     read(10, 100) params%hmf2
     read(10, 100) params%nmf2
-100     format(F18.2)
-101     format(I18)
+100     format(F8.2)
+101     format(I8)
 
     close(10)
 
@@ -366,8 +366,8 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   integer::       ihop, nrstep, istep, aspectind, n, naspstep
 
   ! Arrays for saving ray parameters
-  real*4,dimension(5000)::    rsave, thsave, grpsave, ransave, nrsave
-  real*4,dimension(9)::       ranout
+  real*4,dimension(5000)::    rsave, thsave, grpsave, nrsave ! ransave, 
+  real*4,dimension(8)::       ranout
   real*4,dimension(9,5000)::  ionosout
 
   real*4,parameter::      alti = 0.           ! initial altitude [_km]
@@ -404,7 +404,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   rsave(1) = r
   thsave(1) = theta
   grpsave(1) = grpran
-  ransave(1) = grpran
+!  ransave(1) = grpran
   nrsave(1) = sqrt(nr2)
 
   ! Initialize position
@@ -547,8 +547,8 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 
       ! Write to file
       ! Reflection altitude, theta, grp range, hour, azimuth, elevation, true range, latitude, longitude
-      ranout = (/rrefl, thetatmp, grpran+h, rayhour, rayazim, rayelev, (ransave(nrstep-1) + sqrt(nr2)*h), latiout, longiout/)
-      CALL MPI_FILE_WRITE_SHARED(hfranges, ranout, 9, MPI_REAL, status, code)
+      ranout = (/rayhour, rayazim, rayelev, rrefl, thetatmp, grpran+h, latiout, longiout/) ! , (ransave(nrstep-1) + sqrt(nr2)*h)
+      CALL MPI_FILE_WRITE_SHARED(hfranges, ranout, 8, MPI_REAL, status, code)
       ! Counts number of hops
       ihop = ihop + 1
 
@@ -574,7 +574,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
         d = r/rtmp*h*sin(edensTHT(aspectind) - theta)/sin(thetatmp-theta)
         asp_grpran = grpran + h/2.
         ! Calculate mean slant range
-        asp_ran = ransave(nrstep-1) + h/2.*sqrt(nr2)
+!        asp_ran = ransave(nrstep-1) + h/2.*sqrt(nr2)
         ! Calculate mean ground range
         asp_theta = (thetatmp-theta)/2. + theta
         ! Calculate mean altitude
@@ -584,7 +584,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
 
         ! Write to file
         ! Reflection altitude, theta, grp range, true range, weights, refractive index, latitude, longitude, aspect
-        ionosout(1:9,naspstep) = (/asp_alt, asp_theta, asp_grpran, asp_ran, asp_w, sqrt(nr2), latiin, longiin, aspect/)
+        ionosout(1:9,naspstep) = (/asp_alt, asp_theta, asp_grpran, ranelev, asp_w, sqrt(nr2), latiin, longiin, h/)
         naspstep = naspstep + 1
       endif
       ! Resets aspect indices
@@ -603,7 +603,7 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
     rsave(nrstep) = r
     thsave(nrstep) = theta
     grpsave(nrstep) = grpran
-    ransave(nrstep) = ransave(nrstep-1) + sqrt(nr2)*h
+!    ransave(nrstep) = ransave(nrstep-1) + sqrt(nr2)*h
     nrsave(nrstep) = sqrt(nr2)
 
     ! Calculates new step size (bigger)
@@ -623,8 +623,8 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
                                       (rsave(n),n=1,nrstep-1), &
                                       (thsave(n),n=1,nrstep-1), &
                                       (grpsave(n),n=1,nrstep-1), &
-                                      (ransave(n),n=1,nrstep-1), &
-                                      (nrsave(n),n=1,nrstep-1)/), 1 + 3 + 5*(nrstep-1), MPI_REAL, status, code)
+!                                      (ransave(n),n=1,nrstep-1), &
+                                      (nrsave(n),n=1,nrstep-1)/), 1 + 3 + 4*(nrstep-1), MPI_REAL, status, code)
 
   ! Write ionospheric scatter to file
   ! Number of scatter, hour, azimuth, elevation, altitude, theta, grp range, true range, weights, refractive index, latitude, longitude, aspect
