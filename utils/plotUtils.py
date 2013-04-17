@@ -457,6 +457,7 @@ def curvedEarthAxes(rect=111, fig=None,
     while alt_ticks[-1][0] < Re+maxalt:
         alt_ticks.append( ( 1./nyticks*altran+alt_ticks[-1][0], 
                             "{:.0f}".format(altran*1./nyticks+alt_ticks[-1][0]-Re) ) )
+    _ = alt_ticks.pop()
     grid_locator2 = FixedLocator([v for v, s in alt_ticks])
     tick_formatter2 = DictFormatter(dict(alt_ticks))
         
@@ -465,7 +466,7 @@ def curvedEarthAxes(rect=111, fig=None,
     tr = polar.PolarTransform() + tr_rotate
 
     grid_helper = floating_axes.GridHelperCurveLinear(tr,
-                                        extremes=(0, ang, Re+minalt, Re+maxalt),
+                                        extremes=(0, angran, Re+minalt, Re+maxalt),
                                         grid_locator1=grid_locator1,
                                         grid_locator2=grid_locator2,
                                         tick_formatter1=tick_formatter1,

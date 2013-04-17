@@ -1,3 +1,5 @@
+! Copyright (C) 2012  VT SuperDARN Lab
+! Full license can be found in LICENSE.txt
 program     rayDARN
 
 ! ***********************************************************************************
