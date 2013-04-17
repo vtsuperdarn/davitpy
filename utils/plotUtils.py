@@ -401,7 +401,10 @@ def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
     return cb
     
 
-def curvedEarthAxes(rect=111, fig=None, maxground=2000, minalt=0, maxalt=500, Re=6371.):
+def curvedEarthAxes(rect=111, fig=None, 
+    minground=0., maxground=2000, 
+    minalt=0, maxalt=500, Re=6371., 
+    nyticks=5, nxticks=4):
     """ Create curved axes in ground-range and altitude
         
     **Args**: 
@@ -438,20 +441,22 @@ def curvedEarthAxes(rect=111, fig=None, maxground=2000, minalt=0, maxalt=500, Re
     from pylab import gcf
 
     ang = maxground / Re
-    angle_ticks = [(0, "0"),
-                   (.25*ang, "{:.0f}".format(maxground*.25)),
-                   (.5*ang, "{:.0f}".format(maxground*.5)),
-                   (.75*ang, "{:.0f}".format(maxground*.75))]
+    minang = minground / Re
+    angran = ang - minang
+    angle_ticks = [(0, "{:.0f}".format(minground))]
+    while angle_ticks[-1][0] < angran:
+        tang = angle_ticks[-1][0] + 1./nxticks*angran
+        angle_ticks.append( ( tang, 
+                            "{:.0f}".format((tang-minang)*Re) ) )
     grid_locator1 = FixedLocator([v for v, s in angle_ticks])
     tick_formatter1 = DictFormatter(dict(angle_ticks))
 
     
     altran = maxalt - minalt
-    alt_ticks = [(0, "0"),
-                   (.2*(altran)+Re, "{:.0f}".format((altran)*.2)),
-                   (.4*(altran)+Re, "{:.0f}".format((altran)*.4)),
-                   (.6*(altran)+Re, "{:.0f}".format((altran)*.6)),
-                   (.8*(altran)+Re, "{:.0f}".format((altran)*.8))]
+    alt_ticks = [(minalt+Re, "{:.0f}".format(minalt))]
+    while alt_ticks[-1][0] < Re+maxalt:
+        alt_ticks.append( ( 1./nyticks*altran+alt_ticks[-1][0], 
+                            "{:.0f}".format(altran*1./nyticks+alt_ticks[-1][0]-Re) ) )
     grid_locator2 = FixedLocator([v for v, s in alt_ticks])
     tick_formatter2 = DictFormatter(dict(alt_ticks))
         
@@ -475,6 +480,7 @@ def curvedEarthAxes(rect=111, fig=None, maxground=2000, minalt=0, maxalt=500, Re
     ax1.axis["bottom"].label.set_text(r"Ground range [km]")
     ax1.invert_xaxis()
 
+    ax1.minground = minground
     ax1.maxground = maxground
     ax1.minalt = minalt
     ax1.maxalt = maxalt
