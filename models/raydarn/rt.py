@@ -8,17 +8,17 @@ This module runs the raytracing code
 
 **Class**:
     * :class:`rt.RtRun`: run the code
+    * :class:`rt.Scatter`: store and process modeled backscatter
     * :class:`rt.Edens`: store and process electron density profiles
     * :class:`rt.Rays`: store and process individual rays
-
-**Functions**:
-    * :func:`rt.readHeader`: read the header of each output file from the ray tracing fortran code
 
 .. note:: The ray tracing requires mpi to run. You can adjust the number of processors, but be wise about it and do not assign more than you have
 
 """
 
-
+#########################################################################
+# Main object
+#########################################################################
 class RtRun(object):
     """This class runs the raytracing code and processes the output
 
@@ -135,28 +135,28 @@ class RtRun(object):
 
         fname = path.join(self.outDir, 'rtrun.{}.inp'.format(self.fExt))
         with open(fname, 'w') as f:
-            f.write( "{:18.2f}  Transmitter latitude (degrees N)\n".format( self.site.geolat ) )
-            f.write( "{:18.2f}  Transmitter Longitude (degrees E\n".format( self.site.geolon ) )
-            f.write( "{:18.2f}  Azimuth (degrees E) (begin)\n".format( self.azim[0] ) )
-            f.write( "{:18.2f}  Azimuth (degrees E) (end)\n".format( self.azim[1] ) )
-            f.write( "{:18.2f}  Azimuth (degrees E) (step)\n".format( self.azim[2] ) )
-            f.write( "{:18.2f}  Elevation angle (begin)\n".format( self.elev[0] ) )
-            f.write( "{:18.2f}  Elevation angle (end)\n".format( self.elev[1] ) )
-            f.write( "{:18.2f}  Elevation angle (step)\n".format( self.elev[2] ) )
-            f.write( "{:18.2f}  Frequency (Mhz)\n".format( self.freq ) )
-            f.write( "{:18d}  nubmer of hops (minimum 1)\n".format( self.nhops) )
-            f.write( "{:18d}  Year (yyyy)\n".format( self.time[0].year ) )
-            f.write( "{:18d}  Month and day (mmdd)\n".format( self.time[0].month*100 + self.time[0].day ) )
+            f.write( "{:8.2f}  Transmitter latitude (degrees N)\n".format( self.site.geolat ) )
+            f.write( "{:8.2f}  Transmitter Longitude (degrees E\n".format( self.site.geolon ) )
+            f.write( "{:8.2f}  Azimuth (degrees E) (begin)\n".format( self.azim[0] ) )
+            f.write( "{:8.2f}  Azimuth (degrees E) (end)\n".format( self.azim[1] ) )
+            f.write( "{:8.2f}  Azimuth (degrees E) (step)\n".format( self.azim[2] ) )
+            f.write( "{:8.2f}  Elevation angle (begin)\n".format( self.elev[0] ) )
+            f.write( "{:8.2f}  Elevation angle (end)\n".format( self.elev[1] ) )
+            f.write( "{:8.2f}  Elevation angle (step)\n".format( self.elev[2] ) )
+            f.write( "{:8.2f}  Frequency (Mhz)\n".format( self.freq ) )
+            f.write( "{:8d}  nubmer of hops (minimum 1)\n".format( self.nhops) )
+            f.write( "{:8d}  Year (yyyy)\n".format( self.time[0].year ) )
+            f.write( "{:8d}  Month and day (mmdd)\n".format( self.time[0].month*100 + self.time[0].day ) )
             tt = self.time[0].hour + self.time[0].minute/60.
             tt += 25.
-            f.write( "{:18.2f}  hour (add 25 for UT) (begin)\n".format( tt ) )
+            f.write( "{:8.2f}  hour (add 25 for UT) (begin)\n".format( tt ) )
             tt = self.time[1].hour + self.time[1].minute/60.
             tt += (self.time[1].day - self.time[0].day) * 24.
             tt += 25.
-            f.write( "{:18.2f}  hour (add 25 for UT) (end)\n".format( tt ) )
-            f.write( "{:18.2f}  hour (step)\n".format( self.dTime ) )
-            f.write( "{:18.2f}  hmf2 (km, if 0 then ignored)\n".format( self.hmf2 ) )
-            f.write( "{:18.2f}  nmf2 (log10, if 0 then ignored)\n".format( self.nmf2 ) )
+            f.write( "{:8.2f}  hour (add 25 for UT) (end)\n".format( tt ) )
+            f.write( "{:8.2f}  hour (step)\n".format( self.dTime ) )
+            f.write( "{:8.2f}  hmf2 (km, if 0 then ignored)\n".format( self.hmf2 ) )
+            f.write( "{:8.2f}  nmf2 (log10, if 0 then ignored)\n".format( self.nmf2 ) )
 
         return fname
         
@@ -203,8 +203,13 @@ class RtRun(object):
 
         # File name and path
         fName = path.join(self.outDir, 'rays.{}.dat'.format(self.fExt))
+        if hasattr(self, 'rays') and not path.exists(fName):
+            print 'The file is gone, and it seems you may already have read it into memory...?'
+            return
+
         # Initialize rays output
-        self.rays = Rays(fName, site=self.site, radar=self.radar,
+        self.rays = Rays(fName, 
+            site=self.site, radar=self.radar,
             saveToAscii=saveToAscii, debug=debug)
         # Remove Input file
         subp.call(['rm',fName])
@@ -224,11 +229,46 @@ class RtRun(object):
 
         # File name and path
         fName = path.join(self.outDir, 'edens.{}.dat'.format(self.fExt))
+        if hasattr(self, 'ionos') and not path.exists(fName):
+            print 'The file is gone, and it seems you may already have read it into memory...?'
+            return
+
         # Initialize rays output
-        self.ionos = Edens(fName, site=self.site, radar=self.radar,
+        self.ionos = Edens(fName, 
+            site=self.site, radar=self.radar,
             debug=debug)
         # Remove Input file
-        # subp.call(['rm',fName])
+        subp.call(['rm',fName])
+
+
+    def readScatter(self, debug=False):
+        """Read edens.dat fortran output
+
+        **Args**:
+            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
+            * [**debug**] (bool): print some i/o diagnostics
+        **Returns**:
+            * Add a new member to :class:`rt.RtRun`: **rays**, of type :class:`rt.rays`
+        """
+        import subprocess as subp
+        from os import path
+
+        # File name and path
+        isName = path.join(self.outDir, 'iscat.{}.dat'.format(self.fExt))
+        gsName = path.join(self.outDir, 'gscat.{}.dat'.format(self.fExt))
+        if hasattr(self, 'scatter') \
+            and (not path.exists(isName) \
+            or not path.exists(gsName)):
+            print 'The files are gone, and it seems you may already have read them into memory...?'
+            return
+
+        # Initialize rays output
+        self.scatter = Scatter(gsName, isName, 
+            site=self.site, radar=self.radar,
+            debug=debug)
+        # Remove Input file
+        # subp.call(['rm',isName])
+        # subp.call(['rm',gsName])
 
 
     def save(self, filename):
@@ -271,12 +311,16 @@ class RtRun(object):
             subp.call(['rm', fName])
 
 
+#########################################################################
+# Electron densities
+#########################################################################
 class Edens(object):
     """Store and process electron density profiles after ray tracing
 
     **Args**:
         * **readFrom** (str): edens.dat file to read the rays from
         * [**site**] (:class:`pydarn.radar.site): radar site object
+        * [**radar**] (:class:`pydarn.radar.radar): radar object
         * [**debug**] (bool): verbose mode
     """
     def __init__(self, readFrom, 
@@ -310,7 +354,7 @@ class Edens(object):
         with open(self.readFrom, 'rb') as f:
             if debug:
                 print self.readFrom+' header: '
-            header = readHeader(f, debug=debug)
+            self.header = _readHeader(f, debug=debug)
             self.edens = {}
             while True:
                 bytes = f.read(2*4)
@@ -320,24 +364,27 @@ class Edens(object):
                 hour, azim = unpack('2f', bytes)
                 # format time index
                 hour = hour - 25.
-                mm = header['mmdd']/100
-                dd = header['mmdd'] - mm*100
-                rtime = dt.datetime(header['year'], mm, dd) + dt.timedelta(hours=hour)
+                mm = self.header['mmdd']/100
+                dd = self.header['mmdd'] - mm*100
+                rtime = dt.datetime(self.header['year'], mm, dd) + dt.timedelta(hours=hour)
                 # format azimuth index (beam)
                 raz = site.azimToBeam(azim) if site else round(raz, 2)
                 # Initialize dicts
                 if rtime not in self.edens.keys(): self.edens[rtime] = {}
                 self.edens[rtime][raz] = {}
                 # Read edens dict
-                # self.edens[rtime][raz]['pos'] = array( unpack('{}f'.format(250*2), f.read(250*2*4)) )
-                self.edens[rtime][raz]['th'] = array( unpack('{}f'.format(250), f.read(250*4)) )
-                self.edens[rtime][raz]['nel'] = array( unpack('{}f'.format(250*250), f.read(250*250*4)) ).reshape((250,250), order='F')
-                self.edens[rtime][raz]['dip'] = array( unpack('{}f'.format(250*2), f.read(250*2*4)) ).reshape((250,2), order='F')
+                # self.edens[rtime][raz]['pos'] = array( unpack('{}f'.format(250*2), 
+                #     f.read(250*2*4)) )
+                self.edens[rtime][raz]['th'] = array( unpack('{}f'.format(250), 
+                    f.read(250*4)) )
+                self.edens[rtime][raz]['nel'] = array( unpack('{}f'.format(250*250), 
+                    f.read(250*250*4)) ).reshape((250,250), order='F')
+                self.edens[rtime][raz]['dip'] = array( unpack('{}f'.format(250*2), 
+                    f.read(250*2*4)) ).reshape((250,2), order='F')
 
 
     def plot(self, time, beam=None, maxground=2000, maxalt=500,
-        nel_cmap='jet', nel_lim=[10, 12], 
-        showblines=False, blinescolor=(.9, 0, .4), 
+        nel_cmap='jet', nel_lim=[10, 12], title=False, 
         fig=None, rect=111, ax=None, aax=None):
         """Plot electron density profile
         
@@ -350,6 +397,9 @@ class Edens(object):
             * [**nel_lim**]: electron density index plotting limits
             * [**rect**]: subplot spcification
             * [**fig**]: A pylab.figure object (default to gcf)
+            * [**ax**]: Existing main axes
+            * [**aax**]: Existing auxialary axes
+            * [**title**]: Show default title
         **Returns**:
             * **ax**: matplotlib.axes object containing formatting
             * **aax**: matplotlib.axes object containing data
@@ -363,25 +413,27 @@ class Edens(object):
                 sTime = dt.datetime(2012, 11, 18, 5)
                 rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
                 rto.readEdens() # read electron density into memory
-                ax, aax, cbax = rto.ionos.plot(sTime)
+                ax, aax, cbax = rto.ionos.plot(sTime, title=True)
                 ax.grid()
                 
         written by Sebastien, 2013-04
         """
         from utils import plotUtils
-        from mpl_toolkits.axes_grid1 import SubplotDivider, LocatableAxes, Size
-        from mpl_toolkits.axes_grid1 import make_axes_locatable
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
-        from math import floor
 
+        # Set up axes
         if not ax and not aax:
             ax, aax = plotUtils.curvedEarthAxes(fig=fig, rect=rect, 
                 maxground=maxground, maxalt=maxalt)
         else:
             ax = ax
             aax = aax
+            if hasattr(ax, 'time'):
+                time = ax.time
+            if hasattr(ax, 'beam'):
+                beam = ax.beam
 
         # make sure that the required time and beam are present
         assert (time in self.edens.keys()), 'Unkown time %s' % time
@@ -390,52 +442,280 @@ class Edens(object):
         else:
             beam = self.edens[time].keys()[0]
 
-        X, Y = np.meshgrid(self.edens[time][beam]['th'], 6370. + np.linspace(60,560,250))
+        X, Y = np.meshgrid(self.edens[time][beam]['th'], ax.Re + np.linspace(60,560,250))
         im = aax.pcolormesh(X, Y, np.log10( self.edens[time][beam]['nel'] ), 
             vmin=nel_lim[0], vmax=nel_lim[1], cmap=nel_cmap)
 
         # Plot title with date ut time and local time
-        title = '{:%Y-%b-%d at %H:%M} UT'.format(time)
-        title += '\n(IRI-2011) {} beam {}'.format(self.name, beam)
-        ax.set_title( title )
+        if title:
+            stitle = _getTitle(time, beam, self.header, None)
+            ax.set_title( stitle )
 
-        # Add a colorbar when plotting refractive index
-        fig1 = ax.get_figure()
-        divider = SubplotDivider(fig1, *ax.get_geometry(), aspect=True)
-
-        # axes for colorbar
-        cbax = LocatableAxes(fig1, divider.get_position())
-
-        h = [Size.AxesX(ax), # main axes
-             Size.Fixed(0.1), # padding
-             Size.Fixed(0.2)] # colorbar
-        v = [Size.AxesY(ax)]
-
-        _ = divider.set_horizontal(h)
-        _ = divider.set_vertical(v)
-
-        _ = ax.set_axes_locator(divider.new_locator(nx=0, ny=0))
-        _ = cbax.set_axes_locator(divider.new_locator(nx=2, ny=0))
-
-        _ = fig1.add_axes(cbax)
-
-        _ = cbax.axis["left"].toggle(all=False)
-        _ = cbax.axis["top"].toggle(all=False)
-        _ = cbax.axis["bottom"].toggle(all=False)
-        _ = cbax.axis["right"].toggle(ticklabels=True, label=True)
-
-        _ = plt.colorbar(im, cax=cbax)
+        # Add a colorbar
+        cbax = plotUtils.addColorbar(im, ax)
         _ = cbax.set_ylabel(r"N$_{el}$ [$\log_{10}(m^{-3})$]")
 
+        ax.beam = beam
         return ax, aax, cbax
 
 
+#########################################################################
+# Scatter
+#########################################################################
+class Scatter(object):
+    """Stores and process ground and ionospheric scatter
+
+    **Args**:
+        * **readISFrom** (str): iscat.dat file to read the ionospheric scatter from
+        * **readGSFrom** (str): gscat.dat file to read the ground scatter from
+        * [**site**] (:class:`pydarn.radar.site): radar site object
+        * [**debug**] (bool): verbose mode
+    """
+    def __init__(self, readGSFrom=None, readISFrom=None, 
+        site=None, radar=None, 
+        debug=False):
+        self.readISFrom = readISFrom
+        self.readGSFrom = readGSFrom
+
+        # Read ground scatter
+        if self.readGSFrom:
+            self.gsc = {}
+            self.readGS(site=site, debug=debug)
+
+        # Read ionospheric scatter
+        if self.readISFrom:
+            self.isc = {}
+            self.readIS(site=site, debug=debug)
+
+
+    def readGS(self, site=None, debug=False):
+        """Read gscat.dat fortran output
+
+        **Args**:
+            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
+            * [**debug**] (bool): print some i/o diagnostics
+        **Returns**:
+            * Populate member isc :class:`rt.Scatter`
+        """
+        from struct import unpack
+        import datetime as dt
+        import numpy as np
+
+        with open(self.readGSFrom, 'rb') as f:
+            # read header
+            if debug:
+                print self.readGSFrom+' header: '
+            self.header = _readHeader(f, debug=debug)
+            # Then read ray data, one ray at a time
+            while True:
+                bytes = f.read(3*4)
+                # Check for eof
+                if not bytes: break
+                # read number of ray steps, time, azimuth and elevation
+                rhr, raz, rel = unpack('3f', bytes)
+                # Read reminder of the record
+                rr, tht, gran, lat, lon  = unpack('5f', f.read(5*4))
+                # Convert azimuth to beam number
+                raz = site.azimToBeam(raz) if site else np.round(raz, 2)
+                # convert time to python datetime
+                rhr = rhr - 25.
+                mm = self.header['mmdd']/100
+                dd = self.header['mmdd'] - mm*100
+                rtime = dt.datetime(self.header['year'], mm, dd) + dt.timedelta(hours=rhr)
+                # Create new entries in rays dict
+                if rtime not in self.gsc.keys(): self.gsc[rtime] = {}
+                if raz not in self.gsc[rtime].keys(): self.gsc[rtime][raz] = {}
+                if rel not in self.gsc[rtime][raz].keys(): 
+                    self.gsc[rtime][raz][rel] = {
+                        'r': np.empty(0),
+                        'th': np.empty(0),
+                        'gran': np.empty(0),
+                        'lat': np.empty(0),
+                        'lon': np.empty(0) }
+                self.gsc[rtime][raz][rel]['r'] = np.append( self.gsc[rtime][raz][rel]['r'], rr )
+                self.gsc[rtime][raz][rel]['th'] = np.append( self.gsc[rtime][raz][rel]['th'], tht )
+                self.gsc[rtime][raz][rel]['gran'] = np.append( self.gsc[rtime][raz][rel]['gran'], gran )
+                self.gsc[rtime][raz][rel]['lat'] = np.append( self.gsc[rtime][raz][rel]['lat'], lat )
+                self.gsc[rtime][raz][rel]['lon'] = np.append( self.gsc[rtime][raz][rel]['lon'], lon )
+
+
+    def readIS(self, site=None, debug=False):
+        """Read iscat.dat fortran output
+
+        **Args**:
+            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
+            * [**debug**] (bool): print some i/o diagnostics
+        **Returns**:
+            * Populate member isc :class:`rt.Scatter`
+        """
+        from struct import unpack
+        import datetime as dt
+        from numpy import round, array
+
+        with open(self.readISFrom, 'rb') as f:
+            # read header
+            if debug:
+                print self.readISFrom+' header: '
+            self.header = _readHeader(f, debug=debug)
+            # Then read ray data, one ray at a time
+            while True:
+                bytes = f.read(4*4)
+                # Check for eof
+                if not bytes: break
+                # read number of ray steps, time, azimuth and elevation
+                nstp, rhr, raz, rel = unpack('4f', bytes)
+                nstp = int(nstp)
+                # Convert azimuth to beam number
+                raz = site.azimToBeam(raz) if site else round(raz, 2)
+                # convert time to python datetime
+                rhr = rhr - 25.
+                mm = self.header['mmdd']/100
+                dd = self.header['mmdd'] - mm*100
+                rtime = dt.datetime(self.header['year'], mm, dd) + dt.timedelta(hours=rhr)
+                # Create new entries in rays dict
+                if rtime not in self.isc.keys(): self.isc[rtime] = {}
+                if raz not in self.isc[rtime].keys(): self.isc[rtime][raz] = {}
+                self.isc[rtime][raz][rel] = {}
+                # Read to paths dict
+                self.isc[rtime][raz][rel]['nstp'] = nstp
+                self.isc[rtime][raz][rel]['r'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['th'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['gran'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['rel'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['w'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['nr'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['lat'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['lon'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+                self.isc[rtime][raz][rel]['h'] = array( unpack('{}f'.format(nstp), 
+                    f.read(nstp*4)) )
+
+
+    def plot(self, time, beam=None, maxground=2000, maxalt=500,
+        iscat=True, gscat=True, title=False, weighted=False, cmap='hot_r', 
+        fig=None, rect=111, ax=None, aax=None, zorder=4):
+        """Plot scatter on ground/altitude profile
+        
+        **Args**: 
+            * **time** (datetime.datetime): time of profile
+            * [**beam**]: beam number
+            * [**iscat**] (bool): show ionospheric scatter
+            * [**gscat**] (bool): show ground scatter
+            * [**maxground**]: maximum ground range [km]
+            * [**maxalt**]: highest altitude limit [km]
+            * [**rect**]: subplot spcification
+            * [**fig**]: A pylab.figure object (default to gcf)
+            * [**ax**]: Existing main axes
+            * [**aax**]: Existing auxialary axes
+            * [**title**]: Show default title
+            * [**weighted**] (bool): plot ionospheric scatter relative strength (based on background density and range)
+            * [**cmap**]: colormap used for weighted ionospheric scatter
+        **Returns**:
+            * **ax**: matplotlib.axes object containing formatting
+            * **aax**: matplotlib.axes object containing data
+            * **cbax**: matplotlib.axes object containing colorbar
+        **Example**:
+            ::
+
+                # Show ionospheric scatter
+                import datetime as dt
+                from models import raydarn
+                sTime = dt.datetime(2012, 11, 18, 5)
+                rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
+                rto.readRays() # read rays into memory
+                ax, aax, cbax = rto.rays.plot(sTime, title=True)
+                rto.readScatter() # read scatter into memory
+                rto.scatter.plot(sTime, ax=ax, aax=aax)
+                ax.grid()
+                
+        written by Sebastien, 2013-04
+        """
+        from utils import plotUtils
+        from matplotlib.collections import LineCollection
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        # Set up axes
+        if not ax and not aax:
+            ax, aax = plotUtils.curvedEarthAxes(fig=fig, rect=rect, 
+                maxground=maxground, maxalt=maxalt)
+        else:
+            ax = ax
+            aax = aax
+            if hasattr(ax, 'beam'):
+                beam = ax.beam
+
+        # make sure that the required time and beam are present
+        assert (time in self.isc.keys()), 'Unkown time %s' % time
+        if beam:
+            assert (beam in self.isc[time].keys()), 'Unkown beam %s' % beam
+        else:
+            beam = self.isc[time].keys()[0]
+
+        if gscat:
+            for ir, (el, rays) in enumerate( sorted(self.gsc[time][beam].items()) ):
+                if len(rays['r']) == 0: continue
+                _ = aax.scatter(rays['th'], ax.Re*np.ones(rays['th'].shape), 
+                    color='0', zorder=zorder)
+
+        if iscat:
+            if weighted:
+                wmin = np.min( [ r['w'].min() for r in self.isc[time][beam].values() if r['nstp'] > 0] )
+                wmax = np.max( [ r['w'].max() for r in self.isc[time][beam].values() if r['nstp'] > 0] )
+
+            for ir, (el, rays) in enumerate( sorted(self.isc[time][beam].items()) ):
+                if rays['nstp'] == 0: continue
+                t = rays['th']
+                r = rays['r']*1e-3
+                spts = np.array([t, r]).T.reshape(-1, 1, 2)
+                h = rays['h']*1e-3
+                rel = np.radians( rays['rel'] )
+                r = np.sqrt( r**2 + h**2 + 2*r*h*np.sin( rel ) )
+                t = t + np.arcsin( h/r * np.cos( rel ) )
+                epts = np.array([t, r]).T.reshape(-1, 1, 2)
+                segments = np.concatenate([spts, epts], axis=1)
+                lcol = LineCollection( segments, zorder=zorder )
+                if weighted:
+                    _ = lcol.set_cmap( cmap )
+                    _ = lcol.set_norm( plt.Normalize(0, 1) )
+                    _ = lcol.set_array( ( rays['w'] - wmin ) / wmax )
+                else:
+                    _ = lcol.set_color('0')
+                _ = aax.add_collection( lcol )
+
+            # Plot title with date ut time and local time
+            if title:
+                stitle = _getTitle(time, beam, self.header, None)
+                ax.set_title( stitle )
+
+            # If weighted, plot ionospheric scatter with colormap
+            if weighted:
+                # Add a colorbar
+                cbax = plotUtils.addColorbar(lcol, ax)
+                _ = cbax.set_ylabel("Ionospheric Scatter")
+            else: cbax = None
+
+        ax.beam = beam
+        return ax, aax, cbax
+        
+
+#########################################################################
+# Rays
+#########################################################################
 class Rays(object):
     """Store and process individual rays after ray tracing
 
     **Args**:
         * **readFrom** (str): rays.dat file to read the rays from
         * [**site**] (:class:`pydarn.radar.site): radar site object
+        * [**radar**] (:class:`pydarn.radar.radar): radar object
         * [**saveToAscii**] (str): file name where to output ray positions
         * [**debug**] (bool): verbose mode
     """
@@ -475,14 +755,14 @@ class Rays(object):
             # read header
             if debug:
                 print self.readFrom+' header: '
-            self.header = readHeader(f, debug=debug)
+            self.header = _readHeader(f, debug=debug)
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(4*4)
                 # Check for eof
                 if not bytes: break
                 # read number of ray steps, time, azimuth and elevation
-                nrstep, rhr, raz, rel = unpack('4f3', bytes)
+                nrstep, rhr, raz, rel = unpack('4f', bytes)
                 nrstep = int(nrstep)
                 # Convert azimuth to beam number
                 raz = site.azimToBeam(raz) if site else round(raz, 2)
@@ -497,11 +777,16 @@ class Rays(object):
                 self.paths[rtime][raz][rel] = {}
                 # Read to paths dict
                 self.paths[rtime][raz][rel]['nrstep'] = nrstep
-                self.paths[rtime][raz][rel]['r'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
-                self.paths[rtime][raz][rel]['th'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
-                self.paths[rtime][raz][rel]['gran'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
-                self.paths[rtime][raz][rel]['pran'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
-                self.paths[rtime][raz][rel]['nr'] = array( unpack('{}f'.format(nrstep), f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['r'] = array( unpack('{}f'.format(nrstep), 
+                    f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['th'] = array( unpack('{}f'.format(nrstep), 
+                    f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['gran'] = array( unpack('{}f'.format(nrstep), 
+                    f.read(nrstep*4)) )
+                # self.paths[rtime][raz][rel]['pran'] = array( unpack('{}f'.format(nrstep), 
+                #     f.read(nrstep*4)) )
+                self.paths[rtime][raz][rel]['nr'] = array( unpack('{}f'.format(nrstep), 
+                    f.read(nrstep*4)) )
 
 
     def writeToAscii(self, fname):
@@ -533,11 +818,11 @@ class Rays(object):
                         f.write('\n')
 
 
-    def plot(self, time, beam=None, maxground=2000, maxalt=500, step=1,
+    def plot(self, time, beam=None, 
+        maxground=2000, maxalt=500, step=1,
         showrefract=False, nr_cmap='jet_r', nr_lim=[0.8, 1.], 
-        raycolor='0.3', 
-        showrange=False, rangecolor='0.9',
-        fig=None, rect=111):
+        raycolor='0.3', title=False, 
+        fig=None, rect=111, ax=None, aax=None):
         """Plot ray paths
         
         **Args**: 
@@ -552,6 +837,9 @@ class Rays(object):
             * [**raycolor**]: color of ray paths
             * [**rect**]: subplot spcification
             * [**fig**]: A pylab.figure object (default to gcf)
+            * [**title**]: Show default title
+            * [**ax**]: Existing main axes
+            * [**aax**]: Existing auxialary axes
         **Returns**:
             * **ax**: matplotlib.axes object containing formatting
             * **aax**: matplotlib.axes object containing data
@@ -563,22 +851,30 @@ class Rays(object):
                 import datetime as dt
                 from models import raydarn
                 sTime = dt.datetime(2012, 11, 18, 5)
-                rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
+                rto = raydarn.RtRun(sTime, rCode='bks', beam=12, title=True)
                 rto.readRays() # read rays into memory
-                ax, aax, cbax = rto.rays.plot(sTime, step=2, showrefract=True, nr_lim=[.85,1])
+                ax, aax, cbax = rto.rays.plot(sTime, step=10, showrefract=True, nr_lim=[.85,1])
                 ax.grid()
                 
         written by Sebastien, 2013-04
         """
         from utils import plotUtils
-        from mpl_toolkits.axes_grid1 import make_axes_locatable
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
-        from math import floor
+        from types import MethodType
 
-        ax, aax = plotUtils.curvedEarthAxes(fig=fig, rect=rect, 
-            maxground=maxground, maxalt=maxalt)
+        # Set up axes
+        if not ax and not aax:
+            ax, aax = plotUtils.curvedEarthAxes(fig=fig, rect=rect, 
+                maxground=maxground, maxalt=maxalt)
+        else:
+            ax = ax
+            aax = aax
+            if hasattr(ax, 'time'):
+                time = ax.time
+            if hasattr(ax, 'beam'):
+                beam = ax.beam
 
         # make sure that the required time and beam are present
         assert (time in self.paths.keys()), 'Unkown time %s' % time
@@ -586,9 +882,6 @@ class Rays(object):
             assert (beam in self.paths[time].keys()), 'Unkown beam %s' % beam
         else:
             beam = self.paths[time].keys()[0]
-
-        if showrange:
-            rangemarkers = np.arange(0, 5000, 250)
         
         for ir, (el, rays) in enumerate( sorted(self.paths[time][beam].items()) ):
             if not ir % step:
@@ -602,62 +895,69 @@ class Rays(object):
                     _ = lcol.set_norm( plt.Normalize(*nr_lim) )
                     _ = lcol.set_array( rays['nr'] )
                     _ = aax.add_collection( lcol )
-                # Plot range markers if requested
-                if showrange:
-                    for rm in rangemarkers:
-                        inds = (rays['gran']*1e-3 >= rm)
-                        if inds.any():
-                            aax.scatter(rays['th'][inds][0], rays['r'][inds][0]*1e-3, 
-                                color=rangecolor, s=5, zorder=3)
 
         # Plot title with date ut time and local time
-        utdec = time.hour + time.minute/60.
-        tlon = (self.header['tlon'] % 360.)
-        ctlon = tlon if tlon <=180. else tlon - 360.
-        ltdec = ( utdec + ( ctlon/360.*24.) ) % 24.
-        lthr = floor(ltdec)
-        ltmn = round( (ltdec - lthr)*60 )
-        title = '{:%Y-%b-%d at %H:%M} UT (~{:02.0f}:{:02.0f} LT)'.format(
-            time, lthr, ltmn)
-        title += '\n(IRI-2011) {} beam {}; freq {:.1f}MHz'.format(self.name, beam, self.header['freq'])
-        ax.set_title( title )
+        if title:
+            stitle = _getTitle(time, beam, self.header, self.name)
+            ax.set_title( stitle )
 
         # Add a colorbar when plotting refractive index
         if showrefract:
-            from mpl_toolkits.axes_grid1 import SubplotDivider, LocatableAxes, Size
-
-            fig1 = ax.get_figure()
-            divider = SubplotDivider(fig1, *ax.get_geometry(), aspect=True)
-
-            # axes for colorbar
-            cbax = LocatableAxes(fig1, divider.get_position())
-
-            h = [Size.AxesX(ax), # main axes
-                 Size.Fixed(0.1), # padding
-                 Size.Fixed(0.2)] # colorbar
-            v = [Size.AxesY(ax)]
-
-            _ = divider.set_horizontal(h)
-            _ = divider.set_vertical(v)
-
-            _ = ax.set_axes_locator(divider.new_locator(nx=0, ny=0))
-            _ = cbax.set_axes_locator(divider.new_locator(nx=2, ny=0))
-
-            _ = fig1.add_axes(cbax)
-
-            _ = cbax.axis["left"].toggle(all=False)
-            _ = cbax.axis["top"].toggle(all=False)
-            _ = cbax.axis["bottom"].toggle(all=False)
-            _ = cbax.axis["right"].toggle(ticklabels=True, label=True)
-
-            _ = plt.colorbar(lcol, cax=cbax)
+            cbax = plotUtils.addColorbar(lcol, ax)
             _ = cbax.set_ylabel("refractive index")
         else: cbax = None
 
+        # Declare a new method to show range markers
+        # This method is only available after rays have been plotted
+        # This ensures that the markers match the plotted rays
+        def showRange(self, markers=None, 
+            color='.8', s=2, zorder=3, 
+            **kwargs):
+            """Plot ray paths
+            
+            **Args**: 
+                * [**markers**]: range markers. Defaults to every 250 km
+                * All other keywords are borrowed from :func:`matplotlib.pyplot.scatter`
+            **Returns**:
+                * **coll**: a collection of range markers
+            **Example**:
+                ::
+
+                    # Add range markers to an existing ray plot
+                    ax, aax, cbax = rto.rays.plot(sTime, step=10)
+                    rto.rays.showRange()
+                    
+            written by Sebastien, 2013-04
+            """
+
+            if not markers:
+                markers = np.arange(0, 5000, 250)
+            
+            x, y = [], []
+            for el, rays in self.paths[time][beam].items():
+                for rm in markers:
+                    inds = (rays['gran']*1e-3 >= rm)
+                    if inds.any():
+                        x.append( rays['th'][inds][0] )
+                        y.append( rays['r'][inds][0]*1e-3 )
+            coll = aax.scatter(x, y, 
+                color=color, s=s, zorder=zorder, **kwargs)
+
+            return coll
+        # End of new method
+
+        # Assign new method
+        self.showRange = MethodType(showRange, self)
+
+        ax.beam = beam
         return ax, aax, cbax
 
 
-def readHeader(fObj, debug=False):
+
+#########################################################################
+# Misc.
+#########################################################################
+def _readHeader(fObj, debug=False):
     """Read the header part of ray-tracing *.dat files
 
     **Args**:
@@ -689,3 +989,29 @@ def readHeader(fObj, debug=False):
     header.pop('fext'); header.pop('outdir')
 
     return header
+
+
+def _getTitle(time, beam, header, name):
+    """Create a title for ground/altitude plots
+
+    **Args**:
+        * **time** (datetime.datetime): time shown in plot
+        * **beam**: beam shown in plot
+        * **header** (dict): header of fortran uotput file
+        * **name** (str): radar name
+    **Returns**:
+        * **title** (str): a title string
+    """
+    from numpy import floor, round
+
+    utdec = time.hour + time.minute/60.
+    tlon = (header['tlon'] % 360.)
+    ctlon = tlon if tlon <=180. else tlon - 360.
+    ltdec = ( utdec + ( ctlon/360.*24.) ) % 24.
+    lthr = floor(ltdec)
+    ltmn = round( (ltdec - lthr)*60 )
+    title = '{:%Y-%b-%d at %H:%M} UT (~{:02.0f}:{:02.0f} LT)'.format(
+        time, lthr, ltmn)
+    title += '\n(IRI-2011) {} beam {}; freq {:.1f}MHz'.format(name, beam, header['freq'])
+
+    return title
