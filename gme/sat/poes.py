@@ -532,7 +532,7 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
           if coords == 'mag':
             lonPoesAll[sN].append(lon)
           else:
-            lonPoesAll[sN].append(mltFromEpoch(utils.timeUtils.datetimeToEpoch(l.time),lon)*360./24.)
+            lonPoesAll[sN].append(models.aacgm.mltFromEpoch(utils.timeUtils.datetimeToEpoch(l.time),lon)*360./24.)
         else:
           latPoesAll[sN].append(l.folat)
           lonPoesAll[sN].append(l.folon)
@@ -660,7 +660,7 @@ def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1,
           if coords == 'mag':
             lonPoesAll[sN].append(lon)
           else:
-            lonPoesAll[sN].append(mltFromEpoch(utils.timeUtils.datetimeToEpoch(l.time),lon)*360./24.)
+            lonPoesAll[sN].append(models.aacgm.mltFromEpoch(utils.timeUtils.datetimeToEpoch(currPoesList[l].time),lon)*360./24.)
         else:
           latPoesAll[sN].append(currPoesList[l].folat)
           lonPoesAll[sN].append(currPoesList[l].folon)

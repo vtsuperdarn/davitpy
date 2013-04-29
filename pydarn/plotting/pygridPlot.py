@@ -195,7 +195,7 @@ def plotPygrid(sTime=None,eTime=None,plot='all',rads=None,hemi='north',interval=
       myFig.gca().add_collection(lcoll)
       plt.title(ctime.strftime("%Y/%m/%d %H:%M")+'   Plot Type: %s vecs' % plot)
 
-      pcols = gme.sat.poes.overlayPoesTed(myMap,myFig.gca(),ctime,coords='mag',param=poesparam, scMin=poesMin, scMax=poesMax)
+      pcols = gme.sat.poes.overlayPoesTed(myMap,myFig.gca(),ctime,coords='mlt',param=poesparam, scMin=poesMin, scMax=poesMax)
       if(pcols != None):
         # cols.append(pcols)
         pTicks = numpy.linspace(poesMin,poesMax,8)#[-3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5]
@@ -208,7 +208,7 @@ def plotPygrid(sTime=None,eTime=None,plot='all',rads=None,hemi='north',interval=
           ti.set_fontsize(7)
 
 
-      gme.sat.poes.overlayPoesBnd( myMap, myFig.gca(), ctime, coords = 'mag')
+      gme.sat.poes.overlayPoesBnd( myMap, myFig.gca(), ctime, coords = 'mlt')
 
       cbar = plt.colorbar(lcoll,orientation='vertical',shrink=.65,fraction=.1)
       cbar.ax.tick_params(axis='y',direction='out')

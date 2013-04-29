@@ -679,6 +679,8 @@ class pygrid(object):
     import time
     
     #go through all scatter points on this beam
+    if myData.fit.slist == None: return
+    
     for i in range(len(myData.fit.slist)):
       
       #check for good ionospheric scatter
@@ -688,7 +690,10 @@ class pygrid(object):
         #range gate number
         rng = myData.fit.slist[i]
         #get coords of r-b cell
-        myPos = coordsList[myData.bmnum][rng]
+        try: 
+          myPos = coordsList[myData.bmnum][rng]
+        except:
+          continue
         #latitudinal index
         latInd = int(math.floor(myPos[0]/self.delLat))
         
