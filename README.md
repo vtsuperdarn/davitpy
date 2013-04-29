@@ -31,13 +31,13 @@ Then cd into the cloned directory:
 Then run thes install scripts specific to your system (Ubuntu or MacOS):
 
     cd install/linux/
-    sh python_install_linux.sh
+    sudo sh python_install_linux.sh
     sh set_paths_linux.sh
     
 You may have to recompile the binaries:
 
     cd ../..
-    mastermake
+    ./mastermake
     
 Now you are ready to go. From anywhere on your machine just type:
 
@@ -55,4 +55,6 @@ And code away!
 
 ### Notes
 
+* you will need gfortran to compile most of the models
+* you will need mpi to run the ray tracing (mpich2 prefered)
 * you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>
