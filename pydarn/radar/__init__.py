@@ -33,5 +33,19 @@ except Exception as e:
     print __file__+' -> pydarn.radar.radStruct: ', e
 
 
+####################################
 # Update local HDF5
-_ = updateHdf5()
+####################################
+import os.path, time
+dirn = os.path.abspath( __file__.split('__init__.py')[0] )
+filn = os.path.join(dirn, 'radars.hdf5')
+ctime = time.time()
+# Update if not there or unreadable
+# Update if too old
+try:
+    mtime = os.path.getmtime(filn)
+except OSError:
+    mtime = 0
+finally:
+    if ctime > mtime + 86400*7:
+        _ = updateHdf5()
