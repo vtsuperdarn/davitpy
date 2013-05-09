@@ -18,20 +18,23 @@
 .. module:: pygridLib
    :synopsis: the classes and functions used for pygrid files
 
+.. note::
+      Some of these functions are used to make pygrid files.  This assumes that the environment variable DATADIR is set.  If DATADIR is not set, files will be written to the current working directory
+
 .. moduleauthor:: AJ, 20130410
 *********************
 **Module**: pydarn.proc.pygridLib
 *********************
 **Classes**:
-  * :func:`makePygridBatch`
-  * :func:`mergePygrid`
-  * :func:`makePygrid`
-  * :func:`drawPygridMap`
-  * :class:`pygrid`
-  * :class:`latcell`
-  * :class:`pygridCell`
-  * :class:`mergeVec`
-  * :class:`pygridVec`
+  * :func:`pydarn.proc.pygridLib.makePygridBatch`
+  * :func:`pydarn.proc.pygridLib.mergePygrid`
+  * :func:`pydarn.proc.pygridLib.makePygrid`
+  * :func:`pydarn.proc.pygridLib.drawPygridMap`
+  * :class:`pydarn.proc.pygridLib.pygrid`
+  * :class:`pydarn.proc.pygridLib.latcell`
+  * :class:`pydarn.proc.pygridLib.pygridCell`
+  * :class:`pydarn.proc.pygridLib.mergeVec`
+  * :class:`pydarn.proc.pygridLib.pygridVec`
 """
 
 
@@ -126,18 +129,25 @@ def mergePygrid(sTime,eTime=None,hemi='north',interval=120,vb=0):
   #convert date string, start time, end time to datetime
   if(eTime == None): eTime = sTime + dt.timedelta(days=1)
     
-  baseDir = os.environ['DATADIR']+'/pygrid'
+  ddir = os.environ.get('DATADIR')
+  if ddir == None: ddir = os.getcwd()
+  baseDir = ddir+'/pygrid'
   codes = pydarn.radar.network().getAllCodes(hemi=hemi)
   myFiles,fileNames = [],[]
   for c in codes:
     fileName = locatePygridFile(sTime.strftime("%Y%m%d"),c)
-    if(fileName == None): continue
+    if fileName == None : continue
+
     print 'opening: '+fileName
-    fileNames.append(fileName)
-    myFiles.append(openPygrid(fileName,'r'))
+    ff = openPygrid(fileName,'r')
+    if ff != None:
+      fileNames.append(fileName)
+      myFiles.append(ff)
+    else: 
+      continue
     
   
-  if(myFiles == []): return
+  if myFiles == []: return
   
   d = baseDir+'/'+hemi
   if not os.path.exists(d):
@@ -181,7 +191,7 @@ def mergePygrid(sTime,eTime=None,hemi='north',interval=120,vb=0):
     os.system('bzip2 '+f)
     
 
-def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=True, fileName=None):
+def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=True, fileName=None, vmax=2000.):
   """a function to read in fitted radar data and put it into a geospatial grid
   
   **INPUTS**:
@@ -235,10 +245,12 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
     print 'no data available'
     return None
 
-  d = os.environ['DATADIR']+'/pygrid/'+rad
+  ddir = os.environ.get('DATADIR')
+  if ddir == None: ddir = os.getcwd()
+  d = ddir+'/pygrid/'+rad
   if not os.path.exists(d):
     os.makedirs(d)
-  fileName = d+'/'+sTime.strftime("%Y%m%d")+'.'+rad+'.pygrid.hdf5'
+  fileName = d+'/'+sTime.strftime("%Y%m%d")+'.'+rad+'.pygrid.mlt.hdf5'
   #open a pygrid file
   gFile = openPygrid(fileName,'w')
   
@@ -254,7 +266,6 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
     if(vb==1): print cTime
     #iterate through the radar data
     while(myBeam.time < bndT):
-      
       #current time of radar data
       t = myBeam.time
       
@@ -263,32 +274,30 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
         #get possibly new ngates
         ngates = max([site.maxgate,myBeam.prm.nrang])
         #gereate a new FOV
-        myFov = pydarn.radar.radFov.fov(site=site,rsep=myBeam.prm.rsep,\
-          ngates=ngates+1,nbeams=site.maxbeam)
+        # myFov = pydarn.radar.radFov.fov(site=site,rsep=myBeam.prm.rsep,\
+        #   ngates=ngates+1,nbeams=site.maxbeam)
         myFova = pydarn.radar.radFov.fov(site=site,rsep=myBeam.prm.rsep,\
-          ngates=ngates+1, model=None, altitude=300.)
+          ngates=ngates+1, model=None, altitude=300.,coords='mag')
 
         #create a 2D list to hold coords of RB cells
         coordsList = [[None]*ngates for _ in range(site.maxbeam)]
         #generate new coordsList
         for ii in range(site.maxbeam):
           for jj in range(ngates):
-            arr1=aacgm.aacgmConv(myFov.latCenter[ii][jj],myFov.lonCenter[ii][jj],300,0)
-            arr2=aacgm.aacgmConv(myFov.latCenter[ii][jj+1],myFov.lonCenter[ii][jj+1],300,0)
-            arr3=aacgm.aacgmConv(myFova.latCenter[ii][jj],myFova.lonCenter[ii][jj],300,0)
-            arr4=aacgm.aacgmConv(myFova.latCenter[ii][jj+1],myFova.lonCenter[ii][jj+1],300,0)
-            azm = greatCircleAzm(arr3[0],arr3[1],arr4[0],arr4[1])
+            arr1=[myFova.latCenter[ii][jj],myFova.lonCenter[ii][jj],300]
+            arr2=[myFova.latCenter[ii][jj+1],myFova.lonCenter[ii][jj+1],300]
+            azm = greatCircleAzm(arr1[0],arr1[1],arr2[0],arr2[1])
             coordsList[ii][jj] = [arr1[0],arr1[1],azm]
         oldCpid = myBeam.cp
         
       #are we in the target time interval?
       if(cTime < t <= bndT): 
         #enter the radar data into the grid
-        g.enterData(myBeam,coordsList)
+        g.enterData(myBeam,coordsList,vmax=vmax)
         
       #read the next record
       myBeam = radDataReadRec(myFile)
-      
+
       if(myBeam == None): break
 
     #if we have > 0 gridded vector
@@ -300,14 +309,13 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
       g.averageVecs()
       #write to the hdf5 file
       writePygridRec(gFile,g)
-      
+
     #reassign the current time we are at
     cTime = bndT
     
-    
   closePygrid(gFile)
-  if(os.path.exists(fileName+'.bz2')): os.system('rm '+fileName+'.bz2')
-  os.system('bzip2 '+fileName)
+  # if(os.path.exists(fileName+'.bz2')): os.system('rm '+fileName+'.bz2')
+  # os.system('bzip2 '+fileName)
       
   
 class pygridVec(object):
@@ -335,7 +343,6 @@ class pygridVec(object):
   """
   
   def __init__(self,v,w_l,p_l,stid,time,bmnum,rng,azm):
-    
     #initialize all the values, pretty self-explanatory
     self.v = v
     self.w_l = w_l
@@ -372,7 +379,6 @@ class mergeVec:
   """
   
   def __init__(self,v,w_l,p_l,stid1,stid2,azm):
-    
     #initialize all the values, pretty self-explanatory
     self.v = v
     self.w_l = w_l
@@ -382,45 +388,40 @@ class mergeVec:
     
     
 class pygridCell:
-  """
-
-  PACKAGE: pydarn.proc.pygridLib
-  
-  CLASS: pygridCell
-  
-  PURPOSE: a class defining a single grid cell
-
-  DECLARATION: 
-    myCell = pydarn.proc.pygridLib.pygridCell(botLat,topLat,leftLon,rightLon)
+  """a class defining a single grid cell
     
-  MEMBERS:
-    bl : bottom left corner in [lat,mlt]
-    tl : bottom left corner in [lat,mlt]
-    tr : top right corner in [lat,mlt]
-    br : bottom right corner in [lat,mlt]
-    center : the center coordinate pair in [lat,mlt]
-    nVecs : the number of gridded vectors in this cell
-    vecs : a list to hold the pygridVec objects
-    
+  **Members**:
+    * **bl** (list of floats): bottom left corner in [mlat,mlon]
+    * **tl** (list of floats): bottom left corner in [mlat,mlon]
+    * **tr** (list of floats): top right corner in [mlat,mlon]
+    * **br** (list of floats): bottom right corner in [mlat,mlon]
+    * **center** (list of floats): the center coordinate pair in [mlat,mlon]
+    * **nVecs** (int): the number of gridded vectors in this cell
+    * **vecs** (list of :class:`pydarn.proc.pygridLib.pygridVec`): a list to hold the pygridVec objects
+  
+  **Examples**:
+    ::
+
+      myCell = pydarn.proc.pygridLib.pygridCell(botLat,topLat,leftLon,rightLon)
+
   Written by AJ 20120907
-
   """
   
-  def __init__(self,lat1,lat2,mlt1,mlt2,n):
+  def __init__(self,lat1,lat2,mlon1,mlon2,n):
     import math
     
     #define the 4 corners of the cell
-    self.bl = [lat1,mlt1]
-    self.tl = [lat2,mlt1]
-    self.tr = [lat2,mlt2]
-    self.br = [lat1,mlt2]
+    self.bl = [lat1,mlon1]
+    self.tl = [lat2,mlon1]
+    self.tr = [lat2,mlon2]
+    self.br = [lat1,mlon2]
     
     self.index = int(math.floor(lat1))*500+n
     
     #check for a wrap around midnight (causes issues with mean) and then
     #calculate the center point of the cell
-    if(mlt2 < mlt1): self.center = [(lat1+lat2)/2.,(24.-mlt1+mlt2)/2.]
-    else: self.center = [(lat1+lat2)/2.,(mlt1+mlt2)/2.]
+    if(mlon2 < mlon1): self.center = [(lat1+lat2)/2.,((24.+mlon1+mlon2)/2.)%24.]
+    else: self.center = [(lat1+lat2)/2.,(mlon1+mlon2)/2.]
     
     #initialize number of grid vectors in this cell and the list to hold them
     self.nVecs = 0
@@ -431,28 +432,22 @@ class pygridCell:
     
     
 class latCell:
-  """
+  """a class to hold the information for a single latitude for a geospatial grid
+    
+    
+  **Members**:
+    * **nCells** (int): the number of pygridCells contained in this latCell
+    * **botLat** (float): the lower latitude limit of this cell
+    * **topLat** (float): the upper latitude limit of this cell
+    * **delLon** (float): the step size (in degrees) in longitude for this latCell
+    * **cells** (list): a list of the pygridCell objects
+    
+  **Example:**
+    ::
 
-  PACKAGE: pydarn.proc.pygridLib
-  
-  CLASS: latCell
-  
-  PURPOSE: a class to hold the information for a single latitude
-    for a geospatial grid
-  
-  DECLARATION: 
-    myLat = pydarn.proc.pygridLib.latCell()
-    
-  MEMBERS:
-    nCells : the number of pygridCells contained in this latCell
-    botLat : the lower latitude limit of thsi cell
-    topLat : the upper latitude limit of this cell
-    delLon : the step size (in degrees) in longitude for this
-      latCell
-    cells : a list of the pygridCell objects
-    
+      myLatCell = pydarn.proc.pygridLib.latCell()
+
   Written by AJ 20120907
-
   """
   
   def __init__(self,lat):
@@ -462,7 +457,7 @@ class latCell:
     #bottom latitude boundary of this latCell
     self.botLat = lat
     #latitude step size of this cell
-    self.delMlt = 24./self.nCells
+    self.delLon = 24./self.nCells
     #top latitude boundary of this cell
     self.topLat = lat+1
     #list for pygridCell objects
@@ -470,11 +465,11 @@ class latCell:
     
     #iterate over all longitudinal cells
     for i in range(0,self.nCells):
-      #calculate left and right mlt boundaries for this pygridCell
-      mlt1=i*24./self.nCells
-      mlt2=(i+1)*24./self.nCells
+      #calculate left and right mlon boundaries for this pygridCell
+      mlon1=i*24./self.nCells
+      mlon2=(i+1)*24./self.nCells
       #create a new pygridCell object and append it to the list
-      self.cells.append(pygridCell(self.botLat,self.topLat,mlt1,mlt2,i))
+      self.cells.append(pygridCell(self.botLat,self.topLat,mlon1,mlon2,i))
     
     
 class pygrid(object):
@@ -523,27 +518,21 @@ class pygrid(object):
       self.lats.append(l)
       
   def delVecs(self):
-    """
+    """method to delete all vectors from a pygrid object
 
-    PACKAGE: pydarn.proc.pygridLib
+    **Belongs to** :class:`pydarn.proc.pygridLib.pygrid`
     
-    FUNCTION: pygrid.delVecs():
-    
-    BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
-    
-    PURPOSE: delete all vectors from a pygrid object
-    
-    INPUTS:
-      None
+    **Args**:
+      * Nothing.
+    **Returns**:
+      * Nothing.
       
-    OUTPUTS:
-      None
-      
-    EXAMPLE:
-      myGrid.delVecs()
+    **Example**
+      ::
+
+        myGrid.delVecs()
       
     Written by AJ 20120911
-
     """
     self.nVecs = 0
     self.nAvg = 0
@@ -558,157 +547,157 @@ class pygrid(object):
         c.mrgVec = None
       
   def mergeVecs(self):
-    """
+    """method to go through all grid cells and merge the vectors in cells with more than 1 averaged vector
     
-    PACKAGE: pydarn.proc.pygridLib
+    **Belongs to** :class:`pydarn.proc.pygridLib.pygrid`
     
-    FUNCTION: pygrid.mergeVecs():
-    
-    BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
-
-    go through all grid cells and average the vectors in 
-    cells with more than 1 vector
-
-    INPUTS:
-      None
+    **Args**:
+      * Nothing.
+    **Returns**:
+      * Nothing.
       
-    OUTPUTS:
-      None
-      
-    EXAMPLE:
-      myGrid.averageVecs()
+    **Example**
+      ::
+
+        myGrid.mergeVecs()
       
     Written by AJ 20120917
-
     """
     
     import numpy as np
     import math
     from numpy import linalg as la
     
+    #iterate through lats
     for l in self.lats:
+      #iterate though cells
       for c in l.cells:
+        #see if we have more than 1 average cell
         if(c.nAvg > 1):
-          v1,v2 = c.avgVecs[0],c.avgVecs[1]
-          a1,a2 = math.radians(v1.azm),math.radians(v2.azm)
-          if(abs(a2-a1) < math.radians(20)): continue
-          
-          arr = np.array([[math.cos(a1),math.sin(a1)],[math.cos(a2),math.sin(a2)]])
-          inv = la.inv(arr)
-          
-          v_n = inv[0][0]*v1.v+inv[0][1]*v2.v
-          v_e = inv[1][0]*v1.v+inv[1][1]*v2.v
-          
-          vel = math.sqrt(v_n*v_n + v_e*v_e)
-          azm = math.degrees(math.atan2(v_e,v_n))
-          
-          
-          c.mrgVec = mergeVec(vel,np.average(np.array([v1.w_l,v2.w_l])),\
-          np.average(np.array([v1.p_l,v2.p_l])),v1.stid,v2.stid,azm)
-          
-          self.nMrg += 1
+          mFlg = False
+          #iterate through possible vector combinations
+          for i in range(c.nAvg):
+            for j in range(i+1,c.nAvg):
+              #if we've already merged, don't do anything
+              if mFlg: continue
+
+              #get the velocities and azimuths
+              v1,v2 = c.avgVecs[i],c.avgVecs[j]
+              a1,a2 = math.radians(v1.azm),math.radians(v2.azm)
+
+              #check if the azimuths are too close together
+              if(abs(a2-a1) < math.radians(20)): continue
+              
+              #do a metic inversion to solve simultaneous equations
+              arr = np.array([[math.cos(a1),math.sin(a1)],[math.cos(a2),math.sin(a2)]])
+              inv = la.inv(arr)
+              
+              #solve for 2-d vector
+              v_n = inv[0][0]*v1.v+inv[0][1]*v2.v
+              v_e = inv[1][0]*v1.v+inv[1][1]*v2.v
+              vel = math.sqrt(v_n*v_n + v_e*v_e)
+              azm = math.degrees(math.atan2(v_e,v_n))
+              
+              #create the merged vector
+              c.mrgVec = mergeVec(vel,np.average(np.array([v1.w_l,v2.w_l])),\
+              np.average(np.array([v1.p_l,v2.p_l])),v1.stid,v2.stid,azm)
+              self.nMrg += 1
+              mFlg = True
 
           
   def averageVecs(self):
-    """
+    """method to go through all grid cells and average (actually median) the vectors in cells with more than 1 vector
     
-    PACKAGE: pydarn.proc.pygridLibLib
+    **Belongs to** :class:`pydarn.proc.pygridLib.pygrid`
     
-    FUNCTION: pygrid.averageVecs():
-    
-    BELONGS TO: CLASS: pydarn.proc.pygridLibLib.pygrid
-    
-    PURPOSE: go through all grid cells and average the vectors in 
-    cells with more than 1 vector
-    
-    INPUTS:
-      None
+    **Args**:
+      * Nothing.
+    **Returns**:
+      * Nothing.
       
-    OUTPUTS:
-      None
-      
-    EXAMPLE:
-      myGrid.averageVecs()
+    **Example**
+      ::
+
+        myGrid.averageVecs()
       
     Written by AJ 20120917
-
     """
+
     import numpy,math
     
+    #iterate over latitudes
     for l in self.lats:
+      #iterate over longitudinal cells
       for c in l.cells:
+        #check if we have vectors
         if(c.nVecs > 0):
-          ve,vn,a,w,p = [],[],[],[],[]
-          # tmpVe = [[]*1 for _ in range(50)]
-          # tmpVn = [[]*1 for _ in range(50)]
-          # tmpA = [[]*1 for _ in range(50)]
-          # tmpW,tmpP = [],[]
-          for v in c.allVecs:
-            ve.append(v.v*math.sin(math.radians(v.azm)))
-            vn.append(v.v*math.cos(math.radians(v.azm)))
-            a.append(v.azm)
-            w.append(v.w_l)
-            p.append(v.p_l)
-            # tmpVe[v.bmnum].append(v.v*math.sin(math.radians(v.azm)))
-            # tmpVn[v.bmnum].append(v.v*math.sin(math.radians(v.azm)))
-            # tmpA[v.bmnum].append(v.azm)
-            # tmpW.append(v.w_l)
-            # tmpP.append(v.p_l)
-          # v,a = [],[]
-          # for i in range(50):
-          #   if(tmpV[i] != []):
-          #     v.append(numpy.mean(numpy.array(tmpV[i])))
-          #     a.append(numpy.mean(numpy.array(tmpA[i])))
-          azm = math.atan2(numpy.median(ve),numpy.median(vn))
-          vel = math.sqrt(numpy.median(ve)**2+numpy.median(vn)**2)
-          c.avgVecs.append(pygridVec(vel,numpy.median(w),numpy.median(p),c.allVecs[0].stid,c.allVecs[0].time,-1,-1,azm))
-          self.nAvg += 1
-          c.nAvg += 1
+          for i in range(36):
+            #empty lists
+            ve,vn,a,w,p,vv = [],[],[],[],[],[]
+            for v in c.allVecs:
+              if int(round(v.azm/10.)%36) == i:
+                #append the vector params to the empty lists
+                # ve.append(v.v*math.sin(math.radians(v.azm)))
+                # vn.append(v.v*math.cos(math.radians(v.azm)))
+                vv.append(v.v)
+                # a.append(v.azm)
+                w.append(v.w_l)
+                p.append(v.p_l)
+
+            if vv != []:
+              # azm = math.atan2(numpy.median(ve),numpy.median(vn))*180./3.14159
+              # vel = math.sqrt(numpy.median(ve)**2+numpy.median(vn)**2)
+
+              #create the average vector
+              c.avgVecs.append(pygridVec(numpy.median(vv),numpy.median(w),numpy.median(p),c.allVecs[0].stid, \
+                                c.allVecs[0].time,-1,-1,i*10.+5.))
+              self.nAvg += 1
+              c.nAvg += 1
 
         
-  def enterData(self,myData,coordsList):
-    """
+  def enterData(self,myData,coordsList,vmax=2000.):
+    """method to insert radar fit data into a pygrid object
+
+    **Belongs to** :class:`pydarn.proc.pygridLib.pygrid`
     
-    PACKAGE: pydarn.proc.pygridLib
-    
-    FUNCTION pygrid.enterData():
-    
-    BELONGS TO: CLASS: pydarn.proc.pygridLib.pygrid
-    
-    PURPOSE: inserts radar fitacf data into a pygrid object
-    
-    INPUTS:
-      myData: a pydarn.io.radDataTypes.beam object
-      coordsList: a 2D list containing the coords [lat,lon,azm] 
-        corresponding to range-beam cells
-        
-    OUTPUTS:
-      None
+    **Args**:
+      * **myData** (:class:`pydarn.sdio.radDataTypes.beamData`): the beam ovject to be insterted into the grid
+      * **coordsList** (list of floats): a 2D list containing the coords [lat,lon,azm] corresponding to range-beam cells
+    **Returns**:
+      * Nothing.
       
-    EXAMPLE:
-      myGrid.enterData(myBeam,myCoords)
+    **Example**:
+      ::
+
+        myGrid.enterData(myBeam,myCoords)
       
     Written by AJ 20120911
-
     """
-    import math,models.aacgm as aacgm,time
+    import math
+    import models.aacgm as aacgm
+    import time
     
     #go through all scatter points on this beam
+    if myData.fit.slist == None: return
+    
     for i in range(len(myData.fit.slist)):
       
       #check for good ionospheric scatter
-      if(myData.fit.gflg[i] == 0 or myData.fit.gflg[i] == 2 and myData.fit.v[i] != 0.0):
+      if myData.fit.gflg[i] == 0 and myData.fit.v[i] != 0.0 and math.fabs(myData.fit.v[i]) < vmax:
         
         #range gate number
         rng = myData.fit.slist[i]
         #get coords of r-b cell
-        myPos = coordsList[myData.bmnum][rng]
+        try: 
+          myPos = coordsList[myData.bmnum][rng]
+        except:
+          continue
         #latitudinal index
         latInd = int(math.floor(myPos[0]/self.delLat))
         
         #convert coords to mlt
         mlt1 = aacgm.mltFromEpoch(datetimeToEpoch(myData.time),myPos[1])
-        
+
         #print myData['fit']['v'][i],myPos[2]
         #compensate for neg. direction is away from radar
         if(myData.fit.v[i] > 0.): azm = (myPos[2]+180+360)%360
@@ -716,7 +705,7 @@ class pygrid(object):
         #print abs(myData['fit']['v'][i]),azm
         #print ""
         #longitudinal index
-        lonInd = int(math.floor(mlt1/self.lats[latInd].delMlt))
+        lonInd = int(math.floor(mlt1/self.lats[latInd].delLon))
         
         #create a pygridVec object and append it to the list of pygridCells
         self.lats[latInd].cells[lonInd].allVecs.append(pygridVec(abs(myData.fit.v[i]),myData.fit.w_l[i],\
