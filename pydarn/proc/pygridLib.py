@@ -266,7 +266,6 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
     if(vb==1): print cTime
     #iterate through the radar data
     while(myBeam.time < bndT):
-      
       #current time of radar data
       t = myBeam.time
       
@@ -298,7 +297,7 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
         
       #read the next record
       myBeam = radDataReadRec(myFile)
-      
+
       if(myBeam == None): break
 
     #if we have > 0 gridded vector
@@ -310,10 +309,9 @@ def makePygrid(sTime,rad,eTime=None,fileType='fitex',interval=60,vb=0,filtered=T
       g.averageVecs()
       #write to the hdf5 file
       writePygridRec(gFile,g)
-      
+
     #reassign the current time we are at
     cTime = bndT
-    
     
   closePygrid(gFile)
   # if(os.path.exists(fileName+'.bz2')): os.system('rm '+fileName+'.bz2')
@@ -635,23 +633,24 @@ class pygrid(object):
         if(c.nVecs > 0):
           for i in range(36):
             #empty lists
-            ve,vn,a,w,p = [],[],[],[],[]
+            ve,vn,a,w,p,vv = [],[],[],[],[],[]
             for v in c.allVecs:
               if int(round(v.azm/10.)%36) == i:
                 #append the vector params to the empty lists
-                ve.append(v.v*math.sin(math.radians(v.azm)))
-                vn.append(v.v*math.cos(math.radians(v.azm)))
-                a.append(v.azm)
+                # ve.append(v.v*math.sin(math.radians(v.azm)))
+                # vn.append(v.v*math.cos(math.radians(v.azm)))
+                vv.append(v.v)
+                # a.append(v.azm)
                 w.append(v.w_l)
                 p.append(v.p_l)
 
-            if ve != []:
-              azm = math.atan2(numpy.median(ve),numpy.median(vn))*180./3.14159
-              vel = math.sqrt(numpy.median(ve)**2+numpy.median(vn)**2)
+            if vv != []:
+              # azm = math.atan2(numpy.median(ve),numpy.median(vn))*180./3.14159
+              # vel = math.sqrt(numpy.median(ve)**2+numpy.median(vn)**2)
 
               #create the average vector
-              c.avgVecs.append(pygridVec(vel,numpy.median(w),numpy.median(p),c.allVecs[0].stid, \
-                                c.allVecs[0].time,-1,-1,azm))
+              c.avgVecs.append(pygridVec(numpy.median(vv),numpy.median(w),numpy.median(p),c.allVecs[0].stid, \
+                                c.allVecs[0].time,-1,-1,i*10.+5.))
               self.nAvg += 1
               c.nAvg += 1
 
@@ -684,8 +683,7 @@ class pygrid(object):
     for i in range(len(myData.fit.slist)):
       
       #check for good ionospheric scatter
-      if myData.fit.gflg[i] == 0 or myData.fit.gflg[i] == 2 and \
-          myData.fit.v[i] != 0.0 and math.fabs(myData.fit.v[i]) < vmax:
+      if myData.fit.gflg[i] == 0 and myData.fit.v[i] != 0.0 and math.fabs(myData.fit.v[i]) < vmax:
         
         #range gate number
         rng = myData.fit.slist[i]

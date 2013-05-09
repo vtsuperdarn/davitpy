@@ -176,17 +176,16 @@ def plotPygrid(sTime=None,eTime=None,plot='all',rads=None,hemi='north',interval=
           elif(plot == 'mrg'): ls = [c.mrgVec]
           if len(ls) > 0 and ls[0] != None :
             #convert start point to map cords
+            x1,y1 = myMap(c.center[1]*360./24., c.center[0])
+            circs[0].append(x1)
+            circs[1].append(y1)
             for v in ls:
-              x1,y1 = myMap(c.center[1]*360./24., c.center[0])
-              circs[0].append(x1)
-              circs[1].append(y1)
-              for v in ls:
-                ept = utils.geoPack.greatCircleMove(c.center[0],c.center[1]*360./24.,v.v/vmax*500e3,v.azm)
-                x2,y2 = myMap(ept[1], ept[0])
-                circs[2].append(x2)
-                circs[3].append(y2)
-                lines.append(((x1,y1),(x2,y2)))
-                intensities.append(v.v)
+              ept = utils.geoPack.greatCircleMove(c.center[0],c.center[1]*360./24.,v.v/vmax*500e3,v.azm)
+              x2,y2 = myMap(ept[1], ept[0])
+              circs[2].append(x2)
+              circs[3].append(y2)
+              lines.append(((x1,y1),(x2,y2)))
+              intensities.append(v.v)
 
       cm,norm,bnds = utils.plotUtils.genCmap('power',[0,vmax],colors='aj')
       ccoll = plt.scatter(circs[0],circs[1],c='k',s=.8,zorder=10,cmap=cm,norm=norm)
