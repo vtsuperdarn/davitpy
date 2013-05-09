@@ -6,11 +6,11 @@
 *********************
 This module runs the raytracing code
 
-**Class**:
-    * :class:`models.rt.RtRun`: run the code
-    * :class:`models.rt.Scatter`: store and process modeled backscatter
-    * :class:`models.rt.Edens`: store and process electron density profiles
-    * :class:`models.rt.Rays`: store and process individual rays
+**Classes**:
+    * :class:`models.raydarn.rt.RtRun`: run the code
+    * :class:`models.raydarn.rt.Scatter`: store and process modeled backscatter
+    * :class:`models.raydarn.rt.Edens`: store and process electron density profiles
+    * :class:`models.raydarn.rt.Rays`: store and process individual rays
 
 .. note:: The ray tracing requires mpi to run. You can adjust the number of processors, but be wise about it and do not assign more than you have
 

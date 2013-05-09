@@ -1,54 +1,54 @@
 # UTILS/calcSun
 """
-*******************************
-            calcSun
-*******************************
+*********************
+**Module**: utils.calcSun
+*********************
 This subpackage contains def to calculate sunrise/sunset
 
 This includes the following defs:
-    getJD( date )
+    * :func:`utils.calcSun.getJD`: 
         calculate the julian date from a python datetime object
-    calcTimeJulianCent( jd )
+    * :func:`utils.calcSun.calcTimeJulianCent`: 
         convert Julian Day to centuries since J2000.0.
-    calcGeomMeanLongSun( t )
+    * :func:`utils.calcSun.calcGeomMeanLongSun`: 
         calculate the Geometric Mean Longitude of the Sun (in degrees)
-    calcGeomMeanAnomalySun( t )
+    * :func:`utils.calcSun.calcGeomMeanAnomalySun`: 
         calculate the Geometric Mean Anomaly of the Sun (in degrees)
-    calcEccentricityEarthOrbit( t )
+    * :func:`utils.calcSun.calcEccentricityEarthOrbit`: 
         calculate the eccentricity of earth's orbit (unitless)
-    calcSunEqOfCenter( t )
+    * :func:`utils.calcSun.calcSunEqOfCenter`: 
         calculate the equation of center for the sun (in degrees)
-    calcSunTrueLong( t )
+    * :func:`utils.calcSun.calcSunTrueLong`: 
         calculate the true longitude of the sun (in degrees)
-    calcSunTrueAnomaly( t )
+    * :func:`utils.calcSun.calcSunTrueAnomaly`: 
         calculate the true anamoly of the sun (in degrees)
-    calcSunRadVector( t )
+    * :func:`utils.calcSun.calcSunRadVector`: 
         calculate the distance to the sun in AU (in degrees)
-    calcSunApparentLong( t )
+    * :func:`utils.calcSun.calcSunApparentLong`: 
         calculate the apparent longitude of the sun (in degrees)
-    calcMeanObliquityOfEcliptic( t )
+    * :func:`utils.calcSun.calcMeanObliquityOfEcliptic`: 
         calculate the mean obliquity of the ecliptic (in degrees)
-    calcObliquityCorrection( t )
+    * :func:`utils.calcSun.calcObliquityCorrection`: 
         calculate the corrected obliquity of the ecliptic (in degrees)
-    calcSunRtAscension( t )
+    * :func:`utils.calcSun.calcSunRtAscension`: 
         calculate the right ascension of the sun (in degrees)
-    calcSunDeclination( t )
+    * :func:`utils.calcSun.calcSunDeclination`: 
         calculate the declination of the sun (in degrees)
-    calcEquationOfTime( t )
+    * :func:`utils.calcSun.calcEquationOfTime`: 
         calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)
-    calcHourAngleSunrise( lat, solarDec )
+    * :func:`utils.calcSun.calcHourAngleSunrise`: 
         calculate the hour angle of the sun at sunrise for the latitude (in radians)
-    calcAzEl( output, t, localtime, latitude, longitude, zone )
+    * :func:`utils.calcSun.calcAzEl`: 
         calculate sun azimuth and zenith angle
-    calcSolNoonUTC( jd, longitude )
+    * :func:`utils.calcSun.calcSolNoonUTC`: 
         calculate time of solar noon the given day at the given location on earth (in minutes since 0 UTC)
-    calcSolNoon( jd, longitude, timezone, dst )
+    * :func:`utils.calcSun.calcSolNoon`: 
         calculate time of solar noon the given day at the given location on earth (in minutes)
-    calcSunRiseSetUTC( jd, latitude, longitude )
+    * :func:`utils.calcSun.calcSunRiseSetUTC`: 
         calculate sunrise/sunset the given day at the given location on earth (in minutes since 0 UTC)
-    calcSunRiseSet( jd, latitude, longitude, timezone, dst )
+    * :func:`utils.calcSun.calcSunRiseSet`: 
         calculate sunrise/sunset the given day at the given location on earth (in minutes)
-    calcTerminator( jd, latitudes, longitudes )
+    * :func:`utils.calcSun.calcTerminator`: 
         calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
         note that for plotting only, basemap has a built-in terminator
 

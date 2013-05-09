@@ -17,7 +17,8 @@ This module contains the following functions:
     * :func:`utils.geoPack.lspToLcar`: 
         converts from local spherical coordinates to local cartesian coordinates (and vice-versa)
     * :func:`utils.geoPack.calcDistPnt`: 
-        calculates the coordines|distance,elevation,azimuth of a point given a point of origin and distance,elevation,azimuth|distant point coordinates
+        calculates the coordines|distance,elevation,azimuth of a point given a point of origin and 
+        distance,elevation,azimuth|distant point coordinates
 
 Based on J.M. Ruohoniemi's geopack
 Based on R.J. Barnes radar.pro
@@ -127,11 +128,11 @@ def gspToGcar(X, Y, Z, inverse=False):
     """
     Converts a position from global spherical (geocentric) to global cartesian (and vice-versa).
     The global cartesian coordinate system is defined as:
-        * origin: center of the Earth
-        * X axis in the equatorial plane and through the prime meridian.
-        * Z axis in the direction of the rotational axis and through the North pole
-    The meaning of the input (X,Y,Z) depends on the direction of the conversion (to global 
-    cartesian or to global spherical).
+        - origin: center of the Earth
+        - X axis in the equatorial plane and through the prime meridian.
+        - Z axis in the direction of the rotational axis and through the North pole
+    The meaning of the input (X,Y,Z) depends on the direction of the conversion 
+    (to global cartesian or to global spherical).
 
     **Args**:
         * **X**: latitude [degree] or global cartesian X [km]
@@ -279,27 +280,25 @@ def calcDistPnt(origLat, origLon, origAlt, \
             dist=None, el=None, az=None, \
             distLat=None, distLon=None, distAlt=None):
     """Calculate 
-    - the coordinates and altitude of a distant point given a point of origin, distance, 
-    azimuth and elevation, or 
-    - the coordinates and distance of a distant point given a point of origin, altitude, 
-    azimuth and elevation, or 
-    - the distance, azimuth and elevation between a point of origin and a 
-    distant point or 
-    - the distance, azimuth between a point of origin and a distant point and the altitude
-    of said distant point given a point of origin, distant point and elevation angle.
+        - the coordinates and altitude of a distant point given a point of origin, distance, azimuth and elevation, or 
+        - the coordinates and distance of a distant point given a point of origin, altitude, azimuth and elevation, or 
+        - the distance, azimuth and elevation between a point of origin and a distant point or 
+        - the distance, azimuth between a point of origin and a distant point and the altitude of said distant point given 
+        a point of origin, distant point and elevation angle.
     Input/output is in geodetic coordinates, distances are in km and angles in degrees.
 
     **Args**:
         * **origLat**: geographic latitude of point of origin [degree]
         * **origLon**: geographic longitude of point of origin [degree]
         * **origAlt**: altitude of point of origin [km]
-        * **[dist]**, **[el]**, **[az]**: distance [km], azimuth [degree] and elevation [degree]. 
-            Must be set together.
-        * **[distLat]**, **[distLon]**, **[distAlt]**: latitude [degree], longitude [degree] and 
-            altitide [km] of distant point. Must be set together.
+        * **[dist]**: distance to point [km]
+        * **[el]**: azimuth [degree]
+        * **[az]**: elevation [degree]
+        * **[distLat]**: latitude [degree] of distant point
+        * **[distLon]**: longitude [degree] of distant point
+        * **[distAlt]**: altitide [km] of distant point
     **Returns**:
-        * **dict**: a dictionary containing all the information about origin and distant \
-            points and their relative positions
+        * **dict**: a dictionary containing all the information about origin and distant points and their relative positions
     """
     from math import sqrt, pi
     import numpy
