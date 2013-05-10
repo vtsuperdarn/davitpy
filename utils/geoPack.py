@@ -279,7 +279,7 @@ def lspToLcar(X, Y, Z, inverse=False):
 def calcDistPnt(origLat, origLon, origAlt, \
             dist=None, el=None, az=None, \
             distLat=None, distLon=None, distAlt=None):
-    """Calculate 
+    """Calculate: 
         - the coordinates and altitude of a distant point given a point of origin, distance, azimuth and elevation, or 
         - the coordinates and distance of a distant point given a point of origin, altitude, azimuth and elevation, or 
         - the distance, azimuth and elevation between a point of origin and a distant point or 
