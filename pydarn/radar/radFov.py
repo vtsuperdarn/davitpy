@@ -395,4 +395,3 @@ See Milan et al. [1997] for more details on how this works.
     return degrees(boreOffset)
 
     
-
