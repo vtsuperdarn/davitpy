@@ -324,7 +324,7 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
   """A function of overlay radar scan data on a map
 
   **Args**:
-    * **myData (:class:`radDataTypes.scanData` or :class:`radDataTypes.beamData` or list)**: a radar beam object, a radar scanData object, or simply a list of radar beams
+    * **myData (:class:`pydarn.sdio.radDataTypes.scanData` or :class:`pydarn.sdio.radDataTypes.beamData` or list of :class:`pydarn.sdio.radDataTypes.beamData` objects)**: a radar beam object, a radar scanData object, or simply a list of radar beams
     * **myMap**: the map we are plotting on
     * **[param]**: the parameter we are plotting
     * **[coords]**: the coordinates we are plotting in
