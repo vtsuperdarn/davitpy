@@ -83,8 +83,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   **Example**:
     ::
     
-      plotFan('20121001',['bks','fhw'],time=[0,24],interval=2,fileType='fitex',param='velocity',filtered=0 ,
-                scale=[-400,400],channel='a',coords='geo',colors='lasse',gsct=0,pdf=0,fov=1,edgeColors='face',gflg=0)
+      import datetime as dt
+      pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
 
   Written by AJ 20121004
   """
