@@ -374,7 +374,7 @@ def drawCB(fig,coll,cmap,norm,map=0,pos=[0,0,1,1]):
 
     if(map == 0):
         #create a new axes for the colorbar
-        cax = fig.add_axes([pos[0]+pos[2]+.03, pos[1], 0.03, pos[3]])
+        cax = fig.add_axes([pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
         #set the colormap and boundaries for the collection
         #of plotted items
         if(isinstance(coll,list)):

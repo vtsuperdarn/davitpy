@@ -15,114 +15,82 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-*******************************
-MODULE: pydarn.plot.rti
-*******************************
+.. module:: rti
+   :synopsis: A module for generating rti plots
 
-This module contains the following functions:
+.. moduleauthor:: AJ, 20130123
 
-  plotRti
-  
-  plotFreq
-  
-  plotNoise
-  
-  plotCpid
-  
-  rtiTitle
-
-  drawAxes
-  
-*******************************
+*********************
+**Module**: pydarn.plotting.rti
+*********************
+**Functions**:
+  * :func:`pydarn.plotting.rti.plotRti`
+  * :func:`pydarn.plotting.rti.plotFreq`
+  * :func:`pydarn.plotting.rti.plotNoise`
+  * :func:`pydarn.plotting.rti.plotCpid`
+  * :func:`pydarn.plotting.rti.rtiTitle`
+  * :func:`pydarn.plotting.rti.drawAxes`
 """
 
 
 import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
 from utils.timeUtils import *
 from pydarn.sdio import *
+from matplotlib.figure import Figure
 
 
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
-              svg=0,png=0,filtered=False,fileName=None,custType='fitex',overlayMask=False):
-  """
-  *******************************
-  
-  PACKAGE: pydarn.plot.rti
-  
-  FUNCTION: plotRti(dateStr,rad,beam=7,time=[0,2400],fileType='fitex',params=['velocity','power','width'], \
-    scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=0,pdf=0,filter=0,gflg=0)
-  
-  PURPOSE: create an rti plot for a secified radar and time period
+              pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex'):
+  """create an rti plot for a secified radar and time period
 
-  INPUTS:
-    dateStr: a string containing the target date in yyyymmdd format
-    rad: the 3 letter radar code, e.g. 'bks'
-    [beam]: the beam to plot
-      default: 7
-    [times]: the range of times for which the file should be read,
-      in SIMPLIFIED [hhmm,hhmm] format, eg [29,156], 
-      instead of [0029,0156]
-      note that an end time of 2400 will read to the end of the file
-      default = [0,2400]
-    [fileType]: one of ['fitex','fitacf','lmfit']
-      default = 'fitex'
-    [params]: a list of the fit parameters to plot, allowable values are:
-      ['velocity','power','width','elevation','phi0']
-      default: ['velocity','power','width']
-    [scales]: a list of the min/max values for the color scale for
-      each param.  If omitted, default scales will be used.  If present,
-      the list should be n x 2 where n is the number of
-      elements in the params list.  Use an empty list for default range,
-      e.g. [[-250,300],[],[]]
-      default: [[-200,200],[0,30],[0,150]]
-    [channel]: the channel you wish to plot, the allowable values are
-      'a' and 'b'
-      default: 'a'
-    [coords]: the coordinates to use for the y axis.  The allowable values are
-      'gate','rng','geo'
-      default: 'gate'
-    [colors]: a string indicating what color bar to use, valid inputs are
-      ['lasse','aj']
-      default: 'lasse'
-    [yrng]: a list indicating the min and max values for the y axis in the
-      chosen coordinate system, or a -1 indicating to plot everything
-      default: -1
-    [gsct]: a flag indicating whether to plot ground scatter as transparent
-      default: 0 (ground scatter plotted normally)
-    [pdf]: a flag indicating whether to output to a file
-      default = 0 ( on screen output)
-    [filter]: a flag indicating whether to boxcar filter the data
-      default = 0 (no filter)
-    [gflg]: a flag indicating whether to plot low velocities in gray
-      default = 0 
-  OUTPUTS:
+  **Args**:
+    * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating the start time which you would like to plot
+    * **rad** (str): the 3 letter radar code, e.g. 'bks'
+    * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating th end time you would like plotted.  If this is None, 24 hours will be plotted.  default = None.
+    * **[bmnum] (int)**: The beam to plot.  default: 7
+    * **[fileType]** (str): The file type to be plotted, one of ['fitex','fitacf','lmfit'].  default = 'fitex'.
+    * **[params]** (list): a list of the fit parameters to plot, allowable values are: ['velocity', 'power', 'width', 'elevation', 'phi0'].  default: ['velocity', 'power', 'width']
+    * **[scales]** (list): a list of the min/max values for the color scale for each param.  If omitted, default scales will be used.  If present, the list should be n x 2 where n is the number of elements in the params list.  Use an empty list for default range, e.g. [[-250,300],[],[]].  default: [[-200,200],[0,30],[0,150]]
+    * **[channel]** (char): the channel you wish to plot, e.g. 'a', 'b', 'c', ...  default: 'a'
+    * **[coords]** (str): the coordinates to use for the y axis.  The allowable values are 'gate', 'rng', 'geo', 'mag' default: 'gate'
+    * **[colors]** (str): a string indicating what color bar to use, valid inputs are ['lasse','aj'].  default: 'lasse'
+    * **[yrng]** (list or -1): a list indicating the min and max values for the y axis in the chosen coordinate system, or a -1 indicating to plot everything.  default: -1.
+    * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray. default: False (ground scatter plotted normally)
+    * **[lowGray]** (boolean): a flag indicating whether to plot low velocity scatter as gray. default: False (low velocity scatter plotted normally)
+    * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow.
+    * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
+    * **[dpi]** (int): dots per inch if saving as png.  default = 300
+    * **[show]** (boolean): a flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
+    * **[retfig]** (boolean):  a flag indicating that you want the figure to be returned from the function.  default = False
+    * **[filtered]** (boolean): a flag indicating whether to boxcar filter the data.  default = False (no filter)
+    * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
+    * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
+  **Returns**:
+    * Possibly a figure, depending on the **retfig** keyword
 
-  EXAMPLE:
-    plotRti('20120101','bks',beam=12,time=[10,1453],fileType='fitex',
-    params=['vel','power'],scales=[[-200,200],[]],channel='b',
-    coords='mag'):
+  **Example**:
+    ::
+    
+      import datetime as dt
+      pydarn.plotting.rti.plotRti(dt.datetime(2013,3,16), 'bks', eTime=dt.datetime(2013,3,16,14,30), bmnum=12, fileType='fitacf', scales=[[-500,500],[],[]], coords='geo',colors='aj', filtered=True, show=True)
+
     
   Written by AJ 20121002
-
   """
   import os
-  
-  #check for plotting directory, create if does not exist
-  d = os.environ['PYPLOTS']+'/rti'
-  if not os.path.exists(d):
-    os.makedirs(d)
-    
     
     
   t1 = datetime.datetime.now()
   #check the inputs
-  #assert(isinstance(dateStr,str) and len(dateStr) == 8),'error, dateStr must be a string 8 chars long'
-  #assert(isinstance(rad,str) and len(rad) == 3),'error, dateStr must be a string 3 chars long'
+  assert(isinstance(sTime,datetime.datetime)),'error, sTime must be a datetime object'
+  assert(isinstance(rad,str) and len(rad) == 3),'error, rad must be a string 3 chars long'
+  assert(isinstance(eTime,datetime.datetime) or eTime == None),'error, eTime must be a datetime object or None'
   assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or coords == 'mag'),\
   "error, coords must be one of 'gate','rng','geo','mag"
   assert(isinstance(bmnum,int)),'error, beam must be integer'
@@ -137,6 +105,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
   
+
+  #assign any default color scales
   tscales = []
   for i in range(0,len(params)):
     if(scales == [] or scales[i] == []):
@@ -157,6 +127,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
                           fileName=fileName,custType=custType)
 
+  #check that we have data available
   if myFile == None:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
@@ -165,33 +136,12 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
 
-  if overlayMask:
-    rtfile = open('/data/fit/rtmask/%s.%s.rt.mask' % (sTime.strftime("%Y%m%d"),str(pydarn.radar.radar(rad).id)))
-    print '/data/fit/rtmask/%s.%s.rt.mask' % (sTime.strftime("%Y%m%d"),str(pydarn.radar.radar(rad).id))
-    masks,rttimes,maskarr = [],[],[]
-    cnt = 0
-    rtbm = -1
-    for line in rtfile:
-      cols = line.split()
-      if len(cols) == 1:
-        if cnt == 0:
-          if maskarr != []:
-            masks.append(maskarr)
-            rttimes.append(rtt)
-          rtt=utils.timeUtils.julToDatetime(float(cols[0]))
-          maskarr = []
-        elif cnt == 2:
-          rtbm = int(float(cols[0]))
-        cnt += 1
-      else:
-        cnt = 0
-        if rtbm == bmnum:
-          maskarr.append(int(cols[2]))
 
-
+  #initialize empty lists
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
         [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
   
+  #read the parameters of interest
   while(myBeam != None):
     if(myBeam.time > eTime): break
     if(myBeam.bmnum == bmnum and (sTime <= myBeam.time)):
@@ -216,16 +166,22 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     myBeam = radDataReadRec(myFile)
     
   
-  rtiFig = plot.figure()
+  #get/create a figure
+  if show:
+    rtiFig = plot.figure(figsize=(10,10))
+  else:
+    rtiFig = Figure(figsize=(14,14))
 
-  rtiTitle(sTime,rad,fileType,bmnum)
-  
+  #give the plot a title
+  rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
+  #plot the noise bar
   plotNoise(rtiFig,times,nsky,nsch)
-  
+  #plot the frequency bar
   plotFreq(rtiFig,times,freq,nave)
-  
+  #plot the cpid bar
   plotCpid(rtiFig,times,cpid,mode)
   
+  #plot each of the parameter panels
   figtop = .77
   figheight = .72/len(params)
   for p in range(len(params)):
@@ -236,8 +192,10 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     elif(params[p] == 'phi0'): pArr = phi0
     pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
     
+    #draw the axis
     ax = drawAxes(rtiFig,times,rad,cpid,bmnum,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
                   pos=pos)
+
     
     if(pArr == []): continue
     
@@ -257,11 +215,12 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
           
       if(pArr[i] == []): continue
       
-      for j in range(len(slist[i])):
-        if(not gsct or gsflg[i][j] == 0):
-          data[tcnt][slist[i][j]] = pArr[i][j]
-        elif gsct and gsflg[i][j] == 1:
-          data[tcnt][slist[i][j]] = -100000.
+      if slist[i] != None:
+        for j in range(len(slist[i])):
+          if(not gsct or gsflg[i][j] == 0):
+            data[tcnt][slist[i][j]] = pArr[i][j]
+          elif gsct and gsflg[i][j] == 1:
+            data[tcnt][slist[i][j]] = -100000.
 
         
     if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
@@ -275,33 +234,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
     cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
     
-    #data = numpy.ma.masked_where(data == 100000., data)
-    pcoll = plot.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
-    
-
-    if overlayMask:
-      data = numpy.zeros((len(rttimes)*2,rmax))
-
-      rmax = 70
-      x = numpy.zeros(len(rttimes)*2)
-      tcnt = 0      
-      for i in range(len(rttimes)):
-        x[tcnt] = matplotlib.dates.date2num(rttimes[i])
-        if(i < len(rttimes)-1):
-          if(matplotlib.dates.date2num(rttimes[i+1])-x[tcnt] > 35./1440.):
-            tcnt += 1
-            x[tcnt] = x[tcnt-1]+30./1440.
-        tcnt += 1
-            
-        if(pArr[i] == []): continue
-        
-        for j in range(4,len(masks[i])):
-          data[tcnt][j-4] = masks[i][j]
-        
-      X, Y = numpy.meshgrid(x[:tcnt], y)
-
-      data = numpy.ma.masked_where(data == 0., data)
-      plot.pcolormesh(X, Y, data[:tcnt][:].T, edgecolors='None',alpha=.5,facecolors='b')
+    pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
 
     cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=pos)
     
@@ -331,55 +264,47 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
     if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
     if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
-    
-  print 'done plot'
-  
 
-  if(png):
-    rtiFig.savefig(d+'/'+sTime.strftime("%Y%m%d")+'.png',dpi=300)
-  elif(svg):
-    rtiFig.savefig(d+'/'+sTime.strftime("%Y%m%d")+'.svg')
-  else:
+  #handle the outputs
+  if png == True:
+    if not show:
+      canvas = FigureCanvasAgg(rtiFig)
+    rtiFig.savefig(sTime.strftime("%Y%m%d")+'.png',dpi=dpi)
+  if pdf:
+    if not show:
+      canvas = FigureCanvasAgg(rtiFig)
+    rtiFig.savefig(sTime.strftime("%Y%m%d")+'.pdf')
+  if show:
     rtiFig.show()
     
-  print datetime.datetime.now()-t1
+  print 'plotting took:',datetime.datetime.now()-t1
 
   
 def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
-  """
-  *******************************
+  """draws empty axes for an rti plot
 
-  PACKAGE: pydarn.plot.rti
-
-  FUNCTION: drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72])
-
-  PURPOSE: draws empty axes for an rti plot
-
-  INPUTS:
-    myFig: the MPL figure we are plotting to
-    times: a list of datetime objects referencing the beam soundings
-    rad: 3 letter radar code
-    cpid: list of the cpids or the beam soundings
-    bmnum: beam number being plotted
-    nrang: list of nrang for the beam soundings
-    frang: list of frang of the beam soundings
-    cpid: list of cpids of the beam soundings
-    rsep: list of rsep of the beam soundings
-    bottom: flag indicating if we are at the bottom of the page
-    [yrng]: range of y axis, -1=autoscale (default)
-    [coords]: y axis coordinate system, acceptable values are
-      'geo', 'mag', 'gate', 'rng'
-    [pos]: position of the plot
-
-  OUTPUTS:
-    ax: an axes object
+  **Args**:
+    * **myFig**: the MPL figure we are plotting to
+    * **times**: a list of datetime objects referencing the beam soundings
+    * **rad**: 3 letter radar code
+    * **cpid**: list of the cpids or the beam soundings
+    * **bmnum**: beam number being plotted
+    * **nrang**: list of nrang for the beam soundings
+    * **frang**: list of frang of the beam soundings
+    * **rsep**: list of rsep of the beam soundings
+    * **bottom**: flag indicating if we are at the bottom of the page
+    * **[yrng]**: range of y axis, -1=autoscale (default)
+    * **[coords]**: y axis coordinate system, acceptable values are 'geo', 'mag', 'gate', 'rng'
+    * **[pos]**: position of the plot
+  **Returns**:
+    * **ax**: an axes object
     
-  EXAMPLES:
-    ax = drawAxes(rtiFig,times,rad,cpid,beam,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
-      pos=pos)
+  **Example:
+    ::
+
+      ax = drawAxes(aFig,times,rad,cpid,beam,nrang,frang,rsep,0)
       
   Written by AJ 20121002
-
   """
   
   nrecs = len(times)
@@ -422,16 +347,21 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
   #format the x axis
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
-  plot.xticks(size=9)
+
+  
+  # ax.xaxis.xticks(size=9)
   if(not bottom):
-    loc,lab = plot.xticks()
-    plot.xticks(loc,(' '))
+    for tick in ax.xaxis.get_major_ticks():
+      tick.label.set_fontsize(0) 
   else:
+    for tick in ax.xaxis.get_major_ticks():
+      tick.label.set_fontsize(9) 
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
     ax.xaxis.set_label_text('UT')
     
   #set ytick size
-  plot.yticks(size=9)
+  for tick in ax.yaxis.get_major_ticks():
+    tick.label.set_fontsize(9) 
   #format y axis depending on coords
   if(coords == 'gate'): 
     ax.yaxis.set_label_text('Range gate',size=10)
@@ -454,67 +384,54 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 
   return ax
     
-def rtiTitle(d,rad,fileType,beam,xmin=.1,xmax=.86):
-  """
-  *******************************
+def rtiTitle(fig,d,rad,fileType,beam,xmin=.1,xmax=.86):
+  """draws title for an rti plot
 
-  PACKAGE: pydarn.plot.rti
-
-  FUNCTION: rtiTitle(dateStr,rad,fileType,beam,xmin=.1,xmax=.86)
-
-  PURPOSE: draws title for an rti plot
-
-  INPUTS:
-    dateStr: the date being plotted in 'yyyymmdd' format
-    rad: the 3 letter radar code
-    fileType: the file type being plotted
-    beam: the beam number being plotted
-    [xmin]: minimum x value o the plot in page coords
-    [xmax]: maximum x value o the plot in page coords
-
-  OUTPUTS:
-    NONE
+  **Args**:
+    * **d**: the date being plotted as a datetime object
+    * **rad**: the 3 letter radar code
+    * **fileType**: the file type being plotted
+    * **beam**: the beam number being plotted
+    * **[xmin]**: minimum x value o the plot in page coords
+    * **[xmax]**: maximum x value o the plot in page coords
+  * **Returns**:
+    *Nothing.
     
-  EXAMPLES:
-    rtiTitle(dateStr,rad,fileType,beam)
+  **Example**:
+    ::
+
+      import datetime as dt
+      rtiTitle(dt.datetime(2011,1,1),'bks','fitex',7)
       
   Written by AJ 20121002
-
   """
   r=pydarn.radar.network().getRadarByCode(rad)
   
-  plot.figtext(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
+  fig.text(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
   
-  plot.figtext((xmin+xmax)/2.,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
+  fig.text((xmin+xmax)/2.,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
   weight=550,size='large',ha='center')
   
-  plot.figtext(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
+  fig.text(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
   
 def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
-  """
-  *******************************
+  """plots cpid panel at position pos
 
-  PACKAGE: pydarn.plot.rti
-
-  FUNCTION: plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05])
-
-  PURPOSE: plots cpid panel as position pos
-
-  INPUTS:
-    myFig: the MPL figure we are plotting on
-    times: a list of the times of the beam soundings
-    cpid: a lsit of the cpids of th beam soundings
-    mode: a list of the ifmode param
-    [pos]: position of the panel
-
-  OUTPUTS:
-    NONE
+  **Args**:
+    * **myFig**: the MPL figure we are plotting on
+    * **times**: a list of the times of the beam soundings
+    * **cpid**: a lsit of the cpids of th beam soundings
+    * **mode**: a list of the ifmode param
+    * **[pos]**: position of the panel
+  **Returns**:
+    * Nothing.
     
-  EXAMPLES:
-    plotCpid(rtiFig,times,cpid,mode)
+  **Example**:
+    ::
+
+      plotCpid(rtiFig,times,cpid,mode)
       
   Written by AJ 20121002
-
   """
   
   oldCpid = -9999999
@@ -555,44 +472,37 @@ def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
   #format the x axis
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
-  plot.xticks(size=9)
+
       
-  #remove the x tick labels
-  loc,lab = plot.xticks()
-  plot.xticks(loc,(' '))
-  #use only 2 major yticks
-  plot.yticks([],(' '))
-  plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'CPID',ha='center',va='center', \
+  # ax.xaxis.xticks(size=9)
+  for tick in ax.xaxis.get_major_ticks():
+    tick.label.set_fontsize(0) 
+
+  ax.set_yticks([])
+  myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'CPID',ha='center',va='center', \
   size=8.5,rotation='vertical')
   
   
   
     
 def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
-  """
-  *******************************
+  """plots a noise panel at position pos
 
-  PACKAGE: pydarn.plot.rti
-
-  FUNCTION: plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06])
-
-  PURPOSE: plots a noise panel at position pos
-
-  INPUTS:
-    myFig: the MPL figure we are plotting on
-    times: a list of the times of the beam soundings
-    sky: a lsit of the noise.sky of the beam soundings
-    search: a list of the noise.search param
-    [pos]: position of the panel
-
-  OUTPUTS:
-    NONE
+  **Args**:
+    * **myFig**: the MPL figure we are plotting on
+    * **times**: a list of the times of the beam soundings
+    * **sky**: a lsit of the noise.sky of the beam soundings
+    * **search**: a list of the noise.search param
+    * **[pos]**: position of the panel
+  **Returns**:
+    * Nothing
     
-  EXAMPLES:
-    plotNoise(rtiFig,times,nsky,nsch)
+  **Example**:
+    ::
+
+      plotNoise(rtiFig,times,nsky,nsch)
       
   Written by AJ 20121002
-
   """
   
   #read the data
@@ -611,24 +521,22 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
   #format the x axis
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
-  plot.xticks(size=9)
   
   #plot the sky noise data
   ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-', \
   tz=None, xdate=True, ydate=False)
   #remove the x tick labels
-  loc,lab = plot.xticks()
-  plot.xticks(loc,(' '))
+  ax.set_xticklabels([' '])
   #use only 2 major yticks
-  plot.yticks([0,6],(' '))
-  
+  ax.set_yticks([0,6])
+  ax.set_yticklabels([' ',' '])
+
   #left y axis annotation
-  plot.figtext(pos[0]-.01,pos[1]+.004,'10^0',ha='right',va='bottom',size=8)
-  plot.figtext(pos[0]-.01,pos[1]+pos[3],'10^6',ha='right',va='top',size=8)
-  plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'N.Sky',ha='center',va='center', \
-  size=8.5,rotation='vertical')
+  myFig.text(pos[0]-.01,pos[1]+.004,'10^0',ha='right',va='bottom',size=8)
+  myFig.text(pos[0]-.01,pos[1]+pos[3],'10^6',ha='right',va='top',size=8)
+  myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'N.Sky',ha='center',va='center',size=8.5,rotation='vertical')
   l=lines.Line2D([pos[0]-.06,pos[0]-.06], [pos[1]+.01,pos[1]+pos[3]-.01], \
-  transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
+      transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
   ax.add_line(l)
   
   
@@ -643,46 +551,40 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
   #plot the search noise data
   ax2.plot_date(matplotlib.dates.date2num(times), numpy.log10(search), fmt='k:', \
   tz=None, xdate=True, ydate=False,lw=1.5)
-  
-  #remove the x tick labels
-  loc,lab = plot.xticks()
-  plot.xticks([0],(' '))
+
+  ax2.set_xticklabels([' '])
   #use only 2 major yticks
-  plot.yticks([0,6],(' '))
+  ax2.set_yticks([0,6])
+  ax2.set_yticklabels([' ',' '])
+
+
   
   #right y axis annotation
-  plot.figtext(pos[0]+pos[2]+.01,pos[1]+.004,'10^0',ha='left',va='bottom',size=8)
-  plot.figtext(pos[0]+pos[2]+.01,pos[1]+pos[3],'10^6',ha='left',va='top',size=8)
-  plot.figtext(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'N.Sch',ha='center',va='center',size=8.5,rotation='vertical')
+  myFig.text(pos[0]+pos[2]+.01,pos[1]+.004,'10^0',ha='left',va='bottom',size=8)
+  myFig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'10^6',ha='left',va='top',size=8)
+  myFig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'N.Sch',ha='center',va='center',size=8.5,rotation='vertical')
   l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
   transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
   ax2.add_line(l)
   
 def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
-  """
-  *******************************
+  """plots a frequency panel at position pos
 
-  PACKAGE: pydarn.plot.rti
-
-  FUNCTION: plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06])
-
-  PURPOSE: plots a frequency panel at position pos
-
-  INPUTS:
-    myFig: the MPL figure we are plotting on
-    times: a list of the times of the beam soundings
-    freq: a lsit of the tfreq of the beam soundings
-    search: a list of the nave param
-    [pos]: position of the panel
-
-  OUTPUTS:
-    NONE
+  **Args**:
+    * **myFig**: the MPL figure we are plotting on
+    * **times**: a list of the times of the beam soundings
+    * **freq**: a lsit of the tfreq of the beam soundings
+    * **search**: a list of the nave param
+    * **[pos]**: position of the panel
+  **Returns**:
+    *Nothing.
     
-  EXAMPLES:
-    plotNoise(rtiFig,times,tfreq,nave)
+  **Example**:
+    ::
+
+      plotNoise(rtiFig,times,tfreq,nave)
       
   Written by AJ 20121002
-
   """
     
   #FIRST, DO THE TFREQ PLOTTING
@@ -699,11 +601,15 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
     
   ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
   tz=None, xdate=True, ydate=False,markersize=2)
-  
-  loc,lab = plot.xticks()
-  plot.xticks(loc,(' '))
-  #customize yticks
-  plot.yticks([10,16],(' '))
+
+
+  ax.set_xticklabels([' '])
+  #use only 2 major yticks
+  ax.set_yticks([10,16])
+  ax.set_yticklabels([' ',' '])
+
+
+
   
   xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
   xrng = (xmax-xmin)
@@ -712,12 +618,11 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
   #format the x axis
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
-  plot.xticks(size=9)
   
-  plot.figtext(pos[0]-.01,pos[1],'10',ha='right',va='bottom',size=8)
-  plot.figtext(pos[0]-.01,pos[1]+pos[3]-.003,'16',ha='right',va='top',size=8)
-  plot.figtext(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
-  plot.figtext(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
+  myFig.text(pos[0]-.01,pos[1],'10',ha='right',va='bottom',size=8)
+  myFig.text(pos[0]-.01,pos[1]+pos[3]-.003,'16',ha='right',va='top',size=8)
+  myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
+  myFig.text(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
   l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
   transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
   ax.add_line(l)
@@ -733,15 +638,16 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
   
   ax2.plot_date(matplotlib.dates.date2num(times), nave, fmt='k:', \
   tz=None, xdate=True, ydate=False,markersize=2)
+
+  ax2.set_xticklabels([' '])
+  #use only 2 major yticks
+  ax2.set_yticks([0,80])
+  ax2.set_yticklabels([' ',' '])
+
   
-  loc,lab = plot.xticks()
-  plot.xticks([0],(' '))
-  #customize yticks
-  plot.yticks([0,80],(' '))
-  
-  plot.figtext(pos[0]+pos[2]+.01,pos[1]+.004,'0',ha='left',va='bottom',size=8)
-  plot.figtext(pos[0]+pos[2]+.01,pos[1]+pos[3],'80',ha='left',va='top',size=8)
-  plot.figtext(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'Nave',ha='center',va='center',size=8.5,rotation='vertical')
+  myFig.text(pos[0]+pos[2]+.01,pos[1]+.004,'0',ha='left',va='bottom',size=8)
+  myFig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'80',ha='left',va='top',size=8)
+  myFig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'Nave',ha='center',va='center',size=8.5,rotation='vertical')
   l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
   transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
   ax2.add_line(l)
