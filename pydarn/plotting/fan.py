@@ -24,8 +24,8 @@
 **Module**: pydarn.plotting.fan
 ***************************
 **Functions**:
-  * :func:`plotFan`
-  * :func:`overlayFan`
+  * :func:`pydarn.plotting.fan.plotFan`
+  * :func:`pydarn.plotting.fan.overlayFan`
 """
   
 import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
