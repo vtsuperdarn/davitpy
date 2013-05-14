@@ -227,7 +227,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     elif(coords == 'rng'): y = numpy.linspace(frang[0],rmax*rsep[0],rmax+1)
     else:
       site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[0])
-      myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,nbeams=site.maxbeam,rsep=rsep[0],coords=coords)
+      myFov = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[0],coords=coords)
       y =  myFov.latFull[bmnum]
       
     X, Y = numpy.meshgrid(x[:tcnt], y)
