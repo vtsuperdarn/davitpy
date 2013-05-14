@@ -278,7 +278,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     rtiFig.show()
     
   print 'plotting took:',datetime.datetime.now()-t1
-
+  if retfig:
+    return rtiFig
   
 def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
   """draws empty axes for an rti plot
