@@ -37,5 +37,7 @@ def getCpName(cpid):
 	if(fabs(cpid) == 503): return 'tauscan'
 	if(fabs(cpid) == 9213): return 'pcpscan'
 	if(fabs(cpid) == 1): return 'normalscan'
+	if(fabs(cpid) == 210): return 'rbsp-tau'
+	if(fabs(cpid) == 3501): return 'twofsound'
 	return ''
 
