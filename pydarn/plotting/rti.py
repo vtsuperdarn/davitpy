@@ -236,7 +236,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
     pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
 
-    cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=pos)
+    cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
     
     l = []
     #define the colorbar labels
