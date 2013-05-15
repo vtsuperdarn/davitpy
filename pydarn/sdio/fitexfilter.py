@@ -1,7 +1,61 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import pydarn
 import numpy as np
 import datetime as dt
 import utils
+
+"""
+*********************
+**Module**: pydarn.sdio.fitexfilter
+*********************
+Filter fitexfiles natively in python
+
+.. warning::
+  This is very SLOW.  We are currently working on this.  We recommend using the c version which is folded into :func:`pydarn.sdio.radDataRead.radDataOpen` 
+**Functions**:
+  * :func:`combBeams`
+  * :func:`fitFilter`
+  * :func:`doFilter
+**Classes**:
+  * :class:`Gate`
+"""
+
+class Gate(object):
+  """A class to represent a single range gate
+    
+  **Attrs**: 
+    * **v** (float): velocity
+    * **w_l** (float): spectral width
+    * **p_l** (float): power
+    * **elv** (float): elevation angle
+    * **phi0** (float): phase difference between front and back array
+
+  written by AJ, 20130402
+  """
+  def __init__(self,fit,i):
+    self.v = fit.v[i]
+    self.w_l = fit.w_l[i]
+    self.p_l = fit.p_l[i]
+    self.pwr0 = fit.pwr0[i]
+    if fit.elv != None: self.elv = fit.elv[i]
+    else: self.elv = None
+    if fit.phi0 != None: self.phi0 = fit.phi0[i]
+    else: self.phi0 = None
 
 def combBeams(scan):
   """This function combines all repeated beams within a scan into an averaged beam
@@ -71,18 +125,28 @@ def combBeams(scan):
 
   return outScan
 
-class Gate(object):
-  def __init__(self,fit,i):
-    self.v = fit.v[i]
-    self.w_l = fit.w_l[i]
-    self.p_l = fit.p_l[i]
-    self.pwr0 = fit.pwr0[i]
-    if fit.elv != None: self.elv = fit.elv[i]
-    else: self.elv = None
-    if fit.phi0 != None: self.phi0 = fit.phi0[i]
-    else: self.phi0 = None
 
-def fitFilter(inFile,outFile,thresh=0.4):
+def fitFilter(inFile,outFile,thresh=0.4,vb=False):
+  """This function applies a boxcar filter to a fitacf file
+    
+  .. warning::
+    This is **VERY** slow.  We are currently working on improving this.
+
+  **Args**: 
+    * **infile** (str): the name of the input fitacf-format file
+    * **outfile** (str): the name of the output file
+    * **[thresh]** (float): the filter threshold for turning on a R-B cell.  default = 0.4
+    * **[vb]** (boolean): a flag indicating verbose output.  default = False
+  **Returns**:
+    * Nothing.
+
+  **Example**:
+    ::
+    
+      pydarn.sdio.fitexfilter.fitFilter('input.fitacf','output.fitacf',thresh=0.5,vb=True)
+    
+  written by AJ, 20130402
+  """
   inp = pydarn.sdio.radDataOpen(dt.datetime(2010,5,1),'bks',fileName=inFile)
 
   outp = open(outFile,'w')
@@ -99,9 +163,9 @@ def fitFilter(inFile,outFile,thresh=0.4):
 
     tsc = doFilter(scans,thresh=thresh)
 
-    # for b in tsc:
-    #   print b
-    #   pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
+    for b in tsc:
+      print b
+      pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
 
     sc = pydarn.sdio.radDataReadScan(inp)
     
@@ -111,14 +175,31 @@ def fitFilter(inFile,outFile,thresh=0.4):
 
   tsc = doFilter(scans,thresh=thresh)
   print tsc.time
-  # for b in tsc:
-  #   pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
+  for b in tsc:
+    pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
 
   outp.close()
 
 
 def doFilter(scans,thresh=.4):
+  """This function applies a boxcar filter to consecutive scans
+    
+  .. warning::
+    This is **VERY** slow.  We are currently working on improving this.
 
+  **Args**: 
+    * **scans** (list): a list of 3 consecutive scans in time.
+    * **[thresh]** (float): the filter threshold for turning on a R-B cell.  default = 0.4
+  **Returns**:
+    * outScan** (:class:`pydarn.sdio.radDataTypes.scanData`): the filtered scan
+
+  **Example**:
+    ::
+    
+      filtScan = pydarn.sdio.fitexfilter.doFilter(scanList,thresh=0.5)
+    
+  written by AJ, 20130402
+  """
   myScans = []
   for s in scans:
     if s == None:

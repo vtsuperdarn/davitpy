@@ -2,7 +2,7 @@
 # Full license can be found in LICENSE.txt
 """
 *********************
-**Module**: pydarn.plot.mapOverlay
+**Module**: pydarn.plotting.mapOverlay
 *********************
 Overlay information on maps
 
