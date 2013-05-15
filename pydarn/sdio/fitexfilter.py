@@ -25,7 +25,7 @@ Filter fitexfiles natively in python
 **Functions**:
   * :func:`pydarn.sdio.fitexfilter.combBeams`
   * :func:`pydarn.sdio.fitexfilter.fitFilter`
-  * :func:`pydarn.sdio.fitexfilter.doFilter
+  * :func:`pydarn.sdio.fitexfilter.doFilter`
 **Classes**:
   * :class:`pydarn.sdio.fitexfilter.Gate`
 """
