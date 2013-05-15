@@ -14,11 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pydarn
-import numpy as np
-import datetime as dt
-import utils
-
 """
 *************************************
 **Module**: pydarn.sdio.fitexfilter
@@ -34,6 +29,12 @@ Filter fitexfiles natively in python
 **Classes**:
   * :class:`pydarn.sdio.fitexfilter.Gate`
 """
+
+import pydarn
+import numpy as np
+import datetime as dt
+import utils
+
 
 class Gate(object):
   """A class to represent a single range gate
