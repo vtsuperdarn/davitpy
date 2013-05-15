@@ -20,19 +20,19 @@ import datetime as dt
 import utils
 
 """
-*********************
+*************************************
 **Module**: pydarn.sdio.fitexfilter
-*********************
+*************************************
 Filter fitexfiles natively in python
 
 .. warning::
   This is very SLOW.  We are currently working on this.  We recommend using the c version which is folded into :func:`pydarn.sdio.radDataRead.radDataOpen` 
 **Functions**:
-  * :func:`combBeams`
-  * :func:`fitFilter`
-  * :func:`doFilter
+  * :func:`pydarn.sdio.fitexfilter.combBeams`
+  * :func:`pydarn.sdio.fitexfilter.fitFilter`
+  * :func:`pydarn.sdio.fitexfilter.doFilter
 **Classes**:
-  * :class:`Gate`
+  * :class:`pydarn.sdio.fitexfilter.Gate`
 """
 
 class Gate(object):
