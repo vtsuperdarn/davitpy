@@ -14,6 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+.. module:: timeUtils
+   :synopsis: A module for manipulating time representations
+
+.. moduleauthor:: VTSD Lab
+
+****************************
+**Module**: utils.timeUtils
+****************************
+**Functions**:
+  * :func:`utils.timeUtils.dateToDecYear`
+  * :func:`utils.timeUtils.dateToYyyymmdd`
+  * :func:`utils.timeUtils.datetimeToEpoch`
+  * :func:`utils.timeUtils.julToDatetime`
+  * :func:`utils.timeUtils.parseDate`
+  * :func:`utils.timeUtils.parseTime`
+  * :func:`utils.timeUtils.timeYrsecToDate`
+  * :func:`utils.timeUtils.yyyymmddToDate`
+"""
+
+
 def dateToYyyymmdd(myDate):
   """takes a python datetime object and returns a string in yyyymmdd format
 
