@@ -29,10 +29,10 @@ try:
 except Exception,e: 
 	print 'problem importing mapOverlay: ', e
 
-try:
-	from pygridPlot import *
-except Exception,e: 
-	print 'problem importing pygridPlot: ', e
+# try:
+# 	from pygridPlot import *
+# except Exception,e: 
+# 	print 'problem importing pygridPlot: ', e
 
 try:
 	from printRec import *

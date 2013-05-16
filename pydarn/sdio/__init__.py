@@ -31,10 +31,10 @@ try:
 	from radDataRead import *
 except: print 'problem importing radDataRead'
 	
-try:
-	import pygridIo
-	from pygridIo import *
-except: print 'problem importing pygridIo'
+# try:
+# 	import pygridIo
+# 	from pygridIo import *
+# except: print 'problem importing pygridIo'
 
 try:
 	import fitexfilter
