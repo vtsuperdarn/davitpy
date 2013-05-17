@@ -16,9 +16,9 @@ This includes the following function(s):
 *******************************
 """
 
-try: import pygridLib 
-except Exception, e: 
-    print 'problem importing pydarn.proc.pygridLib: ', e
+# import pygridLib
+# from pygridLib import *
+
 
 #import simLib
 #from simLib import *
