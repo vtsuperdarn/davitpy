@@ -301,31 +301,29 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None, cp=N
     return None
     
 def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
-  """
-| **PACKAGE**: pydarn.sdio.dbUtils
-| **FUNCTION**: mapDbFit(dateStr, rad, [time], [fileType], [vb]):
-| **PURPOSE**: put dmap data into the mongodb database
-|
-| **NOTE**: this is a write operation, so you must have DBWRITEUSER
-|   and DBWRITEPASS defined in your ~/.bashrc.  these can be obtained
-|   from the VT crew, as needed.  most people will not need this capability
-|
-| **INPUTS**:
-|   **dateStr**: the target date in 'yyymmdd' format
-|   **rad**: the three letter radar code, e.g. 'bks'
-|   **[time]**: the time range to perform the operation in REDUCED
-|     hhmm format, ie [28,652] instead of [0028,0652].  default = [0,2400]
-|   **[fileType]**: the file type for which to perform the operation.
-|     valid inputs are 'fitex' [default], 'fitacf', 'lmfit', 'rawacf' , 'iqdat'
-|   **[vb]**: a flag for verbose output.  default = 0
-|
-| **OUTPUTS**:
-|   NONE
-| 
-| **EXAMPLES**:
-|   mapDbFit('20110710', 'bks', time=[0,240], fileType='fitacf', vb=1):
-|   
-| Written by AJ 20130108
+  """put dmap data into the mongodb database
+ 
+  **NOTE**: this is a write operation, so you must have DBWRITEUSER
+    and DBWRITEPASS defined in your ~/.bashrc.  these can be obtained
+    from the VT crew, as needed.  most people will not need this capability
+ 
+  **Args**:
+    * **dateStr**: the target date in 'yyymmdd' format
+    * **rad**: the three letter radar code, e.g. 'bks'
+    * **[time]**: the time range to perform the operation in REDUCED
+      hhmm format, ie [28,652] instead of [0028,0652].  default = [0,2400]
+    * **[fileType]**: the file type for which to perform the operation.
+      valid inputs are 'fitex' [default], 'fitacf', 'lmfit', 'rawacf' , 'iqdat'
+    * **[vb]**: a flag for verbose output.  default = 0
+  **Returns**:
+    * Nothing
+  
+  **Example**:
+    ::
+
+      mapDbFit('20110710', 'bks', time=[0,240], fileType='fitacf', vb=1):
+    
+  Written by AJ 20130108
   """
   import utils
   import math
