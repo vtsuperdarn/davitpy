@@ -17,3 +17,4 @@ port install py${ver}-pil
 port install py${ver}-sqlalchemy
 port install py${ver}-psycopg2
 port install py${ver}-pymongo
+port install py${ver}-paramiko
