@@ -34,6 +34,10 @@ Then run thes install scripts specific to your system (Ubuntu or MacOS):
     sudo sh python_install_linux.sh
     sh set_paths_linux.sh
     
+Next, either restart the terminal, open a new one, or source your .bashrc, e.g.
+
+    source ~/.bashrc
+    
 You may have to recompile the binaries:
 
     cd ../..
