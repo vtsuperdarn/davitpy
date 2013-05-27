@@ -57,4 +57,4 @@ And code away!
 
 * you will need gfortran to compile most of the models
 * you will need mpi to run the ray tracing (mpich2 prefered)
-* you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>
+* you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.  First, clone the repo, then run setup.py (python setup.py)
