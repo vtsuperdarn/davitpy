@@ -22,13 +22,13 @@
 **Module**: pydarn.sdio.radDataTypes
 *********************
 **Classes**:
-  * :class:`radDataPtr`
-  * :class:`baseData`
-  * :class:`beamData`
-  * :class:`prmData`
-  * :class:`fitData`
-  * :class:`rawData`
-  * :class:`iqData`
+  * :class:`pydarn.sdio.radDataTypes.radDataPtr`
+  * :class:`pydarn.sdio.radDataTypes.baseData`
+  * :class:`pydarn.sdio.radDataTypes.beamData`
+  * :class:`pydarn.sdio.radDataTypes.prmData`
+  * :class:`pydarn.sdio.radDataTypes.fitData`
+  * :class:`pydarn.sdio.radDataTypes.rawData`
+  * :class:`pydarn.sdio.radDataTypes.iqData`
 """
 
 
