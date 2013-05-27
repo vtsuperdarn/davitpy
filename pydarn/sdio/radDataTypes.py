@@ -67,7 +67,7 @@ class radDataPtr():
     * **cp** (int): control prog id of the request
     * **dType** (str): the data type, 'mongo' or 'dmap'
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
-    * **fBeam** (:class:`beamData`): the first beam of the next scan, useful for when reading into scan objects
+    * **fBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): the first beam of the next scan, useful for when reading into scan objects
   **Methods**:
     * Nothing.
     
@@ -111,7 +111,7 @@ class baseData():
       In general, users will not need to use this.
       
     **Args**: 
-      * **obj** (:class:`baseData`): the object to be copied
+      * **obj** (:class:`pydarn.sdio.radDataTypes.baseData`): the object to be copied
     **Returns**:
       * Nothing.
     **Example**:
@@ -162,7 +162,7 @@ class baseData():
       else: setattr(self,cipher[key],val)
       
   def toDbDict(self):
-    """This method is used to convert a :class:`baseData` object into a mongodb radData data dictionary.  
+    """This method is used to convert a :class:`pydarn.sdio.radDataTypes.baseData` object into a mongodb radData data dictionary.  
     
     .. note::
       In general, users will not need to worry about this.
@@ -308,7 +308,7 @@ class baseData():
     #return myStr
     
 class scanData(list):
-  """a class to contain a radar scan.  Extends list.  Basically just a list of :class:`beamData` objects
+  """a class to contain a radar scan.  Extends list.  Basically just a list of :class:`pydarn.sdio.radDataTypes.beamData` objects
   
   **Attrs**:
     Nothing.
@@ -332,13 +332,13 @@ class beamData(baseData):
     * **time** (`datetime <http://tinyurl.com/bl352yx>`_): timestamp of beam sounding
     * **channel** (str): radar operating channel, eg 'a', 'b', ...
     * **bmnum** (int): beam number
-    * **prm** (:class:`prmData`): operating params
-    * **fit** (:class:`fitData`): fitted params
-    * **rawacf** (:class:`rawData`): rawacf data
-    * **iqdat** (:class:`iqData`): iqdat data
-    * **fitex** (:class:`fitData`): fitted params from fitex file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
-    * **fitacf** (:class:`fitData`): fitted params from fitacf file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
-    * **lmfit** (:class:`fitData`): fitted params from lmfit file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
+    * **prm** (:class:`pydarn.sdio.radDataTypes.prmData`): operating params
+    * **fit** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params
+    * **rawacf** (:class:`pydarn.sdio.radDataTypes.rawData`): rawacf data
+    * **iqdat** (:class:`pydarn.sdio.radDataTypes.iqData`): iqdat data
+    * **fitex** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params from fitex file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
+    * **fitacf** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params from fitacf file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
+    * **lmfit** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params from lmfit file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
     * **exflg** (int): a flag indicating the presence of fitex data. this is useful for database operation, can enerally be ignored by users
     * **acflg** (int): a flag indicating the presence of acflg data. this is useful for database operation, can generally be ignored by users
     * **lmflg** (int): a flag indicating the presence of lmfit data. this is useful for database operation, can generally be ignored by users
@@ -525,7 +525,7 @@ class rawData(baseData):
     if(rawDict != None): self.updateValsFromDict(rawDict)
     
 class iqData(baseData):
-  """ a class to contain the iq data from a radar beam sounding, extends :class:`baseData`
+  """ a class to contain the iq data from a radar beam sounding, extends :class:`pydarn.sdio.radDataTypes.baseData`
   
   .. warning::
     I'm not sure what all of the attributes mean.  if somebody knows what these are, please help!
