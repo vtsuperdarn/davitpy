@@ -25,9 +25,9 @@
 ************************************
 
 **Functions**:
-  * :func:`radDataOpen`
-  * :func:`radDataReadRec`
-  * :func:`radDataReadScan`
+  * :func:`pydarn.sdio.radDataRead.radDataOpen`
+  * :func:`pydarn.sdio.radDataRead.radDataReadRec`
+  * :func:`pydarn.sdio.radDataRead.radDataReadScan`
 """
 
 def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
