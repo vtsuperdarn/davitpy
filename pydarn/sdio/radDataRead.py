@@ -25,9 +25,9 @@
 ************************************
 
 **Functions**:
-  * :func:`radDataOpen`
-  * :func:`radDataReadRec`
-  * :func:`radDataReadScan`
+  * :func:`pydarn.sdio.radDataRead.radDataOpen`
+  * :func:`pydarn.sdio.radDataRead.radDataReadRec`
+  * :func:`pydarn.sdio.radDataRead.radDataReadScan`
 """
 
 def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
@@ -49,7 +49,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
     * **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
   **Returns**:
-    * **myPtr** (:class:`radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
+    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
     
   **Example**:
     ::
@@ -299,15 +299,15 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     return None
   
 def radDataReadRec(myPtr):
-  """A function to read a single record of radar data from a :class:`radDataTypes.radDataPtr` object
+  """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
   .. note::
-    to use this, you must first create a :class:`radDataTypes.radDataPtr` object with :func:`radDataOpen` 
+    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen` 
 
   **Args**:
-    * **myPtr** (:class:`radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
   **Returns**:
-    * **myBeam** (:class:`radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
+    * **myBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
     
   **Example**:
     ::
@@ -397,18 +397,18 @@ def radDataReadRec(myPtr):
       return None
       
 def radDataReadScan(myPtr):
-  """A function to read a full scan of data from a :class:`radDataTypes.radDataPtr` object
+  """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
   .. note::
-    to use this, you must first create a :class:`radDataTypes.radDataPtr` object with :func:`radDataOpen`
+    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
     
   .. note::
     This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
 
   **Args**:
-    * **myPtr** (:class:`radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
   **Returns**:
-    * **myScan** (:class:`radDataTypes.scanData): an object filled with the data we are after.  *will return None when finished reading*
+    * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData): an object filled with the data we are after.  *will return None when finished reading*
     
   **Example**:
     ::
