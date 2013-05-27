@@ -18,5 +18,6 @@ apt-get install -y python-tornado
 apt-get install -y python-zmq
 apt-get install -y python-imaging
 apt-get install -y python-sqlalchemy
+apt-get install -y python-paramiko
 apt-get install -y python-psycopg2
 apt-get install -y python-pymongo
