@@ -30,14 +30,14 @@ Then cd into the cloned directory:
     
 Then run thes install scripts specific to your system 
 
-* Ubuntu
+Ubuntu
 
     cd install/linux/
     sudo sh python_install_linux.sh
     sh set_paths_linux.sh
     
-* MacOS
-    
+MacOS
+
     cd install/mac
     sudo sh python_install_mac.sh
     sh set_paths_mac.sh
