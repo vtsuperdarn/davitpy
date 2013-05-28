@@ -28,7 +28,7 @@ Then cd into the cloned directory:
 
     cd davitpy
     
-Then run thes install scripts specific to your system 
+Then run the install scripts specific to your system 
 
 Ubuntu
 
@@ -42,7 +42,8 @@ MacOS
     sudo sh python_install_mac.sh
     sh set_paths_mac.sh
 
-    
+If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
+
 Next, either restart the terminal, open a new one, or source your .bashrc, e.g.
 
     source ~/.bashrc
