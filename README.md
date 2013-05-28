@@ -34,9 +34,9 @@ Then run the install scripts specific to your system
 
 Ubuntu
 
-    cd install/linux/
-    sudo sh python_install_linux.sh
-    sh set_paths_linux.sh
+    cd install/ubuntu/
+    sudo sh python_install_ubuntu.sh
+    sh set_paths_ubuntu.sh
     
 MacOS
 
