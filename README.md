@@ -74,5 +74,5 @@ And code away!
 
 ### Issues and Bug reporting
 
-Please report any problems/comments using the Issues tab of the davitpy GitHub page.
+Please report any problems/comments using the Issues tab of the davitpy GitHub page, or use this link: https://github.com/vtsuperdarn/davitpy/issues
 
