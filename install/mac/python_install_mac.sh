@@ -18,6 +18,5 @@ port install py${ver}-sqlalchemy
 port install py${ver}-psycopg2
 port install py${ver}-pymongo
 port install py${ver}-paramiko
-port install mpich2
-port install gfortran
+port install openmpi
 
