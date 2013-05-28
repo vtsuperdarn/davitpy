@@ -22,3 +22,5 @@ apt-get install -y python-paramiko
 apt-get install -y python-psycopg2
 apt-get install -y python-pymongo
 apt-get install -y mpich2
+apt-get install -y gfortran
+
