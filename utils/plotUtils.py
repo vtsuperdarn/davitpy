@@ -198,6 +198,7 @@ class mapObj(basemap.Basemap):
         return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
     elif self.coords is 'mlt':
+      print 'Not implemented'
       callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
 
 
