@@ -28,11 +28,20 @@ Then cd into the cloned directory:
 
     cd davitpy
     
-Then run thes install scripts specific to your system (Ubuntu or MacOS):
+Then run thes install scripts specific to your system 
+
+* Ubuntu
 
     cd install/linux/
     sudo sh python_install_linux.sh
     sh set_paths_linux.sh
+    
+* MacOS
+    
+    cd install/mac
+    sudo sh python_install_mac.sh
+    sh set_paths_mac.sh
+
     
 Next, either restart the terminal, open a new one, or source your .bashrc, e.g.
 
@@ -59,6 +68,4 @@ And code away!
 
 ### Notes
 
-* you will need gfortran to compile most of the models
-* you will need mpi to run the ray tracing (mpich2 prefered)
 * you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.
