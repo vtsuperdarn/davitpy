@@ -62,15 +62,25 @@ Now you are ready to go. From anywhere on your machine just type:
 
     davitpy
 
-or 
+for the interactive terminal, or 
 
     davitpy-notebook
 
-or
+for the notebook, or
  
     davitpy-qtconsole
     
+for the QT console.
 And code away!
+
+
+### Using the example notebooks
+
+In `docs/notebook` you will find a small collection of notebooks demonstrating the main modules of DaViTpy (see also the documentation: http://davit.ece.vt.edu/davitpy/).
+Go to that directory and run
+
+    davitpy-notebook
+
 
 ### Issues and Bug reporting
 
