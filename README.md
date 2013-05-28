@@ -18,7 +18,9 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 
 ### Install instructions
 
-First, you will need RST to read standard SuperDARN dmap files. You will find a strpped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+First install python.  Note that we have developed using python 2.7.  If you use a different version, the code will probably not work.
+
+You will need RST to read standard SuperDARN dmap files. You will find a strpped down version of RST here: https://github.com/vtsuperdarn/RSTLite
 
 Then, clone this repository:
 
@@ -44,9 +46,12 @@ MacOS
 
 If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
 
+You will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.
+
 Next, either restart the terminal, open a new one, or source your .bashrc, e.g.
 
     source ~/.bashrc
+    
     
 You may have to recompile the binaries:
 
@@ -67,6 +72,5 @@ or
     
 And code away!
 
-### Notes
 
-* you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.
+
