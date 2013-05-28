@@ -377,7 +377,7 @@ def calcDistPnt(origLat, origLon, origAlt, \
         # convert pointing direction from local spherical to local cartesian
         (pX, pY, pZ) = lspToLcar(gaz, gel, dist)
         # convert pointing direction from local cartesian to global cartesian
-        (dX, dY, dZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon, origRe+origAlt)
+        (dX, dY, dZ) = gcarToLcar(pX, pY, pZ, gcLat, gcLon, origRe+origAlt, inverse=True)
         # Convert distant point from global cartesian to geocentric
         (gcDistLat, gcDistLon, rho) = gspToGcar(dX, dY, dZ, inverse=True)
         # Convert distant point from geocentric to geodetic
