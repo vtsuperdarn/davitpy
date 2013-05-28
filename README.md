@@ -18,7 +18,9 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 
 ### Install instructions
 
-First, you will need RST to read standard SuperDARN dmap files. You will find a strpped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+First install python.  Note that we have developed using python 2.7.  If you use a different version, the code will probably not work.
+
+You will need RST to read standard SuperDARN dmap files. You will find a strpped down version of RST here: https://github.com/vtsuperdarn/RSTLite
 
 Then, clone this repository:
 
@@ -28,11 +30,28 @@ Then cd into the cloned directory:
 
     cd davitpy
     
-Then run thes install scripts specific to your system (Ubuntu or MacOS):
+Then run the install scripts specific to your system 
+
+Ubuntu
 
     cd install/linux/
     sudo sh python_install_linux.sh
     sh set_paths_linux.sh
+    
+MacOS
+
+    cd install/mac
+    sudo sh python_install_mac.sh
+    sh set_paths_mac.sh
+
+If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
+
+You will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.
+
+Next, either restart the terminal, open a new one, or source your .bashrc, e.g.
+
+    source ~/.bashrc
+    
     
 You may have to recompile the binaries:
 
@@ -53,8 +72,7 @@ or
     
 And code away!
 
-### Notes
+### Issues and Bug reporting
 
-* you will need gfortran to compile most of the models
-* you will need mpi to run the ray tracing (mpich2 prefered)
-* you will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>
+Please report any problems/comments using the Issues tab of the davitpy GitHub page, or use this link: https://github.com/vtsuperdarn/davitpy/issues
+
