@@ -30,21 +30,32 @@ Then cd into the cloned directory:
 
     cd davitpy
     
-Then run the install scripts specific to your system 
+Then run the dependency install scripts specific to your system 
+
+Note:  If you are running openSUSE, you need to install gcc
 
 Ubuntu
 
     cd install/linux/
-    sudo sh python_install_linux.sh
-    sh set_paths_linux.sh
+    sudo sh python_install_dependencies_ubuntu.sh
     
 MacOS
 
     cd install/mac
-    sudo sh python_install_mac.sh
-    sh set_paths_mac.sh
+    sudo sh python_install_dependencies_mac.sh
 
 If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
+
+Next, run the environment variable scripts
+
+Linux
+
+    sh set_paths_linux.sh
+
+MacOS
+
+    sh set_paths_mac.sh
+    
 
 You will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.
 
