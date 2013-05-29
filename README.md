@@ -40,13 +40,13 @@ Ubuntu
 
     cd install/debian/
     sudo sh python_install_linux.sh
-    sh set_paths_linux
+    sh set_paths_linux.sh
     
 MacOS
 
     cd install/mac
-    sudo sh python_install_dependencies_mac.sh
-    sh set_paths_mac
+    sudo sh python_install_mac.sh
+    sh set_paths_mac.sh
 
 If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
     
