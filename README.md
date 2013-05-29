@@ -20,7 +20,9 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 
 First install python.  Note that we have developed using python 2.7.  If you use a different version, the code will probably not work.
 
-You will need RST to read standard SuperDARN dmap files. You will find a strpped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+You will need RST to read standard SuperDARN dmap files. You will find a stripped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+
+If you have a Mac, make sure you have macports installed.
 
 Then, clone this repository:
 
