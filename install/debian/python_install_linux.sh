@@ -13,6 +13,7 @@ apt-get install -y python-numpy
 apt-get install -y python-scipy
 apt-get install -y python-matplotlib
 sudo apt-get install libfreetype6-dev
+sudo apt-get install libpng-dev
 pip install --upgrade matplotlib
 apt-get install -y python-mpltoolkits.basemap
 apt-get install -y python-h5py
