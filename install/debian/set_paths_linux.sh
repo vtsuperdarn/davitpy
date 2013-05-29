@@ -23,7 +23,7 @@ fi
 # Set path to DAVITPY
 if [ "" == "${PYTHONPATH}" ]
 then
-	echo "export PTHONPATH=$PYTHONPATH:$DAVITPY" >> ~/.bashrc
+	echo "export PYTHONPATH=$PYTHONPATH:$DAVITPY" >> ~/.bashrc
 	echo "You can now check ~/.bashrc to make sure the path has been updated, then restart your terminal."
 fi
 # Set RSTPATH
