@@ -163,7 +163,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 outname = string.replace(outname,'.bz2','')
                 print 'bunzip2 -c '+filename+' > '+outname+'\n'
                 os.system('bunzip2 -c '+filename+' > '+outname)
-              else:
+              elif(string.find(filename,'.gz') != -1):
                 outname = string.replace(outname,'.gz','')
                 print 'gunzip -c '+filename+' > '+outname+'\n'
                 os.system('gunzip -c '+filename+' > '+outname)
