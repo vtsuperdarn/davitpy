@@ -16,6 +16,7 @@ pip install --upgrade matplotlib
 apt-get install -y python-mpltoolkits.basemap
 apt-get install -y python-h5py
 apt-get install -y python-tornado
+pip install --upgrade tornado
 apt-get install -y python-zmq
 apt-get install -y python-imaging
 apt-get install -y python-sqlalchemy
