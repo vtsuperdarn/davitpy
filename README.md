@@ -53,7 +53,7 @@ MacOS
 If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
     
 
-You will need basemap v1.0.3 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.  
+You will need basemap v1.0.6 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.  
 
 ** If you are running Ubuntu, after installing, it needs some finesse.  
 
