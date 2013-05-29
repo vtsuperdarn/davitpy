@@ -14,9 +14,17 @@ port install py${ver}-h5py
 port install py${ver}-tornado
 port install py${ver}-zmq
 port install py${ver}-pil
-port install py${ver}-sqlalchemy
-port install py${ver}-psycopg2
 port install py${ver}-pymongo
 port install py${ver}-paramiko
 port install openmpi
+port install coreutils
 
+dir=$(pwd)
+
+cd $dir
+install_dir=$(readlink -f ../..)
+echo "source $install_dir/profile.mac" >> ~/.bash_profile
+
+
+cd ../..
+./mastermake
