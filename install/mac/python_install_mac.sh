@@ -23,6 +23,11 @@ port install coreutils
 
 dir=$(pwd)
 
+##########################
+#put basemap upgrade here
+##########################
+
+
 cd $dir
 install_dir=$(readlink -f ../..)
 echo "source $install_dir/profile.mac" >> ~/.bash_profile
