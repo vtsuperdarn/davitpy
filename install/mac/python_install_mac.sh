@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Python install script for mac
 # 	installs all pre-requisite software to run DaViT-py
 #	requires MacPort
