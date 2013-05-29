@@ -32,6 +32,8 @@ Then cd into the cloned directory:
     
 Then run the dependency install scripts specific to your system 
 
+Note:  If you are running openSUSE, you need to install gcc
+
 Ubuntu
 
     cd install/linux/
