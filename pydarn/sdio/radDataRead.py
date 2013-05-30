@@ -45,7 +45,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[cp]** (int): the control program which you want data for.  If this is set to None, data from all cp's will be read.  default = None
     * **[fileType]** (str):  The type of data you want to read.  valid inputs are: 'fitex','fitacf','lmfit','rawacf','iqdat'.   if you choose a fit file format and the specified one isn't found, we will search for one of the others.  Beware: if you ask for rawacf/iq data, these files are large and the data transfer might take a long time.  default = 'fitex'
     * **[filtered]** (boolean): a boolean specifying whether you want the fit data to be boxcar filtered.  ONLY VALID FOR FIT.  default = False
-    * **[src]** (str): the source of the data.  valid inputs are 'mongo' 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
+    * **[src]** (str): the source of the data.  valid inputs are 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
     * **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
     * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
@@ -86,8 +86,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     'error, fileName must be None or a string'
   assert(isinstance(filtered,bool)), \
     'error, filtered must be True of False'
-  assert(src == None or src == 'mongo' or src == 'local' or src == 'sftp'), \
-    'error, src must be one of None,local,mongo,sftp'
+  assert(src == None or src == 'local' or src == 'sftp'), \
+    'error, src must be one of None,local,sftp'
     
   if(eTime == None):
     eTime = sTime+dt.timedelta(days=1)
@@ -101,6 +101,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
   elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
   else: arr = [fileType]
+
   #move back a little in time because files often start at 2 mins after the hour
   sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
@@ -110,39 +111,10 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     os.makedirs(d)
 
   cached = False
+  fileSt = None
 
-  #FIRST, check for a cached file
-  try:
-    if filtered:
-      for f in glob.glob("%s????????.????.????????.????.%s.%sf" % (tmpDir,rad,fileType)):
-        try:
-          ff = string.replace(f,tmpDir,'')
-          t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]))
-          t2 = dt.datetime(int(ff[14:18]),int(ff[18:20]),int(ff[20:22]),int(ff[23:25]),int(ff[25:27]))
-          if t1 <= sTime and t2 >= eTime:
-            cached = True
-            filelist.append(f)
-            print 'Found cached file: %s' % f
-            break
-        except Exception,e:
-          print e
-    if not cached:
-      for f in glob.glob("%s????????.????.????????.????.%s.%s" % (tmpDir,rad,fileType)):
-        try:
-          ff = string.replace(f,tmpDir,'')
-          t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]))
-          t2 = dt.datetime(int(ff[14:18]),int(ff[18:20]),int(ff[20:22]),int(ff[23:25]),int(ff[25:27]))
-          if t1 <= sTime and t2 >= eTime:
-            cached = True
-            filelist.append(f)
-            print 'Found cached file: %s' % f
-            break
-        except Exception,e:
-          print e
-  except Exception,e:
-    print e
-  #Next, check if a specific filename was given
-  if(not cached and fileName != None):
+  #FIRST, check if a specific filename was given
+  if fileName != None:
     try:
       if(not os.path.isfile(fileName)):
         print 'problem reading',fileName,':file does not exist'
@@ -161,10 +133,48 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
         print 'cp '+fileName+' '+outname
       filelist.append(outname)
       myPtr.fType,myPtr.dType = custType,'dmap'
+      fileSt = sTime
     except Exception, e:
       print e
       print 'problem reading file',fileName
       return None
+
+  #Next, check for a cached file
+  if fileName == None:
+    try:
+      if filtered:
+        for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,rad,fileType)):
+          try:
+            ff = string.replace(f,tmpDir,'')
+            #check time span of file
+            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+            t2 = dt.datetime(int(ff[14:18]),int(ff[18:20]),int(ff[20:22]),int(ff[23:25]),int(ff[25:27]),int(ff[27:29]))
+            #check if file covers our timespan
+            if t1 <= sTime and t2 >= eTime:
+              cached = True
+              filelist.append(f)
+              print 'Found cached file: %s' % f
+              break
+          except Exception,e:
+            print e
+      if not cached:
+        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,rad,fileType)):
+          try:
+            ff = string.replace(f,tmpDir,'')
+            #check time span of file
+            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+            #check if file covers our timespan
+            if t1 <= sTime and t2 >= eTime:
+              cached = True
+              filelist.append(f)
+              print 'Found cached file: %s' % f
+              break
+          except Exception,e:
+            print e
+    except Exception,e:
+      print e
+
   #Next, LOOK LOCALLY FOR FILES
   if(not cached and (src == None or src == 'local') and fileName == None):
     try:
@@ -202,6 +212,13 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 os.system('gunzip -c '+filename+' > '+outname)
               
               filelist.append(outname)
+
+              #HANDLE CACHEING NAME
+              ff = string.replace(outname,tmpDir,'')
+              #check the beginning time of the file (for cacheing)
+              t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+              if fileSt == None or t1 < fileSt: fileSt = t1
+
             ##################################################################
             ### END SECTION YOU WILL HAVE TO CHANGE
             ##################################################################
@@ -220,19 +237,19 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'I will try to read from other sources'
       src=None
         
-  #NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
-  if(not cached and (src == None or src == 'mongo') and len(filelist) == 0 and fileName == None):
-    for ftype in arr:
-      print '\nLooking on mongodb for',ftype,'data'
-      myPtr.ptr = pydarn.sdio.readFromDb(sTime=myPtr.sTime, eTime=myPtr.eTime, stid=myPtr.stid, \
-                  channel=myPtr.channel, bmnum=myPtr.bmnum, cp=myPtr.cp, \
-                  fileType=fileType,exactFlg=False)
-      if(myPtr.ptr != None): 
-        print 'found',ftype,'data on mongodb'
-        myPtr.dType,myPtr.fType = 'mongo',ftype
-        break
-      else:
-        print  'could not find',ftype,'data on mongodb'
+  # #NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
+  # if(not cached and (src == None or src == 'mongo') and len(filelist) == 0 and fileName == None):
+  #   for ftype in arr:
+  #     print '\nLooking on mongodb for',ftype,'data'
+  #     myPtr.ptr = pydarn.sdio.readFromDb(sTime=myPtr.sTime, eTime=myPtr.eTime, stid=myPtr.stid, \
+  #                 channel=myPtr.channel, bmnum=myPtr.bmnum, cp=myPtr.cp, \
+  #                 fileType=fileType,exactFlg=False)
+  #     if(myPtr.ptr != None): 
+  #       print 'found',ftype,'data on mongodb'
+  #       myPtr.dType,myPtr.fType = 'mongo',ftype
+  #       break
+  #     else:
+  #       print  'could not find',ftype,'data on mongodb'
         
   #finally, check the VT sftp server if we have not yet found files
   if((src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0 and fileName == None):
@@ -287,7 +304,13 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                   print 'Strange things might happen from here on out...'
                   
                 filelist.append(outname)
-              
+
+                #HANDLE CACHEING NAME
+                ff = string.replace(outname,tmpDir,'')
+                #check the beginning time of the file
+                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+                if fileSt == None or t1 < fileSt: fileSt = t1
+
             ctime = ctime+dt.timedelta(hours=1)
           if(len(filelist) > 0):
             print 'found',ftype,'data on sftp server'
@@ -302,14 +325,13 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
         
   #check if we have found files
   if len(filelist) != 0:
-    print filelist
     #concatenate the files into a single file
     if not cached:
       print 'Concatenating all the files in to one'
+      #choose a temp file name with time span info for cacheing
       tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
-                sTime.strftime("%Y%m%d"),sTime.strftime("%H%M"), \
-                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M"),rad,fileType)
-      # tmpName = tmpDir+str(int(datetimeToEpoch(dt.datetime.now())))+'.'+rad+'.'+fileType
+                fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
+                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),rad,fileType)
       print 'cat '+string.join(filelist)+' > '+tmpName
       os.system('cat '+string.join(filelist)+' > '+tmpName)
       print filelist
@@ -320,23 +342,25 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       tmpName = filelist[0]
       myPtr.fType = fileType
       myPtr.dType = 'dmap'
-      print tmpName
+
     #filter(if desired) and open the file
     if(not filtered): 
       myPtr.ptr = open(tmpName,'r')
-      print myPtr
     else:
       if not fileType+'f' in tmpName:
-        print 'fitexfilter '+tmpName+' > '+tmpName+'f'
-        os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
-        os.system('rm '+tmpName)
+        try:
+          fTmpName = tmpName+'f'
+          print 'fitexfilter '+tmpName+' > '+fTmpName
+          os.system('fitexfilter '+tmpName+' > '+fTmpName)
+        except Exception,e:
+          print 'problem filtering file, using unfiltered'
+          fTmpName = tmpName
       try:
-        myPtr.ptr = open(tmpName+'f','r')
+        myPtr.ptr = open(fTmpName,'r')
       except Exception,e:
         print 'problem opening file'
         print e
         return None
-      
   if(myPtr.ptr != None): 
     if(myPtr.dType == None): myPtr.dType = 'dmap'
     return myPtr
