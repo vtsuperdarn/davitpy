@@ -160,263 +160,217 @@ def hdwRead(fname, path=None):
 
 
 # *************************************************************
-class updateHdf5(object):
-	"""update local radar.hdf5 from remote db database. Currently, the remote 
-	database is housed on the VT servers.
-	
-	**Members**: 
-		* **h5_path** (str): path to hdf5 file
-		* **h5_file** (str): hdf5 file name
-	**Methods**:
-		* :func:`h5Init`
-		* :func:`h5Update`
-		* :func:`dbConnect`
-	**Example**:
-		::
+class updateRadars(object):
+    """update local radar.sqlite from remote db database. Currently, the remote 
+    database is housed on the VT servers.
+    
+    **Members**: 
+        * **sql_path** (str): path to sqlite file
+        * **sql_file** (str): sqlite file name
+    **Methods**:
+        * :func:`sqlInit`
+        * :func:`sqlUpdate`
+        * :func:`dbConnect`
+    **Example**:
+        ::
 
-			obj = pydarn.radar.updateHdf5()
+            obj = pydarn.radar.updateRadars()
 
-	written by Sebastien, 2012-10
-	"""
+    written by Sebastien, 2013-05
+    """
 
-	def __init__(self):
-		"""Default class constructor
-		
-		**Belongs to**: :class:`updateHdf5`
-		
-		**Args**: 
-			* **None**
-		**Returns**:
-			* **updateHdf5** (obj)
-					
-		written by Sebastien, 2012-10
-		"""
+    def __init__(self):
+        """Default class constructor
+        
+        **Belongs to**: :class:`updateRadars`
+        
+        **Args**: 
+            * **None**
+        **Returns**:
+            * **updateRadars** (obj)
+        """
 
-		import os, sys
-		from datetime import datetime
-		from numpy import dtype
-		import h5py
+        import os, sys
+        from datetime import datetime
+        from numpy import dtype
+        import sqlite3 as lite
 
-		# Date format
-		dtfmt = '%Y-%m-%d %H:%M:%S'
-		dttest = datetime.utcnow().strftime(dtfmt)
-		# File path
-		self.h5_path = os.path.abspath( __file__.split('radInfoIo.py')[0] )
-		self.h5_file = 'radars.hdf5'
-		# MongoDB server
-		self.db_user = 'sd_dbread'
-		self.db_pswd = '5d'
-		self.db_host = 'sd-work9.ece.vt.edu'
-		self.db_name = 'radarInfo'
+        # Date format
+        dtfmt = '%Y-%m-%d %H:%M:%S'
+        dttest = datetime.utcnow().strftime(dtfmt)
+        # File path
+        self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
+        self.sql_file = 'radars.sqlite'
+        # MongoDB server
+        self.db_user = os.environ['DBREADUSER']
+        self.db_pswd = os.environ['DBREADPASS']
+        self.db_host = os.environ['SDDB']
+        self.db_name = 'radarInfo'
 
-		# Declare custom data types
-		self.dtype_rad = dtype([('id', 'i'), 
-		                         ('cnum', 'i'),
-		                         ('code', 'S3', (2,)),
-		                         ('name', h5py.new_vlen(str) ), 
-		                         ('operator', h5py.new_vlen(str) ), 
-		                         ('hdwfname', h5py.new_vlen(str) ), 
-		                         ('status', 'i'), 
-		                         ('stTime', 'S{}'.format(len(dttest))), 
-		                         ('edTime', 'S{}'.format(len(dttest))), 
-		                         ('snum', 'i') ])
-		self.dtype_hdw = dtype([('id', 'i'), 
-		                         ('tval', 'S{}'.format(len(dttest))),
-		                         ('geolat', 'float'),
-		                         ('geolon', 'float'),
-		                         ('alt', 'float'),
-		                         ('boresite', 'float'),
-		                         ('bmsep', 'float'),
-		                         ('vdir', 'i'),
-		                         ('tdiff', 'float'),
-		                         ('phidiff', 'float'),
-		                         ('recrise', 'float'),
-		                         ('atten', 'float'),
-		                         ('maxatten', 'float'),
-		                         ('maxgate', 'i'),
-		                         ('maxbeam', 'i'),
-		                         ('interfer', 'float', (3,)) ])
-		self.dtype_info = dtype([('var', h5py.new_vlen(str)),
-		                          ('description', h5py.new_vlen(str)) ])
+        # Declare custom data types
+        self.dtype_rad = ["id INT", 
+                          "cnum INT", 
+                          "code BLOB", 
+                          "name TEXT", 
+                          "operator TEXT", 
+                          "hdwfname TEXT", 
+                          "status INT", 
+                          "stTime TIMESTAMP", 
+                          "edTime TIMESTAMP", 
+                          "snum INT"]
+        self.dtype_hdw = ["id INT", 
+                          "tval TIMESTAMP", 
+                          "geolat REAL", 
+                          "geolon REAL", 
+                          "alt REAL", 
+                          "boresite REAL", 
+                          "bmsep REAL", 
+                          "vdir INT", 
+                          "tdiff REAL", 
+                          "phidiff REAL", 
+                          "recrise REAL", 
+                          "atten REAL", 
+                          "maxatten REAL", 
+                          "maxgate INT", 
+                          "maxbeam INT", 
+                          "interfer BLOB"]
+        self.dtype_inf = ["var TEXT", 
+                          "description TEXT"]
 
-		self.h5Update()
+        self.sqlUpdate()
 
 
-	def dbConnect(self):
-		"""Try to establish a connection to remote db database
-		
-		**Belongs to**: :class:`updateHdf5`
-		
-		**Args**: 
-			* **None**
-		**Returns**:
-			* **isConnected** (bool): True if the connection was successfull
-					
-		written by Sebastien, 2012-10
-		"""
-		from pymongo import MongoClient
-		import sys
+    def dbConnect(self):
+        """Try to establish a connection to remote db database
+        
+        **Belongs to**: :class:`updateRadars`
+        
+        **Args**: 
+            * **None**
+        **Returns**:
+            * **isConnected** (bool): True if the connection was successfull
+        """
+        from pymongo import MongoClient
+        import sys
 
-		try:
-			conn = MongoClient( 'mongodb://{}:{}@{}/{}'.format(self.db_user,
-																	   self.db_pswd, 
-																	   self.db_host,
-																	   self.db_name) )
+        try:
+            conn = MongoClient( 'mongodb://{}:{}@{}/{}'.format(self.db_user,
+                                                                       self.db_pswd, 
+                                                                       self.db_host,
+                                                                       self.db_name) )
+            dba = conn[self.db_name]
+        except:
+            print 'Could not connect to remote DB: ', sys.exc_info()[0]
+            return False
 
-			dba = conn[self.db_name]
-		except:
-			print 'Could not connect to remote DB: ', sys.exc_info()[0]
-			return False
+        try:
+            colSel = lambda colName: dba[colName].find()
 
-		try:
-			colSel = lambda colName: dba[colName].find()
-
-			self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
-			return True
-		except:
-			print 'Could not get data from remote DB: ', sys.exc_info()[0]
-			return False
+            self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
+            return True
+        except:
+            print 'Could not get data from remote DB: ', sys.exc_info()[0]
+            return False
 
 
-	def h5Init(self):
-		"""Initialize HDF5 file (only if file does not already exists)
-		
-		**Belongs to**: :class:`updateHdf5`
-		
-		**Args**: 
-			* **None**
-		**Returns**:
-			* **isConnected** (bool): True if hdf5 file already exists or was sussessfully created
-					
-		written by Sebastien, 2012-10
-		"""
-		import h5py, os
+    def sqlInit(self):
+        """Initialize sqlite file (only if file does not already exists)
+        
+        **Belongs to**: :class:`updateRadars`
+        
+        **Args**: 
+            * **None**
+        **Returns**:
+            * **isConnected** (bool): True if sqlite file already exists or was sussessfully created
+        """
+        import sqlite3 as lite
+        import os
 
-		fname = os.path.join(self.h5_path, self.h5_file)
-		try:
-			with open(fname,'r+') as f: pass
-			return True
-		except IOError:
-			try:
-				# Open file
-				with h5py.File(fname,'w') as f:
-				    rad_ds = f.create_dataset('radar', (1,), dtype=self.dtype_rad, chunks=True)
-				    hdw_ds = f.create_dataset('hdw', (1,), dtype=self.dtype_hdw, chunks=True)
-				    info_ds = f.create_dataset("metadata", (1,), dtype=self.dtype_info, chunks=True)
-
-				return True
-			except IOError as e:
-				print 'Cannot initialize {} for updates. Changing nothing.'.format(fname)
-				return False
+        fname = os.path.join(self.sql_path, self.sql_file)
+        try:
+            with lite.connect(fname) as conn: pass
+            return True
+        except lite.Error, e:
+            print "sqlInit() Error %s:" % e.args[0]
+            return False
 
 
-	def h5Update(self):
-		"""Update HDF5 file with provided db selections (if possible).
-		
-		**Belongs to**: :class:`updateHdf5`
-		
-		**Args**: 
-			* **None**
-		**Returns**:
-			* **isConnected** (bool): True if hdf5 file update was successfull
-					
-		written by Sebastien, 2012-10
-		"""
-		import h5py, os, sys
+    def sqlUpdate(self):
+        """Update sqlite file with provided db selections (if possible).
+        
+        **Belongs to**: :class:`updateRadars`
+        
+        **Args**: 
+            * **None**
+        **Returns**:
+            * **isConnected** (bool): True if sqlite file update was successfull
+        """
+        import os, sys
+        import sqlite3 as lite
 
-		# Try to connect to DB
-		conn = self.dbConnect()
-		if not conn: return False
+        # Try to connect to DB
+        conn = self.dbConnect()
+        if not conn: return False
 
-		# Try to open hdf5 file
-		isInit = self.h5Init()
-		if not isInit: return False
+        # Try to open sqlite file
+        isInit = self.sqlInit()
+        if not isInit: return False
 
-		fname = os.path.join(self.h5_path, self.h5_file)
+        # Format BD output for sqlite input
+        arr_rad = self.__makeInsDict(self.db_select['rad'], self.dtype_rad)
+        arr_hdw = self.__makeInsDict(self.db_select['hdw'], self.dtype_hdw)
+        arr_inf = self.__makeInsDict(self.db_select['inf'], self.dtype_inf)
 
-		arr_rad = self.__makeCompArr(self.db_select['rad'], self.dtype_rad)
-		arr_hdw = self.__makeCompArr(self.db_select['hdw'], self.dtype_hdw)
-		arr_inf = self.__makeCompArr(self.db_select['inf'], self.dtype_info)
+        fname = os.path.join(self.sql_path, self.sql_file)
 
-		try:
-			f = h5py.File(fname,'r+')
+        with lite.connect(fname, detect_types=lite.PARSE_DECLTYPES) as conn:
+            cur = conn.cursor()
 
-			# Update each dataset
-			self.__h5UpdateDset(f['radar'], arr_rad, ('id',))
-			self.__h5UpdateDset(f['hdw'], arr_hdw, ('id', 'tval'))
-			self.__h5UpdateDset(f['metadata'], arr_inf, ('var',))
+            # Drop tables if they exists
+            cur.execute("DROP TABLE IF EXISTS rad")
+            cur.execute("DROP TABLE IF EXISTS hdw")
+            cur.execute("DROP TABLE IF EXISTS inf")
 
-			# Close file
-			f.close()
-			print 'Updated radar information in {}'.format( os.path.join(self.h5_path, self.h5_file) )
-		except:
-			print 'Problem updating HDF5 file: ', sys.exc_info()[0]
-			return False
+            # Create new tables
+            cur.execute("CREATE TABLE rad (%s)" % ', '.join(self.dtype_rad))
+            cur.execute("CREATE TABLE hdw (%s)" % ', '.join(self.dtype_hdw))
+            cur.execute("CREATE TABLE inf (%s)" % ', '.join(self.dtype_inf))
 
-		return True
+            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?']*len(self.dtype_rad)), 
+                arr_rad)
+            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?']*len(self.dtype_hdw)), 
+                arr_hdw)
+            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?']*len(self.dtype_inf)), 
+                arr_inf)
 
-
-	def __h5UpdateDset(self, dset, arr, key):
-		"""Update dataset (scan existing rows and update if necessary).
-		This method is hidden and used internatlly by :func:`h5Update`.
-		
-		**Belongs to**: :class:`updateHdf5`
-		
-		**Args**: 
-			* **dset** (hdf5 dataset): an hdf5 dataset from an hdf5 file object
-			* **arr** (numpy.dtype): compound array
-			* **key** (str): primary key to hdf5 dataset
-		**Returns**:
-			* **None**
-					
-		written by Sebastien, 2012-10
-		"""
-		import sys
-		from numpy import where
-
-		if dset.shape[0] == 1: 
-			dset[0] = arr[0]
-
-		for row in arr:
-			inds = range( len(dset[:,key[0]]) )
-			for k in list(key):
-				tinds = where( dset[:,k]==row[k] )
-				if len(tinds[0]) > 0: 
-					inds = [t for t in tinds[0] if t in inds]
-				else: 
-					inds = [dset.shape[0]]
-					break
-			# Try to overwrite if exist, else grow the dataset and insert
-			try:
-				dset[inds[0]] = row
-			except:
-				dset.resize((dset.shape[0]+1,))
-				dset[dset.shape[0]-1] = row
+        return True
 
 
-	def __makeCompArr(self, sel, dtype=None):
-		"""Create a compound array out of db output. This is used to write in HDF5 datasets.
-		This method is hidden and used internatlly by :func:`h5Update`.
-		
-		**Belongs to**: :class:`updateHdf5`
-		
-		**Args**: 
-			* **sel** (pymongo Ptr)
-			* [**dtype**] (numpy.dtype): the numpy.dtype of the compound array
-		**Returns**:
-			* **None**
-					
-		written by Sebastien, 2012-10
-		"""
-		import numpy
+    def __makeInsDict(self, sel, dtype):
+        """Handles BLOB datatype for arrays before insertion into sqlite DB.
+        This method is hidden and used internatlly by :func:`sqlUpdate`.
+        
+        **Belongs to**: :class:`updateRadars`
+        
+        **Args**: 
+            * **sel** (pymongo Ptr)
+            * [**dtype**] (str): a list of 'name TYPE' pairsto be inserted into sqlite DB
+        **Returns**:
+            * **arr** a list of lists of DB entries
+        """
+        import pickle
 
-		arr = numpy.empty(sel.count(), dtype=dtype)
-		for ir,row in enumerate(sel):
-			for k,v in row.items():
-				if k == '_id': continue
-				try:
-					arr[ir][k] = v
-				except (ValueError, TypeError):
-					arr[ir][k][:] = v
-		return arr
+        arr = []
+        for ir,row in enumerate(sel):
+            entry = []
+            for typ in dtype:
+                k, d = typ.split()
+                if d == 'BLOB':
+                    v = pickle.dumps(row[k])
+                else: 
+                    v = row[k]
+                entry.append( v )
+            arr.append( entry )
 
+        return arr
+        

@@ -15,7 +15,7 @@ Radar structures
 # *************************************************************
 class network(object):
     """This class stores information from all radars according to their hdw.dat and radar.dat
-    This information is read from the radar.hdf5 files provided with the pydarn module.
+    This information is read from the radar.sqlite files provided with the pydarn module.
     
     **Members**: 
         * **nradar** (int): number of radars in class
@@ -48,22 +48,25 @@ class network(object):
                     
         written by Sebastien, 2012-08
         """
-        import h5py
-
-        # Date format
-        dtfmt = "%Y-%m-%d %H:%M:%S"
+        import sqlite3 as lite
+        import os
 
         self.radars = []
-        # Open file
-        rad_path = __file__.split('radStruct.py')[0]
-        f = h5py.File(rad_path+'/radars.hdf5','r')
-        radarF = f['/radar']
-        siteF = f['/hdw']
-        self.nradar = len(radarF['id'])
-        for irad in range( self.nradar ):
+        # Get DB name
+        rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+        dbname = os.path.join(rad_path, 'radars.sqlite')
+        print dbname
+
+        with lite.connect(dbname) as conn:
+            cur = conn.cursor()
+            cur.execute("select count() from rad")
+            self.nradar = cur.fetchone()[0]
+            cur.execute("select id from rad")
+            rows = cur.fetchall()
+
+        for row in rows:
             self.radars.append(radar())
-            self.radars[irad].fillFromHdf5(radarF['id'][irad], radarF, siteF)
-        f.close()
+            self.radars[-1].fillFromSqlite(dbname, row[0])
             
     def __len__(self):
         """Object length (number of radars)
@@ -357,8 +360,9 @@ class radar(object):
                     
         written by Sebastien, 2012-08
         """
-        import h5py
-        from numpy import where
+        import sqlite3 as lite
+        import pickle
+        import os
 
         self.id = 0
         self.status = 0
@@ -374,53 +378,61 @@ class radar(object):
 
         # If a radar is requested...
         if code or radId:
-            rad_path = __file__.split('radStruct.py')[0]
-            f = h5py.File(rad_path+'/radars.hdf5','r')
-            radarF = f['/radar']
-            siteF = f['/hdw']
-            if code: radId = radarF['id'][ where( radarF['code'][:] == code )[0][0] ]
-            self.fillFromHdf5(radId, radarF, siteF)
-            f.close()
+            rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            dbname = os.path.join(rad_path, 'radars.sqlite')
 
-    def fillFromHdf5(self, radId, dset, siteDset):
-        """fill radar structure from hdf5 dataset
+            # if the radar code was provided, look for corresponding id
+            if code:
+                with lite.connect(dbname) as conn:
+                    cur = conn.cursor()
+                    cur.execute('SELECT id,code FROM rad')
+                    rows = cur.fetchall()
+                for row in rows:
+                    if code in pickle.loads(row[1]):
+                        radId = row[0]
+
+            self.fillFromSqlite(dbname, radId)
+
+    def fillFromSqlite(self, dbname, radId):
+        """fill radar structure from sqlite DB
         
         **Belongs to**: :class:`radar`
         
         **Args**: 
+            * **dbname** (str): sqlite database path/name
             * **radID** (int): radar ID
-            * **dset** (h5py.dset): hdf5 radar dataset
-            * **sitedset** (h5py.dset): hdf5 site dataset
         **Returns**:
             * **None**
                     
         written by Sebastien, 2013-02
         """
         from datetime import datetime
-        from numpy import where
+        import sqlite3 as lite
+        import pickle
 
-        # Date format
-        dtfmt = "%Y-%m-%d %H:%M:%S"
+        with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
+            cur = conn.cursor()
+            cur.execute('SELECT * FROM rad WHERE id=?', (radId,))
+            
+            row = cur.fetchone()
+            if not row:
+                print 'Radar not found in DB: {}'.format(radId)
+                return
 
-        irad = where( dset['id'][:] == radId )[0][0]
-        self.id = dset['id'][irad]
-        self.status = dset['status'][irad]
-        self.cnum = dset['cnum'][irad]
-        self.stTime = datetime.strptime(dset['stTime'][irad], dtfmt)
-        self.edTime = datetime.strptime(dset['edTime'][irad], dtfmt)
-        self.name = unicode(dset['name'][irad])
-        self.operator = unicode(dset['operator'][irad])
-        self.hdwfname = unicode(dset['hdwfname'][irad])
-        self.code = dset['code'][irad]
-        siteInds = where( siteDset['id'][:] == radId )[0]
-        if siteInds == []: return
-        tsnum = 0
-        for ist,isit in enumerate(siteInds):
-            self.sites[ist].fillFromHdf5(radId, siteDset, ind=ist)
-            tsnum += 1
-            self.sites.append(site())
-        del self.sites[tsnum]
-        self.snum = tsnum
+            self.id = row[0]
+            self.cnum = row[1]
+            self.code = pickle.loads(row[2])
+            self.name = row[3]
+            self.operator = row[4]
+            self.hdwfname = row[5]
+            self.status = row[6]
+            self.stTime = row[7]
+            self.edTime = row[8]
+            self.snum = row[9]
+            for ist in range(self.snum):
+                self.sites[ist].fillFromSqlite(dbname, radId, ind=ist)
+                self.sites.append(site())
+            del self.sites[-1]
             
     def __len__(self):
         """ Object length (number of site updates)
@@ -446,7 +458,7 @@ class radar(object):
         outstring = 'id: {0} \
                     \nstatus: {1} \
                     \ncnum: {2} \
-                    \ncode: [{3}] \
+                    \ncode: {3} \
                     \nname: {4} \
                     \noperator: {5} \
                     \nhdwfname: {6} \
@@ -542,8 +554,9 @@ class site(object):
                     
         written by Sebastien, 2012-08
         """
-        import h5py
-        from numpy import where
+        import sqlite3 as lite
+        import pickle
+        import os
 
         self.tval = 0.0
         self.geolat = 0.0
@@ -561,21 +574,29 @@ class site(object):
         self.maxgate = 0
         self.maxbeam = 0
         if radId or code: 
-            rad_path = __file__.split('radStruct.py')[0]
-            f = h5py.File(rad_path+'/radars.hdf5','r')
-            siteF = f['/hdw']
-            if code: radId = f['/radar']['id'][ where( f['/radar']['code'][:] == code )[0][0] ]
-            self.fillFromHdf5(radId, siteF, dt=dt)
-            f.close()
+            rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            dbname = os.path.join(rad_path, 'radars.sqlite')
 
-    def fillFromHdf5(self, radId, dset, ind=-1, dt=None):
-        """fill site structure from hdf5 dataset
+            # if the radar code was provided, look for corresponding id
+            if code:
+                with lite.connect(dbname) as conn:
+                    cur = conn.cursor()
+                    cur.execute('SELECT id,code FROM rad')
+                    rows = cur.fetchall()
+                for row in rows:
+                    if code in pickle.loads(row[1]):
+                        radId = row[0]
+
+            self.fillFromSqlite(dbname, radId, dt=dt)
+
+    def fillFromSqlite(self, dbname, radId, ind=-1, dt=None):
+        """fill site structure from sqlite databse
         
         **Belongs to**: :class:`site`
         
         **Args**: 
+            * **dbname** (str): sqlite database path/name
             * **radID** (int): radar ID
-            * **dset** (h5py.dset): hdf5 dataset
             * [**ind**] (int): site index; defaults to most recent configuration
             * [**dt**] (datetime.datetime)
         **Returns**:
@@ -584,43 +605,33 @@ class site(object):
         written by Sebastien, 2013-02
         """
         from datetime import datetime
-        from numpy import where
+        import sqlite3 as lite
+        import pickle
 
-        # Date format
-        dtfmt = "%Y-%m-%d %H:%M:%S"
+        with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
+            cur = conn.cursor()
+            if dt:
+                cur.execute('SELECT * FROM hdw WHERE id=? and tval<=? ORDER BY tval DESC', (radId, dt))
+            else:
+                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval DESC', (radId,))
+            row = cur.fetchone()
 
-        # Find the data index
-        siteInds = where( dset['id'][:] == radId )[0]
-        # Adjust index if negative
-        if ind < 0: ind = len(siteInds) + ind
-        # Get index
-        if siteInds == []: return
-        if dt:
-            for ist,isit in enumerate(siteInds):
-                tval = datetime.strptime(dset['tval'][isit], dtfmt)
-                if tval < dt: 
-                    continue
-                else:
-                    ind = isit 
-                    break
-        else:
-            ind = siteInds[ind]
-
-        self.tval = datetime.strptime(dset['tval'][ind], dtfmt)
-        self.geolat = dset['geolat'][ind]
-        self.geolon = dset['geolon'][ind]
-        self.alt = dset['alt'][ind]
-        self.boresite = dset['boresite'][ind]
-        self.bmsep = dset['bmsep'][ind]
-        self.vdir = dset['vdir'][ind]
-        self.atten = dset['atten'][ind]
-        self.tdiff = dset['tdiff'][ind]
-        self.phidiff = dset['phidiff'][ind]
-        self.interfer = dset['interfer'][ind]
-        self.recrise = dset['recrise'][ind]
-        self.maxatten = dset['maxatten'][ind]
-        self.maxgate = dset['maxgate'][ind]
-        self.maxbeam = dset['maxbeam'][ind]
+            self.id = row[0]
+            self.tval = row[1]
+            self.geolat = row[2]
+            self.geolon = row[3]
+            self.alt = row[4]
+            self.boresite = row[5]
+            self.bmsep = row[6]
+            self.vdir = row[7]
+            self.tdiff = row[8]
+            self.phidiff = row[9]
+            self.recrise = row[10]
+            self.atten = row[11]
+            self.maxatten = row[12]
+            self.maxgate = row[13]
+            self.maxbeam = row[14]
+            self.interfer = pickle.loads(row[15])
             
     def __len__(self):
         """
