@@ -32,7 +32,7 @@
 
 def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
-                custType='fitex'):
+                custType='fitex',noCache=False):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -48,6 +48,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[src]** (str): the source of the data.  valid inputs are 'mongo' 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
     * **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
+    * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
   **Returns**:
     * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
     
@@ -103,13 +104,45 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   #move back a little in time because files often start at 2 mins after the hour
   sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
-  tmpDir = '/tmp/fit/'
+  tmpDir = '/tmp/sd/'
   d = os.path.dirname(tmpDir)
   if not os.path.exists(d):
     os.makedirs(d)
 
-  #FIRST, check if a specific filename was given
-  if(fileName != None):
+  cached = False
+
+  #FIRST, check for a cached file
+  try:
+    if filtered:
+      for f in glob.glob("%s????????.????.????????.????.%s.%sf" % (tmpDir,rad,fileType)):
+        try:
+          ff = string.replace(f,tmpDir,'')
+          t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]))
+          t2 = dt.datetime(int(ff[14:18]),int(ff[18:20]),int(ff[20:22]),int(ff[23:25]),int(ff[25:27]))
+          if t1 <= sTime and t2 >= eTime:
+            cached = True
+            filelist.append(f)
+            print 'Found cached file: %s' % f
+            break
+        except Exception,e:
+          print e
+    if not cached:
+      for f in glob.glob("%s????????.????.????????.????.%s.%s" % (tmpDir,rad,fileType)):
+        try:
+          ff = string.replace(f,tmpDir,'')
+          t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]))
+          t2 = dt.datetime(int(ff[14:18]),int(ff[18:20]),int(ff[20:22]),int(ff[23:25]),int(ff[25:27]))
+          if t1 <= sTime and t2 >= eTime:
+            cached = True
+            filelist.append(f)
+            print 'Found cached file: %s' % f
+            break
+        except Exception,e:
+          print e
+  except Exception,e:
+    print e
+  #Next, check if a specific filename was given
+  if(not cached and fileName != None):
     try:
       if(not os.path.isfile(fileName)):
         print 'problem reading',fileName,':file does not exist'
@@ -133,7 +166,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'problem reading file',fileName
       return None
   #Next, LOOK LOCALLY FOR FILES
-  if((src == None or src == 'local') and fileName == None):
+  if(not cached and (src == None or src == 'local') and fileName == None):
     try:
       for ftype in arr:
         print '\nLooking locally for',ftype,'files'
@@ -188,7 +221,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       src=None
         
   #NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
-  if((src == None or src == 'mongo') and len(filelist) == 0 and fileName == None):
+  if(not cached and (src == None or src == 'mongo') and len(filelist) == 0 and fileName == None):
     for ftype in arr:
       print '\nLooking on mongodb for',ftype,'data'
       myPtr.ptr = pydarn.sdio.readFromDb(sTime=myPtr.sTime, eTime=myPtr.eTime, stid=myPtr.stid, \
@@ -268,22 +301,35 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
         print 'problem reading from sftp server'
         
   #check if we have found files
-  if(len(filelist) != 0):
+  if len(filelist) != 0:
+    print filelist
     #concatenate the files into a single file
-    print 'Concatenating all the files in to one'
-    tmpName = tmpDir+str(int(datetimeToEpoch(dt.datetime.now())))+'.'+rad+'.'+fileType
-    print 'cat '+string.join(filelist)+' > '+tmpName
-    os.system('cat '+string.join(filelist)+' > '+tmpName)
-    for filename in filelist:
-      print 'rm '+filename
-      os.system('rm '+filename)
-      
-    #filter(if desired) and open the file
-    if(not filtered): myPtr.ptr = open(tmpName,'r')
+    if not cached:
+      print 'Concatenating all the files in to one'
+      tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
+                sTime.strftime("%Y%m%d"),sTime.strftime("%H%M"), \
+                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M"),rad,fileType)
+      # tmpName = tmpDir+str(int(datetimeToEpoch(dt.datetime.now())))+'.'+rad+'.'+fileType
+      print 'cat '+string.join(filelist)+' > '+tmpName
+      os.system('cat '+string.join(filelist)+' > '+tmpName)
+      print filelist
+      for filename in filelist:
+        print 'rm '+filename
+        os.system('rm '+filename)
     else:
-      print 'fitexfilter '+tmpName+' > '+tmpName+'f'
-      os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
-      os.system('rm '+tmpName)
+      tmpName = filelist[0]
+      myPtr.fType = fileType
+      myPtr.dType = 'dmap'
+      print tmpName
+    #filter(if desired) and open the file
+    if(not filtered): 
+      myPtr.ptr = open(tmpName,'r')
+      print myPtr
+    else:
+      if not fileType+'f' in tmpName:
+        print 'fitexfilter '+tmpName+' > '+tmpName+'f'
+        os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
+        os.system('rm '+tmpName)
       try:
         myPtr.ptr = open(tmpName+'f','r')
       except Exception,e:
