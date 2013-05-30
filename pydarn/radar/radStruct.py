@@ -55,7 +55,6 @@ class network(object):
         # Get DB name
         rad_path = os.path.dirname( os.path.abspath( __file__ ) )
         dbname = os.path.join(rad_path, 'radars.sqlite')
-        print dbname
 
         with lite.connect(dbname) as conn:
             cur = conn.cursor()

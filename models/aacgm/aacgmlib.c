@@ -27,7 +27,7 @@ aacgm_wrap(PyObject *self, PyObject *args)
 		return NULL;
 	else
 	{
-		inlon = fmod(inlon, 360.d);
+		inlon = fmod(inlon, 360.);
 		AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 		 
 		return Py_BuildValue("ddd", outLat, outLon, r);
@@ -62,7 +62,7 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 		for (i=0; i<nElem; i++) {
 			inlat = PyFloat_AsDouble( PyList_GetItem(latList, i) );
 			inlon = PyFloat_AsDouble( PyList_GetItem(lonList, i) );
-			inlon = fmod(inlon, 360.d);
+			inlon = fmod(inlon, 360.);
 			height = PyFloat_AsDouble( PyList_GetItem(heightList, i) );
 			AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 
