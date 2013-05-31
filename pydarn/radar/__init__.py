@@ -38,7 +38,7 @@ except Exception as e:
 ####################################
 import os.path, time
 dirn = os.path.abspath( __file__.split('__init__.py')[0] )
-filn = os.path.join(dirn, 'radars.hdf5')
+filn = os.path.join(dirn, 'radars.sqlite')
 ctime = time.time()
 # Update if not there or unreadable
 # Update if too old
@@ -48,4 +48,4 @@ except OSError:
     mtime = 0
 finally:
     if ctime > mtime + 86400*7:
-        _ = updateHdf5()
+        _ = updateRadars()

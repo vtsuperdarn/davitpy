@@ -23,5 +23,7 @@ _build
 sphinx
 radars.hdf5*
 radars.hdf5
+radars.sqlite*
+radars.sqlite
 *.so
 rtFort
