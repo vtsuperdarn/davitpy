@@ -37,6 +37,7 @@ cd $dir
 install_dir=$(readlink -f ../..)
 echo "source $install_dir/profile.bash" >> ~/.bashrc
 
+PS1='$ '
 source ~/.bashrc
 cd ../..
 ./mastermake
