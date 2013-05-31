@@ -22,10 +22,9 @@ port install openmpi
 port install coreutils
 
 dir=$(pwd)
-
-##########################
-#put basemap upgrade here
-##########################
+cd /tmp
+git clone https://github.com/matplotlib/basemap.git
+python2.7 setup.py install
 
 
 cd $dir
