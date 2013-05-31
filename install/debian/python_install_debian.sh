@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Python install script for Ubuntu
 #	installs all pre-requisite software to run DaViT-py
 #	tested on Ubuntu 12.04
@@ -21,11 +23,39 @@ apt-get install -y python-tornado
 pip install --upgrade tornado
 apt-get install -y python-zmq
 apt-get install -y python-imaging
-apt-get install -y python-sqlalchemy
 apt-get install -y python-paramiko
-apt-get install -y python-psycopg2
 apt-get install -y python-pymongo
 pip install --upgrade pymongo
 apt-get install -y mpich2
 apt-get install -y gfortran
+
+dir=$(pwd)
+
+cd /tmp
+git clone https://github.com/matplotlib/basemap.git
+cd basemap/geos-3.3.3
+export GEOS_DIR=/usr/local
+./configure --prefix=$GEOS_DIR
+make; make install
+cd ..
+python setup.py install
+
+#basemap install needs some finesse so python can find it.  Hopefully this works for you.  Otherise, you need to track down the old and new versions.
+cd /usr/lib/pymodules/python2.7/mpl_toolkits 
+cp -a basemap basemap_old
+rm -r basemap
+ln -s /usr/local/lib/python2.7/dist-packages/mpl_toolkits/basemap ./basemap
+
+cd $dir
+install_dir=$(readlink -f ../..)
+echo "source $install_dir/profile.bash" >> ~/.bashrc
+
+source ~/.bashrc
+cd ../..
+
+./mastermake
+
+
+
+
 

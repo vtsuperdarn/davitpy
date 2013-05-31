@@ -32,46 +32,25 @@ Then cd into the cloned directory:
 
     cd davitpy
     
-Then run the dependency install scripts specific to your system 
-
-Note:  If you are running openSUSE, you need to install gcc
+Then run the install scripts specific to your system.  These install dependencies and can take a bit of time...
 
 Ubuntu
 
     cd install/debian/
-    sudo ./python_install_linux.sh
-    go into set_paths_linux.sh and change TMP_DAVITPY to your install dir
-    ./set_paths_linux.sh
+    sudo ./python_install_debian.sh
     
 MacOS
 
     cd install/mac
     sudo ./python_install_mac.sh
-    go into set_paths_mac.sh and change TMP_DAVITPY to your install dir
-    ./set_paths_mac.sh
 
-If you are not running Ubuntu or MacOS, you can manually install the dependencies listed in the python_install_*.sh, and set the environment variables in set_paths_*.sh.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
-    
+openSUSE
 
-You will need basemap v1.0.6 or newer. You can clone and install it from <https://github.com/matplotlib/basemap>.  
+    cd install/opensuse
+    sudo ./python_install_opensuse.sh
 
-** If you are running Ubuntu, after installing, it needs some finesse.  
+If you are not running Ubuntu or MacOS or openSUSE, you can manually install the dependencies listed in the python_install_*.sh, and edit your profile.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
 
-    cd /usr/lib/pymodules/python2.7/mpl_toolkits 
-    sudo rm -r basemap
-    sudo ln -s /usr/local/lib/python2.7/dist-packages/mpl_toolkits/basemap ./basemap
-
-
-Next, either restart the terminal, open a new one, or source your .bashrc, e.g.
-
-    source ~/.bashrc
-    
-    
-You may have to recompile the binaries:
-
-    cd ../..
-    ./mastermake
-    
 Now you are ready to go. From anywhere on your machine just type:
 
     davitpy

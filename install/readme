@@ -18,6 +18,5 @@ This provides install scripts for DaViT-py
 		* tornado (required for ipython notebook)
 		* 0MQ (required for ipython notebook)
 		
-	- set_paths_yourOS.sh 
 	sets useful environment variables for the integrated DaViT-py launcher
 

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Python install script for Ubuntu
 #	installs all pre-requisite software to run DaViT-py
 #	tested on Ubuntu 12.04
@@ -19,6 +21,8 @@ zypper install -y openmpi openmpi-devel lam-devel
 zypper install -y libgfortran3
 zypper install -y hdf5 hdf5-devel
 
+dir=$(pwd)
+
 cd /tmp
 git clone https://github.com/matplotlib/basemap.git
 cd basemap/geos-3.3.3
@@ -27,4 +31,13 @@ export GEOS_DIR=/usr/local
 make; make install
 cd ..
 python setup.py install
+
+
+cd $dir
+install_dir=$(readlink -f ../..)
+echo "source $install_dir/profile.bash" >> ~/.bashrc
+
+source ~/.bashrc
+cd ../..
+./mastermake
 
