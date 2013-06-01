@@ -1,3 +1,5 @@
+! Copyright (C) 2012  VT SuperDARN Lab
+! Full license can be found in LICENSE.txt
 ! A list of useful constants for the ray tracing program
 MODULE constants
 
@@ -5,9 +7,32 @@ MODULE constants
 	real*4,parameter::			pi = 4.*atan(1.)
 	real*4,parameter::			dtor = pi/180.
 	real*4,parameter::			radeg = 180./pi
-	real*4,parameter::			Rav = 6370.				! Earth radius [_km]
-	real*4,parameter::			a = 6378.137			! Equatorial radius [_km]
+	real*4,parameter::			Rav = 6370.						! Earth radius [_km]
+	real*4,parameter::			a = 6378.137					! Equatorial radius [_km]
 	real*4,parameter::			f = 1./298.257223563	! Flattening of the Earth
+
+	! Run parameter structure (which is sort of a constant...)
+	type prm
+		real*4::	txlat
+		real*4::	txlon
+		real*4::	azimbeg
+		real*4::	azimend
+		real*4::	azimstp
+		real*4::	elevbeg
+		real*4::	elevend
+		real*4::	elevstp
+		real*4::	freq
+		integer::	nhop
+		integer::	year
+		integer::	mmdd
+		real*4::	hourbeg
+		real*4::	hourend
+		real*4::	hourstp
+		real*4::	hmf2
+		real*4::	nmf2
+		character*10::	filext
+		character*100::	outdir
+	end type prm
 
 	! Cash-Karp Parameters for embeded Runge-Kutta method (ref: Numerical recipes in C, Press et al., 2nd ed., pp.717)
 	real*4,dimension(6),parameter::	ai = (/ 0., 1./5., 3./10., 3./5., 1., 7./8. /)

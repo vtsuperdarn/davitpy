@@ -27,7 +27,7 @@ aacgm_wrap(PyObject *self, PyObject *args)
 		return NULL;
 	else
 	{
-		inlon = fmod(inlon, 360.d);
+		inlon = fmod(inlon, 360.);
 		AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 		 
 		return Py_BuildValue("ddd", outLat, outLon, r);
@@ -62,13 +62,13 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 		for (i=0; i<nElem; i++) {
 			inlat = PyFloat_AsDouble( PyList_GetItem(latList, i) );
 			inlon = PyFloat_AsDouble( PyList_GetItem(lonList, i) );
-			inlon = fmod(inlon, 360.d);
+			inlon = fmod(inlon, 360.);
 			height = PyFloat_AsDouble( PyList_GetItem(heightList, i) );
 			AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 
 			PyList_Append(latOut, PyFloat_FromDouble(outLat)); 
 			PyList_Append(lonOut, PyFloat_FromDouble(outLon));
-			PyList_Append(heightOut, PyFloat_FromDouble(height)); 
+			PyList_Append(heightOut, PyFloat_FromDouble(r)); 
 		}
 		
 		// PyObject *outList = PyList_New(0);
@@ -210,8 +210,8 @@ rposazm_wrap(PyObject *self, PyObject *args)
 */
 static PyMethodDef aacgmMethods[] = 
 {
-	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, alt = aacgmConv(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
-	{"aacgmConvArr",  aacgm_arr_wrap, METH_VARARGS, "convert to aacgm coords when inputs are lists\nformat: lat, lon, alt = aacgmConvArr(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
+	{"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, r = aacgmConv(inLat, inLon, height, flg)\nheight in km; flg=0: geo to aacgm; flg=1: aacgm to geo"},
+	{"aacgmConvArr",  aacgm_arr_wrap, METH_VARARGS, "convert to aacgm coords when inputs are lists\nformat: lat, lon, r = aacgmConvArr(inLat, inLon, height, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
  	{"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
 	{"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
  	{"mltFromYrsec", MLTConvertYrsec_wrap , METH_VARARGS, "calculate mlt from yr seconds and mag lon\nformat:mlt=mltFromEpoch(year,yrsec,mLon)"},

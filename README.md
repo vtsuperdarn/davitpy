@@ -3,7 +3,7 @@
 This is the ongoing development of a python alternative to the Data Visualization Toolkit for SuperDARN data analysis and visualization.
 
 * Project page
-http://vtsuperdarn.github.com/davitpy/
+http://vtsuperdarn.github.com/davitpy/
 
 * Project wiki
 https://github.com/vtsuperdarn/davitpy/wiki
@@ -18,7 +18,11 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 
 ### Install instructions
 
-First, you will need RST to read standard SuperDARN dmap files. You will find a strpped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+Note that we have developed using python 2.7.  If you use a different version, the code will probably not work.
+
+You will need RST to read standard SuperDARN dmap files. You will find a stripped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+
+If you have a Mac, make sure you have macports installed.
 
 Then, clone this repository:
 
@@ -28,27 +32,50 @@ Then cd into the cloned directory:
 
     cd davitpy
     
-Then run thes install scripts specific to your system (Ubuntu or MacOS):
+Then run the install scripts specific to your system.  These install dependencies and can take a bit of time...
 
-    cd install/linux/
-    sh python_install_linux.sh
-    sh set_paths_linux.sh
-    
-You may have to recompile the binaries:
+Ubuntu
 
-    cd ../..
-    mastermake
+    cd install/debian/
+    sudo ./python_install_debian.sh
     
+MacOS
+
+    cd install/mac
+    sudo ./python_install_mac.sh
+
+openSUSE
+
+    cd install/opensuse
+    sudo ./python_install_opensuse.sh
+
+If you are not running Ubuntu or MacOS or openSUSE, you can manually install the dependencies listed in the python_install_*.sh, and edit your profile.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
+
 Now you are ready to go. From anywhere on your machine just type:
 
     davitpy
 
-or 
+for the interactive terminal, or 
 
     davitpy-notebook
 
-or
+for the notebook, or
  
     davitpy-qtconsole
     
+for the QT console.
 And code away!
+
+
+### Using the example notebooks
+
+In `docs/notebook` you will find a small collection of notebooks demonstrating the main modules of DaViTpy (see also the documentation: http://davit.ece.vt.edu/davitpy/).
+Go to that directory and run
+
+    davitpy-notebook
+
+
+### Issues and Bug reporting
+
+Please report any problems/comments using the Issues tab of the davitpy GitHub page, or use this link: https://github.com/vtsuperdarn/davitpy/issues
+

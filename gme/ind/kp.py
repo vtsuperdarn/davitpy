@@ -24,16 +24,16 @@
 **Module**: gme.ind.kp
 *********************
 **Classes**:
-	* :class:`kpDay`
+	* :class:`gme.ind.kp.kpDay`
 **Functions**:
-	* :func:`readKp`
-	* :func:`readKpFtp`
-	* :func:`mapKpMongo`
+	* :func:`gme.ind.kp.readKp`
+	* :func:`gme.ind.kp.readKpFtp`
+	* :func:`gme.ind.kp.mapKpMongo`
 """
 
 import gme
 class kpDay(gme.base.gmeBase.gmeData):
-	"""a class to represent a day of kp data. Extends :class:`gmeBase.gmeData`  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
+	"""a class to represent a day of kp data. Extends :class:`gme.base.gmeBase.gmeData`  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
 	
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which day these data are for
@@ -61,7 +61,7 @@ class kpDay(gme.base.gmeBase.gmeData):
 	def parseFtp(self,line,yr):
 		"""This method is used to convert a line of kp data read from the GFZ-Potsdam FTP site into a :class:`kpDay` object.  In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`kpDay`
+		**Belongs to**: :class:`gme.ind.kp.kpDay`
 		
 		**Args**: 
 			* **line** (str): the ASCII line from the FTP server
@@ -97,9 +97,9 @@ class kpDay(gme.base.gmeBase.gmeData):
 		except: print 'problem assigning sunspot'
 		
 	def __init__(self, ftpLine=None, year=None, dbDict=None):
-		"""the intialization fucntion for a :class:`kpDay` object.  In general, users will not need to worry about this.
+		"""the intialization fucntion for a :class:`gme.ind.kp.kpDay` object.  In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`kpDay`
+		**Belongs to**: :class:`gme.ind.kp.kpDay`
 		
 		**Args**: 
 			* [**ftpLine**] (str): an ASCII line from the FTP server, must be provided in conjunction with year.  if this is provided, the object is initialized from it.  default=None
@@ -137,7 +137,7 @@ class kpDay(gme.base.gmeBase.gmeData):
 		return myStr
 		
 def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,sunspot=None):
-	"""This function reads kp data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the GFZ ftp server using :func:`readKpFtp`
+	"""This function reads kp data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the GFZ ftp server using :func:`gme.ind.kp.readKpFtp`
 	
 	**Args**: 
 		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for.  if this is None, start time will be the earliest record found.  default=None
@@ -148,7 +148,7 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 		* [**apMean**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with apMean values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
 		* [**sunspot**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with sunspot values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
 	**Returns**:
-		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
+		* **kpList** (list or None): if data is found, a list of :class:`gme.ind.kp.kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
 	**Example**:
 		::
 		
@@ -241,7 +241,7 @@ def readKpFtp(sTime, eTime=None):
 		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
 		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be the end of the year of sTime.  default=None
 	**Returns**:
-		* **kpList** (list or None): if data is found, a list of :class:`kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.  default=None
+		* **kpList** (list or None): if data is found, a list of :class:`gme.ind.kp.kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.  default=None
 	**Example**:
 		::
 		

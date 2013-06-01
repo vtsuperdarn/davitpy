@@ -21,3 +21,11 @@ make
 cd ${DAVITPY}/models/tsyganenko
 make clean
 make
+
+cd ${DAVITPY}/models/hwm
+make clean
+make
+
+cd ${DAVITPY}/models/raydarn
+make clean
+make

@@ -24,16 +24,16 @@
 **Module**: gme.ind.dst
 *********************
 **Classes**:
-	* :class:`dstRec`
+	* :class:`gme.ind.dst.dstRec`
 **Functions**:
-	* :func:`readDst`
-	* :func:`readDstWeb`
-	* :func:`mapDstMongo`
+	* :func:`gme.ind.dst.readDst`
+	* :func:`gme.ind.dst.readDstWeb`
+	* :func:`gme.ind.dst.mapDstMongo`
 """
 
 import gme
 class dstRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of dst data.  Extends :class:`gmeBase.gmeData`. Note that Dst data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html>`_
+	"""a class to represent a record of dst data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that Dst data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html>`_
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
@@ -59,7 +59,7 @@ class dstRec(gme.base.gmeBase.gmeData):
 		.. note::
 			In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`dstRec`
+		**Belongs to**: :class:`gme.ind.dst.dstRec`
 		
 		**Args**: 
 			* **line** (str): the ASCII line from the WDC data file
@@ -79,12 +79,12 @@ class dstRec(gme.base.gmeBase.gmeData):
 		if(float(cols[3]) != 99999.0): self.dst = float(cols[3])
 		
 	def __init__(self, webLine=None, dbDict=None):
-		"""the intialization fucntion for a :class:`dstRec` object.  
+		"""the intialization fucntion for a :class:`gme.ind.dst.dstRec` object.  
 		
 		.. note::
 			In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`dstRec`
+		**Belongs to**: :class:`gme.ind.dst.dstRec`
 		
 		**Args**: 
 			* [**webLine**] (str): an ASCII line from the datafile from WDC. if this is provided, the object is initialized from it.  default=None
@@ -116,7 +116,7 @@ def readDst(sTime=None,eTime=None,dst=None):
 		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
 		* [**dst**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with dst values in the range [a,b] will be returned.  default = None
 	**Returns**:
-		* **dstList** (list or None): if data is found, a list of :class:`dstRec` objects matching the input parameters is returned.  If no data is found, None is returned.
+		* **dstList** (list or None): if data is found, a list of :class:`gme.ind.dst.dstRec` objects matching the input parameters is returned.  If no data is found, None is returned.
 	**Example**:
 		::
 		

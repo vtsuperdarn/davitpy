@@ -1,32 +1,28 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-*******************************
-pydarn.radar.radUtils
-*******************************
+*********************
+**Module**: pydarn.radar.radUtils
+*********************
 		
-This module contains the following functions
-	* **getCpName**
-		get the name of a control program from cp id number
+**Functions**:
+	* :func:`getCpName`: get the name of a control program from cp id number
 
-*******************************
 """
 
 def getCpName(cpid):
-	"""
-*******************************
-getCpName(cpid):
-
-get the name of a control program from cp id number
-
-INPUTS:
-	* cpid: the control prog. id number
-OUTPUTS:
-	* cpName: the name of a control program
-EXAMPLE:
-	>>> s = getCpName(3310)
+	"""Get the name of a control program from cp id number
 	
-Written by AJ 20120820
+	**Args**: 
+		* **cpid** (int): the control prog. id number
+	**Returns**:
+		* **cpName** (str): the name of a control program
+	**Example**:
+		::
 
-*******************************
+			s = getCpName(3310)
+			
+	written by AJ, 2012-08
 	"""
 	from math import fabs
 	
@@ -41,5 +37,8 @@ Written by AJ 20120820
 	if(fabs(cpid) == 503): return 'tauscan'
 	if(fabs(cpid) == 9213): return 'pcpscan'
 	if(fabs(cpid) == 1): return 'normalscan'
-	return ' '
+	if(fabs(cpid) == 210): return 'rbsp-tau'
+	if(fabs(cpid) == 3501): return 'twofsound'
+	if(fabs(cpid) == 1200): return 'icescan'
+	return ''
 

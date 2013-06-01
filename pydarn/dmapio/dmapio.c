@@ -133,6 +133,11 @@ write_fit_rec(PyObject *self, PyObject *args)
     Py_CLEAR(tempobj);
     Py_CLEAR(tempval);
 
+    tempval = Py_BuildValue("s", "stid");
+    tempobj = PyObject_GetAttr(pybeam,Py_BuildValue("s", "stid"));
+    prm->stid = PyFloat_AsDouble(tempobj);
+    Py_CLEAR(tempobj);
+    Py_CLEAR(tempval);
 
     tempval = Py_BuildValue("s", "smsep");
     tempobj = PyObject_GetAttr(pyprm,Py_BuildValue("s", "noisemean"));

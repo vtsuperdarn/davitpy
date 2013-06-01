@@ -1,3 +1,19 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 .. module:: radDataRead
    :synopsis: A module for reading radar data
@@ -9,9 +25,9 @@
 ************************************
 
 **Functions**:
-  * :func:`radDataOpen`
-  * :func:`radDataReadRec`
-  * :func:`radDataReadScan`
+  * :func:`pydarn.sdio.radDataRead.radDataOpen`
+  * :func:`pydarn.sdio.radDataRead.radDataReadRec`
+  * :func:`pydarn.sdio.radDataRead.radDataReadScan`
 """
 
 def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
@@ -33,7 +49,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
     * **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
   **Returns**:
-    * **myPtr** (:class:`radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
+    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
     
   **Example**:
     ::
@@ -147,7 +163,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 outname = string.replace(outname,'.bz2','')
                 print 'bunzip2 -c '+filename+' > '+outname+'\n'
                 os.system('bunzip2 -c '+filename+' > '+outname)
-              else:
+              elif(string.find(filename,'.gz') != -1):
                 outname = string.replace(outname,'.gz','')
                 print 'gunzip -c '+filename+' > '+outname+'\n'
                 os.system('gunzip -c '+filename+' > '+outname)
@@ -268,7 +284,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'fitexfilter '+tmpName+' > '+tmpName+'f'
       os.system('fitexfilter '+tmpName+' > '+tmpName+'f')
       os.system('rm '+tmpName)
-      myPtr.ptr = open(tmpName+'f','r')
+      try:
+        myPtr.ptr = open(tmpName+'f','r')
+      except Exception,e:
+        print 'problem opening file'
+        print e
+        return None
       
   if(myPtr.ptr != None): 
     if(myPtr.dType == None): myPtr.dType = 'dmap'
@@ -278,15 +299,15 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     return None
   
 def radDataReadRec(myPtr):
-  """A function to read a single record of radar data from a :class:`radDataTypes.radDataPtr` object
+  """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
   .. note::
-    to use this, you must first create a :class:`radDataTypes.radDataPtr` object with :func:`radDataOpen` 
+    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen` 
 
   **Args**:
-    * **myPtr** (:class:`radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
   **Returns**:
-    * **myBeam** (:class:`radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
+    * **myBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
     
   **Example**:
     ::
@@ -355,7 +376,7 @@ def radDataReadRec(myPtr):
       else: channel = alpha[dfile['channel']-1]
       if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
           dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
-          (myPtr.stid == None or myPtr.stid == dfile['stid']) and
+          (myPtr.stid == None or dfile['stid'] == 0 or myPtr.stid == dfile['stid']) and
           (myPtr.channel == None or myPtr.channel == channel) and
           (myPtr.bmnum == None or myPtr.bmnum == dfile['bmnum']) and
           (myPtr.cp == None or myPtr.cp == dfile['cp'])):
@@ -376,18 +397,18 @@ def radDataReadRec(myPtr):
       return None
       
 def radDataReadScan(myPtr):
-  """A function to read a full scan of data from a :class:`radDataTypes.radDataPtr` object
+  """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
   .. note::
-    to use this, you must first create a :class:`radDataTypes.radDataPtr` object with :func:`radDataOpen`
+    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
     
   .. note::
     This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
 
   **Args**:
-    * **myPtr** (:class:`radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
   **Returns**:
-    * **myScan** (:class:`radDataTypes.scanData): an object filled with the data we are after.  *will return None when finished reading*
+    * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData): an object filled with the data we are after.  *will return None when finished reading*
     
   **Example**:
     ::

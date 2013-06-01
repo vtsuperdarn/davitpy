@@ -1,14 +1,20 @@
-# sat module __init__.py
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
 """
-sat
-****
+*********************
+**Module**: gme.sat
+*********************
 This subpackage contains various fucntions to read and write sattelite data
 
 This includes the following modules:
 	* **poes**
+    * **rbsp**
 """
 
-try: import poes
-except Exception, e: print e
 try: from poes import *
-except Exception, e: print e
+except Exception, e:
+    print __file__+' -> gme.sat.poes: ', e
+
+try: from rbsp import *
+except Exception, e:
+    print __file__+' -> gme.sat.rbsp: ', e

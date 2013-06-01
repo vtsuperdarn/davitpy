@@ -24,20 +24,20 @@
 **Module**: gme.ind.ae
 *********************
 **Classes**:
-	* :class:`aeRec`
+	* :class:`gme.ind.ae.aeRec`
 **Functions**:
-	* :func:`readAe`
-	* :func:`readAeWeb`
-	* :func:`mapAeMongo`
+	* :func:`gme.ind.ae.readAe`
+	* :func:`gme.ind.ae.gme.readAeWeb`
+	* :func:`gme.ind.ae.mapAeMongo`
 """
 
 import gme
 class aeRec(gme.base.gmeBase.gmeData):
-	"""a class to represent a record of ae data.  Extends :class:`gmeBase.gmeData` . Note that Ae data is available from 1990-present day (or whatever the latest WDC has uploaded is).  **We have 1 hour and 1 minute values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
+	"""a class to represent a record of ae data.  Extends :class:`gme.base.gmeBase.gmeData` . Note that Ae data is available from 1990-present day (or whatever the latest WDC has uploaded is).  **We have 1 hour and 1 minute values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
 		
 	**Members**: 
 		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
-		* **dataSet** (:class:`dst.dstRec`)): a string dicating the dataset this is from
+		* **dataSet** (:class:`gme.ind.dst.dstRec`)): a string dicating the dataset this is from
 		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
 		* **ae** (float): auroral electrojet
 		* **au** (float): auroral upper
@@ -63,7 +63,7 @@ class aeRec(gme.base.gmeBase.gmeData):
 		.. note::
 			In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`aeRec`
+		**Belongs to**: :class:`gme.ind.ae.aeRec`
 		
 		**Args**: 
 			* **line** (str): the ASCII line from the WDC data file
@@ -86,12 +86,12 @@ class aeRec(gme.base.gmeBase.gmeData):
 		if(float(cols[6]) != 99999.0): self.ao = float(cols[6])
 		
 	def __init__(self, webLine=None, dbDict=None, res=None):
-		"""the intialization fucntion for a :class:`aeRec` object.  
+		"""the intialization fucntion for a :class:`gme.ind.ae.aeRec` object.  
 		
 		.. note::
 			In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`aeRec`
+		**Belongs to**: :class:`gme.ind.ae.aeRec`
 		
 		**Args**: 
 			* [**webLine**] (str): an ASCII line from the datafile from WDC. if this is provided, the object is initialized from it.  default=None
@@ -131,7 +131,7 @@ def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
 		* [**au**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with au values in the range [a,b] will be returned.  default = None
 		* [**ao**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with ao values in the range [a,b] will be returned.  default = None
 	**Returns**:
-		* **aeList** (list or None): if data is found, a list of :class:`aeRec` objects matching the input parameters is returned.  If no data is found, None is returned.
+		* **aeList** (list or None): if data is found, a list of :class:`gme.ind.ae.aeRec` objects matching the input parameters is returned.  If no data is found, None is returned.
 	**Example**:
 		::
 		
@@ -190,7 +190,7 @@ def readAeWeb(sTime,eTime=None,res=60):
 	"""This function reads ae data from the WDC kyoto website
 	
 	.. warning::
-		You should not use this. Use the general function :func:`readAe` instead.
+		You should not use this. Use the general function :func:`gme.ind.ae.readAe` instead.
 	
 	**Args**: 
 		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for

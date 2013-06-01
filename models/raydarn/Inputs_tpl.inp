@@ -1,19 +1,22 @@
-********** Input file for ray-tracing code (MPI) **********
-index *    Value    * Description
-1              37.10  Transmitter latitude (degrees N)
-2             -77.95  Transmitter Longitude (degrees E)
-3             -52.95  Azimuth (degrees E) (begin)
-4               4.95  Azimuth (degrees E) (end)
-5               3.86  Azimuth (degrees E) (step)
-6               5.00  Elevation angle (begin)
-7              60.00  Elevation angle (end)
-8               0.10  Elevation angle (step)
-9              11.00  Frequency (Mhz)
-10                 1  number of hops (minimum 1)
-11              2010  Year (yyyy)
-12              0601  Month and day (mmdd)
-13             25.00  hour (add 25 for UT) (begin)
-14             48.50  hour (add 25 for UT) (end)
-15              0.50  hour (step)
-16            000.00  hmf2 (km, if 0 then ignored)
-17             00.00  nmf2 (log10, if 0 then ignored)
+   37.10  Transmitter latitude (degrees N)
+  -77.95  Transmitter Longitude (degrees E)
+  -52.95  Azimuth (degrees E) (begin)
+    4.95  Azimuth (degrees E) (end)
+    3.86  Azimuth (degrees E) (step)
+    5.00  Elevation angle (begin)
+   60.00  Elevation angle (end)
+    0.10  Elevation angle (step)
+   11.00  Frequency (Mhz)
+       1  nubmer of hops (minimum 1)
+    2010  Year (yyyy)
+    0601  Month and day (mmdd)
+   27.00  hour (add 25 for UT) (begin)
+   28.00  hour (add 25 for UT) (end)
+    0.50  hour (step)
+  000.00  hmf2 (km, if 0 then ignored)
+   00.00  nmf2 (log10, if 0 then ignored)
+###################################################
+## Input file for ray-tracing code (MPI) ##########
+###################################################
+   Value  Description
+###################################################
