@@ -10,14 +10,14 @@ DEV: functions/modules/classes with a * have not been developed yet
 
 *******************************
 """
-import sigio
+#import sigio
 from music import *
-from signal import *
-from sigproc import *
-from compare import *
-from xcor import *
-
-
+#from signal import *
+#from sigproc import *
+#from compare import *
+#from xcor import *
+#
+#
 # *************************************************************
 # Define a few general-use constants
 

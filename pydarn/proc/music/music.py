@@ -1,4 +1,7 @@
-from datetime import datetime as dt
+import numpy as np
+import datetime 
+
+import pydarn
 
 options = {}
 options['timeStep']       = 2.          #;timeStep between scans in Minutes.
@@ -24,16 +27,98 @@ options['fft_range']      = [0., 1.5]
 options['fir_scale']      = [-10, 10]
 
 params                    = {}
-params['datetime']        = [dt(2010,11,19,9,30), dt(2010,11,19,19,30)]
+params['datetime']        = [datetime.datetime(2010,11,19,9,30), datetime.datetime(2010,11,19,19,30)]
 params['radar']           = 'gbr'
 params['channel']         = 'a'
 params['bmnum']            = 6
 params['drange']          = [500,1000]
 params['band']            = [0.3,1.2]
 params['kmax']            = 0.05
-params['fir_datetime']    = [dt(2010,11,19,14,10), dt(2010,11,19,16,00)]
+params['fir_datetime']    = [datetime.datetime(2010,11,19,14,10), datetime.datetime(2010,11,19,16,00)]
 
 class music(object):
   def __init__(self):
    self.options = options
    self.params  = params
+
+class musicArray(object):
+  def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1):
+#    0: plot all backscatter data 
+#    1: plot ground backscatter only
+#    2: plot ionospheric backscatter only
+#    3: plot all backscatter data with a ground backscatter flag.
+
+    if sTime == None: sTime = myPtr.sTime
+    if eTime == None: eTime = myPtr.eTime
+
+    scanTimeList = []
+    dataList  = []
+    #Subscripts of columns in the dataList/dataArray
+    scanInx = 0
+    dateInx = 1
+    beamInx = 2
+    gateInx = 3
+    dataInx = 4
+
+    beamTime  = sTime
+    scanNr    = np.uint64(0)
+    while beamTime < eTime:
+      #Load one scan into memory.
+      myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
+      if myScan == None: break
+
+      for myBeam in myScan:
+        #Get information from each beam in the scan.
+        beamTime = myBeam.time 
+        bmnum    = myBeam.bmnum
+        fitDataList = getattr(myBeam.fit,param)
+        slist       = getattr(myBeam.fit,'slist')
+        gflag       = getattr(myBeam.fit,'gflg')
+
+        for (gate,data,flag) in zip(slist,fitDataList,gflag):
+          #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
+          if (gscat == 1) and (flag == 0): continue
+          if (gscat == 2) and (flag == 1): continue
+          tmp = (scanNr,beamTime,bmnum,gate,data)
+          dataList.append(tmp)
+
+      #Determine the start time for each scan and save to list.
+      scanTimeList.append(min([x.time for x in myScan]))
+
+      #Advance to the next scan number.
+      scanNr = scanNr + 1
+
+    #Convert lists to numpy arrays.
+    timeArray = np.array(scanTimeList)
+    dataListArray = np.array(dataList)
+
+    #Figure out what size arrays we need and initialize the arrays...
+    nrTimes = np.max(dataListArray[:,scanInx]) + 1
+    nrBeams = np.max(dataListArray[:,beamInx]) + 1
+    nrGates = np.max(dataListArray[:,gateInx]) + 1
+
+    #Convert the dataListArray into a 3 dimensional array.
+    dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
+    dataArray[:]  = np.nan
+    for inx in range(len(dataListArray)):
+      dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
+
+    #Make metadata block to hold information about the processing.
+    metadata = {}
+    metadata['dType']     = myPtr.dType
+    metadata['stid']      = myPtr.stid
+    metadata['fType']     = myPtr.fType
+    metadata['cp']        = myPtr.cp
+    metadata['channel']   = myPtr.channel
+    metadata['timestamp'] = datetime.datetime.utcnow()
+    metadata['sTime']     = sTime
+    metadata['eTime']     = eTime
+    metadata['param']     = param
+    metadata['gscat']     = gscat
+
+    #Save data to be returned as self.variables
+    class empty(object): pass
+    self.originalFit = empty()
+    self.originalFit.data = dataArray
+    self.originalFit.time = timeArray
+    self.originalFit.metadata = metadata
