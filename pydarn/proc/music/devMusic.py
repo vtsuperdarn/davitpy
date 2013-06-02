@@ -21,7 +21,7 @@ sys.path.append('/davitpy')
 # <codecell>
 
 import pydarn.sdio
-import datetime as dt
+import datetime
 
 # <codecell>
 
@@ -33,7 +33,7 @@ import pydarn.proc.music as music
 #establishes a data piepeline.  we will now set up the args.
 
 #sTime is the time we want to start reading (reqd input)
-sTime = dt.datetime(2010,11,19,12,0)
+sTime = datetime.datetime(2010,11,19,12,0)
 print sTime
 
 #rad is the 3-letter radar code for the radar we want (reqd input)
@@ -41,7 +41,7 @@ rad='bks'
 
 #NOTE:the rest of the inputs are optional
 #eTime is the end time we want to read until
-eTime = dt.datetime(2010,11,19,16,0)
+eTime = datetime.datetime(2010,11,19,16,0)
 print eTime
 
 #channel is the radar channel we want data from, eg 'a'
@@ -83,4 +83,6 @@ myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,file
 # <codecell>
 
 dataObj = music.musicArray(myPtr)
+
+pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
 

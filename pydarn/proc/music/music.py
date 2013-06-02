@@ -134,3 +134,6 @@ class musicArray(object):
     self.originalFit.time = timeArray
     self.originalFit.fov  = fov
     self.originalFit.metadata = metadata
+
+    #Set the new data active.
+    self.active = self.originalFit
