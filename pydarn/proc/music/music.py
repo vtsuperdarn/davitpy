@@ -42,7 +42,8 @@ class music(object):
    self.params  = params
 
 class musicArray(object):
-  def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1):
+  def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
+#    fov = pydarn.radar.radFov.fov(frang=180.0, rsep=45.0, site=None, nbeams=None, ngates=None, bmsep=None, recrise=None, siteLat=None, siteLon=None, siteBore=None, siteAlt=None, elevation=None, altitude=300.0, model='IS', coords='geo')
 #    0: plot all backscatter data 
 #    1: plot ground backscatter only
 #    2: plot ionospheric backscatter only
@@ -62,12 +63,18 @@ class musicArray(object):
 
     beamTime  = sTime
     scanNr    = np.uint64(0)
+    fov       = None
     while beamTime < eTime:
       #Load one scan into memory.
       myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
       if myScan == None: break
 
       for myBeam in myScan:
+        #Calculate the field of view if it has not yet been calculated.
+        if fov == None:
+          site  = pydarn.radar.radStruct.site(radId=myPtr.stid,dt=sTime)
+          fov   = pydarn.radar.radFov.fov(frang=myBeam.prm.frang, rsep=myBeam.prm.rsep, site=site,elevation=fovElevation,model=fovModel,coords=fovCoords)
+
         #Get information from each beam in the scan.
         beamTime = myBeam.time 
         bmnum    = myBeam.bmnum
@@ -88,6 +95,7 @@ class musicArray(object):
       #Advance to the next scan number.
       scanNr = scanNr + 1
 
+
     #Convert lists to numpy arrays.
     timeArray = np.array(scanTimeList)
     dataListArray = np.array(dataList)
@@ -102,7 +110,7 @@ class musicArray(object):
     dataArray[:]  = np.nan
     for inx in range(len(dataListArray)):
       dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
-
+  
     #Make metadata block to hold information about the processing.
     metadata = {}
     metadata['dType']     = myPtr.dType
@@ -115,10 +123,14 @@ class musicArray(object):
     metadata['eTime']     = eTime
     metadata['param']     = param
     metadata['gscat']     = gscat
+    metadata['elevation'] = fovElevation
+    metadata['model']     = fovModel
+    metadata['coords']    = fovCoords
 
     #Save data to be returned as self.variables
     class empty(object): pass
     self.originalFit = empty()
     self.originalFit.data = dataArray
     self.originalFit.time = timeArray
+    self.originalFit.fov  = fov
     self.originalFit.metadata = metadata
