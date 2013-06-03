@@ -44,14 +44,14 @@ from pydarn.sdio import *
 from matplotlib.figure import Figure
 
 
-def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
+def plotRti(sTime,radcode,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex'):
   """create an rti plot for a secified radar and time period
 
   **Args**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating the start time which you would like to plot
-    * **rad** (str): the 3 letter radar code, e.g. 'bks'
+    * **radcode** (str): the 3 letter radar code, e.g. 'bks'  with optional channel extension for UAF radars
     * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating th end time you would like plotted.  If this is None, 24 hours will be plotted.  default = None.
     * **[bmnum] (int)**: The beam to plot.  default: 7
     * **[fileType]** (str): The file type to be plotted, one of ['fitex','fitacf','lmfit'].  default = 'fitex'.
@@ -89,6 +89,9 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   t1 = datetime.datetime.now()
   #check the inputs
   assert(isinstance(sTime,datetime.datetime)),'error, sTime must be a datetime object'
+  segments=radcode.split('.')
+  try: rad=segments[0]
+  except: rad=None
   assert(isinstance(rad,str) and len(rad) == 3),'error, rad must be a string 3 chars long'
   assert(isinstance(eTime,datetime.datetime) or eTime == None),'error, eTime must be a datetime object or None'
   assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or coords == 'mag'),\
@@ -122,9 +125,9 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
   #open the file
   if fileName == None:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
+    myFile = radDataOpen(sTime,radcode,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
   else:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
+    myFile = radDataOpen(sTime,radcode,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
                           fileName=fileName,custType=custType)
 
   #check that we have data available
@@ -173,7 +176,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     rtiFig = Figure(figsize=(14,14))
 
   #give the plot a title
-  rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
+  rtiTitle(rtiFig,sTime,radcode,fileType,bmnum)
   #plot the noise bar
   plotNoise(rtiFig,times,nsky,nsch)
   #plot the frequency bar
@@ -193,7 +196,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
     
     #draw the axis
-    ax = drawAxes(rtiFig,times,rad,cpid,bmnum,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
+    ax = drawAxes(rtiFig,times,radcode,cpid,bmnum,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
                   pos=pos)
 
     
@@ -281,13 +284,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   if retfig:
     return rtiFig
   
-def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
+def drawAxes(myFig,times,radcode,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
   """draws empty axes for an rti plot
 
   **Args**:
     * **myFig**: the MPL figure we are plotting to
     * **times**: a list of datetime objects referencing the beam soundings
-    * **rad**: 3 letter radar code
+    * **radcode**: 3 letter radar code with optional chan extension
     * **cpid**: list of the cpids or the beam soundings
     * **bmnum**: beam number being plotted
     * **nrang**: list of nrang for the beam soundings
@@ -307,6 +310,11 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
       
   Written by AJ 20121002
   """
+  segments=radcode.split('.')
+  try: rad=segments[0]
+  except: rad=None
+  try: chan=segments[1]
+  except: chan=None
   
   nrecs = len(times)
   #add an axes to the figure
@@ -385,12 +393,12 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 
   return ax
     
-def rtiTitle(fig,d,rad,fileType,beam,xmin=.1,xmax=.86):
+def rtiTitle(fig,d,radcode,fileType,beam,xmin=.1,xmax=.86):
   """draws title for an rti plot
 
   **Args**:
     * **d**: the date being plotted as a datetime object
-    * **rad**: the 3 letter radar code
+    * **radcode**: the 3 letter radar code
     * **fileType**: the file type being plotted
     * **beam**: the beam number being plotted
     * **[xmin]**: minimum x value o the plot in page coords
@@ -406,9 +414,17 @@ def rtiTitle(fig,d,rad,fileType,beam,xmin=.1,xmax=.86):
       
   Written by AJ 20121002
   """
+  segments=radcode.split('.')
+  try: rad=segments[0]
+  except: rad=None
+  try: chan=segments[1]
+  except: chan=None
+
   r=pydarn.radar.network().getRadarByCode(rad)
+  radname=r.name
+  if chan!=None: radname=radname+"."+chan
   
-  fig.text(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
+  fig.text(xmin,.95,radname+'  ('+fileType+')',ha='left',weight=550)
   
   fig.text((xmin+xmax)/2.,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
   weight=550,size='large',ha='center')
