@@ -72,8 +72,9 @@ class musicArray(object):
       for myBeam in myScan:
         #Calculate the field of view if it has not yet been calculated.
         if fov == None:
-          site  = pydarn.radar.radStruct.site(radId=myPtr.stid,dt=sTime)
-          fov   = pydarn.radar.radFov.fov(frang=myBeam.prm.frang, rsep=myBeam.prm.rsep, site=site,elevation=fovElevation,model=fovModel,coords=fovCoords)
+          radStruct = pydarn.radar.radStruct.radar(radId=myPtr.stid)
+          site      = pydarn.radar.radStruct.site(radId=myPtr.stid,dt=sTime)
+          fov       = pydarn.radar.radFov.fov(frang=myBeam.prm.frang, rsep=myBeam.prm.rsep, site=site,elevation=fovElevation,model=fovModel,coords=fovCoords)
 
         #Get information from each beam in the scan.
         beamTime = myBeam.time 
@@ -115,6 +116,8 @@ class musicArray(object):
     metadata = {}
     metadata['dType']     = myPtr.dType
     metadata['stid']      = myPtr.stid
+    metadata['name']      = radStruct.name
+    metadata['code']      = radStruct.code
     metadata['fType']     = myPtr.fType
     metadata['cp']        = myPtr.cp
     metadata['channel']   = myPtr.channel

@@ -31,23 +31,46 @@ class musicFan(object):
     coords      = metadata['coords']
 
     #Translate parameter information from short to long form.
-    if    metadata['param'] == 'p_l'  : param = 'power'
-    elif  metadata['param'] == 'p_s'  : param = 'power'
-    elif  metadata['param'] == 'v'    : param = 'velocity'
-    elif  metadata['param'] == 'w_l'  : param = 'width'
-    elif  metadata['param'] == 'w_s'  : param = 'width'
-    elif  metadata['param'] == 'elv'  : param = 'elevation'
-    elif  metadata['param'] == 'phi0' : param = 'phi0'
-    else: param = metadata['param']
+    if    metadata['param'] == 'p_l'  :
+      param     =  'power'
+      cbarLabel = r'$\lambda$ Power [dB]'
+    elif  metadata['param'] == 'p_s'  :
+      param     =  'power'
+      cbarLabel = r'$\sigma$ Power [dB]'
+    elif  metadata['param'] == 'v'    :
+      param     = 'velocity'
+      cbarLabel = 'Velocity [m/s]'
+    elif  metadata['param'] == 'w_l'  :
+      param     = 'width'
+      cbarLabel = r'$\lambda$ Spectral Width [m/s]'
+    elif  metadata['param'] == 'w_s'  : 
+      param     = 'width'
+      cbarLabel = r'$\sigma$ Spectral Width [m/s]'
+    elif  metadata['param'] == 'elv'  :
+      param     = 'elevation'
+      cbarLabel = 'Elevation [deg]'
+    elif  metadata['param'] == 'phi0' :
+      param     = 'phi0'
+      cbarLabel = r'$\phi_0$'
+    else:
+      param     = metadata['param']
+      cbarLabel = metadata['param']
 
     #Set colorbar scale if not explicitly defined.
     if(scale == None):
-      if(param == 'velocity'): scale=[-200,200]
-      elif(param == 'power'): scale=[0,30]
-      elif(param == 'width'): scale=[0,150]
-      elif(param == 'elevation'): scale=[0,50]
-      elif(param == 'phi0'): scale=[-np.pi,np.pi]
-      else: scale = [-200,200]
+      if(param == 'velocity'):
+        scale=[-200,200]
+      elif(param == 'power'):
+        scale=[0,30]
+      elif(param == 'width'):
+        scale=[0,150]
+      elif(param == 'elevation'): 
+        scale=[0,50]
+      elif(param == 'phi0'):
+        scale=[-np.pi,np.pi]
+      else:
+        param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
+        scale = [-200,200]
 
     #See if an axis is provided... if not, set one up!
     if axis==None:
@@ -128,7 +151,16 @@ class musicFan(object):
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
+    axis.set_title(metadata['name']) 
+
     cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+    cbar.set_label(cbarLabel)
     labels = cbar.ax.get_yticklabels()
     labels[-1].set_visible(False)
+    axis.text(1, 0, 'centered',
+            horizontalalignment='left',
+            verticalalignment='bottom',
+            rotation='vertical',
+            transform=axis.transAxes)
     plt.show()
+    import ipdb; ipdb.set_trace()
