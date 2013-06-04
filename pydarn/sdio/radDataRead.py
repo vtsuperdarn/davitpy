@@ -30,7 +30,7 @@
   * :func:`pydarn.sdio.radDataRead.radDataReadScan`
 """
 
-def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
+def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
                 custType='fitex'):
 
@@ -38,7 +38,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
 
   **Args**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the beginning time for which you want data
-    * **rad** (str): the 3-letter radar code for which you want data
+    * **radcode** (str): the 3-letter radar code for which you want data, with optional channel extension
     * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): the last time that you want data for.  if this is set to None, it will be set to 1 day after sTime.  default = None
     * **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',...  if this is set to None, data from ALL channels will be read. default = None
     * **[bmnum]** (int): the beam number which you want data for.  If this is set to None, data from all beams will be read. default = None
@@ -68,6 +68,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   #check inputs
   assert(isinstance(sTime,dt.datetime)), \
     'error, sTime must be datetime object'
+  segments=radcode.split(".")
+  print segments
+  try: rad=segments[0]
+  except: rad=None
+  try: chan=segments[1]
+  except: chan=None
   assert(isinstance(rad,str) and len(rad) == 3), \
     'error, rad must be a 3 char string'
   assert(eTime == None or isinstance(eTime,dt.datetime)), \
@@ -136,11 +142,9 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   if((src == None or src == 'local') and fileName == None):
     try:
       for ftype in arr:
-        print '\nLooking locally for',ftype,'files'
-        #deal with UAF naming convention
-        fnames = ['??.??.???.'+ftype+'.*']
-        if(channel == None): fnames.append('??.??.???.a.*')
-        else: fnames.append('??.??.???.'+channel+'.*')
+        print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,rad,chan)
+        #deal with UAF naming convention by using the radcode
+        fnames = ['*.%s.%s*' % (radcode,ftype)]
         for form in fnames:
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
@@ -152,7 +156,22 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
             ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
             ### TO MATCH YOUR DIRECTORY STRUCTURE
             ##################################################################
-            myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+            localdict={}
+            try: 
+              localdict["dirtree"]=os.environ['DAVIT_LOCALDIR']
+            except:
+              localdict["dirtree"]="/sd-data/"
+            localdict["year"] = "%04d" % ctime.year
+            localdict["month"]= "%02d" % ctime.month
+            localdict["day"]  = "%02d" % ctime.day
+            localdict["ftype"]  = ftype 
+            localdict["radar"]  = rad 
+            try:
+
+              localdirformat = os.environ['DAVIT_DIRFORMAT']
+              myDir = localdirformat % localdict 
+            except: 
+              myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
             hrStr = ctime.strftime("%H")
             dateStr = ctime.strftime("%Y%m%d")
             #iterate through all of the files which begin in this hour
@@ -167,7 +186,11 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 outname = string.replace(outname,'.gz','')
                 print 'gunzip -c '+filename+' > '+outname+'\n'
                 os.system('gunzip -c '+filename+' > '+outname)
-              
+              else:
+                command='cp '+filename+' '+outname
+                print command
+                os.system(command)
+               
               filelist.append(outname)
             ##################################################################
             ### END SECTION YOU WILL HAVE TO CHANGE
@@ -186,7 +209,6 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'you probably have to edit radDataRead.py'
       print 'I will try to read from other sources'
       src=None
-        
   #NEXT, CHECK IF THE DATA EXISTS IN THE DATABASE
   if((src == None or src == 'mongo') and len(filelist) == 0 and fileName == None):
     for ftype in arr:
