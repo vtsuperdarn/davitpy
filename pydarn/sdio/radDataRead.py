@@ -142,11 +142,9 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   if((src == None or src == 'local') and fileName == None):
     try:
       for ftype in arr:
-        print '\nLooking locally for',ftype,'files : chan',chan
-        #deal with UAF naming convention
-        fnames = ['??.??.???.'+ftype+'.*']
-        if(chan == None): fnames.append('??.??.???.a.*')
-        else: fnames.append('??.??.???.'+chan+'.*')
+        print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,rad,chan)
+        #deal with UAF naming convention by using the radcode
+        fnames = ['*.%s.%s*' % (radcode,ftype)]
         for form in fnames:
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
