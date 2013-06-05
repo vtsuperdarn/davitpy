@@ -399,6 +399,9 @@ def radDataReadRec(myPtr):
   if(myPtr.ptr == None):
     print 'error, your pointer does not point to any data'
     return None
+  if myPtr.ptr.closed:
+    print 'error, your file pointer is closed'
+    return None
   
   myBeam = beamData()
   
@@ -499,6 +502,9 @@ def radDataReadScan(myPtr):
     'error, input must be of type radDataPtr'
   if(myPtr.ptr == None):
     print 'error, your pointer does not point to any data'
+    return None
+  if myPtr.ptr.closed:
+    print 'error, your file pointer is closed'
     return None
   
   myScan = scanData()
