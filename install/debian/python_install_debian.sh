@@ -46,19 +46,15 @@ cp -a basemap basemap_old
 rm -r basemap
 ln -s /usr/local/lib/python2.7/dist-packages/mpl_toolkits/basemap ./basemap
 
-PS1='$ '
 cd $dir
 install_dir=$(readlink -f ../..)
 echo "source $install_dir/profile.bash" >> ~/.bashrc
 
 # PS1='$ '
 # source ~/.bashrc
-echo "source $install_dir/profile.bash" >> tempsh
-. tempsh
-rm tempsh
-cd ../..
+# cd ../..
 
-./mastermake
+# ./mastermake
 
 
 

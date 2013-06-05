@@ -38,6 +38,10 @@ Ubuntu
 
     cd install/debian/
     sudo ./python_install_debian.sh
+
+Now, source ~/.bashrc, or open a new terminal.  Then, go to your install directory (davitpy) and run 
+    
+    ./mastermake
     
 MacOS
 
@@ -48,7 +52,11 @@ openSUSE
 
     cd install/opensuse
     sudo ./python_install_opensuse.sh
-
+    
+Now, source ~/.bashrc, or open a new terminal.  Then, go to your install directory (davitpy) and run 
+    
+    ./mastermake
+    
 If you are not running Ubuntu or MacOS or openSUSE, you can manually install the dependencies listed in the python_install_*.sh, and edit your profile.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
 
 Now you are ready to go. From anywhere on your machine just type:
