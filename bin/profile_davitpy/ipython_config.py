@@ -7,13 +7,15 @@ c.TerminalIPythonApp.display_banner = True
 c.InteractiveShellApp.log_level = 20
 # c.InteractiveShellApp.extensions = []
 c.InteractiveShellApp.exec_lines = [
-	'%load_ext autoreload',
-	'%autoreload 2',
-	'import pydarn',
-	'import utils',
-	'import models',
-	'import gme',
-	'from datetime import *'
+  '%load_ext autoreload',
+  '%autoreload 2',
+  'import matplotlib as mpl',
+  "mpl.use('Qt4Agg')",
+  'import pydarn',
+  'import utils',
+  'import models',
+  'import gme',
+  'from datetime import *'
 ]
 
 # c.InteractiveShellApp.exec_files = []
