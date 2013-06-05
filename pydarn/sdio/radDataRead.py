@@ -167,7 +167,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   if fileName == None:
     try:
       if filtered:
-        for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,radcode,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
@@ -182,7 +182,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
           except Exception,e:
             print e
       if not cached:
-        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
@@ -203,13 +203,14 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   if(not cached and (src == None or src == 'local') and fileName == None):
     try:
       for ftype in arr:
-        print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,rad,chan)
+        print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,radcode,chan)
         #deal with UAF naming convention by using the radcode
         fnames = ['*.%s.%s*' % (radcode,ftype)]
         for form in fnames:
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
           ctime = sTime.replace(minute=0)
+          fileSt = ctime
           if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
           while ctime <= eTime:
             #directory on the data server
@@ -228,7 +229,6 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
             localdict["ftype"]  = ftype 
             localdict["radar"]  = rad 
             try:
-
               localdirformat = os.environ['DAVIT_DIRFORMAT']
               myDir = localdirformat % localdict 
             except: 
@@ -254,11 +254,11 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                
               filelist.append(outname)
 
-              #HANDLE CACHEING NAME
-              ff = string.replace(outname,tmpDir,'')
-              #check the beginning time of the file (for cacheing)
-              t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
-              if fileSt == None or t1 < fileSt: fileSt = t1
+#              #HANDLE CACHEING NAME
+#              ff = string.replace(outname,tmpDir,'')
+#              #check the beginning time of the file (for cacheing)
+#              t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+#              if fileSt == None or t1 < fileSt: fileSt = t1
 
             ##################################################################
             ### END SECTION YOU WILL HAVE TO CHANGE
@@ -372,7 +372,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
       #choose a temp file name with time span info for cacheing
       tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
                 fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
-                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),rad,fileType)
+                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),radcode,fileType)
       print 'cat '+string.join(filelist)+' > '+tmpName
       os.system('cat '+string.join(filelist)+' > '+tmpName)
       print filelist
