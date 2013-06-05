@@ -51,8 +51,11 @@ cd $dir
 install_dir=$(readlink -f ../..)
 echo "source $install_dir/profile.bash" >> ~/.bashrc
 
-PS1='$ '
-source ~/.bashrc
+# PS1='$ '
+# source ~/.bashrc
+echo "source $install_dir/profile.bash" >> tempsh
+. tempsh
+rm tempsh
 cd ../..
 
 ./mastermake
