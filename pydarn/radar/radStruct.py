@@ -407,7 +407,7 @@ class radar(object):
         """
         from datetime import datetime
         import sqlite3 as lite
-        import pickle
+        import pickle 
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
@@ -420,7 +420,10 @@ class radar(object):
 
             self.id = row[0]
             self.cnum = row[1]
-            self.code = pickle.loads(row[2])
+            if isinstance(row[2], unicode):
+              self.code = pickle.loads(row[2].encode('ascii'))
+            else: 
+              self.code = pickle.loads(row[2])
             self.name = row[3]
             self.operator = row[4]
             self.hdwfname = row[5]
@@ -630,7 +633,10 @@ class site(object):
             self.maxatten = row[12]
             self.maxgate = row[13]
             self.maxbeam = row[14]
-            self.interfer = pickle.loads(row[15])
+            if isinstance(row[15], unicode):
+              self.interfer = pickle.loads(row[15].encode('ascii'))
+            else:
+              self.interfer = pickle.loads(row[15])
             
     def __len__(self):
         """

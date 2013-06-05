@@ -252,12 +252,11 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
-
+        print self.db_user,self.db_pswd,self.db_host,self.db_name
+        uri="mongodb://%s:%s@%s/%s"  % (self.db_user, self.db_pswd, self.db_host, self.db_name)
+        print uri
         try:
-            conn = MongoClient( 'mongodb://{}:{}@{}/{}'.format(self.db_user,
-                                                                       self.db_pswd, 
-                                                                       self.db_host,
-                                                                       self.db_name) )
+            conn = MongoClient(uri) 
             dba = conn[self.db_name]
         except:
             print 'Could not connect to remote DB: ', sys.exc_info()[0]
