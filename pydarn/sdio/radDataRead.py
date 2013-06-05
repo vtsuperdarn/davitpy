@@ -126,14 +126,10 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   #move back a little in time because files often start at 2 mins after the hour
   sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
-<<<<<<< ours
   try: 
     tmpDir=os.environ['DAVIT_TMPDIR']
   except:
-    tmpDir = '/tmp/fit/'
-=======
-  tmpDir = '/tmp/sd/'
->>>>>>> theirs
+    tmpDir = '/tmp/sd/'
   d = os.path.dirname(tmpDir)
   if not os.path.exists(d):
     os.makedirs(d)
