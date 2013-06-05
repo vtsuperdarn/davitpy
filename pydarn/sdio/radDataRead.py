@@ -50,7 +50,22 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
   **Returns**:
     * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
-    
+  **ENVIRONMENT Variables**:
+    * DAVIT_TMPDIR :  Directory used for davitpy temporary file cache. 
+    * DAVIT_TMPEXPIRE :  Length of time that cached temporary files are valid. After which they will be regenerated.  Example: DAVIT_TMPEXPIRE='2h'  will reuse temp files in the cache for 2 hours since last access 
+    * DAVIT_LOCALDIR :  Used to set base directory tree for local file look up
+    * DAVIT_DIRFORMAT : Python string dictionary capable format string appended to local file base directory tree for use with directory structures which encode radar name, channel or date information.
+    Currently supported dictionary keys which can be used: 
+    "dirtree" : base directory tree  
+    "year"  : 0 padded 4 digit year 
+    "month" : 0 padded 2 digit month 
+    "day"   : 0 padded 2 digit day 
+    "ftype" : filetype string
+    "radar" : 3-chr radarcode 
+      Example: DAVIT_DIRFORMAT='%(dirtree)s/%(ftype)s/%(year)s/%(month)s.%(day)s/'
+      would be converted into a path location such as : "/data/fitacf/2013/05/02/" when searching for fitacf files for the date 2013-05-02 
+
+
   **Example**:
     ::
     
@@ -109,7 +124,10 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   #move back a little in time because files often start at 2 mins after the hour
   sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
-  tmpDir = '/tmp/fit/'
+  try: 
+    tmpDir=os.environ['DAVIT_TMPDIR']
+  except:
+    tmpDir = '/tmp/fit/'
   d = os.path.dirname(tmpDir)
   if not os.path.exists(d):
     os.makedirs(d)
