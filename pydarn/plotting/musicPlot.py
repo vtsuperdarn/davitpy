@@ -151,16 +151,17 @@ class musicFan(object):
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
-    axis.set_title(metadata['name']) 
+    axis.set_title(metadata['name']+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
 
     cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
     cbar.set_label(cbarLabel)
     labels = cbar.ax.get_yticklabels()
     labels[-1].set_visible(False)
-    axis.text(1, 0, 'centered',
+    txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
+    axis.text(1.01, 0, txt,
             horizontalalignment='left',
             verticalalignment='bottom',
             rotation='vertical',
+            size='small',
             transform=axis.transAxes)
     plt.show()
-    import ipdb; ipdb.set_trace()

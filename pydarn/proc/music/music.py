@@ -54,6 +54,7 @@ class musicArray(object):
 
     scanTimeList = []
     dataList  = []
+    cpidList  = []
     #Subscripts of columns in the dataList/dataArray
     scanInx = 0
     dateInx = 1
