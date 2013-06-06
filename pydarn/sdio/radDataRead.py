@@ -30,7 +30,7 @@
   * :func:`pydarn.sdio.radDataRead.radDataReadScan`
 """
 
-def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
+def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
                 custType='fitex',noCache=False):
 
@@ -38,7 +38,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
 
   **Args**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the beginning time for which you want data
-    * **rad** (str): the 3-letter radar code for which you want data
+    * **radcode** (str): the 3-letter radar code for which you want data, with optional channel extension
     * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): the last time that you want data for.  if this is set to None, it will be set to 1 day after sTime.  default = None
     * **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',...  if this is set to None, data from ALL channels will be read. default = None
     * **[bmnum]** (int): the beam number which you want data for.  If this is set to None, data from all beams will be read. default = None
@@ -51,7 +51,22 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
   **Returns**:
     * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
-    
+  **ENVIRONMENT Variables**:
+    * DAVIT_TMPDIR :  Directory used for davitpy temporary file cache. 
+    * DAVIT_TMPEXPIRE :  Length of time that cached temporary files are valid. After which they will be regenerated.  Example: DAVIT_TMPEXPIRE='2h'  will reuse temp files in the cache for 2 hours since last access 
+    * DAVIT_LOCALDIR :  Used to set base directory tree for local file look up
+    * DAVIT_DIRFORMAT : Python string dictionary capable format string appended to local file base directory tree for use with directory structures which encode radar name, channel or date information.
+    Currently supported dictionary keys which can be used: 
+    "dirtree" : base directory tree  
+    "year"  : 0 padded 4 digit year 
+    "month" : 0 padded 2 digit month 
+    "day"   : 0 padded 2 digit day 
+    "ftype" : filetype string
+    "radar" : 3-chr radarcode 
+      Example: DAVIT_DIRFORMAT='%(dirtree)s/%(ftype)s/%(year)s/%(month)s.%(day)s/'
+      would be converted into a path location such as : "/data/fitacf/2013/05/02/" when searching for fitacf files for the date 2013-05-02 
+
+
   **Example**:
     ::
     
@@ -69,6 +84,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   #check inputs
   assert(isinstance(sTime,dt.datetime)), \
     'error, sTime must be datetime object'
+  segments=radcode.split(".")
+  print segments
+  try: rad=segments[0]
+  except: rad=None
+  try: chan=segments[1]
+  except: chan=None
   assert(isinstance(rad,str) and len(rad) == 3), \
     'error, rad must be a 3 char string'
   assert(eTime == None or isinstance(eTime,dt.datetime)), \
@@ -105,7 +126,10 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   #move back a little in time because files often start at 2 mins after the hour
   sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
-  tmpDir = '/tmp/sd/'
+  try: 
+    tmpDir=os.environ['DAVIT_TMPDIR']
+  except:
+    tmpDir = '/tmp/sd/'
   d = os.path.dirname(tmpDir)
   if not os.path.exists(d):
     os.makedirs(d)
@@ -143,7 +167,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   if fileName == None:
     try:
       if filtered:
-        for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,radcode,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
@@ -158,7 +182,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
           except Exception,e:
             print e
       if not cached:
-        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
@@ -179,15 +203,14 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   if(not cached and (src == None or src == 'local') and fileName == None):
     try:
       for ftype in arr:
-        print '\nLooking locally for',ftype,'files'
-        #deal with UAF naming convention
-        fnames = ['??.??.???.'+ftype+'.*']
-        if(channel == None): fnames.append('??.??.???.a.*')
-        else: fnames.append('??.??.???.'+channel+'.*')
+        print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,radcode,chan)
+        #deal with UAF naming convention by using the radcode
+        fnames = ['*.%s.%s*' % (radcode,ftype)]
         for form in fnames:
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
           ctime = sTime.replace(minute=0)
+          fileSt = ctime
           if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
           while ctime <= eTime:
             #directory on the data server
@@ -195,7 +218,21 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
             ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
             ### TO MATCH YOUR DIRECTORY STRUCTURE
             ##################################################################
-            myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+            localdict={}
+            try: 
+              localdict["dirtree"]=os.environ['DAVIT_LOCALDIR']
+            except:
+              localdict["dirtree"]="/sd-data/"
+            localdict["year"] = "%04d" % ctime.year
+            localdict["month"]= "%02d" % ctime.month
+            localdict["day"]  = "%02d" % ctime.day
+            localdict["ftype"]  = ftype 
+            localdict["radar"]  = rad 
+            try:
+              localdirformat = os.environ['DAVIT_DIRFORMAT']
+              myDir = localdirformat % localdict 
+            except: 
+              myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
             hrStr = ctime.strftime("%H")
             dateStr = ctime.strftime("%Y%m%d")
             #iterate through all of the files which begin in this hour
@@ -210,14 +247,18 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 outname = string.replace(outname,'.gz','')
                 print 'gunzip -c '+filename+' > '+outname+'\n'
                 os.system('gunzip -c '+filename+' > '+outname)
-              
+              else:
+                command='cp '+filename+' '+outname
+                print command
+                os.system(command)
+               
               filelist.append(outname)
 
-              #HANDLE CACHEING NAME
-              ff = string.replace(outname,tmpDir,'')
-              #check the beginning time of the file (for cacheing)
-              t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
-              if fileSt == None or t1 < fileSt: fileSt = t1
+#              #HANDLE CACHEING NAME
+#              ff = string.replace(outname,tmpDir,'')
+#              #check the beginning time of the file (for cacheing)
+#              t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+#              if fileSt == None or t1 < fileSt: fileSt = t1
 
             ##################################################################
             ### END SECTION YOU WILL HAVE TO CHANGE
@@ -331,7 +372,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       #choose a temp file name with time span info for cacheing
       tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
                 fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
-                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),rad,fileType)
+                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),radcode,fileType)
       print 'cat '+string.join(filelist)+' > '+tmpName
       os.system('cat '+string.join(filelist)+' > '+tmpName)
       print filelist
