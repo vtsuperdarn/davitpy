@@ -38,10 +38,6 @@ Ubuntu
 
     cd install/debian/
     sudo ./python_install_debian.sh
-
-Now, source ~/.bashrc, or open a new terminal.  Then, go to your install directory (davitpy) and run 
-    
-    ./mastermake
     
 MacOS
 
@@ -53,7 +49,7 @@ openSUSE
     cd install/opensuse
     sudo ./python_install_opensuse.sh
     
-Now, source ~/.bashrc, or open a new terminal.  Then, go to your install directory (davitpy) and run 
+Now, `source ~/.bashrc`, or open a new terminal.  Then, go to your install directory (davitpy) and run 
     
     ./mastermake
     
