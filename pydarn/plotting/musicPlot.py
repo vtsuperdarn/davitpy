@@ -10,7 +10,7 @@ from mpl_toolkits.basemap import Basemap
 import utils
 
 class musicFan(object):
-  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, **kwArgs):
+  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, plotZeros=False, **kwArgs):
     if fileName != None:
       from matplotlib.backends.backend_agg import FigureCanvasAgg
       from matplotlib.figure import Figure
@@ -136,7 +136,8 @@ class musicFan(object):
     for bm in range(nbeams):
       for rg in range(ngates):
         if np.isnan(data[bm,rg]): continue
-        if data[bm,rg] == 0: continue
+        if data[bm,rg] == 0 and not plotZeros: continue
+#        if data[bm,rg] == 0: continue
         scan.append(data[bm,rg])
 
         x1,y1 = m(lonFull[bm+0,rg+0],latFull[bm+0,rg+0])
@@ -151,7 +152,8 @@ class musicFan(object):
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
-    axis.set_title(metadata['name']+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
+    dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
+    axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
 
     cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
     cbar.set_label(cbarLabel)

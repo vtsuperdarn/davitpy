@@ -122,7 +122,6 @@ class musicArray(object):
     metadata['fType']     = myPtr.fType
     metadata['cp']        = myPtr.cp
     metadata['channel']   = myPtr.channel
-    metadata['timestamp'] = datetime.datetime.utcnow()
     metadata['sTime']     = sTime
     metadata['eTime']     = eTime
     metadata['param']     = param
@@ -131,6 +130,11 @@ class musicArray(object):
     metadata['model']     = fovModel
     metadata['coords']    = fovCoords
 
+#    history = []
+#    history.append((datetime.datetime.utcnow(),'Originial Fit Data'))
+    history = {}
+    history[datetime.datetime.utcnow()] = 'Originial Fit Data'
+
     #Save data to be returned as self.variables
     class empty(object): pass
     self.originalFit = empty()
@@ -138,6 +142,41 @@ class musicArray(object):
     self.originalFit.time = timeArray
     self.originalFit.fov  = fov
     self.originalFit.metadata = metadata
+    self.originalFit.history = history
 
     #Set the new data active.
     self.active = self.originalFit
+
+def beam_interpolation(dataObj,dataSet='active',limits=None,units='km'):
+  import copy
+  from scipy.interpolate import interp1d
+  currentData = getattr(dataObj,dataSet)
+  nrTimes,nrBeams,nrGates = np.shape(currentData.data)
+
+  interpArr = np.zeros([nrTimes,nrBeams,nrGates])
+  for tt in range(nrTimes):
+    for bb in range(nrBeams):
+      rangeVec  = currentData.fov.slantRCenter[bb,0:nrGates]
+      dataVec   = currentData.data[tt,bb,:]
+      good      = np.where(np.isfinite(dataVec))[0]
+      if len(good) < 2: continue
+      input_x   = rangeVec[good]
+      input_y   = dataVec[good]
+
+      #If the user specifies a limits to range or gates, select only those measurements...
+      if limits != None:
+        if units == 'gate':
+          limits  = rangeVec[limits]
+          units   = 'km'
+        good    = np.where((input_x >= limits[0]) & (input_x <= limits[1]))[0]
+        if len(good) < 2: continue
+        input_x   = input_x[good]
+        input_y   = input_y[good]
+
+      intFn     = interp1d(input_x,input_y,bounds_error=False,fill_value=0)
+      interpArr[tt,bb,:] = intFn(rangeVec)
+  dataObj.beamInterpolated = copy.copy(currentData)
+  dataObj.beamInterpolated.data = interpArr
+#  dataObj.beamInterpolated.history.append((datetime.datetime.utcnow(),'Beam Linear Interpolation'))
+  dataObj.beamInterpolated.history[datetime.datetime.utcnow()] = 'Beam Linear Interpolation'
+  dataObj.active = dataObj.beamInterpolated

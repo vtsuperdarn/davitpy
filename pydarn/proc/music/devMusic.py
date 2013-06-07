@@ -84,5 +84,8 @@ myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,file
 
 dataObj = music.musicArray(myPtr)
 
-pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
+#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
+music.beam_interpolation(dataObj,limits=[500,1500])
+#music.beam_interpolation(dataObj,limits=[15,45],units='gate')
+pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True)
 
