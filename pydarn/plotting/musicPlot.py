@@ -137,7 +137,6 @@ class musicFan(object):
       for rg in range(ngates):
         if np.isnan(data[bm,rg]): continue
         if data[bm,rg] == 0 and not plotZeros: continue
-#        if data[bm,rg] == 0: continue
         scan.append(data[bm,rg])
 
         x1,y1 = m(lonFull[bm+0,rg+0],latFull[bm+0,rg+0])
