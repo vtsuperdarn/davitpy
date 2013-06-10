@@ -138,7 +138,24 @@ class gridData(sdBaseData):
   """ a class to contain a record of gridded data, extends :class:`pydarn.sdio.sdDataTypes.sdBaseData`
   
   **Attrs**:
-    * **chnnum** (int): number of channels?
+    * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the record
+    * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the record
+    * **stid** (list): a list of the station IDs in the record, by radar
+    * **nvec** (list): a list of the number of vectors in the record, by radar
+    * **freq** (list): a list of the transmit frequencies, in kHz, by radar
+    * **programid** (list): a list of the program IDs, by radar
+    * **noisemean** (list): a list of the mean noise level, by radar
+    * **noisesd** (list): a list of the standard deviation of noise level, by radar
+    * **gsct** (list): a list of flags indicating whether ground scatter was excluded from the gridding, by radar
+    * **vmin** (list): a list of minimum allowed Doppler velocity, by radar
+    * **vmax** (list): a list of the maximum allowed Doppler velocity, by radar
+    * **pmin** (list): a list of the minimum allowed power level, by radar
+    * **pmax** (list): a list of the maximum allowed power level, by radar
+    * **wmin** (list): a list of the minimum allowed spectral width, by radar
+    * **wmax** (list): a list of the maximum allowed spectral width, by radar
+    * **vemin** (list): a list of the minimum allowed velocity error, by radar
+    * **vemax** (list): a list of the maximum allowed velocity error, by radar
+    * **vector** (:class:`pydarn.sdio.sdDataTypes.sdVector`): an object containing all of the vector.* elements from the file
   
   **Example**: 
     ::
@@ -175,9 +192,46 @@ class gridData(sdBaseData):
 
 class mapData(sdBaseData):
   """ a class to contain a record of map potential data, extends :class:`pydarn.sdio.sdDataTypes.sdBaseData`
-  
+
+  .. note::
+    I don't know what `alot` <http://4.bp.blogspot.com/_D_Z-D2tzi14/S8TRIo4br3I/AAAAAAAACv4/Zh7_GcMlRKo/s400/ALOT.png>`_ of these attributes mean.  If you do, please add them in.
+
   **Attrs**:
-    * **chnnum** (int): number of channels?
+    * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the record
+    * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the record
+    * **dopinglevel** (int): 
+    * **modelwt** (int): 
+    * **errorwt** (int): 
+    * **IMFflag** (int): 
+    * **IMFdelay** (int): 
+    * **IMFBx** (float): the Bx component of the IMF
+    * **IMFBy** (float): the By component of the IMF
+    * **IMFBz** (float): the Bz component of the IMF
+    * **modelangle** (string): 
+    * **modellevel** (string): 
+    * **hemi** (int): the hemisphere, 1=north, 2=south?
+    * **fitorder** (int): the order of the spherical harmonic fit
+    * **latmin** (float): the minimum latitude in the spherical harmonic fit
+    * **chisqr** (double): 
+    * **chisqrdat** (double): 
+    * **rmserr** (double): an object containing all of the vector.* elements from the file
+    * **lonshft** (double): 
+    * **latshft** (double): 
+    * **mltstart** (double): 
+    * **mltend** (double): 
+    * **mltav** (double): 
+    * **potdrop** (double): the cross polar cap potential, in volts
+    * **potdroperr** (int): the error in the cross polar cap potential 
+    * **potmax** (double): 
+    * **potmaxerr** (double): 
+    * **potmin** (double): 
+    * **potminerr** (double): 
+    * **grid** (:class:`pydarn.sdio.sdDataTypes.gridData`): an object to hold all of the grid data in the record 
+    * **N** (list): 
+    * **Np1** (list): 
+    * **Np2** (list): 
+    * **Np3** (list): 
+    * **model** (:class:`pydarn.sdio.sdDataTypes.sdModel`): an object to hold the model.* data in the record
   
   **Example**: 
     ::
@@ -219,7 +273,6 @@ class mapData(sdBaseData):
     self.potmin = None
     self.potminerr = None
     self.grid = gridData(dataDict=dataDict)
-
     self.N = None
     self.Np1 = None
     self.Np2 = None
@@ -233,12 +286,23 @@ class sdVector(sdBaseData):
   """ a class to contain vector records of gridded data, extends :class:`pydarn.sdio.sdDataTypes.sdBaseData`
   
   **Attrs**:
-    * **chnnum** (int): number of channels?
+    * **mlat** (list): the magnetic longitude of the grid cells
+    * **mlon** (list): the magnetic longitude of the grid cells
+    * **kvect** (list): the kvectors of the vectors in the grid cells
+    * **stid** (int): the station ID of the radar which made the measurement of the vector in the grid cell
+    * **channel** (int): the channel of the radar which made the measurement of the vector in the grid cell
+    * **index** (int): 
+    * **velmedian** (int): the median velocity of the vector
+    * **velsd** (float): the standard deviation of the velocity of the vector
+    * **pwrmedian** (float): the median power of the vector
+    * **pwrsd** (float): the standard devation of the power of the vector
+    * **wdtmedian** (string): the median spectral width of the vector
+    * **wdtsd** (string): the standard devation on the spectral width of the vector
   
   **Example**: 
     ::
     
-      myGrid = pydarn.sdio.gridData()
+      myVec = pydarn.sdio.sdVector()
     
   Written by AJ 20130607
   """
@@ -263,14 +327,21 @@ class sdVector(sdBaseData):
 
 class sdModel(sdBaseData):
   """ a class to contain model records of map poential data, extends :class:`pydarn.sdio.sdDataTypes.sdBaseData`
-  
+
+  .. note::
+    I don't know what `alot` <http://4.bp.blogspot.com/_D_Z-D2tzi14/S8TRIo4br3I/AAAAAAAACv4/Zh7_GcMlRKo/s400/ALOT.png>`_ of these attributes mean.  If you do, please add them in.
+
   **Attrs**:
-    * **chnnum** (int): number of channels?
-  
+    * **mlat** (list): 
+    * **kvect** (list): 
+    * **velmedian** (list): 
+    * **boundarymlat** (int): 
+    * **boundarymlon** (int):
+
   **Example**: 
     ::
     
-      myGrid = pydarn.sdio.gridData()
+      myMod = pydarn.sdio.sdModel()
     
   Written by AJ 20130607
   """
