@@ -143,7 +143,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       return None
 
   #Next, check for a cached file
-  if fileName == None:
+  if fileName == None and not noCache:
     try:
       if filtered:
         for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,rad,fileType)):
@@ -325,7 +325,6 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),rad,fileType)
       print 'cat '+string.join(filelist)+' > '+tmpName
       os.system('cat '+string.join(filelist)+' > '+tmpName)
-      print filelist
       for filename in filelist:
         print 'rm '+filename
         os.system('rm '+filename)
@@ -424,8 +423,8 @@ def radDataReadRec(myPtr):
       myBeam.iqdat.updateValsFromDict(dfile)
       myBeam.fType = myPtr.fType
       if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
-        setattr(myBeam,myPtr.fType,myBeam.fit)
-        if myBeam.fit.slist == None: myBeam.fit.slist = []
+        if myBeam.fit.slist == None: 
+          myBeam.fit.slist = []
       return myBeam
       
 def radDataReadScan(myPtr):
@@ -500,8 +499,8 @@ def radDataReadScan(myPtr):
       myBeam.iqdat.updateValsFromDict(dfile)
       myBeam.fType = myPtr.fType
       if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
-        setattr(myBeam,myPtr.fType,myBeam.fit)
-        if(myBeam.fit.slist == None): myBeam.fit.slist = []
+        if(myBeam.fit.slist == None): 
+          myBeam.fit.slist = []
       if(myBeam.prm.scan == 0 or firstflg):
         myScan.append(myBeam)
         firstflg = False
@@ -579,7 +578,6 @@ def radDataReadAll(myPtr):
       myBeam.iqdat.updateValsFromDict(dfile)
       myBeam.fType = myPtr.fType
       if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
-        setattr(myBeam,myPtr.fType,myBeam.fit)
         if(myBeam.fit.slist == None): myBeam.fit.slist = []
       if(myBeam.prm.scan == 0 or firstflg):
         myScan.append(myBeam)
