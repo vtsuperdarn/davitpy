@@ -194,7 +194,7 @@ class mapData(sdBaseData):
   """ a class to contain a record of map potential data, extends :class:`pydarn.sdio.sdDataTypes.sdBaseData`
 
   .. note::
-    I don't know what `alot` <http://4.bp.blogspot.com/_D_Z-D2tzi14/S8TRIo4br3I/AAAAAAAACv4/Zh7_GcMlRKo/s400/ALOT.png>`_ of these attributes mean.  If you do, please add them in.
+    I don't know what `alot <http://4.bp.blogspot.com/_D_Z-D2tzi14/S8TRIo4br3I/AAAAAAAACv4/Zh7_GcMlRKo/s400/ALOT.png>`_ of these attributes mean.  If you do, please add them in.
 
   **Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the record
@@ -329,7 +329,7 @@ class sdModel(sdBaseData):
   """ a class to contain model records of map poential data, extends :class:`pydarn.sdio.sdDataTypes.sdBaseData`
 
   .. note::
-    I don't know what `alot` <http://4.bp.blogspot.com/_D_Z-D2tzi14/S8TRIo4br3I/AAAAAAAACv4/Zh7_GcMlRKo/s400/ALOT.png>`_ of these attributes mean.  If you do, please add them in.
+    I don't know what `alot <http://4.bp.blogspot.com/_D_Z-D2tzi14/S8TRIo4br3I/AAAAAAAACv4/Zh7_GcMlRKo/s400/ALOT.png>`_ of these attributes mean.  If you do, please add them in.
 
   **Attrs**:
     * **mlat** (list): 
