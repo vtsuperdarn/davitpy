@@ -387,7 +387,7 @@ class radar(object):
                     cur.execute('SELECT id,code FROM rad')
                     rows = cur.fetchall()
                 for row in rows:
-                    if code in pickle.loads(row[1]):
+                    if code in pickle.loads(row[1].encode('ascii')):
                         radId = row[0]
 
             self.fillFromSqlite(dbname, radId)
@@ -583,7 +583,7 @@ class site(object):
                     cur.execute('SELECT id,code FROM rad')
                     rows = cur.fetchall()
                 for row in rows:
-                    if code in pickle.loads(row[1]):
+                    if code in pickle.loads(row[1].encode('ascii')):
                         radId = row[0]
 
             self.fillFromSqlite(dbname, radId, dt=dt)
