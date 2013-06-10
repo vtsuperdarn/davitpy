@@ -5,14 +5,18 @@
 #	tested on Ubuntu 12.04
 
 zypper install -y gcc gcc-c++ make
+zypper install -y freetype2-devel
+zypper install -y libpng14-devel
 zypper install -y python
 zypper install -y python-devel
 zypper install -y python-pip
 zypper install -y ipython
-zypper install -y python-numpy
+zypper install -y python-numpy python-numpy-devel
 pip install --upgrade numpy
 zypper install -y python-scipy
 zypper install -y python-matplotlib
+zypper install -y python-matplotlib-tk
+pip install --upgrade matplotlib
 zypper install -y python-imaging
 zypper install -y python-paramiko
 zypper install -y python-pymongo
