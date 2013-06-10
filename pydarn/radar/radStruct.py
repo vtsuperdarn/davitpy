@@ -420,7 +420,7 @@ class radar(object):
 
             self.id = row[0]
             self.cnum = row[1]
-            self.code = pickle.loads(row[2])
+            self.code = pickle.loads(row[2].encode('ascii'))
             self.name = row[3]
             self.operator = row[4]
             self.hdwfname = row[5]
@@ -630,7 +630,7 @@ class site(object):
             self.maxatten = row[12]
             self.maxgate = row[13]
             self.maxbeam = row[14]
-            self.interfer = pickle.loads(row[15])
+            self.interfer = pickle.loads(row[15].encode('ascii'))
             
     def __len__(self):
         """
