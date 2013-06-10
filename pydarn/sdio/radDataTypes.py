@@ -16,14 +16,14 @@
 
 """
 .. module:: radDataTypes
-   :synopsis: the classes needed for reading, writing, and storing radar data
+   :synopsis: the classes needed for reading, writing, and storing fundamental radar data (iq,raw,fit)
 .. moduleauthor:: AJ, 20130108
 *********************
 **Module**: pydarn.sdio.radDataTypes
 *********************
 **Classes**:
   * :class:`pydarn.sdio.radDataTypes.radDataPtr`
-  * :class:`pydarn.sdio.radDataTypes.baseData`
+  * :class:`pydarn.sdio.radDataTypes.radBaseData`
   * :class:`pydarn.sdio.radDataTypes.beamData`
   * :class:`pydarn.sdio.radDataTypes.prmData`
   * :class:`pydarn.sdio.radDataTypes.fitData`
@@ -36,23 +36,6 @@ from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-#we need to use this cipher in order to shorten variable names on the DB
-#this allows us to save space as well as reduce transfer time
-cipher=twoWayDict({'cp':'c','stid':'s','time':'t','bmnum':'b','channel':'ch', \
-  'exflg':'ef','lmflg':'lf','acflg':'af','fitex':'ex','fitacf':'fa','lmfit':'lm', \
-  'rawacf':'r','iqdat':'iq','prm':'p','nave':'n','lagfr':'l','smsep':'s','bmazm':'ba', \
-  'scan':'sc','rxrise':'rx','inttsc':'is','inttus':'iu','mpinc':'mi','mppul':'mp', \
-  'mplgs':'ms','mplgexs':'mx','nrang':'nr','frang':'fr','rsep':'rs','xcf':'x', \
-  'tfreq':'tf','ifmode':'if','ptab':'pt','ltab':'lt','noisemean':'nm','noisesky':'ns', \
-  'noisesearch':'nc','pwr0':'p0','slist':'sl','npnts':'np','nlag':'nl','qflg':'q', \
-  'gflg':'g','p_l':'pl','p_l_e':'ple','p_s':'ps','p_s_e':'pse','v':'v','v_e':'ve', \
-  'w_l':'wl','w_l_e':'wle','w_s':'ws','w_s_e':'wse','phi0':'i0','phi0_e':'i0e','elv':'e', \
-  'acfd':'ad','xcfd':'xd','rawflg':'rf','iqflg':'iqf','seqnum':'sq','chnnum':'cm', \
-  'smpnum':'sp','btnum':'bt','tatten':'ta','tnoise':'tn','toff':'to','tsze':'ts', \
-  'tbadtr':'tbr','badtr':'br','mainData':'md','intData':'id','skpnum':'sk'})
-
-refArr = twoWayDict({'exflg':'fitex','acflg':'fitacf','lmflg':'lmfit', \
-                      'rawflg':'rawacf','iqflg':'iqdat'})
 
 class radDataPtr():
   """A class which contains a pipeline to a data source
@@ -65,7 +48,6 @@ class radDataPtr():
     * **channel** (str): channel of the request
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
-    * **dType** (str): the data type, 'mongo' or 'dmap'
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
     * **fBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): the first beam of the next scan, useful for when reading into scan objects
   **Methods**:
@@ -81,7 +63,6 @@ class radDataPtr():
     self.channel = channel
     self.bmnum = bmnum
     self.cp = cp
-    self.dType = None
     self.fType = None
     self.fBeam = None
     
@@ -91,15 +72,13 @@ class radDataPtr():
       myStr += key+' = '+str(var)+'\n'
     return myStr
 
-class baseData():
+class radBaseData():
   """a base class for the radar data types.  This allows for single definition of common routines
   
   **ATTRS**:
     * Nothing.
   **METHODS**:
-    * :func:`dbDictToObj`: converts a mongodb dictionary to a baseData object
-    * :func:`toDbDict`: converts a baseData object to a mongodb dictionaty
-    * :func:`updateValsFromDict`: converts a dict from a dmap file to baseData
+    * :func:`updateValsFromDict`: converts a dict from a dmap file to radBaseData
     
   Written by AJ 20130108
   """
@@ -111,89 +90,23 @@ class baseData():
       In general, users will not need to use this.
       
     **Args**: 
-      * **obj** (:class:`pydarn.sdio.radDataTypes.baseData`): the object to be copied
+      * **obj** (:class:`pydarn.sdio.radDataTypes.radBaseData`): the object to be copied
     **Returns**:
       * Nothing.
     **Example**:
       ::
       
-        myBaseData.copyData(baseDataObj)
+        myradBaseData.copyData(radBaseDataObj)
       
     written by AJ, 20130402
     """
     for key, val in obj.__dict__.iteritems():
-      if isinstance(val, baseData):
+      if isinstance(val, radBaseData):
         try: getattr(self, key).copyData(val)
         except: pass
       else:
         setattr(self,key,val)
 
-  def dbDictToObj(self,aDict):
-    """This method is used to parse a dictionary of radar data from the mongodb into a :class:`baseData` object.  
-    
-    .. note::
-      In general, users will not need to use this.
-      
-    **Args**: 
-      * **aDict** (dict): the dictionary from the mongodb
-    **Returns**:
-      * Nothing.
-    **Example**:
-      ::
-      
-        myBaseData.dbDictToObj(mongoDbDict)
-      
-    written by AJ, 20130123
-    """
-    for key, val in aDict.iteritems():
-      if(key == '_id'): continue
-      elif(key == 'it'):
-        self.inttsc = int(val)
-        self.inttus = val-int(val)
-      elif(key == 'tt'):
-        self.tsc = int(val)
-        self.tus = val-int(val)
-      #if the value is a dictionary, make a recursive call
-      elif(isinstance(val,dict)): 
-        if(cipher[key] == 'fitex' or cipher[key] == 'lmfit' or cipher[key] == 'fitacf'):
-          self.fit.dictToObj(val)
-        else: getattr(self, cipher[key]).dbDictToObj(val)
-      #otherwise, copy the value
-      else: setattr(self,cipher[key],val)
-      
-  def toDbDict(self):
-    """This method is used to convert a :class:`pydarn.sdio.radDataTypes.baseData` object into a mongodb radData data dictionary.  
-    
-    .. note::
-      In general, users will not need to worry about this.
-      
-    **Args**: 
-      * Nothing.
-    **Returns**:
-      * **aDict** (dict): a dictionary in the correct format for writing to the radData mongodb
-    **Example**:
-      ::
-      
-        mongoDbDict = aBaseDataObj.todbDict()
-      
-    written by AJ, 20130123
-    """
-    aDict = {}
-    for attr, val in self.__dict__.iteritems():
-      #check for things we dont want to save
-      if(attr=='inttus' or attr=='tus' or attr.rfind('_s') != -1): continue
-      elif(attr == 'inttsc'): 
-        try: aDict['it'] = self.inttsc + self.inttus*1e-6
-        except: aDict['it'] = None
-      elif(attr == 'tsc'): 
-        try: aDict['tt'] = self.tsc + self.tus*1e-6
-        except: aDict['tt'] = None
-      #if the value is a class, recursively convert to dict
-      elif(isinstance(val,baseData)): aDict[cipher[attr]] = val.toDbDict()
-      #otherwise, copy the value
-      else: aDict[cipher[attr]] = val
-    return aDict
-      
   def updateValsFromDict(self, aDict):
     """A function to to fill a radar params structure with the data in a dictionary that is returned from the reading of a dmap file
     
@@ -293,13 +206,13 @@ class baseData():
         setattr(self,attr,aDict[attr])
       except:
         #put in a default value if not another object
-        if(not isinstance(getattr(self,attr),baseData)):
+        if(not isinstance(getattr(self,attr),radBaseData)):
           setattr(self,attr,None)
           
   #def __repr__(self):
     #myStr = ''
     #for key,var in self.__dict__.iteritems():
-      #if(isinstance(var,baseData) and key != 'parent'):
+      #if(isinstance(var,radBaseData) and key != 'parent'):
         #print key
         #myStr += key+'\n'
         #myStr += str(var)
@@ -323,8 +236,8 @@ class scanData(list):
   def __init__(self):
     pass
   
-class beamData(baseData):
-  """a class to contain the data from a radar beam sounding, extends class :class:`baseData`
+class beamData(radBaseData):
+  """a class to contain the data from a radar beam sounding, extends class :class:`pydarn.sdio.radDataTypes.radBaseData`
   
   **Attrs**:
     * **cp** (int): radar control program id number
@@ -336,14 +249,6 @@ class beamData(baseData):
     * **fit** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params
     * **rawacf** (:class:`pydarn.sdio.radDataTypes.rawData`): rawacf data
     * **iqdat** (:class:`pydarn.sdio.radDataTypes.iqData`): iqdat data
-    * **fitex** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params from fitex file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
-    * **fitacf** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params from fitacf file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
-    * **lmfit** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params from lmfit file.  this is useful for mongodb interface.  Users can ignore this, just use at the fit attribute.
-    * **exflg** (int): a flag indicating the presence of fitex data. this is useful for database operation, can enerally be ignored by users
-    * **acflg** (int): a flag indicating the presence of acflg data. this is useful for database operation, can generally be ignored by users
-    * **lmflg** (int): a flag indicating the presence of lmfit data. this is useful for database operation, can generally be ignored by users
-    * **rawflg** (int): a flag indicating the presence of rawacf data. this is useful for database operation, can generally be ignored by users
-    * **iqflg** (int): a flag indicating the presence of iqdat data. this is useful for database operation, can generally be ignored by users
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
 
   **Example**: 
@@ -381,11 +286,14 @@ class beamData(baseData):
     import datetime as dt
     myStr = 'Beam record FROM: '+str(self.time)+'\n'
     for key,var in self.__dict__.iteritems():
-      myStr += key+' = '+str(var)+'\n'
+      if not isinstance(var,radBaseData):
+        myStr += key+' = '+str(var)+'\n'
+      else:
+        myStr += '%s = %s \n' % (key,'object')
     return myStr
     
-class prmData(baseData):
-  """A class to represent radar operating parameters, extends :class:`baseData`
+class prmData(radBaseData):
+  """A class to represent radar operating parameters, extends :class:`pydarn.sdio.radDataTypes.radBaseData`
 
   **Attrs**:
     * **nave**  (int): number of averages
@@ -445,8 +353,15 @@ class prmData(baseData):
     #if we are copying a structure, do that
     if(prmDict != None): self.updateValsFromDict(prmDict)
 
-class fitData(baseData):
-  """a class to contain the fitted params of a radar beam sounding, extends :class:`baseData`
+  def __repr__(self):
+    import datetime as dt
+    myStr = 'Prm data: \n'
+    for key,var in self.__dict__.iteritems():
+      myStr += key+' = '+str(var)+'\n'
+    return myStr
+
+class fitData(radBaseData):
+  """a class to contain the fitted params of a radar beam sounding, extends :class:`pydarn.sdio.radDataTypes.radBaseData`
   
   **Attrs**:
     * **pwr0**  (prm.nrang length list): lag 0 power
@@ -500,9 +415,16 @@ class fitData(baseData):
     self.elv = None       #elevation angle
     
     if(fitDict != None): self.updateValsFromDict(fitDict)
-        
-class rawData(baseData):
-  """a class to contain the rawacf data from a radar beam sounding, extends :class:`baseData`
+
+  def __repr__(self):
+    import datetime as dt
+    myStr = 'Fit data: \n'
+    for key,var in self.__dict__.iteritems():
+      myStr += key+' = '+str(var)+'\n'
+    return myStr
+
+class rawData(radBaseData):
+  """a class to contain the rawacf data from a radar beam sounding, extends :class:`pydarn.sdio.radDataTypes.radBaseData`
   
   **Attrs**:
     * **acfd** (nrang x mplgs x 2 length list): acf data
@@ -523,9 +445,16 @@ class rawData(baseData):
     self.parent = parent #reference to parent beam
     
     if(rawDict != None): self.updateValsFromDict(rawDict)
-    
-class iqData(baseData):
-  """ a class to contain the iq data from a radar beam sounding, extends :class:`pydarn.sdio.radDataTypes.baseData`
+
+  def __repr__(self):
+    import datetime as dt
+    myStr = 'Raw data: \n'
+    for key,var in self.__dict__.iteritems():
+      myStr += key+' = '+str(var)+'\n'
+    return myStr
+
+class iqData(radBaseData):
+  """ a class to contain the iq data from a radar beam sounding, extends :class:`pydarn.sdio.radDataTypes.radBaseData`
   
   .. warning::
     I'm not sure what all of the attributes mean.  if somebody knows what these are, please help!
@@ -572,4 +501,10 @@ class iqData(baseData):
     self.intData = []
     
     if(iqDict != None): self.updateValsFromDict(iqDict)
-        
+
+  def __repr__(self):
+    import datetime as dt
+    myStr = 'IQ data: \n'
+    for key,var in self.__dict__.iteritems():
+      myStr += key+' = '+str(var)+'\n'
+    return myStr
