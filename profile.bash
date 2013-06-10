@@ -23,12 +23,4 @@ export SDDB='sd-work9.ece.vt.edu:27017'
 # Set SFTP DATABASE
 export VTDB='sd-data.ece.vt.edu'
 
-# Set data path and format
-# UAF
-#export DAVIT_DIRFORMAT='%(dirtree)s/%(ftype)s/%(year)s/%(month)s.%(day)s/'
-#export DAVIT_LOCALDIR=/raid/SuperDARN/data/
-# VT
-export DAVIT_DIRFORMAT='%(dirtree)s/%(year)s/%(ftype)s/%(radar)s/'
-export DAVIT_LOCALDIR=/sd-data/
-
 
