@@ -30,6 +30,18 @@ try:
 	import radDataRead
 	from radDataRead import *
 except: print 'problem importing radDataRead'
+
+try:
+	import sdDataTypes
+	from sdDataTypes import *
+except: print 'problem importing sdDataTypes'
+	
+try:
+	import sdDataRead
+	from sdDataRead import *
+except Exception,e: 
+	print e
+	print 'problem importing sdDataRead'
 	
 # try:
 # 	import pygridIo
