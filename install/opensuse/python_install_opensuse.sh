@@ -11,6 +11,7 @@ zypper install -y python
 zypper install -y python-devel
 zypper install -y python-pip
 zypper install -y ipython
+pip install --upgrade ipython
 zypper install -y python-numpy python-numpy-devel
 pip install --upgrade numpy
 zypper install -y python-scipy
@@ -19,9 +20,8 @@ zypper install -y python-matplotlib-tk
 pip install --upgrade matplotlib
 zypper install -y python-imaging
 zypper install -y python-paramiko
-zypper install -y python-pymongo
+pip install pymongo
 zypper install -y python-tornado
-zypper install -y openmpi openmpi-devel lam-devel
 zypper install -y libgfortran3
 zypper install -y hdf5 hdf5-devel
 
@@ -36,6 +36,13 @@ make; make install
 cd ..
 python setup.py install
 
+cd /tmp
+wget http://www.mpich.org/static/downloads/3.0.4/mpich-3.0.4.tar.gz
+tar xfz mpich-3.0.4.tar.gz
+cd mpich-3.0.4
+./configure --enable-fc --enable-f77 FC=gfortran F77=gfortran CC=gcc
+make |& tee m.txt
+make install |& tee mi.txt
 
 cd $dir
 install_dir=$(readlink -f ../..)
