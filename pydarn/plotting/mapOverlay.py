@@ -99,7 +99,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		if not Basemap.xmin <= x <= Basemap.xmax: continue
 		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot radar position
-		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=2)
+		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=zorder)
 		# Now add radar name
 		if annotate:
 			# If any of the other radar is too close...
@@ -179,25 +179,19 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
-		if isinstance(codes, str): codes = [codes]
-		nradars = len(codes)
 		input = {'meth': 'code', 'vals': codes}
 	elif ids:
-		try:
-			[c for c in ids]
-		except:
-			ids = [ids]
-		finally:
-			nradars = len(ids)
-			input = {'meth': 'id', 'vals': ids}
+		input = {'meth': 'id', 'vals': ids}
 	elif names:
-		if isinstance(names, str): names = [names]
-		nradars = len(names)
 		input = {'meth': 'name', 'vals': names}
-	elif fovObj == None:
+	else:
 		print 'overlayRadar: no radars to plot'
 		return
-	else: nradars = 1
+	
+	# Check if radars is given as a list
+	if not isinstance(input['vals'], list): input['vals'] = [input['vals']]
+
+	nradars = len(input['vals'])
 	
 	# iterates through radars to be plotted
 	for ir in xrange(nradars):
@@ -233,11 +227,11 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 								 y[-1::-1,0]) )
 		# Plot contour
 		Basemap.plot(contourX, contourY, 
-			color=lineColor, zorder=4, linewidth=lineWidth)
+			color=lineColor, zorder=zorder, linewidth=lineWidth)
 		# Field of view fill
 		if fovColor:
 			contour = transpose( vstack((contourX,contourY)) )
-			patch = Polygon( contour, color=fovColor, alpha=fovAlpha)
+			patch = Polygon( contour, color=fovColor, alpha=fovAlpha, zorder=zorder)
 			gca().add_patch(patch)
 		# Beams fill
 		if beams:
@@ -257,7 +251,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 										 y[ib+1,eGate::-1],
 										 y[ib+1:ib-1:-1,0]) )
 				contour = transpose( vstack((contourX,contourY)) )
-				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4)
+				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4, zorder=zorder)
 				gca().add_patch(patch)
 	
 	return

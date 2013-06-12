@@ -636,9 +636,10 @@ class site(object):
             cur = conn.cursor()
             if dt:
                 cur.execute('SELECT * FROM hdw WHERE id=? and tval<=? ORDER BY tval DESC', (radId, dt))
+                row = cur.fetchone()
             else:
-                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval DESC', (radId,))
-            row = cur.fetchone()
+                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval ASC', (radId,))
+                row = cur.fetchall()[ind]
 
             self.id = row[0]
             self.tval = row[1]
