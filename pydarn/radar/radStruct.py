@@ -1,6 +1,9 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
+.. module:: radStruct
+   :synopsis: Load and browse radar information
+.. moduleauthor:: Sebastien
 *********************
 **Module**: pydarn.radar.radStruct
 *********************
@@ -55,6 +58,10 @@ class network(object):
         # Get DB name
         rad_path = os.path.dirname( os.path.abspath( __file__ ) )
         dbname = os.path.join(rad_path, 'radars.sqlite')
+
+        if not os.path.isfile(dbname):
+            print "%s not found" % dbname
+            return
 
         with lite.connect(dbname) as conn:
             cur = conn.cursor()
@@ -380,6 +387,10 @@ class radar(object):
             rad_path = os.path.dirname( os.path.abspath( __file__ ) )
             dbname = os.path.join(rad_path, 'radars.sqlite')
 
+            if not os.path.isfile(dbname):
+                print "%s not found" % dbname
+                return
+
             # if the radar code was provided, look for corresponding id
             if code:
                 with lite.connect(dbname) as conn:
@@ -408,6 +419,11 @@ class radar(object):
         from datetime import datetime
         import sqlite3 as lite
         import pickle
+        import os
+
+        if not os.path.isfile(dbname):
+            print "%s not found" % dbname
+            return
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
@@ -576,6 +592,10 @@ class site(object):
             rad_path = os.path.dirname( os.path.abspath( __file__ ) )
             dbname = os.path.join(rad_path, 'radars.sqlite')
 
+            if not os.path.isfile(dbname):
+                print "%s not found" % dbname
+                return
+
             # if the radar code was provided, look for corresponding id
             if code:
                 with lite.connect(dbname) as conn:
@@ -606,14 +626,20 @@ class site(object):
         from datetime import datetime
         import sqlite3 as lite
         import pickle
+        import os
+
+        if not os.path.isfile(dbname):
+            print "%s not found" % dbname
+            return
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
             if dt:
-                cur.execute('SELECT * FROM hdw WHERE id=? and tval<=? ORDER BY tval DESC', (radId, dt))
+                cur.execute('SELECT * FROM hdw WHERE id=? and tval>=? ORDER BY tval ASC', (radId, dt))
+                row = cur.fetchone()
             else:
-                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval DESC', (radId,))
-            row = cur.fetchone()
+                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval ASC', (radId,))
+                row = cur.fetchall()[ind]
 
             self.id = row[0]
             self.tval = row[1]
