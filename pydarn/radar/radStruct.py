@@ -635,7 +635,7 @@ class site(object):
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
             if dt:
-                cur.execute('SELECT * FROM hdw WHERE id=? and tval<=? ORDER BY tval DESC', (radId, dt))
+                cur.execute('SELECT * FROM hdw WHERE id=? and tval>=? ORDER BY tval ASC', (radId, dt))
                 row = cur.fetchone()
             else:
                 cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval ASC', (radId,))
