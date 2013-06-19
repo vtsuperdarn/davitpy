@@ -425,4 +425,15 @@ def greatCircleAzm(lat1,lon1,lat2,lon2):
 
     return numpy.degrees(azm)
 
+
+# *************************************************************
+def greatCircleDist(lat1,lon1,lat2,lon2):
+    
+    import numpy
+    from numpy import cos, sin, arccos, radians
+
+    lat1,lon1,lat2,lon2 = radians(lat1),radians(lon1),radians(lat2),radians(lon2)
+    
+    return arccos( sin(lat1)*sin(lat2) + cos(lon1)*cos(lon2)*cos(abs(lat2-lat1)) )
+
     
