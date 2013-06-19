@@ -44,3 +44,8 @@ try:
 except Exception, e:
     print __file__+' -> models.hwm: ', e
 
+try:
+    import raydarn
+except Exception, e:
+    print __file__+' -> models.raydarn: ', e
+
