@@ -251,7 +251,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     intensities, pcoll = overlayFan(scans[i],myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
                                       
                                       
-  cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+  cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
   
   l = []
   #define the colorbar labels
