@@ -146,12 +146,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   if fileName == None and not noCache:
     try:
       if filtered:
-        for f in glob.glob("%s????????.?????.????????.?????.%s.%sf" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,rad,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
             t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
-            t2 = dt.datetime(int(ff[14:18]),int(ff[18:20]),int(ff[20:22]),int(ff[23:25]),int(ff[25:27]),int(ff[27:29]))
+            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
             #check if file covers our timespan
             if t1 <= sTime and t2 >= eTime:
               cached = True
@@ -345,6 +345,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
         except Exception,e:
           print 'problem filtering file, using unfiltered'
           fTmpName = tmpName
+      else:
+        fTmpName = tmpName
       try:
         myPtr.ptr = open(fTmpName,'r')
       except Exception,e:
