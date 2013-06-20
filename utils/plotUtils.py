@@ -1,6 +1,8 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
+.. module:: plotUtils
+   :synopsis: Plotting utilities (maps, colormaps, ...)
 *********************
 **Module**: utils.plotUtils
 *********************
@@ -47,14 +49,13 @@ class mapObj(basemap.Basemap):
   """
 
   def __init__(self, datetime=None, coords='geo', 
-    projection='stere', resolution='l', dateTime=None, 
+    projection='stere', resolution='c', dateTime=None, 
     lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
     grid=True, gridLabels=True, **kwargs):
     """Create empty map 
     
-    **Args**: 
-      * **[limits]**: [llLat, llLon, urLat, urLon] lower-left and upper-right corners coordinates    
+    **Args**:    
       * **[width, height]**: width and height in m from the (lat_0, lon_0) center
       * **[lon_0]**: center meridian (default is -70E)    
       * **[lat_0]**: center latitude (default is -90E)
@@ -122,7 +123,7 @@ class mapObj(basemap.Basemap):
     # draw parallels and meridians.
     if grid:
       parallels = np.arange(-80.,81.,20.)
-      out = self.drawparallels(parallels, color='.6')
+      out = self.drawparallels(parallels, color='.6', zorder=10)
       # label parallels on map
       if gridLabels: 
         lablon = int(self.llcrnrlon/10)*10
@@ -132,15 +133,15 @@ class mapObj(basemap.Basemap):
           if not self.xmin <= ix <= self.xmax: continue
           if not self.ymin <= iy <= self.ymax: continue
           _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-              rotation=rotate_label, va='center', ha='center')
+              rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
       # label meridians on bottom and left
       meridians = np.arange(-180.,181.,20.)
       if gridLabels: 
-        merLabels = [True,False,False,True]
+        merLabels = [False,False,False,True]
       else: 
         merLabels = [False,False,False,False]
       # draw meridians
-      out = self.drawmeridians(meridians, labels=merLabels, color='.6')
+      out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
 
   
   def __call__(self, x, y, inverse=False, coords=None):
@@ -224,6 +225,8 @@ class mapObj(basemap.Basemap):
       return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
 
 
+################################################################################
+################################################################################
 def genCmap(param, scale, colors='lasse', lowGray=False):
   """Generates a colormap and returns the necessary components to use it
 
@@ -337,6 +340,8 @@ def genCmap(param, scale, colors='lasse', lowGray=False):
   return cmap,norm,bounds
   
 
+################################################################################
+################################################################################
 def drawCB(fig,coll,cmap,norm,map=False,pos=[0,0,1,1]):
   """manually draws a colorbar on a figure.  This can be used in lieu of the standard mpl colorbar function if you need the colorbar in a specific location.  See :func:`pydarn.plotting.rti.plotRti` for an example of its use.
 
@@ -387,35 +392,40 @@ def drawCB(fig,coll,cmap,norm,map=False,pos=[0,0,1,1]):
   
   cb.ax.tick_params(axis='y',direction='out')
   return cb
-  
 
-def curvedEarthAxes(rect=111, fig=None, maxground=2000, minalt=0, maxalt=500, Re=6371.):
+
+################################################################################
+################################################################################
+def curvedEarthAxes(rect=111, fig=None, 
+  minground=0., maxground=2000, 
+  minalt=0, maxalt=500, Re=6371., 
+  nyticks=5, nxticks=4):
   """ Create curved axes in ground-range and altitude
-    
-  **Args**: 
-    * [**rect**]: subplot spcification
-    * [**fig**]: A pylab.figure object (default to gcf)
-    * [**maxground**]: maximum ground range [km]
-    * [**minalt**]: lowest altitude limit [km]
-    * [**maxalt**]: highest altitude limit [km]
-    * [**Re**]: Earth radius
-  **Returns**:
-    * **ax**: matplotlib.axes object containing formatting
-    * **aax**: matplotlib.axes object containing data
-  **Example**:
-    ::
-
-      import numpy as np
-      from utils import plotUtils
-      ax, aax = plotUtils.curvedEarthAxes()
-      th = np.linspace(0, ax.maxground/ax.Re, 50)
-      r = np.linspace(ax.Re+ax.minalt, ax.Re+ax.maxalt, 20)
-      Z = exp( -(r - 300 - ax.Re)**2 / 100**2 ) * np.cos(th[:, np.newaxis]/th.max()*4*np.pi)
-      x, y = np.meshgrid(th, r)
-      im = aax.pcolormesh(x, y, Z.T)
-      ax.grid()
-
       
+  **Args**: 
+      * [**rect**]: subplot spcification
+      * [**fig**]: A pylab.figure object (default to gcf)
+      * [**maxground**]: maximum ground range [km]
+      * [**minalt**]: lowest altitude limit [km]
+      * [**maxalt**]: highest altitude limit [km]
+      * [**Re**]: Earth radius
+  **Returns**:
+      * **ax**: matplotlib.axes object containing formatting
+      * **aax**: matplotlib.axes object containing data
+  **Example**:
+      ::
+
+          import numpy as np
+          from utils import plotUtils
+          ax, aax = plotUtils.curvedEarthAxes()
+          th = np.linspace(0, ax.maxground/ax.Re, 50)
+          r = np.linspace(ax.Re+ax.minalt, ax.Re+ax.maxalt, 20)
+          Z = exp( -(r - 300 - ax.Re)**2 / 100**2 ) * np.cos(th[:, np.newaxis]/th.max()*4*np.pi)
+          x, y = np.meshgrid(th, r)
+          im = aax.pcolormesh(x, y, Z.T)
+          ax.grid()
+
+          
   written by Sebastien, 2013-04
   """
   from matplotlib.transforms import Affine2D, Transform
@@ -426,127 +436,69 @@ def curvedEarthAxes(rect=111, fig=None, maxground=2000, minalt=0, maxalt=500, Re
   from pylab import gcf
 
   ang = maxground / Re
-  angle_ticks = [(0, "0"),
-           (.25*ang, "{:.0f}".format(maxground*.25)),
-           (.5*ang, "{:.0f}".format(maxground*.5)),
-           (.75*ang, "{:.0f}".format(maxground*.75))]
+  minang = minground / Re
+  angran = ang - minang
+  angle_ticks = [(0, "{:.0f}".format(minground))]
+  while angle_ticks[-1][0] < angran:
+    tang = angle_ticks[-1][0] + 1./nxticks*angran
+    angle_ticks.append( ( tang, 
+                        "{:.0f}".format((tang-minang)*Re) ) )
   grid_locator1 = FixedLocator([v for v, s in angle_ticks])
   tick_formatter1 = DictFormatter(dict(angle_ticks))
 
   
   altran = maxalt - minalt
-  alt_ticks = [(0, "0"),
-           (.2*(altran)+Re, "{:.0f}".format((altran)*.2)),
-           (.4*(altran)+Re, "{:.0f}".format((altran)*.4)),
-           (.6*(altran)+Re, "{:.0f}".format((altran)*.6)),
-           (.8*(altran)+Re, "{:.0f}".format((altran)*.8))]
+  alt_ticks = [(minalt+Re, "{:.0f}".format(minalt))]
+  while alt_ticks[-1][0] < Re+maxalt:
+    alt_ticks.append( ( 1./nyticks*altran+alt_ticks[-1][0], 
+                        "{:.0f}".format(altran*1./nyticks+alt_ticks[-1][0]-Re) ) )
+  _ = alt_ticks.pop()
   grid_locator2 = FixedLocator([v for v, s in alt_ticks])
   tick_formatter2 = DictFormatter(dict(alt_ticks))
-    
+      
   tr_rotate = Affine2D().rotate(np.pi/2-ang/2)
   tr_shift = Affine2D().translate(0, Re)
   tr = polar.PolarTransform() + tr_rotate
-def curvedEarthAxes(rect=111, fig=None, 
-    minground=0., maxground=2000, 
-    minalt=0, maxalt=500, Re=6371., 
-    nyticks=5, nxticks=4):
-    """ Create curved axes in ground-range and altitude
-        
-    **Args**: 
-        * [**rect**]: subplot spcification
-        * [**fig**]: A pylab.figure object (default to gcf)
-        * [**maxground**]: maximum ground range [km]
-        * [**minalt**]: lowest altitude limit [km]
-        * [**maxalt**]: highest altitude limit [km]
-        * [**Re**]: Earth radius
-    **Returns**:
-        * **ax**: matplotlib.axes object containing formatting
-        * **aax**: matplotlib.axes object containing data
-    **Example**:
-        ::
 
-            import numpy as np
-            from utils import plotUtils
-            ax, aax = plotUtils.curvedEarthAxes()
-            th = np.linspace(0, ax.maxground/ax.Re, 50)
-            r = np.linspace(ax.Re+ax.minalt, ax.Re+ax.maxalt, 20)
-            Z = exp( -(r - 300 - ax.Re)**2 / 100**2 ) * np.cos(th[:, np.newaxis]/th.max()*4*np.pi)
-            x, y = np.meshgrid(th, r)
-            im = aax.pcolormesh(x, y, Z.T)
-            ax.grid()
+  grid_helper = floating_axes.GridHelperCurveLinear(tr,
+    extremes=(0, angran, Re+minalt, Re+maxalt),
+    grid_locator1=grid_locator1,
+    grid_locator2=grid_locator2,
+    tick_formatter1=tick_formatter1,
+    tick_formatter2=tick_formatter2,
+    )
 
-            
-    written by Sebastien, 2013-04
-    """
-    from matplotlib.transforms import Affine2D, Transform
-    import mpl_toolkits.axisartist.floating_axes as floating_axes
-    from matplotlib.projections import polar
-    from mpl_toolkits.axisartist.grid_finder import FixedLocator, DictFormatter
-    import numpy as np
-    from pylab import gcf
+  if not fig: fig = gcf()
+  ax1 = floating_axes.FloatingSubplot(fig, rect, grid_helper=grid_helper)
 
-    ang = maxground / Re
-    minang = minground / Re
-    angran = ang - minang
-    angle_ticks = [(0, "{:.0f}".format(minground))]
-    while angle_ticks[-1][0] < angran:
-        tang = angle_ticks[-1][0] + 1./nxticks*angran
-        angle_ticks.append( ( tang, 
-                            "{:.0f}".format((tang-minang)*Re) ) )
-    grid_locator1 = FixedLocator([v for v, s in angle_ticks])
-    tick_formatter1 = DictFormatter(dict(angle_ticks))
+  # adjust axis
+  ax1.axis["left"].label.set_text(r"ALt. [km]")
+  ax1.axis["bottom"].label.set_text(r"Ground range [km]")
+  ax1.invert_xaxis()
 
-    
-    altran = maxalt - minalt
-    alt_ticks = [(minalt+Re, "{:.0f}".format(minalt))]
-    while alt_ticks[-1][0] < Re+maxalt:
-        alt_ticks.append( ( 1./nyticks*altran+alt_ticks[-1][0], 
-                            "{:.0f}".format(altran*1./nyticks+alt_ticks[-1][0]-Re) ) )
-    _ = alt_ticks.pop()
-    grid_locator2 = FixedLocator([v for v, s in alt_ticks])
-    tick_formatter2 = DictFormatter(dict(alt_ticks))
-        
-    tr_rotate = Affine2D().rotate(np.pi/2-ang/2)
-    tr_shift = Affine2D().translate(0, Re)
-    tr = polar.PolarTransform() + tr_rotate
-
-    grid_helper = floating_axes.GridHelperCurveLinear(tr,
-                                        extremes=(0, angran, Re+minalt, Re+maxalt),
-                                        grid_locator1=grid_locator1,
-                                        grid_locator2=grid_locator2,
-                                        tick_formatter1=tick_formatter1,
-                                        tick_formatter2=tick_formatter2,
-                                        )
-
-    if not fig: fig = gcf()
-    ax1 = floating_axes.FloatingSubplot(fig, rect, grid_helper=grid_helper)
-
-    # adjust axis
-    ax1.axis["left"].label.set_text(r"ALt. [km]")
-    ax1.axis["bottom"].label.set_text(r"Ground range [km]")
-    ax1.invert_xaxis()
-
-    ax1.minground = minground
-    ax1.maxground = maxground
-    ax1.minalt = minalt
-    ax1.maxalt = maxalt
-    ax1.Re = Re
-    
-    fig.add_subplot(ax1, transform=tr)
+  ax1.minground = minground
+  ax1.maxground = maxground
+  ax1.minalt = minalt
+  ax1.maxalt = maxalt
+  ax1.Re = Re
+  
+  fig.add_subplot(ax1, transform=tr)
 
 
-    # create a parasite axes whose transData in RA, cz
-    aux_ax = ax1.get_aux_axes(tr)
+  # create a parasite axes whose transData in RA, cz
+  aux_ax = ax1.get_aux_axes(tr)
 
-    aux_ax.patch = ax1.patch # for aux_ax to have a clip path as in ax
-    ax1.patch.zorder=0.9 # but this has a side effect that the patch is
-                        # drawn twice, and possibly over some other
-                        # artists. So, we decrease the zorder a bit to
-                        # prevent this.
+  aux_ax.patch = ax1.patch # for aux_ax to have a clip path as in ax
+  ax1.patch.zorder=0.9 # but this has a side effect that the patch is
+                      # drawn twice, and possibly over some other
+                      # artists. So, we decrease the zorder a bit to
+                      # prevent this.
 
-    return ax1, aux_ax
+  return ax1, aux_ax
 
 
+################################################################################
+################################################################################
 def addColorbar(mappable, ax):
   """ Append colorbar to axes
 
@@ -590,3 +542,49 @@ def addColorbar(mappable, ax):
   _ = plt.colorbar(mappable, cax=cbax)
 
   return cbax
+
+
+################################################################################
+################################################################################
+def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0), 
+  zorder=None, text_alignment=(0,0), xycoords='data', 
+  textcoords='offset points', **kwargs):
+    """Plot highlighted annotation (with a white lining)
+    
+    **Belongs to**: :class:`rbspFp`
+    
+    **Args**: 
+        * **xy**: position of point to annotate
+        * **text**: text to show
+        * **[xytext]**: text position
+        * **[zorder]**: text zorder
+        * **[color]**: text color
+        * **[fontsize]**: text font size
+        * **[xycoords]**: xy coordinate (see `matplotlib.pyplot.annotate<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.annotate>`)
+        * **[textcoords]**: text coordinate (see `matplotlib.pyplot.annotate<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.annotate>`)
+    """
+    import matplotlib as mp
+    from pylab import gca
+
+    ax = gca()
+
+    text_path = mp.text.TextPath( (0,0), text, size=fontsize, **kwargs)
+
+    p1 = mp.patches.PathPatch(text_path, ec="w", lw=4, fc="w", alpha=0.7, zorder=zorder, 
+                       transform=mp.transforms.IdentityTransform())
+    p2 = mp.patches.PathPatch(text_path, ec="none", fc=color, zorder=zorder, 
+                       transform=mp.transforms.IdentityTransform())
+
+    offsetbox2 = mp.offsetbox.AuxTransformBox(mp.transforms.IdentityTransform())
+    offsetbox2.add_artist(p1)
+    offsetbox2.add_artist(p2)
+
+    ab = mp.offsetbox.AnnotationBbox(offsetbox2, xy, 
+      xybox=xytext, 
+      xycoords=xycoords,
+      boxcoords=textcoords,
+      box_alignment=text_alignment,
+      frameon=False)
+
+    ab.set_zorder(zorder)
+    ax.add_artist(ab)

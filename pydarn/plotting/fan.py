@@ -319,7 +319,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
 def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
                 fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
-                cmap=None,norm=None):
+                cmap=None,norm=None,alpha=1):
 
   """A function of overlay radar scan data on a map
 
@@ -341,17 +341,19 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
     NONE
 
   **EXAMPLE**:
-    overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],\
+    ::
+      
+      overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],\
                             verts=verts,intensities=intensities,gs_flg=gs_flg)
 
   Written by AJ 20121004
   """
   
   if(site == None):
-    site = pydarn.radar.network().getRadarById(myData[0].stid).getSiteByDate(myData[0].time)
+    site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
   if(fov == None):
     fov = pydarn.radar.radFov.fov(site=site,rsep=myData[0].prm.rsep,\
-    ngates=myData.prm.nrang+1,nbeams= site.maxbeam,coords=coords) 
+    ngates=myData[0].prm.nrang+1,nbeams= site.maxbeam,coords=coords) 
   
   if(isinstance(myData,pydarn.sdio.beamData)): myData = [myData]
   
@@ -362,6 +364,7 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
   #loop through gates with scatter
   for myBeam in myData:
     for k in range(0,len(myBeam.fit.slist)):
+      if myBeam.fit.slist[k] not in fov.gates: continue
       r = myBeam.fit.slist[k]
 
       if fill:
@@ -412,10 +415,13 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
         inx = numpy.arange(len(verts))
       else:
         inx = numpy.where(numpy.array(gs_flg)==0)
-        x = PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],facecolors='.3',linewidths=0,alpha=.5,zorder=5)
+        x = PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],
+          facecolors='.3',linewidths=0,zorder=5,alpha=alpha)
         myFig.gca().add_collection(x, autolim=True)
         
-      pcoll = PolyCollection(numpy.array(verts)[inx],edgecolors='face',linewidths=0,closed=False,zorder=4,cmap=cmap,norm=norm)
+      pcoll = PolyCollection(numpy.array(verts)[inx],
+        edgecolors='face',linewidths=0,closed=False,zorder=4,
+        alpha=alpha,cmap=cmap,norm=norm)
       #set color array to intensities
       pcoll.set_array(numpy.array(intensities)[inx])
       myFig.gca().add_collection(pcoll, autolim=True)

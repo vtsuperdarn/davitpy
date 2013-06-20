@@ -33,7 +33,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		* **[markerColor]**:     
 		* **[markerSize]**: [point]    
 		* **[fontSize]**: [point]    
-		* **[xOffset]**: x-Offset of the annotation in map projection coordinates  
+		* **[xOffset]**: x-Offset of the annotation in points  
 	**Returns**:
 		* None
 	**Example**:
@@ -105,16 +105,16 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		if annotate:
 			# If any of the other radar is too close...
 			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze', 'sys']:
-				xOff = width*.005 if not xOffset else xOffset
+				xOff = 5 if not xOffset else xOffset
 				ha = 0
 			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw', 'sye']:
-				xOff = -width*.005 if not xOffset else xOffset
+				xOff = -5 if not xOffset else xOffset
 				ha = 1
 			else: 
 				xOff = 0.0
 				ha = .5
 			# Plot radar name
-			textHighlighted((x + xOff, y - height*.01), rad.code[0].upper(), 
+			textHighlighted((x, y), rad.code[0].upper(), xytext=(xOff, -5), 
 				text_alignment=(ha,1), variant='small-caps', fontsize=fontSize, zorder=zorder)
 
 	return
