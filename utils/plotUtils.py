@@ -374,21 +374,21 @@ def drawCB(fig,coll,cmap,norm,map=False,pos=[0,0,1,1]):
       for c in coll:
         c.set_cmap(cmap)
         c.set_norm(norm)
-        cb = plot.colorbar(c,cax=cax)
+        cb = plot.colorbar(c,cax=cax,drawedges=True)
     else:
       coll.set_cmap(cmap)
       coll.set_norm(norm)
-      cb = plot.colorbar(coll,cax=cax)
+      cb = plot.colorbar(coll,cax=cax,drawedges=True)
   else:
     if(isinstance(coll,list)):
       for c in coll:
         c.set_cmap(cmap)
         c.set_norm(norm)
-        cb = fig.colorbar(c,location='right')
+        cb = fig.colorbar(c,location='right',drawedges=True)
     else:
       coll.set_cmap(cmap)
       coll.set_norm(norm)
-      cb = fig.colorbar(coll,location='right',pad="5%")
+      cb = fig.colorbar(coll,location='right',pad="5%",drawedges=True)
   
   cb.ax.tick_params(axis='y',direction='out')
   return cb
