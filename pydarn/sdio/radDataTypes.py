@@ -24,6 +24,7 @@
 **Classes**:
   * :class:`pydarn.sdio.radDataTypes.radDataPtr`
   * :class:`pydarn.sdio.radDataTypes.radBaseData`
+  * :class:`pydarn.sdio.radDataTypes.scanData`
   * :class:`pydarn.sdio.radDataTypes.beamData`
   * :class:`pydarn.sdio.radDataTypes.prmData`
   * :class:`pydarn.sdio.radDataTypes.fitData`
@@ -221,7 +222,7 @@ class radBaseData():
     #return myStr
     
 class scanData(list):
-  """a class to contain a radar scan.  Extends list.  Basically just a list of :class:`pydarn.sdio.radDataTypes.beamData` objects
+  """a class to contain a radar scan.  Extends list.  Just a list of :class:`pydarn.sdio.radDataTypes.beamData` objects
   
   **Attrs**:
     Nothing.
