@@ -497,6 +497,12 @@ read_dmap_rec(PyObject *self, PyObject *args)
             PyDict_SetItem(beamData,myStr,myNum);
             Py_CLEAR(myNum);
           }
+          else if(s->type==DATADOUBLE) 
+          {
+            PyObject *myNum = Py_BuildValue("d", *(s->data.dptr));
+            PyDict_SetItem(beamData,myStr,myNum);
+            Py_CLEAR(myNum);
+          }
           else if(s->type==DATACHAR) 
           {
             PyObject *myNum = Py_BuildValue("c", *(s->data.cptr));
@@ -577,6 +583,12 @@ read_dmap_rec(PyObject *self, PyObject *args)
             else if(a->type==DATAFLOAT)
             {
               PyObject *myNum = Py_BuildValue("f", a->data.fptr[i]);
+              PyList_Append(myList,myNum);
+              Py_CLEAR(myNum);
+            }
+            else if(a->type==DATADOUBLE)
+            {
+              PyObject *myNum = Py_BuildValue("f", a->data.dptr[i]);
               PyList_Append(myList,myNum);
               Py_CLEAR(myNum);
             }

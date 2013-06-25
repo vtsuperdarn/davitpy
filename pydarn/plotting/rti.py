@@ -168,7 +168,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   
   #get/create a figure
   if show:
-    rtiFig = plot.figure(figsize=(10,10))
+    rtiFig = plot.figure(figsize=(11,8.5))
   else:
     rtiFig = Figure(figsize=(14,14))
 

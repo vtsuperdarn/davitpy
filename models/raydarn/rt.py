@@ -242,7 +242,7 @@ class RtRun(object):
 
 
     def readScatter(self, debug=False):
-        """Read edens.dat fortran output
+        """Read iscat.dat and gscat.dat fortran output
 
         **Args**:
             * [**site**] (pydarn.radar.radStrict.site): site object of current radar

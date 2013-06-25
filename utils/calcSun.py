@@ -390,9 +390,11 @@ def getJD( date ):
     """
 Calculate julian date for given day, month and year
     """
+    from dateutil.relativedelta import relativedelta
+    
     if date.month < 2: 
-        date.year -= 1
-        date.month += 12
+        date.replace(year=date.year-1)
+        date += relativedelta(month=12)
 
     A = numpy.floor(date.year/100.)
     B = 2. - A + numpy.floor(A/4.)

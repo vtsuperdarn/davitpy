@@ -16,7 +16,8 @@ Overlay information on maps
 # *************************************************************
 def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
 				annotate=True, all=False, hemi=None,
-				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
+				zorder=2, markerColor='k', markerSize=10, 
+				fontSize=10, xOffset=None):
 	"""Overlay radar position(s) and name(s) on map 
 	
 	**Args**: 
@@ -32,7 +33,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		* **[markerColor]**:     
 		* **[markerSize]**: [point]    
 		* **[fontSize]**: [point]    
-		* **[xOffset]**: x-Offset of the annotation in map projection coordinates  
+		* **[xOffset]**: x-Offset of the annotation in points  
 	**Returns**:
 		* None
 	**Example**:
@@ -47,7 +48,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	from pydarn.radar import network
 	from datetime import datetime as dt
 	from datetime import timedelta
-	import matplotlib.pyplot as plt
+	from utils.plotUtils import textHighlighted
 	
 	# Set default date/time to now
 	if not dateTime:
@@ -99,22 +100,22 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		if not Basemap.xmin <= x <= Basemap.xmax: continue
 		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot radar position
-		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=2)
+		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=zorder)
 		# Now add radar name
 		if annotate:
 			# If any of the other radar is too close...
-			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze']:
-				xOff = width*.005 if not xOffset else xOffset
-				ha = 'left'
-			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw']:
-				xOff = -width*.005 if not xOffset else xOffset
-				ha = 'right'
+			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze', 'sys']:
+				xOff = 5 if not xOffset else xOffset
+				ha = 0
+			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw', 'sye']:
+				xOff = -5 if not xOffset else xOffset
+				ha = 1
 			else: 
 				xOff = 0.0
-				ha = 'center'
+				ha = .5
 			# Plot radar name
-			plt.text(x + xOff, y - height*.01, rad.code[0].upper(), 
-				ha=ha, va='top', variant='small-caps', fontsize=fontSize, zorder=zorder)
+			textHighlighted((x, y), rad.code[0].upper(), xytext=(xOff, -5), 
+				text_alignment=(ha,1), variant='small-caps', fontsize=fontSize, zorder=zorder)
 
 	return
 
@@ -179,25 +180,19 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
-		if isinstance(codes, str): codes = [codes]
-		nradars = len(codes)
 		input = {'meth': 'code', 'vals': codes}
 	elif ids:
-		try:
-			[c for c in ids]
-		except:
-			ids = [ids]
-		finally:
-			nradars = len(ids)
-			input = {'meth': 'id', 'vals': ids}
+		input = {'meth': 'id', 'vals': ids}
 	elif names:
-		if isinstance(names, str): names = [names]
-		nradars = len(names)
 		input = {'meth': 'name', 'vals': names}
-	elif fovObj == None:
-		print 'overlayRadar: no radars to plot'
+	else:
+		print 'overlayFov: no radars to plot'
 		return
-	else: nradars = 1
+	
+	# Check if radars is given as a list
+	if not isinstance(input['vals'], list): input['vals'] = [input['vals']]
+
+	nradars = len(input['vals'])
 	
 	# iterates through radars to be plotted
 	for ir in xrange(nradars):
@@ -233,11 +228,11 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 								 y[-1::-1,0]) )
 		# Plot contour
 		Basemap.plot(contourX, contourY, 
-			color=lineColor, zorder=4, linewidth=lineWidth)
+			color=lineColor, zorder=zorder, linewidth=lineWidth)
 		# Field of view fill
 		if fovColor:
 			contour = transpose( vstack((contourX,contourY)) )
-			patch = Polygon( contour, color=fovColor, alpha=fovAlpha)
+			patch = Polygon( contour, color=fovColor, alpha=fovAlpha, zorder=zorder)
 			gca().add_patch(patch)
 		# Beams fill
 		if beams:
@@ -257,7 +252,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 										 y[ib+1,eGate::-1],
 										 y[ib+1:ib-1:-1,0]) )
 				contour = transpose( vstack((contourX,contourY)) )
-				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4)
+				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4, zorder=zorder)
 				gca().add_patch(patch)
 	
 	return
