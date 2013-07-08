@@ -27,6 +27,13 @@ import datetime
 
 import pydarn.proc.music as music
 
+from matplotlib import pyplot as plt
+
+plt.ioff()
+
+outdir = '/home/w2naf/pymusic/'
+figsize = (20,10)
+
 # <codecell>
 
 #the first routine we will call is radDataOpen, which
@@ -67,25 +74,29 @@ filtered=False
 #None which will sequentially try all sources
 src=None
 
-# <codecell>
-
+################################################################################
 # Okay, now lets get the data connection
 myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,fileType=fileType,filtered=filtered, src=src)
+dataObj_IS  = music.musicArray(myPtr,fovModel='IS')
 
-# <codecell>
-
-#myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
-
-# <codecell>
-
-#myScan[0]
-
-# <codecell>
-
-dataObj = music.musicArray(myPtr)
+myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,fileType=fileType,filtered=filtered, src=src)
+dataObj     = music.musicArray(myPtr,fovModel='GS')
 
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
 music.beam_interpolation(dataObj,limits=[500,1500])
 #music.beam_interpolation(dataObj,limits=[15,45],units='gate')
-pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True)
 
+fig = plt.figure(figsize=figsize)
+ax  = fig.add_subplot(121)
+pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+ax  = fig.add_subplot(122)
+pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+fig.savefig(outdir+'/beam_interp.png')
+
+#fig = plt.figure(figsize=figsize)
+#ax  = fig.add_subplot(121)
+#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+#ax  = fig.add_subplot(122)
+#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
+#fig.savefig(outdir+'/beam_interp.png')
+#

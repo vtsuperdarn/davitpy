@@ -1,5 +1,6 @@
 import numpy as np
 import datetime 
+import copy
 
 import pydarn
 
@@ -41,6 +42,84 @@ class music(object):
    self.options = options
    self.params  = params
 
+class musicDataObj(object):
+  def __init__(self, time, data, fov=None, comment=None, parent=0, **metadata):
+    self.parent = parent
+    """Define a vtsd sigStruct object.
+
+    :param dtv: datetime.datetime list
+    :param data: raw data
+    :param id: A serial number uniquely identifying this signal in the
+    : processing chain.
+    :param **metadata: keywords sent to matplot lib, etc.
+    :returns: sig object
+    """
+    self.time     = np.array(time)
+    self.data     = np.array(data)
+    self.fov      = fov
+    self.metadata = {}
+    for key in metadata: self.metadata[key] = metadata[key]
+
+    self.history = {datetime.datetime.now():comment}
+
+
+  def copy(self,newsig,comment):
+    """Copy a vtsig object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+    :param newsig: A string with the name for the new signal.
+    :param comment: A string comment describing the new signal.
+    :returns: sig object
+    """
+    
+    if hasattr(self.parent,newsig):
+      xx = 0
+      ok = False
+      while ok is False:
+        xx += 1
+        testsig = '_'.join([newsig,'%03d' % xx])
+        if hasattr(self.parent,testsig) == False:
+          newsig = testsig
+          ok = True
+
+    setattr(self.parent,newsig,copy.copy(self))
+    newsigobj = getattr(self.parent,newsig)
+
+    newsigobj.time      = copy.deepcopy(self.time)
+    newsigobj.data      = copy.deepcopy(self.data)
+    newsigobj.fov       = copy.deepcopy(self.fov)
+    newsigobj.metadata  = copy.deepcopy(self.metadata)
+    newsigobj.history   = copy.deepcopy(self.history)
+
+    newsigobj.history[datetime.datetime.now()] = comment
+    
+    return newsigobj
+  
+#  def makeNewSignal(self,newsig,dtv,data,comment,**kwargs):
+#    """Create a new vt sigStruct object that is a derivative of this one.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+#    :param newsig: A string with the name for the new signal.
+#    :paran dtv: A new datetime.datetime array.
+#    :param data: A new data array.
+#    :param comment: A string comment describing the new signal.
+#    :returns: sig object
+#
+#    :**kwargs:
+#      appendTitle: String that will be appended to plot's title.
+#    """
+#    newobj = self.copy(newsig,comment)
+#    newobj.dtv  = dtv
+#    newobj.data = data
+#
+#    if kwargs.has_key('appendTitle'):
+#      md = newobj.getAllMetaData()
+#      if md.has_key('title'):
+#        newobj.metadata['title'] = ' '.join([kwargs['appendTitle'],md['title']]) 
+#
+#    newobj.setActive()
+
+  def setActive(self):
+    """Sets this signal as the currently active signal.
+    """
+    self.parent.active = self
+    
 class musicArray(object):
   def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
 #    fov = pydarn.radar.radFov.fov(frang=180.0, rsep=45.0, site=None, nbeams=None, ngates=None, bmsep=None, recrise=None, siteLat=None, siteLon=None, siteBore=None, siteAlt=None, elevation=None, altitude=300.0, model='IS', coords='geo')
@@ -130,22 +209,12 @@ class musicArray(object):
     metadata['model']     = fovModel
     metadata['coords']    = fovCoords
 
-#    history = []
-#    history.append((datetime.datetime.utcnow(),'Originial Fit Data'))
-    history = {}
-    history[datetime.datetime.utcnow()] = 'Originial Fit Data'
-
     #Save data to be returned as self.variables
-    class empty(object): pass
-    self.originalFit = empty()
-    self.originalFit.data = dataArray
-    self.originalFit.time = timeArray
-    self.originalFit.fov  = fov
+    self.originalFit = musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment='Original Fit Data')
     self.originalFit.metadata = metadata
-    self.originalFit.history = history
 
     #Set the new data active.
-    self.active = self.originalFit
+    self.originalFit.setActive()
 
 def beam_interpolation(dataObj,dataSet='active',limits=None,units='km'):
   import copy
@@ -175,8 +244,6 @@ def beam_interpolation(dataObj,dataSet='active',limits=None,units='km'):
 
       intFn     = interp1d(input_x,input_y,bounds_error=False,fill_value=0)
       interpArr[tt,bb,:] = intFn(rangeVec)
-  dataObj.beamInterpolated = copy.copy(currentData)
+  currentData.copy('beamInterpolated','Beam Linear Interpolation')
   dataObj.beamInterpolated.data = interpArr
-#  dataObj.beamInterpolated.history.append((datetime.datetime.utcnow(),'Beam Linear Interpolation'))
-  dataObj.beamInterpolated.history[datetime.datetime.utcnow()] = 'Beam Linear Interpolation'
-  dataObj.active = dataObj.beamInterpolated
+  dataObj.beamInterpolated.setActive()
