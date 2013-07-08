@@ -118,8 +118,8 @@ class fov(object):
                     altitude = altitude[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
-                    altitude = np.append(altitude, altitude[-1,:].reshaphe(1,ngates), axis=0)
-                    altitude = np.append(altitude, altitude[:,-1].reshaphe(nbeams,1), axis=1)
+                    altitude = np.append(altitude, altitude[-1,:].reshape(1,ngates), axis=0)
+                    altitude = np.append(altitude, altitude[:,-1].reshape(nbeams,1), axis=1)
             else:
                 print 'getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0])
                 altitude = altitude[0] * ones((nbeams+1, ngates+1))
@@ -136,8 +136,8 @@ class fov(object):
                     elevation = elevation[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
-                    elevation = np.append(elevation, elevation[-1,:].reshaphe(1,ngates), axis=0)
-                    elevation = np.append(elevation, elevation[:,-1].reshaphe(nbeams,1), axis=1)
+                    elevation = np.append(elevation, elevation[-1,:].reshape(1,ngates), axis=0)
+                    elevation = np.append(elevation, elevation[:,-1].reshape(nbeams,1), axis=1)
             else:
                 print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
                 elevation = elevation[0] * ones((nbeams+1, ngates+1))
