@@ -26,11 +26,11 @@ If you have a Mac, make sure you have macports installed.
 
 Then, clone this repository:
 
-    git clone https://github.com/vtsuperdarn/davitpy.git
+    git clone https://github.com/vtsuperdarn/davitpy-usask.git
     
 Then cd into the cloned directory:
 
-    cd davitpy
+    cd davitpy-usask
     
 Then run the install scripts specific to your system.  These install dependencies and can take a bit of time...
 
