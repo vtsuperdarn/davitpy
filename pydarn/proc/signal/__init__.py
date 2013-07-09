@@ -1,16 +1,13 @@
 # Waver module __init__.py
 """
 *******************************
-            WAVER
+            SIGNAL
 *******************************
-This subpackage contains various utilities for WAVER,
-the SuperDARN Wave Analysis Software Package.
-
-DEV: functions/modules/classes with a * have not been developed yet
+This subpackage contains various utilities for SIGNAL,
+the SuperDARN Signal Processing and Analysis Software Package.
 
 *******************************
 """
-import sigio
 from signal import *
 from sigproc import *
 from compare import *
