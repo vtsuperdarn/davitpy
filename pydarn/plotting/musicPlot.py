@@ -90,8 +90,14 @@ class musicFan(object):
 
     #do some stuff in map projection coords to get necessary width and height of map
     lonFull,latFull = (np.array(lonFull)+360.)%360.,np.array(latFull)
-    tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=np.mean(lonFull))
-    x,y = tmpmap(lonFull,latFull)
+
+    goodLatLon  = np.logical_and( np.logical_not(np.isnan(lonFull)), np.logical_not(np.isnan(latFull)) )
+    goodInx     = np.where(goodLatLon)
+    goodLatFull = latFull[goodInx]
+    goodLonFull = lonFull[goodInx]
+
+    tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=np.mean(goodLonFull))
+    x,y = tmpmap(goodLonFull,goodLatFull)
     minx = x.min()
     miny = y.min()
     maxx = x.max()
@@ -104,7 +110,7 @@ class musicFan(object):
     dist = width/50.
 
     #draw the actual map we want
-    m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(lonFull),lat_0=lat_0)
+    m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0)
     m.drawparallels(np.arange(-80.,81.,10.),labels=[1,0,0,0])
     m.drawmeridians(np.arange(-180.,181.,20.),labels=[0,0,0,1])
     if(coords == 'geo'):
@@ -135,6 +141,7 @@ class musicFan(object):
     data  = currentData.data[timeInx,:,:]
     for bm in range(nbeams):
       for rg in range(ngates):
+        if goodLatLon[bm,rg] == False: continue
         if np.isnan(data[bm,rg]): continue
         if data[bm,rg] == 0 and not plotZeros: continue
         scan.append(data[bm,rg])

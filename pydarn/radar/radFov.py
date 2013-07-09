@@ -188,10 +188,11 @@ class fov(object):
                     tAlt = altitude[ib,ig]
 
                 if model == 'GS':
-                  slantRangeCenter[ib,ig] = gsMapSlantRange(sRangCenter[ig],altitude=None,elevation=None)
-                  slantRangeFull[ib,ig]   = gsMapSlantRange(sRangEdge[ig],altitude=None,elevation=None)
-                  sRangCenter[ig]         = slantRangeCenter[ib,ig]
-                  sRangEdge[ig]           = slantRangeFull[ib,ig] 
+                  if (~isParamArray and ib == 0) or isParamArray:
+                    slantRangeCenter[ib,ig] = gsMapSlantRange(sRangCenter[ig],altitude=None,elevation=None)
+                    slantRangeFull[ib,ig]   = gsMapSlantRange(sRangEdge[ig],altitude=None,elevation=None)
+                    sRangCenter[ig]         = slantRangeCenter[ib,ig]
+                    sRangEdge[ig]           = slantRangeFull[ib,ig] 
 
                 if (sRangCenter[ig] != -1) and (sRangEdge[ig] != -1):
                   # Then calculate projections
