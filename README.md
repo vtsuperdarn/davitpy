@@ -26,7 +26,7 @@ If you have a Mac, make sure you have macports installed.
 
 Then, clone this repository:
 
-    git clone https://github.com/vtsuperdarn/davitpy-usask.git
+    git clone https://github.com/asreimer/davitpy-usask.git
     
 Then cd into the cloned directory:
 
