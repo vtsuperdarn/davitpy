@@ -394,4 +394,35 @@ See Milan et al. [1997] for more details on how this works.
         
     return degrees(boreOffset)
 
-    
+def gsMapSlantRange(slantRange,altitude=None,elevation=None):
+    """
+Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for more details.
+
+**INPUTS**:
+    * **slantRange**: normal slant range [km]
+    * **altitude**:   altitude [km] (defaults to 300 km)
+    * **elevation**:  elevation angle [degree]
+
+**OUTPUT**:
+    * **gsSlantRange**: ground scatter mapped slant range [km] (typically slightly less than 0.5*slantRange.
+      Will return -1 if (slantRange**2/4. - altitude**2 >= 0). This occurs when the scatter is too close and
+      this model breaks down.
+
+    """
+  from math import radians, degrees, sin, cos, asin, atan, sqrt, pi
+  from utils import Re, geoPack
+
+  # Make sure you have altitude, because these 2 projection models rely on it
+  if not elevation and not altitude:
+      # Set default altitude to 300 km
+      altitude = 300.0
+  elif elevation and not altitude:
+      # If you have elevation but not altitude, then you calculate altitude, and elevation will be adjusted anyway
+      altitude = sqrt( Re**2 + slantRange**2 + 2. * slantRange * Re * sin( radians(elevation) ) ) - Re
+
+  if (slantRange**2)/4. - altitude**2 >= 0:
+    gsSlantRange = Re * asin(sqrt(slantRange**2/4. - altitude**2)/Re) #From Bristow et al. [1994]
+  else:
+    gsSlantRange = -1
+
+  return gsSlantRange
