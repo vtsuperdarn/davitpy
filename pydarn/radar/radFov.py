@@ -186,6 +186,13 @@ class fov(object):
                 else:
                     tElev = elevation[ib,ig]
                     tAlt = altitude[ib,ig]
+
+                if model == 'GS':
+                  slantRangeCenter[ib,ig] = gsMapSlantRange(sRangCenter[ig],altitude=None,elevation=None)
+                  slantRangeFull[ib,ig]   = gsMapSlantRange(sRangEdge[ig],altitude=None,elevation=None)
+                  sRangCenter[ig]         = slantRangeCenter[ib,ig]
+                  sRangEndge[ig]          = slantRangeFull[ib,ig] 
+
                 # Then calculate projections
                 latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
                             elevation=tElev, altitude=tAlt, model=model)
