@@ -38,8 +38,3 @@ try:
 	from printRec import *
 except Exception,e: 
 	print 'problem importing printRec: ', e
-
-try:
-	from musicPlot import *
-except Exception,e: 
-	print 'problem importing musicPlot: ', e
