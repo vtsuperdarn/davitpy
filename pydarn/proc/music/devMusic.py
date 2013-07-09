@@ -22,6 +22,7 @@ sys.path.append('/davitpy')
 
 import pydarn.sdio
 import datetime
+import numpy as np
 
 # <codecell>
 

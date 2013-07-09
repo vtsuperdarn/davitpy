@@ -56,7 +56,7 @@ class fov(object):
             elevation=None, altitude=300., \
             model='IS', coords='geo'):
         # Get fov
-        from numpy import ndarray, array, arange, zeros
+        from numpy import ndarray, array, arange, zeros, nan
         import models.aacgm as aacgm
         
         # Test that we have enough input arguments to work with
@@ -191,17 +191,21 @@ class fov(object):
                   slantRangeCenter[ib,ig] = gsMapSlantRange(sRangCenter[ig],altitude=None,elevation=None)
                   slantRangeFull[ib,ig]   = gsMapSlantRange(sRangEdge[ig],altitude=None,elevation=None)
                   sRangCenter[ig]         = slantRangeCenter[ib,ig]
-                  sRangEndge[ig]          = slantRangeFull[ib,ig] 
+                  sRangEdge[ig]           = slantRangeFull[ib,ig] 
 
-                # Then calculate projections
-                latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
-                            elevation=tElev, altitude=tAlt, model=model)
-                latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
-                            elevation=tElev, altitude=tAlt, model=model)
-                            
-                if(coords == 'mag'):
-                    latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,0.,0)
-                    latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,0.,0)
+                if (sRangCenter[ig] != -1) and (sRangEdge[ig] != -1):
+                  # Then calculate projections
+                  latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
+                              elevation=tElev, altitude=tAlt, model=model)
+                  latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
+                              elevation=tElev, altitude=tAlt, model=model)
+                              
+                  if(coords == 'mag'):
+                      latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,0.,0)
+                      latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,0.,0)
+                else:
+                  latC, lonC = nan, nan
+                  latE, lonE = nan, nan
                     
                 # Save into output arrays
                 latCenter[ib, ig] = latC
