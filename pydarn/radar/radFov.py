@@ -402,7 +402,7 @@ See Milan et al. [1997] for more details on how this works.
     return degrees(boreOffset)
 
 def gsMapSlantRange(slantRange,altitude=None,elevation=None):
-    """
+  """
 Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for more details.
 
 **INPUTS**:
@@ -415,7 +415,7 @@ Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for m
       Will return -1 if (slantRange**2/4. - altitude**2 >= 0). This occurs when the scatter is too close and
       this model breaks down.
 
-    """
+  """
   from math import radians, degrees, sin, cos, asin, atan, sqrt, pi
   from utils import Re, geoPack
 
