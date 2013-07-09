@@ -84,7 +84,7 @@ myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,file
 dataObj     = music.musicArray(myPtr,fovModel='GS')
 
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
-music.beam_interpolation(dataObj,limits=[500,1500])
+music.beam_interpolation(dataObj,limits=[200,800])
 #music.beam_interpolation(dataObj,limits=[15,45],units='gate')
 
 fig = plt.figure(figsize=figsize)
@@ -92,12 +92,12 @@ ax  = fig.add_subplot(121)
 pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
 ax  = fig.add_subplot(122)
 pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+fig.savefig(outdir+'/range_comparison.png')
+
+fig = plt.figure(figsize=figsize)
+ax  = fig.add_subplot(121)
+pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+ax  = fig.add_subplot(122)
+pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
 fig.savefig(outdir+'/beam_interp.png')
 
-#fig = plt.figure(figsize=figsize)
-#ax  = fig.add_subplot(121)
-#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-#ax  = fig.add_subplot(122)
-#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
-#fig.savefig(outdir+'/beam_interp.png')
-#
