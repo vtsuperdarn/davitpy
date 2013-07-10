@@ -1,45 +1,29 @@
-# Copyright (C) 2012  VT SuperDARN Lab
-# Full license can be found in LICENSE.txt
+# Waver module __init__.py
 """
-*********************
-**Module**: pydarn.plotting
-*********************
-This subpackage contains various plotting routines for DaViT-py
+*******************************
+            WAVER
+*******************************
+This subpackage contains various utilities for WAVER,
+the SuperDARN Wave Analysis Software Package.
 
-**Modules**:
-	* :mod:`mapOverlay`
-	* :mod:`rti`
-	* :mod:`fan`
-	* :mod:`pygridPlot`
-	* :mod:`printRec`
+DEV: functions/modules/classes with a * have not been developed yet
+
+*******************************
 """
+#import sigio
+from music import *
+#from signal import *
+#from sigproc import *
+#from compare import *
+#from xcor import *
+#
+#
+# *************************************************************
+# Define a few general-use constants
 
-try:
-	from rti import *
-except Exception,e: 
-	print 'problem importing rti: ', e
-
-try:
-	from fan import *
-except Exception,e: 
-	print 'problem importing fan: ', e
-
-try:
-	from mapOverlay import *
-except Exception,e: 
-	print 'problem importing mapOverlay: ', e
-
-# try:
-# 	from pygridPlot import *
-# except Exception,e: 
-# 	print 'problem importing pygridPlot: ', e
-
-try:
-	from printRec import *
-except Exception,e: 
-	print 'problem importing printRec: ', e
-
-try:
-	from musicPlot import *
-except Exception,e: 
-	print 'problem importing musicPlot: ', e
+# Mean Earth radius [km]
+Re = 6371.0
+# Polar Earth radius [km]
+RePol = 6378.1370
+# Equatorial Earth radius [km]
+ReEqu = 6,356.7523
