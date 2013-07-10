@@ -43,20 +43,32 @@ class music(object):
    self.params  = params
 
 class musicDataObj(object):
-  def __init__(self, time, data, fov=None, comment=None, parent=0, **metadata):
+  def __init__(self, time, data, fov=None, beamVec=None, gateVec=None, comment=None, parent=0, **metadata):
     self.parent = parent
-    """Define a vtsd sigStruct object.
+    """Define a vtMUSIC sigStruct object.
 
-    :param dtv: datetime.datetime list
-    :param data: raw data
-    :param id: A serial number uniquely identifying this signal in the
-    : processing chain.
+    :param time: datetime.datetime list
+    :param data: 3-dimensional array of data
+    :param fov:  DaViTPy radar field of view object
+    :param beamVec: Vector explicitly identifying the beams used in the data array
+    :param gateVec: Vector explicitly identifying the gates used in the data array
+    :param comment: String to be appended to the history of this object
     :param **metadata: keywords sent to matplot lib, etc.
     :returns: sig object
     """
+
     self.time     = np.array(time)
     self.data     = np.array(data)
+
+    dims          = np.shape(self.data)
+    if beamVec == None:
+      beamVec = np.arange(dims[1])
+    if gateVec == None:
+      gateVec = np.arange(dims[2])
+
     self.fov      = fov
+    self.beamVec  = beamVec
+    self.gateVec  = gateVec
     self.metadata = {}
     for key in metadata: self.metadata[key] = metadata[key]
 
@@ -64,7 +76,7 @@ class musicDataObj(object):
 
 
   def copy(self,newsig,comment):
-    """Copy a vtsig object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+    """Copy a vtMUSIC object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
     :param newsig: A string with the name for the new signal.
     :param comment: A string comment describing the new signal.
     :returns: sig object
@@ -86,6 +98,8 @@ class musicDataObj(object):
     newsigobj.time      = copy.deepcopy(self.time)
     newsigobj.data      = copy.deepcopy(self.data)
     newsigobj.fov       = copy.deepcopy(self.fov)
+    newsigobj.beamVec   = copy.deepcopy(self.beamVec)
+    newsigobj.gateVec   = copy.deepcopy(self.gateVec)
     newsigobj.metadata  = copy.deepcopy(self.metadata)
     newsigobj.history   = copy.deepcopy(self.history)
 
@@ -186,6 +200,10 @@ class musicArray(object):
     nrBeams = np.max(dataListArray[:,beamInx]) + 1
     nrGates = np.max(dataListArray[:,gateInx]) + 1
 
+    #Create vectors explicitly identifying the beam and gate numbers.
+    beamVec = np.arange(nrBeams)
+    gateVec = np.arange(nrGates)
+
     #Convert the dataListArray into a 3 dimensional array.
     dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
     dataArray[:]  = np.nan
@@ -210,40 +228,87 @@ class musicArray(object):
     metadata['coords']    = fovCoords
 
     #Save data to be returned as self.variables
-    self.originalFit = musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment='Original Fit Data')
+    self.originalFit = musicDataObj(timeArray,dataArray,fov=fov,parent=self,beamVec=beamVec,gateVec=gateVec,comment='Original Fit Data')
     self.originalFit.metadata = metadata
 
     #Set the new data active.
     self.originalFit.setActive()
 
-def beam_interpolation(dataObj,dataSet='active',limits=None,units='km'):
-  import copy
+def beam_interpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
+  """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
+  rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
+
+  :param dataObj: vtMUSIC object
+  :param dataSet: which dataSet in the vtMUSIC object to process
+  :param comment: String to be appended to the history of this object
+  :param newSigName: String name of the attribute of the newly created signal.
+  """
   from scipy.interpolate import interp1d
   currentData = getattr(dataObj,dataSet)
-  nrTimes,nrBeams,nrGates = np.shape(currentData.data)
+
+  nrTimes = len(currentData.time)
+  nrBeams = len(currentData.beamVec)
+  nrGates = len(currentData.gateVec)
 
   interpArr = np.zeros([nrTimes,nrBeams,nrGates])
   for tt in range(nrTimes):
     for bb in range(nrBeams):
-      rangeVec  = currentData.fov.slantRCenter[bb,0:nrGates]
-      dataVec   = currentData.data[tt,bb,:]
-      good      = np.where(np.isfinite(dataVec))[0]
-      if len(good) < 2: continue
-      input_x   = rangeVec[good]
-      input_y   = dataVec[good]
+      rangeVec  = currentData.fov.slantRCenter[currentData.beamVec[bb],currentData.gateVec]
+      input_x   = copy.copy(rangeVec)
+      input_y   = currentData.data[tt,bb,:]
 
-      #If the user specifies a limits to range or gates, select only those measurements...
-      if limits != None:
-        if units == 'gate':
-          limits  = rangeVec[limits]
-          units   = 'km'
-        good    = np.where((input_x >= limits[0]) & (input_x <= limits[1]))[0]
-        if len(good) < 2: continue
-        input_x   = input_x[good]
-        input_y   = input_y[good]
+      #If metadata['gateLimits'], select only those measurements...
+      if currentData.metadata.has_key('gateLimits'):
+        limits = currentData.metadata['gateLimits']
+        gateInx = np.where(np.logical_and(currentData.gateVec >= limits[0],currentData.gateVec <= limits[1]))[0]
+
+        if len(gateInx) < 2: continue
+        input_x   = input_x[gateInx]
+        input_y   = input_y[gateInx]
+
+      good      = np.where(np.isfinite(input_y))[0]
+      if len(good) < 2: continue
+      input_x   = input_x[good]
+      input_y   = input_y[good]
 
       intFn     = interp1d(input_x,input_y,bounds_error=False,fill_value=0)
       interpArr[tt,bb,:] = intFn(rangeVec)
-  currentData.copy('beamInterpolated','Beam Linear Interpolation')
+  currentData.copy(newDataSetName,comment)
   dataObj.beamInterpolated.data = interpArr
   dataObj.beamInterpolated.setActive()
+
+def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None):
+  """Sets the rangeLimits and gateLimits metadata for the chosen data set. This method only changes metadata;
+  it does not create a new data set or alter the data in any way.  If you specify rangeLimits, they will be changed to correspond
+  with the center value of the range cell.  Gate limits always override range limits.
+  Use the apply_limits() method to remove data outside of the data limits.
+
+  :param dataObj: vtMUSIC object
+  :param dataSet: which dataSet in the vtMUSIC object to process
+  :param rangeLimits: Two-element array defining the maximum and minumum slant ranges to use. [km]
+  :param gateLimits: Two-element array defining the maximum and minumum gates to use.
+  :param newSigName: String name of the attribute of the newly created signal.
+  """
+  currentData = getattr(dataObj,dataSet)
+  try:
+    if (rangeLimits == None) and (gateLimits == None):
+      pass
+    #I was thinking of having this remove the limits if they are both set to None, but then I thought I might be using this function
+    #in the future to define time limits, too.  The, I would want to be able to set time limits without altering the spatial limits
+    #and vice-versa.  So, I'm just going to have this function leave everything alone.  I may create an explicit way to remove limits later.
+#      if currentData.metadata.has_key('gateLimits'):  currentData.metadata.pop('gateLimits')
+#      if currentData.metadata.has_key('rangeLimits'): currentData.metadata.pop('rangeLimits')
+    else:
+      if (rangeLimits != None) and (gateLimits == None):
+        inx = np.where(np.logical_and(currentData.fov.slantRCenter >= rangeLimits[0],currentData.fov.slantRCenter <= rangeLimits[1]))
+        gateLimits = [np.min(inx[1][:]),np.max(inx[1][:])]
+
+      if gateLimits != None:
+        rangeMin = np.int(np.min(currentData.fov.slantRCenter[:,gateLimits[0]]))
+        rangeMax = np.int(np.max(currentData.fov.slantRCenter[:,gateLimits[1]]))
+        rangeLimits = [rangeMin,rangeMax]
+
+      currentData.metadata['gateLimits']  = gateLimits
+      currentData.metadata['rangeLimits'] = rangeLimits
+  except:
+    print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."

@@ -84,7 +84,9 @@ myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,file
 dataObj     = music.musicArray(myPtr,fovModel='GS')
 
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
-music.beam_interpolation(dataObj,limits=[200,800])
+music.define_limits(dataObj,rangeLimits=[200,800])
+#music.define_limits(dataObj,gateLimits=[13,33])
+music.beam_interpolation(dataObj)
 #music.beam_interpolation(dataObj,limits=[15,45],units='gate')
 
 fig = plt.figure(figsize=figsize)
