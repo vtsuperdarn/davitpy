@@ -85,7 +85,10 @@ dataObj     = music.musicArray(myPtr,fovModel='GS')
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
 music.define_limits(dataObj,rangeLimits=[200,800])
 #music.define_limits(dataObj,gateLimits=[13,33])
+music.define_limits(dataObj,beamLimits=[5,12])
+music.define_limits(dataObj,timeLimits=[datetime.datetime(2010,11,19,13,30),datetime.datetime(2010,11,19,14,30)])
 music.apply_limits(dataObj)
+
 music.beam_interpolation(dataObj)
 #music.beam_interpolation(dataObj,limits=[15,45],units='gate')
 

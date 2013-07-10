@@ -255,7 +255,7 @@ def beam_interpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated
   interpArr = np.zeros([nrTimes,nrBeams,nrGates])
   for tt in range(nrTimes):
     for bb in range(nrBeams):
-      rangeVec  = currentData.fov.slantRCenter[currentData.fov.beams[bb],:]
+      rangeVec  = currentData.fov.slantRCenter[bb,:]
       input_x   = copy.copy(rangeVec)
       input_y   = currentData.data[tt,bb,:]
 
@@ -279,8 +279,8 @@ def beam_interpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated
   dataObj.beamInterpolated.data = interpArr
   dataObj.beamInterpolated.setActive()
 
-def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None):
-  """Sets the rangeLimits and gateLimits metadata for the chosen data set. This method only changes metadata;
+def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamLimits=None,timeLimits=None):
+  """Sets the range, gate, beam, and time limits for the chosen data set. This method only changes metadata;
   it does not create a new data set or alter the data in any way.  If you specify rangeLimits, they will be changed to correspond
   with the center value of the range cell.  Gate limits always override range limits.
   Use the apply_limits() method to remove data outside of the data limits.
@@ -289,18 +289,13 @@ def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None):
   :param dataSet: which dataSet in the vtMUSIC object to process
   :param rangeLimits: Two-element array defining the maximum and minumum slant ranges to use. [km]
   :param gateLimits: Two-element array defining the maximum and minumum gates to use.
+  :param beamLimits: Two-element array defining the maximum and minumum beams to use.
+  :param timeLimits: Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
   :param newSigName: String name of the attribute of the newly created signal.
   """
   currentData = getattr(dataObj,dataSet)
   try:
-    if (rangeLimits == None) and (gateLimits == None):
-      pass
-    #I was thinking of having this remove the limits if they are both set to None, but then I thought I might be using this function
-    #in the future to define time limits, too.  The, I would want to be able to set time limits without altering the spatial limits
-    #and vice-versa.  So, I'm just going to have this function leave everything alone.  I may create an explicit way to remove limits later.
-#      if currentData.metadata.has_key('gateLimits'):  currentData.metadata.pop('gateLimits')
-#      if currentData.metadata.has_key('rangeLimits'): currentData.metadata.pop('rangeLimits')
-    else:
+    if (rangeLimits != None) or (gateLimits != None):
       if (rangeLimits != None) and (gateLimits == None):
         inx = np.where(np.logical_and(currentData.fov.slantRCenter >= rangeLimits[0],currentData.fov.slantRCenter <= rangeLimits[1]))
         gateLimits = [np.min(inx[1][:]),np.max(inx[1][:])]
@@ -312,6 +307,13 @@ def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None):
 
       currentData.metadata['gateLimits']  = gateLimits
       currentData.metadata['rangeLimits'] = rangeLimits
+
+    if beamLimits != None:
+      currentData.metadata['beamLimits'] = beamLimits
+
+    if timeLimits != None:
+      currentData.metadata['timeLimits'] = timeLimits
+
   except:
     print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
 
@@ -363,12 +365,13 @@ def apply_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDa
       newData.metadata.pop('gateLimits')
       if newData.metadata.has_key('rangeLimits'): newData.metadata.pop('rangeLimits')
       
+    #Apply the beamLimits.
     if currentData.metadata.has_key('beamLimits'):
       limits      = currentData.metadata['beamLimits']
       beamInx     = np.where(np.logical_and(currentData.fov.beams >= limits[0],currentData.fov.beams <= limits[1]))[0]
 
       newData.data = newData.data[:,beamInx,:]
-      newData.fov.gates = newData.fov.beams[beamInx]
+      newData.fov.beams = newData.fov.beams[beamInx]
 
       newData.fov.latCenter     = newData.fov.latCenter[beamInx,:] 
       newData.fov.lonCenter     = newData.fov.lonCenter[beamInx,:] 
@@ -385,15 +388,16 @@ def apply_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDa
       commentList.append('beam: %i,%i' % tuple(limits))
       #Remove limiting item from metadata.
       newData.metadata.pop('beamLimits')
-
+    
+    #Apply the time limits.
     if currentData.metadata.has_key('timeLimits'):
       limits      = currentData.metadata['timeLimits']
       timeInx     = np.where(np.logical_and(currentData.time >= limits[0],currentData.time <= limits[1]))[0]
 
       newData.data = newData.data[timeInx,:,:]
-      newData.fov.gates = newData.time[timeInx]
+      newData.time = newData.time[timeInx]
 
-      commentList.append('time: %i,%i' % tuple(limits))
+      commentList.append('time: '+limits[0].strftime('%Y-%m-%d/%H:%M,')+limits[1].strftime('%Y-%m-%d/%H:%M'))
       #Remove limiting item from metadata.
       newData.metadata.pop('timeLimits')
     
