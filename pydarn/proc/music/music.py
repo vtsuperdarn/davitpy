@@ -43,15 +43,13 @@ class music(object):
    self.params  = params
 
 class musicDataObj(object):
-  def __init__(self, time, data, fov=None, beamVec=None, gateVec=None, comment=None, parent=0, **metadata):
+  def __init__(self, time, data, fov=None, comment=None, parent=0, **metadata):
     self.parent = parent
     """Define a vtMUSIC sigStruct object.
 
     :param time: datetime.datetime list
     :param data: 3-dimensional array of data
     :param fov:  DaViTPy radar field of view object
-    :param beamVec: Vector explicitly identifying the beams used in the data array
-    :param gateVec: Vector explicitly identifying the gates used in the data array
     :param comment: String to be appended to the history of this object
     :param **metadata: keywords sent to matplot lib, etc.
     :returns: sig object
@@ -59,16 +57,7 @@ class musicDataObj(object):
 
     self.time     = np.array(time)
     self.data     = np.array(data)
-
-    dims          = np.shape(self.data)
-    if beamVec == None:
-      beamVec = np.arange(dims[1])
-    if gateVec == None:
-      gateVec = np.arange(dims[2])
-
     self.fov      = fov
-    self.beamVec  = beamVec
-    self.gateVec  = gateVec
     self.metadata = {}
     for key in metadata: self.metadata[key] = metadata[key]
 
@@ -98,8 +87,6 @@ class musicDataObj(object):
     newsigobj.time      = copy.deepcopy(self.time)
     newsigobj.data      = copy.deepcopy(self.data)
     newsigobj.fov       = copy.deepcopy(self.fov)
-    newsigobj.beamVec   = copy.deepcopy(self.beamVec)
-    newsigobj.gateVec   = copy.deepcopy(self.gateVec)
     newsigobj.metadata  = copy.deepcopy(self.metadata)
     newsigobj.history   = copy.deepcopy(self.history)
 
@@ -200,9 +187,24 @@ class musicArray(object):
     nrBeams = np.max(dataListArray[:,beamInx]) + 1
     nrGates = np.max(dataListArray[:,gateInx]) + 1
 
-    #Create vectors explicitly identifying the beam and gate numbers.
-    beamVec = np.arange(nrBeams)
-    gateVec = np.arange(nrGates)
+    #Make sure the FOV is the same size as the data array.
+    if len(fov.beams) != nrBeams:
+      fov.beams         = fov.beams[0:nrBeams]
+      fov.latCenter     = fov.latCenter[0:nrBeams,:]
+      fov.lonCenter     = fov.lonCenter[0:nrBeams,:]
+      fov.slantRCenter  = fov.slantRCenter[0:nrBeams,:]
+      fov.latFull       = fov.latFull[0:nrBeams+1,:]
+      fov.lonFull       = fov.lonFull[0:nrBeams+1,:]
+      fov.slantRFull    = fov.slantRFull[0:nrBeams+1,:]
+
+    if len(fov.gates) != nrGates:
+      fov.gates         = fov.gates[0:nrGates]
+      fov.latCenter     = fov.latCenter[:,0:nrGates]
+      fov.lonCenter     = fov.lonCenter[:,0:nrGates]
+      fov.slantRCenter  = fov.slantRCenter[:,0:nrGates]
+      fov.latFull       = fov.latFull[:,0:nrGates+1]
+      fov.lonFull       = fov.lonFull[:,0:nrGates+1]
+      fov.slantRFull    = fov.slantRFull[:,0:nrGates+1]
 
     #Convert the dataListArray into a 3 dimensional array.
     dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
@@ -228,7 +230,7 @@ class musicArray(object):
     metadata['coords']    = fovCoords
 
     #Save data to be returned as self.variables
-    self.originalFit = musicDataObj(timeArray,dataArray,fov=fov,parent=self,beamVec=beamVec,gateVec=gateVec,comment='Original Fit Data')
+    self.originalFit = musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment='Original Fit Data')
     self.originalFit.metadata = metadata
 
     #Set the new data active.
@@ -247,20 +249,20 @@ def beam_interpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated
   currentData = getattr(dataObj,dataSet)
 
   nrTimes = len(currentData.time)
-  nrBeams = len(currentData.beamVec)
-  nrGates = len(currentData.gateVec)
+  nrBeams = len(currentData.fov.beams)
+  nrGates = len(currentData.fov.gates)
 
   interpArr = np.zeros([nrTimes,nrBeams,nrGates])
   for tt in range(nrTimes):
     for bb in range(nrBeams):
-      rangeVec  = currentData.fov.slantRCenter[currentData.beamVec[bb],currentData.gateVec]
+      rangeVec  = currentData.fov.slantRCenter[currentData.fov.beams[bb],:]
       input_x   = copy.copy(rangeVec)
       input_y   = currentData.data[tt,bb,:]
 
       #If metadata['gateLimits'], select only those measurements...
       if currentData.metadata.has_key('gateLimits'):
         limits = currentData.metadata['gateLimits']
-        gateInx = np.where(np.logical_and(currentData.gateVec >= limits[0],currentData.gateVec <= limits[1]))[0]
+        gateInx = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates <= limits[1]))[0]
 
         if len(gateInx) < 2: continue
         input_x   = input_x[gateInx]
@@ -312,3 +314,98 @@ def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None):
       currentData.metadata['rangeLimits'] = rangeLimits
   except:
     print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
+
+def apply_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
+  """Removes data outside of the rangeLimits and gateLimits boundaries.
+
+  :param dataObj: vtMUSIC object
+  :param dataSet: which dataSet in the vtMUSIC object to process
+  :param rangeLimits: Two-element array defining the maximum and minumum slant ranges to use. [km]
+  :param gateLimits: Two-element array defining the maximum and minumum gates to use.
+  :param newSigName: String name of the attribute of the newly created signal.
+  """
+
+  if (rangeLimits != None) or (gateLimits != None):
+    define_limits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits)
+
+  try:
+    #Make a copy of the current data set.
+    currentData = getattr(dataObj,dataSet)
+    newData     = currentData.copy(newDataSetName,comment)
+
+    commentList = []
+
+    #Apply the gateLimits
+    if currentData.metadata.has_key('gateLimits'):
+      limits      = currentData.metadata['gateLimits']
+      gateInx     = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates<= limits[1]))[0]
+
+      newData.data = newData.data[:,:,gateInx]
+      newData.fov.gates = newData.fov.gates[gateInx]
+
+      newData.fov.latCenter     = newData.fov.latCenter[:,gateInx] 
+      newData.fov.lonCenter     = newData.fov.lonCenter[:,gateInx] 
+      newData.fov.slantRCenter  = newData.fov.slantRCenter[:,gateInx] 
+
+      #Update the full FOV.
+      #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
+      #(typically for computational speed reasons), we will have to do something else.
+      gateInxFull = np.append(gateInx,gateInx[-1]+1) #We need that extra gate since this is the full FOV.
+      newData.fov.latFull = newData.fov.latFull[:,gateInxFull] 
+      newData.fov.lonFull = newData.fov.lonFull[:,gateInxFull] 
+      newData.fov.slantRFull = newData.fov.slantRFull[:,gateInxFull] 
+
+      commentList.append('gate: %i,%i' % tuple(limits))
+      rangeLim = (np.min(newData.fov.slantRCenter), np.max(newData.fov.slantRCenter))
+      commentList.append('range [km]: %i,%i' % rangeLim)
+
+      #Remove limiting item from metadata.
+      newData.metadata.pop('gateLimits')
+      if newData.metadata.has_key('rangeLimits'): newData.metadata.pop('rangeLimits')
+      
+    if currentData.metadata.has_key('beamLimits'):
+      limits      = currentData.metadata['beamLimits']
+      beamInx     = np.where(np.logical_and(currentData.fov.beams >= limits[0],currentData.fov.beams <= limits[1]))[0]
+
+      newData.data = newData.data[:,beamInx,:]
+      newData.fov.gates = newData.fov.beams[beamInx]
+
+      newData.fov.latCenter     = newData.fov.latCenter[beamInx,:] 
+      newData.fov.lonCenter     = newData.fov.lonCenter[beamInx,:] 
+      newData.fov.slantRCenter  = newData.fov.slantRCenter[beamInx,:] 
+
+      #Update the full FOV.
+      #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
+      #(typically for computational speed reasons), we will have to do something else.
+      beamInxFull = np.append(beamInx,beamInx[-1]+1) #We need that extra beam since this is the full FOV.
+      newData.fov.latFull = newData.fov.latFull[beamInxFull,:] 
+      newData.fov.lonFull = newData.fov.lonFull[beamInxFull,:] 
+      newData.fov.slantRFull = newData.fov.slantRFull[beamInxFull,:] 
+
+      commentList.append('beam: %i,%i' % tuple(limits))
+      #Remove limiting item from metadata.
+      newData.metadata.pop('beamLimits')
+
+    if currentData.metadata.has_key('timeLimits'):
+      limits      = currentData.metadata['timeLimits']
+      timeInx     = np.where(np.logical_and(currentData.time >= limits[0],currentData.time <= limits[1]))[0]
+
+      newData.data = newData.data[timeInx,:,:]
+      newData.fov.gates = newData.time[timeInx]
+
+      commentList.append('time: %i,%i' % tuple(limits))
+      #Remove limiting item from metadata.
+      newData.metadata.pop('timeLimits')
+    
+    #Update the history with what limits were applied.
+    if commentList != []:
+      commentStr = comment+': '+'; '.join(commentList)
+      key = max(newData.history.keys())
+      newData.history[key] = commentStr
+
+    newData.setActive()
+    return newData
+  except:
+    if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
+    print 'Warning! Limits not applied.'
+    return None

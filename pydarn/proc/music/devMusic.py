@@ -30,9 +30,8 @@ import pydarn.proc.music as music
 
 from matplotlib import pyplot as plt
 
-plt.ioff()
 
-outdir = '/home/w2naf/pymusic/'
+outdir = '/data/pymusic/'
 figsize = (20,10)
 
 # <codecell>
@@ -86,9 +85,11 @@ dataObj     = music.musicArray(myPtr,fovModel='GS')
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
 music.define_limits(dataObj,rangeLimits=[200,800])
 #music.define_limits(dataObj,gateLimits=[13,33])
+music.apply_limits(dataObj)
 music.beam_interpolation(dataObj)
 #music.beam_interpolation(dataObj,limits=[15,45],units='gate')
 
+plt.ioff()
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)
 pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
