@@ -24,6 +24,6 @@ export SDDB='sd-work9.ece.vt.edu:27017'
 
 # Set SFTP DATABASE
 export VTDB='sd-data.ece.vt.edu'
-export ISASDB='localhost'
+export ISASDB='chapman.usask.ca'
 
 

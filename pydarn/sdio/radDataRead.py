@@ -57,9 +57,14 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     ::
     
       import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-    
+      from pydarn.sdio import radDataOpen
+      myPtr = radDataOpen(dt.datetime(2011,1,1),'sas',eTime=dt.datetime(2011,1,2),fileType='fitacf',filtered=False, src=None):
+
+  **Note**:
+    * The above example reads in only 1 day of data. If eTime=dt.datetime(2011,1,1,0,0,1) then 2 days would be read in.
+
   Written by AJ 20130110
+  Modified by Ashton 20130710
   """
   import paramiko as p
   import re
@@ -91,9 +96,19 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     'error, filtered must be True of False'
   assert(src == None or src == 'local' or src == 'sftp'), \
     'error, src must be one of None,local,sftp'
-    
+
+  #Since ISAS stores an entire day worth of data in one file, eTime=sTime + 1 day specifies one day of data
   if(eTime == None):
-    eTime = sTime#+dt.timedelta(days=1,microseconds=-1)
+    eTime = sTime+dt.timedelta(days=1)
+  else:
+    if sTime < eTime:
+  #So then if eTime is specified, need to round it up to the nearest whole day
+      if dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d") < eTime:
+        eTime=dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d")+dt.timedelta(days=1)
+    else:
+      assert(1==2),'sTime must be less than eTime!'
+  #And for sTime we need to round it down to the nearest whole day
+  sTime=dt.datetime.strptime(sTime.strftime("%Y%m%d"),"%Y%m%d")
     
   #create a datapointer object
   myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id), 
@@ -183,8 +198,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
 
   #Next, LOOK LOCALLY FOR FILES
 #THIS HAS NOT BEEN EDITED FOR THE ISAS GROUP AT UofS. IF DAVITPY IS TO BE PUT ON CHAPMAN, THIS WILL HAVE
-#TO BE LOOKED AT.
-  if not cached and (src == None or src == 'local') and fileName == None:
+#TO BE LOOKED AT. FOR NOW, CONDITIONAL EDITED TO SKIP.
+  if 1==2:# not cached and (src == None or src == 'local') and fileName == None:
     try:
       for ftype in arr:
         print '\nLooking locally for',ftype,'files'
@@ -254,7 +269,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     for ftype in arr:
       print '\nLooking on the remote SFTP server for',ftype,'files'
       try:
-        #deal with UAF naming convention
+        #deal with UofS naming convention
         fnames = ['.C0.'+rad+'.'+ftype]
         if(channel == None): fnames.append('..\...\....\.a\.')
         else: fnames.append('..........'+channel+'.'+ftype)
@@ -266,12 +281,9 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
           
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
-          ctime = sTime#.replace(minute=0)
-          #if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
+          ctime = sTime
           oldyr = ''
-          while ctime <= eTime:
-            print ctime
-            print eTime
+          while ctime < eTime:
             #directory on the data server
             myDir = 'fitcon/'+ctime.strftime("%Y")+'/'+ctime.strftime("%m")+'/'
             dateStr = ctime.strftime("%Y%m%d")
