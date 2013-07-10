@@ -93,7 +93,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     'error, src must be one of None,local,sftp'
     
   if(eTime == None):
-    eTime = sTime+dt.timedelta(days=1)
+    eTime = sTime#+dt.timedelta(days=1,microseconds=-1)
     
   #create a datapointer object
   myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id), 
@@ -106,7 +106,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   else: arr = [fileType]
 
   #move back a little in time because files often start at 2 mins after the hour
-  sTime = sTime-dt.timedelta(minutes=4)
+#  sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
   tmpDir = '/tmp/sd/'
   d = os.path.dirname(tmpDir)
@@ -146,13 +146,16 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   if fileName == None and not noCache:
     try:
       if filtered:
-        for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,rad,fileType)):
+        #for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,rad,fileType)):
+	for f in glob.glob("%s????????.????????.%s.%sf" % (tmpDir,rad,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
-            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
-            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
-            #check if file covers our timespan
+ #           t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),)
+            t2 = dt.datetime(int(ff[10:14]),int(ff[14:16]),int(ff[16:18]))
+#            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+           #check if file covers our timespan
             if t1 <= sTime and t2 >= eTime:
               cached = True
               filelist.append(f)
@@ -161,12 +164,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
           except Exception,e:
             print e
       if not cached:
-        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.????????.%s.%s" % (tmpDir,rad,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
-            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
-            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]))
+            t2 = dt.datetime(int(ff[9:13]),int(ff[13:15]),int(ff[15:17]))
             #check if file covers our timespan
             if t1 <= sTime and t2 >= eTime:
               cached = True
@@ -179,6 +182,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print e
 
   #Next, LOOK LOCALLY FOR FILES
+#THIS HAS NOT BEEN EDITED FOR THE ISAS GROUP AT UofS. IF DAVITPY IS TO BE PUT ON CHAPMAN, THIS WILL HAVE
+#TO BE LOOKED AT.
   if not cached and (src == None or src == 'local') and fileName == None:
     try:
       for ftype in arr:
@@ -240,38 +245,42 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'you probably have to edit radDataRead.py'
       print 'I will try to read from other sources'
       src=None
-        
-  #finally, check the VT sftp server if we have not yet found files
+#END OF NOT EDITED        
+
+
+
+  #finally, check the chapman sftp server if we have not yet found files
   if (src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0 and fileName == None:
     for ftype in arr:
       print '\nLooking on the remote SFTP server for',ftype,'files'
       try:
         #deal with UAF naming convention
-        fnames = ['..........'+ftype]
+        fnames = ['.C0.'+rad+'.'+ftype]
         if(channel == None): fnames.append('..\...\....\.a\.')
         else: fnames.append('..........'+channel+'.'+ftype)
         for form in fnames:
           #create a transport object for use in sftp-ing
-          transport = p.Transport((os.environ['VTDB'], 22))
+          transport = p.Transport((os.environ['ISASDB'], 22))
           transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
           sftp = p.SFTPClient.from_transport(transport)
           
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
-          ctime = sTime.replace(minute=0)
-          if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
+          ctime = sTime#.replace(minute=0)
+          #if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
           oldyr = ''
           while ctime <= eTime:
+            print ctime
+            print eTime
             #directory on the data server
-            myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
-            hrStr = ctime.strftime("%H")
+            myDir = 'fitcon/'+ctime.strftime("%Y")+'/'+ctime.strftime("%m")+'/'
             dateStr = ctime.strftime("%Y%m%d")
             if(ctime.strftime("%Y") != oldyr):
               #get a list of all the files in the directory
               allFiles = sftp.listdir(myDir)
               oldyr = ctime.strftime("%Y")
             #create a regular expression to find files of this day, at this hour
-            regex = re.compile(dateStr+'.'+hrStr+form)
+            regex = re.compile(dateStr+form)
             #go thorugh all the files in the directory
             for aFile in allFiles:
               #if we have a file match between a file and our regex
@@ -298,10 +307,10 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 #HANDLE CACHEING NAME
                 ff = string.replace(outname,tmpDir,'')
                 #check the beginning time of the file
-                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]))
                 if fileSt == None or t1 < fileSt: fileSt = t1
 
-            ctime = ctime+dt.timedelta(hours=1)
+            ctime = ctime+dt.timedelta(days=1)
           if len(filelist) > 0 :
             print 'found',ftype,'data on sftp server'
             myPtr.fType,myPtr.dType = ftype,'dmap'
@@ -320,9 +329,9 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     if not cached:
       print 'Concatenating all the files in to one'
       #choose a temp file name with time span info for cacheing
-      tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
-                fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
-                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),rad,fileType)
+      tmpName = '%s%s.%s.%s.%s' % (tmpDir, \
+                fileSt.strftime("%Y%m%d"), \
+                eTime.strftime("%Y%m%d"),rad,fileType)
       print 'cat '+string.join(filelist)+' > '+tmpName
       os.system('cat '+string.join(filelist)+' > '+tmpName)
       for filename in filelist:

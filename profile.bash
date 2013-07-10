@@ -14,13 +14,16 @@ export PATH=${DAVITPY}/bin:${PATH}
 export PYTHONPATH=$PYTHONPATH:$DAVITPY
 
 # Set Database users
-export DBREADUSER='sd_dbread'
-export DBREADPASS='5d'
+export DBREADUSER='davitpy'
+export DBREADPASS='d4vitPY-usask'
+export VTDBREADUSER='sd_dbread'
+export VTDBREADPASS='5d'
 
 # Set Database users
 export SDDB='sd-work9.ece.vt.edu:27017'
 
 # Set SFTP DATABASE
 export VTDB='sd-data.ece.vt.edu'
+export ISASDB='localhost'
 
 

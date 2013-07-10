@@ -25,11 +25,16 @@ try:
 	import radDataTypes
 	from radDataTypes import *
 except: print 'problem importing radDataTypes'
-	
+
 try:
 	import radDataRead
 	from radDataRead import *
 except: print 'problem importing radDataRead'
+
+try:
+	import radDataReadVT
+	from radDataReadVT import *
+except: print 'problem importing radDataReadVT'
 
 try:
 	import sdDataTypes
