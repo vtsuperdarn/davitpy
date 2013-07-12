@@ -45,9 +45,9 @@ make |& tee m.txt
 make install |& tee mi.txt
 
 cd $dir
+WHO=$(who am i | sed -e 's/ .*//')
 install_dir=$(readlink -f ../..)
-echo "source $install_dir/profile.bash" >> ~/.bashrc
-
+echo "source $install_dir/profile.bash" >> /home/${WHO}/.bashrc
 # PS1='$ '
 # source ~/.bashrc
 # cd ../..
