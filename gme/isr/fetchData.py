@@ -47,7 +47,7 @@ class fetchData(object):
 		* **Chatanika IS Radar**: 50
 		* **ISTP Irkutsk Radar**: 53
 		* **Poker Flat IS Radar**: 61
-		* **EISCAT combined IS Radars**: 70 (not yet implemented)
+		* **EISCAT combined IS Radars**: 70
 		* **EISCAT Kiruna UHF Receiver**: 71
 		* **EISCAT Tromso UHF Receiver**: 72
 		* **EISCAT Sodankyla UHF Receiver**: 73
@@ -78,7 +78,7 @@ class fetchData(object):
 	Adapted by Ashton Reimer 2013-07
 	from code by Sebastien de Larquier, 2013-03
 	"""
-	def __init__(self, expDate, endDate=None, 
+	def __init__(self, expDate, endDate=None, listofparams=None,
 		dataPath=None, fileExt=None, inst_id=None, #getMad=False, 
 		user_fullname=None, user_email=None, user_affiliation=None):
 
@@ -91,13 +91,12 @@ class fetchData(object):
 		if None in [user_fullname, user_email, user_affiliation, inst_id]:
 			print 'Error: Please provide user_fullname, user_email, user_affiliation, and inst_id.'
 			return
-		filePath = self.getFileMad(user_fullname, user_email, user_affiliation)
+		filePath = self.getDataMad(listofparams, user_fullname, user_email, user_affiliation)
 
 		self.filePath = filePath
-		
 
 
-	def getFileMad(self, user_fullname, user_email, user_affiliation):
+	def getDataMad(self, listofparams, user_fullname, user_email, user_affiliation):
 		"""Look for the desired ISR data on Madrigal
 		
 		**Belongs to**: :class:`fetchData`
@@ -106,7 +105,7 @@ class fetchData(object):
 			* **filePath**: the path and name of the data file
 		"""
 		import madrigalWeb.madrigalWeb
-		import os, h5py, numpy, datetime
+		import os, pickle, numpy, datetime
 		from matplotlib.dates import date2num, epoch2num, num2date
 
 		madrigalUrl = 'http://cedar.openmadrigal.org'
@@ -137,22 +136,49 @@ class fetchData(object):
 		if not thisFilename: return
 
 		# Download HDF5 file
-		result = madData.downloadFile(thisFilename, 
-			os.path.join( self.dataPath,"{}.hdf5"\
-			.format(os.path.split(thisFilename)[1]) ), 
-			user_fullname, user_email, user_affiliation, 
-			format="hdf5")
+#		result = madData.downloadFile(thisFilename, 
+#			os.path.join( self.dataPath,"{}.hdf5"\
+#			.format(os.path.split(thisFilename)[1]) ), 
+#			user_fullname, user_email, user_affiliation, 
+#			format="hdf5")
 
-		# Now add some derived data to the hdf5 file
+		if listofparams == None:
+			params=madData.getExperimentFileParameters(thisFilename)
+			listofparams=",".join([t.mnemonic for t in params])
+
+		# Now get the data
 		res = madData.isprint(thisFilename, 
-			'YEAR,MONTH,DAY,HOUR,MIN,SEC,RANGE,GDALT,NE,NEL,MDTYP,GDLAT,GLON',
+			listofparams,#'YEAR,MONTH,DAY,HOUR,MIN,SEC,RANGE,GDALT,NE,NEL,MDTYP,GDLAT,GLON,VIPN',
 	 		'', user_fullname, user_email, user_affiliation)
 
 		rows = res.split("\n") 
+		if self.dataPath==None: self.dataPath=''
 		filePath = os.path.join( self.dataPath,
-			os.path.split(thisFilename)[1]+'.hdf5' )
+			os.path.split(thisFilename)[1]+'.p' )
 		self.fileExt = ( os.path.split(thisFilename)[1] )[-1]
 		# Add new datasets to hdf5 file
-                	
+		self.res=res                
+		self.rows=rows
+		self.thisFilename=thisFilename	
+
+		#Now that we have the data, create a dictionary of it
+		params=listofparams.split(",")
+		data={}
+		for p in params:
+			data[p]=numpy.array([])
+
+		for r in rows:
+			if r=='': continue
+			dat=r.split()
+			j=0
+			for p in params:
+				data[p]=numpy.concatenate((data[p],[float(dat[j])]))#.append(float(dat[j]))
+				j=j+1
+
+		#Then save the dictionary to a file using pickle
+#		self.data=data
+		pickle.dump(data,open(filePath,'wb'))
+
+
 		return filePath
 
