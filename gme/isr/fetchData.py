@@ -24,7 +24,7 @@ class fetchData(object):
 	**Args**:
 		* **expDate** (datetime.datetime): experiment date
 		* **[endDate]** (datetime.datetime): end date/time to look for experiment files on Madrigal
-		* **[getMad]** (bool): force download from Madrigal (overwrite any matching local file)
+		* **[listofparams]** (str): a string containing a list of parameters to download
 		* **[dataPath]** (str): path where the local data should be read/saved
 		* **[fileExt]** (str): file extension (i.e., 'g.002'). If None is provided, it will just look for the most recent available one
 		* **user_fullname** (str): required to download data from Madrigal (no registration needed)
@@ -58,7 +58,7 @@ class fetchData(object):
 
 
 
-	**Example**:
+	**HDF5 Example**:
 		::
 
 			# Get data for November 17-18, 2010
@@ -70,15 +70,34 @@ class fetchData(object):
 			edate = dt.datetime(2010,11,18,13)
 			inst_id = 30
 			filePath = fetchData( date, endDate=edate, 
+				 gethdf5=1
 				 user_fullname=user_fullname, 
 				 user_email=user_email, 
 				 user_affiliation=user_affiliation,
 				 inst_id=inst_id )
-					
+	**isPrint Example**:
+		::
+
+			# Get data for November 17-18, 2010
+			import datetime as dt
+			user_fullname = 'Sebastien de Larquier'
+			user_email = 'sdelarquier@vt.edu'
+			user_affiliation = 'Virginia Tech'
+			date = dt.datetime(2010,11,17,20)
+			edate = dt.datetime(2010,11,18,13)
+			inst_id = 30
+			listofparams='YEAR,MONTH,DAY,HOUR,MIN,SEC,GDALT,GDLAT,GDLON,NE'
+			filePath = fetchData( date, endDate=edate, 
+				 listofparams=listofparams
+				 user_fullname=user_fullname, 
+				 user_email=user_email, 
+				 user_affiliation=user_affiliation,
+				 inst_id=inst_id )
+				
 	Adapted by Ashton Reimer 2013-07
 	from code by Sebastien de Larquier, 2013-03
 	"""
-	def __init__(self, expDate, endDate=None, listofparams=None,
+	def __init__(self, expDate, endDate=None, listofparams=None,gethdf5=None,
 		dataPath=None, fileExt=None, inst_id=None, #getMad=False, 
 		user_fullname=None, user_email=None, user_affiliation=None):
 
@@ -91,13 +110,70 @@ class fetchData(object):
 		if None in [user_fullname, user_email, user_affiliation, inst_id]:
 			print 'Error: Please provide user_fullname, user_email, user_affiliation, and inst_id.'
 			return
-		filePath = self.getDataMad(listofparams, user_fullname, user_email, user_affiliation)
+
+		if gethdf5:
+			self.getHdf5=True
+			filePath = self.getDataMadHdf5( user_fullname, user_email, user_affiliation)
+		else:
+			self.getIsPrint=True
+			filePath = self.getDataMadIsPrint(listofparams, user_fullname, user_email, user_affiliation)
 
 		self.filePath = filePath
 
+	def getDataMadHdf5(self, user_fullname, user_email, user_affiliation):
+		"""Look for the desired ISR data on Madrigal and download hdf5 file
+		
+		**Belongs to**: :class:`fetchData`
 
-	def getDataMad(self, listofparams, user_fullname, user_email, user_affiliation):
-		"""Look for the desired ISR data on Madrigal
+		**Returns**:
+			* **filePath**: the path and name of the data file
+		"""
+		import madrigalWeb.madrigalWeb
+		import os, numpy, datetime
+		from matplotlib.dates import date2num, epoch2num, num2date
+
+		madrigalUrl = 'http://cedar.openmadrigal.org'
+		madData = madrigalWeb.madrigalWeb.MadrigalData(madrigalUrl)
+
+		#Instrument ID
+		inst_id = self.inst_id
+
+		# Start and end date/time
+		sdate = self.expDate
+		fdate = self.endDate if self.endDate else sdate + datetime.timedelta(days=1)
+
+		# Get experiment list
+		expList = madData.getExperiments(inst_id, 
+			sdate.year, sdate.month, sdate.day, sdate.hour, 
+			sdate.minute, sdate.second, 
+			fdate.year, fdate.month, fdate.day, fdate.hour, 
+			fdate.minute, fdate.second)
+		if not expList: return
+
+		# Try to get the default file
+		thisFilename = False
+		fileList = madData.getExperimentFiles(expList[0].id)
+		for thisFile in fileList:
+		    if thisFile.category == 1:
+		        thisFilename = thisFile.name
+		        break
+		if not thisFilename: return
+
+		# Download HDF5 file
+		result = madData.downloadFile(thisFilename, 
+			os.path.join( self.dataPath,"{}.hdf5"\
+			.format(os.path.split(thisFilename)[1]) ), 
+			user_fullname, user_email, user_affiliation, 
+			format="hdf5")
+		ext='.hdf5'
+
+		filePath = os.path.join( self.dataPath,
+			os.path.split(thisFilename)[1]+ext )
+
+		return filePath
+
+	def getDataMadIsPrint(self, listofparams, user_fullname, user_email, user_affiliation):
+		"""Look for the desired ISR data on Madrigal and download it with isPrint
 		
 		**Belongs to**: :class:`fetchData`
 
@@ -135,12 +211,7 @@ class fetchData(object):
 		        break
 		if not thisFilename: return
 
-		# Download HDF5 file
-#		result = madData.downloadFile(thisFilename, 
-#			os.path.join( self.dataPath,"{}.hdf5"\
-#			.format(os.path.split(thisFilename)[1]) ), 
-#			user_fullname, user_email, user_affiliation, 
-#			format="hdf5")
+		# Use isPrint to get data then pickle it
 
 		if listofparams == None:
 			params=madData.getExperimentFileParameters(thisFilename)
@@ -148,15 +219,11 @@ class fetchData(object):
 
 		# Now get the data
 		res = madData.isprint(thisFilename, 
-			listofparams,#'YEAR,MONTH,DAY,HOUR,MIN,SEC,RANGE,GDALT,NE,NEL,MDTYP,GDLAT,GLON,VIPN',
-	 		'', user_fullname, user_email, user_affiliation)
+			listofparams,'', user_fullname, user_email, user_affiliation)
 
 		rows = res.split("\n") 
 		if self.dataPath==None: self.dataPath=''
-		filePath = os.path.join( self.dataPath,
-			os.path.split(thisFilename)[1]+'.p' )
 		self.fileExt = ( os.path.split(thisFilename)[1] )[-1]
-		# Add new datasets to hdf5 file
 		self.res=res                
 		self.rows=rows
 		self.thisFilename=thisFilename	
@@ -166,19 +233,22 @@ class fetchData(object):
 		data={}
 		for p in params:
 			data[p]=numpy.array([])
-
 		for r in rows:
 			if r=='': continue
 			dat=r.split()
 			j=0
 			for p in params:
+				if dat[j]=='missing': dat[j]=numpy.nan
 				data[p]=numpy.concatenate((data[p],[float(dat[j])]))#.append(float(dat[j]))
 				j=j+1
 
-		#Then save the dictionary to a file using pickle
-#		self.data=data
-		pickle.dump(data,open(filePath,'wb'))
+		ext='.p'
+		filePath = os.path.join( self.dataPath,
+			os.path.split(thisFilename)[1]+ext )
 
+
+		#Then save the dictionary to a file using pickle if necessary
+		pickle.dump(data,open(filePath,'wb'))
 
 		return filePath
 
