@@ -102,6 +102,10 @@ class fetchData(object):
 		dataPath=None, fileExt=None, instId=None, sriFile=None, 
 		userFullname=None, userEmail=None, userAffiliation=None):
 
+		import madrigalWeb.madrigalWeb
+		import datetime, os
+		import pickle
+
 		self.expDate = expDate
 		self.endDate = endDate
 		self.dataPath = dataPath
@@ -113,18 +117,46 @@ class fetchData(object):
 			return
 
 
+		madrigalUrl = 'http://cedar.openmadrigal.org'
+                madData = madrigalWeb.madrigalWeb.MadrigalData(madrigalUrl)
 
+		# Start and end date/time
+		sdate = expDate
+                fdate = endDate if endDate else sdate + datetime.timedelta(days=1)
 
+		# Get experiment list
+                expList = madData.getExperiments(instId,
+                        sdate.year, sdate.month, sdate.day, sdate.hour,
+                        sdate.minute, sdate.second,
+                        fdate.year, fdate.month, fdate.day, fdate.hour,
+                        fdate.minute, fdate.second)
+                if not expList: return
+
+		# Try to get the default file
+                thisFilename = False
+                fileList = madData.getExperimentFiles(expList[0].id)
+                for thisFile in fileList:
+                    if thisFile.category == 1:
+                        thisFilename = thisFile.name
+                        break
+                if not thisFilename: return
+
+		self.thisFilename=thisFilename
+		self.madData=madData
 
 		if getHdf5:
 			self.getHdf5=True
-			filePath = self.getDataMadHdf5( userFullname, userEmail, userAffiliation)
+			data = self.getDataMadHdf5( userFullname, userEmail, userAffiliation)
 		else:
 			self.getIsPrint=True
-			filePath = self.getDataMadIsPrint(listOfParams, userFullname, userEmail, userAffiliation)
+			data = self.getDataMadIsPrint(listOfParams, userFullname, userEmail, userAffiliation)
+			
 
-		self.filePath = filePath
+		self.filePath = os.path.join( self.dataPath,
+                        os.path.split(thisFilename)[1]+self.ext )
+		if not getHdf5: pickle.dump(data,open(self.filePath,'wb'))
 
+		
 	def getDataMadHdf5(self, userFullname, userEmail, userAffiliation):
 		"""Look for the desired ISR data on Madrigal and download hdf5 file
 		
@@ -133,49 +165,23 @@ class fetchData(object):
 		**Returns**:
 			* **filePath**: the path and name of the data file
 		"""
-		import madrigalWeb.madrigalWeb
 		import os, numpy, datetime
-		from matplotlib.dates import date2num, epoch2num, num2date
 
-		madrigalUrl = 'http://cedar.openmadrigal.org'
-		madData = madrigalWeb.madrigalWeb.MadrigalData(madrigalUrl)
-
-		#Instrument ID
-		instId = self.instId
-
-		# Start and end date/time
-		sdate = self.expDate
-		fdate = self.endDate if self.endDate else sdate + datetime.timedelta(days=1)
-
-		# Get experiment list
-		expList = madData.getExperiments(instId, 
-			sdate.year, sdate.month, sdate.day, sdate.hour, 
-			sdate.minute, sdate.second, 
-			fdate.year, fdate.month, fdate.day, fdate.hour, 
-			fdate.minute, fdate.second)
-		if not expList: return
-
-		# Try to get the default file
-		thisFilename = False
-		fileList = madData.getExperimentFiles(expList[0].id)
-		for thisFile in fileList:
-		    if thisFile.category == 1:
-		        thisFilename = thisFile.name
-		        break
-		if not thisFilename: return
-
+		thisFilename=self.thisFilename
+		dataPath=self.dataPath
+	
 		# Download HDF5 file
-		result = madData.downloadFile(thisFilename, 
-			os.path.join( self.dataPath,"{}.hdf5"\
+		result = self.madData.downloadFile(thisFilename, 
+			os.path.join( dataPath,"{}.hdf5"\
 			.format(os.path.split(thisFilename)[1]) ), 
 			userFullname, userEmail, userAffiliation, 
 			format="hdf5")
-		ext='.hdf5'
+		self.ext='.hdf5'
 
-		filePath = os.path.join( self.dataPath,
-			os.path.split(thisFilename)[1]+ext )
+		#Now that we have the HDF5 file, read it into a dictionary
+		data={}
 
-		return filePath
+		return data
 
 	def getDataMadIsPrint(self, listOfParams, userFullname, userEmail, userAffiliation):
 		"""Look for the desired ISR data on Madrigal and download it with isPrint
@@ -185,53 +191,22 @@ class fetchData(object):
 		**Returns**:
 			* **filePath**: the path and name of the data file
 		"""
-		import madrigalWeb.madrigalWeb
-		import os, pickle, numpy, datetime
-		from matplotlib.dates import date2num, epoch2num, num2date
+		import os, numpy, datetime
 
-		madrigalUrl = 'http://cedar.openmadrigal.org'
-		madData = madrigalWeb.madrigalWeb.MadrigalData(madrigalUrl)
-
-		#Instrument ID
-		instId = self.instId
-
-		# Start and end date/time
-		sdate = self.expDate
-		fdate = self.endDate if self.endDate else sdate + datetime.timedelta(days=1)
-
-		# Get experiment list
-		expList = madData.getExperiments(instId, 
-			sdate.year, sdate.month, sdate.day, sdate.hour, 
-			sdate.minute, sdate.second, 
-			fdate.year, fdate.month, fdate.day, fdate.hour, 
-			fdate.minute, fdate.second)
-		if not expList: return
-
-		# Try to get the default file
-		thisFilename = False
-		fileList = madData.getExperimentFiles(expList[0].id)
-		for thisFile in fileList:
-		    if thisFile.category == 1:
-		        thisFilename = thisFile.name
-		        break
-		if not thisFilename: return
+		madData=self.madData
+		dataPath=self.dataPath if not self.dataPath else ''
+		thisFilename=self.thisFilename
 
 		# Use isPrint to get data then pickle it
-
 		if not listOfParams:
 			params=madData.getExperimentFileParameters(thisFilename)
-			listofparams=",".join([t.mnemonic for t in params])
+			listOfParams=",".join([t.mnemonic for t in params])
 
 		# Now get the data
 		res = madData.isprint(thisFilename, 
 			listOfParams,'', userFullname, userEmail, userAffiliation)
 
 		rows = res.split("\n") 
-		if not self.dataPath: self.dataPath=''
-		self.fileExt = ( os.path.split(thisFilename)[1] )[-1]
-		self.res=res                
-		self.rows=rows
-		self.thisFilename=thisFilename	
 
 		#Now that we have the data, create a dictionary of it
 		params=listOfParams.split(",")
@@ -247,13 +222,9 @@ class fetchData(object):
 				data[p]=numpy.concatenate((data[p],[float(dat[j])]))
 				j=j+1
 
-		ext='.p'
-		filePath = os.path.join( self.dataPath,
-			os.path.split(thisFilename)[1]+ext )
-
+		self.ext='.p'
 
 		#Then save the dictionary to a file using pickle if necessary
-		pickle.dump(data,open(filePath,'wb'))
 
-		return filePath
+		return data
 
