@@ -12,9 +12,9 @@ This module handles fetching Incoherent Scatter Radar data from Madrigal
 """
 
 # constants
-user_fullname = 'Sebastien de Larquier'
-user_email = 'sdelarquier@vt.edu'
-user_affiliation = 'Virginia Tech'
+userFullname = 'Sebastien de Larquier'
+userEmail = 'sdelarquier@vt.edu'
+userAffiliation = 'Virginia Tech'
 
 #####################################################
 #####################################################
@@ -24,13 +24,14 @@ class fetchData(object):
 	**Args**:
 		* **expDate** (datetime.datetime): experiment date
 		* **[endDate]** (datetime.datetime): end date/time to look for experiment files on Madrigal
-		* **[listofparams]** (str): a string containing a list of parameters to download
+		* **[listOfParams]** (str): a string containing a list of parameters to download
 		* **[dataPath]** (str): path where the local data should be read/saved
 		* **[fileExt]** (str): file extension (i.e., 'g.002'). If None is provided, it will just look for the most recent available one
-		* **user_fullname** (str): required to download data from Madrigal (no registration needed)
-		* **user_email** (str): required to download data from Madrigal (no registration needed)
-		* **user_affiliation** (str): required to download data from Madrigal (no registration needed)
-		* **inst_id** (int): required to specify instrument to download data for. See list of Instrument IDs.
+		* **userFullname** (str): required to download data from Madrigal (no registration needed)
+		* **userEmail** (str): required to download data from Madrigal (no registration needed)
+		* **userAffiliation** (str): required to download data from Madrigal (no registration needed)
+		* **instId** (int): required to specify instrument to download data for. See list of Instrument IDs.
+		* **sriFile** (str): path and filename of SRI International hdf5 file to import
 
 	**Instrument IDs**
 		* **Jicamarca**: 10
@@ -63,64 +64,68 @@ class fetchData(object):
 
 			# Get data for November 17-18, 2010
 			import datetime as dt
-			user_fullname = 'Sebastien de Larquier'
-			user_email = 'sdelarquier@vt.edu'
-			user_affiliation = 'Virginia Tech'
+			userFullname = 'Sebastien de Larquier'
+			userEmail = 'sdelarquier@vt.edu'
+			userAffiliation = 'Virginia Tech'
 			date = dt.datetime(2010,11,17,20)
 			edate = dt.datetime(2010,11,18,13)
-			inst_id = 30
+			instId = 30
 			filePath = fetchData( date, endDate=edate, 
-				 gethdf5=1
-				 user_fullname=user_fullname, 
-				 user_email=user_email, 
-				 user_affiliation=user_affiliation,
-				 inst_id=inst_id )
+				 getHdf5=True
+				 userFullname=userFullname, 
+				 userEmail=userEmail, 
+				 userAffiliation=userAffiliation,
+				 instId=instId )
 	**isPrint Example**:
 		::
 
 			# Get data for November 17-18, 2010
 			import datetime as dt
-			user_fullname = 'Sebastien de Larquier'
-			user_email = 'sdelarquier@vt.edu'
-			user_affiliation = 'Virginia Tech'
+			userFullname = 'Sebastien de Larquier'
+			userEmail = 'sdelarquier@vt.edu'
+			userAffiliation = 'Virginia Tech'
 			date = dt.datetime(2010,11,17,20)
 			edate = dt.datetime(2010,11,18,13)
-			inst_id = 30
-			listofparams='YEAR,MONTH,DAY,HOUR,MIN,SEC,GDALT,GDLAT,GDLON,NE'
+			instId = 30
+			listOfParams='YEAR,MONTH,DAY,HOUR,MIN,SEC,GDALT,GDLAT,GDLON,NE'
 			filePath = fetchData( date, endDate=edate, 
-				 listofparams=listofparams
-				 user_fullname=user_fullname, 
-				 user_email=user_email, 
-				 user_affiliation=user_affiliation,
-				 inst_id=inst_id )
+				 listOfParams=listOfParams
+				 userFullname=userFullname, 
+				 userEmail=userEmail, 
+				 userAffiliation=userAffiliation,
+				 instId=instId )
 				
 	Adapted by Ashton Reimer 2013-07
 	from code by Sebastien de Larquier, 2013-03
 	"""
-	def __init__(self, expDate, endDate=None, listofparams=None,gethdf5=None,
-		dataPath=None, fileExt=None, inst_id=None, #getMad=False, 
-		user_fullname=None, user_email=None, user_affiliation=None):
+	def __init__(self, expDate, endDate=None, listOfParams=None,getHdf5=None,
+		dataPath=None, fileExt=None, instId=None, sriFile=None, 
+		userFullname=None, userEmail=None, userAffiliation=None):
 
 		self.expDate = expDate
 		self.endDate = endDate
 		self.dataPath = dataPath
 		self.fileExt = fileExt
-		self.inst_id = inst_id
+		self.instId = instId
 
-		if None in [user_fullname, user_email, user_affiliation, inst_id]:
-			print 'Error: Please provide user_fullname, user_email, user_affiliation, and inst_id.'
+		if None in [userFullname, userEmail, userAffiliation, instId]:
+			print 'Error: Please provide userFullname, userEmail, userAffiliation, and instId.'
 			return
 
-		if gethdf5:
+
+
+
+
+		if getHdf5:
 			self.getHdf5=True
-			filePath = self.getDataMadHdf5( user_fullname, user_email, user_affiliation)
+			filePath = self.getDataMadHdf5( userFullname, userEmail, userAffiliation)
 		else:
 			self.getIsPrint=True
-			filePath = self.getDataMadIsPrint(listofparams, user_fullname, user_email, user_affiliation)
+			filePath = self.getDataMadIsPrint(listOfParams, userFullname, userEmail, userAffiliation)
 
 		self.filePath = filePath
 
-	def getDataMadHdf5(self, user_fullname, user_email, user_affiliation):
+	def getDataMadHdf5(self, userFullname, userEmail, userAffiliation):
 		"""Look for the desired ISR data on Madrigal and download hdf5 file
 		
 		**Belongs to**: :class:`fetchData`
@@ -136,14 +141,14 @@ class fetchData(object):
 		madData = madrigalWeb.madrigalWeb.MadrigalData(madrigalUrl)
 
 		#Instrument ID
-		inst_id = self.inst_id
+		instId = self.instId
 
 		# Start and end date/time
 		sdate = self.expDate
 		fdate = self.endDate if self.endDate else sdate + datetime.timedelta(days=1)
 
 		# Get experiment list
-		expList = madData.getExperiments(inst_id, 
+		expList = madData.getExperiments(instId, 
 			sdate.year, sdate.month, sdate.day, sdate.hour, 
 			sdate.minute, sdate.second, 
 			fdate.year, fdate.month, fdate.day, fdate.hour, 
@@ -163,7 +168,7 @@ class fetchData(object):
 		result = madData.downloadFile(thisFilename, 
 			os.path.join( self.dataPath,"{}.hdf5"\
 			.format(os.path.split(thisFilename)[1]) ), 
-			user_fullname, user_email, user_affiliation, 
+			userFullname, userEmail, userAffiliation, 
 			format="hdf5")
 		ext='.hdf5'
 
@@ -172,7 +177,7 @@ class fetchData(object):
 
 		return filePath
 
-	def getDataMadIsPrint(self, listofparams, user_fullname, user_email, user_affiliation):
+	def getDataMadIsPrint(self, listOfParams, userFullname, userEmail, userAffiliation):
 		"""Look for the desired ISR data on Madrigal and download it with isPrint
 		
 		**Belongs to**: :class:`fetchData`
@@ -188,14 +193,14 @@ class fetchData(object):
 		madData = madrigalWeb.madrigalWeb.MadrigalData(madrigalUrl)
 
 		#Instrument ID
-		inst_id = self.inst_id
+		instId = self.instId
 
 		# Start and end date/time
 		sdate = self.expDate
 		fdate = self.endDate if self.endDate else sdate + datetime.timedelta(days=1)
 
 		# Get experiment list
-		expList = madData.getExperiments(inst_id, 
+		expList = madData.getExperiments(instId, 
 			sdate.year, sdate.month, sdate.day, sdate.hour, 
 			sdate.minute, sdate.second, 
 			fdate.year, fdate.month, fdate.day, fdate.hour, 
@@ -213,23 +218,23 @@ class fetchData(object):
 
 		# Use isPrint to get data then pickle it
 
-		if listofparams == None:
+		if not listOfParams:
 			params=madData.getExperimentFileParameters(thisFilename)
 			listofparams=",".join([t.mnemonic for t in params])
 
 		# Now get the data
 		res = madData.isprint(thisFilename, 
-			listofparams,'', user_fullname, user_email, user_affiliation)
+			listOfParams,'', userFullname, userEmail, userAffiliation)
 
 		rows = res.split("\n") 
-		if self.dataPath==None: self.dataPath=''
+		if not self.dataPath: self.dataPath=''
 		self.fileExt = ( os.path.split(thisFilename)[1] )[-1]
 		self.res=res                
 		self.rows=rows
 		self.thisFilename=thisFilename	
 
 		#Now that we have the data, create a dictionary of it
-		params=listofparams.split(",")
+		params=listOfParams.split(",")
 		data={}
 		for p in params:
 			data[p]=numpy.array([])
@@ -239,7 +244,7 @@ class fetchData(object):
 			j=0
 			for p in params:
 				if dat[j]=='missing': dat[j]=numpy.nan
-				data[p]=numpy.concatenate((data[p],[float(dat[j])]))#.append(float(dat[j]))
+				data[p]=numpy.concatenate((data[p],[float(dat[j])]))
 				j=j+1
 
 		ext='.p'
