@@ -50,7 +50,8 @@ from matplotlib.figure import Figure
 
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
-              pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex',tFreqBands=[]):
+              pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex', \
+              tFreqBands=[]):
   """create an rti plot for a secified radar and time period
 
   **Args**:
