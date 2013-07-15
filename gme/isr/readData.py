@@ -2,12 +2,12 @@
 # Full license can be found in LICENSE.txt
 """
 *********************
-**Module**: gme.mho
+**Module**: gme.readData
 *********************
 This module handles Millstone Hill ISR data
 
 **Class**:
-	* :class:`mhoData`: Read Millstone Hill data, either locally if it can be found, or directly from Madrigal
+	* :class:`readData`: Read ISR data from a file from Madrigal or directly from SRI
 
 """
 
@@ -18,18 +18,12 @@ user_affiliation = 'Virginia Tech'
 
 #####################################################
 #####################################################
-class mhoData(object):
-	"""Read Millstone Hill data, either locally if it can be found, or directly from Madrigal
+class readData(object):
+	"""Read ISR data from a file from Madrigal or directly from SRI
 
 	**Args**:
-		* **expDate** (datetime.datetime): experiment date
-		* **[endDate]** (datetime.datetime): end date/time to look for experiment files on Madrigal
-		* **[getMad]** (bool): force download from Madrigal (overwrite any matching local file)
-		* **[dataPath]** (str): path where the local data should be read/saved
-		* **[fileExt]** (str): file extension (i.e., 'g.002'). If None is provided, it will just look for the most recent available one
-		* **user_fullname** (str): required to download data from Madrigal (no registration needed)
-		* **user_email** (str): required to download data from Madrigal (no registration needed)
-		* **user_affiliation** (str): required to download data from Madrigal (no registration needed)
+		* **arg** info about arg
+	
 	**Example**:
 		::
 
