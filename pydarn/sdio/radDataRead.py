@@ -218,7 +218,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
             ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
             ### TO MATCH YOUR DIRECTORY STRUCTURE
             ##################################################################
-            myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+            myDir = '/sd_data/'+ctime.strftime("%Y")+'/'+ctime.strftime("%m")+'/'
             hrStr = ctime.strftime("%H")
             dateStr = ctime.strftime("%Y%m%d")
             #iterate through all of the files which begin in this hour
