@@ -214,6 +214,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       return None
 
   for fplot in range(len(tbands)):
+    #Check to ensure that data exists for the requested frequency band else
+    #continue on to the next range of frequencies
+    if not freq[i]:
+      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+      rtiFig=None	#Need this line in case no data is plotted
+      continue
+
     #get/create a figure
     if show:
       rtiFig = plot.figure(figsize=(11,8.5))
@@ -252,7 +259,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       if gsct: gsdata=numpy.zeros((len(times[fplot])*2,rmax))+100000
       x=numpy.zeros(len(times[fplot])*2)
       tcnt = 0
-      #x = matplotlib.dates.date2num(times)
+
       for i in range(len(times[fplot])):
         x[tcnt]=matplotlib.dates.date2num(times[fplot][i])
         if(i < len(times[fplot])-1):
