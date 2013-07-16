@@ -1,3 +1,7 @@
+# Modified version by MRW
+# Copyright???????????????????????????
+
+
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -15,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: rti
+.. module:: rti2
    :synopsis: A module for generating rti plots
 
 .. moduleauthor:: AJ, 20130123
@@ -46,7 +50,8 @@ from matplotlib.figure import Figure
 
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
-              pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex'):
+              pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex', \
+              tFreqBands=[],myFile=None):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -67,12 +72,14 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
     * **[dpi]** (int): dots per inch if saving as png.  default = 300
     * **[show]** (boolean): a flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
-    * **[retfig]** (boolean):  a flag indicating that you want the figure to be returned from the function.  default = False
+    * **[retfig]** (boolean):  a flag indicating that you want the figure to be returned from the function.  Only the last figure in the list of frequency bands will be returned.  default = False
     * **[filtered]** (boolean): a flag indicating whether to boxcar filter the data.  default = False (no filter)
     * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
     * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
+    * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
+    * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
   **Returns**:
-    * Possibly a figure, depending on the **retfig** keyword
+    * Possibly figure, depending on the **retfig** keyword
 
   **Example**:
     ::
@@ -82,6 +89,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
 
     
   Written by AJ 20121002
+  Modified by Matt W. 20130715
   """
   import os
     
@@ -104,7 +112,6 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
-  
 
   #assign any default color scales
   tscales = []
@@ -117,167 +124,221 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       elif(params[i] == 'phi0'): tscales.append([-numpy.pi,numpy.pi])
     else: tscales.append(scales[i])
   scales = tscales
-      
-  if eTime == None: eTime = sTime+datetime.timedelta(days=1)
-    
-  #open the file
-  if fileName == None:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
-  else:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
-                          fileName=fileName,custType=custType)
 
-  #check that we have data available
-  if myFile == None:
+  #assign default frequency band
+  tbands = []
+  if tFreqBands == []: tbands.append([8000,20000])
+  else: 
+    for band in tFreqBands: 
+      #make sure that starting frequncy is less than the ending frequency for each band
+      assert(band[0] < band[1]),"Starting frequency must be less than ending frequency!"
+      tbands.append(band)
+
+
+  if eTime == None: eTime = sTime+datetime.timedelta(days=1)
+  assert(sTime<eTime),"eTime must be greater than sTime!" 
+   
+  #open the file if a pointer was not given to us
+  #if fileName is specified then it will be read
+  if not myFile:
+    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
+
+  #check that we have data available now that we may have tried
+  #to read it using radDataOpen
+  if not myFile:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
+  else:
+    #make sure that we will only plot data for the time range specified by sTime and eTime
+    if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
+      myFile.sTime=sTime
+      myFile.eTime=eTime
+    else:
+      #if the times range is not covered by the file, throw an error
+      print 'error, no data available for the requested time'
+      return None
+
+  #Finally we can start reading the data file
   myBeam = radDataReadRec(myFile)
-  if myBeam == None:
+  if not myBeam:
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
-
 
   #initialize empty lists
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
         [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
+  for i in range(len(tbands)):
+    times.append([])
+    cpid.append([])
+    nave.append([])
+    nsky.append([])
+    rsep.append([])
+    nrang.append([])
+    frang.append([])
+    nsch.append([])
+    freq.append([])
+    slist.append([])
+    mode.append([])
+    vel.append([])
+    pow.append([])
+    wid.append([])
+    elev.append([])
+    phi0.append([])
+    gsflg.append([])
   
   #read the parameters of interest
   while(myBeam != None):
     if(myBeam.time > eTime): break
     if(myBeam.bmnum == bmnum and (sTime <= myBeam.time)):
-      times.append(myBeam.time)
-      cpid.append(myBeam.cp)
-      nave.append(myBeam.prm.nave)
-      nsky.append(myBeam.prm.noisesky)
-      rsep.append(myBeam.prm.rsep)
-      nrang.append(myBeam.prm.nrang)
-      frang.append(myBeam.prm.frang)
-      nsch.append(myBeam.prm.noisesearch)
-      freq.append(myBeam.prm.tfreq/1e3)
-      slist.append(myBeam.fit.slist)
-      mode.append(myBeam.prm.ifmode)
-      if('velocity' in params): vel.append(myBeam.fit.v)
-      if('power' in params): pow.append(myBeam.fit.p_l)
-      if('width' in params): wid.append(myBeam.fit.w_l)
-      if('elevation' in params): elev.append(myBeam.fit.elv)
-      if('phi0' in params): phi0.append(myBeam.fit.phi0)
-      gsflg.append(myBeam.fit.gflg)
+      for i in range(len(tbands)):
+        if myBeam.prm.tfreq >= tbands[i][0] and myBeam.prm.tfreq <= tbands[i][1]:
+          times[i].append(myBeam.time)
+          cpid[i].append(myBeam.cp)
+          nave[i].append(myBeam.prm.nave)
+          nsky[i].append(myBeam.prm.noisesky)
+          rsep[i].append(myBeam.prm.rsep)
+          nrang[i].append(myBeam.prm.nrang)
+          frang[i].append(myBeam.prm.frang)
+          nsch[i].append(myBeam.prm.noisesearch)
+          freq[i].append(myBeam.prm.tfreq/1e3)
+          slist[i].append(myBeam.fit.slist)
+          mode[i].append(myBeam.prm.ifmode)
+          if('velocity' in params): vel[i].append(myBeam.fit.v)
+          if('power' in params): pow[i].append(myBeam.fit.p_l)
+          if('width' in params): wid[i].append(myBeam.fit.w_l)
+          if('elevation' in params): elev[i].append(myBeam.fit.elv)
+          if('phi0' in params): phi0[i].append(myBeam.fit.phi0)
+          gsflg[i].append(myBeam.fit.gflg)
       
     myBeam = radDataReadRec(myFile)
-    
-  
-  #get/create a figure
-  if show:
-    rtiFig = plot.figure(figsize=(11,8.5))
-  else:
-    rtiFig = Figure(figsize=(14,14))
 
-  #give the plot a title
-  rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
-  #plot the noise bar
-  plotNoise(rtiFig,times,nsky,nsch)
-  #plot the frequency bar
-  plotFreq(rtiFig,times,freq,nave)
-  #plot the cpid bar
-  plotCpid(rtiFig,times,cpid,mode)
-  
-  #plot each of the parameter panels
-  figtop = .77
-  figheight = .72/len(params)
-  for p in range(len(params)):
-    if(params[p] == 'velocity'): pArr = vel
-    elif(params[p] == 'power'): pArr = pow
-    elif(params[p] == 'width'): pArr = wid
-    elif(params[p] == 'elevation'): pArr = elev
-    elif(params[p] == 'phi0'): pArr = phi0
-    pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
-    
-    #draw the axis
-    ax = drawAxes(rtiFig,times,rad,cpid,bmnum,nrang,frang,rsep,p==len(params)-1,yrng=yrng,coords=coords,\
-                  pos=pos)
+  for i in range(len(tbands)):
+    if not freq[i]:
+      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+      return None
 
-    
-    if(pArr == []): continue
-    
-    rmax = max(nrang)
-    data=numpy.zeros((len(times)*2,rmax))+100000
-    if gsct: gsdata=numpy.zeros((len(times)*2,rmax))+100000
-    x=numpy.zeros(len(times)*2)
-    tcnt = 0
-    #x = matplotlib.dates.date2num(times)
-    for i in range(len(times)):
-      x[tcnt]=matplotlib.dates.date2num(times[i])
-      if(i < len(times)-1):
-        if(matplotlib.dates.date2num(times[i+1])-x[tcnt] > 4./1440.):
-          tcnt += 1
-          x[tcnt] = x[tcnt-1]+1./1440.
-      tcnt += 1
-          
-      if(pArr[i] == []): continue
-      
-      if slist[i] != None:
-        for j in range(len(slist[i])):
-          if(not gsct or gsflg[i][j] == 0):
-            data[tcnt][slist[i][j]] = pArr[i][j]
-          elif gsct and gsflg[i][j] == 1:
-            data[tcnt][slist[i][j]] = -100000.
+  for fplot in range(len(tbands)):
+    #Check to ensure that data exists for the requested frequency band else
+    #continue on to the next range of frequencies
+    if not freq[i]:
+      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+      rtiFig=None	#Need this line in case no data is plotted
+      continue
 
-        
-    if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
-    elif(coords == 'rng'): y = numpy.linspace(frang[0],rmax*rsep[0],rmax+1)
+    #get/create a figure
+    if show:
+      rtiFig = plot.figure(figsize=(11,8.5))
     else:
-      site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[0])
-      myFov = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[0],coords=coords)
-      y =  myFov.latFull[bmnum]
+      rtiFig = Figure(figsize=(14,14))
+  
+    #give the plot a title
+    rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
+    #plot the noise bar
+    plotNoise(rtiFig,times[fplot],nsky[fplot],nsch[fplot])
+    #plot the frequency bar
+    plotFreq(rtiFig,times[fplot],freq[fplot],nave[fplot])
+    #plot the cpid bar
+    plotCpid(rtiFig,times[fplot],cpid[fplot],mode[fplot])
+    
+    #plot each of the parameter panels
+    figtop = .77
+    figheight = .72/len(params)
+    for p in range(len(params)):
+      if(params[p] == 'velocity'): pArr = vel[fplot]
+      elif(params[p] == 'power'): pArr = pow[fplot]
+      elif(params[p] == 'width'): pArr = wid[fplot]
+      elif(params[p] == 'elevation'): pArr = elev[fplot]
+      elif(params[p] == 'phi0'): pArr = phi0[fplot]
+      pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
       
-    X, Y = numpy.meshgrid(x[:tcnt], y)
-    
-    cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
-    
-    pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
-
-    cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
-    
-    l = []
-    #define the colorbar labels
-    for i in range(0,len(bounds)):
-      if(params[p] == 'phi0'):
-        ln = 4
-        if(bounds[i] == 0): ln = 3
-        elif(bounds[i] < 0): ln = 5
-        l.append(str(bounds[i])[:ln])
-        continue
-      if((i == 0 and params[p] == 'velocity') or i == len(bounds)-1):
-        l.append(' ')
-        continue
-      l.append(str(int(bounds[i])))
-    cb.ax.set_yticklabels(l)
+      #draw the axis
+      ax = drawAxes(rtiFig,times[fplot],rad,cpid[fplot],bmnum,nrang[fplot],frang[fplot],rsep[fplot],p==len(params)-1,yrng=yrng,coords=coords,\
+                    pos=pos)
+  
       
-    #set colorbar ticklabel size
-    for t in cb.ax.get_yticklabels():
-      t.set_fontsize(9)
-    
-    #set colorbar label
-    if(params[p] == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
-    if(params[p] == 'grid'): cb.set_label('Velocity [m/s]',size=10)
-    if(params[p] == 'power'): cb.set_label('Power [dB]',size=10)
-    if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
-    if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
-    if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
+      if(pArr == []): continue
+      
+      rmax = max(nrang[fplot])
+      data=numpy.zeros((len(times[fplot])*2,rmax))+100000
+      if gsct: gsdata=numpy.zeros((len(times[fplot])*2,rmax))+100000
+      x=numpy.zeros(len(times[fplot])*2)
+      tcnt = 0
 
-  #handle the outputs
-  if png == True:
-    if not show:
-      canvas = FigureCanvasAgg(rtiFig)
-    rtiFig.savefig(sTime.strftime("%Y%m%d")+'.png',dpi=dpi)
-  if pdf:
-    if not show:
-      canvas = FigureCanvasAgg(rtiFig)
-    rtiFig.savefig(sTime.strftime("%Y%m%d")+'.pdf')
-  if show:
-    rtiFig.show()
+      for i in range(len(times[fplot])):
+        x[tcnt]=matplotlib.dates.date2num(times[fplot][i])
+        if(i < len(times[fplot])-1):
+          if(matplotlib.dates.date2num(times[fplot][i+1])-x[tcnt] > 4./1440.):
+            tcnt += 1
+            x[tcnt] = x[tcnt-1]+1./1440.
+        tcnt += 1
+            
+        if(pArr[i] == []): continue
+        
+        if slist[fplot][i] != None:
+          for j in range(len(slist[fplot][i])):
+            if(not gsct or gsflg[fplot][i][j] == 0):
+              data[tcnt][slist[fplot][i][j]] = pArr[i][j]
+            elif gsct and gsflg[fplot][i][j] == 1:
+              data[tcnt][slist[fplot][i][j]] = -100000.
+  
+          
+      if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
+      elif(coords == 'rng'): y = numpy.linspace(frang[fplot][0],rmax*rsep[fplot][0],rmax+1)
+      else:
+        site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[fplot][0])
+        myFov = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[fplot][0],coords=coords)
+        y =  myFov.latFull[bmnum]
+        
+      X, Y = numpy.meshgrid(x[:tcnt], y)
+      
+      cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
+      
+      pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
+  
+      cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
+      
+      l = []
+      #define the colorbar labels
+      for i in range(0,len(bounds)):
+        if(params[p] == 'phi0'):
+          ln = 4
+          if(bounds[i] == 0): ln = 3
+          elif(bounds[i] < 0): ln = 5
+          l.append(str(bounds[i])[:ln])
+          continue
+        if((i == 0 and params[p] == 'velocity') or i == len(bounds)-1):
+          l.append(' ')
+          continue
+        l.append(str(int(bounds[i])))
+      cb.ax.set_yticklabels(l)
+        
+      #set colorbar ticklabel size
+      for t in cb.ax.get_yticklabels():
+        t.set_fontsize(9)
+      
+      #set colorbar label
+      if(params[p] == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
+      if(params[p] == 'grid'): cb.set_label('Velocity [m/s]',size=10)
+      if(params[p] == 'power'): cb.set_label('Power [dB]',size=10)
+      if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
+      if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
+      if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
+  
+    #handle the outputs
+    if png == True:
+      if not show:
+        canvas = FigureCanvasAgg(rtiFig)
+      rtiFig.savefig(sTime.strftime("%Y%m%d")+'_'+str(tbands[fplot][0])+'_'+str(tbands[fplot][1])+'.'+rad+'.png',dpi=dpi)
+    if pdf:
+      if not show:
+        canvas = FigureCanvasAgg(rtiFig)
+      rtiFig.savefig(sTime.strftime("%Y%m%d")+'_'+str(tbands[fplot][0])+'_'+str(tbands[fplot][1])+'.'+rad+'.pdf')
+    if show:
+      rtiFig.show()
+      
+    print 'plotting took:',datetime.datetime.now()-t1
+    #end of plotting for loop
     
-  print 'plotting took:',datetime.datetime.now()-t1
   if retfig:
     return rtiFig
   
@@ -592,13 +653,14 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
   ax = myFig.add_axes(pos)
   ax.yaxis.tick_left()
   ax.yaxis.set_tick_params(direction='out')
-  ax.set_ylim(bottom=10,top=16)
+  #ax.set_ylim(bottom=10,top=16)
+  ax.set_ylim(bottom=8,top=20)
   ax.yaxis.set_minor_locator(MultipleLocator())
   ax.yaxis.set_tick_params(direction='out',which='minor')
   
-  for f in freq:
-    if(f > 16): f = 16
-    if(f < 10): f = 10
+  #for f in freq:
+    #if(f > 16): f = 16
+    #if(f < 10): f = 10
     
   ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
   tz=None, xdate=True, ydate=False,markersize=2)
@@ -620,8 +682,8 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
   
-  myFig.text(pos[0]-.01,pos[1],'10',ha='right',va='bottom',size=8)
-  myFig.text(pos[0]-.01,pos[1]+pos[3]-.003,'16',ha='right',va='top',size=8)
+  myFig.text(pos[0]-.01,pos[1]+.005,'10',ha='right',va='bottom',size=8)
+  myFig.text(pos[0]-.01,pos[1]+pos[3]-.015,'16',ha='right',va='top',size=8)
   myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
   myFig.text(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
   l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
