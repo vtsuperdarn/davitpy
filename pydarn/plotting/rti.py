@@ -135,18 +135,24 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
   #open the file
   if not myFile:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
-                          fileName=fileName,custType=custType)
+    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
 
   #check that we have data available
   if not myFile:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
+  else:
+    if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
+      myFile.sTime=sTime
+      myFile.eTime=eTime
+    else:
+      print 'error, no data available for the requested time'
+      return None
+
   myBeam = radDataReadRec(myFile)
   if not myBeam:
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
-
 
   #initialize empty lists
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
