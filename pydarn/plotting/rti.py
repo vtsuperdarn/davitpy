@@ -51,7 +51,7 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex', \
-              tFreqBands=[]):
+	      tFreqBands=[],myFile=None):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -134,18 +134,16 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   if eTime == None: eTime = sTime+datetime.timedelta(days=1)
     
   #open the file
-  if fileName == None:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
-  else:
+  if not myFile:
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
                           fileName=fileName,custType=custType)
 
   #check that we have data available
-  if myFile == None:
+  if not myFile:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
   myBeam = radDataReadRec(myFile)
-  if myBeam == None:
+  if not myBeam:
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
 
