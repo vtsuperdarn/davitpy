@@ -112,7 +112,6 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
-  assert(sTime<eTime),"eTime must be greater than sTime!" 
 
   #assign any default color scales
   tscales = []
@@ -130,10 +129,15 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   tbands = []
   if tFreqBands == []: tbands.append([8000,20000])
   else: 
-    for i in range(len(tFreqBands)): tbands.append(tFreqBands[i])
-      
+    for band in tFreqBands: 
+      #make sure that starting frequncy is less than the ending frequency for each band
+      assert(band[0] < band[1]),"Starting frequency must be less than ending frequency!"
+      tbands.append(band)
+
+
   if eTime == None: eTime = sTime+datetime.timedelta(days=1)
-    
+  assert(sTime<eTime),"eTime must be greater than sTime!" 
+   
   #open the file if a pointer was not given to us
   #if fileName is specified then it will be read
   if not myFile:
