@@ -77,6 +77,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
     * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
     * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
+    * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -111,7 +112,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
-  
+  assert(sTime<eTime),"eTime must be greater than sTime!" 
 
   #assign any default color scales
   tscales = []
@@ -133,22 +134,27 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       
   if eTime == None: eTime = sTime+datetime.timedelta(days=1)
     
-  #open the file
+  #open the file if a pointer was not given to us
+  #if fileName is specified then it will be read
   if not myFile:
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
 
-  #check that we have data available
+  #check that we have data available now that we may have tried
+  #to read it using radDataOpen
   if not myFile:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
   else:
+    #make sure that we will only plot data for the time range specified by sTime and eTime
     if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
       myFile.sTime=sTime
       myFile.eTime=eTime
     else:
+      #if the times range is not covered by the file, throw an error
       print 'error, no data available for the requested time'
       return None
 
+  #Finally we can start reading the data file
   myBeam = radDataReadRec(myFile)
   if not myBeam:
     print 'error, no data available for the requested time/radar/filetype combination'
