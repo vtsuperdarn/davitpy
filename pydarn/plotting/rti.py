@@ -142,12 +142,6 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   #if fileName is specified then it will be read
   if not myFile:
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
-
-  #check that we have data available now that we may have tried
-  #to read it using radDataOpen
-  if not myFile:
-    print 'error, no files available for the requested time/radar/filetype combination'
-    return None
   else:
     #make sure that we will only plot data for the time range specified by sTime and eTime
     if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
@@ -157,6 +151,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       #if the times range is not covered by the file, throw an error
       print 'error, no data available for the requested time'
       return None
+
+
+  #check that we have data available now that we may have tried
+  #to read it using radDataOpen
+  if not myFile:
+    print 'error, no files available for the requested time/radar/filetype combination'
+    return None
 
   #Finally we can start reading the data file
   myBeam = radDataReadRec(myFile)
