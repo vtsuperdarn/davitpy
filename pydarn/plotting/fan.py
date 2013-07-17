@@ -89,6 +89,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
       pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBand=[[10000,11000],[]])
 
   Written by AJ 20121004
+  Modified by Matt W. 20130717
   """
 
   
