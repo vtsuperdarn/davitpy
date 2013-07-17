@@ -136,7 +136,6 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   #open the data files
   myFiles = []
   myBands = []
-  #for r in rad:
   for i in range(len(rad)):
     f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
     if(f != None): 
@@ -152,7 +151,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   sites,fovs,oldCpids,lonFull,latFull=[],[],[],[],[]
   #go through all open files
   for i in range(len(myFiles)):
-    #read until we reach start time and freq in band
+    #read until we reach start time
     allBeams[i] = radDataReadRec(myFiles[i])
     while (allBeams[i].time < sTime and allBeams[i] != None):
       allBeams[i] = radDataReadRec(myFiles[i])
@@ -265,15 +264,17 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     ft = allBeams[i].fType
     #until we reach the end of the time window
     while(allBeams[i] != None and allBeams[i].time < bndTime):
+      #filter on frequency
       if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]: 
         scans.append(allBeams[i])
       #read the next record
       allBeams[i] = radDataReadRec(myFiles[i])
+    #if there is no data in scans, overlayFan will object
     if scans == []: continue
     intensities, pcoll = overlayFan(scans,myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
 
                                       
-                                      
+  #if no data has been found pcoll will not have been set, and the following code will object                                   
   if pcoll: 
     cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
     
@@ -311,6 +312,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   tx2 = myFig.text(bbox.x1+.02,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
         bndTime.strftime('%H:%M      '),ha='right',size=13,weight=550)
   tx3 = myFig.text(bbox.x0,bbox.y1+.02,'['+ft+']',ha='left',size=13,weight=550)
+  #label with frequency bands
   tx4 = myFig.text(bbox.x1+.02,bbox.y1,'Frequency filters:',ha='right',size=8,weight=550)
   for i in range(len(rad)):
     myFig.text(bbox.x1+.02,bbox.y1-((i+1)*.015),rad[i]+': '+\
