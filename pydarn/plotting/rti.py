@@ -51,7 +51,7 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex', \
-              tFreqBands=[]):
+	      tFreqBands=[],myFile=None):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -77,6 +77,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
     * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
     * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
+    * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -111,7 +112,6 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
-  
 
   #assign any default color scales
   tscales = []
@@ -129,26 +129,41 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   tbands = []
   if tFreqBands == []: tbands.append([8000,20000])
   else: 
-    for i in range(len(tFreqBands)): tbands.append(tFreqBands[i])
-      
-  if eTime == None: eTime = sTime+datetime.timedelta(days=1)
-    
-  #open the file
-  if fileName == None:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered)
-  else:
-    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,filtered=filtered, 
-                          fileName=fileName,custType=custType)
+    for band in tFreqBands: 
+      #make sure that starting frequncy is less than the ending frequency for each band
+      assert(band[0] < band[1]),"Starting frequency must be less than ending frequency!"
+      tbands.append(band)
 
-  #check that we have data available
-  if myFile == None:
+
+  if eTime == None: eTime = sTime+datetime.timedelta(days=1)
+  assert(sTime<eTime),"eTime must be greater than sTime!" 
+   
+  #open the file if a pointer was not given to us
+  #if fileName is specified then it will be read
+  if not myFile:
+    myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
+  else:
+    #make sure that we will only plot data for the time range specified by sTime and eTime
+    if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
+      myFile.sTime=sTime
+      myFile.eTime=eTime
+    else:
+      #if the times range is not covered by the file, throw an error
+      print 'error, no data available for the requested time'
+      return None
+
+
+  #check that we have data available now that we may have tried
+  #to read it using radDataOpen
+  if not myFile:
     print 'error, no files available for the requested time/radar/filetype combination'
     return None
+
+  #Finally we can start reading the data file
   myBeam = radDataReadRec(myFile)
-  if myBeam == None:
+  if not myBeam:
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
-
 
   #initialize empty lists
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
@@ -204,6 +219,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       return None
 
   for fplot in range(len(tbands)):
+    #Check to ensure that data exists for the requested frequency band else
+    #continue on to the next range of frequencies
+    if not freq[i]:
+      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+      rtiFig=None	#Need this line in case no data is plotted
+      continue
+
     #get/create a figure
     if show:
       rtiFig = plot.figure(figsize=(11,8.5))
@@ -242,7 +264,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       if gsct: gsdata=numpy.zeros((len(times[fplot])*2,rmax))+100000
       x=numpy.zeros(len(times[fplot])*2)
       tcnt = 0
-      #x = matplotlib.dates.date2num(times)
+
       for i in range(len(times[fplot])):
         x[tcnt]=matplotlib.dates.date2num(times[fplot][i])
         if(i < len(times[fplot])-1):
