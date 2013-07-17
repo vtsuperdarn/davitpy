@@ -45,7 +45,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     scale=[],channel='a',coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
     velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
     poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False, \
-    show=True,png=False,pdf=False,dpi=500):
+    show=True,png=False,pdf=False,dpi=500,tFreqBands=[]):
 
   """A function to make a fan plot
   
@@ -77,6 +77,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow
     * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
     * **[dpi]** (int): dots per inch if saving as png.  default = 300
+    * **[tFreqBands]** (list): upper and lower bounds of frequency in kHz to be used.  Must be unset (or set to []) or have a pair for each radar, and for any band set to [] the default will be used.  default = [[8000,20000]], [[8000,20000],[8000,20000]], etc.
   **Returns**:
     * Nothing
 
@@ -85,6 +86,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     
       import datetime as dt
       pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
+      pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBand=[[10000,11000],[]])
 
   Written by AJ 20121004
   """
@@ -108,6 +110,16 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   'error, if present, scales must have 2 elements'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
   
+  #check freq band and set to default if needed
+  assert(tFreqBands == [] or len(tFreqBands) == len(rad)),'error, if present, tFreqBands must have same number of elements as rad'
+  tbands = []
+  for i in range(len(rad)):
+    if tFreqBands == [] or tFreqBands[i] == []: tbands.append([8000,20000])
+    else: tbands.append(tFreqBands[i])
+
+  for i in range(len(tbands)):
+    assert(tbands[i][1] > tbands[i][0]),'error, frequency upper bound must be > lower bound'
+
   if(scale == []):
     if(param == 'velocity'): scale=[-200,200]
     elif(param == 'power'): scale=[0,30]
@@ -122,9 +134,14 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   
   #open the data files
   myFiles = []
-  for r in rad:
-    f = radDataOpen(sTime,r,sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
-    if(f != None): myFiles.append(f)
+  myBands = []
+  #for r in rad:
+  for i in range(len(rad)):
+    f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
+    if(f != None): 
+      myFiles.append(f)
+      myBands.append(tbands[i])
+
 
   assert(myFiles != []),'error, no data available for this period'
 
@@ -134,16 +151,17 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   sites,fovs,oldCpids,lonFull,latFull=[],[],[],[],[]
   #go through all open files
   for i in range(len(myFiles)):
-    #read until we reach start time
+    #read until we reach start time and freq in band
     allBeams[i] = radDataReadRec(myFiles[i])
-    while(allBeams[i].time < sTime and allBeams[i] != None):
+    while (allBeams[i].time < sTime and allBeams[i] != None):
       allBeams[i] = radDataReadRec(myFiles[i])
-      
+
     #check that the file has data in the target interval
     if(allBeams[i] == None): 
       myFiles[i].close()
       myFiles[i] = None
       continue
+
   
     #get to field of view coords in order to determine map limits
     t=allBeams[i].time
@@ -238,55 +256,65 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   
   ft = 'None'
   #go though all files
+  pcoll = None
   for i in range(len(myFiles)):
-    scans = [[] for j in range(len(myFiles))]
+    scans = []
     #check that we have good data at this time
     if(myFiles[i] == None or allBeams[i] == None): continue
     ft = allBeams[i].fType
     #until we reach the end of the time window
     while(allBeams[i] != None and allBeams[i].time < bndTime):
-      scans[i].append(allBeams[i])
+      if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]: 
+        scans.append(allBeams[i])
       #read the next record
       allBeams[i] = radDataReadRec(myFiles[i])
-    intensities, pcoll = overlayFan(scans[i],myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
+    if scans == []: continue
+    intensities, pcoll = overlayFan(scans,myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
+
                                       
                                       
-  cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
-  
-  l = []
-  #define the colorbar labels
-  for i in range(0,len(bounds)):
-    if(param == 'phi0'):
-      ln = 4
-      if(bounds[i] == 0): ln = 3
-      elif(bounds[i] < 0): ln = 5
-      l.append(str(bounds[i])[:ln])
-      continue
-    if((i == 0 and param == 'velocity') or i == len(bounds)-1):
-      l.append(' ')
-      continue
-    l.append(str(int(bounds[i])))
-  cbar.ax.set_yticklabels(l)
-  cbar.ax.tick_params(axis='y',direction='out')
-  #set colorbar ticklabel size
-  for ti in cbar.ax.get_yticklabels():
-    ti.set_fontsize(12)
-  if(param == 'velocity'): 
-    cbar.set_label('Velocity [m/s]',size=14)
-    cbar.extend='max'
+  if pcoll: 
+    cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
     
-  if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=14)
-  if(param == 'power'): cbar.set_label('Power [dB]',size=14)
-  if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=14)
-  if(param == 'elevation'): cbar.set_label('Elev [deg]',size=14)
-  if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=14)
+    l = []
+    #define the colorbar labels
+    for i in range(0,len(bounds)):
+      if(param == 'phi0'):
+        ln = 4
+        if(bounds[i] == 0): ln = 3
+        elif(bounds[i] < 0): ln = 5
+        l.append(str(bounds[i])[:ln])
+        continue
+      if((i == 0 and param == 'velocity') or i == len(bounds)-1):
+        l.append(' ')
+        continue
+      l.append(str(int(bounds[i])))
+    cbar.ax.set_yticklabels(l)
+    cbar.ax.tick_params(axis='y',direction='out')
+    #set colorbar ticklabel size
+    for ti in cbar.ax.get_yticklabels():
+      ti.set_fontsize(12)
+    if(param == 'velocity'): 
+      cbar.set_label('Velocity [m/s]',size=14)
+      cbar.extend='max'
+      
+    if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=14)
+    if(param == 'power'): cbar.set_label('Power [dB]',size=14)
+    if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=14)
+    if(param == 'elevation'): cbar.set_label('Elev [deg]',size=14)
+    if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=14)
   
   #myFig.gca().set_rasterized(True)
   #label the plot
   tx1 = myFig.text((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%Y/%m/%d'),ha='center',size=14,weight=550)
-  tx2 = myFig.text(bbox.x1,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
+  tx2 = myFig.text(bbox.x1+.02,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
         bndTime.strftime('%H:%M      '),ha='right',size=13,weight=550)
   tx3 = myFig.text(bbox.x0,bbox.y1+.02,'['+ft+']',ha='left',size=13,weight=550)
+  tx4 = myFig.text(bbox.x1+.02,bbox.y1,'Frequency filters:',ha='right',size=8,weight=550)
+  for i in range(len(rad)):
+    myFig.text(bbox.x1+.02,bbox.y1-((i+1)*.015),rad[i]+': '+\
+        str(tbands[i][0]/1e3)+' - '+str(tbands[i][1]/1e3)+\
+        ' MHz',ha='right',size=8,weight=550)
   
   if(overlayPoes):
     pcols = gme.sat.poes.overlayPoesTed(myMap, myFig.gca(), cTime, param=poesparam, scMin=poesMin, scMax=poesMax)
