@@ -1,7 +1,3 @@
-# Modified version by MRW
-# Copyright???????????????????????????
-
-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -19,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: rti2
+.. module:: rti
    :synopsis: A module for generating rti plots
 
 .. moduleauthor:: AJ, 20130123
