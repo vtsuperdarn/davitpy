@@ -1,7 +1,3 @@
-# Modified version by MRW
-# Copyright???????????????????????????
-
-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -19,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: rti2
+.. module:: rti
    :synopsis: A module for generating rti plots
 
 .. moduleauthor:: AJ, 20130123
@@ -51,7 +47,7 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex', \
-              tFreqBands=[],myFile=None):
+         tFreqBands=[],myFile=None):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -142,12 +138,6 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   #if fileName is specified then it will be read
   if not myFile:
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
-
-  #check that we have data available now that we may have tried
-  #to read it using radDataOpen
-  if not myFile:
-    print 'error, no files available for the requested time/radar/filetype combination'
-    return None
   else:
     #make sure that we will only plot data for the time range specified by sTime and eTime
     if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
@@ -157,6 +147,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       #if the times range is not covered by the file, throw an error
       print 'error, no data available for the requested time'
       return None
+
+
+  #check that we have data available now that we may have tried
+  #to read it using radDataOpen
+  if not myFile:
+    print 'error, no files available for the requested time/radar/filetype combination'
+    return None
 
   #Finally we can start reading the data file
   myBeam = radDataReadRec(myFile)
@@ -212,16 +209,11 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       
     myBeam = radDataReadRec(myFile)
 
-  for i in range(len(tbands)):
-    if not freq[i]:
-      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
-      return None
-
   for fplot in range(len(tbands)):
     #Check to ensure that data exists for the requested frequency band else
     #continue on to the next range of frequencies
-    if not freq[i]:
-      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+    if not freq[fplot]:
+      print 'error, no data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz'
       rtiFig=None	#Need this line in case no data is plotted
       continue
 
