@@ -213,16 +213,16 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       
     myBeam = radDataReadRec(myFile)
 
-  for i in range(len(tbands)):
-    if not freq[i]:
-      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
-      return None
+  #for i in range(len(tbands)):
+    #if not freq[i]:
+      #print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+      #return None
 
   for fplot in range(len(tbands)):
     #Check to ensure that data exists for the requested frequency band else
     #continue on to the next range of frequencies
-    if not freq[i]:
-      print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
+    if not freq[fplot]:
+      print 'error, no data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz'
       rtiFig=None	#Need this line in case no data is plotted
       continue
 
