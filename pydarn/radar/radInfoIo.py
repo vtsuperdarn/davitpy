@@ -166,16 +166,16 @@ def hdwRead(fname, path=None):
 
 # *************************************************************
 class updateRadars(object):
-    """update local radar.sqlite from remote db database. Currently, the remote 
-    database is housed on the VT servers.
+    """update local radar.sqlite from remote db database, or from local files if the database cannot be reached. 
+    Currently, the remote database is housed on the VT servers.
     
     **Members**: 
         * **sql_path** (str): path to sqlite file
         * **sql_file** (str): sqlite file name
     **Methods**:
-        * :func:`sqlInit`
-        * :func:`sqlUpdate`
-        * :func:`dbConnect`
+        * :func:`updateRadars.sqlInit`
+        * :func:`updateRadars.sqlUpdate`
+        * :func:`updateRadars.dbConnect`
 
     **Example**:
         ::
