@@ -11,8 +11,8 @@ https://github.com/vtsuperdarn/davitpy/wiki
 * Project documentation
 http://davit.ece.vt.edu/davitpy/
 
-* Project Trello (ToDos)
-https://trello.com/b/djb82luC
+* Project Milestones
+https://github.com/vtsuperdarn/davitpy/issues/milestones
 
 If you get a Bus Error when using radDataRead() and/or radDataReadRec() functions, you probably have to recompile the dmapio library on your local computer.  This can be done by going to davitpy/pydarn/dmapio and typing 'make clean' followed by 'make'.
 
