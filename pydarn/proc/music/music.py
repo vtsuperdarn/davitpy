@@ -236,7 +236,7 @@ class musicArray(object):
     #Set the new data active.
     self.originalFit.setActive()
 
-def beam_interpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
+def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
   """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
   rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
 
@@ -279,11 +279,11 @@ def beam_interpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated
   dataObj.beamInterpolated.data = interpArr
   dataObj.beamInterpolated.setActive()
 
-def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamLimits=None,timeLimits=None):
+def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamLimits=None,timeLimits=None):
   """Sets the range, gate, beam, and time limits for the chosen data set. This method only changes metadata;
   it does not create a new data set or alter the data in any way.  If you specify rangeLimits, they will be changed to correspond
   with the center value of the range cell.  Gate limits always override range limits.
-  Use the apply_limits() method to remove data outside of the data limits.
+  Use the applyLimits() method to remove data outside of the data limits.
 
   :param dataObj: vtMUSIC object
   :param dataSet: which dataSet in the vtMUSIC object to process
@@ -317,7 +317,7 @@ def define_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beam
   except:
     print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
 
-def apply_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
+def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
   """Removes data outside of the rangeLimits and gateLimits boundaries.
 
   :param dataObj: vtMUSIC object
@@ -413,3 +413,12 @@ def apply_limits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDa
     if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
     print 'Warning! Limits not applied.'
     return None
+
+#def determine_relative_position(dataObj,dataSet='active'):
+#  currentData = getattr(dataObj,dataSet)
+#  ctrBeamInx  = len(currentData.fov.beams)/2
+#  ctrGateInx  = len(currentData.fov.gates)/2
+#
+#  
+#  #Determine center beam.
+#  import ipdb; ipdb.set_trace()
