@@ -431,7 +431,6 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0):
 
     return [numpy.degrees(lat2),numpy.degrees(lon2)]
 
-
 # *************************************************************
 def greatCircleAzm(lat1,lon1,lat2,lon2):
     """Calculates the azimuth from the coordinates of a start point to and end point
@@ -445,16 +444,15 @@ def greatCircleAzm(lat1,lon1,lat2,lon2):
     **Returns**:
         * **azm**:   azimuth [deg]
     """
-    
-    import numpy
-    lat1,lon1,lat2,lon2 = numpy.radians(lat1),numpy.radians(lon1),numpy.radians(lat2),numpy.radians(lon2)
-    
-    y = numpy.sin(lon2-lon1) * numpy.cos(lat2)
-    x = numpy.cos(lat1)*numpy.sin(lat2) - numpy.sin(lat1)*numpy.cos(lat2)*numpy.cos(lon2-lon1)
-    
-    azm = numpy.arctan2(y,x)
 
-    return numpy.degrees(azm)
+    from numpy import sin, cos, arctan2, degrees, radians
+    lat1,lon1,lat2,lon2 = radians(lat1),radians(lon1),radians(lat2),radians(lon2)
+    dlon  = lon2-lon1
+    y     = sin(dlon)*cos(lat2)
+    x     = cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(dlon)
+    azm   = degrees(arctan2(y,x))
+
+    return azm
 
 
 # *************************************************************
@@ -467,11 +465,15 @@ def greatCircleDist(lat1,lon1,lat2,lon2):
         * **lat2**:  latitude [deg]
         * **lon2**:  longitude [deg]
     **Returns**:
-        * **dist**:  distance [radians]
+        * **radDist**:  distance [radians]
     """
-    import numpy
-    from numpy import cos, sin, arccos, radians
+    from numpy import cos, sin, arctan2, radians, sqrt
 
     lat1,lon1,lat2,lon2 = radians(lat1),radians(lon1),radians(lat2),radians(lon2)
-    
-    return arccos( sin(lat1)*sin(lat2) + cos(lon1)*cos(lon2)*cos(abs(lat2-lat1)) )
+
+    dlat = lat2-lat1
+    dlon = lon2-lon1
+    a    = sin(dlat/2.)*sin(dlat/2.)+cos(lat1)*cos(lat2)*sin(dlon/2.)*sin(dlon/2.)
+    radDist = 2.*arctan2(sqrt(a),sqrt(1.-a))
+
+    return radDist
