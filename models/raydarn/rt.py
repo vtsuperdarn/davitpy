@@ -39,8 +39,13 @@ class RtRun(object):
         * [**fext**] (str): output file id, max 10 character long (mostly used for multiple users environments, like a website)
         * [**loadFrom**] (str): file name where a pickled instance of RtRun was saved (supersedes all other args)
         * [**nprocs**] (int): number of processes to use with MPI
-    **Returns**:
-        * **RtRun** (:class:`RtRun`)
+    **Methods**:
+        * :func:`RtRun.readRays`
+        * :func:`RtRun.readEdens`
+        * :func:`RtRun.readScatter`
+        * :func:`RtRun.save`
+        * :func:`RtRun.load`
+
     **Example**:
         ::
 
@@ -322,6 +327,9 @@ class Edens(object):
         * [**site**] (:class:`pydarn.radar.site): radar site object
         * [**radar**] (:class:`pydarn.radar.radar): radar object
         * [**debug**] (bool): verbose mode
+    **Methods**:
+        * :func:`Edens.readEdens`
+        * :func:`Edens.plot`
     """
     def __init__(self, readFrom, 
         site=None, radar=None, 
@@ -470,6 +478,10 @@ class Scatter(object):
         * **readGSFrom** (str): gscat.dat file to read the ground scatter from
         * [**site**] (:class:`pydarn.radar.site): radar site object
         * [**debug**] (bool): verbose mode
+    **Methods**:
+        * :func:`Scatter.readGS`
+        * :func:`Scatter.readIS`
+        * :func:`Scatter.plot`
     """
     def __init__(self, readGSFrom=None, readISFrom=None, 
         site=None, radar=None, 
@@ -718,6 +730,10 @@ class Rays(object):
         * [**radar**] (:class:`pydarn.radar.radar): radar object
         * [**saveToAscii**] (str): file name where to output ray positions
         * [**debug**] (bool): verbose mode
+    **Methods**:
+        * :func:`Rays.readRays`
+        * :func:`Rays.writeToAscii`
+        * :func:`Rays.plot`
     """
     def __init__(self, readFrom, 
         site=None, radar=None, 

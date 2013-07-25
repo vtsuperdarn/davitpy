@@ -52,7 +52,7 @@ class mapObj(basemap.Basemap):
     projection='stere', resolution='c', dateTime=None, 
     lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
-    grid=True, gridLabels=True, **kwargs):
+    grid=True, gridLabels=True, showCoords=True, **kwargs):
     """Create empty map 
     
     **Args**:    
@@ -64,6 +64,7 @@ class mapObj(basemap.Basemap):
       * **[fill_continents]**: continent color. Default is 'grey'    
       * **[fill_water]**: water color. Default is 'None'    
       * **[coords]**: 'geo'
+      * **[showCoords]**: display coordinate system name in upper right corner
       * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
     **Returns**:
@@ -117,8 +118,9 @@ class mapObj(basemap.Basemap):
       _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
     # Add coordinate spec
-    _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
-        rotation=-90., va='top', fontsize=8)
+    if showCoords:
+      _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
+          rotation=-90., va='top', fontsize=8)
 
     # draw parallels and meridians.
     if grid:
