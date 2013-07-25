@@ -4,6 +4,8 @@ import copy
 
 import pydarn
 
+Re = 6378   #Earth radius
+
 options = {}
 options['timeStep']       = 2.          #;timeStep between scans in Minutes.
 options['param']          = 'power'
@@ -414,11 +416,28 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDat
     print 'Warning! Limits not applied.'
     return None
 
-#def determine_relative_position(dataObj,dataSet='active'):
-#  currentData = getattr(dataObj,dataSet)
-#  ctrBeamInx  = len(currentData.fov.beams)/2
-#  ctrGateInx  = len(currentData.fov.gates)/2
-#
-#  
-#  #Determine center beam.
-#  import ipdb; ipdb.set_trace()
+def determine_relative_position(dataObj,dataSet='active'):
+  import utils
+
+  currentData = getattr(dataObj,dataSet)
+  ctrBeamInx  = len(currentData.fov.beams)/2
+  ctrGateInx  = len(currentData.fov.gates)/2
+  
+  currentData.fov.relative_centerInx = [ctrBeamInx, ctrGateInx]
+  currentData.fov.relative_azm   = np.zeros_like(currentData.fov.latCenter)
+  currentData.fov.relative_x     = np.zeros_like(currentData.fov.latCenter)   
+  currentData.fov.relative_y     = np.zeros_like(currentData.fov.latCenter)   
+
+  lat1 = np.zeros_like(currentData.fov.latCenter)   
+  lon1 = np.zeros_like(currentData.fov.latCenter)   
+
+  lat1[:] = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
+  lon1[:] = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
+  lat2    = currentData.fov.latCenter
+  lon2    = currentData.fov.lonCenter
+
+  azm     = utils.greatCircleAzm(lat1,lon1,lat2,lon2)
+  currentData.fov.relative_range = Re*utils.greatCircleDist(lat1,lon1,lat2,lon2)
+
+  #Determine center beam.
+  import ipdb; ipdb.set_trace()

@@ -92,7 +92,7 @@ music.applyLimits(dataObj)
 music.beamInterpolation(dataObj)
 #music.beamInterpolation(dataObj,limits=[15,45],units='gate')
 
-#music.determine_relative_position(dataObj)
+music.determine_relative_position(dataObj)
 
 plt.ioff()
 fig = plt.figure(figsize=figsize)
