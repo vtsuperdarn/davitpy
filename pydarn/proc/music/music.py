@@ -416,28 +416,56 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDat
     print 'Warning! Limits not applied.'
     return None
 
-def determine_relative_position(dataObj,dataSet='active'):
+def determine_relative_position(dataObj,dataSet='active',altitude=250.):
+  """Finds the center cell of the field-of-view of a vtMUSIC data object.
+  The range, azimuth, x-range, and y-range from the center to each cell in the FOV
+  is calculated and saved to the FOV object. The following objects are added to
+  dataObj.dataSet:
+    fov.relative_centerInx: [beam, gate] index of the center cell
+    fov.relative_azm:       Azimuth relative to center cell [deg]
+    fov.relative_range:     Range relative to center cell [km]
+    fov.relative_x:         X-range relative to center cell [km]
+    fov.relative_y:         Y-range relative to center cell [km]
+
+  **Args**:
+      * **dataObj**:  vtMUSIC object
+      * **dataSet**:  name of dataSet to use
+      * **altitude**: altitude added to Re = 6378.1 km [km]
+  **Returns**:
+      * **None**:  None.
+  """
   import utils
 
+  #Get the chosen dataset.
   currentData = getattr(dataObj,dataSet)
+
+  #Determine center beam.
   ctrBeamInx  = len(currentData.fov.beams)/2
   ctrGateInx  = len(currentData.fov.gates)/2
-  
-  currentData.fov.relative_centerInx = [ctrBeamInx, ctrGateInx]
-  currentData.fov.relative_azm   = np.zeros_like(currentData.fov.latCenter)
-  currentData.fov.relative_x     = np.zeros_like(currentData.fov.latCenter)   
-  currentData.fov.relative_y     = np.zeros_like(currentData.fov.latCenter)   
 
+  currentData.fov.relative_centerInx = [ctrBeamInx, ctrGateInx]
+
+  #Set arrays of lat1/lon1 to the center cell value.  Use this to calculate all other positions
+  #with numpy array math.
   lat1 = np.zeros_like(currentData.fov.latCenter)   
   lon1 = np.zeros_like(currentData.fov.latCenter)   
 
   lat1[:] = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
   lon1[:] = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
+
+  #Make lat2/lon2 the center position array of the dataset.
   lat2    = currentData.fov.latCenter
   lon2    = currentData.fov.lonCenter
 
+  #Calculate the azimuth and distance from the centerpoint to the endpoint.
   azm     = utils.greatCircleAzm(lat1,lon1,lat2,lon2)
-  currentData.fov.relative_range = Re*utils.greatCircleDist(lat1,lon1,lat2,lon2)
+  dist    = (Re + altitude)*utils.greatCircleDist(lat1,lon1,lat2,lon2)
 
-  #Determine center beam.
-  import ipdb; ipdb.set_trace()
+  #Save calculated values to the current data object, as well as calculate the
+  #X and Y relatvie positions of each cell.
+  currentData.fov.relative_azm    = azm
+  currentData.fov.relative_range  = dist
+  currentData.fov.relative_x      = dist * np.sin(np.radians(azm)) 
+  currentData.fov.relative_y      = dist * np.cos(np.radians(azm)) 
+
+  return None
