@@ -97,7 +97,9 @@ music.beamInterpolation(dataObj)
 
 music.determine_relative_position(dataObj)
 
-pydarn.plotting.musicPlot.plotRelativeRanges(dataObj)
+
+time = datetime.datetime(2010,11,19,13)
+pydarn.plotting.musicPlot.plotRelativeRanges(dataObj,time=time)
 
 #plt.ioff()
 #fig = plt.figure(figsize=figsize)

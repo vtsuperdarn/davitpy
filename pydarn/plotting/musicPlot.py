@@ -174,19 +174,104 @@ class musicFan(object):
             transform=axis.transAxes)
 #    plt.show()
 
-def plotRelativeRanges(dataObj,dataSet='active'):
-  currentData = getattr(dataObj,dataSet)
+class plotRelativeRanges(object):
+  def __init__(self,dataObj,dataSet='active',time=None):
 
-  from matplotlib.backends.backend_agg import FigureCanvasAgg
-  from matplotlib.figure import Figure
+    currentData = getattr(dataObj,dataSet)
 
-  fig = Figure(figsize=(11,8.5))
-  ax  = fig.add_subplot(111)
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+    import matplotlib
 
-#  musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
-  musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+    fig   = Figure(figsize=(11,8.5))
 
-  outFName = '/data/pymusic/ranges.png'
-  canvas  = FigureCanvasAgg(fig)
-  canvas.print_figure(outFName,format='png',facecolor='white',edgecolor='white')
+    gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
+    axis  = fig.add_subplot(gs[0:2, 1]) 
+    musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis)
 
+    #Determine the color scale for plotting.
+    def myround(x, base=50):
+          return int(base * round(float(x)/base))
+    absmax  = np.max(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
+    rnd     = myround(absmax)
+    scale   = (-rnd, rnd)
+
+    xlabel    = 'Beam'
+    ylabel    = 'Gate'
+    cbarLabel = 'Distance from Center [km]'
+
+    axis   = fig.add_subplot(gs[2,0]) 
+    data    = currentData.fov.relative_y
+    title   = 'N-S Distance from Center'
+    ctrBeamInx  = currentData.fov.relative_centerInx[0]
+    ctrGateInx  = currentData.fov.relative_centerInx[1]
+    ctrBeam     = currentData.fov.beams[ctrBeamInx]
+    ctrGate     = currentData.fov.gates[ctrGateInx]
+    title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
+    rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+
+    axis   = fig.add_subplot(gs[2,1]) 
+    data    = currentData.fov.relative_x
+    title   = 'E-W Distance from Center'
+    ctrBeamInx  = currentData.fov.relative_centerInx[0]
+    ctrGateInx  = currentData.fov.relative_centerInx[1]
+    ctrBeam     = currentData.fov.beams[ctrBeamInx]
+    ctrGate     = currentData.fov.gates[ctrGateInx]
+    title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
+    rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+
+    outFName = '/data/pymusic/ranges.png'
+    canvas  = FigureCanvasAgg(fig)
+    canvas.print_figure(outFName,format='png',facecolor='white',edgecolor='white')
+
+def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param='velocity',scale=None,cbarLabel=None):
+  fig     = axis.get_figure()
+
+  ngates  = len(currentData.fov.gates)
+  nbeams  = len(currentData.fov.beams)
+  verts   = []
+  scan    = []
+
+  for bmInx in range(nbeams):
+    for rgInx in range(ngates):
+      scan.append(data[bmInx,rgInx])
+
+      bm = currentData.fov.beams[bmInx]
+      rg = currentData.fov.gates[rgInx]
+
+      x1,y1 = bm+0, rg+0
+      x2,y2 = bm+1, rg+0
+      x3,y3 = bm+1, rg+1
+      x4,y4 = bm+0, rg+1
+      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+  colors  = 'lasse'
+  if scale == None:
+    scale   = (np.min(scan),np.max(scan))
+
+  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+  pcoll.set_array(np.array(scan))
+  axis.add_collection(pcoll,autolim=False)
+
+  axis.set_xlim(min(currentData.fov.beams), max(currentData.fov.beams)+1)
+  axis.set_ylim(min(currentData.fov.gates), max(currentData.fov.gates)+1)
+
+  if title != None: axis.set_title(title)
+  if xlabel != None: axis.set_xlabel(xlabel)
+  if ylabel != None: axis.set_ylabel(ylabel)
+
+#    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+  if cbarLabel != None: cbar.set_label(cbarLabel)
+  labels = cbar.ax.get_yticklabels()
+  labels[-1].set_visible(False)
+  labels[0].set_visible(False)
+#  txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
+#  txt = 'txt'
+#  axis.text(1.01, 0, txt,
+#          horizontalalignment='left',
+#          verticalalignment='bottom',
+#          rotation='vertical',
+#          size='small',
+#          transform=axis.transAxes
