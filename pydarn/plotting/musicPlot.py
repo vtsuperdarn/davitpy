@@ -110,7 +110,7 @@ class musicFan(object):
     dist = width/50.
 
     #draw the actual map we want
-    m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0)
+    m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis)
     m.drawparallels(np.arange(-80.,81.,10.),labels=[1,0,0,0])
     m.drawmeridians(np.arange(-180.,181.,20.),labels=[0,0,0,1])
     if(coords == 'geo'):
@@ -172,4 +172,21 @@ class musicFan(object):
             rotation='vertical',
             size='small',
             transform=axis.transAxes)
-    plt.show()
+#    plt.show()
+
+def plotRelativeRanges(dataObj,dataSet='active'):
+  currentData = getattr(dataObj,dataSet)
+
+  from matplotlib.backends.backend_agg import FigureCanvasAgg
+  from matplotlib.figure import Figure
+
+  fig = Figure(figsize=(11,8.5))
+  ax  = fig.add_subplot(111)
+
+#  musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
+  musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+
+  outFName = '/data/pymusic/ranges.png'
+  canvas  = FigureCanvasAgg(fig)
+  canvas.print_figure(outFName,format='png',facecolor='white',edgecolor='white')
+

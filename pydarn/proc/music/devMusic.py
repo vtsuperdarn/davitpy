@@ -20,6 +20,9 @@ sys.path.append('/davitpy')
 
 # <codecell>
 
+import matplotlib
+matplotlib.use('Agg')
+
 import pydarn.sdio
 import datetime
 import numpy as np
@@ -94,18 +97,21 @@ music.beamInterpolation(dataObj)
 
 music.determine_relative_position(dataObj)
 
-plt.ioff()
-fig = plt.figure(figsize=figsize)
-ax  = fig.add_subplot(121)
-pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-ax  = fig.add_subplot(122)
-pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-fig.savefig(outdir+'/range_comparison.png')
+pydarn.plotting.musicPlot.plotRelativeRanges(dataObj)
 
-fig = plt.figure(figsize=figsize)
-ax  = fig.add_subplot(121)
-pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-ax  = fig.add_subplot(122)
-pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
-fig.savefig(outdir+'/beam_interp.png')
+#plt.ioff()
+#fig = plt.figure(figsize=figsize)
+#ax  = fig.add_subplot(121)
+#pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+#ax  = fig.add_subplot(122)
+#pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+#fig.savefig(outdir+'/range_comparison.png')
+#
+#fig = plt.figure(figsize=figsize)
+#ax  = fig.add_subplot(121)
+#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
+#ax  = fig.add_subplot(122)
+#pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
+#fig.savefig(outdir+'/beam_interp.png')
 
+#plt.show()
