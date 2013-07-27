@@ -1,3 +1,15 @@
+# Copyright (C) 2013  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+"""
+*********************
+**Module**: pydarn.plotting 
+*********************
+
+This module contains the following functions:
+    * :func:`utils.geoPack.geodToGeoc`: 
+        converts from geodetic to geocentric (and vice-versa)
+"""
+
 import numpy as np
 import datetime
 
@@ -167,6 +179,17 @@ class musicFan(object):
             transform=axis.transAxes)
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
+    """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
+       Also plots one scan of the chosen dataSet, with the center cell marked in black.
+
+    **Args**:
+        * **dataObj**:  vtMUSIC object
+        * **dataSet**:  which dataSet in the vtMUSIC object to process
+        * **time**:     datetime.datetime object giving the start scan time to plot.  If None, first time will be used.
+        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
+    """
   currentData = getattr(dataObj,dataSet)
 
   from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -230,6 +253,19 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   return fig
 
 def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param='velocity',scale=None,cbarLabel=None):
+    """Plots data on a range versus beam plot with a colorbar.
+
+    **Args**:
+        * **currentData**:  vtMUSIC.dataSet object
+        * **data**:         nBeams x nGates Numpy array of data
+        * **axis**:         matplotlib axis object on which to plot
+        * **title**:        Title of plot.
+        * **xlabel**:       X-axis label
+        * **ylabel**:       Y-axis label
+        * **param**:        Parameter used for colorbar selection.
+        * **scale**:        Two-element colorbar scale.
+        * **cbarLabel**:    Colorbar label.
+    """
   fig     = axis.get_figure()
 
   ngates  = len(currentData.fov.gates)
@@ -266,22 +302,27 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
   if xlabel != None: axis.set_xlabel(xlabel)
   if ylabel != None: axis.set_ylabel(ylabel)
 
-#    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
   cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
   if cbarLabel != None: cbar.set_label(cbarLabel)
   labels = cbar.ax.get_yticklabels()
   labels[-1].set_visible(False)
   labels[0].set_visible(False)
-#  txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
-#  txt = 'txt'
-#  axis.text(1.01, 0, txt,
-#          horizontalalignment='left',
-#          verticalalignment='bottom',
-#          rotation='vertical',
-#          size='small',
-#          transform=axis.transAxes
 
 def multiPlot(dataObj,dataSet='active',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None):
+    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
+    This defaults to 9 cells of the FOV.
+
+    **Args**:
+        * **dataObj**:  vtMUSIC object
+        * **dataSet**:  which dataSet in the vtMUSIC object to process
+        * **plotBeam**: list of beams to plot from
+        * **plotGates*: list of range gates to plot from
+        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * **xlim**:     X-axis limits of all plots
+        * **ylim**:     Y-axis limits of all plots
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
+    """
   from matplotlib import dates as md
   currentData = getattr(dataObj,dataSet)
 
