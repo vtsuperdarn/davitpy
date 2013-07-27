@@ -308,3 +308,108 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
 #          rotation='vertical',
 #          size='small',
 #          transform=axis.transAxes
+
+def multiPlot(dataObj,dataSet='active',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None):
+  from matplotlib import dates as md
+  currentData = getattr(dataObj,dataSet)
+
+  #Calculate three default beams and gates to plot.
+  if plotBeam == None:
+    beamMin = min(currentData.fov.beams)
+    beamMed = int(np.median(currentData.fov.beams))
+    beamMax = max(currentData.fov.beams)
+
+    plotBeam     = np.array([beamMin,beamMed,beamMax])
+
+  if plotGate == None:
+    gateMin = min(currentData.fov.gates)
+    gateMed = int(np.median(currentData.fov.gates))
+    gateMax = max(currentData.fov.gates)
+
+    plotGate     = np.array([gateMin,gateMed,gateMax])
+
+  #Put things in the correct order.  Gates need to be backwards.
+  plotBeam.sort()
+  plotGate.sort()
+  plotGate = plotGate[::-1] #Reverse the order.
+
+  #Determine the indices of the beams and gates.
+  plotBeamInx = []
+  for item in plotBeam:
+    plotBeamInx.append(int(np.where(currentData.fov.beams == item)[0]))
+
+  plotGateInx = []
+  for item in plotGate:
+    plotGateInx.append(int(np.where(currentData.fov.gates == item)[0]))
+
+  plotBeamInx = np.array(plotBeamInx)
+  plotGateInx = np.array(plotGateInx)
+
+  nCols = len(plotBeam)
+  nRows = len(plotGate)
+
+  if fig == None:
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+    fig = Figure()
+
+  #Define x-axis range
+  if xlim == None:
+    xlim = (min(currentData.time),max(currentData.time))
+
+  #Autorange y-axis... make all plots have the same range.
+  data = []
+  if ylim == None:
+    for rg,rgInx in zip(plotGate,plotGateInx):
+      for bm,bmInx in zip(plotBeam,plotBeamInx):
+        data.append(currentData.data[:,bmInx,rgInx])
+    mx  = np.max(data)
+    mn  = np.min(data)
+   
+    if mx > 0 and mn >= 0:
+      ylim = (0,mx)
+    elif mn < 0 and mx <= 0:
+      ylim = (mn,0)
+    elif abs(mx) >= abs(mn):
+      ylim = (-mx,mx)
+    elif abs(mn) > abs(mx):
+      ylim = (-abs(mn),abs(mn))
+
+
+  ii = 1
+  for rg,rgInx in zip(plotGate,plotGateInx):
+    for bm,bmInx in zip(plotBeam,plotBeamInx):
+      axis = fig.add_subplot(nCols,nRows,ii)
+      axis.plot(currentData.time,currentData.data[:,bmInx,rgInx])
+
+      axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
+
+      labels = axis.get_xticklabels()
+      for label in labels:
+        label.set_rotation(30)
+
+      #Set axis limits.
+      if xlim != None:
+        axis.set_xlim(xlim)
+      if ylim != None:
+        axis.set_ylim(ylim)
+
+      text = 'Beam: %i, Gate: %i' % (bm, rg)
+      axis.text(0.02,0.92,text,transform=axis.transAxes)
+
+      #Only have the last row have time ticks
+      if ii <= (nRows-1)*nCols:
+        axis.xaxis.set_visible(False)
+      else:
+        axis.set_xlabel('UT')
+
+
+      ii = ii+1
+    title = []
+    title.append('Selected Cells')
+    title.append(currentData.metadata['code'][0].upper() + ': ' +
+        xlim[0].strftime('%Y %b %d %H:%M - ') + xlim[1].strftime('%Y %b %d %H:%M'))
+    title = '\n'.join(title)
+    fig.suptitle(title,size=24)
+
+  return fig

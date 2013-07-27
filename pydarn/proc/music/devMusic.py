@@ -101,6 +101,12 @@ music.determine_relative_position(dataObj)
 time = datetime.datetime(2010,11,19,13)
 pydarn.plotting.musicPlot.plotRelativeRanges(dataObj,time=time)
 
+pydarn.plotting.musicPlot.multiPlot(dataObj)
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.multiPlot(dataObj,fig=fig)
+fig.savefig(outdir+'/multiplot.png')
+
 #plt.ioff()
 #fig = plt.figure(figsize=figsize)
 #ax  = fig.add_subplot(121)
