@@ -7,6 +7,7 @@
 		
 **Functions**:
 	* :func:`getCpName`: get the name of a control program from cp id number
+	* :func:`getParamDict`: Get information about a parameter, including units, default ranges, and axis labels.
 
 """
 
