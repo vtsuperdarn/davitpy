@@ -431,7 +431,6 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0):
 
     return [numpy.degrees(lat2),numpy.degrees(lon2)]
 
-
 # *************************************************************
 def greatCircleAzm(lat1,lon1,lat2,lon2):
     """Calculates the azimuth from the coordinates of a start point to and end point
@@ -471,7 +470,7 @@ def greatCircleDist(lat1,lon1,lat2,lon2):
     from numpy import cos, sin, arctan2, radians, sqrt
 
     lat1,lon1,lat2,lon2 = radians(lat1),radians(lon1),radians(lat2),radians(lon2)
-    
+
     dlat = lat2-lat1
     dlon = lon2-lon1
     a    = sin(dlat/2.)*sin(dlat/2.)+cos(lat1)*cos(lat2)*sin(dlon/2.)*sin(dlon/2.)
