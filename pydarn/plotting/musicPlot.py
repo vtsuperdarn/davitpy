@@ -166,71 +166,68 @@ class musicFan(object):
             size='small',
             transform=axis.transAxes)
 
-class plotRelativeRanges(object):
-  def __init__(self,dataObj,dataSet='active',time=None):
+def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
+  currentData = getattr(dataObj,dataSet)
 
-    currentData = getattr(dataObj,dataSet)
+  from matplotlib.backends.backend_agg import FigureCanvasAgg
+  from matplotlib.figure import Figure
+  import matplotlib
 
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
-    from matplotlib.figure import Figure
-    import matplotlib
+  #Get center of FOV.
+  ctrBeamInx  = currentData.fov.relative_centerInx[0]
+  ctrGateInx  = currentData.fov.relative_centerInx[1]
+  ctrBeam     = currentData.fov.beams[ctrBeamInx]
+  ctrGate     = currentData.fov.gates[ctrGateInx]
 
-    #Get center of FOV.
-    ctrBeamInx  = currentData.fov.relative_centerInx[0]
-    ctrGateInx  = currentData.fov.relative_centerInx[1]
-    ctrBeam     = currentData.fov.beams[ctrBeamInx]
-    ctrGate     = currentData.fov.gates[ctrGateInx]
+  if fig == None:
+    fig   = Figure()
 
-    fig   = Figure(figsize=(11,8.5))
+  gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
+  axis  = fig.add_subplot(gs[0:2, 1]) 
+  musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
 
-    gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
-    axis  = fig.add_subplot(gs[0:2, 1]) 
-    musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
+  #Determine the color scale for plotting.
+  def myround(x, base=50):
+        return int(base * round(float(x)/base))
+  absmax  = np.max(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
+  rnd     = myround(absmax)
+  scale   = (-rnd, rnd)
 
-    #Determine the color scale for plotting.
-    def myround(x, base=50):
-          return int(base * round(float(x)/base))
-    absmax  = np.max(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
-    rnd     = myround(absmax)
-    scale   = (-rnd, rnd)
+  #Determine maximum ranges.
+  xRange    = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
+  yRange    = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
+  latRange  = np.max(currentData.fov.latCenter)  - np.min(currentData.fov.latCenter)
+  lonRange  = np.max(currentData.fov.lonCenter)  - np.min(currentData.fov.lonCenter)
 
-    #Determine maximum ranges.
-    xRange    = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
-    yRange    = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
-    latRange  = np.max(currentData.fov.latCenter)  - np.min(currentData.fov.latCenter)
-    lonRange  = np.max(currentData.fov.lonCenter)  - np.min(currentData.fov.lonCenter)
-
-    axis  = fig.add_subplot(gs[0:2, 0]) 
+  axis  = fig.add_subplot(gs[0:2, 0]) 
 #    axis.set_visible(False)
 
-    axis.set_axis_off()
-    text = []
-    text.append('X-Range [km]: %i' % xRange)
-    text.append('Y-Range [km]: %i' % yRange)
-    text.append('Lat Range [deg]: %.1f' % latRange)
-    text.append('Lon Range [deg]: %.1f' % lonRange)
-    text = '\n'.join(text)
-    axis.text(0,0.75,text)
+  axis.set_axis_off()
+  text = []
+  text.append('X-Range [km]: %i' % xRange)
+  text.append('Y-Range [km]: %i' % yRange)
+  text.append('Lat Range [deg]: %.1f' % latRange)
+  text.append('Lon Range [deg]: %.1f' % lonRange)
+  text = '\n'.join(text)
+  axis.text(0,0.75,text)
 
-    xlabel    = 'Beam'
-    ylabel    = 'Gate'
-    cbarLabel = 'Distance from Center [km]'
+  xlabel    = 'Beam'
+  ylabel    = 'Gate'
+  cbarLabel = 'Distance from Center [km]'
 
-    axis   = fig.add_subplot(gs[2,0]) 
-    data    = currentData.fov.relative_y
-    title   = 'N-S Distance from Center'
-    title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
-    rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+  axis   = fig.add_subplot(gs[2,0]) 
+  data    = currentData.fov.relative_y
+  title   = 'N-S Distance from Center'
+  title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
+  rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
 
-    axis   = fig.add_subplot(gs[2,1]) 
-    data    = currentData.fov.relative_x
-    title   = 'E-W Distance from Center'
-    title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
-    rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+  axis   = fig.add_subplot(gs[2,1]) 
+  data    = currentData.fov.relative_x
+  title   = 'E-W Distance from Center'
+  title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
+  rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
 
-    outFName = '/data/pymusic/ranges.png'
-    canvas  = FigureCanvasAgg(fig)
-    canvas.print_figure(outFName,format='png',facecolor='white',edgecolor='white')
+  return fig
 
 def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param='velocity',scale=None,cbarLabel=None):
   fig     = axis.get_figure()
