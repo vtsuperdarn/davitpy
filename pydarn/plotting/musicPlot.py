@@ -2,6 +2,7 @@ import numpy as np
 import datetime
 
 from matplotlib.collections import PolyCollection
+from matplotlib.patches import Polygon
 from matplotlib import dates as md
 import matplotlib
 
@@ -10,7 +11,7 @@ from mpl_toolkits.basemap import Basemap
 import utils
 
 class musicFan(object):
-  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, plotZeros=False, **kwArgs):
+  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, plotZeros=False, markCell=None, **kwArgs):
     if fileName != None:
       from matplotlib.backends.backend_agg import FigureCanvasAgg
       from matplotlib.figure import Figure
@@ -158,6 +159,23 @@ class musicFan(object):
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
+    #Mark Cell
+    markVerts = []
+    if markCell != None:
+      beamInx = int(np.where(currentData.fov.beams == markCell[0])[0])
+      gateInx = int(np.where(currentData.fov.gates == markCell[1])[0])
+
+      x1,y1 = m(lonFull[beamInx+0,gateInx+0],latFull[beamInx+0,gateInx+0])
+      x2,y2 = m(lonFull[beamInx+1,gateInx+0],latFull[beamInx+1,gateInx+0])
+      x3,y3 = m(lonFull[beamInx+1,gateInx+1],latFull[beamInx+1,gateInx+1])
+      x4,y4 = m(lonFull[beamInx+0,gateInx+1],latFull[beamInx+0,gateInx+1])
+      markVerts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+      mkv = np.array([[x1,y1],[x2,y2],[x3,y3],[x4,y4],[x1,y1]])
+
+      poly = Polygon(mkv,facecolor='#000000',edgecolor='none',zorder=100)
+      axis.add_patch(poly)
+
     dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
     axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
 
@@ -172,7 +190,6 @@ class musicFan(object):
             rotation='vertical',
             size='small',
             transform=axis.transAxes)
-#    plt.show()
 
 class plotRelativeRanges(object):
   def __init__(self,dataObj,dataSet='active',time=None):
@@ -183,11 +200,17 @@ class plotRelativeRanges(object):
     from matplotlib.figure import Figure
     import matplotlib
 
+    #Get center of FOV.
+    ctrBeamInx  = currentData.fov.relative_centerInx[0]
+    ctrGateInx  = currentData.fov.relative_centerInx[1]
+    ctrBeam     = currentData.fov.beams[ctrBeamInx]
+    ctrGate     = currentData.fov.gates[ctrGateInx]
+
     fig   = Figure(figsize=(11,8.5))
 
     gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
     axis  = fig.add_subplot(gs[0:2, 1]) 
-    musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis)
+    musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
 
     #Determine the color scale for plotting.
     def myround(x, base=50):
@@ -196,6 +219,24 @@ class plotRelativeRanges(object):
     rnd     = myround(absmax)
     scale   = (-rnd, rnd)
 
+    #Determine maximum ranges.
+    xRange    = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
+    yRange    = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
+    latRange  = np.max(currentData.fov.latCenter)  - np.min(currentData.fov.latCenter)
+    lonRange  = np.max(currentData.fov.lonCenter)  - np.min(currentData.fov.lonCenter)
+
+    axis  = fig.add_subplot(gs[0:2, 0]) 
+#    axis.set_visible(False)
+
+    axis.set_axis_off()
+    text = []
+    text.append('X-Range [km]: %i' % xRange)
+    text.append('Y-Range [km]: %i' % yRange)
+    text.append('Lat Range [deg]: %.1f' % latRange)
+    text.append('Lon Range [deg]: %.1f' % lonRange)
+    text = '\n'.join(text)
+    axis.text(0,0.75,text)
+
     xlabel    = 'Beam'
     ylabel    = 'Gate'
     cbarLabel = 'Distance from Center [km]'
@@ -203,20 +244,12 @@ class plotRelativeRanges(object):
     axis   = fig.add_subplot(gs[2,0]) 
     data    = currentData.fov.relative_y
     title   = 'N-S Distance from Center'
-    ctrBeamInx  = currentData.fov.relative_centerInx[0]
-    ctrGateInx  = currentData.fov.relative_centerInx[1]
-    ctrBeam     = currentData.fov.beams[ctrBeamInx]
-    ctrGate     = currentData.fov.gates[ctrGateInx]
     title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
     rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
 
     axis   = fig.add_subplot(gs[2,1]) 
     data    = currentData.fov.relative_x
     title   = 'E-W Distance from Center'
-    ctrBeamInx  = currentData.fov.relative_centerInx[0]
-    ctrGateInx  = currentData.fov.relative_centerInx[1]
-    ctrBeam     = currentData.fov.beams[ctrBeamInx]
-    ctrGate     = currentData.fov.gates[ctrGateInx]
     title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
     rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
 
