@@ -9,6 +9,7 @@ import matplotlib
 from mpl_toolkits.basemap import Basemap
 
 import utils
+from pydarn.radar.radUtils import getParamDict
 
 class musicFan(object):
   def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, plotZeros=False, markCell=None, **kwArgs):
@@ -32,45 +33,19 @@ class musicFan(object):
     coords      = metadata['coords']
 
     #Translate parameter information from short to long form.
-    if    metadata['param'] == 'p_l'  :
-      param     =  'power'
-      cbarLabel = r'$\lambda$ Power [dB]'
-    elif  metadata['param'] == 'p_s'  :
-      param     =  'power'
-      cbarLabel = r'$\sigma$ Power [dB]'
-    elif  metadata['param'] == 'v'    :
-      param     = 'velocity'
-      cbarLabel = 'Velocity [m/s]'
-    elif  metadata['param'] == 'w_l'  :
-      param     = 'width'
-      cbarLabel = r'$\lambda$ Spectral Width [m/s]'
-    elif  metadata['param'] == 'w_s'  : 
-      param     = 'width'
-      cbarLabel = r'$\sigma$ Spectral Width [m/s]'
-    elif  metadata['param'] == 'elv'  :
-      param     = 'elevation'
-      cbarLabel = 'Elevation [deg]'
-    elif  metadata['param'] == 'phi0' :
-      param     = 'phi0'
-      cbarLabel = r'$\phi_0$'
+    paramDict = getParamDict(metadata['param'])
+    if paramDict.has_key('label'):
+      param     = paramDict['param']
+      cbarLabel = paramDict['label']
     else:
-      param     = metadata['param']
+      param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
       cbarLabel = metadata['param']
 
     #Set colorbar scale if not explicitly defined.
     if(scale == None):
-      if(param == 'velocity'):
-        scale=[-200,200]
-      elif(param == 'power'):
-        scale=[0,30]
-      elif(param == 'width'):
-        scale=[0,150]
-      elif(param == 'elevation'): 
-        scale=[0,50]
-      elif(param == 'phi0'):
-        scale=[-np.pi,np.pi]
+      if paramDict.has_key('range'):
+        scale = paramDict['range']
       else:
-        param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
         scale = [-200,200]
 
     #See if an axis is provided... if not, set one up!
