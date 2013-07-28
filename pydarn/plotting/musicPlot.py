@@ -308,7 +308,7 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
   labels[-1].set_visible(False)
   labels[0].set_visible(False)
 
-def timeSeriesMultiPlot(dataObj,dataSet='active',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None):
+def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
   This defaults to 9 cells of the FOV.
 
@@ -352,10 +352,25 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',plotBeam=None,plotGate=None,fig
         xlim[0].strftime('%Y %b %d %H:%M - ') + xlim[1].strftime('%Y %b %d %H:%M'))
     title = '\n'.join(title)
 
-  multiPlot(xData,yData1,beams,gates,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title)
+  if dataSet2 != None:
+    if dataObj2 != None:
+      currentData2 = getattr(dataObj2,dataSet2)
+    else:
+      currentData2  = getattr(dataObj,dataSet2)
+    xData2        = currentData2.time
+    yData2        = currentData2.data
+    yData2_title  = currentData2.history[max(currentData2.history.keys())]
+  else:
+    xData2 = None
+    yData2 = None
+    yData2_title = None
+
+  multiPlot(xData,yData1,beams,gates,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
+      xData2=xData2,yData2=yData2,yData2_title=yData2_title)
 
 #def multiPlot(dataObj,dataSet='active',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None):
-def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None):
+def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
+    xData2=None,yData2=None,yData2_title=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
   This defaults to 9 cells of the FOV.
 
@@ -424,8 +439,11 @@ def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim
     for rg,rgInx in zip(plotGate,plotGateInx):
       for bm,bmInx in zip(plotBeam,plotBeamInx):
         data.append(yData1[:,bmInx,rgInx])
-    mx  = np.max(data)
-    mn  = np.min(data)
+        if yData2 != None:
+          data.append(yData2[:,bmInx,rgInx])
+
+    mx  = np.nanmax(data)
+    mn  = np.nanmin(data)
    
     if mx > 0 and mn >= 0:
       ylim = (0,mx)
@@ -442,6 +460,9 @@ def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim
       axis = fig.add_subplot(nCols,nRows,ii)
       axis.plot(xData,yData1[:,bmInx,rgInx])
 
+      if yData2 != None:
+        axis.plot(xData2,yData2[:,bmInx,rgInx])
+
       #Special handling for time axes.
       if xlabel == 'UT': 
         axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
@@ -453,6 +474,7 @@ def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim
       #Set axis limits.
       if xlim != None:
         axis.set_xlim(xlim)
+
       if ylim != None:
         axis.set_ylim(ylim)
 
