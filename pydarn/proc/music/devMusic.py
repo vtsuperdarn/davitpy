@@ -105,7 +105,7 @@ pydarn.plotting.musicPlot.plotRelativeRanges(dataObj,time=time,fig=fig)
 fig.savefig(outdir+'/ranges.png')
 
 fig = plt.figure(figsize=figsize)
-pydarn.plotting.musicPlot.multiPlot(dataObj,fig=fig)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig)
 fig.savefig(outdir+'/multiplot.png')
 
 fig = plt.figure(figsize=figsize)
