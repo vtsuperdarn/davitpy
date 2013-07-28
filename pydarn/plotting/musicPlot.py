@@ -344,10 +344,10 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
   if ylabel == None and paramDict.has_key('label'):
     ylabel = paramDict['label']
 
+  yData1_title = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing
   if title == None:
-    dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
     title = []
-    title.append('Selected Cells: '+dataName)
+    title.append('Selected Cells: '+yData1_title)
     title.append(currentData.metadata['code'][0].upper() + ': ' +
         xlim[0].strftime('%Y %b %d %H:%M - ') + xlim[1].strftime('%Y %b %d %H:%M'))
     title = '\n'.join(title)
@@ -365,11 +365,10 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
     yData2 = None
     yData2_title = None
 
-  multiPlot(xData,yData1,beams,gates,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
+  multiPlot(xData,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
       xData2=xData2,yData2=yData2,yData2_title=yData2_title)
 
-#def multiPlot(dataObj,dataSet='active',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None):
-def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
+def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
     xData2=None,yData2=None,yData2_title=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
   This defaults to 9 cells of the FOV.
@@ -458,10 +457,10 @@ def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim
   for rg,rgInx in zip(plotGate,plotGateInx):
     for bm,bmInx in zip(plotBeam,plotBeamInx):
       axis = fig.add_subplot(nCols,nRows,ii)
-      axis.plot(xData,yData1[:,bmInx,rgInx])
+      l1, = axis.plot(xData,yData1[:,bmInx,rgInx],label=yData1_title)
 
       if yData2 != None:
-        axis.plot(xData2,yData2[:,bmInx,rgInx])
+        l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
 
       #Special handling for time axes.
       if xlabel == 'UT': 
@@ -493,7 +492,10 @@ def multiPlot(xData,yData1,beams,gates,plotBeam=None,plotGate=None,fig=None,xlim
 
       ii = ii+1
 
-    if title != None:
-      fig.suptitle(title,size=24)
+  if yData1_title != None and yData2_title != None:
+    fig.legend((l1,l2),(yData1_title,yData2_title),loc=(0.55,0.92))
+
+  if title != None:
+    fig.text(0.12,0.92,title,size=24)
 
   return fig
