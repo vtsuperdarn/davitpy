@@ -40,6 +40,34 @@ params['band']            = [0.3,1.2]
 params['kmax']            = 0.05
 params['fir_datetime']    = [datetime.datetime(2010,11,19,14,10), datetime.datetime(2010,11,19,16,00)]
 
+def sigObjCheck(dataObj):
+  """Determines if the called dataObj is a vtMUSIC or a vtMUSICArray object. 
+  :returns vtMUSIC: vtMUSIC object
+  """
+  if hasattr(dataObj,'data'):
+    vtMUSIC = dataObj
+  else:
+    vtMUSIC = dataObj.active
+
+  return sigobj
+
+
+def prepForProc(dataObj):
+  """Determines if the called signal is a vt sig or a vt sigStruct object. 
+  If it is a vt sig object, the active dataObj.active sigStruct object is returned.
+  The signal is truncated to its current valid time limits if necessary.
+  This also sets the called sigStruct to be the active sigStruct.
+  :returns vtMUSIC: vt sigStruct object
+  """
+ 
+  vtMUSIC = sigObjCheck(dataObj)
+
+  #Remove times that are not valid.
+  vtMUSIC = vtMUSIC.truncate()
+  vtMUSIC.setActive()
+
+  return vtMUSIC
+
 class music(object):
   def __init__(self):
    self.options = options
@@ -74,15 +102,18 @@ class musicDataObj(object):
     :returns: sig object
     """
     
-    if hasattr(self.parent,newsig):
-      xx = 0
-      ok = False
-      while ok is False:
-        xx += 1
-        testsig = '_'.join([newsig,'%03d' % xx])
-        if hasattr(self.parent,testsig) == False:
-          newsig = testsig
-          ok = True
+    serial = self.metadata['serial'] + 1
+    newsig = '_'.join(['%03d' % serial,newsig])
+#    #Make sure that the newsig isn't already in use.  If it is, add a serial number to it.
+#    if hasattr(self.parent,newsig):
+#      xx = 0
+#      ok = False
+#      while ok is False:
+#        xx += 1
+#        testsig = '_'.join([newsig,'%03d' % xx])
+#        if hasattr(self.parent,testsig) == False:
+#          newsig = testsig
+#          ok = True
 
     setattr(self.parent,newsig,copy.copy(self))
     newsigobj = getattr(self.parent,newsig)
@@ -94,6 +125,7 @@ class musicDataObj(object):
     newsigobj.history   = copy.deepcopy(self.history)
 
     newsigobj.metadata['dataSetName'] = newsig
+    newsigobj.metadata['serial']      = serial
     newsigobj.history[datetime.datetime.now()] = '['+newsig+'] '+comment
     
     return newsigobj
@@ -169,6 +201,17 @@ class musicDataObj(object):
 
   def setMetaData(self,**metadata):
     self.metadata = dict(self.metadata.items() + metadata.items())
+
+  def applyLimits(self,rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
+      tmp = applyLimits(self.parent,self.metadata['dataSetName'],rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits,newDataSetName=newDataSetName,comment=comment)
+      return tmp
+
+  def printHistory(self):
+    keys = self.history.keys()
+    keys.sort()
+    for key in keys:
+      print key,self.history[key]
+
     
 class musicArray(object):
   def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
@@ -278,8 +321,9 @@ class musicArray(object):
     metadata['model']     = fovModel
     metadata['coords']    = fovCoords
 
-    dataSet = 'originalFit'
+    dataSet = '000_originalFit'
     metadata['dataSetName'] = dataSet
+    metadata['serial']      = 0
     comment = '['+dataSet+'] '+ 'Original Fit Data'
     #Save data to be returned as self.variables
     setattr(self,dataSet,musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment=comment))
@@ -371,18 +415,19 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
   except:
     print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
 
-def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
+def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
   """Removes data outside of the rangeLimits and gateLimits boundaries.
 
-  :param dataObj: vtMUSIC object
-  :param dataSet: which dataSet in the vtMUSIC object to process
-  :param rangeLimits: Two-element array defining the maximum and minumum slant ranges to use. [km]
-  :param gateLimits: Two-element array defining the maximum and minumum gates to use.
-  :param newSigName: String name of the attribute of the newly created signal.
+  * **dataObj**:      vtMUSIC object
+  * **dataSet**:      which dataSet in the vtMUSIC object to process
+  * **rangeLimits**:  Two-element array defining the maximum and minumum slant ranges to use. [km]
+  * **gateLimits**:   Two-element array defining the maximum and minumum gates to use.
+  * **newSigName**:   String name of the attribute of the newly created signal.
+  * **comment**:      String to be appended to the history of this object.  Set to None for the Default comment (recommended).
   """
 
   if (rangeLimits != None) or (gateLimits != None):
-    define_limits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits)
+    defineLimits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits)
 
   try:
     #Make a copy of the current data set.
@@ -456,8 +501,9 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDat
       newData.metadata.pop('timeLimits')
     
     #Update the history with what limits were applied.
-    if commentList != []:
-      commentStr = '['+currentData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
+    if commentList != [] and comment == None:
+      comment = 'Limits Applied'
+      commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
       key = max(newData.history.keys())
       newData.history[key] = commentStr
 
@@ -850,3 +896,32 @@ class filter(object):
         newsigobj.metadata[key] = 'Filtered'
 
       newsigobj.setActive()
+
+def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,type='linear'):
+  """Linearly detrend a vtsig object.
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+      * **newSigName**: String name of the attribute of the newly created signal.
+      * **type**:       {'linear', 'constant'}, optional
+                        The type of detrending. If type == 'linear' (default), the result of a linear least-squares fit to data
+                        is subtracted from data. If type == 'constant', only the mean of data is subtracted.
+  """
+  import scipy as sp
+  currentData = getattr(dataObj,dataSet)
+
+  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+  newDataArr= np.zeros_like(currentData.data)
+  for bm in range(nrBeams):
+    for rg in range(nrGates):
+      newDataArr[:,bm,rg] = sp.signal.detrend(currentData.data[:,bm,rg],type=type)
+  
+  if comment == None:
+    comment = type.capitalize() + ' detrend (scipy.signal.detrend)'
+      
+  newDataSet      = currentData.copy(newDataSetName,comment)
+  newDataSet.data = newDataArr
+  newDataSet.setActive()
