@@ -435,18 +435,27 @@ def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=
   #Autorange y-axis... make all plots have the same range.
   data = []
   if ylim == None:
+#    for rg,rgInx in zip(plotGate,plotGateInx):
+#      for bm,bmInx in zip(plotBeam,plotBeamInx):
+#        data.append(yData1[:,bmInx,rgInx])
+#        if yData2 != None:
+#          data.append(yData2[:,bmInx,rgInx])
+
     for rg,rgInx in zip(plotGate,plotGateInx):
       for bm,bmInx in zip(plotBeam,plotBeamInx):
-        data.append(yData1[:,bmInx,rgInx])
+        for item in yData1[:,bmInx,rgInx]:
+          data.append(item)
         if yData2 != None:
-          data.append(yData2[:,bmInx,rgInx])
+          for item in yData2[:,bmInx,rgInx]:
+            data.append(item)
+
 
     mx  = np.nanmax(data)
     mn  = np.nanmin(data)
    
-    if mx > 0 and mn >= 0:
+    if np.logical_and(mx > 0,mn >= -0.001):
       ylim = (0,mx)
-    elif mn < 0 and mx <= 0:
+    elif np.logical_and(mn < 0, mx <= 0.001):
       ylim = (mn,0)
     elif abs(mx) >= abs(mn):
       ylim = (-mx,mx)

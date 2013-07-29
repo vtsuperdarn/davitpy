@@ -1,5 +1,6 @@
 import numpy as np
 import datetime 
+import time
 import copy
 
 import pydarn
@@ -242,10 +243,11 @@ def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated'
   """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
   rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
 
-  :param dataObj: vtMUSIC object
-  :param dataSet: which dataSet in the vtMUSIC object to process
-  :param comment: String to be appended to the history of this object
-  :param newSigName: String name of the attribute of the newly created signal.
+  **Args**:
+      * **dataObj**:  vtMUSIC object
+      * **dataSet**:  which dataSet in the vtMUSIC object to process
+      * **comment**: String to be appended to the history of this object
+      * **newSigName**: String name of the attribute of the newly created signal.
   """
   from scipy.interpolate import interp1d
   currentData = getattr(dataObj,dataSet)
@@ -277,9 +279,9 @@ def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated'
 
       intFn     = interp1d(input_x,input_y,bounds_error=False,fill_value=0)
       interpArr[tt,bb,:] = intFn(rangeVec)
-  currentData.copy(newDataSetName,comment)
-  dataObj.beamInterpolated.data = interpArr
-  dataObj.beamInterpolated.setActive()
+  newDataSet = currentData.copy(newDataSetName,comment)
+  newDataSet.data = interpArr
+  newDataSet.setActive()
 
 def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamLimits=None,timeLimits=None):
   """Sets the range, gate, beam, and time limits for the chosen data set. This method only changes metadata;
@@ -469,3 +471,67 @@ def determine_relative_position(dataObj,dataSet='active',altitude=250.):
   currentData.fov.relative_y      = dist * np.cos(np.radians(azm)) 
 
   return None
+
+def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated',comment='Time Linear Interpolation',timeRes=10,newTimeVec=None):
+  """Interpolates the data in a vtMUSIC object to a regular time grid.
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object
+      * **newSigName**: String name of the attribute of the newly created signal.
+      * **timeRes**:    time resolution of new time vector [seconds]
+      * **newTimeVec**: Sequence of datetime.datetime objects that data will be interpolated to.  This overides timeRes.
+  """
+  from scipy.interpolate import interp1d
+  currentData = getattr(dataObj,dataSet)
+
+  sTime = currentData.time[0]
+  sTime = datetime.datetime(sTime.year,sTime.month,sTime.day,sTime.hour,sTime.minute) #Make start time a round time.
+  fTime = currentData.time[-1]
+
+  #Create new time vector.
+  if newTimeVec == None:
+    newTimeVec = [sTime]
+    while newTimeVec[-1] < fTime:
+      newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
+
+  #Ensure that the new time vector is within the bounds of the actual data set.
+  newTimeVec  = np.array(newTimeVec)
+  good        = np.where(np.logical_and(newTimeVec > min(currentData.time),newTimeVec < max(currentData.time)))
+  newTimeVec  = newTimeVec[good]
+  newEpochVec = toUnixEpochTime(newTimeVec)
+
+  #Initialize interpolated data.
+  nrTimes = len(newTimeVec)
+  nrBeams = len(currentData.fov.beams)
+  nrGates = len(currentData.fov.gates)
+
+  interpArr = np.zeros([nrTimes,nrBeams,nrGates])
+
+  for rg in range(nrGates):
+    for bb in range(nrBeams):
+      input_x   = currentData.time[:]
+      input_y   = currentData.data[:,bb,rg]
+
+      good      = np.where(np.isfinite(input_y))[0]
+      if len(good) < 2: continue
+      input_x   = input_x[good]
+      input_y   = input_y[good]
+
+      input_x   = toUnixEpochTime(input_x)
+
+      intFn     = interp1d(input_x,input_y,bounds_error=False)#,fill_value=0)
+      interpArr[:,bb,rg] = intFn(newEpochVec)
+  newDataSet = currentData.copy(newDataSetName,comment)
+  newDataSet.time = newTimeVec
+  newDataSet.data = interpArr
+  newDataSet.setActive()
+
+def toUnixEpochTime(datetimeList):
+  import numpy
+  import time
+
+  datetimeArray = numpy.array(datetimeList)
+  unx = [time.mktime(dt.timetuple()) for dt in datetimeArray]
+  return unx

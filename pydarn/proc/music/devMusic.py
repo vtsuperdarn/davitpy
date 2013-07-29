@@ -97,16 +97,23 @@ music.beamInterpolation(dataObj)
 
 music.determine_relative_position(dataObj)
 
-
 time = datetime.datetime(2010,11,19,13)
 
 fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.plotRelativeRanges(dataObj,time=time,fig=fig)
 fig.savefig(outdir+'/ranges.png')
 
+#fig = plt.figure(figsize=figsize)
+#pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet2='limitsApplied',fig=fig)
+#fig.savefig(outdir+'/multiplot.png')
+
+music.timeInterpolation(dataObj)
+
 fig = plt.figure(figsize=figsize)
-pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet2='limitsApplied',fig=fig)
-fig.savefig(outdir+'/multiplot.png')
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig)
+fig.savefig(outdir+'/timeInterp.png')
+import ipdb; ipdb.set_trace()
+
 
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)
