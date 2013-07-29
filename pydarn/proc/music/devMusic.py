@@ -116,8 +116,6 @@ xBoundaryLimits = None
 fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig,xBoundaryLimits=xBoundaryLimits)
 fig.savefig(outdir+'/timeInterp.png')
-import ipdb; ipdb.set_trace()
-
 
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)

@@ -409,6 +409,8 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
       * **ylim**:     Y-axis limits of all plots
       * **xlabel**:   X-axis label
       * **ylabel**:   Y-axis label
+      * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+        Data inside of the range will have a white background.
   **Returns**:
       * **fig**:      matplotlib figure object that was plotted to
   """
