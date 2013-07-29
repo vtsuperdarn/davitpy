@@ -426,7 +426,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
   * **comment**:      String to be appended to the history of this object.  Set to None for the Default comment (recommended).
   """
 
-  if (rangeLimits != None) or (gateLimits != None):
+  if (rangeLimits != None) or (gateLimits != None) or (timeLimits != None):
     defineLimits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits)
 
   try:
@@ -507,8 +507,11 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
       key = max(newData.history.keys())
       newData.history[key] = commentStr
 
-    newData.setActive()
-    return newData
+      newData.setActive()
+      return newData
+    else:
+      print 'No limits were defined.  Data left unchanged.'
+      return None
   except:
     if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
     print 'Warning! Limits not applied.'
@@ -910,7 +913,9 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
                         is subtracted from data. If type == 'constant', only the mean of data is subtracted.
   """
   import scipy as sp
+
   currentData = getattr(dataObj,dataSet)
+  currentData.applyLimits()
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
