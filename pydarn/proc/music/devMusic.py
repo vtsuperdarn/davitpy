@@ -132,7 +132,9 @@ fig = plt.figure(figsize=figsize)
 filt.plotImpulseResponse(fig=fig)
 fig.savefig(outdir+'/impulseResponse.png')
 
+import ipdb; ipdb.set_trace()
 dataObj.active.applyLimits()
+import ipdb; ipdb.set_trace()
 detrend = music.detrend(dataObj, dataSet='active')
 
 fig = plt.figure(figsize=figsize)

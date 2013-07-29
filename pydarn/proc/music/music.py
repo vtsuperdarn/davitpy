@@ -212,6 +212,12 @@ class musicDataObj(object):
     for key in keys:
       print key,self.history[key]
 
+  def printMetadata(self):
+    keys = self.metadata.keys()
+    keys.sort()
+    for key in keys:
+      print key+':',self.metadata[key]
+
     
 class musicArray(object):
   def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
@@ -436,6 +442,12 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
 
     commentList = []
 
+    if (currentData.metadata.has_key('timeLimits') == False and 
+        currentData.metadata.has_key('beamLimits') == False and 
+        currentData.metadata.has_key('gateLimits') == False):
+      print 'No limits were defined.  Data left unchanged.'
+      return None
+
     #Apply the gateLimits
     if currentData.metadata.has_key('gateLimits'):
       limits      = currentData.metadata['gateLimits']
@@ -501,17 +513,13 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
       newData.metadata.pop('timeLimits')
     
     #Update the history with what limits were applied.
-    if commentList != [] and comment == None:
-      comment = 'Limits Applied'
-      commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
-      key = max(newData.history.keys())
-      newData.history[key] = commentStr
+    comment = 'Limits Applied'
+    commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
+    key = max(newData.history.keys())
+    newData.history[key] = commentStr
 
-      newData.setActive()
-      return newData
-    else:
-      print 'No limits were defined.  Data left unchanged.'
-      return None
+    newData.setActive()
+    return newData
   except:
     if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
     print 'Warning! Limits not applied.'

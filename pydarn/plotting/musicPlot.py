@@ -212,15 +212,15 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   #Determine the color scale for plotting.
   def myround(x, base=50):
         return int(base * round(float(x)/base))
-  absmax  = np.max(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
-  rnd     = myround(absmax)
+  absnanmax  = np.nanmax(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
+  rnd     = myround(absnanmax)
   scale   = (-rnd, rnd)
 
-  #Determine maximum ranges.
-  xRange    = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
-  yRange    = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
-  latRange  = np.max(currentData.fov.latCenter)  - np.min(currentData.fov.latCenter)
-  lonRange  = np.max(currentData.fov.lonCenter)  - np.min(currentData.fov.lonCenter)
+  #Determine nanmaximum ranges.
+  xRange    = np.nanmax(currentData.fov.relative_x) - np.nanmin(currentData.fov.relative_x)
+  yRange    = np.nanmax(currentData.fov.relative_y) - np.nanmin(currentData.fov.relative_y)
+  latRange  = np.nanmax(currentData.fov.latCenter)  - np.nanmin(currentData.fov.latCenter)
+  lonRange  = np.nanmax(currentData.fov.lonCenter)  - np.nanmin(currentData.fov.lonCenter)
 
   axis  = fig.add_subplot(gs[0:2, 0]) 
 #    axis.set_visible(False)
