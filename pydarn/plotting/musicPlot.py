@@ -308,7 +308,7 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
   labels[-1].set_visible(False)
   labels[0].set_visible(False)
 
-def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None):
+def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
   This defaults to 9 cells of the FOV.
 
@@ -322,18 +322,57 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
       * **ylim**:     Y-axis limits of all plots
       * **xlabel**:   X-axis label
       * **ylabel**:   Y-axis label
+      * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+        Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+        in the metadata, if they exist.
   **Returns**:
       * **fig**:      matplotlib figure object that was plotted to
   """
   currentData = getattr(dataObj,dataSet)
-  xData       = currentData.time
+  xData1      = currentData.time
   yData1      = currentData.data
   beams       = currentData.fov.beams
   gates       = currentData.fov.gates
 
+  if dataObj2 != None and dataSet2 == None: dataSet2 == 'active'
+
+  if dataSet2 != None:
+    if dataObj2 != None:
+      currentData2 = getattr(dataObj2,dataSet2)
+    else:
+      currentData2  = getattr(dataObj,dataSet2)
+    xData2        = currentData2.time
+    yData2        = currentData2.data
+    yData2_title  = currentData2.history[max(currentData2.history.keys())]
+  else:
+    xData2 = None
+    yData2 = None
+    yData2_title = None
+
   #Define x-axis range
   if xlim == None:
-    xlim = (min(xData),max(xData))
+    tmpLim = []
+    tmpLim.append(min(xData1))
+    tmpLim.append(max(xData1))
+    if xData2 != None:
+      tmpLim.append(min(xData2))
+      tmpLim.append(max(xData2))
+    xlim = (min(tmpLim),max(tmpLim))
+
+  #Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
+  if xBoundaryLimits == None:
+    tmpLim = []
+    if currentData.metadata.has_key('timeLimits'):
+      tmpLim.append(currentData.metadata['timeLimits'][0])
+      tmpLim.append(currentData.metadata['timeLimits'][1])
+
+    if dataSet2 != None:
+      if currentData2.metadata.has_key('timeLimits'):
+        tmpLim.append(currentData2.metadata['timeLimits'][0])
+        tmpLim.append(currentData2.metadata['timeLimits'][1])
+
+    if tmpLim != []:
+      xBoundaryLimits = (min(tmpLim), max(tmpLim))
 
   #Get X-Axis title.
   if xlabel == None:
@@ -352,24 +391,11 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
         xlim[0].strftime('%Y %b %d %H:%M - ') + xlim[1].strftime('%Y %b %d %H:%M'))
     title = '\n'.join(title)
 
-  if dataSet2 != None:
-    if dataObj2 != None:
-      currentData2 = getattr(dataObj2,dataSet2)
-    else:
-      currentData2  = getattr(dataObj,dataSet2)
-    xData2        = currentData2.time
-    yData2        = currentData2.data
-    yData2_title  = currentData2.history[max(currentData2.history.keys())]
-  else:
-    xData2 = None
-    yData2 = None
-    yData2_title = None
+  multiPlot(xData1,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
+      xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
 
-  multiPlot(xData,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
-      xData2=xData2,yData2=yData2,yData2_title=yData2_title)
-
-def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
-    xData2=None,yData2=None,yData2_title=None):
+def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
+    xData2=None,yData2=None,yData2_title=None,xBoundaryLimits=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
   This defaults to 9 cells of the FOV.
 
@@ -430,7 +456,13 @@ def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=
 
   #Define x-axis range
   if xlim == None:
-    xlim = (min(xData),max(xData))
+    tmpLim = []
+    tmpLim.append(min(xData1))
+    tmpLim.append(max(xData1))
+    if xData2 != None:
+      tmpLim.append(min(xData2))
+      tmpLim.append(max(xData2))
+    xlim = (min(tmpLim),max(tmpLim))
 
   #Autorange y-axis... make all plots have the same range.
   data = []
@@ -449,7 +481,6 @@ def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=
           for item in yData2[:,bmInx,rgInx]:
             data.append(item)
 
-
     mx  = np.nanmax(data)
     mn  = np.nanmin(data)
    
@@ -466,7 +497,7 @@ def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=
   for rg,rgInx in zip(plotGate,plotGateInx):
     for bm,bmInx in zip(plotBeam,plotBeamInx):
       axis = fig.add_subplot(nCols,nRows,ii)
-      l1, = axis.plot(xData,yData1[:,bmInx,rgInx],label=yData1_title)
+      l1, = axis.plot(xData1,yData1[:,bmInx,rgInx],label=yData1_title)
 
       if yData2 != None:
         l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
@@ -485,6 +516,14 @@ def multiPlot(xData,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=
 
       if ylim != None:
         axis.set_ylim(ylim)
+
+      #Gray out area outside of the boundary.
+      if xBoundaryLimits != None:
+        gray = '0.75'
+        axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray)
+        axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray)
+        axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2)
+        axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2)
 
       text = 'Beam: %i, Gate: %i' % (bm, rg)
       axis.text(0.02,0.92,text,transform=axis.transAxes)

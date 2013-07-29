@@ -109,8 +109,12 @@ fig.savefig(outdir+'/ranges.png')
 
 music.timeInterpolation(dataObj)
 
+#xBoundaryLimits = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
+#dataObj.beamInterpolated.metadata['timeLimits'] = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
+xBoundaryLimits = None
+
 fig = plt.figure(figsize=figsize)
-pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig,xBoundaryLimits=xBoundaryLimits)
 fig.savefig(outdir+'/timeInterp.png')
 import ipdb; ipdb.set_trace()
 
