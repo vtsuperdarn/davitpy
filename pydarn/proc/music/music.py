@@ -93,7 +93,8 @@ class musicDataObj(object):
     newsigobj.metadata  = copy.deepcopy(self.metadata)
     newsigobj.history   = copy.deepcopy(self.history)
 
-    newsigobj.history[datetime.datetime.now()] = comment
+    newsigobj.metadata['dataSetName'] = newsig
+    newsigobj.history[datetime.datetime.now()] = '['+newsig+'] '+comment
     
     return newsigobj
   
@@ -123,6 +124,51 @@ class musicDataObj(object):
     """Sets this signal as the currently active signal.
     """
     self.parent.active = self
+
+  def nyquistFrequency(self,timeVec=None):
+    """Calculate the Nyquist frequency of a vt sigStruct signal.
+    :param timeVec: List of datetime.datetime to use instead of self.time.
+    :returns: nyq: Nyquist frequency of the signal in Hz.
+    """
+    dt  = self.samplePeriod(timeVec=timeVec)
+    nyq = 1. / (2*dt)
+    return nyq
+
+  def samplePeriod(self,timeVec=None):
+    """Calculate the sample period of a vt sigStruct signal.
+    :param timeVec: List of datetime.datetime to use instead of self.time.
+    :returns: samplePeriod: sample period of signal in seconds.
+    """
+    
+    if timeVec == None: timeVec = self.time
+
+    diffs = np.unique(np.diff(timeVec))
+    self.diffs = diffs
+
+    if len(diffs) == 1:
+      samplePeriod = diffs[0].total_seconds()
+    else:
+      maxDt = np.max(diffs) - np.min(diffs)
+      maxDt = maxDt.total_seconds()
+      avg = np.sum(diffs)/len(diffs)
+      avg = avg.total_seconds()
+      md  = self.metadata
+      warn = 'WARNING'
+      if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
+      print warn + ':'
+      print '   Date time vector is not regularly sampled!'
+      print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
+      print '   Using average sampling period of ' + str(avg) + ' sec.'
+      samplePeriod = avg
+
+    return samplePeriod
+
+  def getAllMetaData(self):
+#    return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
+    return self.metadata
+
+  def setMetaData(self,**metadata):
+    self.metadata = dict(self.metadata.items() + metadata.items())
     
 class musicArray(object):
   def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
@@ -232,12 +278,16 @@ class musicArray(object):
     metadata['model']     = fovModel
     metadata['coords']    = fovCoords
 
+    dataSet = 'originalFit'
+    metadata['dataSetName'] = dataSet
+    comment = '['+dataSet+'] '+ 'Original Fit Data'
     #Save data to be returned as self.variables
-    self.originalFit = musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment='Original Fit Data')
-    self.originalFit.metadata = metadata
+    setattr(self,dataSet,musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment=comment))
+    newSigObj = getattr(self,dataSet)
+    setattr(newSigObj,'metadata',metadata)
 
     #Set the new data active.
-    self.originalFit.setActive()
+    newSigObj.setActive()
 
 def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
   """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
@@ -407,7 +457,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,newDat
     
     #Update the history with what limits were applied.
     if commentList != []:
-      commentStr = comment+': '+'; '.join(commentList)
+      commentStr = '['+currentData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
       key = max(newData.history.keys())
       newData.history[key] = commentStr
 
@@ -520,7 +570,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
       input_x   = input_x[good]
       input_y   = input_y[good]
 
-      input_x   = toUnixEpochTime(input_x)
+      input_x   = utils.datetimeToEpoch(input_x)
 
       intFn     = interp1d(input_x,input_y,bounds_error=False)#,fill_value=0)
       interpArr[:,bb,rg] = intFn(newEpochVec)
@@ -530,7 +580,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
   newDataSet.setActive()
 
 class filter(object):
-  def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newSigName='filtered'):
+  def __init__(self, dataObj, dataSet='active', numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newDataSetName='filtered'):
     """Filter a VT sig/sigStruct object and define a FIR filter object.
     If only cutoff_low is defined, this is a high pass filter.
     If only cutoff_high is defined, this is a low pass filter.
@@ -583,14 +633,11 @@ class filter(object):
                       `nyq` (i.e the filter is a single band highpass filter);
                   center of first passband otherwise.
 
-    nyq : float
-        Nyquist frequency.  Each frequency in `cutoff` must be between 0
-        and `nyq`.
-
     :returns: filter object
     """
+    import scipy as sp
     
-    sigObj = prepForProc(vtsig)
+    sigObj = getattr(dataObj,dataSet)
     nyq = sigObj.nyquistFrequency()
 
     #Get metadata for cutoffs and numtaps.
@@ -628,102 +675,118 @@ class filter(object):
       print "WARNING!! You must define cutoff frequencies!"
       return
     
-    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz'])
+    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz,','Numtaps:',str(numtaps)])
     self.nyq = nyq
     self.ir = d
 
-    self.filter(sigObj,newSigName=newSigName)
+    self.filter(dataObj,dataSet=dataSet,newDataSetName=newDataSetName)
 
 
   def __str__(self):
     return self.comment
 
-  def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None,worN=None):
-      """Plot the frequency and phase response of the filter object.
+  def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None,worN=None,fig=None):
+    import scipy as sp
+    """Plot the frequency and phase response of the filter object.
 
-      :param xmin: Minimum value for x-axis.
-      :param xmax: Maximum value for x-axis.
-      :param ymin_mag: Minimum value for y-axis for the frequency response plot.
-      :param ymax_mag: Maximum value for y-axis for the frequency response plot.
-      :param ymin_phase: Minimum value for y-axis for the phase response plot.
-      :param ymax_phase: Maximum value for y-axis for the phase response plot.
-      :param worN: worN : {None, int}, optional
-          passed to scipy.signal.freqz()
-          If None, then compute at 512 frequencies around the unit circle.
-          If the len(filter) > 512, then compute at len(filter) frequencies around the unit circle.
-          If a single integer, the compute at that many frequencies.
-          Otherwise, compute the response at frequencies given in worN
-      """
-      if worN == None:
-        if len(self.ir) > 512: worN = len(self.ir)
-        else: worN = None
-      else: pass
+    :param xmin: Minimum value for x-axis.
+    :param xmax: Maximum value for x-axis.
+    :param ymin_mag: Minimum value for y-axis for the frequency response plot.
+    :param ymax_mag: Maximum value for y-axis for the frequency response plot.
+    :param ymin_phase: Minimum value for y-axis for the phase response plot.
+    :param ymax_phase: Maximum value for y-axis for the phase response plot.
+    :param worN: worN : {None, int}, optional
+        passed to scipy.signal.freqz()
+        If None, then compute at 512 frequencies around the unit circle.
+        If the len(filter) > 512, then compute at len(filter) frequencies around the unit circle.
+        If a single integer, the compute at that many frequencies.
+        Otherwise, compute the response at frequencies given in worN
+    """
 
-      w,h = sp.signal.freqz(self.ir,1,worN=worN)
-      h_dB = 20 * np.log10(abs(h))
-      mp.subplot(211)
-    
-      #Compute frequency vector.
-      w = w/max(w) * self.nyq
-      mp.plot(w,h_dB,'.-')
-      #mp.axvline(x=self.fMax,color='r',ls='--',lw=2)
+    if fig == None:
+      from matplotlib.backends.backend_agg import FigureCanvasAgg
+      from matplotlib.figure import Figure
+      fig = Figure()
 
-      if xmin is not None: mp.xlim(xmin=xmin)
-      if xmax is not None: mp.xlim(xmax=xmax)
-      if ymin_mag is not None: mp.ylim(ymin=ymin_mag)
-      if ymax_mag is not None: mp.ylim(ymax=ymax_mag)
+    if worN == None:
+      if len(self.ir) > 512: worN = len(self.ir)
+      else: worN = None
+    else: pass
 
-      mp.ylabel('Magnitude (db)')
-      mp.xlabel(r'Frequency (Hz)')
+    w,h = sp.signal.freqz(self.ir,1,worN=worN)
+    h_dB = 20 * np.log10(abs(h))
+    axis = fig.add_subplot(211)
+  
+    #Compute frequency vector.
+    w = w/max(w) * self.nyq
+    axis.plot(w,h_dB,'.-')
+    #mp.axvline(x=self.fMax,color='r',ls='--',lw=2)
 
-      mp.title(r'Frequency response')
-      mp.subplot(212)
-      h_Phase = np.unwrap(np.arctan2(np.imag(h),np.real(h)))
-      mp.plot(w,h_Phase,'.-')
+    if xmin is not None: axis.set_xlim(xmin=xmin)
+    if xmax is not None: axis.set_xlim(xmax=xmax)
+    if ymin_mag is not None: axis.set_ylim(ymin=ymin_mag)
+    if ymax_mag is not None: axis.set_ylim(ymax=ymax_mag)
 
-      if xmin is not None: mp.xlim(xmin=xmin)
-      if xmax is not None: mp.xlim(xmax=xmax)
-      if ymin_phase is not None: mp.ylim(ymin=ymin_phase)
-      if ymax_phase is not None: mp.ylim(ymax=ymax_phase)
+    axis.set_xlabel(r'Frequency (Hz)')
+    axis.set_ylabel('Magnitude (db)')
 
-      mp.ylabel('Phase (radians)')
-      mp.xlabel(r'Frequency (Hz)')
-      mp.title(r'Phase response')
-      mp.subplots_adjust(hspace=0.5)
-      mp.show()
+    axis.set_title(r'Frequency response')
 
-  #Plot step and impulse response
-  def plotImpulseResponse(self,xmin=None,xmax=None,ymin_imp=None,ymax_imp=None,ymin_step=None,ymax_step=None):
-      """Plot the frequency and phase response of the filter object.
+    axis = fig.add_subplot(212)
+    h_Phase = np.unwrap(np.arctan2(np.imag(h),np.real(h)))
+    axis.plot(w,h_Phase,'.-')
 
-      :param xmin: Minimum value for x-axis.
-      :param xmax: Maximum value for x-axis.
-      :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-      :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-      :param ymin_step: Minimum value for y-axis for the step response plot.
-      :param ymax_step: Maximum value for y-axis for the step response plot.
-      """
-    #  def plotImpulseResponse(b,a=1):
-      l = len(self.ir)
-      impulse = np.repeat(0.,l); impulse[0] =1.
-      x = np.arange(0,l)
-      response = sp.signal.lfilter(self.ir,1,impulse)
-      mp.subplot(211)
-      mp.stem(x, response)
-      mp.ylabel('Amplitude')
-      mp.xlabel(r'n (samples)')
-      mp.title(r'Impulse response')
-      mp.subplot(212)
+    if xmin is not None: axis.set_xlim(xmin=xmin)
+    if xmax is not None: axis.set_xlim(xmax=xmax)
+    if ymin_phase is not None: axis.set_ylim(ymin=ymin_phase)
+    if ymax_phase is not None: axis.set_ylim(ymax=ymax_phase)
 
-      step = np.cumsum(response)
-      mp.stem(x, step)
-      mp.ylabel('Amplitude')
-      mp.xlabel(r'n (samples)')
-      mp.title(r'Step response')
-      mp.subplots_adjust(hspace=0.5)
-      mp.show()
+    axis.set_ylabel('Phase (radians)')
+    axis.set_xlabel(r'Frequency (Hz)')
+    axis.set_title(r'Phase response')
+    fig.suptitle(self.comment)
+    fig.subplots_adjust(hspace=0.5)
 
-  def filter(self,vtsig,newSigName='filtered'):
+    return fig
+
+  def plotImpulseResponse(self,xmin=None,xmax=None,ymin_imp=None,ymax_imp=None,ymin_step=None,ymax_step=None,fig=None):
+    import scipy as sp
+    """Plot the frequency and phase response of the filter object.
+
+    :param xmin: Minimum value for x-axis.
+    :param xmax: Maximum value for x-axis.
+    :param ymin_imp: Minimum value for y-axis for the impulse response plot.
+    :param ymax_imp: Maximum value for y-axis for the impulse response plot.
+    :param ymin_step: Minimum value for y-axis for the step response plot.
+    :param ymax_step: Maximum value for y-axis for the step response plot.
+    """
+    if fig == None:
+      from matplotlib.backends.backend_agg import FigureCanvasAgg
+      from matplotlib.figure import Figure
+      fig = Figure()
+
+    l = len(self.ir)
+    impulse = np.repeat(0.,l); impulse[0] =1.
+    x = np.arange(0,l)
+    response = sp.signal.lfilter(self.ir,1,impulse)
+    axis = fig.add_subplot(211)
+    axis.stem(x, response)
+    axis.set_ylabel('Amplitude')
+    axis.set_xlabel(r'n (samples)')
+    axis.set_title(r'Impulse response')
+
+    axis = fig.add_subplot(212)
+    step = np.cumsum(response)
+    axis.stem(x, step)
+    axis.set_ylabel('Amplitude')
+    axis.set_xlabel(r'n (samples)')
+    axis.set_title(r'Step response')
+    fig.suptitle(self.comment)
+    fig.subplots_adjust(hspace=0.5)
+
+    return fig
+
+  def filter(self,dataObj,dataSet='active',newDataSetName='filtered'):
       """Apply the filter to a vtsig object.
 
       :param vtsig: vtsig object
@@ -733,52 +796,57 @@ class filter(object):
       :param ymin_step: Minimum value for y-axis for the step response plot.
       :param ymax_step: Maximum value for y-axis for the step response plot.
       """
+      import scipy as sp
       
-      sigobj = prepForProc(vtsig)
+      sigobj = getattr(dataObj,dataSet)
       vtsig  = sigobj.parent
 
-      #Apply filter
-      filt_data = sp.signal.lfilter(self.ir,[1.0],sigobj.data)
+      nrTimes,nrBeams,nrGates = np.shape(sigobj.data)
 
-#Filter causes a delay in the signal and also doesn't get the tail end of the signal...  Shift signal around, provide info about where the signal is valid.
+      #Filter causes a delay in the signal and also doesn't get the tail end of the signal...  Shift signal around, provide info about where the signal is valid.
       shift = np.int32(-np.floor(len(self.ir)/2.))
 
-      start_line = np.zeros(len(filt_data))
+      start_line    = np.zeros(nrTimes)
       start_line[0] = 1
+      start_line    = np.roll(start_line,shift)
 
-      filt_data  = np.roll(filt_data,shift)
-      start_line = np.roll(start_line,shift)
-      
       tinx0 = abs(shift)
       tinx1 = np.where(start_line == 1)[0][0]
 
-      val_tm0 = sigobj.dtv[tinx0]
-      val_tm1 = sigobj.dtv[tinx1]
+      val_tm0 = sigobj.time[tinx0]
+      val_tm1 = sigobj.time[tinx1]
+
+      filteredData = np.zeros_like(sigobj.data)
+
+      #Apply filter
+      for bm in range(nrBeams):
+        for rg in range(nrGates):
+          tmp = sp.signal.lfilter(self.ir,[1.0],sigobj.data[:,bm,rg])
+          tmp = np.roll(tmp,shift)
+          filteredData[:,bm,rg] = tmp[:]
 
       #Create new signal object.
-      newsigobj = sigobj.copy(newSigName,self.comment)
+      newsigobj = sigobj.copy(newDataSetName,self.comment)
       #Put in the filtered data.
-      newsigobj.data = copy.copy(filt_data)
-      newsigobj.dtv = copy.copy(sigobj.dtv)
+      newsigobj.data = copy.copy(filteredData)
+      newsigobj.time = copy.copy(sigobj.time)
 
       #Clear out ymin and ymax from metadata; make sure meta data block exists.
       #If not, create it.
       if hasattr(newsigobj,'metadata'):
-        delMeta = ['ymin','ymax']
+        delMeta = ['ymin','ymax','ylim']
         for key in delMeta:
           if newsigobj.metadata.has_key(key):
             del newsigobj.metadata[key]
       else:
         newsigobj.metadata = {}
 
-      newsigobj.updateValidTimes([val_tm0,val_tm1])
+      newsigobj.metadata['timeLimits'] = (val_tm0,val_tm1)
 
       key = 'title'
       if newsigobj.metadata.has_key(key):
         newsigobj.metadata[key] = ' '.join(['Filtered',newsigobj.metadata[key]])
-      elif vtsig.metadata.has_key(key):
-        newsigobj.metadata[key] = ' '.join(['Filtered',vtsig.metadata[key]])
       else:
         newsigobj.metadata[key] = 'Filtered'
 
-      setattr(vtsig,'active',newsigobj)
+      newsigobj.setActive()

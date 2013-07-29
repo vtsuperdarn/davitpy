@@ -107,7 +107,7 @@ fig.savefig(outdir+'/ranges.png')
 #pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet2='limitsApplied',fig=fig)
 #fig.savefig(outdir+'/multiplot.png')
 
-music.timeInterpolation(dataObj)
+music.timeInterpolation(dataObj,timeRes=10)
 
 #xBoundaryLimits = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
 #dataObj.beamInterpolated.metadata['timeLimits'] = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
@@ -116,6 +116,20 @@ xBoundaryLimits = None
 fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig,xBoundaryLimits=xBoundaryLimits)
 fig.savefig(outdir+'/timeInterp.png')
+
+filt = music.filter(dataObj, dataSet='active', numtaps=501, cutoff_low=0.0003, cutoff_high=0.0012)
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='filtered',fig=fig)
+fig.savefig(outdir+'/filtered.png')
+
+fig = plt.figure(figsize=figsize)
+filt.plotTransferFunction(fig=fig,xmax=0.004)
+fig.savefig(outdir+'/transferFunction.png')
+
+fig = plt.figure(figsize=figsize)
+filt.plotImpulseResponse(fig=fig)
+fig.savefig(outdir+'/impulseResponse.png')
 
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)
