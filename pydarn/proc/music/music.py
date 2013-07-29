@@ -484,6 +484,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
       * **newTimeVec**: Sequence of datetime.datetime objects that data will be interpolated to.  This overides timeRes.
   """
   from scipy.interpolate import interp1d
+  import utils 
   currentData = getattr(dataObj,dataSet)
 
   sTime = currentData.time[0]
@@ -500,7 +501,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
   newTimeVec  = np.array(newTimeVec)
   good        = np.where(np.logical_and(newTimeVec > min(currentData.time),newTimeVec < max(currentData.time)))
   newTimeVec  = newTimeVec[good]
-  newEpochVec = toUnixEpochTime(newTimeVec)
+  newEpochVec = utils.datetimeToEpoch(newTimeVec)
 
   #Initialize interpolated data.
   nrTimes = len(newTimeVec)
@@ -527,14 +528,6 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
   newDataSet.time = newTimeVec
   newDataSet.data = interpArr
   newDataSet.setActive()
-
-def toUnixEpochTime(datetimeList):
-  import numpy
-  import time
-
-  datetimeArray = numpy.array(datetimeList)
-  unx = [time.mktime(dt.timetuple()) for dt in datetimeArray]
-  return unx
 
 class filter(object):
   def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newSigName='filtered'):
