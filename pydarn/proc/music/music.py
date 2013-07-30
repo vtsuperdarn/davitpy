@@ -435,10 +435,9 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
   if (rangeLimits != None) or (gateLimits != None) or (timeLimits != None):
     defineLimits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits)
 
+  currentData = getattr(dataObj,dataSet)
   try:
     #Make a copy of the current data set.
-    currentData = getattr(dataObj,dataSet)
-    newData     = currentData.copy(newDataSetName,comment)
 
     commentList = []
 
@@ -446,8 +445,9 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
         currentData.metadata.has_key('beamLimits') == False and 
         currentData.metadata.has_key('gateLimits') == False):
       print 'No limits were defined.  Data left unchanged.'
-      return None
+      return currentData
 
+    newData     = currentData.copy(newDataSetName,comment)
     #Apply the gateLimits
     if currentData.metadata.has_key('gateLimits'):
       limits      = currentData.metadata['gateLimits']
@@ -523,7 +523,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
   except:
     if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
     print 'Warning! Limits not applied.'
-    return None
+    return currentData
 
 def determine_relative_position(dataObj,dataSet='active',altitude=250.):
   """Finds the center cell of the field-of-view of a vtMUSIC data object.
@@ -923,7 +923,7 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   import scipy as sp
 
   currentData = getattr(dataObj,dataSet)
-  currentData.applyLimits()
+  currentData = currentData.applyLimits()
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
@@ -934,6 +934,38 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   
   if comment == None:
     comment = type.capitalize() + ' detrend (scipy.signal.detrend)'
+      
+  newDataSet      = currentData.copy(newDataSetName,comment)
+  newDataSet.data = newDataArr
+  newDataSet.setActive()
+
+def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,window='hann'):
+  """Linearly detrend a vtsig object.
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+      * **newSigName**: String name of the attribute of the newly created signal.
+      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
+                        barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
+                        slepian (needs width), chebwin (needs attenuation)
+  """
+  import scipy as sp
+
+  currentData = getattr(dataObj,dataSet)
+  currentData = currentData.applyLimits()
+
+  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+  win = sp.signal.get_window(window,nrTimes,fftbins=False)
+  newDataArr= np.zeros_like(currentData.data)
+  for bm in range(nrBeams):
+    for rg in range(nrGates):
+      newDataArr[:,bm,rg] = currentData.data[:,bm,rg] * win
+  
+  if comment == None:
+    comment = window.capitalize() + ' window applied (scipy.signal.get_window)'
       
   newDataSet      = currentData.copy(newDataSetName,comment)
   newDataSet.data = newDataArr

@@ -132,10 +132,16 @@ fig = plt.figure(figsize=figsize)
 filt.plotImpulseResponse(fig=fig)
 fig.savefig(outdir+'/impulseResponse.png')
 
-import ipdb; ipdb.set_trace()
-dataObj.active.applyLimits()
-import ipdb; ipdb.set_trace()
 detrend = music.detrend(dataObj, dataSet='active')
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig)
+fig.savefig(outdir+'/detrendedData.png')
+
+detrend = music.windowData(dataObj, dataSet='active')
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig)
+fig.savefig(outdir+'/windowedData.png')
 
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)
