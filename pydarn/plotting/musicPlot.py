@@ -628,3 +628,141 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
     fig.text(0.12,0.92,title,size=24)
 
   return fig
+
+def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
+  from scipy import stats
+
+  currentData = getattr(dataObj,dataSet)
+  if fig == None:
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+    fig = Figure()
+
+  nrFreqs,nrBeams,nrGates = np.shape(currentData.spectrum)
+
+  if xlim == None:
+    posFreqInx  = np.where(currentData.freqVec >= 0)[0]
+  else:
+    posFreqInx  = np.where(np.logical_and(currentData.freqVec >= xlim[0],currentData.freqVec <= xlim[1]))[0]
+
+  posFreqVec  = currentData.freqVec[posFreqInx]
+  npf         = len(posFreqVec) #Number of positive frequencies
+
+  data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
+
+  #Determine scale for colorbar.
+  sd          = stats.nanstd(data,axis=None)
+  mean        = stats.nanmean(data,axis=None)
+  scMax       = mean + 2.*sd
+  scale       = scMax*np.array([0,1.])
+
+  nXBins      = nrBeams * npf #number of bins we are going to plot
+
+  #Average Power Spectral Density
+  avg_psd = np.zeros(npf)
+  for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
+  avg_psd = avg_psd/np.nanmax(avg_psd)
+
+  #Do plotting here!
+  axis = fig.add_subplot(111)
+
+  verts   = []
+  scan    = []
+  #Plot Spectrum
+  sep     = 0.1
+  for ff in range(npf):
+    for bb in range(nrBeams):
+      xx0      = nrBeams*(ff + 0.5*sep) + bb*(1-sep)
+      xx1      = xx0 + (1-sep)
+      for gg in range(nrGates):
+        scan.append(data[ff,bb,gg])
+
+        yy0  = gg
+        yy1  = gg + 1
+
+        x1,y1 = xx0, yy0
+        x2,y2 = xx1, yy0
+        x3,y3 = xx1, yy1
+        x4,y4 = xx0, yy1
+        verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+  colors  = 'lasse'
+  if scale == None:
+    scale   = (np.min(scan),np.max(scan))
+  param = 'power'
+  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+  pcoll.set_array(np.array(scan))
+  axis.add_collection(pcoll,autolim=False)
+
+  #Plot average values.
+  verts   = []
+  scan    = []
+  for ff in range(npf):
+    scan.append(avg_psd[ff])
+
+    xx0      = nrBeams*(ff + 0.5*sep)
+    xx1      = xx0 + nrBeams*(1-sep)
+    yy0      = nrGates
+    yy1      = nrGates + 1
+
+    x1,y1 = xx0, yy0
+    x2,y2 = xx1, yy0
+    x3,y3 = xx1, yy1
+    x4,y4 = xx0, yy1
+
+    verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+  param = 'power'
+  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+  pcoll.set_array(np.array(scan))
+  axis.add_collection(pcoll,autolim=False)
+
+  #X-Labels
+  maxXTicks = 10.
+  modX      = np.ceil(npf / maxXTicks)
+  fCharSize= 0.60
+
+  xlabels = []
+  xpos    = []
+  for ff in range(npf-1):
+    if (ff % modX) != 0: continue
+    freqLabel = '%.2f'  % (posFreqVec[ff]*1000.)
+    if posFreqVec[ff] == 0:
+      periodLabel = 'Inf'
+    else:
+      periodLabel = '%i' % (1./posFreqVec[ff] / 60.)
+    xlabels.append(freqLabel+'\n'+periodLabel)
+    xpos.append(nrBeams* (ff + 0.1))
+
+  xlabels.append('freq [mHz]\nPer. [min]')
+  xpos.append(nrBeams* (npf-1 + 0.1))
+
+  axis.set_xticks(xpos)
+  axis.set_xticklabels(xlabels,ha='left')
+
+  #Y-Labels
+  maxYTicks       = 10.
+  modY            = np.ceil(nrGates/maxYTicks)
+
+  ylabels = []
+  ypos    = []
+  for gg in range(nrGates):
+    if (gg % modY) != 0: continue
+    ylabels.append('%i' % currentData.fov.gates[gg])
+    ypos.append(gg+0.5)
+    
+  ylabels.append('Norm\nAvg\PSD') 
+  ypos.append(nrGates+0.5)
+  axis.set_yticks(ypos)
+  axis.set_yticklabels(ylabels)
+  axis.set_ylabel('Range Gate')
+
+  for ff in range(npf):
+    axis.axvline(x=ff*nrBeams,color='k',lw=2)
+
+  axis.set_xlim([0,nXBins])
+  axis.set_ylim([0,nrGates+1])
+
+  fig.text(0.1,0.9,'Full Spectrum View')

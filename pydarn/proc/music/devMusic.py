@@ -158,6 +158,10 @@ pydarn.plotting.musicPlot.spectrumMultiPlot(dataObj,fig=fig,plotType='phase',xli
 fig.savefig(outdir+'/phase.png')
 
 fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.plotFullSpectrum(dataObj,fig=fig,xlim=(0,0.0015))
+fig.savefig(outdir+'/fullSpectrum.png')
+
+fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)
 pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='000_originalFit',axis=ax)
 ax  = fig.add_subplot(122)
