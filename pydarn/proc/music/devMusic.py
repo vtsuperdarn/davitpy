@@ -143,6 +143,20 @@ fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig)
 fig.savefig(outdir+'/windowedData.png')
 
+music.calculateFFT(dataObj)
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.spectrumMultiPlot(dataObj,fig=fig,xlim=(-0.0025,0.0025))
+fig.savefig(outdir+'/spectrum.png')
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.spectrumMultiPlot(dataObj,fig=fig,plotType='magnitude',xlim=(0,0.0025))
+fig.savefig(outdir+'/magnitude.png')
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.spectrumMultiPlot(dataObj,fig=fig,plotType='phase',xlim=(0,0.0025))
+fig.savefig(outdir+'/phase.png')
+
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(121)
 pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='000_originalFit',axis=ax)

@@ -940,7 +940,7 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   newDataSet.setActive()
 
 def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,window='hann'):
-  """Linearly detrend a vtsig object.
+  """Apply a window to a vtMUSIC object.  The window is calculated using scipy.signal.get_window().
 
   **Args**:
       * **dataObj**:    vtMUSIC object
@@ -970,3 +970,36 @@ def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,w
   newDataSet      = currentData.copy(newDataSetName,comment)
   newDataSet.data = newDataArr
   newDataSet.setActive()
+
+def calculateFFT(dataObj,dataSet='active',newDataSetName='windowed',comment=None):
+  """Calculate the spectrum of an object.
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+      * **newSigName**: String name of the attribute of the newly created signal.
+      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
+                        barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
+                        slepian (needs width), chebwin (needs attenuation)
+  """
+  import scipy as sp
+
+  currentData = getattr(dataObj,dataSet)
+  currentData = currentData.applyLimits()
+
+  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+  #Determine frequency axis.
+  nyq = currentData.nyquistFrequency()
+  freq_ax = np.arange(nrTimes,dtype='f8')
+  freq_ax = (freq_ax / max(freq_ax)) - 0.5
+  freq_ax = freq_ax * 2. * nyq
+
+  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex128)
+  for bm in range(nrBeams):
+    for rg in range(nrGates):
+      newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg]))
+  
+  currentData.freqVec   = freq_ax
+  currentData.spectrum  = newDataArr
