@@ -695,6 +695,13 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
   pcoll.set_array(np.array(scan))
   axis.add_collection(pcoll,autolim=False)
 
+  #Colorbar
+  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+  cbar.set_label('ABS(Spectral Density')
+  labels = cbar.ax.get_yticklabels()
+  labels[-1].set_visible(False)
+  labels[0].set_visible(False)
+
   #Plot average values.
   verts   = []
   scan    = []
@@ -765,4 +772,30 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
   axis.set_xlim([0,nXBins])
   axis.set_ylim([0,nrGates+1])
 
-  fig.text(0.1,0.9,'Full Spectrum View')
+  xpos = 0.130
+  fig.text(xpos,0.99,'Full Spectrum View',fontsize=20,va='top')
+  #Get the time limits.
+  timeLim = (np.min(currentData.time),np.max(currentData.time))
+  md = currentData.metadata
+
+  #Translate parameter information from short to long form.
+  paramDict = getParamDict(md['param'])
+  param     = paramDict['param']
+  cbarLabel = paramDict['label']
+
+  text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
+
+  if md.has_key('fir_filter'):
+    filt = md['fir_filter']
+    if filt[0] == None:
+      low = 'None'
+    else:
+      low = '%.2f' % (1000. * filt[0])
+    if filt[1] == None:
+      high = 'None'
+    else:
+      high = '%.2f' % (1000. * filt[1])
+
+    text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+
+  fig.text(xpos,0.95,text,fontsize=14,va='top')

@@ -733,6 +733,8 @@ class filter(object):
       return
     
     self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz,','Numtaps:',str(numtaps)])
+    self.cutoff_low   = cutoff_low
+    self.cutoff_high  = cutoff_high
     self.nyq = nyq
     self.ir = d
 
@@ -906,6 +908,7 @@ class filter(object):
       else:
         newsigobj.metadata[key] = 'Filtered'
 
+      newsigobj.metadata['fir_filter'] = (self.cutoff_low,self.cutoff_high)
       newsigobj.setActive()
 
 def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,type='linear'):
