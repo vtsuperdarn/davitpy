@@ -164,11 +164,22 @@ fig.savefig(outdir+'/fullSpectrum.png')
 music.calculateDlm(dataObj)
 
 fig = plt.figure(figsize=figsize)
-ax  = fig.add_subplot(121)
-pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='000_originalFit',axis=ax)
-ax  = fig.add_subplot(122)
-pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='000_originalFit',axis=ax)
-fig.savefig(outdir+'/range_comparison.png')
+pydarn.plotting.musicPlot.plotDlm(dataObj,fig=fig)
+fig.savefig(outdir+'/dlm_abs.png')
+
+music.calculateKarr(dataObj)
+
+import pickle
+pickle.dump(dataObj,open('dataObj.p','wb'))
+
+#fig = plt.figure(figsize=figsize)
+#ax  = fig.add_subplot(121)
+#pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='000_originalFit',axis=ax)
+#ax  = fig.add_subplot(122)
+#pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='000_originalFit',axis=ax)
+#fig.savefig(outdir+'/range_comparison.png')
+
+
 #
 #fig = plt.figure(figsize=figsize)
 #ax  = fig.add_subplot(121)

@@ -1004,3 +1004,88 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
         mmAI            = np.unravel_index(mm,[nrBeams,nrGates])
         spectM          = currentData.spectrum[:,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
+
+def calculateKarr(dataObj,dataSet='active',comment=None):
+  """Calculate the cross-spectral matrix of a vtMUSIC object. FFT must already have been calculated.
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+      * **newSigName**: String name of the attribute of the newly created signal.
+      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
+                        barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
+                        slepian (needs width), chebwin (needs attenuation)
+  """
+  currentData = getattr(dataObj,dataSet)
+
+  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+  #Calculate eigenvalues, eigenvectors
+  eVals,eVecs = np.linalg.eig(dataObj.active.Dlm)
+
+  kx_max  = 0.05
+  ky_max  = 0.05
+  dkx     = 0.001
+  dky     = 0.001
+
+  nkx     = np.ceil(2*kx_max/dkx)
+  if (nkx % 2) == 0: nkx = nkx+1
+  kx_vec  = kx_max * (2*np.arange(nkx)/(nkx-1) - 1)
+
+  nky     = np.ceil(2*ky_max/dky)
+  if (nky % 2) == 0: nky = nky+1
+  ky_vec  = ky_max * (2*np.arange(nky)/(nky-1) - 1)
+
+  nkx = int(nkx)
+  nky = int(nky)
+
+  xm      = currentData.llLookupTable[4,:] #x is in the E-W direction.
+  ym      = currentData.llLookupTable[3,:] #y is in the N-S direction.
+
+  omega   = 0.
+  t       = 0.
+
+  sigThresh       = 0.15
+  maxEval = np.max(np.abs(eVals))
+
+  minEvalsInx = np.where(eVals <= sigThresh*maxEval)[0]
+  cnt         = np.size(minEvalsInx)
+  maxEvalsInx = np.where(eVals >  sigThresh*maxEval)[0]
+  nSigs       = np.size(maxEvalsInx)
+
+  if cnt < 3:
+      print 'Not enough small eigenvalues!'
+      import ipdb; ipdb.set_trace()
+
+  i     = 0+1j
+  kArr  = np.zeros((nkx,nky),dtype=np.complex128)
+
+
+  print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
+  print 'Kx Max: ' + str(kx_max)
+  print 'Kx Res: ' + str(dkx)
+  print 'Ky Max: ' + str(ky_max)
+  print 'Ky Res: ' + str(dky)
+  print ''
+  print 'Signal Threshold:      ' + str(sigThresh)
+  print 'Number of Det Signals: ' + str(nSigs)
+  print 'Number of Noise Evals: ' + str(cnt)
+
+  for kk_kx in range(nkx):
+      kx  = kx_vec[kk_kx]
+      for kk_ky in range(nky):
+          ky  = ky_vec[kk_ky]
+          resTot  = 0
+          for ee in range(cnt):
+              ec  = minEvalsInx[ee]
+              v   = np.transpose(eVecs[:,ec])
+              um  = np.transpose(np.exp(i*(kx*xm + ky*ym - omega*t)))
+
+              res = np.dot(np.dot( np.transpose(np.conj(um)),v),np.dot(np.transpose(np.conj(v)),um))
+              resTot = resTot + res
+          kArr[kk_kx,kk_ky] = 1. / resTot
+
+  currentData.karr   = kArr
+  currentData.kx_vec = kx_vec
+  currentData.ky_vec = ky_vec
