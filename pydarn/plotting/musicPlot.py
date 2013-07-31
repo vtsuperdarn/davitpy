@@ -147,7 +147,6 @@ class musicFan(object):
     axis.add_collection(pcoll,autolim=False)
 
     #Mark Cell
-    markVerts = []
     if markCell != None:
       beamInx = int(np.where(currentData.fov.beams == markCell[0])[0])
       gateInx = int(np.where(currentData.fov.gates == markCell[1])[0])
@@ -156,7 +155,6 @@ class musicFan(object):
       x2,y2 = m(lonFull[beamInx+1,gateInx+0],latFull[beamInx+1,gateInx+0])
       x3,y3 = m(lonFull[beamInx+1,gateInx+1],latFull[beamInx+1,gateInx+1])
       x4,y4 = m(lonFull[beamInx+0,gateInx+1],latFull[beamInx+0,gateInx+1])
-      markVerts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
       mkv = np.array([[x1,y1],[x2,y2],[x3,y3],[x4,y4],[x1,y1]])
 
@@ -661,7 +659,6 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
   #Average Power Spectral Density
   avg_psd = np.zeros(npf)
   for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
-  avg_psd = avg_psd/np.nanmax(avg_psd)
 
   #Do plotting here!
   axis = fig.add_subplot(111)
@@ -690,28 +687,34 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
   if scale == None:
     scale   = (np.min(scan),np.max(scan))
   param = 'power'
-  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+#  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+  cmap = matplotlib.cm.Blues_r
+  
+  bounds  = np.linspace(scale[0],scale[1],256)
+  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+
   pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
   pcoll.set_array(np.array(scan))
   axis.add_collection(pcoll,autolim=False)
 
   #Colorbar
   cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  cbar.set_label('ABS(Spectral Density')
-  labels = cbar.ax.get_yticklabels()
-  labels[-1].set_visible(False)
-  labels[0].set_visible(False)
+  cbar.set_label('ABS(Spectral Density)')
+  cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+#  labels = cbar.ax.get_yticklabels()
+#  labels[-1].set_visible(False)
+#  labels[0].set_visible(False)
 
   #Plot average values.
   verts   = []
   scan    = []
+  yy0      = nrGates
+  yy1      = nrGates + 1
   for ff in range(npf):
     scan.append(avg_psd[ff])
 
     xx0      = nrBeams*(ff + 0.5*sep)
     xx1      = xx0 + nrBeams*(1-sep)
-    yy0      = nrGates
-    yy1      = nrGates + 1
 
     x1,y1 = xx0, yy0
     x2,y2 = xx1, yy0
@@ -721,10 +724,24 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
     verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
   param = 'power'
-  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+  cmap = matplotlib.cm.winter
+  norm = matplotlib.colors.Normalize(vmin = 0, vmax = np.max(avg_psd))
   pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
   pcoll.set_array(np.array(scan))
   axis.add_collection(pcoll,autolim=False)
+
+  #Mark maximum PSD column.
+  maxInx = np.argmax(avg_psd)
+  xx0      = nrBeams*(maxInx + 0.5*sep)
+  xx1      = xx0 + nrBeams*(1-sep)
+
+  x1,y1 = xx0, yy0
+  x2,y2 = xx1, yy0
+  x3,y3 = xx1, yy1
+  x4,y4 = xx0, yy1
+  mkv = np.array([[x1,y1],[x2,y2],[x3,y3],[x4,y4],[x1,y1]])
+  poly = Polygon(mkv,facecolor='Red',edgecolor='none',zorder=100)
+  axis.add_patch(poly)
 
   #X-Labels
   maxXTicks = 10.
