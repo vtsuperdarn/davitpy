@@ -933,7 +933,6 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
   scale       = scMax*np.array([0,1.])
 
   #Do plotting here!
-  import ipdb; ipdb.set_trace()
   axis = fig.add_subplot(111,aspect='equal')
 
   nrL, nrM = np.shape(data)

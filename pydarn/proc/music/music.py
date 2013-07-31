@@ -230,12 +230,22 @@ class musicArray(object):
         slist       = getattr(myBeam.fit,'slist')
         gflag       = getattr(myBeam.fit,'gflg')
 
-        for (gate,data,flag) in zip(slist,fitDataList,gflag):
+        if len(slist) > 1:
+          for (gate,data,flag) in zip(slist,fitDataList,gflag):
+            #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
+            if (gscat == 1) and (flag == 0): continue
+            if (gscat == 2) and (flag == 1): continue
+            tmp = (scanNr,beamTime,bmnum,gate,data)
+            dataList.append(tmp)
+        elif len(slist) == 1:
+          gate,data,flag = (slist[0],fitDataList[0],gflag[0])
           #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
           if (gscat == 1) and (flag == 0): continue
           if (gscat == 2) and (flag == 1): continue
           tmp = (scanNr,beamTime,bmnum,gate,data)
           dataList.append(tmp)
+        else:
+          continue
 
       #Determine the start time for each scan and save to list.
       scanTimeList.append(min([x.time for x in myScan]))
