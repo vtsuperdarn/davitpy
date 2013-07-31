@@ -104,16 +104,6 @@ class musicDataObj(object):
     
     serial = self.metadata['serial'] + 1
     newsig = '_'.join(['%03d' % serial,newsig])
-#    #Make sure that the newsig isn't already in use.  If it is, add a serial number to it.
-#    if hasattr(self.parent,newsig):
-#      xx = 0
-#      ok = False
-#      while ok is False:
-#        xx += 1
-#        testsig = '_'.join([newsig,'%03d' % xx])
-#        if hasattr(self.parent,testsig) == False:
-#          newsig = testsig
-#          ok = True
 
     setattr(self.parent,newsig,copy.copy(self))
     newsigobj = getattr(self.parent,newsig)
@@ -130,28 +120,6 @@ class musicDataObj(object):
     
     return newsigobj
   
-#  def makeNewSignal(self,newsig,dtv,data,comment,**kwargs):
-#    """Create a new vt sigStruct object that is a derivative of this one.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
-#    :param newsig: A string with the name for the new signal.
-#    :paran dtv: A new datetime.datetime array.
-#    :param data: A new data array.
-#    :param comment: A string comment describing the new signal.
-#    :returns: sig object
-#
-#    :**kwargs:
-#      appendTitle: String that will be appended to plot's title.
-#    """
-#    newobj = self.copy(newsig,comment)
-#    newobj.dtv  = dtv
-#    newobj.data = data
-#
-#    if kwargs.has_key('appendTitle'):
-#      md = newobj.getAllMetaData()
-#      if md.has_key('title'):
-#        newobj.metadata['title'] = ' '.join([kwargs['appendTitle'],md['title']]) 
-#
-#    newobj.setActive()
-
   def setActive(self):
     """Sets this signal as the currently active signal.
     """
@@ -1006,3 +974,33 @@ def calculateFFT(dataObj,dataSet='active',newDataSetName='windowed',comment=None
   
   currentData.freqVec   = freq_ax
   currentData.spectrum  = newDataArr
+
+def calculateDlm(dataObj,dataSet='active',comment=None):
+  """Calculate the cross-spectral matrix of a vtMUSIC object. FFT must already have been calculated.
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+      * **newSigName**: String name of the attribute of the newly created signal.
+      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
+                        barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
+                        slepian (needs width), chebwin (needs attenuation)
+  """
+  currentData = getattr(dataObj,dataSet)
+
+  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+  
+  nCells                    = nrBeams * nrGates
+  currentData.llLookupTable = np.zeros([5,nCells])
+  currentData.Dlm           = np.zeros([nCells,nCells],dtype=np.complex128)
+  for ll in range(nCells):
+      llAI              = np.unravel_index(ll,[nrBeams,nrGates])
+      ew_dist           = currentData.fov.relative_x[llAI]
+      ns_dist           = currentData.fov.relative_y[llAI]
+      currentData.llLookupTable[:,ll]  = [ll, currentData.fov.beams[llAI[0]], currentData.fov.gates[llAI[1]],ns_dist,ew_dist]
+      spectL            = currentData.spectrum[:,llAI[0],llAI[1]]
+      for mm in range(nCells):
+        mmAI            = np.unravel_index(mm,[nrBeams,nrGates])
+        spectM          = currentData.spectrum[:,mmAI[0],mmAI[1]]
+        currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
