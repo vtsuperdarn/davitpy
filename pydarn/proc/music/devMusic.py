@@ -110,6 +110,15 @@ fig.savefig(outdir+'/multiplot.png')
 
 music.timeInterpolation(dataObj,timeRes=10)
 
+#Insert simulated data.
+music.simulator(dataObj)
+
+fig = plt.figure(figsize=figsize)
+ax  = fig.add_subplot(111)
+pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
+fig.savefig(outdir+'/simulatedData.png')
+import ipdb; ipdb.set_trace()
+
 #xBoundaryLimits = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
 #dataObj.002_beamInterpolated.metadata['timeLimits'] = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
 xBoundaryLimits = None

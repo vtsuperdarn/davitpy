@@ -1004,15 +1004,19 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
   nCells                    = nrBeams * nrGates
   currentData.llLookupTable = np.zeros([5,nCells])
   currentData.Dlm           = np.zeros([nCells,nCells],dtype=np.complex128)
+
+  #Only use positive frequencies...
+  posInx = np.where(currentData.freqVec >= 0)[0]
+
   for ll in range(nCells):
       llAI              = np.unravel_index(ll,[nrBeams,nrGates])
       ew_dist           = currentData.fov.relative_x[llAI]
       ns_dist           = currentData.fov.relative_y[llAI]
       currentData.llLookupTable[:,ll]  = [ll, currentData.fov.beams[llAI[0]], currentData.fov.gates[llAI[1]],ns_dist,ew_dist]
-      spectL            = currentData.spectrum[:,llAI[0],llAI[1]]
+      spectL            = currentData.spectrum[posInx,llAI[0],llAI[1]]
       for mm in range(nCells):
         mmAI            = np.unravel_index(mm,[nrBeams,nrGates])
-        spectM          = currentData.spectrum[:,mmAI[0],mmAI[1]]
+        spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
 
 def calculateKarr(dataObj,dataSet='active',comment=None):
@@ -1099,3 +1103,187 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   currentData.karr   = kArr
   currentData.kx_vec = kx_vec
   currentData.ky_vec = ky_vec
+
+def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
+  import utils
+  currentData = getattr(dataObj,dataSet)
+
+#Typical TID Parameters:
+#       Frequency:      0.0003 mHz
+#       Period:         55.5 min
+#       H. Wavelength:  314 km
+#       k:              0.02 /km
+
+  i       = 0+1j
+
+  if keepLocalRange == True:
+    nx, ny  = np.shape(currentData.fov.relative_x)
+    xRange  = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
+    yRange  = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
+
+    xgrid   = currentData.fov.relative_x
+    ygrid   = currentData.fov.relative_y
+  else:
+    nx      = 16
+    xRange  = 800.
+    ny      = 25
+    yRange  = 600.
+
+    xvec    = np.linspace(-xRange/2.,xRange/2.,nx)
+    yvec    = np.linspace(-yRange/2.,yRange/2.,ny)
+
+    dx      = np.diff(xvec)[0]
+    dy      = np.diff(yvec)[0]
+
+    xaxis   = np.append(xvec,xvec[-1]+dx)
+    yayis   = np.append(yvec,yvec[-1]+dy)
+
+    xgrid   = np.zeros((nx,ny))
+    ygrid   = np.zeros((nx,ny))
+
+    for kk in xrange(nx): ygrid[kk,:] = yvec[:]
+    for kk in xrange(ny): xgrid[kk,:] = yvec[:]
+
+  sigs = []
+  #sigs           = (amp,  kx,  ky,  f, phi, dcoffset)
+  sigs.append((5, 0.01 ,  -0.010, 0.0004, 0,  5.))
+  sigs.append((5, 0.022,  -0.023, 0.0004, 0,  5.))
+#  (2, -0.02,  0, 0.0006, 0)
+#  (4, -0.04,  0.04, 0.0006, 0)
+#  (2, -0.02, 0, 0.0005, 0)
+#  (30, -0.0141,  -0.0141, 0.0003, 0)
+  
+  secVec  = np.array(utils.datetimeToEpoch(currentData.time))
+  secVec  = secVec - secVec[0]
+
+  nSteps  = len(secVec)
+  dt      = currentData.samplePeriod()
+
+  dataArr = np.zeros((nSteps,nx,ny)) 
+
+  for step in xrange(nSteps):
+    t = secVec[step]
+    for kk in xrange(len(sigs)):
+      amp     = sigs[kk][0]
+      kx      = sigs[kk][1]
+      ky      = sigs[kk][2]
+      f       = sigs[kk][3]
+      phi     = sigs[kk][4]
+      dc      = sigs[kk][5]
+        
+      if 1./dt <= 2.*f:
+        print 'WARNING: Nyquist Violation in f.'
+        print 'Signal #: %i' % kk
+
+#      if 1./dx <= 2.*kx/(2.*np.pi):
+#        print 'WARNING: Nyquist Violation in kx.'
+#        print 'Signal #: %i' % kk
+#
+#      if 1./dy <= 2.*ky/(2.*np.pi):
+#        print 'WARNING: Nyquist Violation in ky.'
+#        print 'Signal #: %i' % kk
+
+      temp    = amp * np.cos(kx*xgrid + ky*ygrid - 2.*np.pi*f*t + phi) + dc
+      dataArr[step,:,:] = dataArr[step,:,:] + temp
+
+  #Signal RMS
+  sig_rms = np.zeros((nx,ny))
+  for xx in xrange(nx):
+    for yy in xrange(ny):
+      sig_rms[xx,yy] = np.sqrt(np.mean((dataArr[:,xx,yy])**2.))
+
+  noise_rms = np.zeros((nx,ny))
+  if noiseFactor > 0:
+    nf = noiseFactor
+    #Temporal White Noise
+    for xx in xrange(nx):
+      for yy in xrange(ny):
+        noise             = nf*np.random.standard_normal(nSteps)
+        noise_rms[xx,yy]  = np.sqrt(np.mean(noise**2))
+        dataArr[:,xx,yy]  = dataArr[:,xx,yy] + noise
+
+  xx      = np.arange(ny)
+  mu      = (ny-1.)/2.
+  sigma2  = 10.0
+  sigma   = np.sqrt(sigma2)
+  rgDist  = 1./(sigma*np.sqrt(2.*np.pi)) * np.exp(-0.5 * ((xx-mu)/sigma)**2)
+  rgDist  = rgDist / np.max(rgDist)
+
+  mask    = np.zeros((nx,ny))
+  for nn in xrange(nx): mask[nn,:] = rgDist[:]
+
+  mask3d  = np.zeros((nSteps,nx,ny))
+  for nn in xrange(nSteps): mask3d[nn,:,:] = mask[:]
+
+  #Apply Range Gate Dependence
+  dataArr = dataArr * mask3d
+
+  snr     = (sig_rms/noise_rms)**2
+  snr_db  = 10.*np.log10(snr)
+
+  if comment == None:
+    comment = 'Simulated data injected.'
+      
+  newDataSet      = currentData.copy(newDataSetName,comment)
+  newDataSet.data = dataArr
+  newDataSet.setActive()
+
+  #OPENW,unit,'simstats.txt',/GET_LUN,WIDTH=300
+  #stats$  = ' Mean: '   + NUMSTR(MEAN(sig_rms),3)         $
+  #        + ' STDDEV: ' + NUMSTR(STDDEV(sig_rms),3)       $
+  #        + ' Var: '    + NUMSTR(STDDEV(sig_rms)^2,3)
+  #PRINTF,unit,'SIG_RMS'
+  #PRINTF,unit,stats$
+  #PRINTF,unit,sig_rms
+  #
+  #PRINTF,unit,''
+  #PRINTF,unit,'NOISE_RMS'
+  #stats$  = ' Mean: '   + NUMSTR(MEAN(noise_rms),3)         $
+  #        + ' STDDEV: ' + NUMSTR(STDDEV(noise_rms),3)       $
+  #        + ' Var: '    + NUMSTR(STDDEV(noise_rms)^2,3)
+  #PRINTF,unit,stats$
+  #PRINTF,unit,noise_rms
+  #
+  #PRINTF,unit,''
+  #PRINTF,unit,'SNR_DB'
+  #stats$  = ' Mean: '   + NUMSTR(MEAN(snr_db),3)         $
+  #        + ' STDDEV: ' + NUMSTR(STDDEV(snr_db),3)       $
+  #        + ' Var: '    + NUMSTR(STDDEV(snr_db)^2,3)
+  #PRINTF,unit,stats$
+  #PRINTF,unit,snr_db
+  #CLOSE,unit
+
+  #IF KEYWORD_SET(lr) AND ~KEYWORD_SET(keep_lr) THEN BEGIN
+  #    lr[0,*,*]   = xgrid
+  #    lr[1,*,*]   = ygrid
+  #    lr[2,*,*]   = SQRT(xgrid^2 + ygrid^2)
+  #    lr[3,*,*]   = ATAN(xgrid,ygrid) * !RADEG
+  #
+  #    bndLr       = FLTARR(4,2,2,nx,ny)
+  #    FOR xx=0,nx-1 DO BEGIN
+  #        FOR yy=0,ny-1 DO BEGIN
+  #            xp  = xgrid[xx,yy]
+  #            yp  = ygrid[xx,yy]
+  #
+  #            bndLr[0,0,0,xx,yy]   = xp - dx/2.
+  #            bndLr[0,0,1,xx,yy]   = xp - dx/2.
+  #            bndLr[0,1,1,xx,yy]   = xp + dx/2.
+  #            bndLr[0,1,0,xx,yy]   = xp + dx/2.
+  #
+  #            bndLr[1,0,0,xx,yy]   = yp - dy/2.
+  #            bndLr[1,0,1,xx,yy]   = yp + dy/2.
+  #            bndLr[1,1,1,xx,yy]   = yp + dy/2.
+  #            bndLr[1,1,0,xx,yy]   = yp - dy/2.
+  #
+  #            bndLr[2,0,0,xx,yy]   = SQRT((xp-dx/2.)^2 + (yp-dy/2.)^2)
+  #            bndLr[2,0,1,xx,yy]   = SQRT((xp-dx/2.)^2 + (yp+dy/2.)^2)
+  #            bndLr[2,1,1,xx,yy]   = SQRT((xp+dx/2.)^2 + (yp+dy/2.)^2)
+  #            bndLr[2,1,0,xx,yy]   = SQRT((xp+dx/2.)^2 + (yp-dy/2.)^2)
+  #
+  #            bndLr[3,0,0,xx,yy]   = ATAN(xp-dx/2.,yp-dy/2.) * !RADEG
+  #            bndLr[3,0,1,xx,yy]   = ATAN(xp-dx/2.,yp+dy/2.) * !RADEG
+  #            bndLr[3,1,1,xx,yy]   = ATAN(xp+dx/2.,yp+dy/2.) * !RADEG
+  #            bndLr[3,1,0,xx,yy]   = ATAN(xp+dx/2.,yp-dy/2.) * !RADEG
+  #        ENDFOR
+  #    ENDFOR
+  #ENDIF
