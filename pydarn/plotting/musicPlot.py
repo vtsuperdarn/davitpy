@@ -125,7 +125,7 @@ class musicFan(object):
     ngates = np.shape(currentData.data)[2]
     nbeams = np.shape(currentData.data)[1]
     verts = []
-    scan = []
+    scan  = []
     data  = currentData.data[timeInx,:,:]
     for bm in range(nbeams):
       for rg in range(ngates):
@@ -164,11 +164,126 @@ class musicFan(object):
     dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
     axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
 
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+#    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
     cbar.set_label(cbarLabel)
     labels = cbar.ax.get_yticklabels()
     labels[-1].set_visible(False)
+    if currentData.metadata.has_key('gscat'):
+      if currentData.metadata['gscat'] == 1:
+        cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
     txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
+    axis.text(1.01, 0, txt,
+            horizontalalignment='left',
+            verticalalignment='bottom',
+            rotation='vertical',
+            size='small',
+            transform=axis.transAxes)
+
+class musicRTI(object):
+  def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, **kwArgs):
+    if fileName != None:
+      from matplotlib.backends.backend_agg import FigureCanvasAgg
+      from matplotlib.figure import Figure
+      if axis==None:
+        fig   = Figure()
+    else:
+      from matplotlib import pyplot as plt
+      plt.ion()
+      if axis==None:
+        fig   = plt.figure()
+
+    #Make some variables easier to get to...
+    currentData = getattr(dataObject,dataSet)
+    metadata    = currentData.metadata
+    latFull     = currentData.fov.latFull
+    lonFull     = currentData.fov.lonFull
+
+    coords      = metadata['coords']
+
+    #Translate parameter information from short to long form.
+    paramDict = getParamDict(metadata['param'])
+    if paramDict.has_key('label'):
+      param     = paramDict['param']
+      cbarLabel = paramDict['label']
+    else:
+      param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
+      cbarLabel = metadata['param']
+
+    #Set colorbar scale if not explicitly defined.
+    if(scale == None):
+      if paramDict.has_key('range'):
+        scale = paramDict['range']
+      else:
+        scale = [-200,200]
+
+    #See if an axis is provided... if not, set one up!
+    if axis==None:
+      axis  = fig.add_subplot(111)
+    else:
+      fig   = axis.get_figure()
+
+    #Get beam index...
+    beamInx = np.where(currentData.fov.beams == beam)[0]
+    if np.size(beamInx) == 0:
+      beamInx = 0
+      beam    = currentData.fov.beams[0]
+
+    #Plot the SuperDARN data!
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+    verts = []
+    scan  = []
+    data  = np.squeeze(currentData.data[:,beamInx,:])
+
+    rnge  = currentData.fov.gates
+    xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
+    time  = currentData.time
+    for tm in range(nrTimes-1):
+      for rg in range(nrGates-1):
+        if np.isnan(data[tm,rg]): continue
+        if data[tm,rg] == 0 and not plotZeros: continue
+        scan.append(data[tm,rg])
+
+        x1,y1 = xvec[tm+0],rnge[rg+0]
+        x2,y2 = xvec[tm+1],rnge[rg+0]
+        x3,y3 = xvec[tm+1],rnge[rg+1]
+        x4,y4 = xvec[tm+0],rnge[rg+1]
+        verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+    colors  = 'lasse'
+    cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+    pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+    pcoll.set_array(np.array(scan))
+    axis.add_collection(pcoll,autolim=False)
+
+    if xlim == None:
+      xlim = (np.min(time),np.max(time))
+    axis.set_xlim(xlim)
+
+    axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
+    axis.set_xlabel('Time [UT]')
+
+    if ylim == None:
+      ylim = (np.min(rnge),np.max(rnge))
+    axis.set_ylim(ylim)
+    axis.set_ylabel('Range Gate')
+
+    dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
+    axis.set_title(metadata['name']+' - ' + dataName
+        + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
+        + xlim[1].strftime('%Y %b %d %H%M UT')
+        ) 
+
+#    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
+    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+    cbar.set_label(cbarLabel)
+    labels = cbar.ax.get_yticklabels()
+    labels[-1].set_visible(False)
+    if currentData.metadata.has_key('gscat'):
+      if currentData.metadata['gscat'] == 1:
+        cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+#    txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
+    txt = 'Model: ' + metadata['model']
     axis.text(1.01, 0, txt,
             horizontalalignment='left',
             verticalalignment='bottom',
