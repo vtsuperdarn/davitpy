@@ -68,6 +68,34 @@ def prepForProc(dataObj):
 
   return vtMUSIC
 
+def getDataSet(dataObj,dataSet='active'):
+  """Returns a specified dataSet object from a vtMUSIC object.  If the vtMUSIC object has the exact attribute
+  specified in the dataSet keyword, then that attribute is returned.  If not, all attributes of the vtMUSIC object
+  will be searched for attributes which contain the string specified in the dataSet keyword.  If more than one are
+  found, the last attribute of a sorted list will be returned.  If no attributes are found which contain the specified
+  string, the 'active' dataSet is returned.
+
+  **Args**:
+      * **dataObj**:  vtMUSIC object
+      * **dataSet**:  which dataSet in the vtMUSIC object to process
+  **Returns**
+      * **currentData**: dataSet object
+  """
+  lst = dir(dataObj)
+  if dataSet not in lst:
+    tmp = []
+    for item in lst:
+      if dataSet in item:
+        tmp.append(item)
+    if len(tmp) == 0:
+      dataSet = 'active'
+    else:
+      tmp.sort()
+      dataSet = tmp[-1]
+
+  currentData = getattr(dataObj,dataSet)
+  return currentData
+
 class music(object):
   def __init__(self):
    self.options = options
@@ -328,7 +356,7 @@ def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated'
       * **newSigName**: String name of the attribute of the newly created signal.
   """
   from scipy.interpolate import interp1d
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
   nrTimes = len(currentData.time)
   nrBeams = len(currentData.fov.beams)
@@ -375,7 +403,7 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
   :param timeLimits: Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
   :param newSigName: String name of the attribute of the newly created signal.
   """
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   try:
     if (rangeLimits != None) or (gateLimits != None):
       if (rangeLimits != None) and (gateLimits == None):
@@ -413,7 +441,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
   if (rangeLimits != None) or (gateLimits != None) or (timeLimits != None):
     defineLimits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits)
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   try:
     #Make a copy of the current data set.
 
@@ -503,7 +531,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
     print 'Warning! Limits not applied.'
     return currentData
 
-def determine_relative_position(dataObj,dataSet='active',altitude=250.):
+def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
   """Finds the center cell of the field-of-view of a vtMUSIC data object.
   The range, azimuth, x-range, and y-range from the center to each cell in the FOV
   is calculated and saved to the FOV object. The following objects are added to
@@ -524,7 +552,7 @@ def determine_relative_position(dataObj,dataSet='active',altitude=250.):
   import utils
 
   #Get the chosen dataset.
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
   #Determine center beam.
   ctrBeamInx  = len(currentData.fov.beams)/2
@@ -570,7 +598,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
   """
   from scipy.interpolate import interp1d
   import utils 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
   sTime = currentData.time[0]
   sTime = datetime.datetime(sTime.year,sTime.month,sTime.day,sTime.hour,sTime.minute) #Make start time a round time.
@@ -903,7 +931,7 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   """
   import scipy as sp
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   currentData = currentData.applyLimits()
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
@@ -934,7 +962,7 @@ def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,w
   """
   import scipy as sp
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   currentData = currentData.applyLimits()
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
@@ -966,7 +994,7 @@ def calculateFFT(dataObj,dataSet='active',newDataSetName='windowed',comment=None
   """
   import scipy as sp
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   currentData = currentData.applyLimits()
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
@@ -997,7 +1025,7 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
                         barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
                         slepian (needs width), chebwin (needs attenuation)
   """
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
   
@@ -1031,7 +1059,7 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
                         barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
                         slepian (needs width), chebwin (needs attenuation)
   """
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
@@ -1106,7 +1134,7 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
 
 def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
   import utils
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
 #Typical TID Parameters:
 #       Frequency:      0.0003 mHz

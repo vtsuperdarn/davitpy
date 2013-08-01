@@ -23,6 +23,8 @@ from mpl_toolkits.basemap import Basemap
 import utils
 from pydarn.radar.radUtils import getParamDict
 
+from pydarn.proc.music import getDataSet
+
 class musicFan(object):
   def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, plotZeros=False, markCell=None, **kwArgs):
     if fileName != None:
@@ -37,7 +39,7 @@ class musicFan(object):
         fig   = plt.figure()
 
     #Make some variables easier to get to...
-    currentData = getattr(dataObject,dataSet)
+    currentData = getDataSet(dataObject,dataSet)
     metadata    = currentData.metadata
     latFull     = currentData.fov.latFull
     lonFull     = currentData.fov.lonFull
@@ -194,7 +196,7 @@ class musicRTI(object):
         fig   = plt.figure()
 
     #Make some variables easier to get to...
-    currentData = getattr(dataObject,dataSet)
+    currentData = getDataSet(dataObject,dataSet)
     metadata    = currentData.metadata
     latFull     = currentData.fov.latFull
     lonFull     = currentData.fov.lonFull
@@ -303,7 +305,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   **Returns**:
       * **fig**:      matplotlib figure object that was plotted to
   """
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
 
   from matplotlib.backends.backend_agg import FigureCanvasAgg
   from matplotlib.figure import Figure
@@ -441,7 +443,7 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
   **Returns**:
       * **fig**:      matplotlib figure object that was plotted to
   """
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   xData1      = currentData.time
   yData1      = currentData.data
   beams       = currentData.fov.beams
@@ -451,9 +453,9 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
 
   if dataSet2 != None:
     if dataObj2 != None:
-      currentData2 = getattr(dataObj2,dataSet2)
+      currentData2  = getDataSet(dataObj2,dataSet2)
     else:
-      currentData2  = getattr(dataObj,dataSet2)
+      currentData2  = getDataSet(dataObj,dataSet2)
     xData2        = currentData2.time
     yData2        = currentData2.data
     yData2_title  = currentData2.history[max(currentData2.history.keys())]
@@ -745,7 +747,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
   from scipy import stats
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   if fig == None:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
@@ -937,7 +939,7 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
 def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
   from scipy import stats
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   if fig == None:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
@@ -1033,7 +1035,7 @@ def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
 def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
   from scipy import stats
 
-  currentData = getattr(dataObj,dataSet)
+  currentData = getDataSet(dataObj,dataSet)
   if fig == None:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
