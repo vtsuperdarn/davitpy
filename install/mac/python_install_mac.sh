@@ -19,7 +19,7 @@ port install py${ver}-zmq
 port install py${ver}-pil
 port install py${ver}-pymongo
 port install py${ver}-paramiko
-port install openmpi
+port install mpich +gcc47
 port install coreutils
 
 dir=$(pwd)
