@@ -43,15 +43,17 @@ figsize = (20,10)
 #establishes a data piepeline.  we will now set up the args.
 
 #sTime is the time we want to start reading (reqd input)
-sTime = datetime.datetime(2010,11,19,11,0)
+#sTime = datetime.datetime(2010,11,19,11,0)
+sTime = datetime.datetime(2011,5,9,8,0)
 print sTime
 
 #rad is the 3-letter radar code for the radar we want (reqd input)
-rad='bks'
+#rad='bks'
+rad='wal'
 
 #NOTE:the rest of the inputs are optional
 #eTime is the end time we want to read until
-eTime = datetime.datetime(2010,11,19,19,45)
+eTime = datetime.datetime(2011,5,9,19,0)
 print eTime
 
 #channel is the radar channel we want data from, eg 'a'
@@ -86,19 +88,35 @@ myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,channel=channel,cp=cp,file
 dataObj     = music.musicArray(myPtr,fovModel='GS')
 
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
-music.defineLimits(dataObj,rangeLimits=[150,500])
+#music.defineLimits(dataObj,rangeLimits=[150,500])
+music.defineLimits(dataObj,rangeLimits=[600,1200])
 #music.defineLimits(dataObj,gateLimits=[13,33])
 #music.defineLimits(dataObj,beamLimits=[5,12])
 #music.defineLimits(dataObj,timeLimits=[datetime.datetime(2010,11,19,13,30),datetime.datetime(2010,11,19,14,30)])
 #music.applyLimits(dataObj)
 dataObj.active.applyLimits()
 
+fig = plt.figure(figsize=figsize)
+ax  = fig.add_subplot(121)
+pydarn.plotting.musicPlot.musicFan(dataObj   ,plotZeros=True,dataSet='originalFit',axis=ax)
+ax  = fig.add_subplot(122)
+pydarn.plotting.musicPlot.musicFan(dataObj_IS,plotZeros=True,dataSet='originalFit',axis=ax)
+fig.savefig(outdir+'/range_comparison.png')
+
 music.beamInterpolation(dataObj,dataSet='limitsApplied')
 #music.beamInterpolation(dataObj,limits=[15,45],units='gate')
 
+fig = plt.figure(figsize=figsize)
+ax  = fig.add_subplot(121)
+pydarn.plotting.musicPlot.musicFan(dataObj,plotZeros=True,dataSet='originalFit',axis=ax)
+ax  = fig.add_subplot(122)
+pydarn.plotting.musicPlot.musicFan(dataObj,plotZeros=True,axis=ax)
+fig.savefig(outdir+'/beam_interp.png')
+
 music.determineRelativePosition(dataObj)
 
-time = datetime.datetime(2010,11,19,13)
+#time = datetime.datetime(2010,11,19,13)
+time = sTime
 
 fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.plotRelativeRanges(dataObj,time=time,fig=fig)
@@ -108,10 +126,15 @@ fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet2='limitsApplied',fig=fig)
 fig.savefig(outdir+'/multiplot.png')
 
-music.timeInterpolation(dataObj,timeRes=10)
+music.timeInterpolation(dataObj,timeRes=120)
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig)
+fig.savefig(outdir+'/timeInterp.png')
 
 #Insert simulated data.
 music.simulator(dataObj)
+timeOfInt = (datetime.datetime(2011,5,9,11,45),datetime.datetime(2011,5,9,15,15))
 
 fig = plt.figure(figsize=figsize)
 ax  = fig.add_subplot(111)
@@ -123,30 +146,37 @@ ax  = fig.add_subplot(111)
 pydarn.plotting.musicPlot.musicRTI(dataObj,plotZeros=True,axis=ax)
 fig.savefig(outdir+'/simulatedDataRTI.png')
 
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig,xlim=timeOfInt)
+fig.savefig(outdir+'/simulatedMultiPlot.png')
 
-#xBoundaryLimits = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
-#dataObj.002_beamInterpolated.metadata['timeLimits'] = (datetime.datetime(2010,11,19,13,00),datetime.datetime(2010,11,19,15,00))
-xBoundaryLimits = None
+#filt = music.filter(dataObj, dataSet='active', numtaps=501, cutoff_low=0.0003, cutoff_high=0.0012)
+dataObj.active.metadata['timeLimits'] = timeOfInt
+dataObj.active.applyLimits()
 
 fig = plt.figure(figsize=figsize)
-pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='timeInterpolated',dataSet2='beamInterpolated',fig=fig,xBoundaryLimits=xBoundaryLimits)
-fig.savefig(outdir+'/timeInterp.png')
-
-filt = music.filter(dataObj, dataSet='active', numtaps=501, cutoff_low=0.0003, cutoff_high=0.0012)
-
-fig = plt.figure(figsize=figsize)
-pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,dataSet='filtered',fig=fig)
+pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig)
 fig.savefig(outdir+'/filtered.png')
 
-fig = plt.figure(figsize=figsize)
-filt.plotTransferFunction(fig=fig,xmax=0.004)
-fig.savefig(outdir+'/transferFunction.png')
+#fig = plt.figure(figsize=figsize)
+#ax  = fig.add_subplot(111)
+#pydarn.plotting.musicPlot.musicFan(dataObj,plotZeros=True,axis=ax)
+#fig.savefig(outdir+'/filteredDataFan.png')
+#
+#fig = plt.figure(figsize=figsize)
+#ax  = fig.add_subplot(111)
+#pydarn.plotting.musicPlot.musicRTI(dataObj,plotZeros=True,axis=ax)
+#fig.savefig(outdir+'/filteredDataRTI.png')
+#
+#fig = plt.figure(figsize=figsize)
+#filt.plotTransferFunction(fig=fig,xmax=0.004)
+#fig.savefig(outdir+'/transferFunction.png')
+#
+#fig = plt.figure(figsize=figsize)
+#filt.plotImpulseResponse(fig=fig)
+#fig.savefig(outdir+'/impulseResponse.png')
 
-fig = plt.figure(figsize=figsize)
-filt.plotImpulseResponse(fig=fig)
-fig.savefig(outdir+'/impulseResponse.png')
-
-dataObj.active.metadata['timeLimits'] = (datetime.datetime(2010,11,19,15,6),datetime.datetime(2010,11,19,16,8))
+#dataObj.active.metadata['timeLimits'] = (datetime.datetime(2010,11,19,15,6),datetime.datetime(2010,11,19,16,8))
 detrend = music.detrend(dataObj, dataSet='active')
 
 fig = plt.figure(figsize=figsize)
@@ -191,18 +221,5 @@ fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.plotKarr(dataObj,fig=fig)
 fig.savefig(outdir+'/karr.png')
 
-fig = plt.figure(figsize=figsize)
-ax  = fig.add_subplot(121)
-pydarn.plotting.musicPlot.musicFan(dataObj   ,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-ax  = fig.add_subplot(122)
-pydarn.plotting.musicPlot.musicFan(dataObj_IS,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-fig.savefig(outdir+'/range_comparison.png')
-
-fig = plt.figure(figsize=figsize)
-ax  = fig.add_subplot(121)
-pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,dataSet='originalFit',axis=ax)
-ax  = fig.add_subplot(122)
-pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13),plotZeros=True,axis=ax)
-fig.savefig(outdir+'/beam_interp.png')
 
 #plt.show()

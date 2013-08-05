@@ -142,8 +142,14 @@ class musicFan(object):
         x4,y4 = m(lonFull[bm+0,rg+1],latFull[bm+0,rg+1])
         verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    colors  = 'lasse'
-    cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+    if scale[0] >= -1 and scale[1] <= 1:
+      cmap = matplotlib.cm.jet
+      bounds  = np.linspace(scale[0],scale[1],256)
+      norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+    else:
+      colors  = 'lasse'
+      cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+
     pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
@@ -252,8 +258,14 @@ class musicRTI(object):
         x4,y4 = xvec[tm+0],rnge[rg+1]
         verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    colors  = 'lasse'
-    cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+    if scale[0] >= -1 and scale[1] <= 1:
+      cmap = matplotlib.cm.jet
+      bounds  = np.linspace(scale[0],scale[1],256)
+      norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+    else:
+      colors  = 'lasse'
+      cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+
     pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
@@ -1046,7 +1058,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
   #Determine scale for colorbar.
   sd          = stats.nanstd(data,axis=None)
   mean        = stats.nanmean(data,axis=None)
-  scMax       = mean + 6.5*sd
+  scMax       = mean + 1.5*sd
   scale       = scMax*np.array([0,1.])
 
   #Do plotting here!

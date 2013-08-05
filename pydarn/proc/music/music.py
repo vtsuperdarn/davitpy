@@ -131,7 +131,7 @@ class musicDataObj(object):
     """
     
     serial = self.metadata['serial'] + 1
-    newsig = '_'.join(['%03d' % serial,newsig])
+    newsig = '_'.join(['DS%03d' % serial,newsig])
 
     setattr(self.parent,newsig,copy.copy(self))
     newsigobj = getattr(self.parent,newsig)
@@ -333,7 +333,7 @@ class musicArray(object):
     metadata['model']     = fovModel
     metadata['coords']    = fovCoords
 
-    dataSet = '000_originalFit'
+    dataSet = 'DS000_originalFit'
     metadata['dataSetName'] = dataSet
     metadata['serial']      = 0
     comment = '['+dataSet+'] '+ 'Original Fit Data'
@@ -1103,7 +1103,6 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   i     = 0+1j
   kArr  = np.zeros((nkx,nky),dtype=np.complex128)
 
-
   print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
   print 'Kx Max: ' + str(kx_max)
   print 'Kx Res: ' + str(dkx)
@@ -1174,8 +1173,8 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 
   sigs = []
   #sigs           = (amp,  kx,  ky,  f, phi, dcoffset)
-  sigs.append((5, 0.01 ,  -0.010, 0.0004, 0,  5.))
-  sigs.append((5, 0.022,  -0.023, 0.0004, 0,  5.))
+  sigs.append((5, 0.01 ,  -0.010, 0.0005, 0,  10.))
+#  sigs.append((5, 0.022,  -0.023, 0.0004, 0,  10.))
 #  (2, -0.02,  0, 0.0006, 0)
 #  (4, -0.04,  0.04, 0.0006, 0)
 #  (2, -0.02, 0, 0.0005, 0)
