@@ -1036,8 +1036,30 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
   #Only use positive frequencies...
   posInx = np.where(currentData.freqVec >= 0)[0]
 
+  #Explicitly write out gate/range indices...
+
+  def myRavelIndex(bmInx,rgInx,nrBeams,nrGates):
+    inx = np.zeros([nrBeams,nrGates],dtype=np.int)
+    
+    num = 0
+    for gg in xrange(nrGates):
+      for bb in xrange(nrBeams):
+        inx[bb,gg] = num
+        num = num + 1
+
+    ll = inx[bmInx,rgInx]
+    return ll
+
   for ll in range(nCells):
-      llAI              = np.unravel_index(ll,[nrBeams,nrGates])
+      llAI              = np.unravel_index(ll,[nrBeams,nrGates],order='F')
+      testll            = myRavelIndex(llAI[0],llAI[1],nrBeams,nrGates)
+
+      if ll == testll:
+        print ll,' Good!!'
+      else:
+        print 'Yikes!!'
+        import ipdb; ipdb.set_trace()
+
       ew_dist           = currentData.fov.relative_x[llAI]
       ns_dist           = currentData.fov.relative_y[llAI]
       currentData.llLookupTable[:,ll]  = [ll, currentData.fov.beams[llAI[0]], currentData.fov.gates[llAI[1]],ns_dist,ew_dist]

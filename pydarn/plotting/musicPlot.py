@@ -1016,6 +1016,50 @@ def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
   axis.set_xlabel('l')
   axis.set_ylabel('m')
 
+  #Adjust x-ticks
+  xticks  = axis.get_xticks()
+  beams   = []
+  gates   = []
+  newLabels = []
+  for x in xrange(len(xticks)):
+    try:
+      beams.append(currentData.llLookupTable[1,xticks[x]])
+    except:
+      beams.append(-1)
+
+    try:
+      gates.append(currentData.llLookupTable[2,xticks[x]])
+    except:
+      gates.append(-1)
+
+    txt = '%i\n%i\n%i' % (xticks[x], beams[x], gates[x])
+    newLabels.append(txt)
+
+  newLabels[-1] = 'l\nbeam\ngate'
+  axis.set_xticklabels(newLabels)
+
+  #Adjust y-ticks
+  yticks  = axis.get_yticks()
+  beams   = []
+  gates   = []
+  newLabels = []
+  for y in xrange(len(yticks)):
+    try:
+      beams.append(currentData.llLookupTable[1,yticks[y]])
+    except:
+      beams.append(-1)
+
+    try:
+      gates.append(currentData.llLookupTable[2,yticks[y]])
+    except:
+      gates.append(-1)
+
+    txt = '%i\n%i\n%i' % (yticks[y], beams[y], gates[y])
+    newLabels.append(txt)
+
+  newLabels[-1] = 'm\nbeam\ngate'
+  axis.set_yticklabels(newLabels)
+
   xpos = 0.130
   fig.text(xpos,0.99,'ABS(Cross Spectral Density Matrix Dlm)',fontsize=20,va='top')
   #Get the time limits.
