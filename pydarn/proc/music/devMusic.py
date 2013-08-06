@@ -45,6 +45,7 @@ figsize = (20,10)
 #sTime is the time we want to start reading (reqd input)
 #sTime = datetime.datetime(2010,11,19,11,0)
 sTime = datetime.datetime(2011,5,9,8,0)
+sTime = datetime.datetime(2011,5,9,11,45)
 print sTime
 
 #rad is the 3-letter radar code for the radar we want (reqd input)
@@ -54,6 +55,7 @@ rad='wal'
 #NOTE:the rest of the inputs are optional
 #eTime is the end time we want to read until
 eTime = datetime.datetime(2011,5,9,19,0)
+eTime = datetime.datetime(2011,5,9,15,15)
 print eTime
 
 #channel is the radar channel we want data from, eg 'a'

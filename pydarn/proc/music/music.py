@@ -1008,7 +1008,7 @@ def calculateFFT(dataObj,dataSet='active',newDataSetName='windowed',comment=None
   newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex128)
   for bm in range(nrBeams):
     for rg in range(nrGates):
-      newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg]))
+      newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg])) / np.size(currentData.data[:,bm,rg])
   
   currentData.freqVec   = freq_ax
   currentData.spectrum  = newDataArr
@@ -1038,34 +1038,20 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
 
   #Explicitly write out gate/range indices...
 
-  def myRavelIndex(bmInx,rgInx,nrBeams,nrGates):
-    inx = np.zeros([nrBeams,nrGates],dtype=np.int)
-    
-    num = 0
-    for gg in xrange(nrGates):
-      for bb in xrange(nrBeams):
-        inx[bb,gg] = num
-        num = num + 1
+  llList = []
+  for gg in xrange(nrGates):
+    for bb in xrange(nrBeams):
+      llList.append((bb,gg))
 
-    ll = inx[bmInx,rgInx]
-    return ll
 
   for ll in range(nCells):
-      llAI              = np.unravel_index(ll,[nrBeams,nrGates],order='F')
-      testll            = myRavelIndex(llAI[0],llAI[1],nrBeams,nrGates)
-
-      if ll == testll:
-        print ll,' Good!!'
-      else:
-        print 'Yikes!!'
-        import ipdb; ipdb.set_trace()
-
+      llAI  = llList[ll]
       ew_dist           = currentData.fov.relative_x[llAI]
       ns_dist           = currentData.fov.relative_y[llAI]
       currentData.llLookupTable[:,ll]  = [ll, currentData.fov.beams[llAI[0]], currentData.fov.gates[llAI[1]],ns_dist,ew_dist]
       spectL            = currentData.spectrum[posInx,llAI[0],llAI[1]]
       for mm in range(nCells):
-        mmAI            = np.unravel_index(mm,[nrBeams,nrGates])
+        mmAI  = llList[mm]
         spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
 
@@ -1195,8 +1181,8 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 
   sigs = []
   #sigs           = (amp,  kx,  ky,  f, phi, dcoffset)
-  sigs.append((5, 0.01 ,  -0.010, 0.0005, 0,  10.))
-#  sigs.append((5, 0.022,  -0.023, 0.0004, 0,  10.))
+  sigs.append((5, 0.01 ,  -0.010, 0.0004, 0,  5.))
+  sigs.append((5, 0.022,  -0.023, 0.0004, 0,  5.))
 #  (2, -0.02,  0, 0.0006, 0)
 #  (4, -0.04,  0.04, 0.0006, 0)
 #  (2, -0.02, 0, 0.0005, 0)
