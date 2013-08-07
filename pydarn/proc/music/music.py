@@ -610,6 +610,11 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
     while newTimeVec[-1] < fTime:
       newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
 
+#  if newTimeVec == None:
+#    newTimeVec = [sTime]
+#    while len(newTimeVec) != 107:
+#      newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
+
   #Ensure that the new time vector is within the bounds of the actual data set.
   newTimeVec  = np.array(newTimeVec)
   good        = np.where(np.logical_and(newTimeVec > min(currentData.time),newTimeVec < max(currentData.time)))
@@ -1005,7 +1010,9 @@ def calculateFFT(dataObj,dataSet='active',newDataSetName='windowed',comment=None
   freq_ax = (freq_ax / max(freq_ax)) - 0.5
   freq_ax = freq_ax * 2. * nyq
 
-  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex128)
+#  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex128)
+  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex64)
+#  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype='>c8')
   for bm in range(nrBeams):
     for rg in range(nrGates):
       newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg])) / np.size(currentData.data[:,bm,rg])
@@ -1034,7 +1041,7 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
   currentData.Dlm           = np.zeros([nCells,nCells],dtype=np.complex128)
 
   #Only use positive frequencies...
-  posInx = np.where(currentData.freqVec >= 0)[0]
+  posInx = np.where(currentData.freqVec > 0)[0]
 
   #Explicitly write out gate/range indices...
 
@@ -1072,7 +1079,7 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
   #Calculate eigenvalues, eigenvectors
-  eVals,eVecs = np.linalg.eig(dataObj.active.Dlm)
+  eVals,eVecs = np.linalg.eig(np.transpose(dataObj.active.Dlm))
 
   kx_max  = 0.05
   ky_max  = 0.05
@@ -1096,8 +1103,8 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   omega   = 0.
   t       = 0.
 
-  sigThresh       = 0.15
-  maxEval = np.max(np.abs(eVals))
+  sigThresh   = 0.15
+  maxEval     = np.max(np.abs(eVals))
 
   minEvalsInx = np.where(eVals <= sigThresh*maxEval)[0]
   cnt         = np.size(minEvalsInx)
@@ -1108,8 +1115,6 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
       print 'Not enough small eigenvalues!'
       import ipdb; ipdb.set_trace()
 
-  i     = 0+1j
-  kArr  = np.zeros((nkx,nky),dtype=np.complex128)
 
   print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
   print 'Kx Max: ' + str(kx_max)
@@ -1121,23 +1126,60 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   print 'Number of Det Signals: ' + str(nSigs)
   print 'Number of Noise Evals: ' + str(cnt)
 
-  for kk_kx in range(nkx):
-      kx  = kx_vec[kk_kx]
-      for kk_ky in range(nky):
-          ky  = ky_vec[kk_ky]
-          resTot  = 0
-          for ee in range(cnt):
-              ec  = minEvalsInx[ee]
-              v   = np.transpose(eVecs[:,ec])
-              um  = np.transpose(np.exp(i*(kx*xm + ky*ym - omega*t)))
+#  for kk_kx in xrange(nkx):
+#      kx  = kx_vec[kk_kx]
+#      for kk_ky in xrange(nky):
+#          ky  = ky_vec[kk_ky]
+#          resTot  = 0
+#          for ee in xrange(cnt):
+#              ec  = minEvalsInx[ee]
+#              v   = np.transpose(eVecs[:,ec])
+#              um  = np.transpose(np.exp(i*(kx*xm + ky*ym - omega*t)))
+#
+#              import ipdb; ipdb.set_trace()
+#              res = np.dot(np.dot( np.transpose(np.conj(um)),v),np.dot(np.transpose(np.conj(v)),um))
+#              resTot = resTot + res
+#          kArr[kk_kx,kk_ky] = 1. / resTot
 
-              res = np.dot(np.dot( np.transpose(np.conj(um)),v),np.dot(np.transpose(np.conj(v)),um))
-              resTot = resTot + res
-          kArr[kk_kx,kk_ky] = 1. / resTot
+  i     = 0+1j
+  kArr  = np.zeros((nkx,nky),dtype=np.complex128)
+  for kk_kx in xrange(nkx):
+    kx  = kx_vec[kk_kx]
+    for kk_ky in xrange(nky):
+      ky  = ky_vec[kk_ky]
+      resTot = np.zeros(1,dtype=np.complex128)
+      for ee in xrange(cnt):
+        print kk_kx, kk_ky, ee
+        ec  = minEvalsInx[ee]
+        v   = eVecs[:,ec]
+        um  = np.exp(i*(kx*xm + ky*ym - omega*t))
+
+        p1  = np.dot( np.conj(um), v)
+        p2  = np.dot( np.conj(v), um)
+        res = p1 * p2
+        resTot = resTot + res
+      kArr[kk_kx,kk_ky] = 1. / resTot[0]
 
   currentData.karr   = kArr
   currentData.kx_vec = kx_vec
   currentData.ky_vec = ky_vec
+
+#              from matplotlib import pyplot as plt
+#              fig   = plt.figure()
+#              axis  = fig.add_subplot(111)
+#              axis.plot(np.real(um))
+##              axis.set_xlim((0,25))
+#              fig.savefig('/data/pymusic/um.png')
+#
+#              fig   = plt.figure()
+#              axis  = fig.add_subplot(111)
+#              axis.plot(xm)
+#              fig.savefig('/data/pymusic/xm.png')
+#
+#              fig   = plt.figure()
+#              axis  = fig.add_subplot(111)
+#              axis.plot(ym)
+#              fig.savefig('/data/pymusic/ym.png')
 
 def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
   import utils

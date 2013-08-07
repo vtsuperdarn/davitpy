@@ -91,7 +91,7 @@ dataObj     = music.musicArray(myPtr,fovModel='GS')
 
 #pydarn.plotting.musicPlot.musicFan(dataObj,time=datetime.datetime(2010,11,19,13))
 #music.defineLimits(dataObj,rangeLimits=[150,500])
-music.defineLimits(dataObj,rangeLimits=[600,1200])
+music.defineLimits(dataObj,rangeLimits=[600,1225])
 #music.defineLimits(dataObj,gateLimits=[13,33])
 #music.defineLimits(dataObj,beamLimits=[5,12])
 #music.defineLimits(dataObj,timeLimits=[datetime.datetime(2010,11,19,13,30),datetime.datetime(2010,11,19,14,30)])
@@ -190,7 +190,19 @@ fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.timeSeriesMultiPlot(dataObj,fig=fig)
 fig.savefig(outdir+'/windowedData.png')
 
+#from scipy import io
+#idlsav  = io.readsav('karr.sav')
+#dataObj.active.data = np.array(idlsav['interpdata'].transpose(),dtype=np.float)
+
 music.calculateFFT(dataObj)
+#from scipy import io
+#idlsav  = io.readsav('karr.sav')
+#spectrum = idlsav['spectarr'].transpose()
+#freqVec  = idlsav['freqvec']
+
+#import ipdb; ipdb.set_trace()
+#dataObj.active.spectrum = spectrum
+#dataObj.active.freqVec  = freqVec
 
 fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.spectrumMultiPlot(dataObj,fig=fig,xlim=(-0.0025,0.0025))
@@ -209,6 +221,10 @@ pydarn.plotting.musicPlot.plotFullSpectrum(dataObj,fig=fig,xlim=(0,0.0015))
 fig.savefig(outdir+'/fullSpectrum.png')
 
 music.calculateDlm(dataObj)
+
+#from scipy import io
+#idlsav  = io.readsav('karr.sav')
+#dataObj.active.Dlm = idlsav['dlm']
 
 fig = plt.figure(figsize=figsize)
 pydarn.plotting.musicPlot.plotDlm(dataObj,fig=fig)

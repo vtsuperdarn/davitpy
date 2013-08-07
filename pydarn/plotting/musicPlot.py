@@ -413,11 +413,16 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
       x4,y4 = bm+0, rg+1
       verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-  colors  = 'lasse'
   if scale == None:
     scale   = (np.min(scan),np.max(scan))
 
-  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+#  colors  = 'lasse'
+#  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+
+  cmap    = matplotlib.cm.jet
+  bounds  = np.linspace(scale[0],scale[1],256)
+  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+
   pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
   pcoll.set_array(np.array(scan))
   axis.add_collection(pcoll,autolim=False)
@@ -431,9 +436,9 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
 
   cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
   if cbarLabel != None: cbar.set_label(cbarLabel)
-  labels = cbar.ax.get_yticklabels()
-  labels[-1].set_visible(False)
-  labels[0].set_visible(False)
+#  labels = cbar.ax.get_yticklabels()
+#  labels[-1].set_visible(False)
+#  labels[0].set_visible(False)
 
 def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
@@ -1127,7 +1132,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
   #Determine scale for colorbar.
   sd          = stats.nanstd(data,axis=None)
   mean        = stats.nanmean(data,axis=None)
-  scMax       = mean + 1.5*sd
+  scMax       = mean + 6.5*sd
   scale       = scMax*np.array([0,1.])
 
   #Do plotting here!
