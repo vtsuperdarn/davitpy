@@ -124,7 +124,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 def overlayFov(Basemap, codes=None, ids=None, names=None, 
 				dateTime=None, all=False, 
 				maxGate=None, fovColor=None, fovAlpha=0.2, 
-				beams=None, hemi=None, fovObj=None, 
+				beams=None, beamsColors=None, hemi=None, fovObj=None, 
 				zorder=2, lineColor='k', lineWidth=1):
 	"""Overlay FoV position(s) on map
 	
@@ -143,7 +143,8 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 		* **[fovAlpha]**: field of view fill color transparency
 		* **[fovObj]**: a fov object. See pydarn.radar.radFov.fov
 		* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere
-		* **[beam]**: hightlight specified beams 
+		* **[beams]**: hightlight specified beams 
+		* **[beamsColors]**: colors of the hightlighted beams 
 	**Returns**:
 		* None
 	**Example**:
@@ -242,7 +243,11 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 				beams = [beams]
 			for ib in beams:
 				if not (0 <= ib <= x.shape[0]): continue
-				bCol = ib/float(x.shape[0])
+				if not beamsColors:
+					bColRGB = ib/float(x.shape[0])
+					bCol = (bColRGB/2.,bColRGB,1)
+				else:
+					bCol = beamsColors[beams.index(ib)]
 				contourX = concatenate( (x[ib,0:eGate+1], 
 										 x[ib:ib+2,eGate],
 										 x[ib+1,eGate::-1],
@@ -252,7 +257,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 										 y[ib+1,eGate::-1],
 										 y[ib+1:ib-1:-1,0]) )
 				contour = transpose( vstack((contourX,contourY)) )
-				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4, zorder=zorder)
+				patch = Polygon( contour, color=bCol, alpha=.4, zorder=zorder)
 				gca().add_patch(patch)
 	
 	return

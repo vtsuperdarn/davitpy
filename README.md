@@ -44,6 +44,8 @@ MacOS
     cd install/mac
     sudo ./python_install_mac.sh
 
+(**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries)
+
 openSUSE
 
     cd install/opensuse

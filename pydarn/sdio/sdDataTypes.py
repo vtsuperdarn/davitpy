@@ -199,7 +199,7 @@ class mapData(sdBaseData):
   **Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the record
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the record
-    * **dopinglevel** (int): 
+    * **dopinglevel** (int): density of points where statistical model is sampled
     * **modelwt** (int): 
     * **errorwt** (int): 
     * **IMFflag** (int): 
