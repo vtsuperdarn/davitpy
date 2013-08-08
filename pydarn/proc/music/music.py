@@ -1028,7 +1028,7 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
         spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
 
-def calculateKarr(dataObj,dataSet='active',comment=None):
+def calculateKarr(dataObj,dataSet='active',comment=None,kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0.001,threshold=0.15):
   """Calculate the cross-spectral matrix of a vtMUSIC object. FFT must already have been calculated.
 
   **Args**:
@@ -1047,18 +1047,13 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   #Calculate eigenvalues, eigenvectors
   eVals,eVecs = np.linalg.eig(np.transpose(dataObj.active.Dlm))
 
-  kx_max  = 0.05
-  ky_max  = 0.05
-  dkx     = 0.001
-  dky     = 0.001
-
-  nkx     = np.ceil(2*kx_max/dkx)
+  nkx     = np.ceil(2*kxMax/dkx)
   if (nkx % 2) == 0: nkx = nkx+1
-  kx_vec  = kx_max * (2*np.arange(nkx)/(nkx-1) - 1)
+  kxVec  = kxMax * (2*np.arange(nkx)/(nkx-1) - 1)
 
-  nky     = np.ceil(2*ky_max/dky)
+  nky     = np.ceil(2*kyMax/dky)
   if (nky % 2) == 0: nky = nky+1
-  ky_vec  = ky_max * (2*np.arange(nky)/(nky-1) - 1)
+  kyVec  = kyMax * (2*np.arange(nky)/(nky-1) - 1)
 
   nkx = int(nkx)
   nky = int(nky)
@@ -1066,12 +1061,12 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   xm      = currentData.llLookupTable[4,:] #x is in the E-W direction.
   ym      = currentData.llLookupTable[3,:] #y is in the N-S direction.
 
-  sigThresh   = 0.15
+  threshold   = 0.15
   maxEval     = np.max(np.abs(eVals))
 
-  minEvalsInx = np.where(eVals <= sigThresh*maxEval)[0]
+  minEvalsInx = np.where(eVals <= threshold*maxEval)[0]
   cnt         = np.size(minEvalsInx)
-  maxEvalsInx = np.where(eVals >  sigThresh*maxEval)[0]
+  maxEvalsInx = np.where(eVals >  threshold*maxEval)[0]
   nSigs       = np.size(maxEvalsInx)
 
   if cnt < 3:
@@ -1079,12 +1074,12 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
       import ipdb; ipdb.set_trace()
 
   print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
-  print 'Kx Max: ' + str(kx_max)
+  print 'Kx Max: ' + str(kxMax)
   print 'Kx Res: ' + str(dkx)
-  print 'Ky Max: ' + str(ky_max)
+  print 'Ky Max: ' + str(kyMax)
   print 'Ky Res: ' + str(dky)
   print ''
-  print 'Signal Threshold:      ' + str(sigThresh)
+  print 'Signal Threshold:      ' + str(threshold)
   print 'Number of Det Signals: ' + str(nSigs)
   print 'Number of Noise Evals: ' + str(cnt)
 
@@ -1095,16 +1090,16 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   vList = [eVecs[:,minEvalsInx[ee]] for ee in xrange(cnt)]
   kArr  = np.zeros((nkx,nky),dtype=np.complex64)
   for kk_kx in xrange(nkx):
-    kx  = kx_vec[kk_kx]
+    kx  = kxVec[kk_kx]
     for kk_ky in xrange(nky):
-      ky  = ky_vec[kk_ky]
+      ky  = kyVec[kk_ky]
       um  = np.exp(1j*(kx*xm + ky*ym))
       kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
   t1 = datetime.datetime.now()
 
-  currentData.karr   = kArr
-  currentData.kx_vec = kx_vec
-  currentData.ky_vec = ky_vec
+  currentData.karr  = kArr
+  currentData.kxVec = kxVec
+  currentData.kyVec = kyVec
 
 def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
   import utils
