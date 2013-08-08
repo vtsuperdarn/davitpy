@@ -7,39 +7,6 @@ import pydarn
 
 Re = 6378   #Earth radius
 
-options = {}
-options['timeStep']       = 2.          #;timeStep between scans in Minutes.
-options['param']          = 'power'
-options['scale']          = [-25, 25]
-options['filtered']       = False
-options['ajground']       = False
-options['scatterflag']    = 1
-options['sim']            = 0 
-options['keep_lr']        = 0 
-options['kx_min']         = 0.05
-options['ky_min']         = 0.05
-options['coord']          = 'geog'
-options['dkx']            = 0.001
-options['dky']            = 0.001
-options['gl']             = 3
-options['test']           = 0
-options['nmax']           = 5
-options['fir_filter']     = 1
-options['zero_padding']   = 1
-options['use_all_cells']  = 1
-options['fft_range']      = [0., 1.5]
-options['fir_scale']      = [-10, 10]
-
-params                    = {}
-params['datetime']        = [datetime.datetime(2010,11,19,9,30), datetime.datetime(2010,11,19,19,30)]
-params['radar']           = 'gbr'
-params['channel']         = 'a'
-params['bmnum']            = 6
-params['drange']          = [500,1000]
-params['band']            = [0.3,1.2]
-params['kmax']            = 0.05
-params['fir_datetime']    = [datetime.datetime(2010,11,19,14,10), datetime.datetime(2010,11,19,16,00)]
-
 def sigObjCheck(dataObj):
   """Determines if the called dataObj is a vtMUSIC or a vtMUSICArray object. 
   :returns vtMUSIC: vtMUSIC object
@@ -50,7 +17,6 @@ def sigObjCheck(dataObj):
     vtMUSIC = dataObj.active
 
   return sigobj
-
 
 def prepForProc(dataObj):
   """Determines if the called signal is a vt sig or a vt sigStruct object. 
@@ -1100,9 +1066,6 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   xm      = currentData.llLookupTable[4,:] #x is in the E-W direction.
   ym      = currentData.llLookupTable[3,:] #y is in the N-S direction.
 
-  omega   = 0.
-  t       = 0.
-
   sigThresh   = 0.15
   maxEval     = np.max(np.abs(eVals))
 
@@ -1115,7 +1078,6 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
       print 'Not enough small eigenvalues!'
       import ipdb; ipdb.set_trace()
 
-
   print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
   print 'Kx Max: ' + str(kx_max)
   print 'Kx Res: ' + str(dkx)
@@ -1126,60 +1088,23 @@ def calculateKarr(dataObj,dataSet='active',comment=None):
   print 'Number of Det Signals: ' + str(nSigs)
   print 'Number of Noise Evals: ' + str(cnt)
 
-#  for kk_kx in xrange(nkx):
-#      kx  = kx_vec[kk_kx]
-#      for kk_ky in xrange(nky):
-#          ky  = ky_vec[kk_ky]
-#          resTot  = 0
-#          for ee in xrange(cnt):
-#              ec  = minEvalsInx[ee]
-#              v   = np.transpose(eVecs[:,ec])
-#              um  = np.transpose(np.exp(i*(kx*xm + ky*ym - omega*t)))
-#
-#              import ipdb; ipdb.set_trace()
-#              res = np.dot(np.dot( np.transpose(np.conj(um)),v),np.dot(np.transpose(np.conj(v)),um))
-#              resTot = resTot + res
-#          kArr[kk_kx,kk_ky] = 1. / resTot
+  print 'Starting kArr Calculation...'
+  def vCalc(um,v):
+    return np.dot( np.conj(um), v) * np.dot( np.conj(v), um)
 
-  i     = 0+1j
-  kArr  = np.zeros((nkx,nky),dtype=np.complex128)
+  vList = [eVecs[:,minEvalsInx[ee]] for ee in xrange(cnt)]
+  kArr  = np.zeros((nkx,nky),dtype=np.complex64)
   for kk_kx in xrange(nkx):
     kx  = kx_vec[kk_kx]
     for kk_ky in xrange(nky):
       ky  = ky_vec[kk_ky]
-      resTot = np.zeros(1,dtype=np.complex128)
-      for ee in xrange(cnt):
-        print kk_kx, kk_ky, ee
-        ec  = minEvalsInx[ee]
-        v   = eVecs[:,ec]
-        um  = np.exp(i*(kx*xm + ky*ym - omega*t))
-
-        p1  = np.dot( np.conj(um), v)
-        p2  = np.dot( np.conj(v), um)
-        res = p1 * p2
-        resTot = resTot + res
-      kArr[kk_kx,kk_ky] = 1. / resTot[0]
+      um  = np.exp(1j*(kx*xm + ky*ym))
+      kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
+  t1 = datetime.datetime.now()
 
   currentData.karr   = kArr
   currentData.kx_vec = kx_vec
   currentData.ky_vec = ky_vec
-
-#              from matplotlib import pyplot as plt
-#              fig   = plt.figure()
-#              axis  = fig.add_subplot(111)
-#              axis.plot(np.real(um))
-##              axis.set_xlim((0,25))
-#              fig.savefig('/data/pymusic/um.png')
-#
-#              fig   = plt.figure()
-#              axis  = fig.add_subplot(111)
-#              axis.plot(xm)
-#              fig.savefig('/data/pymusic/xm.png')
-#
-#              fig   = plt.figure()
-#              axis  = fig.add_subplot(111)
-#              axis.plot(ym)
-#              fig.savefig('/data/pymusic/ym.png')
 
 def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
   import utils
@@ -1329,38 +1254,3 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
   #PRINTF,unit,stats$
   #PRINTF,unit,snr_db
   #CLOSE,unit
-
-  #IF KEYWORD_SET(lr) AND ~KEYWORD_SET(keep_lr) THEN BEGIN
-  #    lr[0,*,*]   = xgrid
-  #    lr[1,*,*]   = ygrid
-  #    lr[2,*,*]   = SQRT(xgrid^2 + ygrid^2)
-  #    lr[3,*,*]   = ATAN(xgrid,ygrid) * !RADEG
-  #
-  #    bndLr       = FLTARR(4,2,2,nx,ny)
-  #    FOR xx=0,nx-1 DO BEGIN
-  #        FOR yy=0,ny-1 DO BEGIN
-  #            xp  = xgrid[xx,yy]
-  #            yp  = ygrid[xx,yy]
-  #
-  #            bndLr[0,0,0,xx,yy]   = xp - dx/2.
-  #            bndLr[0,0,1,xx,yy]   = xp - dx/2.
-  #            bndLr[0,1,1,xx,yy]   = xp + dx/2.
-  #            bndLr[0,1,0,xx,yy]   = xp + dx/2.
-  #
-  #            bndLr[1,0,0,xx,yy]   = yp - dy/2.
-  #            bndLr[1,0,1,xx,yy]   = yp + dy/2.
-  #            bndLr[1,1,1,xx,yy]   = yp + dy/2.
-  #            bndLr[1,1,0,xx,yy]   = yp - dy/2.
-  #
-  #            bndLr[2,0,0,xx,yy]   = SQRT((xp-dx/2.)^2 + (yp-dy/2.)^2)
-  #            bndLr[2,0,1,xx,yy]   = SQRT((xp-dx/2.)^2 + (yp+dy/2.)^2)
-  #            bndLr[2,1,1,xx,yy]   = SQRT((xp+dx/2.)^2 + (yp+dy/2.)^2)
-  #            bndLr[2,1,0,xx,yy]   = SQRT((xp+dx/2.)^2 + (yp-dy/2.)^2)
-  #
-  #            bndLr[3,0,0,xx,yy]   = ATAN(xp-dx/2.,yp-dy/2.) * !RADEG
-  #            bndLr[3,0,1,xx,yy]   = ATAN(xp-dx/2.,yp+dy/2.) * !RADEG
-  #            bndLr[3,1,1,xx,yy]   = ATAN(xp+dx/2.,yp+dy/2.) * !RADEG
-  #            bndLr[3,1,0,xx,yy]   = ATAN(xp+dx/2.,yp-dy/2.) * !RADEG
-  #        ENDFOR
-  #    ENDFOR
-  #ENDIF
