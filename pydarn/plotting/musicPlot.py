@@ -1144,13 +1144,13 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
   scan    = []
   #Plot Spectrum
   for ll in range(nrL-1):
-    xx0      = currentData.kx_vec[ll]
-    xx1      = currentData.kx_vec[ll+1]
+    xx0      = currentData.kxVec[ll]
+    xx1      = currentData.kxVec[ll+1]
     for mm in range(nrM-1):
       scan.append(data[ll,mm])
 
-      yy0  = currentData.ky_vec[mm]
-      yy1  = currentData.ky_vec[mm + 1]
+      yy0  = currentData.kyVec[mm]
+      yy1  = currentData.kyVec[mm + 1]
 
       x1,y1 = xx0, yy0
       x2,y2 = xx1, yy0
@@ -1180,8 +1180,8 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
 #  labels = cbar.ax.get_yticklabels()
 #  labels[-1].set_visible(False)
 #  labels[0].set_visible(False)
-  axis.set_xlim([np.min(currentData.kx_vec),np.max(currentData.kx_vec)])
-  axis.set_ylim([np.min(currentData.ky_vec),np.max(currentData.ky_vec)])
+  axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
+  axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
 
   axis.set_xlabel('kx')
   axis.set_ylabel('ky')

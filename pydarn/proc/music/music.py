@@ -1028,17 +1028,18 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
         spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
 
-def calculateKarr(dataObj,dataSet='active',comment=None,kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0.001,threshold=0.15):
-  """Calculate the cross-spectral matrix of a vtMUSIC object. FFT must already have been calculated.
+def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0.001,threshold=0.15):
+  """Calculate the two-dimensional horizonatal wavenumber array of a vtMUSIC object.
+  Cross-spectrum array Dlm must already have been calculated.
 
   **Args**:
       * **dataObj**:    vtMUSIC object
       * **dataSet**:    which dataSet in the vtMUSIC object to process
-      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-      * **newSigName**: String name of the attribute of the newly created signal.
-      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
-                        barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
-                        slepian (needs width), chebwin (needs attenuation)
+      * **kxMax**:      Maximum kx (East-West) wavenumber to calculate [rad/km]
+      * **kyMax**:      Maximum ky (North-South) wavenumber to calculate [rad/km]
+      * **dkx**:        kx resolution [rad/km]
+      * **dky**:        ky resolution [rad/km]
+      * **threshold**:  threshold of signals to detect as a fraction of the maximum eigenvalue
   """
   currentData = getDataSet(dataObj,dataSet)
 
@@ -1110,8 +1111,6 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 #       Period:         55.5 min
 #       H. Wavelength:  314 km
 #       k:              0.02 /km
-
-  i       = 0+1j
 
   if keepLocalRange == True:
     nx, ny  = np.shape(currentData.fov.relative_x)
