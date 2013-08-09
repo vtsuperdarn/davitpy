@@ -1129,14 +1129,116 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
 
   data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
 
+#  data        = data / np.nanmax(data)
+
   #Determine scale for colorbar.
   sd          = stats.nanstd(data,axis=None)
   mean        = stats.nanmean(data,axis=None)
   scMax       = mean + 6.5*sd
-  scale       = scMax*np.array([0,1.])
+#  scale       = scMax*np.array([0,1.])
+
+  data = data / scMax
+  scale       = [0.,1.]
 
   #Do plotting here!
   axis = fig.add_subplot(111,aspect='equal')
+
+  nrL, nrM = np.shape(data)
+
+  verts   = []
+  scan    = []
+  #Plot Spectrum
+  for ll in range(nrL-1):
+    xx0      = currentData.kxVec[ll]
+    xx1      = currentData.kxVec[ll+1]
+    for mm in range(nrM-1):
+      scan.append(data[ll,mm])
+
+      yy0  = currentData.kyVec[mm]
+      yy1  = currentData.kyVec[mm + 1]
+
+      x1,y1 = xx0, yy0
+      x2,y2 = xx1, yy0
+      x3,y3 = xx1, yy1
+      x4,y4 = xx0, yy1
+      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+  cmap = matplotlib.cm.jet
+  bounds  = np.linspace(scale[0],scale[1],256)
+  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+
+  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+  pcoll.set_array(np.array(scan))
+  axis.add_collection(pcoll,autolim=False)
+
+  #Colorbar
+  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+  cbar.set_label('ABS(Spectral Density)')
+  cbar.set_ticks(np.arange(10)/10.)
+  if currentData.metadata.has_key('gscat'):
+    if currentData.metadata['gscat'] == 1:
+      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+
+  axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
+  axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
+
+  axis.set_xlabel('kx')
+  axis.set_ylabel('ky')
+
+  xpos = 0.130
+  fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
+  #Get the time limits.
+  timeLim = (np.min(currentData.time),np.max(currentData.time))
+  md = currentData.metadata
+
+  #Translate parameter information from short to long form.
+  paramDict = getParamDict(md['param'])
+  param     = paramDict['param']
+  cbarLabel = paramDict['label']
+
+  text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
+
+  if md.has_key('fir_filter'):
+    filt = md['fir_filter']
+    if filt[0] == None:
+      low = 'None'
+    else:
+      low = '%.2f' % (1000. * filt[0])
+    if filt[1] == None:
+      high = 'None'
+    else:
+      high = '%.2f' % (1000. * filt[1])
+
+    text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+
+  fig.text(xpos,0.95,text,fontsize=14,va='top')
+
+def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude'):
+  from scipy import stats
+
+  currentData = getDataSet(dataObj,dataSet)
+  if fig == None:
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+    fig = Figure()
+
+  data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
+
+#  data        = data / np.nanmax(data)
+
+  #Determine scale for colorbar.
+  sd          = stats.nanstd(data,axis=None)
+  mean        = stats.nanmean(data,axis=None)
+  scMax       = mean + 6.5*sd
+#  scale       = scMax*np.array([0,1.])
+
+  data = data / scMax
+  scale       = [0.,1.]
+
+  
+
+  #Do plotting here!
+  axis = fig.add_subplot(121,aspect='equal')
 
   nrL, nrM = np.shape(data)
 
@@ -1174,9 +1276,11 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
   #Colorbar
   cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
   cbar.set_label('ABS(Spectral Density)')
+  cbar.set_ticks(np.arange(10)/10.)
   if currentData.metadata.has_key('gscat'):
     if currentData.metadata['gscat'] == 1:
       cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+
 #  labels = cbar.ax.get_yticklabels()
 #  labels[-1].set_visible(False)
 #  labels[0].set_visible(False)
@@ -1213,3 +1317,74 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
     text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
 
   fig.text(xpos,0.95,text,fontsize=14,va='top')
+
+  ################################################################################
+  #Feature detection...
+  #Now lets do a little image processing...
+  from scipy import ndimage
+  from skimage.morphology import watershed, is_local_maximum
+  from matplotlib import pyplot as plt
+  #sudo pip install cython
+  #sudo pip install scikit-image
+  mask = data > 0.50
+  labels, nb = ndimage.label(mask)
+
+  hist,bin_edges = np.histogram(data,bins=60)
+
+  distance    = ndimage.distance_transform_edt(mask)
+  local_maxi  = is_local_maximum(distance,mask,np.ones((10,10)))
+  markers,nb  = ndimage.label(local_maxi)
+  labels      = watershed(-distance,markers,mask=mask)
+  import ipdb; ipdb.set_trace()
+
+#  plt.ion()
+#  fig1 = plt.figure()
+#  ax = fig1.add_subplot(111)
+#  ax.plot(hist)
+#  import ipdb; ipdb.set_trace()
+
+  data2 = labels
+
+  scale = [0,labels.max()]
+
+  #Do plotting here!
+  axis = fig.add_subplot(122,aspect='equal')
+  verts   = []
+  scan    = []
+  #Plot Spectrum
+  for ll in range(nrL-1):
+    xx0      = currentData.kxVec[ll]
+    xx1      = currentData.kxVec[ll+1]
+    for mm in range(nrM-1):
+      scan.append(data2[ll,mm])
+
+      yy0  = currentData.kyVec[mm]
+      yy1  = currentData.kyVec[mm + 1]
+
+      x1,y1 = xx0, yy0
+      x2,y2 = xx1, yy0
+      x3,y3 = xx1, yy1
+      x4,y4 = xx0, yy1
+      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+  cmap    = matplotlib.cm.jet
+  bounds  = np.linspace(scale[0],scale[1],256)
+  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+
+  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+  pcoll.set_array(np.array(scan))
+  axis.add_collection(pcoll,autolim=False)
+
+  #Colorbar
+  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+  cbar.set_label('ABS(Spectral Density)')
+#  cbar.set_ticks(np.arange(10)/10.)
+  cbar.set_ticks(np.arange(scale[1]))
+  if currentData.metadata.has_key('gscat'):
+    if currentData.metadata['gscat'] == 1:
+      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+  axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
+  axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
+
+  axis.set_xlabel('kx')
+  axis.set_ylabel('ky')

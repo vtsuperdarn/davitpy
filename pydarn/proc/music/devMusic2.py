@@ -8,7 +8,7 @@ sys.path.append('/davitpy')
 # <codecell>
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 
 import pydarn.sdio
 import datetime
@@ -27,11 +27,11 @@ figsize = (20,10)
 
 dataObj = pickle.load(open('dataObj.p','rb'))
 
-from scipy import io
-idlsav  = io.readsav('karr.sav')
-karr = idlsav['karr']
-
-dataObj.active.karr = karr.transpose()
+#from scipy import io
+#idlsav  = io.readsav('karr.sav')
+#karr = idlsav['karr']
+#
+#dataObj.active.karr = karr.transpose()
 
 #fig = plt.figure(figsize=figsize)
 #ax  = fig.add_subplot(111)
@@ -43,6 +43,6 @@ dataObj.active.karr = karr.transpose()
 #pydarn.plotting.musicPlot.musicRTI(dataObj,dataSet='filtered',plotZeros=True,axis=ax,scale=(-1,1))
 #fig.savefig(outdir+'/filteredDataRTI.png')
 
-fig = plt.figure(figsize=figsize)
+fig = plt.figure(figsize=(10,10))
 pydarn.plotting.musicPlot.plotKarr(dataObj,fig=fig)
 fig.savefig(outdir+'/karr.png')

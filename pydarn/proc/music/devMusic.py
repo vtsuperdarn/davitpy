@@ -224,7 +224,7 @@ t1 = datetime.datetime.now()
 import pickle
 pickle.dump(dataObj,open('dataObj.p','wb'))
 
-fig = plt.figure(figsize=figsize)
+fig = plt.figure(figsize=(10,10))
 pydarn.plotting.musicPlot.plotKarr(dataObj,fig=fig)
 fig.savefig(outdir+'/karr.png')
 
