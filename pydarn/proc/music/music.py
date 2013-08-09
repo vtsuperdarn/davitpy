@@ -1248,3 +1248,52 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
   #PRINTF,unit,stats$
   #PRINTF,unit,snr_db
   #CLOSE,unit
+
+def detectSignals(dataObj,dataSet='active'):
+  currentData = getDataSet(dataObj,dataSet)
+  ################################################################################
+  #Feature detection...
+  #Now lets do a little image processing...
+  from scipy import ndimage, stats
+  from skimage.morphology import watershed, is_local_maximum
+  #sudo pip install cython
+  #sudo pip install scikit-image
+
+  data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
+
+  #Determine scale for colorbar.
+  scale       = [0.,1.]
+  sd          = stats.nanstd(data,axis=None)
+  mean        = stats.nanmean(data,axis=None)
+  scMax       = mean + 6.5*sd
+  data        = data / scMax
+
+  mask = data > 0.50
+  labels, nb = ndimage.label(mask)
+
+  distance    = ndimage.distance_transform_edt(mask)
+  local_maxi  = is_local_maximum(distance,mask,np.ones((10,10)))
+  markers,nb  = ndimage.label(local_maxi)
+  labels      = watershed(-distance,markers,mask=mask)
+
+  areas         = ndimage.sum(mask,labels,xrange(1,labels.max()+1))
+  maxima        = ndimage.maximum(data,labels,xrange(1, labels.max()+1))
+  sortedMaxima  = np.sort(maxima)[::-1]
+  maxpos        = ndimage.maximum_position(data,labels,xrange(1, labels.max()+1))
+
+  class sigDetect: pass
+  sigDetect.mask    = mask
+  sigDetect.labels  = labels
+  sigDetect.nrSigs  = nb
+  sigDetect.info    = []
+  for x in xrange(labels.max()):
+    info = {}
+    info['labelInx']  = x+1
+    info['order']     = int(np.where(maxima[x] == sortedMaxima)[0]) + 1
+    info['area']      = areas[x]
+    info['max']       = maxima[x]
+    info['maxpos']    = maxpos[x]
+    sigDetect.info.append(info)
+
+  currentData.sigDetect = sigDetect
+  return currentData

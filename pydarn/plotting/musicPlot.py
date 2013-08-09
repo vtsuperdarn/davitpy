@@ -1118,72 +1118,16 @@ def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
 
   fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
-  from scipy import stats
-
+def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=5):
   currentData = getDataSet(dataObj,dataSet)
   if fig == None:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
     fig = Figure()
-
-  data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
-
-#  data        = data / np.nanmax(data)
-
-  #Determine scale for colorbar.
-  sd          = stats.nanstd(data,axis=None)
-  mean        = stats.nanmean(data,axis=None)
-  scMax       = mean + 6.5*sd
-#  scale       = scMax*np.array([0,1.])
-
-  data = data / scMax
-  scale       = [0.,1.]
 
   #Do plotting here!
   axis = fig.add_subplot(111,aspect='equal')
-
-  nrL, nrM = np.shape(data)
-
-  verts   = []
-  scan    = []
-  #Plot Spectrum
-  for ll in range(nrL-1):
-    xx0      = currentData.kxVec[ll]
-    xx1      = currentData.kxVec[ll+1]
-    for mm in range(nrM-1):
-      scan.append(data[ll,mm])
-
-      yy0  = currentData.kyVec[mm]
-      yy1  = currentData.kyVec[mm + 1]
-
-      x1,y1 = xx0, yy0
-      x2,y2 = xx1, yy0
-      x3,y3 = xx1, yy1
-      x4,y4 = xx0, yy1
-      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
-
-  cmap = matplotlib.cm.jet
-  bounds  = np.linspace(scale[0],scale[1],256)
-  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-
-  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-  pcoll.set_array(np.array(scan))
-  axis.add_collection(pcoll,autolim=False)
-
-  #Colorbar
-  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  cbar.set_label('ABS(Spectral Density)')
-  cbar.set_ticks(np.arange(10)/10.)
-  if currentData.metadata.has_key('gscat'):
-    if currentData.metadata['gscat'] == 1:
-      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-
-  axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
-  axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
-
-  axis.set_xlabel('kx')
-  axis.set_ylabel('ky')
+  plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals)
 
   xpos = 0.130
   fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
@@ -1213,83 +1157,20 @@ def plotKarr(dataObj,dataSet='active',fig=None,type='magnitude'):
 
   fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude'):
-  from scipy import stats
-
+def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude',maxSignals=5):
   currentData = getDataSet(dataObj,dataSet)
+
+  from scipy import stats
+  import matplotlib.patheffects as PathEffects
+
   if fig == None:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
     fig = Figure()
 
-  data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
-
-#  data        = data / np.nanmax(data)
-
-  #Determine scale for colorbar.
-  sd          = stats.nanstd(data,axis=None)
-  mean        = stats.nanmean(data,axis=None)
-  scMax       = mean + 6.5*sd
-#  scale       = scMax*np.array([0,1.])
-
-  data = data / scMax
-  scale       = [0.,1.]
-
-  
-
   #Do plotting here!
   axis = fig.add_subplot(121,aspect='equal')
-
-  nrL, nrM = np.shape(data)
-
-  verts   = []
-  scan    = []
-  #Plot Spectrum
-  for ll in range(nrL-1):
-    xx0      = currentData.kxVec[ll]
-    xx1      = currentData.kxVec[ll+1]
-    for mm in range(nrM-1):
-      scan.append(data[ll,mm])
-
-      yy0  = currentData.kyVec[mm]
-      yy1  = currentData.kyVec[mm + 1]
-
-      x1,y1 = xx0, yy0
-      x2,y2 = xx1, yy0
-      x3,y3 = xx1, yy1
-      x4,y4 = xx0, yy1
-      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
-
-  colors  = 'lasse'
-  if scale == None:
-    scale   = (np.min(scan),np.max(scan))
-#  param = 'power'
-#  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
-  cmap = matplotlib.cm.jet
-  bounds  = np.linspace(scale[0],scale[1],256)
-  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-
-  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-  pcoll.set_array(np.array(scan))
-  axis.add_collection(pcoll,autolim=False)
-
-  #Colorbar
-  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  cbar.set_label('ABS(Spectral Density)')
-  cbar.set_ticks(np.arange(10)/10.)
-  if currentData.metadata.has_key('gscat'):
-    if currentData.metadata['gscat'] == 1:
-      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-
-#  labels = cbar.ax.get_yticklabels()
-#  labels[-1].set_visible(False)
-#  labels[0].set_visible(False)
-  axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
-  axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
-
-  axis.set_xlabel('kx')
-  axis.set_ylabel('ky')
-
+  # Page-wide header #############################################################
   xpos = 0.130
   fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
   #Get the time limits.
@@ -1317,35 +1198,15 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude'):
     text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
 
   fig.text(xpos,0.95,text,fontsize=14,va='top')
+  # End Page-wide header #########################################################
+
+  plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals)
 
   ################################################################################
   #Feature detection...
-  #Now lets do a little image processing...
-  from scipy import ndimage
-  from skimage.morphology import watershed, is_local_maximum
-  from matplotlib import pyplot as plt
-  #sudo pip install cython
-  #sudo pip install scikit-image
-  mask = data > 0.50
-  labels, nb = ndimage.label(mask)
-
-  hist,bin_edges = np.histogram(data,bins=60)
-
-  distance    = ndimage.distance_transform_edt(mask)
-  local_maxi  = is_local_maximum(distance,mask,np.ones((10,10)))
-  markers,nb  = ndimage.label(local_maxi)
-  labels      = watershed(-distance,markers,mask=mask)
-  import ipdb; ipdb.set_trace()
-
-#  plt.ion()
-#  fig1 = plt.figure()
-#  ax = fig1.add_subplot(111)
-#  ax.plot(hist)
-#  import ipdb; ipdb.set_trace()
-
-  data2 = labels
-
-  scale = [0,labels.max()]
+  data2 = currentData.sigDetect.labels
+  nrL, nrM = np.shape(data2)
+  scale = [0,data2.max()]
 
   #Do plotting here!
   axis = fig.add_subplot(122,aspect='equal')
@@ -1375,16 +1236,173 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude'):
   pcoll.set_array(np.array(scan))
   axis.add_collection(pcoll,autolim=False)
 
+  axis.axvline(color='0.82',lw=2,zorder=150)
+  axis.axhline(color='0.82',lw=2,zorder=150)
+
   #Colorbar
   cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  cbar.set_label('ABS(Spectral Density)')
+  cbar.set_label('Region of Interest')
 #  cbar.set_ticks(np.arange(10)/10.)
-  cbar.set_ticks(np.arange(scale[1]))
-  if currentData.metadata.has_key('gscat'):
-    if currentData.metadata['gscat'] == 1:
-      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+#  cbar.set_ticks(np.arange(scale[1]))
+  cbar.set_ticks([])
+#  if currentData.metadata.has_key('gscat'):
+#    if currentData.metadata['gscat'] == 1:
+#      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
   axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
   axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
 
-  axis.set_xlabel('kx')
-  axis.set_ylabel('ky')
+  # Add wavelength to x/y tick labels ############################################ 
+  ticks     = axis.get_xticks()
+  newLabels = []
+  for x in xrange(len(ticks)):
+    tck = ticks[x]
+    if tck != 0:
+      km = 2*np.pi/tck
+      km_txt = '%i' % km
+    else:
+      km_txt = ''
+
+    rad_txt = '%.2f' % tck
+    txt = '\n'.join([rad_txt,km_txt])
+    newLabels.append(txt)
+  axis.set_xticklabels(newLabels)
+  axis.set_xlabel(u'kx [rad]\n$\lambda$ [km]',ha='center')
+
+  ticks     = axis.get_yticks()
+  newLabels = []
+  for y in xrange(len(ticks)):
+    tck = ticks[y]
+    if tck != 0:
+      km = 2*np.pi/tck
+      km_txt = '%i' % km
+    else:
+      km_txt = ''
+
+    rad_txt = '%.2f' % tck
+    txt = '\n'.join([rad_txt,km_txt])
+    newLabels.append(txt)
+  axis.set_yticklabels(newLabels)
+  axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center')
+  # End add wavelength to x/y tick labels ######################################## 
+
+  if hasattr(currentData,'sigDetect'):
+    pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
+    for signal in currentData.sigDetect.info:
+      if signal['order'] > maxSignals: continue 
+      xpos = currentData.kxVec[signal['maxpos'][0]]
+      ypos = currentData.kyVec[signal['maxpos'][1]]
+      txt  = '%i' % signal['order']
+      axis.text(xpos,ypos,txt,color='k',zorder=150,size=24,path_effects=pe)
+
+def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=5):
+  if axis == None: return
+  fig = axis.get_figure()
+  from scipy import stats
+  import matplotlib.patheffects as PathEffects
+
+  currentData = getDataSet(dataObj,dataSet)
+
+  data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
+  #Determine scale for colorbar.
+  sd          = stats.nanstd(data,axis=None)
+  mean        = stats.nanmean(data,axis=None)
+  scMax       = mean + 6.5*sd
+
+  data = data / scMax
+  scale       = [0.,1.]
+
+  nrL, nrM = np.shape(data)
+  verts   = []
+  scan    = []
+  #Plot Spectrum
+  for ll in range(nrL-1):
+    xx0      = currentData.kxVec[ll]
+    xx1      = currentData.kxVec[ll+1]
+    for mm in range(nrM-1):
+      scan.append(data[ll,mm])
+
+      yy0  = currentData.kyVec[mm]
+      yy1  = currentData.kyVec[mm + 1]
+
+      x1,y1 = xx0, yy0
+      x2,y2 = xx1, yy0
+      x3,y3 = xx1, yy1
+      x4,y4 = xx0, yy1
+      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+  cmap = matplotlib.cm.jet
+  bounds  = np.linspace(scale[0],scale[1],256)
+  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+
+  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+  pcoll.set_array(np.array(scan))
+  axis.add_collection(pcoll,autolim=False)
+
+  ################################################################################
+  #Annotations
+  axis.axvline(color='0.82',lw=2,zorder=150)
+  axis.axhline(color='0.82',lw=2,zorder=150)
+
+  #Colorbar
+  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+  cbar.set_label('ABS(Spectral Density)')
+  cbar.set_ticks(np.arange(10)/10.)
+  if currentData.metadata.has_key('gscat'):
+    if currentData.metadata['gscat'] == 1:
+      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+
+#  labels = cbar.ax.get_yticklabels()
+#  labels[-1].set_visible(False)
+#  labels[0].set_visible(False)
+  axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
+  axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
+
+  # Add wavelength to x/y tick labels ############################################ 
+  ticks     = axis.get_xticks()
+  newLabels = []
+  for x in xrange(len(ticks)):
+    tck = ticks[x]
+    if tck != 0:
+      km = 2*np.pi/tck
+      km_txt = '%i' % km
+    else:
+      km_txt = ''
+
+    rad_txt = '%.2f' % tck
+    txt = '\n'.join([rad_txt,km_txt])
+    newLabels.append(txt)
+  axis.set_xticklabels(newLabels)
+  axis.set_xlabel(u'kx [rad]\n$\lambda$ [km]',ha='center')
+
+  ticks     = axis.get_yticks()
+  newLabels = []
+  for y in xrange(len(ticks)):
+    tck = ticks[y]
+    if tck != 0:
+      km = 2*np.pi/tck
+      km_txt = '%i' % km
+    else:
+      km_txt = ''
+
+    rad_txt = '%.2f' % tck
+    txt = '\n'.join([rad_txt,km_txt])
+    newLabels.append(txt)
+  axis.set_yticklabels(newLabels)
+  axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center')
+  # End add wavelength to x/y tick labels ######################################## 
+
+  md = currentData.metadata
+
+  #Translate parameter information from short to long form.
+  paramDict = getParamDict(md['param'])
+  param     = paramDict['param']
+  cbarLabel = paramDict['label']
+
+  if hasattr(currentData,'sigDetect'):
+    pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
+    for signal in currentData.sigDetect.info:
+      if signal['order'] > maxSignals: continue 
+      xpos = currentData.kxVec[signal['maxpos'][0]]
+      ypos = currentData.kyVec[signal['maxpos'][1]]
+      txt  = '%i' % signal['order']
+      axis.text(xpos,ypos,txt,color='k',zorder=150,size=24,path_effects=pe)

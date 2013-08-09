@@ -43,6 +43,12 @@ dataObj = pickle.load(open('dataObj.p','rb'))
 #pydarn.plotting.musicPlot.musicRTI(dataObj,dataSet='filtered',plotZeros=True,axis=ax,scale=(-1,1))
 #fig.savefig(outdir+'/filteredDataRTI.png')
 
+music.detectSignals(dataObj)
+
 fig = plt.figure(figsize=(10,10))
 pydarn.plotting.musicPlot.plotKarr(dataObj,fig=fig)
 fig.savefig(outdir+'/karr.png')
+
+fig = plt.figure(figsize=figsize)
+pydarn.plotting.musicPlot.plotKarrDetected(dataObj,fig=fig)
+fig.savefig(outdir+'/karrDetected.png')
