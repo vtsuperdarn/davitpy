@@ -976,15 +976,27 @@ def calculateFFT(dataObj,dataSet='active',newDataSetName='windowed',comment=None
   freq_ax = (freq_ax / max(freq_ax)) - 0.5
   freq_ax = freq_ax * 2. * nyq
 
-#  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex128)
+  #Use complex64, not complex128!  If you use complex128, too much numerical noise will accumulate and the final plot will be bad!
   newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex64)
-#  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype='>c8')
   for bm in range(nrBeams):
     for rg in range(nrGates):
       newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg])) / np.size(currentData.data[:,bm,rg])
   
   currentData.freqVec   = freq_ax
   currentData.spectrum  = newDataArr
+
+  # Calculate the dominant frequency #############################################
+  posFreqInx  = np.where(currentData.freqVec >= 0)[0]
+  posFreqVec  = currentData.freqVec[posFreqInx]
+  npf         = len(posFreqVec) #Number of positive frequencies
+
+  data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
+
+  #Average Power Spectral Density
+  avg_psd = np.zeros(npf)
+  for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
+  currentData.dominantFreq = posFreqVec[np.argmax(avg_psd)]
+  
 
 def calculateDlm(dataObj,dataSet='active',comment=None):
   """Calculate the cross-spectral matrix of a vtMUSIC object. FFT must already have been calculated.
