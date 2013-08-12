@@ -11,8 +11,8 @@ https://github.com/vtsuperdarn/davitpy/wiki
 * Project documentation
 http://davit.ece.vt.edu/davitpy/
 
-* Project Trello (ToDos)
-https://trello.com/b/djb82luC
+* Project Milestones
+https://github.com/vtsuperdarn/davitpy/issues/milestones
 
 If you get a Bus Error when using radDataRead() and/or radDataReadRec() functions, you probably have to recompile the dmapio library on your local computer.  This can be done by going to davitpy/pydarn/dmapio and typing 'make clean' followed by 'make'.
 
@@ -43,6 +43,8 @@ MacOS
 
     cd install/mac
     sudo ./python_install_mac.sh
+
+(**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries)
 
 openSUSE
 

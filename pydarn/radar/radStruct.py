@@ -24,11 +24,11 @@ class network(object):
         * **nradar** (int): number of radars in class
         * **radars** (list): list of :class:`radar` objects
     **Methods**:
-        * :func:`getRadarById`
-        * :func:`getRadarByName`
-        * :func:`getRadarByCode`
-        * :func:`getRadarsByPosition`
-        * :func:`getAllCodes`
+        * :func:`network.getRadarById`
+        * :func:`network.getRadarByName`
+        * :func:`network.getRadarByCode`
+        * :func:`network.getRadarsByPosition`
+        * :func:`network.getAllCodes`
     **Example**:
         ::
 
@@ -341,7 +341,8 @@ class radar(object):
         * **snum** (int): number of site objects (i.e. number of updates to the hdw.dat)
         * **sites** (list): list of :class:`site` objects
     **Methods**:
-        * :func:`getSiteByDate`
+        * :func:`radar.fillFromSqlite`
+        * :func:`radar.getSiteByDate`
     **Example**:
         ::
 
@@ -545,6 +546,11 @@ class site(object):
         * **maxatten** (int): maximum number of analog attenuation stages
         * **maxgate** (int): maximum number of range gates (assuming 45km gates)
         * **maxbeam** (int): maximum number of beams
+    **Methods**:
+        * :func:`site.fillFromSqlite`
+        * :func:`site.beamToAzim`
+        * :func:`site.azimToBeam`
+
     **Example**:
         ::
 

@@ -16,55 +16,54 @@
 
 
 """
-.. module:: plotGME
+.. module:: gmeplot
    :synopsis: A module for reading, writing, and storing kp Data
-
 .. moduleauthor:: Nathaniel Frissell
-
 *********************
 **Module**: gme.plotting.gmeplot
 *********************
   * :func:`gme.plotting.plotGME`
 """
 
-
-#import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
-import matplotlib.pyplot as mp
-import matplotlib.dates as md
-
-def get_iterable(x):
+def __get_iterable(x):
   if isinstance(x, str):
     return [x]
   else:
     return x
 
+
 def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None):
-  """plot ground magnetic indicies, including AE,SYMH,ASYMH, and DST.
+  """plot ground magnetic indicies, including AE, SYMH, ASYMH, and DST.
 
   **Args**:
-    * **gmiList: gmiList object returned from ae.readAe(), symAsy.readSymAsy(), or dst.readDst()
-    * **[parameter]: List of parameters to plot. Valid values are
-      * aeList:     ['ae','al','au','ao'] (Defaults to 'ae')
-      * symAsyList: ['symh','symd','asymh','asymd'] (Defaults to 'symh')
+    * **gmiList**: gmiList object returned from ae.readAe(), symAsy.readSymAsy(), or dst.readDst()
+    * **[parameter]**: List of parameters to plot. Valid values are: 
+
+      * aeList:     ['ae', 'al', 'au', 'ao'] (Defaults to 'ae')
+      * symAsyList: ['symh', 'symd', 'asymh', 'asymd'] (Defaults to 'symh')
       * dstList:    ['dst']
-    * **[sTime]: datetime.datetime object for start of plotting.  If not given, earliest data availble from aeList is used.
-    [eTime]: datetime.datetime object for end of plotting.  If not given, latest data availble from aeList is used.
-    * **[ymin]: Y-Axis minimum limit
-    * **[ymax]: Y-Axis maximum limit
-    * **[NoX]:  Suppress X-Axis Titles and Ticks
-    * **[NoY]:  Suppress Y-Axis Titles and Ticks
-    * **[NoCredit]: Suppress printing source of data on plot
-    * **[NoLegend]: Suppress a legend if more than one parameter is plotted
-    * **[legendSize]: Character size of the legend
+
+    * **[sTime]**: datetime.datetime object for start of plotting.  If not given, earliest data availble from aeList is used.
+    * **[eTime]**: datetime.datetime object for end of plotting.  If not given, latest data availble from aeList is used.
+    * **[ymin]**: Y-Axis minimum limit
+    * **[ymax]**: Y-Axis maximum limit
+    * **[NoX]**:  Suppress X-Axis Titles and Ticks
+    * **[NoY]**:  Suppress Y-Axis Titles and Ticks
+    * **[NoCredit]**: Suppress printing source of data on plot
+    * **[NoLegend]**: Suppress a legend if more than one parameter is plotted
+    * **[legendSize]**: Character size of the legend
 
   **Returns**:
-    *Nothing.
+    * Nothing.
 
   .. note::
     If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
 
   Written by Nathaniel Frissell 20130216
   """
+  #import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+  import matplotlib.pyplot as mp
+  import matplotlib.dates as md
         
   times = [gmiList[x].time for x in range(len(gmiList))]
   dataSet = (gmiList[0]).dataSet
@@ -87,7 +86,7 @@ def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX
     data  = {'dst':dst}
     if parameter == None: parameter = ['dst']
 
-  parameter = get_iterable(parameter)
+  parameter = __get_iterable(parameter)
 
   figure = mp.gcf()
   if figure == None: figure = mp.figure()

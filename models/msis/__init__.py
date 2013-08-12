@@ -70,14 +70,16 @@ Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
   """
   from models import iri
   from datetime import datetime
-  from numpy import mean
+  from numpy import mean, floor
   
   # Get current path to IRI module
   path = iri.__file__.partition('__init__.py')[0]
   
   # open apf107.dat file
-  fileh = open('{}apf107.dat'.format(path), 'r')
-  data = fileh.xreadlines()
+  with open('{}apf107.dat'.format(path), 'r') as fileh:
+    data = []
+    for line in fileh:
+      data.append(line)
 
   # read into array 
   # (cannot use genfromtext because some columns are not separated by anything)
@@ -100,9 +102,6 @@ Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
     tf107a.append( float(ldat[44:49]) )
     tf107y.append( float(ldat[49:54]) )
 
-  # close file
-  fileh.close()
-
   # Get required datetime
   dictOut = {}
   if mydatetime is None:
@@ -117,7 +116,7 @@ Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
   # Find entry for date
   dtInd = tdate.index(dictOut['datetime'].date())
   # Find hour index
-  hrInd = int( round( (dictOut['datetime'].hour + dictOut['datetime'].minute/60.)/3. ) )
+  hrInd = int( floor( dictOut['datetime'].hour/3. ) )
 
   # f107 output
   dictOut['f107'] = tf107[dtInd-1]
