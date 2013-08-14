@@ -939,6 +939,25 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   newDataSet.data = newDataArr
   newDataSet.setActive()
 
+def nan_to_num(dataObj,dataSet='active',newDataSetName='nan_to_num',comment=None):
+  """Convert all NANs and INFs to finite numbers using numpy.nan_to_num().
+
+  **Args**:
+      * **dataObj**:    vtMUSIC object
+      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+      * **newSigName**: String name of the attribute of the newly created signal.
+  """
+  currentData = getDataSet(dataObj,dataSet)
+  currentData = currentData.applyLimits()
+
+  if comment == None:
+    comment = 'numpy.nan_to_num'
+      
+  newDataSet      = currentData.copy(newDataSetName,comment)
+  newDataSet.data = np.nan_to_num(currentData.data)
+  newDataSet.setActive()
+
 def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,window='hann'):
   """Apply a window to a vtMUSIC object.  The window is calculated using scipy.signal.get_window().
 
