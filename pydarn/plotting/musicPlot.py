@@ -189,7 +189,7 @@ class musicFan(object):
             transform=axis.transAxes)
 
 class musicRTI(object):
-  def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, **kwArgs):
+  def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, **kwArgs):
     if fileName != None:
       from matplotlib.backends.backend_agg import FigureCanvasAgg
       from matplotlib.figure import Figure
@@ -208,6 +208,9 @@ class musicRTI(object):
     lonFull     = currentData.fov.lonFull
 
     coords      = metadata['coords']
+    if coords not in ['gate','range']:
+        print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+        coords = 'gate'
 
     #Translate parameter information from short to long form.
     paramDict = getParamDict(metadata['param'])
@@ -281,6 +284,33 @@ class musicRTI(object):
       ylim = (np.min(rnge),np.max(rnge))
     axis.set_ylim(ylim)
     axis.set_ylabel('Range Gate')
+
+    #Shade yBoundary Limits
+    if xBoundaryLimits == None:
+      if currentData.metadata.has_key('timeLimits'):
+          xBoundaryLimits = currentData.metadata['timeLimits']
+
+    if xBoundaryLimits != None:
+      gray = '0.75'
+      axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+      axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=150,alpha=0.5)
+      axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
+      axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
+
+    #Shade yBoundary Limits
+    if yBoundaryLimits == None:
+        if currentData.metadata.has_key('gateLimits') and coords == 'gate':
+            yBoundaryLimits = currentData.metadata['gateLimits']
+
+        if currentData.metadata.has_key('rangeLimits') and coords == 'range':
+            yBoundaryLimits = currentData.metadata['rangeLimits']
+
+    if yBoundaryLimits != None:
+        gray = '0.75'
+        axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+        axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
+        axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
+        axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
 
     dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
     axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
@@ -715,6 +745,10 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
       if yData2 != None:
         l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
 
+      #Set axis limits.
+      axis.set_xlim(xlim)
+      axis.set_ylim(ylim)
+
       #Special handling for time axes.
       if xlabel == 'UT': 
         axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
@@ -722,13 +756,6 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
         labels = axis.get_xticklabels()
         for label in labels:
           label.set_rotation(30)
-
-      #Set axis limits.
-      if xlim != None:
-        axis.set_xlim(xlim)
-
-      if ylim != None:
-        axis.set_ylim(ylim)
 
       #Gray out area outside of the boundary.
       if xBoundaryLimits != None:

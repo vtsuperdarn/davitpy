@@ -613,6 +613,23 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
   newDataSet.data = interpArr
   newDataSet.setActive()
 
+def filterTimes(sTime,eTime,timeRes,numTaps):
+    """The linear filter is going to cause a delay in the signal and also won't get to the end of the signal.
+    This function will calcuate the full time period of data that needs to be loaded in order to provide filtered data
+    for the event requested.
+
+    * **sTime**:    (datetime.datetime) Start time of event.
+    * **eTime**:    (datetime.datetime) End time of event.
+    * **timeRes**:  (float)  Time resolution in seconds of data to be sent to filter.
+    * **numtaps**:  (int)    Length of the filter 
+
+    :returns: (newSTime, newETime)
+    """
+    td = datetime.timedelta(seconds=(numTaps*timeRes/2.))
+    newSTime = sTime - td
+    newETime = eTime + td
+    return (newSTime, newETime)
+
 class filter(object):
   def __init__(self, dataObj, dataSet='active', numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newDataSetName='filtered'):
     """Filter a VT sig/sigStruct object and define a FIR filter object.
@@ -910,7 +927,10 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   newDataArr= np.zeros_like(currentData.data)
   for bm in range(nrBeams):
     for rg in range(nrGates):
-      newDataArr[:,bm,rg] = sp.signal.detrend(currentData.data[:,bm,rg],type=type)
+        try:
+          newDataArr[:,bm,rg] = sp.signal.detrend(currentData.data[:,bm,rg],type=type)
+        except:
+          newDataArr[:,bm,rg] = np.nan
   
   if comment == None:
     comment = type.capitalize() + ' detrend (scipy.signal.detrend)'
