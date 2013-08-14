@@ -283,7 +283,7 @@ class musicRTI(object):
     axis.set_ylabel('Range Gate')
 
     dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-    axis.set_title(metadata['name']+' - ' + dataName
+    axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
         + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
         + xlim[1].strftime('%Y %b %d %H%M UT')
         ) 
