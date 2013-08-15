@@ -26,7 +26,8 @@ from pydarn.radar.radUtils import getParamDict
 from pydarn.proc.music import getDataSet
 
 class musicFan(object):
-  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None, plotZeros=False, markCell=None, **kwArgs):
+  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None,autoScale=False, plotZeros=False, markCell=None, **kwArgs):
+    from scipy import stats
     if fileName != None:
       from matplotlib.backends.backend_agg import FigureCanvasAgg
       from matplotlib.figure import Figure
@@ -57,10 +58,19 @@ class musicFan(object):
 
     #Set colorbar scale if not explicitly defined.
     if(scale == None):
-      if paramDict.has_key('range'):
-        scale = paramDict['range']
-      else:
-        scale = [-200,200]
+        if autoScale:
+            sd          = stats.nanstd(np.abs(currentData.data),axis=None)
+            mean        = stats.nanmean(np.abs(currentData.data),axis=None)
+            scMax       = np.ceil(mean + 1.*sd)
+            if np.min(currentData.data) < 0:
+                scale   = scMax*np.array([-1.,1.])
+            else:
+                scale   = scMax*np.array([0.,1.])
+        else:
+            if paramDict.has_key('range'):
+                scale = paramDict['range']
+            else:
+                scale = [-200,200]
 
     #See if an axis is provided... if not, set one up!
     if axis==None:
@@ -142,7 +152,7 @@ class musicFan(object):
         x4,y4 = m(lonFull[bm+0,rg+1],latFull[bm+0,rg+1])
         verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    if scale[0] >= -1 and scale[1] <= 1:
+    if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
       cmap = matplotlib.cm.jet
       bounds  = np.linspace(scale[0],scale[1],256)
       norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
@@ -176,7 +186,7 @@ class musicFan(object):
     cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
     cbar.set_label(cbarLabel)
     labels = cbar.ax.get_yticklabels()
-    labels[-1].set_visible(False)
+#    labels[-1].set_visible(False)
     if currentData.metadata.has_key('gscat'):
       if currentData.metadata['gscat'] == 1:
         cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
@@ -189,7 +199,8 @@ class musicFan(object):
             transform=axis.transAxes)
 
 class musicRTI(object):
-  def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, **kwArgs):
+  def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, **kwArgs):
+    from scipy import stats
     if fileName != None:
       from matplotlib.backends.backend_agg import FigureCanvasAgg
       from matplotlib.figure import Figure
@@ -223,10 +234,19 @@ class musicRTI(object):
 
     #Set colorbar scale if not explicitly defined.
     if(scale == None):
-      if paramDict.has_key('range'):
-        scale = paramDict['range']
-      else:
-        scale = [-200,200]
+        if autoScale:
+            sd          = stats.nanstd(np.abs(currentData.data),axis=None)
+            mean        = stats.nanmean(np.abs(currentData.data),axis=None)
+            scMax       = np.ceil(mean + 1.*sd)
+            if np.min(currentData.data) < 0:
+                scale   = scMax*np.array([-1.,1.])
+            else:
+                scale   = scMax*np.array([0.,1.])
+        else:
+            if paramDict.has_key('range'):
+                scale = paramDict['range']
+            else:
+                scale = [-200,200]
 
     #See if an axis is provided... if not, set one up!
     if axis==None:
@@ -261,7 +281,7 @@ class musicRTI(object):
         x4,y4 = xvec[tm+0],rnge[rg+1]
         verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    if scale[0] >= -1 and scale[1] <= 1:
+    if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
       cmap = matplotlib.cm.jet
       bounds  = np.linspace(scale[0],scale[1],256)
       norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
@@ -322,7 +342,7 @@ class musicRTI(object):
     cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
     cbar.set_label(cbarLabel)
     labels = cbar.ax.get_yticklabels()
-    labels[-1].set_visible(False)
+#    labels[-1].set_visible(False)
     if currentData.metadata.has_key('gscat'):
       if currentData.metadata['gscat'] == 1:
         cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
