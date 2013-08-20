@@ -310,6 +310,19 @@ class musicArray(object):
 
     #Set the new data active.
     newSigObj.setActive()
+  def get_data_sets(self):
+      #Return a sorted list of datasets associated with this music object.
+      attrs = dir(self)
+
+      dataSets = []
+      for item in attrs:
+        if item.startswith('DS'):
+            dataSets.append(item)
+      dataSets.sort()
+      return dataSets
+
+
+
 
 def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
   """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
