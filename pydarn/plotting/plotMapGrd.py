@@ -96,8 +96,8 @@ class PlotSdCnvObj :
 
         # Check and overlay colorbar
         if pltColBar :
-            self.cbar = matplotlib.pyplot.colorbar(self.grdPltStrt, orientation='vertical')
-            self.cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
+            cbar = matplotlib.pyplot.colorbar(self.grdPltStrt, orientation='vertical')
+            cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
         # Check and overlay radnames
         if overlayRadNames :
             overlayRadar( self.mObj, fontSize=12, ids= self.grdData.stid )
@@ -318,6 +318,7 @@ class PlotSdCnvObj :
         numLats     =  int( ( 90. - plotLatMin ) / latStep )
         numLongs    =  int( 360. / lonStep )+1
         zatArr = numpy.array( range(numLats) * latStep ) + plotLatMin
+        zatArr = zatArr * hemisphere
         zonArr = numpy.array( range(numLongs) )* lonStep
 
         # Right now create a grid kinda stuff with lats and lons
@@ -325,12 +326,12 @@ class PlotSdCnvObj :
         counter1 = 0
         for lo in zonArr :
             for la in zatArr :
-                gridArr[0, counter1] = la
+                gridArr[0, counter1] = la 
                 gridArr[1, counter1] = lo
                 counter1 = counter1 + 1
 
         # Now we need to convert a few things to spherical coordinates
-        theta = numpy.deg2rad( 90. - gridArr[0,:] )
+        theta = numpy.deg2rad( 90. - numpy.abs(gridArr[0,:]) )
         phi = numpy.deg2rad( gridArr[1,:] )
 
         # Now we need the adjusted/normalized values of the theta such that full range of theta runs from 0 to pi
@@ -382,7 +383,7 @@ class PlotSdCnvObj :
         # you need an extra bit of code to account for the lat shift
         if latShftFit == 0. :
 
-            q = numpy.array( numpy.where( zatArr <= numpy.abs(latMinFit) ) )
+            q = numpy.array( numpy.where( numpy.abs(zatArr) <= numpy.abs(latMinFit) ) )
             q = q[0]
             
             if ( len(q) != 0 ):
@@ -399,11 +400,12 @@ class PlotSdCnvObj :
             lonShftFit += mltDef
             gridArr[1,:] = numpy.mod( ( gridArr[1,:] + lonShftFit ) / 15., 24. )
         else :
-            gridArr[1,:] = ( gridArr[1,:] + lonShftFit + intHemi*(-180.) ) * hemisphere
+            gridArr[1,:] = ( gridArr[1,:] + lonShftFit ) 
+            
 
         latCntr = gridArr[0,:].reshape( ( 181, 60 ) )
         lonCntr = gridArr[1,:].reshape( ( 181, 60 ) )
-
+        
         return latCntr, lonCntr, potArr
 
 
@@ -413,6 +415,7 @@ class PlotSdCnvObj :
     def overlayCnvCntrs( self ) :
 
         from matplotlib.ticker import LinearLocator
+        import matplotlib.pyplot as plt
 
 
         # get the lats, lons and potentials from calcCnvPots() function
@@ -420,8 +423,9 @@ class PlotSdCnvObj :
 
         #plot the contours
         xCnt, yCnt = self.mObj( lonCntr, latCntr, coords=self.plotCoords )
-        self.cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, zorder = 2.,\
+        cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, zorder = 2.,\
          vmax=potCntr.max(), vmin=potCntr.min(), colors = 'DarkSlateGray', linewidths=1., locator=LinearLocator(12) )
+        plt.clabel(cntrPlt, inline=1, fontsize=10)
 
 
 
@@ -436,7 +440,7 @@ class PlotSdCnvObj :
 
 
 
-    def overlayMapModelVel( self, pltColBar=True, annotateTime=True, colorBarLabelSize=15., colMap=cm.jet ) :
+    def overlayMapModelVel( self, pltColBar=False, annotateTime=True, colorBarLabelSize=15., colMap=cm.jet ) :
 
         import matplotlib
         import datetime
@@ -446,7 +450,7 @@ class PlotSdCnvObj :
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
         # dateString to overlay date on plot
-        dateStr = datetime.datetime.strftime( self.grdData.sTime, "%Y/%b/%d %H%M" ) + '-' + datetime.datetime.strftime( self.grdData.eTime, "%H%M" ) + ' UT'
+        dateStr = datetime.datetime.strftime( self.mapData.sTime, "%Y/%b/%d %H%M" ) + '-' + datetime.datetime.strftime( self.mapData.eTime, "%H%M" ) + ' UT'
 
         # get the standard location and velocity parameters of the model.
         mlatsPlot = self.mapData.model.mlat
@@ -475,15 +479,15 @@ class PlotSdCnvObj :
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
             xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords = self.plotCoords)
 
-            self.mapFModelPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,\
+            self.mapModelPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,\
              vmin=0, vmax=self.maxVelPlot, alpha=0.7, cmap=colMap, zorder=5., edgecolor='none' )
 
             self.mapModelPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], color = colMap(norm(velMagn[nn])) )
 
         # Check and overlay colorbar
         if pltColBar :
-            self.cbar = matplotlib.pyplot.colorbar(self.mapModelPltStrt, orientation='vertical')
-            self.cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
+            cbar = matplotlib.pyplot.colorbar(self.mapModelPltStrt, orientation='vertical')
+            cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
         # Check and annotate time
         if annotateTime :
             self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, ha="center", xycoords="axes fraction",\
@@ -540,8 +544,8 @@ class PlotSdCnvObj :
 
         # Check and overlay colorbar
         if pltColBar :
-            self.cbar = matplotlib.pyplot.colorbar(self.mapFitPltStrt, orientation='vertical')
-            self.cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
+            cbar = matplotlib.pyplot.colorbar(self.mapFitPltStrt, orientation='vertical')
+            cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
         # Check and overlay radnames
         if overlayRadNames :
             overlayRadar( self.mObj, fontSize=12, ids= self.mapData.grid.stid )
