@@ -199,7 +199,7 @@ class mapData(sdBaseData):
   **Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the record
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the record
-    * **dopinglevel** (int): density of points where statistical model is sampled
+    * **dopinglevel** (int): 
     * **modelwt** (int): 
     * **errorwt** (int): 
     * **IMFflag** (int): 
@@ -349,6 +349,7 @@ class sdModel(sdBaseData):
   #initialize the struct
   def __init__(self, dataDict=None):
     self.mlat = None
+    self.mlon = None
     self.kvect = None
     self.velmedian = None
     self.boundarymlat = None
