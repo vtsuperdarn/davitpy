@@ -1,4 +1,52 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+"""
+
+*********************
+**Module**: pydarn.plotting.plotMapGrid
+   :synopsis: Plotting/Retreiving SuperDARN gridded velocities, fitted convection velocities and contour plotting routines
+*********************
+**Class**:
+    * :class:`PlotSdCnvObj`: Read a record (from a time) from grdex and mapex files and plot or retreive the gridded LoS velocity vectors, 
+                            convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard Boundary.
+
+"""
+
+
+
 class PlotSdCnvObj :
+
+	"""Plot/retreive data from mapex and grdex files
+
+	**Args**:
+		* **startTime** (datetime.datetime): start date and time of the data rec
+        * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
+        * **axisHandle** : the axis handle used
+		* **[hemi]** (str): hemisphere - 'north' or 'south'
+		* **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale would be [0,maxVelScale]
+		* **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
+	**Example**:
+		::
+
+			# Plot contours, fitted velocities and Heppnard-Maynard boundary from convection map data on April-3-2011
+			import datetime
+            import matplotlib.pyplot as plt
+            import pydarn.plotting.plotMapGrd
+
+			sdate = datetime.datetime(2011,4,3,4,0)
+	        mObj = plotUtils.mapObj(boundinglat=50., gridLabels=True, coords='mag')
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+			mapDatObj = pydarn.plotting.plotMapGrd.PlotSdCnvObj(sdate, mObj, ax)
+            mapDatObj.overlayMapFitVel()
+            mapDatObj.overlayCnvCntrs()
+            mapDatObj.overlayHMB()
+					
+	written by Bharat Kunduri, 2013-08
+	"""
+
+
 
     import matplotlib.cm as cm
 
@@ -48,6 +96,14 @@ class PlotSdCnvObj :
 
 
     def overlayGridVel( self, pltColBar=True, overlayRadNames=True, annotateTime=True, colorBarLabelSize = 15., colMap = cm.jet ) :
+
+        """Overlay Gridded LoS velocity data from grdex files
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            Gridded LoS data is overlayed on the map object.
+        """
 
         import matplotlib
         import datetime
@@ -111,6 +167,16 @@ class PlotSdCnvObj :
 
 
     def calcFitCnvVel( self ) :
+
+        """Calculate fitted convection velocity magnitude and azimuth from mapex data (basically coefficients of the fit)
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            Arrays of Fitted velocity magnitude and azimuth
+            EX :
+                (magn, azimuth) = PlotSdCnvObj.calcFitCnvVel()
+        """
 
         import datetime
         import numpy
@@ -278,6 +344,16 @@ class PlotSdCnvObj :
 
     def calcCnvPots( self ) :
 
+        """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            Arrays of latitude, longitude and potentials
+            EX :
+                (lats, lons, pots) = PlotSdCnvObj.calcFitCnvVel()
+        """
+
         import datetime
         import numpy
         import scipy
@@ -414,6 +490,16 @@ class PlotSdCnvObj :
 
     def overlayCnvCntrs( self ) :
 
+        """Overlay convection contours from mapex data
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            contours of convection are overlayed on the map object.
+            EX :
+                PlotSdCnvObj.overlayCnvCntrs()
+        """
+
         from matplotlib.ticker import LinearLocator
         import matplotlib.pyplot as plt
 
@@ -432,6 +518,16 @@ class PlotSdCnvObj :
 
     def overlayHMB( self, hmbCol='Gray' ) :
 
+        """Overlay Heppnard-Maynard boundary from mapex data
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            Heppnard-Maynard boundary is overlayed on the map object.
+            EX :
+                PlotSdCnvObj.overlayHMB()
+        """
+
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, self.mapData.model.boundarymlat, coords = self.plotCoords )
         grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
         grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, linewidth = 2., linestyle = '--', color = hmbCol, zorder = 4. )
@@ -441,6 +537,16 @@ class PlotSdCnvObj :
 
 
     def overlayMapModelVel( self, pltColBar=False, annotateTime=True, colorBarLabelSize=15., colMap=cm.jet ) :
+
+        """Overlay model velocity vectors from mapex data
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            velocity vectors from the model are overlayed on the map object.
+            EX :
+                PlotSdCnvObj.overlayMapModelVel()
+        """
 
         import matplotlib
         import datetime
@@ -498,6 +604,16 @@ class PlotSdCnvObj :
 
 
     def overlayMapFitVel( self, pltColBar=True, overlayRadNames=True, annotateTime=True, colorBarLabelSize=15., colMap=cm.jet ) :
+
+        """Overlay fitted velocity vectors from mapex data
+        
+        **Belongs to**: :class:`PlotSdCnvObj`
+
+        **Returns**:
+            vectors of fitted convection velocities are overlayed on the map object.
+            EX :
+                PlotSdCnvObj.overlayMapFitVel()
+        """
 
         import matplotlib
         import datetime
