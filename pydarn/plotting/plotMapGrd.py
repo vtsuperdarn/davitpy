@@ -1,58 +1,54 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-
 *********************
-**Module**: pydarn.plotting.plotMapGrid
+**Module**: pydarn.plotting.mapGrid
    :synopsis: Plotting/Retreiving SuperDARN gridded velocities, fitted convection velocities and contour plotting routines
 *********************
+
 **Class**:
-    * :class:`PlotSdCnvObj`: Read a record (from a time) from grdex and mapex files and plot or retreive the gridded LoS velocity vectors, 
-                            convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard Boundary.
+    * :class:`MapConv`: Read a record (from a time) from grdex and mapex files and plot or retreive the gridded LoS velocity vectors, 
+convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard Boundary.
 
 """
 
-
-
-class PlotSdCnvObj :
-
+class MapConv(object):
 	"""Plot/retreive data from mapex and grdex files
 
 	**Args**:
 		* **startTime** (datetime.datetime): start date and time of the data rec
         * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
         * **axisHandle** : the axis handle used
-		* **[hemi]** (str): hemisphere - 'north' or 'south'
-		* **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale would be [0,maxVelScale]
+		* **[hemi]** : hemisphere - 'north' or 'south'
+		* **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
 		* **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
 	**Example**:
 		::
 
-			# Plot contours, fitted velocities and Heppnard-Maynard boundary from convection map data on April-3-2011
+			# Plot contours, fitted velocities and Heppnard-Maynard 
+            # boundary from convection map data on April-3-2011
 			import datetime
             import matplotlib.pyplot as plt
-            import pydarn.plotting.plotMapGrd
+            import pydarn.plotting.mapGrd
 
 			sdate = datetime.datetime(2011,4,3,4,0)
-	        mObj = plotUtils.mapObj(boundinglat=50., gridLabels=True, coords='mag')
+	        mObj = plotUtils.mapObj(boundinglat=50., 
+                gridLabels=True, coords='mag')
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-			mapDatObj = pydarn.plotting.plotMapGrd.PlotSdCnvObj(sdate, mObj, ax)
+			mapDatObj = pydarn.plotting.mapGrd.MapConv(sdate, mObj, ax)
             mapDatObj.overlayMapFitVel()
             mapDatObj.overlayCnvCntrs()
             mapDatObj.overlayHMB()
 					
-	written by Bharat Kunduri, 2013-08
+	written by Bharat Kunduri and Sebastien de Larquier, 2013-08
 	"""
-
-
-
     import matplotlib.cm as cm
 
-
-    def __init__( self, startTime, mObj, axisHandle, hemi = 'north', maxVelScale = 1000., plotCoords = 'mag' ) :
-
+    def __init__(self, startTime, mObj, 
+        axisHandle, hemi = 'north', 
+        maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
         from pydarn.sdio import *
         from pydarn.radar import *
@@ -91,20 +87,16 @@ class PlotSdCnvObj :
         mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
         self.mapData = sdDataReadRec(mapPtr)
 
-
-
-
-
-    def overlayGridVel( self, pltColBar=True, overlayRadNames=True, annotateTime=True, colorBarLabelSize = 15., colMap = cm.jet ) :
-
+    def overlayGridVel(self, pltColBar=True, 
+        overlayRadNames=True, annotateTime=True, 
+        colorBarLabelSize = 15., colMap = cm.jet):
         """Overlay Gridded LoS velocity data from grdex files
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             Gridded LoS data is overlayed on the map object.
         """
-
         import matplotlib
         import datetime
         import numpy
@@ -113,7 +105,8 @@ class PlotSdCnvObj :
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
         # dateString to overlay date on plot
-        dateStr = datetime.datetime.strftime( self.grdData.sTime, "%Y/%b/%d %H%M" ) + '-' + datetime.datetime.strftime( self.grdData.eTime, "%H%M" ) + ' UT'
+        dateStr = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(
+            self.grdData.sTime, self.grdData.eTime)
 
         # get the standard location and LoS Vel parameters.
         mlatsPlot = self.grdData.vector.mlat
@@ -122,16 +115,18 @@ class PlotSdCnvObj :
         azmsPlot = self.grdData.vector.kvect
         stIds = self.grdData.vector.stid
 
-
         for nn in range( len(mlatsPlot) ) :
     
             # calculate stuff for plotting such as vector length, azimuth etc 
             vecLen = velsPlot[nn]*self.lenFactor/self.radEarth/1000.
             endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) + \
-                numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( azmsPlot[nn] ) ) )
+                numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
+                *numpy.cos(numpy.deg2rad( azmsPlot[nn] ) ) )
             endLat = numpy.degrees( endLat )
-            delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( azmsPlot[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), \
-                numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(numpy.deg2rad( endLat ) ) ) )
+            delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( azmsPlot[nn] ) ) \
+                *numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), 
+                numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) ) \
+                *numpy.sin(numpy.deg2rad( endLat ) ) ) )
                         
             # depending on whether we have 'mag' or 'mlt' coords, calculate endLon
             if self.plotCoords == 'mag' :
@@ -146,9 +141,11 @@ class PlotSdCnvObj :
             xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords=self.plotCoords )
             
             # Plot the start point and then append the vector indicating magn. and azimuth
-            self.grdPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velsPlot[nn], s=10., vmin=0, vmax=self.maxVelPlot,\
-             alpha=0.7, cmap=colMap, zorder=5., edgecolor='none' )
-            self.grdPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], color = colMap(norm(velsPlot[nn])) )
+            self.grdPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, 
+                c=velsPlot[nn], s=10., vmin=0, vmax=self.maxVelPlot,
+                alpha=0.7, cmap=colMap, zorder=5., edgecolor='none' )
+            self.grdPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], 
+                color = colMap(norm(velsPlot[nn])) )
 
         # Check and overlay colorbar
         if pltColBar :
@@ -159,25 +156,24 @@ class PlotSdCnvObj :
             overlayRadar( self.mObj, fontSize=12, ids= self.grdData.stid )
         # Check and annotate time
         if annotateTime :
-            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, ha="center", xycoords="axes fraction",\
-             bbox=dict(boxstyle='round,pad=0.2', fc="w", alpha=0.3) )
+            self.axisHandle.annotate( dateStr, 
+                xy=(0.5, 1.), fontsize=12, 
+                ha="center", xycoords="axes fraction",
+                bbox=dict(boxstyle='round,pad=0.2', 
+                fc="w", alpha=0.3) )
 
-
-
-
-
-    def calcFitCnvVel( self ) :
-
+    def calcFitCnvVel(self):
         """Calculate fitted convection velocity magnitude and azimuth from mapex data (basically coefficients of the fit)
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             Arrays of Fitted velocity magnitude and azimuth
-            EX :
-                (magn, azimuth) = PlotSdCnvObj.calcFitCnvVel()
-        """
+        **Example**:
+            ::
 
+                (magn, azimuth) = MapConv.calcFitCnvVel()
+        """
         import datetime
         import numpy
         import scipy
@@ -207,7 +203,6 @@ class PlotSdCnvObj :
         theta = numpy.deg2rad( 90.- numpy.absolute( mlatsPlot ) ) # the absolute part is for the southern hemisphere
         thetaMax = numpy.deg2rad( 90.-numpy.absolute( latMinFit ) )
 
-
         # Now we need the adjusted/normalized values of the theta such that full range of theta runs from 0 to pi
         # At this point if you are wondering why we are doing this, It would be good to refer Mike's paper
         alpha = numpy.pi/thetaMax
@@ -229,7 +224,6 @@ class PlotSdCnvObj :
         plmFit = numpy.delete(plmFit, 0, 0)
         phi = numpy.deg2rad(mlonsPlot)
 
-
         # now do the index legender part,
         # We are doing Associated Legendre Polynomials but for each polynomial we have two coefficients
         # one for cos(phi) and the other for sin(phi), so we do spherical harmonics for a real valued function
@@ -237,7 +231,8 @@ class PlotSdCnvObj :
 
         # we use a lambda function for the index legender part, since we use it in other places as well.
         # a good thing about python is this lambda functions..u dont have to define another function for this.
-        indexLgndr = lambda l,m :( m == 0 and l**2 ) or ( (l != 0 ) and (m != 0) and l**2 + 2*m - 1 ) or 0
+        indexLgndr = lambda l,m :( m == 0 and l**2 ) or \
+            ( (l != 0 ) and (m != 0) and l**2 + 2*m - 1 ) or 0
         kMax = indexLgndr( orderFit, orderFit )  
 
         # set up arrays and small stuff for the eFld coeffs calculation
@@ -249,7 +244,6 @@ class PlotSdCnvObj :
         q = numpy.array( numpy.where( theta != 0. ) )
         q = q[0]
 
-
         # finally get to converting coefficients for the potential into coefficients for elec. Field
         coeffFitFlat = coeffFit.flatten()
         for m in range( orderFit+1 ) :
@@ -260,9 +254,12 @@ class PlotSdCnvObj :
                 
                 if k3 >= 0 :
                     thetaECoeffs[k4,qPrime] = thetaECoeffs[k4,qPrime] - \
-                    coeffFitFlat[k3]*alpha*L*numpy.cos( thetaPrime[qPrime] )/numpy.sin( thetaPrime[qPrime] )/self.radEarthMtrs
-                    phiECoeffs[k4,q] = phiECoeffs[k4,q] - coeffFitFlat[k3+1]*m/numpy.sin( theta[q] )/self.radEarthMtrs
-                    phiECoeffs[k4+1,q] = phiECoeffs[k4+1,q] + coeffFitFlat[k3]*m/numpy.sin(theta[q])/self.radEarthMtrs
+                        coeffFitFlat[k3]*alpha*L*numpy.cos( thetaPrime[qPrime] ) \
+                        /numpy.sin( thetaPrime[qPrime] )/self.radEarthMtrs
+                    phiECoeffs[k4,q] = phiECoeffs[k4,q] - \
+                        coeffFitFlat[k3+1]*m/numpy.sin( theta[q] )/self.radEarthMtrs
+                    phiECoeffs[k4+1,q] = phiECoeffs[k4+1,q] + \
+                        coeffFitFlat[k3]*m/numpy.sin(theta[q])/self.radEarthMtrs
                 
                 if L < orderFit :
                     k1 = indexLgndr( L+1, m )
@@ -272,7 +269,9 @@ class PlotSdCnvObj :
                 k2 = indexLgndr(L, m )
                 
                 if k1 >= 0 :
-                    thetaECoeffs[k2,qPrime] = thetaECoeffs[k2,qPrime] + coeffFitFlat[k1]*alpha*(L+1+m)/numpy.sin(thetaPrime[qPrime])/self.radEarthMtrs
+                    thetaECoeffs[k2,qPrime] = thetaECoeffs[k2,qPrime] + \
+                        coeffFitFlat[k1]*alpha*(L+1+m)/numpy.sin(thetaPrime[qPrime]) \
+                        /self.radEarthMtrs
                     
                 if m > 0 :
                     if k3 >= 0 :
@@ -285,10 +284,13 @@ class PlotSdCnvObj :
                     
                     if k3 >= 0 :
                         thetaECoeffs[k4,qPrime] = thetaECoeffs[k4,qPrime] - \
-                        coeffFitFlat[k3]*alpha*L*numpy.cos(thetaPrime[qPrime])/numpy.sin(thetaPrime[qPrime])/self.radEarthMtrs
+                            coeffFitFlat[k3]*alpha*L*numpy.cos(thetaPrime[qPrime]) \
+                            /numpy.sin(thetaPrime[qPrime])/self.radEarthMtrs
                         
                     if k1 >= 0 :
-                        thetaECoeffs[k2,qPrime] = thetaECoeffs[k2,qPrime] + coeffFitFlat[k1]*alpha*(L+1+m)/numpy.sin(thetaPrime[qPrime])/self.radEarthMtrs
+                        thetaECoeffs[k2,qPrime] = thetaECoeffs[k2,qPrime] + \
+                            coeffFitFlat[k1]*alpha*(L+1+m)/numpy.sin(thetaPrime[qPrime]) \
+                            /self.radEarthMtrs
 
         #Calculate the Elec. fld positions where 
         thetaEcomp = numpy.zeros( theta.shape )
@@ -304,8 +306,10 @@ class PlotSdCnvObj :
                     thetaEcomp = thetaEcomp + thetaECoeffs[k,:]*plmFit[:,m,L]
                     phiEcomp = phiEcomp + phiECoeffs[k,:]*plmFit[:,m,L]
                 else :   
-                    thetaEcomp = thetaEcomp + thetaECoeffs[k,:] * plmFit[:,m,L] * numpy.cos(m*phi) + thetaECoeffs[k+1,:] * plmFit[:,m,L] * numpy.sin(m*phi)
-                    phiEcomp = phiEcomp + phiECoeffs[k,:] * plmFit[:,m,L] * numpy.cos(m*phi) + phiECoeffs[k+1,:] * plmFit[:,m,L] * numpy.sin(m*phi)
+                    thetaEcomp = thetaEcomp + thetaECoeffs[k,:] * plmFit[:,m,L] \
+                        * numpy.cos(m*phi) + thetaECoeffs[k+1,:] * plmFit[:,m,L] * numpy.sin(m*phi)
+                    phiEcomp = phiEcomp + phiECoeffs[k,:] * plmFit[:,m,L] \
+                        * numpy.cos(m*phi) + phiECoeffs[k+1,:] * plmFit[:,m,L] * numpy.sin(m*phi)
 
 
         # Store the two components of EFld into a single array
@@ -314,7 +318,8 @@ class PlotSdCnvObj :
         # We'll calculate Bfld magnitude now, need to initialize some more stuff
         alti = 300. * 1000.
         bFldPolar = -0.62e-4 
-        bFldMagn = bFldPolar * (1.-3.* alti/self.radEarthMtrs)*numpy.sqrt( 3.0*numpy.square( numpy.cos( theta ) ) + 1. )/2
+        bFldMagn = bFldPolar * (1.-3.* alti/self.radEarthMtrs) \
+            *numpy.sqrt( 3.0*numpy.square( numpy.cos( theta ) ) + 1. )/2
 
         # get the velocity components from E-field
         velFitVecs = numpy.zeros( eFieldFit.shape )
@@ -332,28 +337,26 @@ class PlotSdCnvObj :
             velAzm = numpy.array( [0.] )
         else :
             if hemisphere == -1 :
-                velAzm[velChkZeroInds] = numpy.rad2deg( numpy.arctan2( velFitVecs[1,velChkZeroInds], velFitVecs[0,velChkZeroInds] ) )
+                velAzm[velChkZeroInds] = numpy.rad2deg( numpy.arctan2( velFitVecs[1,velChkZeroInds], 
+                    velFitVecs[0,velChkZeroInds] ) )
             else :
-                velAzm[velChkZeroInds] = numpy.rad2deg( numpy.arctan2( velFitVecs[1,velChkZeroInds], -velFitVecs[0,velChkZeroInds] ) )            
+                velAzm[velChkZeroInds] = numpy.rad2deg( numpy.arctan2( velFitVecs[1,velChkZeroInds], 
+                    -velFitVecs[0,velChkZeroInds] ) )            
                         
         return velMagn, velAzm
 
-
-
-
-
-    def calcCnvPots( self ) :
-
+    def calcCnvPots(self):
         """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             Arrays of latitude, longitude and potentials
-            EX :
-                (lats, lons, pots) = PlotSdCnvObj.calcFitCnvVel()
-        """
+        **Example**:
+            ::
 
+                (lats, lons, pots) = MapConv.calcFitCnvVel()
+        """
         import datetime
         import numpy
         import scipy
@@ -372,7 +375,8 @@ class PlotSdCnvObj :
         mlonsPlot = self.mapData.grid.vector.mlon
         stIds = self.mapData.grid.vector.stid
 
-        # Alright we have the parameters but we need to calculate the coeffs for eField and then calc eField and Fitted Vels.
+        # Alright we have the parameters but we need to 
+        # calculate the coeffs for eField and then calc eField and Fitted Vels.
         
         # Some important parameters from fitting.
         coeffFit = numpy.array( [ self.mapData.Np2 ] )
@@ -440,7 +444,8 @@ class PlotSdCnvObj :
 
         # we use a lambda function for the index legender part, since we use it in other places as well..
         # a good thing about python is this lambda functions..u dont have to define another function for this....
-        indexLgndr = lambda l,m :( m == 0 and l**2 ) or ( (l != 0 ) and (m != 0) and l**2 + 2*m - 1 ) or 0
+        indexLgndr = lambda l,m :( m == 0 and l**2 ) or \
+            ( (l != 0 ) and (m != 0) and l**2 + 2*m - 1 ) or 0
 
         coeffFitFlat = coeffFit.flatten()
         for m in range( lMax ) :
@@ -449,7 +454,9 @@ class PlotSdCnvObj :
                 if m == 0 :
                     v = v + coeffFitFlat[k]*plmFit[:,0,L]
                 else :
-                    v = v + coeffFitFlat[k]*numpy.cos( m*phi )*plmFit[:,m,L] + coeffFitFlat[k+1]*numpy.sin( m*phi )*plmFit[:,m,L]
+                    v = v + \
+                        coeffFitFlat[k]*numpy.cos( m*phi )*plmFit[:,m,L] + \
+                        coeffFitFlat[k+1]*numpy.sin( m*phi )*plmFit[:,m,L]
 
         potArr = numpy.zeros( ( numLongs, numLats ) ) 
         potArr = numpy.reshape(v, potArr.shape)/1000.
@@ -468,7 +475,6 @@ class PlotSdCnvObj :
         else :
             print 'LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero'
 
-
         # mlt conversion stuff
         if self.plotCoords == 'mlt' :
             epoch = timeUtils.datetimeToEpoch(strtTime)
@@ -477,29 +483,24 @@ class PlotSdCnvObj :
             gridArr[1,:] = numpy.mod( ( gridArr[1,:] + lonShftFit ) / 15., 24. )
         else :
             gridArr[1,:] = ( gridArr[1,:] + lonShftFit ) 
-            
 
         latCntr = gridArr[0,:].reshape( ( 181, 60 ) )
         lonCntr = gridArr[1,:].reshape( ( 181, 60 ) )
         
         return latCntr, lonCntr, potArr
 
-
-
-
-
-    def overlayCnvCntrs( self ) :
-
+    def overlayCnvCntrs(self):
         """Overlay convection contours from mapex data
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             contours of convection are overlayed on the map object.
-            EX :
-                PlotSdCnvObj.overlayCnvCntrs()
-        """
+        **Example**:
+            ::
 
+                MapConv.overlayCnvCntrs()
+        """
         from matplotlib.ticker import LinearLocator
         import matplotlib.pyplot as plt
 
@@ -509,45 +510,46 @@ class PlotSdCnvObj :
 
         #plot the contours
         xCnt, yCnt = self.mObj( lonCntr, latCntr, coords=self.plotCoords )
-        cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, zorder = 2.,\
-         vmax=potCntr.max(), vmin=potCntr.min(), colors = 'DarkSlateGray', linewidths=1., locator=LinearLocator(12) )
+        cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, 
+            zorder = 2.,
+            vmax=potCntr.max(), vmin=potCntr.min(), 
+            colors = 'DarkSlateGray', linewidths=1., 
+            locator=LinearLocator(12) )
         plt.clabel(cntrPlt, inline=1, fontsize=10)
 
-
-
-
-    def overlayHMB( self, hmbCol='Gray' ) :
-
+    def overlayHMB(self, hmbCol='Gray'):
         """Overlay Heppnard-Maynard boundary from mapex data
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             Heppnard-Maynard boundary is overlayed on the map object.
-            EX :
-                PlotSdCnvObj.overlayHMB()
+        **Example**:
+            ::
+
+                MapConv.overlayHMB()
         """
+        xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
+            self.mapData.model.boundarymlat, coords = self.plotCoords )
+        grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, l
+            inewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
+        grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, 
+            linewidth = 2., linestyle = '--', color = hmbCol, zorder = 4. )
 
-        xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, self.mapData.model.boundarymlat, coords = self.plotCoords )
-        grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
-        grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, linewidth = 2., linestyle = '--', color = hmbCol, zorder = 4. )
-
-
-
-
-
-    def overlayMapModelVel( self, pltColBar=False, annotateTime=True, colorBarLabelSize=15., colMap=cm.jet ) :
-
+    def overlayMapModelVel(self, pltColBar=False, 
+        annotateTime=True, colorBarLabelSize=15., 
+        colMap=cm.jet):
         """Overlay model velocity vectors from mapex data
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             velocity vectors from the model are overlayed on the map object.
-            EX :
-                PlotSdCnvObj.overlayMapModelVel()
-        """
+        **Example**:
+            ::
 
+                MapConv.overlayMapModelVel()
+        """
         import matplotlib
         import datetime
         import numpy
@@ -556,20 +558,21 @@ class PlotSdCnvObj :
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
         # dateString to overlay date on plot
-        dateStr = datetime.datetime.strftime( self.mapData.sTime, "%Y/%b/%d %H%M" ) + '-' + datetime.datetime.strftime( self.mapData.eTime, "%H%M" ) + ' UT'
+        dateStr = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(
+            self.mapData.sTime, self.mapData.eTime)
 
         # get the standard location and velocity parameters of the model.
         mlatsPlot = self.mapData.model.mlat
         mlonsPlot = self.mapData.model.mlon
         velMagn = self.mapData.model.velmedian
         velAzm = self.mapData.model.kvect
-        
-
 
         for nn in range( len(mlatsPlot) ) :
 
             vecLen = velMagn[nn]*self.lenFactor/self.radEarth/1000.
-            endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) + numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
+            endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) + \
+                numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
+                *numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
             endLat = numpy.degrees( endLat )
             
             delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(numpy.deg2rad( endLat ) ) ) )
@@ -585,10 +588,12 @@ class PlotSdCnvObj :
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
             xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords = self.plotCoords)
 
-            self.mapModelPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,\
-             vmin=0, vmax=self.maxVelPlot, alpha=0.7, cmap=colMap, zorder=5., edgecolor='none' )
+            self.mapModelPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,
+                vmin=0, vmax=self.maxVelPlot, alpha=0.7, 
+                cmap=colMap, zorder=5., edgecolor='none' )
 
-            self.mapModelPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], color = colMap(norm(velMagn[nn])) )
+            self.mapModelPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], 
+                color = colMap(norm(velMagn[nn])) )
 
         # Check and overlay colorbar
         if pltColBar :
@@ -596,25 +601,24 @@ class PlotSdCnvObj :
             cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
         # Check and annotate time
         if annotateTime :
-            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, ha="center", xycoords="axes fraction",\
-             bbox=dict(boxstyle='round,pad=0.2', fc="w", alpha=0.3) )
+            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, 
+                ha="center", xycoords="axes fraction",
+                bbox=dict(boxstyle='round,pad=0.2', fc="w", alpha=0.3) )
 
-
-
-
-
-    def overlayMapFitVel( self, pltColBar=True, overlayRadNames=True, annotateTime=True, colorBarLabelSize=15., colMap=cm.jet ) :
-
+    def overlayMapFitVel(self, pltColBar=True, 
+        overlayRadNames=True, annotateTime=True, 
+        colorBarLabelSize=15., colMap=cm.jet):
         """Overlay fitted velocity vectors from mapex data
         
-        **Belongs to**: :class:`PlotSdCnvObj`
+        **Belongs to**: :class:`MapConv`
 
         **Returns**:
             vectors of fitted convection velocities are overlayed on the map object.
-            EX :
-                PlotSdCnvObj.overlayMapFitVel()
-        """
+        **Example**:
+            ::
 
+                MapConv.overlayMapFitVel()
+        """
         import matplotlib
         import datetime
         import numpy
@@ -623,7 +627,8 @@ class PlotSdCnvObj :
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
         # dateString to overlay date on plot
-        dateStr = datetime.datetime.strftime( self.grdData.sTime, "%Y/%b/%d %H%M" ) + '-' + datetime.datetime.strftime( self.grdData.eTime, "%H%M" ) + ' UT'
+        dateStr = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(
+            self.grdData.sTime, self.grdData.eTime)
 
         # get the standard location parameters.
         mlatsPlot = self.mapData.grid.vector.mlat
@@ -637,10 +642,15 @@ class PlotSdCnvObj :
         for nn in range( len(mlatsPlot) ) :
 
             vecLen = velMagn[nn]*self.lenFactor/self.radEarth/1000.
-            endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) + numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
+            endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) \
+                + numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
+                *numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
             endLat = numpy.degrees( endLat )
             
-            delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(numpy.deg2rad( endLat ) ) ) )
+            delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) ) \
+                *numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), 
+                numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) ) \
+                *numpy.sin(numpy.deg2rad( endLat ) ) ) )
             
             if self.plotCoords == 'mag' :
                 endLon = mlonsPlot[nn] + numpy.degrees( delLon )
@@ -650,13 +660,19 @@ class PlotSdCnvObj :
                 print 'Check the coords.'
                 
             
-            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
-            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords = self.plotCoords)
+            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], 
+                coords=self.plotCoords)
+            xVecEnd, yVecEnd = self.mObj(endLon, endLat, 
+                coords = self.plotCoords)
 
-            self.mapFitPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,\
-             vmin=0, vmax=self.maxVelPlot, alpha=0.7, cmap=colMap, zorder=5., edgecolor='none' )
+            self.mapFitPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, 
+                c=velMagn[nn], s=10.,
+                vmin=0, vmax=self.maxVelPlot, 
+                alpha=0.7, cmap=colMap, zorder=5., 
+                edgecolor='none' )
 
-            self.mapFitPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], color = colMap(norm(velMagn[nn])) )
+            self.mapFitPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], 
+                color = colMap(norm(velMagn[nn])) )
 
         # Check and overlay colorbar
         if pltColBar :
@@ -667,5 +683,6 @@ class PlotSdCnvObj :
             overlayRadar( self.mObj, fontSize=12, ids= self.mapData.grid.stid )
         # Check and annotate time
         if annotateTime :
-            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, ha="center", xycoords="axes fraction",\
-             bbox=dict(boxstyle='round,pad=0.2', fc="w", alpha=0.3) )
+            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), 
+                fontsize=12, ha="center", xycoords="axes fraction",
+                bbox=dict(boxstyle='round,pad=0.2', fc="w", alpha=0.3) )
