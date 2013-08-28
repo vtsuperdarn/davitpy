@@ -40,6 +40,11 @@ except Exception,e:
 	print 'problem importing printRec: ', e
 
 try:
+    from plotMapGrd import *
+except Exception, e:
+    print __file__+' -> utils.plotMapGrd: ', e
+
+try:
 	from musicPlot import *
 except Exception,e: 
 	print 'problem importing musicPlot: ', e
