@@ -183,6 +183,9 @@ class musicDataObj(object):
         for key in keys:
             print key+':',self.metadata[key]
 
+    def append_history(self,comment):
+        self.history[datetime.datetime.now()] = '['+self.metadata['dataSetName']+'] '+comment
+
     
 class musicArray(object):
   def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
@@ -1369,5 +1372,6 @@ def detectSignals(dataObj,dataSet='active'):
         info['vel']         = (2.*np.pi/info['k']) * info['freq'] * 1000.
         sigDetect.info.append(info)
 
+    currentData.append_history('Detected KArr Signals')
     currentData.sigDetect = sigDetect
     return currentData
