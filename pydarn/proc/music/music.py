@@ -1353,11 +1353,21 @@ def detectSignals(dataObj,dataSet='active'):
     sigDetect.info    = []
     for x in xrange(labels.max()):
         info = {}
-        info['labelInx']  = x+1
-        info['order']     = int(np.where(maxima[x] == sortedMaxima)[0]) + 1
-        info['area']      = areas[x]
-        info['max']       = maxima[x]
-        info['maxpos']    = maxpos[x]
+        info['labelInx']    = x+1
+        info['order']       = int(np.where(maxima[x] == sortedMaxima)[0]) + 1
+        info['area']        = areas[x]
+        info['max']         = maxima[x]
+        info['maxpos']      = maxpos[x]
+        info['kx']          = currentData.kxVec[info['maxpos'][0]]
+        info['ky']          = currentData.kyVec[info['maxpos'][1]]
+        info['k']           = np.sqrt( info['kx']**2 + info['ky']**2 )
+        info['lambda_x']    = 2*np.pi / info['kx']
+        info['lambda_y']    = 2*np.pi / info['ky']
+        info['lambda']      = 2*np.pi / info['k']
+        info['azm']         = np.degrees(np.arctan2(info['kx'],info['ky']))
+        info['freq']        = currentData.dominantFreq
+        info['period']      = 1./currentData.dominantFreq
+        info['vel']         = (2.*np.pi/info['k']) * info['freq'] * 1000.
         sigDetect.info.append(info)
 
     currentData.sigDetect = sigDetect
