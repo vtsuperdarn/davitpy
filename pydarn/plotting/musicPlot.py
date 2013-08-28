@@ -1339,12 +1339,13 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude',maxSigna
 
       if hasattr(currentData,'sigDetect'):
         pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
+        tmpList = range(currentData.sigDetect.nrSigs)[::-1] #Force list to plot backwards so number 1 is on top!
         for signal in currentData.sigDetect.info:
           if signal['order'] > maxSignals: continue 
           xpos = currentData.kxVec[signal['maxpos'][0]]
           ypos = currentData.kyVec[signal['maxpos'][1]]
           txt  = '%i' % signal['order']
-          axis.text(xpos,ypos,txt,color='k',zorder=150,size=24,path_effects=pe)
+          axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
 
 def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=5):
   if axis == None: return
@@ -1457,4 +1458,4 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=5):
       xpos = currentData.kxVec[signal['maxpos'][0]]
       ypos = currentData.kyVec[signal['maxpos'][1]]
       txt  = '%i' % signal['order']
-      axis.text(xpos,ypos,txt,color='k',zorder=150,size=24,path_effects=pe)
+      axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
