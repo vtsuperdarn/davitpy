@@ -72,117 +72,116 @@ class music(object):
    self.params  = params
 
 class musicDataObj(object):
-  def __init__(self, time, data, fov=None, comment=None, parent=0, **metadata):
-    self.parent = parent
-    """Define a vtMUSIC sigStruct object.
+    def __init__(self, time, data, fov=None, comment=None, parent=0, **metadata):
+        self.parent = parent
+        """Define a vtMUSIC sigStruct object.
 
-    :param time: datetime.datetime list
-    :param data: 3-dimensional array of data
-    :param fov:  DaViTPy radar field of view object
-    :param comment: String to be appended to the history of this object
-    :param **metadata: keywords sent to matplot lib, etc.
-    :returns: sig object
-    """
+        :param time: datetime.datetime list
+        :param data: 3-dimensional array of data
+        :param fov:  DaViTPy radar field of view object
+        :param comment: String to be appended to the history of this object
+        :param **metadata: keywords sent to matplot lib, etc.
+        :returns: sig object
+        """
 
-    self.time     = np.array(time)
-    self.data     = np.array(data)
-    self.fov      = fov
-    self.metadata = {}
-    for key in metadata: self.metadata[key] = metadata[key]
+        self.time     = np.array(time)
+        self.data     = np.array(data)
+        self.fov      = fov
+        self.metadata = {}
+        for key in metadata: self.metadata[key] = metadata[key]
 
-    self.history = {datetime.datetime.now():comment}
+        self.history = {datetime.datetime.now():comment}
 
+    def copy(self,newsig,comment):
+        """Copy a vtMUSIC object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+        :param newsig: A string with the name for the new signal.
+        :param comment: A string comment describing the new signal.
+        :returns: sig object
+        """
+        
+        serial = self.metadata['serial'] + 1
+        newsig = '_'.join(['DS%03d' % serial,newsig])
 
-  def copy(self,newsig,comment):
-    """Copy a vtMUSIC object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
-    :param newsig: A string with the name for the new signal.
-    :param comment: A string comment describing the new signal.
-    :returns: sig object
-    """
-    
-    serial = self.metadata['serial'] + 1
-    newsig = '_'.join(['DS%03d' % serial,newsig])
+        setattr(self.parent,newsig,copy.copy(self))
+        newsigobj = getattr(self.parent,newsig)
 
-    setattr(self.parent,newsig,copy.copy(self))
-    newsigobj = getattr(self.parent,newsig)
+        newsigobj.time      = copy.deepcopy(self.time)
+        newsigobj.data      = copy.deepcopy(self.data)
+        newsigobj.fov       = copy.deepcopy(self.fov)
+        newsigobj.metadata  = copy.deepcopy(self.metadata)
+        newsigobj.history   = copy.deepcopy(self.history)
 
-    newsigobj.time      = copy.deepcopy(self.time)
-    newsigobj.data      = copy.deepcopy(self.data)
-    newsigobj.fov       = copy.deepcopy(self.fov)
-    newsigobj.metadata  = copy.deepcopy(self.metadata)
-    newsigobj.history   = copy.deepcopy(self.history)
-
-    newsigobj.metadata['dataSetName'] = newsig
-    newsigobj.metadata['serial']      = serial
-    newsigobj.history[datetime.datetime.now()] = '['+newsig+'] '+comment
-    
-    return newsigobj
+        newsigobj.metadata['dataSetName'] = newsig
+        newsigobj.metadata['serial']      = serial
+        newsigobj.history[datetime.datetime.now()] = '['+newsig+'] '+comment
+        
+        return newsigobj
   
-  def setActive(self):
-    """Sets this signal as the currently active signal.
-    """
-    self.parent.active = self
+    def setActive(self):
+        """Sets this signal as the currently active signal.
+        """
+        self.parent.active = self
 
-  def nyquistFrequency(self,timeVec=None):
-    """Calculate the Nyquist frequency of a vt sigStruct signal.
-    :param timeVec: List of datetime.datetime to use instead of self.time.
-    :returns: nyq: Nyquist frequency of the signal in Hz.
-    """
-    dt  = self.samplePeriod(timeVec=timeVec)
-    nyq = 1. / (2*dt)
-    return nyq
+    def nyquistFrequency(self,timeVec=None):
+        """Calculate the Nyquist frequency of a vt sigStruct signal.
+        :param timeVec: List of datetime.datetime to use instead of self.time.
+        :returns: nyq: Nyquist frequency of the signal in Hz.
+        """
+        dt  = self.samplePeriod(timeVec=timeVec)
+        nyq = 1. / (2*dt)
+        return nyq
 
-  def samplePeriod(self,timeVec=None):
-    """Calculate the sample period of a vt sigStruct signal.
-    :param timeVec: List of datetime.datetime to use instead of self.time.
-    :returns: samplePeriod: sample period of signal in seconds.
-    """
-    
-    if timeVec == None: timeVec = self.time
+    def samplePeriod(self,timeVec=None):
+        """Calculate the sample period of a vt sigStruct signal.
+        :param timeVec: List of datetime.datetime to use instead of self.time.
+        :returns: samplePeriod: sample period of signal in seconds.
+        """
+        
+        if timeVec == None: timeVec = self.time
 
-    diffs = np.unique(np.diff(timeVec))
-    self.diffs = diffs
+        diffs = np.unique(np.diff(timeVec))
+        self.diffs = diffs
 
-    if len(diffs) == 1:
-      samplePeriod = diffs[0].total_seconds()
-    else:
-      maxDt = np.max(diffs) - np.min(diffs)
-      maxDt = maxDt.total_seconds()
-      avg = np.sum(diffs)/len(diffs)
-      avg = avg.total_seconds()
-      md  = self.metadata
-      warn = 'WARNING'
-      if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
-      print warn + ':'
-      print '   Date time vector is not regularly sampled!'
-      print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
-      print '   Using average sampling period of ' + str(avg) + ' sec.'
-      samplePeriod = avg
+        if len(diffs) == 1:
+            samplePeriod = diffs[0].total_seconds()
+        else:
+            maxDt = np.max(diffs) - np.min(diffs)
+            maxDt = maxDt.total_seconds()
+            avg = np.sum(diffs)/len(diffs)
+            avg = avg.total_seconds()
+            md  = self.metadata
+            warn = 'WARNING'
+            if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
+            print warn + ':'
+            print '   Date time vector is not regularly sampled!'
+            print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
+            print '   Using average sampling period of ' + str(avg) + ' sec.'
+            samplePeriod = avg
 
-    return samplePeriod
+        return samplePeriod
 
-  def getAllMetaData(self):
-#    return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
-    return self.metadata
+    def getAllMetaData(self):
+#        return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
+        return self.metadata
 
-  def setMetaData(self,**metadata):
-    self.metadata = dict(self.metadata.items() + metadata.items())
+    def setMetaData(self,**metadata):
+        self.metadata = dict(self.metadata.items() + metadata.items())
 
-  def applyLimits(self,rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
-      tmp = applyLimits(self.parent,self.metadata['dataSetName'],rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits,newDataSetName=newDataSetName,comment=comment)
-      return tmp
+    def applyLimits(self,rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
+          tmp = applyLimits(self.parent,self.metadata['dataSetName'],rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits,newDataSetName=newDataSetName,comment=comment)
+          return tmp
 
-  def printHistory(self):
-    keys = self.history.keys()
-    keys.sort()
-    for key in keys:
-      print key,self.history[key]
+    def printHistory(self):
+        keys = self.history.keys()
+        keys.sort()
+        for key in keys:
+            print key,self.history[key]
 
-  def printMetadata(self):
-    keys = self.metadata.keys()
-    keys.sort()
-    for key in keys:
-      print key+':',self.metadata[key]
+    def printMetadata(self):
+        keys = self.metadata.keys()
+        keys.sort()
+        for key in keys:
+            print key+':',self.metadata[key]
 
     
 class musicArray(object):
