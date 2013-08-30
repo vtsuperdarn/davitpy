@@ -48,7 +48,11 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None,custType='fitex', \
 <<<<<<< HEAD
+<<<<<<< HEAD
 	      tFreqBands=[],myFile=None):
+=======
+         tFreqBands=[],myFile=None):
+>>>>>>> 0e032e58108ab987f010bac18189288f1e999838
 =======
          tFreqBands=[],myFile=None):
 >>>>>>> 0e032e58108ab987f010bac18189288f1e999838
@@ -214,11 +218,14 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     myBeam = radDataReadRec(myFile)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   #for i in range(len(tbands)):
     #if not freq[i]:
       #print 'error, no data in frequency range '+str(tbands[i][0])+' kHz to '+str(tbands[i][1])+' kHz'
       #return None
 
+=======
+>>>>>>> 0e032e58108ab987f010bac18189288f1e999838
 =======
 >>>>>>> 0e032e58108ab987f010bac18189288f1e999838
   for fplot in range(len(tbands)):
