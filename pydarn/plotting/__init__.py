@@ -41,6 +41,5 @@ except Exception,e:
 
 try:
 	from plotMapGrd import *
-except Exception, e:
-	print __file__+' -> utils.plotMapGrd: ', e
-
+except Exception,e:
+	print 'problem importing plotMapGrd: ', e
