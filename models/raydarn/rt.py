@@ -310,7 +310,7 @@ class RtRun(object):
         import subprocess as subp
         from os import path
 
-        files = ['rays', 'edens', 'ranges', 'ionos']
+        files = ['rays', 'edens', 'gscat', 'iscat']
         for f in files:
             fName = path.join(self.outDir, '{}.{}.dat'.format(f, self.fExt))
             subp.call(['rm', fName])
@@ -529,6 +529,8 @@ class Scatter(object):
                 rr, tht, gran, lat, lon  = unpack('5f', f.read(5*4))
                 # Convert azimuth to beam number
                 raz = site.azimToBeam(raz) if site else np.round(raz, 2)
+                # Adjust rel to 2 decimal
+                rel = np.around(rel, 2)
                 # convert time to python datetime
                 rhr = rhr - 25.
                 mm = self.header['mmdd']/100
@@ -562,7 +564,7 @@ class Scatter(object):
         """
         from struct import unpack
         import datetime as dt
-        from numpy import round, array
+        from numpy import around, array
 
         with open(self.readISFrom, 'rb') as f:
             # read header
@@ -578,7 +580,9 @@ class Scatter(object):
                 nstp, rhr, raz, rel = unpack('4f', bytes)
                 nstp = int(nstp)
                 # Convert azimuth to beam number
-                raz = site.azimToBeam(raz) if site else round(raz, 2)
+                raz = site.azimToBeam(raz) if site else around(raz, 2)
+                # Adjust rel to 2 decimal
+                rel = around(rel, 2)
                 # convert time to python datetime
                 rhr = rhr - 25.
                 mm = self.header['mmdd']/100
@@ -665,19 +669,19 @@ class Scatter(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
-        assert (time in self.isc.keys()), 'Unkown time %s' % time
+        assert (time in self.isc.keys() or time in self.gsc.keys()), 'Unkown time %s' % time
         if beam:
             assert (beam in self.isc[time].keys()), 'Unkown beam %s' % beam
         else:
             beam = self.isc[time].keys()[0]
 
-        if gscat:
+        if gscat and time in self.gsc.keys():
             for ir, (el, rays) in enumerate( sorted(self.gsc[time][beam].items()) ):
                 if len(rays['r']) == 0: continue
                 _ = aax.scatter(rays['th'], ax.Re*np.ones(rays['th'].shape), 
                     color='0', zorder=zorder)
 
-        if iscat:
+        if iscat and time in self.isc.keys():
             if weighted:
                 wmin = np.min( [ r['w'].min() for r in self.isc[time][beam].values() if r['nstp'] > 0] )
                 wmax = np.max( [ r['w'].max() for r in self.isc[time][beam].values() if r['nstp'] > 0] )
@@ -837,7 +841,7 @@ class Rays(object):
     def plot(self, time, beam=None, 
         maxground=2000, maxalt=500, step=1,
         showrefract=False, nr_cmap='jet_r', nr_lim=[0.8, 1.], 
-        raycolor='0.3', title=False, 
+        raycolor='0.3', title=False, zorder=2, alpha=1, 
         fig=None, rect=111, ax=None, aax=None):
         """Plot ray paths
         
@@ -902,11 +906,12 @@ class Rays(object):
         for ir, (el, rays) in enumerate( sorted(self.paths[time][beam].items()) ):
             if not ir % step:
                 if not showrefract:
-                    aax.plot(rays['th'], rays['r']*1e-3, c=raycolor, zorder=2)
+                    aax.plot(rays['th'], rays['r']*1e-3, c=raycolor, 
+                        zorder=zorder, alpha=alpha)
                 else:
                     points = np.array([rays['th'], rays['r']*1e-3]).T.reshape(-1, 1, 2)
                     segments = np.concatenate([points[:-1], points[1:]], axis=1)
-                    lcol = LineCollection( segments )
+                    lcol = LineCollection( segments, zorder=zorder, alpha=alpha)
                     _ = lcol.set_cmap( nr_cmap )
                     _ = lcol.set_norm( plt.Normalize(*nr_lim) )
                     _ = lcol.set_array( rays['nr'] )
@@ -1028,6 +1033,6 @@ def _getTitle(time, beam, header, name):
     ltmn = round( (ltdec - lthr)*60 )
     title = '{:%Y-%b-%d at %H:%M} UT (~{:02.0f}:{:02.0f} LT)'.format(
         time, lthr, ltmn)
-    title += '\n(IRI-2011) {} beam {}; freq {:.1f}MHz'.format(name, beam, header['freq'])
+    title += '\n(IRI-2012) {} beam {}; freq {:.1f}MHz'.format(name, beam, header['freq'])
 
     return title
