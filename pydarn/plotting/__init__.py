@@ -38,3 +38,9 @@ try:
 	from printRec import *
 except Exception,e: 
 	print 'problem importing printRec: ', e
+
+try:
+    from plotMapGrd import *
+except Exception, e:
+    print __file__+' -> utils.plotMapGrd: ', e
+
