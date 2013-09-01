@@ -2,7 +2,7 @@
 # Full license can be found in LICENSE.txt
 """
 *********************
-**Module**: pydarn.plotting.mapGrid
+**Module**: pydarn.plotting.plotMapGrd
    :synopsis: Plotting/Retreiving SuperDARN gridded velocities, fitted convection velocities and contour plotting routines
 *********************
 
@@ -13,37 +13,37 @@ convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard
 """
 
 class MapConv(object):
-	"""Plot/retreive data from mapex and grdex files
+    """Plot/retreive data from mapex and grdex files
 
-	**Args**:
-		* **startTime** (datetime.datetime): start date and time of the data rec
+    **Args**:
+        * **startTime** (datetime.datetime): start date and time of the data rec
         * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
         * **axisHandle** : the axis handle used
-		* **[hemi]** : hemisphere - 'north' or 'south'
-		* **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
-		* **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
-	**Example**:
-		::
+        * **[hemi]** : hemisphere - 'north' or 'south'
+        * **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
+        * **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
+    **Example**:
+        ::
 
-			# Plot contours, fitted velocities and Heppnard-Maynard 
+            # Plot contours, fitted velocities and Heppnard-Maynard 
             # boundary from convection map data on April-3-2011
-			import datetime
+            import datetime
             import matplotlib.pyplot as plt
-            import pydarn.plotting.mapGrd
+            import pydarn.plotting.plotMapGrd
 
-			sdate = datetime.datetime(2011,4,3,4,0)
-	        mObj = plotUtils.mapObj(boundinglat=50., 
+            sdate = datetime.datetime(2011,4,3,4,0)
+            mObj = plotUtils.mapObj(boundinglat=50., 
                 gridLabels=True, coords='mag')
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-			mapDatObj = pydarn.plotting.mapGrd.MapConv(sdate, mObj, ax)
+            mapDatObj = pydarn.plotting.plotMapGrd.MapConv(sdate, mObj, ax)
             mapDatObj.overlayMapFitVel()
             mapDatObj.overlayCnvCntrs()
             mapDatObj.overlayHMB()
-					
-	written by Bharat Kunduri and Sebastien de Larquier, 2013-08
-	"""
+                    
+    written by Bharat Kunduri and Sebastien de Larquier, 2013-08
+    """
     import matplotlib.cm as cm
 
     def __init__(self, startTime, mObj, 
@@ -531,8 +531,8 @@ class MapConv(object):
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
             self.mapData.model.boundarymlat, coords = self.plotCoords )
-        grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, l
-            inewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
+        grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, 
+            linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
         grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, 
             linewidth = 2., linestyle = '--', color = hmbCol, zorder = 4. )
 
