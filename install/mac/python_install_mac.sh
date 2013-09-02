@@ -29,7 +29,7 @@ python2.7 setup.py install
 
 
 cd $dir
-install_dir=$(readlink -f ../..)
+install_dir=$(greadlink -f ../..)
 echo "source $install_dir/profile.mac" >> ~/.bash_profile
 
 
