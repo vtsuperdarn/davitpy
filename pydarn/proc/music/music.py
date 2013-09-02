@@ -106,21 +106,30 @@ def stringify_signal(sig):
 
     return sigInfo
 
-def stringify_signal_list(signal_list):
+def stringify_signal_list(signal_list,sort_key='order'):
     """Method to convert a list of signal dictionaries into strings.
 
+    **Args**:
+      * **sort_key**: Dictionary key to sort on, or None for no sort.
     **Returns**
       * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
     """
 
-    orders  = [x['order'] for x in signal_list]
-    orders.sort()
-
     string_info = []
-    for order in orders:
+
+    if sort_key is not None:
+        orders  = [x[sort_key] for x in signal_list]
+        orders.sort()
+
+        for order in orders:
+            for sig in signal_list:
+                if sig[sort_key] == order:
+                    string_info.append(stringify_signal(sig))
+                    signal_list.remove(sig)
+    else:
         for sig in signal_list:
-            if sig['order'] == order:
-                string_info.append(stringify_signal(sig))
+            string_info.append(stringify_signal(sig))
+
     return string_info
 
 class SigDetect(object):
