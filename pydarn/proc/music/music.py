@@ -66,6 +66,76 @@ class emptyObj(object):
     def __init__(self):
         pass
 
+def stringify_signal(sig):
+    """Method to convert a signal dictionaries into strings.
+
+    **Returns**
+      * **sigInfo**: A dictionary of strings.
+    """
+    sigInfo = {}
+    if sig.has_key('order'):
+        sigInfo['order']    = '%d' % sig['order']                   #Order of signals by strength as detected by image detection algorithm
+    if sig.has_key('kx'):
+        sigInfo['kx']       = '%.3f' % sig['kx']
+    if sig.has_key('ky'):
+        sigInfo['ky']       = '%.3f' % sig['ky']
+    if sig.has_key('k'):
+        sigInfo['k']        = '%.3f' % sig['k']
+    if sig.has_key('lambda'):
+        sigInfo['lambda']   = '%d' % np.round(sig['lambda'])        # km
+    if sig.has_key('lambda_x'):
+        sigInfo['lambda_x'] = '%d' % np.round(sig['lambda_x'])      # km
+    if sig.has_key('lambda_y'):
+        sigInfo['lambda_y'] = '%d' % np.round(sig['lambda_y'])      # km
+    if sig.has_key('azm'):
+        sigInfo['azm']      = '%d' % np.round(sig['azm'])           # degrees
+    if sig.has_key('freq'):
+        sigInfo['freq']     = '%.2f' % (sig['freq']*1000.)          # mHz
+    if sig.has_key('period'):
+        sigInfo['period']   = '%d' % np.round(sig['period']/60.)    # minutes
+    if sig.has_key('vel'):
+        sigInfo['vel']      = '%d' % np.round(sig['vel'])           # km/s
+    if sig.has_key('area'):
+        sigInfo['area']     = '%d' % sig['area']                    # Pixels
+    if sig.has_key('max'):
+        sigInfo['max']      = str(sig['max'])                       # Value from kArr in arbitrary units, probably with some normalization
+    if sig.has_key('maxpos'):
+        sigInfo['maxpos']   = str(sig['maxpos'])                    # Index position in kArr of maximum value.
+    if sig.has_key('labelInx'):
+        sigInfo['labelInx'] = '%d' % sig['labelInx']                # Label value from image processing
+
+    return sigInfo
+
+def stringify_signal_list(signal_list):
+    """Method to convert a list of signal dictionaries into strings.
+
+    **Returns**
+      * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
+    """
+
+    orders  = [x['order'] for x in signal_list]
+    orders.sort()
+
+    string_info = []
+    for order in orders:
+        for sig in signal_list:
+            if sig['order'] == order:
+                string_info.append(stringify_signal(sig))
+    return string_info
+
+class SigDetect(object):
+    """Class to hold information about detected signals.
+    """
+    def __init__(self):
+        pass
+    def string(self):
+        """Method to convert a list of signal dictionaries into strings.
+
+        **Returns**
+          * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
+        """
+        return stringify_signal_list(self.info)
+
 class music(object):
   def __init__(self):
    self.options = options
@@ -1348,7 +1418,7 @@ def detectSignals(dataObj,dataSet='active'):
     maxpos        = ndimage.maximum_position(data,labels,xrange(1, labels.max()+1))
 
 #  class sigDetect: pass
-    sigDetect = emptyObj()
+    sigDetect = SigDetect()
     sigDetect.mask    = mask
     sigDetect.labels  = labels
     sigDetect.nrSigs  = nb
