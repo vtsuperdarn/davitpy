@@ -82,11 +82,20 @@ def stringify_signal(sig):
     if sig.has_key('k'):
         sigInfo['k']        = '%.3f' % sig['k']
     if sig.has_key('lambda'):
-        sigInfo['lambda']   = '%d' % np.round(sig['lambda'])        # km
+        if np.isinf(sig['lambda']):
+            sigInfo['lambda'] = 'inf'
+        else:
+            sigInfo['lambda'] = '%d' % np.round(sig['lambda'])      # km
     if sig.has_key('lambda_x'):
-        sigInfo['lambda_x'] = '%d' % np.round(sig['lambda_x'])      # km
+        if np.isinf(sig['lambda_x']):
+            sigInfo['lambda_x'] = 'inf'
+        else:
+            sigInfo['lambda_x'] = '%d' % np.round(sig['lambda_x'])      # km
     if sig.has_key('lambda_y'):
-        sigInfo['lambda_y'] = '%d' % np.round(sig['lambda_y'])      # km
+        if np.isinf(sig['lambda_y']):
+            sigInfo['lambda_y'] = 'inf'
+        else:
+            sigInfo['lambda_y'] = '%d' % np.round(sig['lambda_y'])      # km
     if sig.has_key('azm'):
         sigInfo['azm']      = '%d' % np.round(sig['azm'])           # degrees
     if sig.has_key('freq'):
@@ -98,7 +107,7 @@ def stringify_signal(sig):
     if sig.has_key('area'):
         sigInfo['area']     = '%d' % sig['area']                    # Pixels
     if sig.has_key('max'):
-        sigInfo['max']      = str(sig['max'])                       # Value from kArr in arbitrary units, probably with some normalization
+        sigInfo['max']      = '%.4f' % sig['max']                   # Value from kArr in arbitrary units, probably with some normalization
     if sig.has_key('maxpos'):
         sigInfo['maxpos']   = str(sig['maxpos'])                    # Index position in kArr of maximum value.
     if sig.has_key('labelInx'):
@@ -146,6 +155,25 @@ class SigDetect(object):
           * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
         """
         return stringify_signal_list(self.info)
+    def reorder(self):
+        """Method to sort items in .info by signal maximum value (from the scaled kArr) and update nrSignals.
+        """
+        #Do the sorting...
+        from operator import itemgetter
+        newlist = sorted(self.info,key=itemgetter('max'),reverse=True)
+
+        #Put in the order numbers...
+        order = 1
+        for item in newlist:
+            item['order'] = order
+            order = order + 1
+
+        #Save the list to the dataObj...
+        self.info = newlist
+
+        #Update the nrSigs
+        self.nrSigs = len(newlist)
+
 
 class music(object):
   def __init__(self):
@@ -1400,17 +1428,10 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
   #PRINTF,unit,snr_db
   #CLOSE,unit
 
-def detectSignals(dataObj,dataSet='active'):
-    currentData = getDataSet(dataObj,dataSet)
-    ################################################################################
-    #Feature detection...
-    #Now lets do a little image processing...
-    from scipy import ndimage, stats
-    from skimage.morphology import watershed, is_local_maximum
-    #sudo pip install cython
-    #sudo pip install scikit-image
-
-    data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
+def scale_karr(kArr):
+    from scipy import stats
+    '''Scale/normalize kArr for plotting and signal detection.'''
+    data        = np.abs(kArr) - np.min(np.abs(kArr))
 
     #Determine scale for colorbar.
     scale       = [0.,1.]
@@ -1418,12 +1439,26 @@ def detectSignals(dataObj,dataSet='active'):
     mean        = stats.nanmean(data,axis=None)
     scMax       = mean + 6.5*sd
     data        = data / scMax
+    return data
 
-    mask = data > 0.50
+def detectSignals(dataObj,dataSet='active'):
+    currentData = getDataSet(dataObj,dataSet)
+    ################################################################################
+    #Feature detection...
+    #Now lets do a little image processing...
+    from scipy import ndimage
+    from skimage.morphology import watershed, is_local_maximum
+    #sudo pip install cython
+    #sudo pip install scikit-image
+
+    data = scale_karr(currentData.karr)
+
+    mask = data > 0.35
     labels, nb = ndimage.label(mask)
 
     distance    = ndimage.distance_transform_edt(mask)
-    local_maxi  = is_local_maximum(distance,mask,np.ones((10,10)))
+#    local_maxi  = is_local_maximum(distance,mask,np.ones((10,10)))
+    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
     markers,nb  = ndimage.label(local_maxi)
     labels      = watershed(-distance,markers,mask=mask)
 
@@ -1460,3 +1495,82 @@ def detectSignals(dataObj,dataSet='active'):
     currentData.append_history('Detected KArr Signals')
     currentData.sigDetect = sigDetect
     return currentData
+
+def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
+    '''Add a signal to the detected signal list.  All signals will be re-ordered according to value in the 
+    scaled kArr.  Added signals can be distinguished from autodetected signals because 
+    'labelInx' and 'area' will both be set to -1.
+
+    **Args**:
+        * **kx**:           Value of kx of new signal.
+        * **ky**:           Value of ky of new signal.
+        * **dataObj**:      vtMUSIC object
+        * **dataSet**:      which dataSet in the vtMUSIC object to process
+        * **frequency**:    Frequency to use to calculate period, phase velocity, etc.  If None, 
+                            the calculated dominant frequency will be used.
+    **Returns**
+        * **currentData**: dataSet object
+    '''
+    currentData = getDataSet(dataObj,dataSet)
+    data = scale_karr(currentData.karr)
+
+    def find_nearest_inx(array,value):
+        return (np.abs(array-value)).argmin()
+
+    kx_inx  = find_nearest_inx(currentData.kxVec,kx)
+    ky_inx  = find_nearest_inx(currentData.kyVec,ky)
+
+    maxpos  = (kx_inx,ky_inx)
+    value   = data[kx_inx,ky_inx]
+
+    if frequency == None:
+        freq    = currentData.dominantFreq
+    else:
+        freq = frequency
+
+    info = {}
+    info['labelInx']    = -1
+    info['area']        = -1
+    info['order']       = -1
+    info['max']         = value
+    info['maxpos']      = maxpos
+    info['kx']          = currentData.kxVec[info['maxpos'][0]]
+    info['ky']          = currentData.kyVec[info['maxpos'][1]]
+    info['k']           = np.sqrt( info['kx']**2 + info['ky']**2 )
+    info['lambda_x']    = 2*np.pi / info['kx']
+    info['lambda_y']    = 2*np.pi / info['ky']
+    info['lambda']      = 2*np.pi / info['k']
+    info['azm']         = np.degrees(np.arctan2(info['kx'],info['ky']))
+    info['freq']        = freq
+    info['period']      = 1./freq
+    info['vel']         = (2.*np.pi/info['k']) * info['freq'] * 1000.
+
+    currentData.sigDetect.info.append(info)
+    currentData.sigDetect.reorder()
+    currentData.append_history('Appended Signal to sigDetect List')
+
+    return dataObj
+
+def del_signal(order,dataObj,dataSet='active'):
+    '''Remove a signal to the detected signal list.
+
+    **Args**:
+        * **order**:        Single value of list of signal orders (ID's) to be removed from the list.
+        * **dataObj**:      vtMUSIC object
+        * **dataSet**:      which dataSet in the vtMUSIC object to process
+
+    **Returns**
+        * **currentData**: dataSet object
+    '''
+    currentData = getDataSet(dataObj,dataSet)
+    data = scale_karr(currentData.karr)
+
+    orderArr = np.array(order)
+
+    for item in list(currentData.sigDetect.info):
+        if item['order'] in order:
+            currentData.sigDetect.info.remove(item)
+
+    currentData.sigDetect.reorder()
+    currentData.append_history('Deleted Signals from sigDetect List')
+    return dataObj
