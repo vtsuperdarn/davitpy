@@ -30,12 +30,14 @@ class MapConv(object):
             import datetime
             import matplotlib.pyplot as plt
             import pydarn.plotting.plotMapGrd
+            from utils import *
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
             sdate = datetime.datetime(2011,4,3,4,0)
             mObj = plotUtils.mapObj(boundinglat=50., 
                 gridLabels=True, coords='mag')
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
             mapDatObj = pydarn.plotting.plotMapGrd.MapConv(sdate, mObj, ax)
             mapDatObj.overlayMapFitVel()
