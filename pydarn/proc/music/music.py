@@ -103,6 +103,8 @@ def stringify_signal(sig):
         sigInfo['maxpos']   = str(sig['maxpos'])                    # Index position in kArr of maximum value.
     if sig.has_key('labelInx'):
         sigInfo['labelInx'] = '%d' % sig['labelInx']                # Label value from image processing
+    if sig.has_key('serialNr'):
+        sigInfo['serialNr'] = '%d' % sig['serialNr']                # Label value from image processing
 
     return sigInfo
 
@@ -1129,6 +1131,7 @@ def calculateFFT(dataObj,dataSet='active',comment=None):
   avg_psd = np.zeros(npf)
   for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
   currentData.dominantFreq = posFreqVec[np.argmax(avg_psd)]
+  currentData.append_history('Calculated FFT')
   
 
 def calculateDlm(dataObj,dataSet='active',comment=None):
@@ -1172,6 +1175,8 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
         mmAI  = llList[mm]
         spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
+
+  currentData.append_history('Calculated Cross-Spectral Matrix Dlm')
 
 def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0.001,threshold=0.15):
   """Calculate the two-dimensional horizonatal wavenumber array of a vtMUSIC object.
@@ -1246,6 +1251,7 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
   currentData.karr  = kArr
   currentData.kxVec = kxVec
   currentData.kyVec = kyVec
+  currentData.append_history('Calculated kArr')
 
 def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
   import utils
