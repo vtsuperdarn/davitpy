@@ -76,9 +76,9 @@ def stringify_signal(sig):
     if sig.has_key('order'):
         sigInfo['order']    = '%d' % sig['order']                   #Order of signals by strength as detected by image detection algorithm
     if sig.has_key('kx'):
-        sigInfo['kx']       = '%.3f' % sig['kx']
+        sigInfo['kx']       = '%.5f' % sig['kx']
     if sig.has_key('ky'):
-        sigInfo['ky']       = '%.3f' % sig['ky']
+        sigInfo['ky']       = '%.5f' % sig['ky']
     if sig.has_key('k'):
         sigInfo['k']        = '%.3f' % sig['k']
     if sig.has_key('lambda'):
