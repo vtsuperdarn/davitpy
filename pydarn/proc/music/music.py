@@ -1441,7 +1441,7 @@ def scale_karr(kArr):
     data        = data / scMax
     return data
 
-def detectSignals(dataObj,dataSet='active'):
+def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     currentData = getDataSet(dataObj,dataSet)
     ################################################################################
     #Feature detection...
@@ -1453,12 +1453,12 @@ def detectSignals(dataObj,dataSet='active'):
 
     data = scale_karr(currentData.karr)
 
-    mask = data > 0.35
+    mask = data > threshold
     labels, nb = ndimage.label(mask)
 
     distance    = ndimage.distance_transform_edt(mask)
-#    local_maxi  = is_local_maximum(distance,mask,np.ones((10,10)))
-    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
+    local_maxi  = is_local_maximum(distance,mask,np.ones(neighborhood))
+#    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
     markers,nb  = ndimage.label(local_maxi)
     labels      = watershed(-distance,markers,mask=mask)
 
