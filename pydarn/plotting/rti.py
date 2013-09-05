@@ -140,7 +140,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     myFile = radDataOpen(sTime,rad,eTime,channel=channel,bmnum=bmnum,fileType=fileType,filtered=filtered,fileName=fileName)
   else:
     #make sure that we will only plot data for the time range specified by sTime and eTime
-    if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime and myFile.eTime > sTime:
+    if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime:
       myFile.sTime=sTime
       myFile.eTime=eTime
     else:
