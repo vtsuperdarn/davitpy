@@ -100,21 +100,20 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   #Since ISAS stores an entire day worth of data in one file, eTime=sTime + 1 day specifies one day of data
   if(eTime == None):
     eTime = sTime+dt.timedelta(days=1)
-
-  #create a datapointer object
-  myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id), 
-                      channel=channel,bmnum=bmnum,cp=cp)
- 
-  if sTime < eTime:
-  #So then if eTime is specified, need to round it up to the nearest whole day
-    if dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d") < eTime:
-      eTime=dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d")+dt.timedelta(days=1)
   else:
-    assert(1==2),'sTime must be less than eTime!'
+    if sTime < eTime:
+  #So then if eTime is specified, need to round it up to the nearest whole day
+      if dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d") < eTime:
+        eTime=dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d")+dt.timedelta(days=1)
+    else:
+      assert(1==2),'sTime must be less than eTime!'
   #And for sTime we need to round it down to the nearest whole day
   sTime=dt.datetime.strptime(sTime.strftime("%Y%m%d"),"%Y%m%d")
     
- 
+  #create a datapointer object
+  myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id), 
+                      channel=channel,bmnum=bmnum,cp=cp)
+  
   filelist = []
   if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
   elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
@@ -219,7 +218,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
             ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
             ### TO MATCH YOUR DIRECTORY STRUCTURE
             ##################################################################
-            myDir = '/sd_data/'+ctime.strftime("%Y")+'/'+ctime.strftime("%m")+'/'
+            myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
             hrStr = ctime.strftime("%H")
             dateStr = ctime.strftime("%Y%m%d")
             #iterate through all of the files which begin in this hour
