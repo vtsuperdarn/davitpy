@@ -149,6 +149,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
   allBeams = [''] * len(myFiles)
   sites,fovs,oldCpids,lonFull,latFull=[],[],[],[],[]
+  lonC,latC = [],[]
+
   #go through all open files
   for i in range(len(myFiles)):
     #read until we reach start time
@@ -167,13 +169,17 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     t=allBeams[i].time
     site = pydarn.radar.site(radId=allBeams[i].stid,dt=t)
     sites.append(site)
-    if(coords == 'geo'):
+    if(coords == 'geo'):           #make a list of site lats and lons
       latFull.append(site.geolat)
       lonFull.append(site.geolon)
+      latC.append(site.geolat)     #latC and lonC are used for figuring out
+      lonC.append(site.geolon)     #where the map should be centered.
     elif(coords == 'mag'):
       x = aacgm.aacgmConv(site.geolat,site.geolon,0.,0)
       latFull.append(x[0])
       lonFull.append(x[1])
+      latC.append(x[0])
+      lonC.append(x[1])
     myFov = pydarn.radar.radFov.fov(site=site,rsep=allBeams[i].prm.rsep,\
             ngates=allBeams[i].prm.nrang+1,nbeams=site.maxbeam,coords=coords)
     fovs.append(myFov)
@@ -182,32 +188,53 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         lonFull.append(myFov.lonFull[b][k])
         latFull.append(myFov.latFull[b][k])
     oldCpids.append(allBeams[i].cp)
-      
-  #do some stuff in map projection coords to get necessary width and height of map
+    
+    k=allBeams[i].prm.nrang
+    b=0
+    latC.append(myFov.latFull[b][k])
+    lonC.append(myFov.lonFull[b][k])
+    b=site.maxbeam
+    latC.append(myFov.latFull[b][k])
+    lonC.append(myFov.lonFull[b][k])
+
+  #Now that we have 3 points from the FOVs of the radars, calculate the lat,lon pair
+  #to center the map on. We can simply do this by converting from Spherical coords
+  #to Cartesian, taking the mean of each coordinate and then converting back
+  #to get lat_0 and lon_0
+  lonC,latC = (numpy.array(lonC)+360.)%360.0,numpy.array(latC)
+  xs=numpy.cos(numpy.deg2rad(latC))*numpy.cos(numpy.deg2rad(lonC))
+  ys=numpy.cos(numpy.deg2rad(latC))*numpy.sin(numpy.deg2rad(lonC))
+  zs=numpy.sin(numpy.deg2rad(latC))
+  xc=numpy.mean(xs)
+  yc=numpy.mean(ys)
+  zc=numpy.mean(zs)
+  lon_0=numpy.rad2deg(numpy.arctan2(yc,xc))
+  lat_0=numpy.rad2deg(numpy.arctan2(zc,numpy.sqrt(xc*xc+yc*yc)))
+
+  #Now do some stuff in map projection coords to get necessary width and height of map
+  #and also figure out the corners of the map
   t1=dt.datetime.now()
-  lonFull,latFull = (numpy.array(lonFull)+360.)%360.,numpy.array(latFull)
-  tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=numpy.mean(lonFull))
+  lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
+
+  tmpmap = Basemap(projection='stere', width=10.0**3, height=10.0**3, lat_0=lat_0, lon_0=lon_0)
   x,y = tmpmap(lonFull,latFull)
-  minx = x.min()
-  miny = y.min()
-  maxx = x.max()
-  maxy = y.max()
+  minx = x.min()*1.05     #since we don't want the map to cut off labels or
+  miny = y.min()*1.05     #FOVs of the radars we should alter the extrema a bit.
+  maxx = x.max()*1.05
+  maxy = y.max()*1.05
   width = (maxx-minx)
   height = (maxy-miny)
-  cx = minx + width/2.
-  cy = miny + height/2.
-  lon_0,lat_0 = tmpmap(cx, cy, inverse=True)
+  llcrnrlon,llcrnrlat = tmpmap(minx,miny,inverse=True)
+  urcrnrlon,urcrnrlat = tmpmap(maxx,maxy,inverse=True)
+
   dist = width/50.
   cTime = sTime
-  
-  # if show:
-  #   myFig = plot.figure(figsize=(12,8))
-  # else:
-  #   myFig = Figure(figsize=(12,8))
+
   myFig = plot.figure(figsize=(12,8))
   
   #draw the actual map we want
-  myMap = Basemap(projection='stere',width=width,height=height,lon_0=numpy.mean(lonFull),lat_0=lat_0)
+  myMap = Basemap(projection='stere', lat_0=lat_0, lon_0=lon_0, llcrnrlon=llcrnrlon,\
+                  llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat)
   myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
   myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
   if(coords == 'geo'):
@@ -216,9 +243,10 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myMap.fillcontinents(color='w', lake_color='w')
   #overlay fields of view, if desired
   if(fov == 1):
-    for r in rad:
+    for i,r in enumerate(rad):
       pydarn.plotting.overlayRadar(myMap, codes=r, dateTime=sTime)
-      pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime)
+      #this was missing fovObj! We need to plot the fov for this particular sTime.
+      pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i]) 
   
   print dt.datetime.now()-t1
   #manually draw the legend
@@ -245,8 +273,6 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         y=LineCollection(numpy.array([((xctr-dist/2.,y[1]*(.98-w*.025)),(xctr+dist/2.,y[1]*(.98-w*.025)))]),linewidths=.5,zorder=15,color='k')
         myFig.gca().add_collection(y)
         
-  # pickle.dump(myFig,open('map.pickle','wb'),-1)
-  
   bbox = myFig.gca().get_axes().get_position()
   #now, loop through desired time interval
 
@@ -347,7 +373,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   if show:
     myFig.show()
 
-
+  return myMap
 def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
                 fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
                 cmap=None,norm=None,alpha=1):
