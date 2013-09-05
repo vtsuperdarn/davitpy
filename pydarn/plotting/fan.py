@@ -371,7 +371,6 @@ Modified by Matt W. 20130717
   if show:
     myFig.show()
 
-  return myMap
 def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
                 fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
                 cmap=None,norm=None,alpha=1):
