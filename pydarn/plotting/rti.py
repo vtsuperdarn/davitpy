@@ -145,7 +145,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       myFile.eTime=eTime
     else:
       #if the times range is not covered by the file, throw an error
-      print 'error, no data available for the requested time'
+      print 'error, data not available in myFile for the whole sTime to eTime'
       return None
 
 
