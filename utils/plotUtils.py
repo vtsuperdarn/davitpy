@@ -108,7 +108,8 @@ class mapObj(basemap.Basemap):
       width = height = 2*111e3*( abs(lat_0 - boundinglat) )
 
     # Initialize map
-    super(mapObj, self).__init__(self, projection=projection, resolution=resolution, 
+
+    super(mapObj, self).__init__(projection=projection, resolution=resolution,
         lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
     # Add continents
