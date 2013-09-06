@@ -48,8 +48,8 @@ class MapConv(object):
     """
     import matplotlib.cm as cm
 
-    def __init__(self, startTime, mObj, 
-        axisHandle, hemi = 'north', 
+    def __init__(self, startTime, mObj, \
+        axisHandle, hemi = 'north', \
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
         from pydarn.sdio import *
@@ -533,9 +533,15 @@ class MapConv(object):
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
             self.mapData.model.boundarymlat, coords = self.plotCoords )
+<<<<<<< HEAD
+        grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, \
+            linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
+        grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, \
+=======
         grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, 
             linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
         grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, 
+>>>>>>> upstream/master
             linewidth = 2., linestyle = '--', color = hmbCol, zorder = 4. )
 
     def overlayMapModelVel(self, pltColBar=False, 

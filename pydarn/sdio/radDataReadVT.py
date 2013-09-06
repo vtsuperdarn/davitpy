@@ -31,7 +31,7 @@
   * :func:`pydarn.sdio.radDataRead.radDataReadAll`
 """
 
-def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
+def radDataOpenVT(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
                 custType='fitex',noCache=False):
 
@@ -57,14 +57,9 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     ::
     
       import datetime as dt
-      from pydarn.sdio import radDataOpen
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'sas',eTime=dt.datetime(2011,1,2),fileType='fitacf',filtered=False, src=None):
-
-  **Note**:
-    * The above example reads in only 1 day of data. If eTime=dt.datetime(2011,1,1,0,0,1) then 2 days would be read in.
-
+      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+    
   Written by AJ 20130110
-  Modified by Ashton 20130710
   """
   import paramiko as p
   import re
@@ -96,19 +91,9 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     'error, filtered must be True of False'
   assert(src == None or src == 'local' or src == 'sftp'), \
     'error, src must be one of None,local,sftp'
-
-  #Since ISAS stores an entire day worth of data in one file, eTime=sTime + 1 day specifies one day of data
+    
   if(eTime == None):
     eTime = sTime+dt.timedelta(days=1)
-  else:
-    if sTime < eTime:
-  #So then if eTime is specified, need to round it up to the nearest whole day
-      if dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d") < eTime:
-        eTime=dt.datetime.strptime(eTime.strftime("%Y%m%d"),"%Y%m%d")+dt.timedelta(days=1)
-    else:
-      assert(1==2),'sTime must be less than eTime!'
-  #And for sTime we need to round it down to the nearest whole day
-  sTime=dt.datetime.strptime(sTime.strftime("%Y%m%d"),"%Y%m%d")
     
   #create a datapointer object
   myPtr = radDataPtr(sTime=sTime,eTime=eTime,stid=int(network().getRadarByCode(rad).id), 
@@ -121,7 +106,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   else: arr = [fileType]
 
   #move back a little in time because files often start at 2 mins after the hour
-#  sTime = sTime-dt.timedelta(minutes=4)
+  sTime = sTime-dt.timedelta(minutes=4)
   #a temporary directory to store a temporary file
   tmpDir = '/tmp/sd/'
   d = os.path.dirname(tmpDir)
@@ -161,16 +146,13 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   if fileName == None and not noCache:
     try:
       if filtered:
-        #for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,rad,fileType)):
-	for f in glob.glob("%s????????.????????.%s.%sf" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,rad,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
- #           t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
-            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),)
-            t2 = dt.datetime(int(ff[10:14]),int(ff[14:16]),int(ff[16:18]))
-#            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
-           #check if file covers our timespan
+            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+            #check if file covers our timespan
             if t1 <= sTime and t2 >= eTime:
               cached = True
               filelist.append(f)
@@ -179,12 +161,12 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
           except Exception,e:
             print e
       if not cached:
-        for f in glob.glob("%s????????.????????.%s.%s" % (tmpDir,rad,fileType)):
+        for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,rad,fileType)):
           try:
             ff = string.replace(f,tmpDir,'')
             #check time span of file
-            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]))
-            t2 = dt.datetime(int(ff[9:13]),int(ff[13:15]),int(ff[15:17]))
+            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+            t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
             #check if file covers our timespan
             if t1 <= sTime and t2 >= eTime:
               cached = True
@@ -197,9 +179,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print e
 
   #Next, LOOK LOCALLY FOR FILES
-#THIS HAS NOT BEEN EDITED FOR THE ISAS GROUP AT UofS. IF DAVITPY IS TO BE PUT ON CHAPMAN, THIS WILL HAVE
-#TO BE LOOKED AT. FOR NOW, CONDITIONAL EDITED TO SKIP.
-  if 1==2:# not cached and (src == None or src == 'local') and fileName == None:
+  if not cached and (src == None or src == 'local') and fileName == None:
     try:
       for ftype in arr:
         print '\nLooking locally for',ftype,'files'
@@ -260,39 +240,38 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'you probably have to edit radDataRead.py'
       print 'I will try to read from other sources'
       src=None
-#END OF NOT EDITED        
-
-
-
-  #finally, check the chapman sftp server if we have not yet found files
+        
+  #finally, check the VT sftp server if we have not yet found files
   if (src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0 and fileName == None:
     for ftype in arr:
       print '\nLooking on the remote SFTP server for',ftype,'files'
       try:
-        #deal with UofS naming convention
-        fnames = ['.C0.'+rad+'.'+ftype]
+        #deal with UAF naming convention
+        fnames = ['..........'+ftype]
         if(channel == None): fnames.append('..\...\....\.a\.')
         else: fnames.append('..........'+channel+'.'+ftype)
         for form in fnames:
           #create a transport object for use in sftp-ing
-          transport = p.Transport((os.environ['ISASDB'], 22))
-          transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
+          transport = p.Transport((os.environ['VTDB'], 22))
+          transport.connect(username=os.environ['VTDBREADUSER'],password=os.environ['VTDBREADPASS'])
           sftp = p.SFTPClient.from_transport(transport)
           
           #iterate through all of the hours in the request
           #ie, iterate through all possible file names
-          ctime = sTime
+          ctime = sTime.replace(minute=0)
+          if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
           oldyr = ''
-          while ctime < eTime:
+          while ctime <= eTime:
             #directory on the data server
-            myDir = 'fitcon/'+ctime.strftime("%Y")+'/'+ctime.strftime("%m")+'/'
+            myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+            hrStr = ctime.strftime("%H")
             dateStr = ctime.strftime("%Y%m%d")
             if(ctime.strftime("%Y") != oldyr):
               #get a list of all the files in the directory
               allFiles = sftp.listdir(myDir)
               oldyr = ctime.strftime("%Y")
             #create a regular expression to find files of this day, at this hour
-            regex = re.compile(dateStr+form)
+            regex = re.compile(dateStr+'.'+hrStr+form)
             #go thorugh all the files in the directory
             for aFile in allFiles:
               #if we have a file match between a file and our regex
@@ -319,10 +298,10 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                 #HANDLE CACHEING NAME
                 ff = string.replace(outname,tmpDir,'')
                 #check the beginning time of the file
-                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]))
+                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
                 if fileSt == None or t1 < fileSt: fileSt = t1
 
-            ctime = ctime+dt.timedelta(days=1)
+            ctime = ctime+dt.timedelta(hours=1)
           if len(filelist) > 0 :
             print 'found',ftype,'data on sftp server'
             myPtr.fType,myPtr.dType = ftype,'dmap'
@@ -341,9 +320,9 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     if not cached:
       print 'Concatenating all the files in to one'
       #choose a temp file name with time span info for cacheing
-      tmpName = '%s%s.%s.%s.%s' % (tmpDir, \
-                fileSt.strftime("%Y%m%d"), \
-                eTime.strftime("%Y%m%d"),rad,fileType)
+      tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
+                fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
+                eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),rad,fileType)
       print 'cat '+string.join(filelist)+' > '+tmpName
       os.system('cat '+string.join(filelist)+' > '+tmpName)
       for filename in filelist:
@@ -381,234 +360,4 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     print '\nSorry, we could not find any data for you :('
     return None
   
-def radDataReadRec(myPtr):
-  """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen` 
-
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
-    
-  **Example**:
-    ::
-    
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myBeam = radDataReadRec(myPtr)
-    
-  Written by AJ 20130110
-  """
-
-  from pydarn.sdio.radDataTypes import radDataPtr, beamData, \
-    fitData, prmData, rawData, iqData, alpha
-  import pydarn, datetime as dt
-  
-  #check input
-  assert(isinstance(myPtr,radDataPtr)),\
-    'error, input must be of type radDataPtr'
-  if(myPtr.ptr == None):
-    print 'error, your pointer does not point to any data'
-    return None
-  if myPtr.ptr.closed:
-    print 'error, your file pointer is closed'
-    return None
-  
-  myBeam = beamData()
-  
-  #do this until we reach the requested start time
-  #and have a parameter match
-  while(1):
-    dfile = pydarn.dmapio.readDmapRec(myPtr.ptr)
-    #check for valid data
-    if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > myPtr.eTime:
-      #if we dont have valid data, clean up, get out
-      print '\nreached end of data'
-      myPtr.ptr.close()
-      return None
-    #check that we're in the time window, and that we have a 
-    #match for the desired params
-    if dfile['channel'] < 2: channel = 'a'
-    else: channel = alpha[dfile['channel']-1]
-    if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
-        dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
-        (myPtr.stid == None or dfile['stid'] == 0 or myPtr.stid == dfile['stid']) and
-        (myPtr.channel == None or myPtr.channel == channel) and
-        (myPtr.bmnum == None or myPtr.bmnum == dfile['bmnum']) and
-        (myPtr.cp == None or myPtr.cp == dfile['cp'])):
-      #fill the beamdata object
-      myBeam.updateValsFromDict(dfile)
-      myBeam.fit.updateValsFromDict(dfile)
-      myBeam.prm.updateValsFromDict(dfile)
-      myBeam.rawacf.updateValsFromDict(dfile)
-      myBeam.iqdat.updateValsFromDict(dfile)
-      myBeam.fType = myPtr.fType
-      if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
-        if myBeam.fit.slist == None: 
-          myBeam.fit.slist = []
-      return myBeam
-      
-def radDataReadScan(myPtr):
-  """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
-    
-  .. note::
-    This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
-
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData`): an object filled with the data we are after.  *will return None when finished reading*
-    
-  **Example**:
-    ::
-    
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myBeam = radDataReadScan(myPtr)
-    
-  Written by AJ 20130110
-  """
-  from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
-    rawData, iqData, alpha, scanData
-  import pydarn, datetime as dt
-  
-  #check input
-  assert(isinstance(myPtr,radDataPtr)),\
-    'error, input must be of type radDataPtr'
-  if(myPtr.ptr == None):
-    print 'error, your pointer does not point to any data'
-    return None
-  if myPtr.ptr.closed:
-    print 'error, your file pointer is closed'
-    return None
-  
-  myScan = scanData()
-  if myPtr.fBeam != None: 
-     myScan.append(myPtr.fBeam)
-     firstflg = False
-  else: 
-     firstflg = True
-  if myPtr.channel == None: tmpchn = 'a'
-  else: tmpchn = myPtr.channel
-  
-  #do this until we reach the requested start time
-  #and have a parameter match
-  while(1):
-      #read the next record from the dmap file
-    dfile = pydarn.dmapio.readDmapRec(myPtr.ptr)
-    #check for valid data
-    if(dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > myPtr.eTime):
-      #if we dont have valid data, clean up, get out
-      print '\nreached end of data'
-      myPtr.ptr.close()
-      return None
-    #check that we're in the time window, and that we have a 
-    #match for the desired params
-    if(dfile['channel'] < 2): channel = 'a'
-    else: channel = alpha[dfile['channel']-1]
-    if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
-        dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
-        (myPtr.stid == None or myPtr.stid == dfile['stid']) and
-        (tmpchn == channel) and
-        (myPtr.cp == None or myPtr.cp == dfile['cp'])):
-      #fill the beamdata object
-      myBeam = beamData()
-      myBeam.updateValsFromDict(dfile)
-      myBeam.fit.updateValsFromDict(dfile)
-      myBeam.prm.updateValsFromDict(dfile)
-      myBeam.rawacf.updateValsFromDict(dfile)
-      myBeam.iqdat.updateValsFromDict(dfile)
-      myBeam.fType = myPtr.fType
-      if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
-        if(myBeam.fit.slist == None): 
-          myBeam.fit.slist = []
-      if(myBeam.prm.scan == 0 or firstflg):
-        myScan.append(myBeam)
-        firstflg = False
-      else:
-        myPtr.fBeam = myBeam
-        return myScan
-
-def radDataReadAll(myPtr):
-  """A function to read a large amount (to the end of the request) of radar data into a list from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
-
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myList** (list): a list filled with :class:`pydarn.sdio.radDataTypes.scanData` objects holding the data we are after.  *will return None if nothing is found*
-    
-  **Example**:
-    ::
-    
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myList = radDataReadAll(myPtr)
-    
-  Written by AJ 20130606
-  """
-  from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
-    rawData, iqData, alpha, scanData
-  import pydarn, datetime as dt
-  
-  #check input
-  if not isinstance(myPtr,radDataPtr):
-    'error, input must be of type radDataPtr'
-    return None
-  if myPtr.ptr == None:
-    print 'error, your pointer does not point to any data'
-    return None
-  if myPtr.ptr.closed:
-    print 'error, your file pointer is closed'
-    return None
-  
-  myScan = scanData()
-  if(myPtr.fBeam != None): myScan.append(myPtr.fBeam)
-  else: firstflg = True
-  if(myPtr.channel == None): tmpchn = 'a'
-  else: tmpchn = myPtr.channel
-  
-  #do this until we reach the requested start time
-  #and have a parameter match
-  while(1):
-      #read the next record from the dmap file
-    dfile = pydarn.dmapio.readDmapRec(myPtr.ptr)
-    #check for valid data
-    if(dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > myPtr.eTime):
-      #if we dont have valid data, clean up, get out
-      print '\nreached end of data'
-      myPtr.ptr.close()
-      return None
-    #check that we're in the time window, and that we have a 
-    #match for the desired params
-    if(dfile['channel'] < 2): channel = 'a'
-    else: channel = alpha[dfile['channel']-1]
-    if(dt.datetime.utcfromtimestamp(dfile['time']) >= myPtr.sTime and \
-        dt.datetime.utcfromtimestamp(dfile['time']) <= myPtr.eTime and \
-        (myPtr.stid == None or myPtr.stid == dfile['stid']) and
-        (tmpchn == channel) and
-        (myPtr.cp == None or myPtr.cp == dfile['cp'])):
-      #fill the beamdata object
-      myBeam = beamData()
-      myBeam.updateValsFromDict(dfile)
-      myBeam.fit.updateValsFromDict(dfile)
-      myBeam.prm.updateValsFromDict(dfile)
-      myBeam.rawacf.updateValsFromDict(dfile)
-      myBeam.iqdat.updateValsFromDict(dfile)
-      myBeam.fType = myPtr.fType
-      if(myPtr.fType == 'fitacf' or myPtr.fType == 'fitex' or myPtr.fType == 'lmfit'):
-        if(myBeam.fit.slist == None): myBeam.fit.slist = []
-      if(myBeam.prm.scan == 0 or firstflg):
-        myScan.append(myBeam)
-        firstflg = False
-      else:
-        myPtr.fBeam = myBeam
-        return myScan
 

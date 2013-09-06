@@ -13,3 +13,7 @@ This includes the following submodules:
 try: from mho import *
 except Exception, e:
     print __file__+' -> gme.isr.mho: ', e
+
+try: from fetchData import *
+except Exception, e:
+    print __file__+' -> gme.isr.fetchData: ', e
