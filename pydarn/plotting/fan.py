@@ -138,11 +138,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   myBands = []
   for i in range(len(rad)):
     f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
-<<<<<<< HEAD
-    if(f != None): 
-=======
     if(f != None):
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
       myFiles.append(f)
       myBands.append(tbands[i])
 
@@ -173,19 +169,11 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     t=allBeams[i].time
     site = pydarn.radar.site(radId=allBeams[i].stid,dt=t)
     sites.append(site)
-<<<<<<< HEAD
     if(coords == 'geo'):           #make a list of site lats and lons
       latFull.append(site.geolat)
       lonFull.append(site.geolon)
       latC.append(site.geolat)     #latC and lonC are used for figuring out
       lonC.append(site.geolon)     #where the map should be centered.
-=======
-    if(coords == 'geo'): #make a list of site lats and lons
-      latFull.append(site.geolat)
-      lonFull.append(site.geolon)
-      latC.append(site.geolat) #latC and lonC are used for figuring out
-      lonC.append(site.geolon) #where the map should be centered.
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
     elif(coords == 'mag'):
       x = aacgm.aacgmConv(site.geolat,site.geolon,0.,0)
       latFull.append(x[0])
@@ -228,18 +216,11 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   t1=dt.datetime.now()
   lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
 
-<<<<<<< HEAD
   tmpmap = utils.mapObj(coords=coords,projection='stere', width=10.0**3, 
                         height=10.0**3, lat_0=lat_0, lon_0=lon_0)
   x,y = tmpmap(lonFull,latFull)
   minx = x.min()*1.05     #since we don't want the map to cut off labels or
   miny = y.min()*1.05     #FOVs of the radars we should alter the extrema a bit.
-=======
-  tmpmap = Basemap(projection='stere', width=10.0**3, height=10.0**3, lat_0=lat_0, lon_0=lon_0)
-  x,y = tmpmap(lonFull,latFull)
-  minx = x.min()*1.05 #since we don't want the map to cut off labels or
-  miny = y.min()*1.05 #FOVs of the radars we should alter the extrema a bit.
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
   maxx = x.max()*1.05
   maxy = y.max()*1.05
   width = (maxx-minx)
@@ -253,14 +234,9 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   myFig = plot.figure(figsize=(12,8))
   
   #draw the actual map we want
-<<<<<<< HEAD
   myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, lon_0=lon_0,
                        llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon,
                        urcrnrlat=urcrnrlat)
-=======
-  myMap = Basemap(projection='stere', lat_0=lat_0, lon_0=lon_0, llcrnrlon=llcrnrlon,\
-                  llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat)
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
   myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
   myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
   #if(coords == 'geo'):
@@ -272,11 +248,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     for i,r in enumerate(rad):
       pydarn.plotting.overlayRadar(myMap, codes=r, dateTime=sTime)
       #this was missing fovObj! We need to plot the fov for this particular sTime.
-<<<<<<< HEAD
       pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i]) 
-=======
-      pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i])
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
   
   print dt.datetime.now()-t1
   #manually draw the legend
@@ -321,11 +293,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     #until we reach the end of the time window
     while(allBeams[i] != None and allBeams[i].time < bndTime):
       #filter on frequency
-<<<<<<< HEAD
       if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]: 
-=======
-      if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]:
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
         scans.append(allBeams[i])
       #read the next record
       allBeams[i] = radDataReadRec(myFiles[i])
@@ -334,13 +302,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     intensities, pcoll = overlayFan(scans,myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
 
                                       
-<<<<<<< HEAD
   #if no data has been found pcoll will not have been set, and the following code will object                                   
   if pcoll: 
-=======
-  #if no data has been found pcoll will not have been set, and the following code will object
-  if pcoll:
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
     cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
     
     l = []
@@ -361,11 +324,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     #set colorbar ticklabel size
     for ti in cbar.ax.get_yticklabels():
       ti.set_fontsize(12)
-<<<<<<< HEAD
-    if(param == 'velocity'): 
-=======
     if(param == 'velocity'):
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
       cbar.set_label('Velocity [m/s]',size=14)
       cbar.extend='max'
       
@@ -379,11 +338,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   #label the plot
   tx1 = myFig.text((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%Y/%m/%d'),ha='center',size=14,weight=550)
   tx2 = myFig.text(bbox.x1+.02,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
-<<<<<<< HEAD
         bndTime.strftime('%H:%M      '),ha='right',size=13,weight=550)
-=======
-        bndTime.strftime('%H:%M '),ha='right',size=13,weight=550)
->>>>>>> 85c58bd19889251b64f8f77b1df3f81d917c2121
   tx3 = myFig.text(bbox.x0,bbox.y1+.02,'['+ft+']',ha='left',size=13,weight=550)
   #label with frequency bands
   tx4 = myFig.text(bbox.x1+.02,bbox.y1,'Frequency filters:',ha='right',size=8,weight=550)
