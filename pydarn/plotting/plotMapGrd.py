@@ -11,6 +11,11 @@
 convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard Boundary.
 
 """
+from pydarn.sdio import *
+from pydarn.radar import *
+from utils import *
+from pydarn.plotting import *
+
 
 class MapConv(object):
     """Plot/retreive data from mapex and grdex files
@@ -52,9 +57,6 @@ class MapConv(object):
         axisHandle, hemi = 'north', 
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
-        from pydarn.sdio import *
-        from pydarn.radar import *
-        from utils import *
         import matplotlib.cm as cm
         import numpy
         import matplotlib
@@ -102,7 +104,6 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
-        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -555,7 +556,6 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
-        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -624,7 +624,6 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
-        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
