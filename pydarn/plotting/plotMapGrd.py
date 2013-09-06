@@ -13,7 +13,7 @@ convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard
 """
 
 class MapConv(object):
-    """Plot/retreive data from mapex and grdex files
+    """Plot/retrieve data from mapex and grdex files
 
     **Args**:
         * **startTime** (datetime.datetime): start date and time of the data rec
