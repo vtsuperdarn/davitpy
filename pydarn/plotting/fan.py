@@ -216,7 +216,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   t1=dt.datetime.now()
   lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
 
-  tmpmap = Basemap(projection='stere', width=10.0**3, height=10.0**3, lat_0=lat_0, lon_0=lon_0)
+  tmpmap = utils.mapObj(coords=coords,projection='stere', width=10.0**3, 
+                        height=10.0**3, lat_0=lat_0, lon_0=lon_0)
   x,y = tmpmap(lonFull,latFull)
   minx = x.min()*1.05     #since we don't want the map to cut off labels or
   miny = y.min()*1.05     #FOVs of the radars we should alter the extrema a bit.
@@ -233,14 +234,15 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   myFig = plot.figure(figsize=(12,8))
   
   #draw the actual map we want
-  myMap = Basemap(projection='stere', lat_0=lat_0, lon_0=lon_0, llcrnrlon=llcrnrlon,\
-                  llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat)
+  myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, lon_0=lon_0,
+                       llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon,
+                       urcrnrlat=urcrnrlat)
   myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
   myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
-  if(coords == 'geo'):
-    myMap.drawcoastlines(linewidth=0.5,color='k')
-    myMap.drawmapboundary(fill_color='w')
-    myMap.fillcontinents(color='w', lake_color='w')
+  #if(coords == 'geo'):
+  myMap.drawcoastlines(linewidth=0.5,color='k')
+  myMap.drawmapboundary(fill_color='w')
+  myMap.fillcontinents(color='w', lake_color='w')
   #overlay fields of view, if desired
   if(fov == 1):
     for i,r in enumerate(rad):
@@ -373,7 +375,6 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   if show:
     myFig.show()
 
-  return myMap
 def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
                 fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
                 cmap=None,norm=None,alpha=1):
