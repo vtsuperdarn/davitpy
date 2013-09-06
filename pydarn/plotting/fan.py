@@ -45,7 +45,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     scale=[],channel='a',coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
     velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
     poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False, \
-    show=True,png=False,pdf=False,dpi=500):
+    show=True,png=False,pdf=False,dpi=500,tFreqBands=[]):
 
   """A function to make a fan plot
   
@@ -77,6 +77,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow
     * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
     * **[dpi]** (int): dots per inch if saving as png.  default = 300
+    * **[tFreqBands]** (list): upper and lower bounds of frequency in kHz to be used.  Must be unset (or set to []) or have a pair for each radar, and for any band set to [] the default will be used.  default = [[8000,20000]], [[8000,20000],[8000,20000]], etc.
   **Returns**:
     * Nothing
 
@@ -85,8 +86,10 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     
       import datetime as dt
       pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
+      pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBand=[[10000,11000],[]])
 
   Written by AJ 20121004
+  Modified by Matt W. 20130717
   """
 
   
@@ -108,6 +111,16 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   'error, if present, scales must have 2 elements'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
   
+  #check freq band and set to default if needed
+  assert(tFreqBands == [] or len(tFreqBands) == len(rad)),'error, if present, tFreqBands must have same number of elements as rad'
+  tbands = []
+  for i in range(len(rad)):
+    if tFreqBands == [] or tFreqBands[i] == []: tbands.append([8000,20000])
+    else: tbands.append(tFreqBands[i])
+
+  for i in range(len(tbands)):
+    assert(tbands[i][1] > tbands[i][0]),'error, frequency upper bound must be > lower bound'
+
   if(scale == []):
     if(param == 'velocity'): scale=[-200,200]
     elif(param == 'power'): scale=[0,30]
@@ -122,9 +135,13 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   
   #open the data files
   myFiles = []
-  for r in rad:
-    f = radDataOpen(sTime,r,sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
-    if(f != None): myFiles.append(f)
+  myBands = []
+  for i in range(len(rad)):
+    f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
+    if(f != None): 
+      myFiles.append(f)
+      myBands.append(tbands[i])
+
 
   assert(myFiles != []),'error, no data available for this period'
 
@@ -132,30 +149,37 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
   allBeams = [''] * len(myFiles)
   sites,fovs,oldCpids,lonFull,latFull=[],[],[],[],[]
+  lonC,latC = [],[]
+
   #go through all open files
   for i in range(len(myFiles)):
     #read until we reach start time
     allBeams[i] = radDataReadRec(myFiles[i])
-    while(allBeams[i].time < sTime and allBeams[i] != None):
+    while (allBeams[i].time < sTime and allBeams[i] != None):
       allBeams[i] = radDataReadRec(myFiles[i])
-      
+
     #check that the file has data in the target interval
     if(allBeams[i] == None): 
       myFiles[i].close()
       myFiles[i] = None
       continue
+
   
     #get to field of view coords in order to determine map limits
     t=allBeams[i].time
     site = pydarn.radar.site(radId=allBeams[i].stid,dt=t)
     sites.append(site)
-    if(coords == 'geo'):
+    if(coords == 'geo'):           #make a list of site lats and lons
       latFull.append(site.geolat)
       lonFull.append(site.geolon)
+      latC.append(site.geolat)     #latC and lonC are used for figuring out
+      lonC.append(site.geolon)     #where the map should be centered.
     elif(coords == 'mag'):
       x = aacgm.aacgmConv(site.geolat,site.geolon,0.,0)
       latFull.append(x[0])
       lonFull.append(x[1])
+      latC.append(x[0])
+      lonC.append(x[1])
     myFov = pydarn.radar.radFov.fov(site=site,rsep=allBeams[i].prm.rsep,\
             ngates=allBeams[i].prm.nrang+1,nbeams=site.maxbeam,coords=coords)
     fovs.append(myFov)
@@ -164,43 +188,67 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         lonFull.append(myFov.lonFull[b][k])
         latFull.append(myFov.latFull[b][k])
     oldCpids.append(allBeams[i].cp)
-      
-  #do some stuff in map projection coords to get necessary width and height of map
+    
+    k=allBeams[i].prm.nrang
+    b=0
+    latC.append(myFov.latFull[b][k])
+    lonC.append(myFov.lonFull[b][k])
+    b=site.maxbeam
+    latC.append(myFov.latFull[b][k])
+    lonC.append(myFov.lonFull[b][k])
+
+  #Now that we have 3 points from the FOVs of the radars, calculate the lat,lon pair
+  #to center the map on. We can simply do this by converting from Spherical coords
+  #to Cartesian, taking the mean of each coordinate and then converting back
+  #to get lat_0 and lon_0
+  lonC,latC = (numpy.array(lonC)+360.)%360.0,numpy.array(latC)
+  xs=numpy.cos(numpy.deg2rad(latC))*numpy.cos(numpy.deg2rad(lonC))
+  ys=numpy.cos(numpy.deg2rad(latC))*numpy.sin(numpy.deg2rad(lonC))
+  zs=numpy.sin(numpy.deg2rad(latC))
+  xc=numpy.mean(xs)
+  yc=numpy.mean(ys)
+  zc=numpy.mean(zs)
+  lon_0=numpy.rad2deg(numpy.arctan2(yc,xc))
+  lat_0=numpy.rad2deg(numpy.arctan2(zc,numpy.sqrt(xc*xc+yc*yc)))
+
+  #Now do some stuff in map projection coords to get necessary width and height of map
+  #and also figure out the corners of the map
   t1=dt.datetime.now()
-  lonFull,latFull = (numpy.array(lonFull)+360.)%360.,numpy.array(latFull)
-  tmpmap = Basemap(projection='npstere', boundinglat=20,lat_0=90, lon_0=numpy.mean(lonFull))
+  lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
+
+  tmpmap = utils.mapObj(coords=coords,projection='stere', width=10.0**3, 
+                        height=10.0**3, lat_0=lat_0, lon_0=lon_0)
   x,y = tmpmap(lonFull,latFull)
-  minx = x.min()
-  miny = y.min()
-  maxx = x.max()
-  maxy = y.max()
+  minx = x.min()*1.05     #since we don't want the map to cut off labels or
+  miny = y.min()*1.05     #FOVs of the radars we should alter the extrema a bit.
+  maxx = x.max()*1.05
+  maxy = y.max()*1.05
   width = (maxx-minx)
   height = (maxy-miny)
-  cx = minx + width/2.
-  cy = miny + height/2.
-  lon_0,lat_0 = tmpmap(cx, cy, inverse=True)
+  llcrnrlon,llcrnrlat = tmpmap(minx,miny,inverse=True)
+  urcrnrlon,urcrnrlat = tmpmap(maxx,maxy,inverse=True)
+
   dist = width/50.
   cTime = sTime
-  
-  # if show:
-  #   myFig = plot.figure(figsize=(12,8))
-  # else:
-  #   myFig = Figure(figsize=(12,8))
+
   myFig = plot.figure(figsize=(12,8))
   
   #draw the actual map we want
-  myMap = Basemap(projection='stere',width=width,height=height,lon_0=numpy.mean(lonFull),lat_0=lat_0)
+  myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, lon_0=lon_0,
+                       llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon,
+                       urcrnrlat=urcrnrlat)
   myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
   myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
-  if(coords == 'geo'):
-    myMap.drawcoastlines(linewidth=0.5,color='k')
-    myMap.drawmapboundary(fill_color='w')
-    myMap.fillcontinents(color='w', lake_color='w')
+  #if(coords == 'geo'):
+  myMap.drawcoastlines(linewidth=0.5,color='k')
+  myMap.drawmapboundary(fill_color='w')
+  myMap.fillcontinents(color='w', lake_color='w')
   #overlay fields of view, if desired
   if(fov == 1):
-    for r in rad:
+    for i,r in enumerate(rad):
       pydarn.plotting.overlayRadar(myMap, codes=r, dateTime=sTime)
-      pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime)
+      #this was missing fovObj! We need to plot the fov for this particular sTime.
+      pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i]) 
   
   print dt.datetime.now()-t1
   #manually draw the legend
@@ -227,8 +275,6 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         y=LineCollection(numpy.array([((xctr-dist/2.,y[1]*(.98-w*.025)),(xctr+dist/2.,y[1]*(.98-w*.025)))]),linewidths=.5,zorder=15,color='k')
         myFig.gca().add_collection(y)
         
-  # pickle.dump(myFig,open('map.pickle','wb'),-1)
-  
   bbox = myFig.gca().get_axes().get_position()
   #now, loop through desired time interval
 
@@ -238,55 +284,68 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   
   ft = 'None'
   #go though all files
+  pcoll = None
   for i in range(len(myFiles)):
-    scans = [[] for j in range(len(myFiles))]
+    scans = []
     #check that we have good data at this time
     if(myFiles[i] == None or allBeams[i] == None): continue
     ft = allBeams[i].fType
     #until we reach the end of the time window
     while(allBeams[i] != None and allBeams[i].time < bndTime):
-      scans[i].append(allBeams[i])
+      #filter on frequency
+      if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]: 
+        scans.append(allBeams[i])
       #read the next record
       allBeams[i] = radDataReadRec(myFiles[i])
-    intensities, pcoll = overlayFan(scans[i],myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
+    #if there is no data in scans, overlayFan will object
+    if scans == []: continue
+    intensities, pcoll = overlayFan(scans,myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
+
                                       
-                                      
-  cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
-  
-  l = []
-  #define the colorbar labels
-  for i in range(0,len(bounds)):
-    if(param == 'phi0'):
-      ln = 4
-      if(bounds[i] == 0): ln = 3
-      elif(bounds[i] < 0): ln = 5
-      l.append(str(bounds[i])[:ln])
-      continue
-    if((i == 0 and param == 'velocity') or i == len(bounds)-1):
-      l.append(' ')
-      continue
-    l.append(str(int(bounds[i])))
-  cbar.ax.set_yticklabels(l)
-  cbar.ax.tick_params(axis='y',direction='out')
-  #set colorbar ticklabel size
-  for ti in cbar.ax.get_yticklabels():
-    ti.set_fontsize(12)
-  if(param == 'velocity'): 
-    cbar.set_label('Velocity [m/s]',size=14)
-    cbar.extend='max'
+  #if no data has been found pcoll will not have been set, and the following code will object                                   
+  if pcoll: 
+    cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
     
-  if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=14)
-  if(param == 'power'): cbar.set_label('Power [dB]',size=14)
-  if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=14)
-  if(param == 'elevation'): cbar.set_label('Elev [deg]',size=14)
-  if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=14)
+    l = []
+    #define the colorbar labels
+    for i in range(0,len(bounds)):
+      if(param == 'phi0'):
+        ln = 4
+        if(bounds[i] == 0): ln = 3
+        elif(bounds[i] < 0): ln = 5
+        l.append(str(bounds[i])[:ln])
+        continue
+      if((i == 0 and param == 'velocity') or i == len(bounds)-1):
+        l.append(' ')
+        continue
+      l.append(str(int(bounds[i])))
+    cbar.ax.set_yticklabels(l)
+    cbar.ax.tick_params(axis='y',direction='out')
+    #set colorbar ticklabel size
+    for ti in cbar.ax.get_yticklabels():
+      ti.set_fontsize(12)
+    if(param == 'velocity'): 
+      cbar.set_label('Velocity [m/s]',size=14)
+      cbar.extend='max'
+      
+    if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=14)
+    if(param == 'power'): cbar.set_label('Power [dB]',size=14)
+    if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=14)
+    if(param == 'elevation'): cbar.set_label('Elev [deg]',size=14)
+    if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=14)
   
   #myFig.gca().set_rasterized(True)
   #label the plot
   tx1 = myFig.text((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%Y/%m/%d'),ha='center',size=14,weight=550)
-  tx2 = myFig.text(bbox.x1,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
+  tx2 = myFig.text(bbox.x1+.02,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
         bndTime.strftime('%H:%M      '),ha='right',size=13,weight=550)
   tx3 = myFig.text(bbox.x0,bbox.y1+.02,'['+ft+']',ha='left',size=13,weight=550)
+  #label with frequency bands
+  tx4 = myFig.text(bbox.x1+.02,bbox.y1,'Frequency filters:',ha='right',size=8,weight=550)
+  for i in range(len(rad)):
+    myFig.text(bbox.x1+.02,bbox.y1-((i+1)*.015),rad[i]+': '+\
+        str(tbands[i][0]/1e3)+' - '+str(tbands[i][1]/1e3)+\
+        ' MHz',ha='right',size=8,weight=550)
   
   if(overlayPoes):
     pcols = gme.sat.poes.overlayPoesTed(myMap, myFig.gca(), cTime, param=poesparam, scMin=poesMin, scMax=poesMax)
@@ -315,7 +374,6 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myFig.savefig(sTime.strftime("%Y%m%d.%H%M.")+str(interval)+'.fan.pdf')
   if show:
     myFig.show()
-
 
 def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
                 fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
