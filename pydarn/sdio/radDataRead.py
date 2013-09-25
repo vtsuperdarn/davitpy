@@ -549,7 +549,9 @@ def radDataReadAll(myPtr):
     return None
   
   myScan = scanData()
-  if(myPtr.fBeam != None): myScan.append(myPtr.fBeam)
+  if(myPtr.fBeam != None): 
+     myScan.append(myPtr.fBeam)
+     firstflg = False
   else: firstflg = True
   if(myPtr.channel == None): tmpchn = 'a'
   else: tmpchn = myPtr.channel
