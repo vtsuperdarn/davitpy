@@ -198,7 +198,7 @@ def datetimeToEpoch(myDate):
   if numpy.size(myDate) == 1:
     unx = calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
   else:
-    unx = [calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6 for dt in myDate]
+    unx = [calendar.timegm(dt.timetuple())+dt.microsecond/1e6 for dt in myDate]
 
   return unx
 
