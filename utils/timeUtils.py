@@ -190,6 +190,7 @@ def datetimeToEpoch(myDate):
   Written by AJ 20120914
   Modified by Nathaniel Frissell 20130729 - Added list support.
   Modified by AJ 20130925 - fixed local time bug with conversion
+  Modified by Nathaniel Frissell 20130930 - Fixed list support.
   """
   import datetime
   import calendar
