@@ -34,22 +34,31 @@ Then cd into the cloned directory:
     
 Then run the install scripts specific to your system.  These install dependencies and can take a bit of time...
 
-Ubuntu
+####Ubuntu
 
     cd install/debian/
     sudo ./python_install_debian.sh
     
-MacOS
+####MacOS
 
     cd install/mac
-    sudo ./python_install_mac.sh
+    
+If you are a MacPort user
+
+    sudo ./python_install_mac_port.sh
 
 (**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries)
+    
+If you are a Homebrew user
 
-openSUSE
+    sudo ./python_install_mac_brew.sh
+
+####openSUSE
 
     cd install/opensuse
     sudo ./python_install_opensuse.sh
+    
+####Finally
     
 Now, `source ~/.bashrc`, or open a new terminal.  Then, go to your install directory (davitpy) and run 
     
