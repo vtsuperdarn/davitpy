@@ -23,7 +23,7 @@ setup(name='davitpy',
        author_email = "ajribeiro86@gmail.com",
        url = "https://github.com/vtsuperdarn/davitpy",
        packages=[x.replace(os.getcwd()+'/','') for x in sources],
-       install_requires=['ipython','numpy','scipy','matplotlib','tornado','zmq', \
+       install_requires=['ipython','numpy','scipy','matplotlib','tornado', \
                         'paramiko','pymongo','h5py','mechanize','basemap']
       )
 

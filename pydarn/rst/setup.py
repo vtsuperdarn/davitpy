@@ -17,29 +17,17 @@
 from distutils.core import setup, Extension
 import os
 
-rst = os.environ['RSTPATH']
+rst = '/rst'
+
+dmap = Extension("dmapio",
+                  sources=["dmap/dmapio.c","dmap/rtime.c"])
+
 setup (name = "dmapio",
-       version = "0.2",
+       version = "1.0",
        description = "lib to read dmap files",
        author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
        author_email = "ribeiro@vt.edu",
-       url = "",
-       long_description =
-"""
-""",
-       classifiers=[],
-
-       ext_modules = [Extension("dmapio",
-                                sources=["pydarndmapio.c"],
-                                include_dirs = [
-                                     "/usr/local/include/pydarn",
-                                     rst+"/include/superdarn",
-                                     rst+"/include/analysis",
-                                     rst+"/include/base",
-                                     rst+"/include/general",
-                                     ],
-                                library_dirs = [rst+"/lib/","/davitpy/pydarn/rst/rtime"],
-				libraries=["rtime","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
+       ext_modules = [dmap]
        )
        
        
