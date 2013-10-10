@@ -19,8 +19,21 @@ import os
 
 rst = '/rst'
 
+# dmap = Extension("dmapio",
+#                 	sources=["dmap/dmapio.c","dmap/rtime.c","dmap/dmap.c","dmap/convert.c"],
+#                   	include_dirs = ["dmap",
+#                                      "/usr/local/include/pydarn",
+#                                      rst+"/include/superdarn",
+#                                      ],
+#                     library_dirs = [rst+"/lib/"],
+# 					libraries=["radar.1", "fit.1", "rscan.1", "cfit.1"]
+#        )
+
 dmap = Extension("dmapio",
-                  sources=["dmap/dmapio.c","dmap/rtime.c"])
+                	sources=["dmap/convert.c"],
+                  	# include_dirs = ["dmap",
+                   #                   ],
+       )
 
 setup (name = "dmapio",
        version = "1.0",

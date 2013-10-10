@@ -32,8 +32,7 @@
 #ifndef _RTIME_H
 #define _RTIME_H
 
-void TimeEpochToYMDHMS(double tme,int *yr,int *mo,int *dy,int *hr,int *mn,
-		       double *sc);
-
-
+void TimeEpochToYMDHMS(double tme,int *yr,int *mo,int *dy,int *hr,int *mn, double *sc);
+double TimeYMDHMSToEpoch(int yr,int mo,int dy,int hr,int mn,double sec);
+void TimeYrsecToYMDHMS(int time,int yr, int *mo,int *dy, int *hr,int *mn,int *sc);
 #endif
