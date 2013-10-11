@@ -17,13 +17,11 @@
 #include "rtypes.h"
 
 
-
 int ConvertBitOrder() {
   int32 test;
   test=1;
   return *((unsigned char *) &test);
 }
-  
 
 void ConvertToLong(unsigned char *cnv,int64 *val) {
   unsigned char *out;
@@ -187,121 +185,6 @@ void ConvertBlock(unsigned char *cnv,int *pattern) {
 }
 
 
-int ConvertFreadLong(FILE *fp,int64 *val) {
-  unsigned char tmp[8];
-  if (fread(tmp,8,1,fp) !=1) return -1;
-  ConvertToLong(tmp,val);
-  return 0;
-}
-
-int ConvertFreadInt(FILE *fp,int32 *val) {
-  unsigned char tmp[4];
-  if (fread(tmp,4,1,fp) !=1) return -1;
-  ConvertToInt(tmp,val);
-  return 0;
-}
-
-int ConvertFreadShort(FILE *fp,int16 *val) {
-  unsigned char tmp[2];
-  if (fread(tmp,2,1,fp) !=1) return -1;
-  ConvertToShort(tmp,val);
-  return 0;
-}
-
-int ConvertFreadULong(FILE *fp,uint64 *val) {
-  unsigned char tmp[8];
-  if (fread(tmp,8,1,fp) !=1) return -1;
-  ConvertToULong(tmp,val);
-  return 0;
-}
-
-int ConvertFreadUInt(FILE *fp,uint32 *val) {
-  unsigned char tmp[4];
-  if (fread(tmp,4,1,fp) !=1) return -1;
-  ConvertToUInt(tmp,val);
-  return 0;
-}
-
-int ConvertFreadUShort(FILE *fp,uint16 *val) {
-  unsigned char tmp[2];
-  if (fread(tmp,2,1,fp) !=1) return -1;
-  ConvertToUShort(tmp,val);
-  return 0;
-}
-
-int ConvertFreadDouble(FILE *fp,double *val) {
-  unsigned char tmp[8];
-  if (fread(tmp,8,1,fp) !=1) return -1;
-  ConvertToDouble(tmp,val);
-  return 0;
-}
-
-int ConvertFreadFloat(FILE *fp,float *val) {
-  unsigned char tmp[4];
-  if (fread(tmp,4,1,fp) !=1) return -1;
-  ConvertToFloat(tmp,val);
-  return 0;
-}
-
-int ConvertFwriteFloat(FILE *fp,float val) {
-  unsigned char tmp[4];
-  ConvertFromFloat(val,tmp);
-  if (fwrite(tmp,4,1,fp) !=1) return -1;
-  return 0;
-}
-
-int ConvertFwriteDouble(FILE *fp,double val) {
-  unsigned char tmp[8];
-  ConvertFromDouble(val,tmp);
-  if (fwrite(tmp,8,1,fp) !=1) return -1;
-  return 0;
-}
-
-
-int ConvertFwriteLong(FILE *fp,int64 val) {
-  unsigned char tmp[8];
-  ConvertFromLong(val,tmp);
-  if (fwrite(tmp,8,1,fp) !=1) return -1;
-  return 0;
-}
-
-
-int ConvertFwriteInt(FILE *fp,int32 val) {
-  unsigned char tmp[4];
-  ConvertFromInt(val,tmp);
-  if (fwrite(tmp,4,1,fp) !=1) return -1;
-  return 0;
-}
-
-int ConvertFwriteShort(FILE *fp,int16 val) {
-  unsigned char tmp[2];
-  ConvertFromShort(val,tmp);
-  if (fwrite(tmp,2,1,fp) !=1) return -1;
-  return 0;
-}
-
-int ConvertFwriteULong(FILE *fp,uint64 val) {
-  unsigned char tmp[8];
-  ConvertFromULong(val,tmp);
-  if (fwrite(tmp,8,1,fp) !=1) return -1;
-  return 0;
-}
-
-
-int ConvertFwriteUInt(FILE *fp,uint32 val) {
-  unsigned char tmp[4];
-  ConvertFromUInt(val,tmp);
-  if (fwrite(tmp,4,1,fp) !=1) return -1;
-  return 0;
-}
-
-int ConvertFwriteUShort(FILE *fp,uint16 val) {
-  unsigned char tmp[2];
-  ConvertFromUShort(val,tmp);
-  if (fwrite(tmp,2,1,fp) !=1) return -1;
-  return 0;
-}
-
 int ConvertReadLong(int fp,int64 *val) {
   unsigned char tmp[8];
   int s=0,o=0,l=8;
@@ -420,63 +303,3 @@ int ConvertReadFloat(int fp,float *val) {
 }
 
 
-int ConvertWriteFloat(int fp,float val) {
-  unsigned char tmp[4];
-  ConvertFromFloat(val,tmp);
-  if (write(fp,tmp,4) !=4) return -1;
-  return 0;
-}
-
-int ConvertWriteDouble(int fp,double val) {
-  unsigned char tmp[8];
-  ConvertFromDouble(val,tmp);
-  if (write(fp,tmp,8) !=8) return -1;
-  return 0;
-}
-
-
-int ConvertWriteLong(int fp,int64 val) {
-  unsigned char tmp[8];
-  ConvertFromLong(val,tmp);
-  if (write(fp,tmp,8) !=8) return -1;
-  return 0;
-}
-
-
-int ConvertWriteInt(int fp,int32 val) {
-  unsigned char tmp[4];
-  ConvertFromInt(val,tmp);
-  if (write(fp,tmp,4) !=4) return -1;
-  return 0;
-}
-
-int ConvertWriteShort(int fp,int16 val) {
-  unsigned char tmp[2];
-  ConvertFromShort(val,tmp);
-  if (write(fp,tmp,2) !=2) return -1;
-  return 0;
-}
-
-
-
-int ConvertWriteULong(int fp,uint64 val) {
-  unsigned char tmp[8];
-  ConvertFromULong(val,tmp);
-  if (write(fp,tmp,8) !=8) return -1;
-  return 0;
-}
-
-
-int ConvertWriteUInt(int fp,uint32 val) {
-  unsigned char tmp[4];
-  ConvertFromUInt(val,tmp);
-  if (write(fp,tmp,4) !=4) return -1;
-  return 0;
-}
-
-int ConvertWriteUShort(int fp,uint16 val) {
-  unsigned char tmp[2];
-  ConvertFromUShort(val,tmp);
-  if (write(fp,tmp,2) !=2) return -1;
-  return 0;
-}

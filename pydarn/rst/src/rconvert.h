@@ -12,7 +12,7 @@
 #ifndef _RCONVERT_H
 #define _RCONVERT_H
 
-int ConvertBitOrder();
+int ConvertBitOrder(void);
 void ConvertToLong(unsigned char *cnv,int64 *val);
 void ConvertToInt(unsigned char *cnv,int32 *val);
 void ConvertToShort(unsigned char *cnv,int16 *val);
@@ -30,22 +30,7 @@ void ConvertFromULong(uint64 val,unsigned char *cnv);
 void ConvertFromUInt(uint32 val,unsigned char *cnv);
 void ConvertFromUShort(uint16 val,unsigned char *cnv);
 void ConvertBlock(unsigned char *cnv,int *pattern);
-int ConvertFreadLong(FILE *fp,int64 *val);
-int ConvertFreadInt(FILE *fp,int32 *val);
-int ConvertFreadShort(FILE *fp,int16 *val);
-int ConvertFreadULong(FILE *fp,uint64 *val);
-int ConvertFreadUInt(FILE *fp,uint32 *val);
-int ConvertFreadUShort(FILE *fp,uint16 *val);
-int ConvertFreadDouble(FILE *fp,double *val);
-int ConvertFreadFloat(FILE *fp,float *val);
-int ConvertFwriteFloat(FILE *fp,float val);
-int ConvertFwriteDouble(FILE *fp,double val);
-int ConvertFwriteLong(FILE *fp,int64 val);
-int ConvertFwriteInt(FILE *fp,int32 val);
-int ConvertFwriteShort(FILE *fp,int16 val);
-int ConvertFwriteULong(FILE *fp,uint64 val);
-int ConvertFwriteUInt(FILE *fp,uint32 val);
-int ConvertFwriteUShort(FILE *fp,uint16 val);
+
 
 int ConvertReadLong(int fp,int64 *val);
 int ConvertReadInt(int fp,int32 *val);
@@ -55,14 +40,7 @@ int ConvertReadUInt(int fp,uint32 *val);
 int ConvertReadUShort(int fp,uint16 *val);
 int ConvertReadDouble(int fp,double *val);
 int ConvertReadFloat(int fp,float *val);
-int ConvertWriteFloat(int fp,float val);
-int ConvertWriteDouble(int fp,double val);
-int ConvertWriteLong(int fp,int64 val);
-int ConvertWriteInt(int fp,int32 val);
-int ConvertWriteShort(int fp,int16 val);
-int ConvertWriteULong(int fp,uint64 val);
-int ConvertWriteUInt(int fp,uint32 val);
-int ConvertWriteUShort(int fp,uint16 val);
+
 
 
 

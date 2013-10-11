@@ -58,7 +58,6 @@ struct DataMapFp {
   int size;
   union {
     FILE *f;
-    gzFile *z;
   } fp;
 };
 
@@ -107,7 +106,7 @@ struct DataMap {
 }; 
 
 
-struct DataMap *DataMapMake();
+struct DataMap *DataMapMake(void);
 
 struct DataMapScalar* DataMapMakeScalar(char *name,int mode,int type,
                                                 void *data);

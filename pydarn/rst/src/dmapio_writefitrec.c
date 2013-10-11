@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <Python.h>
 #include <datetime.h>
-#include <zlib.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>

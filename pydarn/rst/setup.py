@@ -19,28 +19,36 @@ import os
 
 rst = '/rst'
 
-# dmap = Extension("dmapio",
-#                 	sources=["dmap/dmapio.c","dmap/rtime.c","dmap/dmap.c","dmap/convert.c"],
-#                   	include_dirs = ["dmap",
-#                                      "/usr/local/include/pydarn",
-#                                      rst+"/include/superdarn",
-#                                      ],
-#                     library_dirs = [rst+"/lib/"],
-# 					libraries=["radar.1", "fit.1", "rscan.1", "cfit.1"]
-#        )
+dmap = Extension("dmapio",sources=["src/dmapio.c","src/rtime.c","src/dmap.c","src/convert.c"],include_dirs = ["src"])
 
-dmap = Extension("dmapio",
-                	sources=["dmap/convert.c"],
-                  	# include_dirs = ["dmap",
-                   #                   ],
-       )
+aacgm = Extension("aacgmlib",sources=["src/aacgmlib.c","src/aacgm.c","src/altitude_to_cgm.c",
+                    "src/cgm_to_altitude.c","src/coeff.c","src/convert_geo_coord.c","src/math.c",
+                    "src/rylm.c","src/AstAlg_apparent_obliquity.c","src/AstAlg_apparent_solar_longitude.c", 
+                    "src/AstAlg_dday.c","src/AstAlg_equation_of_time.c","src/AstAlg_geometric_solar_longitude.c", 
+                    "src/AstAlg_jde.c","src/AstAlg_jde2calendar.c", "src/AstAlg_lunar_ascending_node.c", 
+                    "src/AstAlg_mean_lunar_longitude.c", "src/AstAlg_mean_obliquity.c", "src/AstAlg_mean_solar_anomaly.c", 
+                    "src/AstAlg_mean_solar_longitude.c", "src/AstAlg_nutation_corr.c", "src/AstAlg_solar_declination.c", 
+                    "src/AstAlg_solar_right_ascension.c","src/mlt.c","src/shval3.c","src/dihf.c", 
+                    "src/interpshc.c","src/extrapshc.c","src/fft.c","src/nrfit.c", \
+                    "src/magcmp.c", "src/igrfcall.c", "src/getshc.c", ],)
+
+# dmap = Extension("dmapio",
+#                   sources=["dmap/convert.c"],
+#                       include_dirs = ["dmap"],
+#                    #                   ],
+#        )
+# test = Extension("ajtest",
+#                   sources=["test.c"],
+#                       # include_dirs = ["dmap",
+#                    #                   ],
+#        )
 
 setup (name = "dmapio",
        version = "1.0",
        description = "lib to read dmap files",
        author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
        author_email = "ribeiro@vt.edu",
-       ext_modules = [dmap]
+       ext_modules = [aacgm]
        )
        
        
