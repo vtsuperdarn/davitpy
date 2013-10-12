@@ -23,9 +23,6 @@ setup (name = "aagcmlib",
                                      rst+"/include/general",
                                      ],
                                 library_dirs = [rst+"/lib/"],
-#				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1","igrf.1","radar.1","rpos.1","rcnv.1","dmap.1"]),]
-#				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1","igrf.1","radar.1","rpos.1"]),]
-#				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1","igrf.1","radar.1"]),]
 				libraries=["mlt.1","aacgm.1","astalg.1","rtime.1","igrf.1"]),]
        )
 

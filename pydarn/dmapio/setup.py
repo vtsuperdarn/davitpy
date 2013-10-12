@@ -30,7 +30,7 @@ setup (name = "dmapio",
        classifiers=[],
 
        ext_modules = [Extension("dmapio",
-                                sources=["dmapio.c"],
+                                sources=["pydarndmapio.c"],
                                 include_dirs = [
                                      "/usr/local/include/pydarn",
                                      rst+"/include/superdarn",
@@ -38,8 +38,8 @@ setup (name = "dmapio",
                                      rst+"/include/base",
                                      rst+"/include/general",
                                      ],
-                                library_dirs = [rst+"/lib/"],
-				libraries=["m","z","rtime.1","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
+                                library_dirs = [rst+"/lib/","/davitpy/pydarn/rst/rtime"],
+				libraries=["rtime","dmap.1", "rcnv.1", "radar.1", "fit.1", "rscan.1", "cfit.1"]),]
        )
        
        
