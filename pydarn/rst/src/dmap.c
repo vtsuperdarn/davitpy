@@ -9,7 +9,7 @@
  Copyright (c) 2012 The Johns Hopkins University/Applied Physics Laboratory
  
  This file is part of the Radar Software Toolkit (RST).
- 
+  
  RST is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,7 @@
  You should have received a copy of the GN U Lesser General Public License
  along with RST.  If not, see <http://www.gnu.org/licenses/>.
    
-  
+   
   
 */ 
 

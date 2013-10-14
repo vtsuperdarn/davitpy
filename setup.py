@@ -1,6 +1,37 @@
-from setuptools import setup
-from distutils.core import Extension
+from numpy.distutils.core import setup, Extension
 import os
+
+readmes = []
+for x in os.listdir(os.getcwd()):
+    if os.path.isdir(x) and 'README.md' in os.listdir(x):
+        readmes.append(x+'/README.md')
+print readmes
+
+hwm = Extension('hwm',sources=['models/hwm/apexcord.f90','models/hwm/dwm07b.f90','models/hwm/hwm07e.f90','models/hwm/hwm07.pyf'])
+igrf = Extension("igrf",sources=["models/igrf/igrf11.f90",'models/igrf/igrf11.pyf'])
+iri = Extension('iri',sources=['models/iri/irisub.for', 'models/iri/irifun.for', 'models/iri/iriflip.for', \
+                    'models/iri/iritec.for', 'models/iri/igrf.for', 'models/iri/cira.for', 'models/iri/iridreg.for', \
+                    'models/iri/iri.pyf'])
+msis = Extension("msis",sources=["models/msis/nrlmsise00_sub.for",'models/msis/nrlmsis.pyf'])
+tsyg = Extension('tsyg',sources=['models/tsyganenko/T02.f', 'models/tsyganenko/T96.f', \
+                    'models/tsyganenko/geopack08.for','models/tsyganenko/geopack08.pyf'])
+
+parent=os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+
+raydarn = Extension('raydarn',sources=[parent+'/models/iri/irisub.for', parent+'/models/iri/irifun.for', parent+'/models/iri/iriflip.for', \
+                    parent+'/models/iri/iritec.for', parent+'/models/iri/igrf.for', parent+'/models/iri/cira.for', parent+'/models/iri/iridreg.for', \
+                    parent+'/models/iri/iri.pyf','models/raydarn/MPIutils.f90', 'models/raydarn/constants.f90', 'models/raydarn/raytrace_mpi.f90'])
+
+aacgm = Extension("aacgm",sources=["models/aacgm/aacgmlib.c","models/aacgm/aacgm.c","models/aacgm/altitude_to_cgm.c",
+                    "models/aacgm/cgm_to_altitude.c","models/aacgm/coeff.c","models/aacgm/convert_geo_coord.c","models/aacgm/math.c",
+                    "models/aacgm/rylm.c","models/aacgm/AstAlg_apparent_obliquity.c","models/aacgm/AstAlg_apparent_solar_longitude.c", 
+                    "models/aacgm/AstAlg_dday.c","models/aacgm/AstAlg_equation_of_time.c","models/aacgm/AstAlg_geometric_solar_longitude.c", 
+                    "models/aacgm/AstAlg_jde.c","models/aacgm/AstAlg_jde2calendar.c", "models/aacgm/AstAlg_lunar_ascending_node.c", 
+                    "models/aacgm/AstAlg_mean_lunar_longitude.c", "models/aacgm/AstAlg_mean_obliquity.c", "models/aacgm/AstAlg_mean_solar_anomaly.c", 
+                    "models/aacgm/AstAlg_mean_solar_longitude.c", "models/aacgm/AstAlg_nutation_corr.c", "models/aacgm/AstAlg_solar_declination.c", 
+                    "models/aacgm/AstAlg_solar_right_ascension.c","models/aacgm/mlt.c","models/aacgm/shval3.c","models/aacgm/dihf.c", 
+                    "models/aacgm/interpshc.c","models/aacgm/extrapshc.c","models/aacgm/fft.c","models/aacgm/nrfit.c", \
+                    "models/aacgm/magcmp.c", "models/aacgm/igrfcall.c", "models/aacgm/getshc.c", ],)
 
 sources = []
 
@@ -14,21 +45,7 @@ def get_files(dir):
 get_files(os.getcwd())
 ################################################################################
 
-
-dmap = Extension("dmapio",sources=["pydarn/rst/src/dmapio.c","pydarn/rst/src/rtime.c","pydarn/rst/src/dmap.c","pydarn/rst/src/convert.c"],
-                                    include_dirs = ["pydarn/rst/src"])
-
-aacgm = Extension("aacgmlib",sources=["pydarn/rst/src/aacgmlib.c","pydarn/rst/src/aacgm.c","pydarn/rst/src/altitude_to_cgm.c",
-                "pydarn/rst/src/cgm_to_altitude.c","pydarn/rst/src/coeff.c","pydarn/rst/src/convert_geo_coord.c","pydarn/rst/src/math.c",
-                "pydarn/rst/src/rylm.c","pydarn/rst/src/AstAlg_apparent_obliquity.c","pydarn/rst/src/AstAlg_apparent_solar_longitude.c", 
-                "pydarn/rst/src/AstAlg_dday.c","pydarn/rst/src/AstAlg_equation_of_time.c","pydarn/rst/src/AstAlg_geometric_solar_longitude.c", 
-                "pydarn/rst/src/AstAlg_jde.c","pydarn/rst/src/AstAlg_jde2calendar.c", "pydarn/rst/src/AstAlg_lunar_ascending_node.c", 
-                "pydarn/rst/src/AstAlg_mean_lunar_longitude.c", "pydarn/rst/src/AstAlg_mean_obliquity.c", "pydarn/rst/src/AstAlg_mean_solar_anomaly.c", 
-                "pydarn/rst/src/AstAlg_mean_solar_longitude.c", "pydarn/rst/src/AstAlg_nutation_corr.c", "pydarn/rst/src/AstAlg_solar_declination.c", 
-                "pydarn/rst/src/AstAlg_solar_right_ascension.c","pydarn/rst/src/mlt.c","pydarn/rst/src/shval3.c","pydarn/rst/src/dihf.c", 
-                "pydarn/rst/src/interpshc.c","pydarn/rst/src/extrapshc.c","pydarn/rst/src/fft.c","pydarn/rst/src/nrfit.c", \
-                "pydarn/rst/src/magcmp.c", "pydarn/rst/src/igrfcall.c", "pydarn/rst/src/getshc.c"],
-                include_dirs = ["pydarn/rst/src"])
+print [x.replace(os.getcwd()+'/','') for x in sources]
 
 setup(name='davitpy',
         version = "0.2",
@@ -36,10 +53,13 @@ setup(name='davitpy',
         author = "VT SuperDARN Lab and friends",
         author_email = "ajribeiro86@gmail.com",
         url = "https://github.com/vtsuperdarn/davitpy",
-        packages=[x.replace(os.getcwd()+'/','') for x in sources],
-        #install_requires=['ipython','numpy','scipy','matplotlib','tornado', \
-        #                'paramiko','pymongo','h5py','mechanize','basemap'],
-        ext_modules = [aacgm]
+        # packages=[x.replace(os.getcwd()+'/','') for x in sources],
+        ext_modules = [hwm,igrf,iri,msis,tsyg,aacgm],
+        data_files=[('readmes', readmes),
+                    ('iriFiles', ['models/iri/'+x for x in os.listdir('models/iri') if '.dat' in x] + 
+                    ['models/iri/'+x for x in os.listdir('models/iri') if '.asc' in x]),
+                    ('hwmFiles', ['models/hwm/'+x for x in os.listdir('models/hwm') if '.dat' in x]),
+                    ('raydarnFiles',['models/raydarn/Inputs_tpl.inp','models/raydarn/rtFort'])],
         )
 
 
