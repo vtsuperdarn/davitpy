@@ -1,4 +1,5 @@
-from numpy.distutils.core import setup, Extension
+from numpy.distutils.core import Extension
+from distutils.core import setup
 import os
 
 readmes = []
@@ -22,6 +23,9 @@ raydarn = Extension('raydarn',sources=[parent+'/models/iri/irisub.for', parent+'
                     parent+'/models/iri/iritec.for', parent+'/models/iri/igrf.for', parent+'/models/iri/cira.for', parent+'/models/iri/iridreg.for', \
                     parent+'/models/iri/iri.pyf','models/raydarn/MPIutils.f90', 'models/raydarn/constants.f90', 'models/raydarn/raytrace_mpi.f90'])
 
+
+dmap = Extension("dmapio",sources=["pydarn/rst/src/dmapio.c","pydarn/rst/src/rtime.c", 
+                    "pydarn/rst/src/dmap.c","pydarn/rst/src/convert.c"],include_dirs = ["src"])
 aacgm = Extension("aacgm",sources=["models/aacgm/aacgmlib.c","models/aacgm/aacgm.c","models/aacgm/altitude_to_cgm.c",
                     "models/aacgm/cgm_to_altitude.c","models/aacgm/coeff.c","models/aacgm/convert_geo_coord.c","models/aacgm/math.c",
                     "models/aacgm/rylm.c","models/aacgm/AstAlg_apparent_obliquity.c","models/aacgm/AstAlg_apparent_solar_longitude.c", 
@@ -54,19 +58,13 @@ setup(name='davitpy',
         author_email = "ajribeiro86@gmail.com",
         url = "https://github.com/vtsuperdarn/davitpy",
         # packages=[x.replace(os.getcwd()+'/','') for x in sources],
-        ext_modules = [hwm,igrf,iri,msis,tsyg,aacgm],
+        ext_modules = [dmap,aacgm,hwm,igrf,iri,msis,tsyg],
+        install_requires=['ipython','numpy','scipy','matplotlib','basemap','h5py', \
+                            'tornado','paramiko','pymongo','mechanize'],
         data_files=[('readmes', readmes),
                     ('iriFiles', ['models/iri/'+x for x in os.listdir('models/iri') if '.dat' in x] + 
                     ['models/iri/'+x for x in os.listdir('models/iri') if '.asc' in x]),
                     ('hwmFiles', ['models/hwm/'+x for x in os.listdir('models/hwm') if '.dat' in x]),
-                    ('raydarnFiles',['models/raydarn/Inputs_tpl.inp','models/raydarn/rtFort'])],
+                    ('raydarnFiles',['models/raydarn/Inputs_tpl.inp'])],
         )
-
-
-
-# sudo apt-get install libfreetype6-dev
-# sudo apt-get install libpng-dev
-# apt-get install -y mpich2
-# apt-get install -y gfortran
-
 
