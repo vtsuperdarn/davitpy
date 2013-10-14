@@ -7,9 +7,10 @@
 ver=2.7
 
 apt-get install -y python$ver
+apt-get install python-dev
 apt-get install -y python-pip
+apt-get install python-numpy
 pip install --upgrade ipython
-pip install jinja2
 apt-get install -y ipython-notebook
 apt-get install -y python-zmq
 apt-get install -y python-imaging

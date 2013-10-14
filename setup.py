@@ -60,7 +60,7 @@ setup(name='davitpy',
         # packages=[x.replace(os.getcwd()+'/','') for x in sources],
         ext_modules = [dmap,aacgm,hwm,igrf,iri,msis,tsyg],
         install_requires=['ipython','numpy','scipy','matplotlib','basemap','h5py', \
-                            'tornado','paramiko','pymongo','mechanize'],
+                            'tornado','paramiko','pymongo','mechanize','jinja2'],
         data_files=[('readmes', readmes),
                     ('iriFiles', ['models/iri/'+x for x in os.listdir('models/iri') if '.dat' in x] + 
                     ['models/iri/'+x for x in os.listdir('models/iri') if '.asc' in x]),
