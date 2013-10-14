@@ -1,9 +1,9 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
 
-python module tsygFort ! in 
-    interface  ! in :tsygFort
-        subroutine igrf_gsw_08(xgsw,ygsw,zgsw,hxgsw,hygsw,hzgsw) ! in :tsygFort:geopack08.for
+python module tsyg ! in 
+    interface  ! in :tsyg
+        subroutine igrf_gsw_08(xgsw,ygsw,zgsw,hxgsw,hygsw,hzgsw) ! in :tsyg:geopack08.for
             real :: xgsw
             real :: ygsw
             real :: zgsw
@@ -15,7 +15,7 @@ python module tsygFort ! in
             real dimension(105) :: rec
             common /geopack2/ g,h,rec
         end subroutine igrf_gsw_08
-        subroutine igrf_geo_08(r,theta,phi,br,btheta,bphi) ! in :tsygFort:geopack08.for
+        subroutine igrf_geo_08(r,theta,phi,br,btheta,bphi) ! in :tsyg:geopack08.for
             real :: r
             real :: theta
             real :: phi
@@ -27,7 +27,7 @@ python module tsygFort ! in
             real dimension(105) :: rec
             common /geopack2/ g,h,rec
         end subroutine igrf_geo_08
-        subroutine dip_08(xgsw,ygsw,zgsw,bxgsw,bygsw,bzgsw) ! in :tsygFort:geopack08.for
+        subroutine dip_08(xgsw,ygsw,zgsw,bxgsw,bygsw,bzgsw) ! in :tsyg:geopack08.for
             real :: xgsw
             real :: ygsw
             real :: zgsw
@@ -44,7 +44,7 @@ python module tsygFort ! in
             common /geopack1/ aa,sps,cps,bb
             common /geopack2/ g,h,rec
         end subroutine dip_08
-        subroutine sun_08(iyear,iday,ihour,min_bn,isec,gst,slong,srasn,sdec) ! in :tsygFort:geopack08.for
+        subroutine sun_08(iyear,iday,ihour,min_bn,isec,gst,slong,srasn,sdec) ! in :tsyg:geopack08.for
             integer :: iyear
             integer :: iday
             integer :: ihour
@@ -55,7 +55,7 @@ python module tsygFort ! in
             real :: srasn
             real :: sdec
         end subroutine sun_08
-        subroutine sphcar_08(r,theta,phi,x,y,z,j) ! in :tsygFort:geopack08.for
+        subroutine sphcar_08(r,theta,phi,x,y,z,j) ! in :tsyg:geopack08.for
             real intent(in,out) :: r
             real intent(in,out) :: theta
             real intent(in,out) :: phi
@@ -64,7 +64,7 @@ python module tsygFort ! in
             real intent(in,out) :: z
             integer intent(in) :: j
         end subroutine sphcar_08
-        subroutine bspcar_08(theta,phi,br,btheta,bphi,bx,by,bz) ! in :tsygFort:geopack08.for
+        subroutine bspcar_08(theta,phi,br,btheta,bphi,bx,by,bz) ! in :tsyg:geopack08.for
             real :: theta
             real :: phi
             real :: br
@@ -74,7 +74,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine bspcar_08
-        subroutine bcarsp_08(x,y,z,bx,by,bz,br,btheta,bphi) ! in :tsygFort:geopack08.for
+        subroutine bcarsp_08(x,y,z,bx,by,bz,br,btheta,bphi) ! in :tsyg:geopack08.for
             real :: x
             real :: y
             real :: z
@@ -85,7 +85,7 @@ python module tsygFort ! in
             real :: btheta
             real :: bphi
         end subroutine bcarsp_08
-        subroutine recalc_08(iyear,iday,ihour,min_bn,isec,vgsex,vgsey,vgsez) ! in :tsygFort:geopack08.for
+        subroutine recalc_08(iyear,iday,ihour,min_bn,isec,vgsex,vgsey,vgsez) ! in :tsyg:geopack08.for
             integer :: iyear
             integer :: iday
             integer :: ihour
@@ -134,7 +134,7 @@ python module tsygFort ! in
             common /geopack1/ st0,ct0,sl0,cl0,ctcl,stcl,ctsl,stsl,sfi,cfi,sps,cps,ds3,cgst,sgst,psi,a11,a21,a31,a12,a22,a32,a13,a23,a33,e11,e21,e31,e12,e22,e32,e13,e23,e33
             common /geopack2/ g,h,rec
         end subroutine recalc_08
-        subroutine gswgse_08(xgsw,ygsw,zgsw,xgse,ygse,zgse,j) ! in :tsygFort:geopack08.for
+        subroutine gswgse_08(xgsw,ygsw,zgsw,xgse,ygse,zgse,j) ! in :tsyg:geopack08.for
             real :: xgsw
             real :: ygsw
             real :: zgsw
@@ -154,7 +154,7 @@ python module tsygFort ! in
             real :: e33
             common /geopack1/ aaa,e11,e21,e31,e12,e22,e32,e13,e23,e33
         end subroutine gswgse_08
-        subroutine geomag_08(xgeo,ygeo,zgeo,xmag,ymag,zmag,j) ! in :tsygFort:geopack08.for
+        subroutine geomag_08(xgeo,ygeo,zgeo,xmag,ymag,zmag,j) ! in :tsyg:geopack08.for
             real :: xgeo
             real :: ygeo
             real :: zgeo
@@ -173,7 +173,7 @@ python module tsygFort ! in
             real dimension(26) :: ab
             common /geopack1/ st0,ct0,sl0,cl0,ctcl,stcl,ctsl,stsl,ab
         end subroutine geomag_08
-        subroutine geigeo_08(xgei,ygei,zgei,xgeo,ygeo,zgeo,j) ! in :tsygFort:geopack08.for
+        subroutine geigeo_08(xgei,ygei,zgei,xgeo,ygeo,zgeo,j) ! in :tsyg:geopack08.for
             real :: xgei
             real :: ygei
             real :: zgei
@@ -187,7 +187,7 @@ python module tsygFort ! in
             real dimension(19) :: b
             common /geopack1/ a,cgst,sgst,b
         end subroutine geigeo_08
-        subroutine magsm_08(xmag,ymag,zmag,xsm,ysm,zsm,j) ! in :tsygFort:geopack08.for
+        subroutine magsm_08(xmag,ymag,zmag,xsm,ysm,zsm,j) ! in :tsyg:geopack08.for
             real :: xmag
             real :: ymag
             real :: zmag
@@ -201,7 +201,7 @@ python module tsygFort ! in
             real dimension(24) :: b
             common /geopack1/ a,sfi,cfi,b
         end subroutine magsm_08
-        subroutine smgsw_08(xsm,ysm,zsm,xgsw,ygsw,zgsw,j) ! in :tsygFort:geopack08.for
+        subroutine smgsw_08(xsm,ysm,zsm,xgsw,ygsw,zgsw,j) ! in :tsyg:geopack08.for
             real :: xsm
             real :: ysm
             real :: zsm
@@ -215,7 +215,7 @@ python module tsygFort ! in
             real dimension(22) :: b
             common /geopack1/ a,sps,cps,b
         end subroutine smgsw_08
-        subroutine geogsw_08(xgeo,ygeo,zgeo,xgsw,ygsw,zgsw,j) ! in :tsygFort:geopack08.for
+        subroutine geogsw_08(xgeo,ygeo,zgeo,xgsw,ygsw,zgsw,j) ! in :tsyg:geopack08.for
             real intent(in,out) :: xgeo
             real intent(in,out) :: ygeo
             real intent(in,out) :: zgeo
@@ -236,14 +236,14 @@ python module tsygFort ! in
             real dimension(9) :: b
             common /geopack1/ aa,a11,a21,a31,a12,a22,a32,a13,a23,a33,b
         end subroutine geogsw_08
-        subroutine geodgeo_08(h,xmu,r,theta,j) ! in :tsygFort:geopack08.for
+        subroutine geodgeo_08(h,xmu,r,theta,j) ! in :tsyg:geopack08.for
             real intent(in,out) :: h
             real intent(in,out) :: xmu
             real intent(in,out) :: r
             real intent(in,out) :: theta
             integer intent(in) :: j
         end subroutine geodgeo_08
-        subroutine rhand_08(x,y,z,r1,r2,r3,iopt,parmod,exname,inname) ! in :tsygFort:geopack08.for
+        subroutine rhand_08(x,y,z,r1,r2,r3,iopt,parmod,exname,inname) ! in :tsyg:geopack08.for
             real :: x
             real :: y
             real :: z
@@ -261,7 +261,7 @@ python module tsygFort ! in
             real dimension(18) :: cc
             common /geopack1/ a,ds3,bb,psi,cc
         end subroutine rhand_08
-        subroutine step_08(x,y,z,ds,dsmax,errin,iopt,parmod,exname,inname) ! in :tsygFort:geopack08.for
+        subroutine step_08(x,y,z,ds,dsmax,errin,iopt,parmod,exname,inname) ! in :tsyg:geopack08.for
             real :: x
             real :: y
             real :: z
@@ -277,7 +277,7 @@ python module tsygFort ! in
             real dimension(21) :: b
             common /geopack1/ a,ds3,b
         end subroutine step_08
-        subroutine trace_08(xi,yi,zi,dir,dsmax,err,rlim,r0,iopt,parmod,exname,inname,xf,yf,zf,xx,yy,zz,l,lmax) ! in :tsygFort:geopack08.for
+        subroutine trace_08(xi,yi,zi,dir,dsmax,err,rlim,r0,iopt,parmod,exname,inname,xf,yf,zf,xx,yy,zz,l,lmax) ! in :tsyg:geopack08.for
             real intent(in) :: xi
             real intent(in) :: yi
             real intent(in) :: zi
@@ -303,7 +303,7 @@ python module tsygFort ! in
             real dimension(21) :: bb
             common /geopack1/ aa,dd,bb
         end subroutine trace_08
-        subroutine shuetal_mgnp_08(xn_pd,vel,bzimf,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id) ! in :tsygFort:geopack08.for
+        subroutine shuetal_mgnp_08(xn_pd,vel,bzimf,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id) ! in :tsyg:geopack08.for
             real :: xn_pd
             real :: vel
             real :: bzimf
@@ -316,7 +316,7 @@ python module tsygFort ! in
             real :: dist
             integer :: id
         end subroutine shuetal_mgnp_08
-        subroutine t96_mgnp_08(xn_pd,vel,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id) ! in :tsygFort:geopack08.for
+        subroutine t96_mgnp_08(xn_pd,vel,xgsw,ygsw,zgsw,xmgnp,ymgnp,zmgnp,dist,id) ! in :tsyg:geopack08.for
             real :: xn_pd
             real :: vel
             real :: xgsw
@@ -328,7 +328,7 @@ python module tsygFort ! in
             real :: dist
             integer :: id
         end subroutine t96_mgnp_08
-        subroutine t96_01(iopt,parmod,ps,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine t96_01(iopt,parmod,ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             integer :: iopt
             real dimension(10) :: parmod
             real :: ps
@@ -339,7 +339,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t96_01
-        subroutine dipshld(ps,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine dipshld(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: ps
             real*8 :: x
             real*8 :: y
@@ -348,7 +348,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine dipshld
-        subroutine cylharm(a,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine cylharm(a,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real dimension(12) :: a
             real :: x
             real :: y
@@ -357,7 +357,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine cylharm
-        subroutine cylhar1(a,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine cylhar1(a,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real dimension(12) :: a
             real :: x
             real :: y
@@ -366,20 +366,20 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine cylhar1
-        function bes(x,k) ! in :tsygFort:T96.f
+        function bes(x,k) ! in :tsyg:T96.f
             real*8 :: x
             integer :: k
             double precision :: bes
         end function bes
-        function bes0(x) ! in :tsygFort:T96.f
+        function bes0(x) ! in :tsyg:T96.f
             real*8 :: x
             double precision :: bes0
         end function bes0
-        function bes1(x) ! in :tsygFort:T96.f
+        function bes1(x) ! in :tsyg:T96.f
             real*8 :: x
             double precision :: bes1
         end function bes1
-        subroutine intercon(x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine intercon(x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real :: x
             real :: y
             real :: z
@@ -387,7 +387,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine intercon
-        subroutine tailrc96(sps,x,y,z,bxrc,byrc,bzrc,bxt2,byt2,bzt2,bxt3,byt3,bzt3) ! in :tsygFort:T96.f
+        subroutine tailrc96(sps,x,y,z,bxrc,byrc,bzrc,bxt2,byt2,bzt2,bxt3,byt3,bzt3) ! in :tsyg:T96.f
             real*8 :: sps
             real*8 :: x
             real*8 :: y
@@ -422,7 +422,7 @@ python module tsygFort ! in
             real*8 :: zsww
             common /warp/ cpss,spss,dpsrr,rps,warp,d,xs,zs,dxsx,dxsy,dxsz,dzsx,dzsy,dzsz,dzetas,ddzetadx,ddzetady,ddzetadz,zsww
         end subroutine tailrc96
-        subroutine ringcurr96(x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine ringcurr96(x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -445,7 +445,7 @@ python module tsygFort ! in
             real*8 :: zs
             common /warp/ cpss,spss,dpsrr,xnext,xs,zswarped,dxsx,dxsy,dxsz,dzsx,dzsywarped,dzsz,other,zs
         end subroutine ringcurr96
-        subroutine taildisk(x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine taildisk(x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -469,7 +469,7 @@ python module tsygFort ! in
             real*8 :: zsww
             common /warp/ cpss,spss,dpsrr,xnext,xs,zs,dxsx,dxsy,dxsz,other,dzetas,ddzetadx,ddzetady,ddzetadz,zsww
         end subroutine taildisk
-        subroutine tail87(x,z,bx,bz) ! in :tsygFort:T96.f
+        subroutine tail87(x,z,bx,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: z
             real*8 :: bx
@@ -481,7 +481,7 @@ python module tsygFort ! in
             real*8 dimension(13) :: other
             common /warp/ first,rps,warp,d,other
         end subroutine tail87
-        subroutine shlcar3x3(a,x,y,z,sps,hx,hy,hz) ! in :tsygFort:T96.f
+        subroutine shlcar3x3(a,x,y,z,sps,hx,hy,hz) ! in :tsyg:T96.f
             real dimension(48) :: a
             real :: x
             real :: y
@@ -491,7 +491,7 @@ python module tsygFort ! in
             real :: hy
             real :: hz
         end subroutine shlcar3x3
-        subroutine birk1tot_02(ps,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine birk1tot_02(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: ps
             real*8 :: x
             real*8 :: y
@@ -520,7 +520,7 @@ python module tsygFort ! in
             common /coord11/ xx1,yy1
             common /coord21/ xx2,yy2,zz2
         end subroutine birk1tot_02
-        subroutine diploop1(xi,d) ! in :tsygFort:T96.f
+        subroutine diploop1(xi,d) ! in :tsyg:T96.f
             real dimension(4) :: xi
             real dimension(3,26) :: d
             real :: rh
@@ -536,7 +536,7 @@ python module tsygFort ! in
             common /loopdip1/ tilt,xcentre,radius,dipx,dipy
             common /coord11/ xx,yy
         end subroutine diploop1
-        subroutine circle(x,y,z,rl,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine circle(x,y,z,rl,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -545,7 +545,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine circle
-        subroutine crosslp(x,y,z,bx,by,bz,xc,rl,al) ! in :tsygFort:T96.f
+        subroutine crosslp(x,y,z,bx,by,bz,xc,rl,al) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -556,7 +556,7 @@ python module tsygFort ! in
             real*8 :: rl
             real*8 :: al
         end subroutine crosslp
-        subroutine dipxyz(x,y,z,bxx,byx,bzx,bxy,byy,bzy,bxz,byz,bzz) ! in :tsygFort:T96.f
+        subroutine dipxyz(x,y,z,bxx,byx,bzx,bxy,byy,bzy,bxz,byz,bzz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -570,7 +570,7 @@ python module tsygFort ! in
             real*8 :: byz
             real*8 :: bzz
         end subroutine dipxyz
-        subroutine condip1(xi,d) ! in :tsygFort:T96.f
+        subroutine condip1(xi,d) ! in :tsyg:T96.f
             real dimension(4) :: xi
             real dimension(3,79) :: d
             real :: dx
@@ -582,7 +582,7 @@ python module tsygFort ! in
             common /dx1/ dx,scalein,scaleout
             common /coord21/ xx,yy,zz
         end subroutine condip1
-        subroutine birk1shld(ps,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine birk1shld(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real :: ps
             real :: x
             real :: y
@@ -591,7 +591,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine birk1shld
-        subroutine birk2tot_02(ps,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine birk2tot_02(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: ps
             real*8 :: x
             real*8 :: y
@@ -600,7 +600,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine birk2tot_02
-        subroutine birk2shl(x,y,z,ps,hx,hy,hz) ! in :tsygFort:T96.f
+        subroutine birk2shl(x,y,z,ps,hx,hy,hz) ! in :tsyg:T96.f
             real :: x
             real :: y
             real :: z
@@ -609,7 +609,7 @@ python module tsygFort ! in
             real :: hy
             real :: hz
         end subroutine birk2shl
-        subroutine r2_birk(x,y,z,ps,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine r2_birk(x,y,z,ps,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -618,7 +618,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine r2_birk
-        subroutine r2inner(x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine r2inner(x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -626,7 +626,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine r2inner
-        subroutine bconic(x,y,z,cbx,cby,cbz,nmax) ! in :tsygFort:T96.f
+        subroutine bconic(x,y,z,cbx,cby,cbz,nmax) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -635,7 +635,7 @@ python module tsygFort ! in
             real*8 dimension(nmax),depend(nmax) :: cbz
             integer, optional,check(len(cbx)>=nmax),depend(cbx) :: nmax=len(cbx)
         end subroutine bconic
-        subroutine dipdistr(x,y,z,bx,by,bz,mode) ! in :tsygFort:T96.f
+        subroutine dipdistr(x,y,z,bx,by,bz,mode) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -644,7 +644,7 @@ python module tsygFort ! in
             real*8 :: bz
             integer :: mode
         end subroutine dipdistr
-        subroutine r2outer(x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine r2outer(x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -652,7 +652,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine r2outer
-        subroutine loops4(x,y,z,bx,by,bz,xc,yc,zc,r,theta,phi) ! in :tsygFort:T96.f
+        subroutine loops4(x,y,z,bx,by,bz,xc,yc,zc,r,theta,phi) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -666,7 +666,7 @@ python module tsygFort ! in
             real*8 :: theta
             real*8 :: phi
         end subroutine loops4
-        subroutine r2sheet(x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine r2sheet(x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
@@ -674,29 +674,29 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine r2sheet
-        function xksi(x,y,z) ! in :tsygFort:T96.f
+        function xksi(x,y,z) ! in :tsyg:T96.f
             real*8 :: x
             real*8 :: y
             real*8 :: z
             double precision :: xksi
         end function xksi
-        function fexp(s,a) ! in :tsygFort:T96.f
+        function fexp(s,a) ! in :tsyg:T96.f
             real*8 :: s
             real*8 :: a
             real*8 :: fexp
         end function fexp
-        function fexp1(s,a) ! in :tsygFort:T96.f
+        function fexp1(s,a) ! in :tsyg:T96.f
             real*8 :: s
             real*8 :: a
             real*8 :: fexp1
         end function fexp1
-        function tksi(xksi,xks0,dxksi) ! in :tsygFort:T96.f
+        function tksi(xksi,xks0,dxksi) ! in :tsyg:T96.f
             real*8 :: xksi
             real*8 :: xks0
             real*8 :: dxksi
             double precision :: tksi
         end function tksi
-        subroutine dipole(ps,x,y,z,bx,by,bz) ! in :tsygFort:T96.f
+        subroutine dipole(ps,x,y,z,bx,by,bz) ! in :tsyg:T96.f
             real :: ps
             real :: x
             real :: y
@@ -705,7 +705,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine dipole
-        subroutine t01_01(iopt,parmod,ps,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t01_01(iopt,parmod,ps,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             integer :: iopt
             real dimension(10) :: parmod
             real :: ps
@@ -716,7 +716,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t01_01
-        subroutine t02_extall(iopgen,iopt,iopb,iopr,a,ntot,pdyn,dst,byimf,bzimf,vbimf1,vbimf2,ps,x,y,z,bxcf,bycf,bzcf,bxt1,byt1,bzt1,bxt2,byt2,bzt2,bxsrc,bysrc,bzsrc,bxprc,byprc,bzprc,bxr11,byr11,bzr11,bxr12,byr12,bzr12,bxr21,byr21,bzr21,bxr22,byr22,bzr22,hximf,hyimf,hzimf,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_extall(iopgen,iopt,iopb,iopr,a,ntot,pdyn,dst,byimf,bzimf,vbimf1,vbimf2,ps,x,y,z,bxcf,bycf,bzcf,bxt1,byt1,bzt1,bxt2,byt2,bzt2,bxsrc,bysrc,bzsrc,bxprc,byprc,bzprc,bxr11,byr11,bzr11,bxr12,byr12,bzr12,bxr21,byr21,bzr21,bxr22,byr22,bzr22,hximf,hyimf,hzimf,bx,by,bz) ! in :tsyg:T02.f
             integer :: iopgen
             integer :: iopt
             integer :: iopb
@@ -783,7 +783,7 @@ python module tsygFort ! in
             common /rcpar/ sc_sy,sc_as,phi
             common /g/ g
         end subroutine t02_extall
-        subroutine t02_shlcar3x3(x,y,z,ps,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_shlcar3x3(x,y,z,ps,bx,by,bz) ! in :tsyg:T02.f
             real :: x
             real :: y
             real :: z
@@ -792,7 +792,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t02_shlcar3x3
-        subroutine t02_deformed(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsygFort:T02.f
+        subroutine t02_deformed(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsyg:T02.f
             integer :: iopt
             real*8 :: ps
             real*8 :: x
@@ -807,7 +807,7 @@ python module tsygFort ! in
             real*8 :: rh0
             common /rh0/ rh0
         end subroutine t02_deformed
-        subroutine t02_warped(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsygFort:T02.f
+        subroutine t02_warped(iopt,ps,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsyg:T02.f
             integer :: iopt
             real*8 :: ps
             real*8 :: x
@@ -822,7 +822,7 @@ python module tsygFort ! in
             real*8 :: g
             common /g/ g
         end subroutine t02_warped
-        subroutine t02_unwarped(iopt,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsygFort:T02.f
+        subroutine t02_unwarped(iopt,x,y,z,bx1,by1,bz1,bx2,by2,bz2) ! in :tsyg:T02.f
             integer :: iopt
             real*8 :: x
             real*8 :: y
@@ -839,7 +839,7 @@ python module tsygFort ! in
             real*8 :: deltady
             common /tail/ dxshift1,dxshift2,d0,deltady
         end subroutine t02_unwarped
-        subroutine t02_taildisk(d0,deltadx,deltady,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_taildisk(d0,deltadx,deltady,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real*8 :: d0
             real*8 :: deltadx
             real*8 :: deltady
@@ -850,7 +850,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine t02_taildisk
-        subroutine t02_shlcar5x5(a,x,y,z,dshift,hx,hy,hz) ! in :tsygFort:T02.f
+        subroutine t02_shlcar5x5(a,x,y,z,dshift,hx,hy,hz) ! in :tsyg:T02.f
             real dimension(60) :: a
             real :: x
             real :: y
@@ -860,7 +860,7 @@ python module tsygFort ! in
             real :: hy
             real :: hz
         end subroutine t02_shlcar5x5
-        subroutine t02_birk_tot(iopb,ps,x,y,z,bx11,by11,bz11,bx12,by12,e_bz__________________________bx21_er,by21,bz21,bx22,by22,bz22) ! in :tsygFort:T02.f
+        subroutine t02_birk_tot(iopb,ps,x,y,z,bx11,by11,bz11,bx12,by12,e_bz__________________________bx21_er,by21,bz21,bx22,by22,bz22) ! in :tsyg:T02.f
             integer :: iopb
             real*8 :: ps
             real*8 :: x
@@ -888,7 +888,7 @@ python module tsygFort ! in
             common /birkpar/ xkappa1,xkappa2   !  input parameters,specified
             common /dphi_b_rho0/ dphi,b,rho_0,xkappa ! parameters,controlling
         end subroutine t02_birk_tot
-        subroutine t02_birk_1n2(numb,mode,ps,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_birk_1n2(numb,mode,ps,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             integer :: numb
             integer :: mode
             real*8 :: ps
@@ -908,7 +908,7 @@ python module tsygFort ! in
             common /modenum/ m
             common /dtheta/ dtheta
         end subroutine t02_birk_1n2
-        subroutine t02_twocones(a,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_twocones(a,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real*8 dimension(31) :: a
             real*8 :: x
             real*8 :: y
@@ -917,7 +917,7 @@ python module tsygFort ! in
             real*8 :: by
             real*8 :: bz
         end subroutine t02_twocones
-        subroutine t02_one_cone(a,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_one_cone(a,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real*8 dimension(31) :: a
             real*8 :: x
             real*8 :: y
@@ -930,19 +930,19 @@ python module tsygFort ! in
             common /modenum/ m
             common /dtheta/ dtheta
         end subroutine t02_one_cone
-        function r_s(a,r,theta) ! in :tsygFort:T02.f
+        function r_s(a,r,theta) ! in :tsyg:T02.f
             real*8 dimension(31) :: a
             real*8 :: r
             real*8 :: theta
             double precision :: r_s
         end function r_s
-        function theta_s(a,r,theta) ! in :tsygFort:T02.f
+        function theta_s(a,r,theta) ! in :tsyg:T02.f
             real*8 dimension(31) :: a
             real*8 :: r
             real*8 :: theta
             double precision :: theta_s
         end function theta_s
-        subroutine t02_fialcos(r,theta,phi,btheta,bphi,n,theta0,dt) ! in :tsygFort:T02.f
+        subroutine t02_fialcos(r,theta,phi,btheta,bphi,n,theta0,dt) ! in :tsyg:T02.f
             real*8 :: r
             real*8 :: theta
             real*8 :: phi
@@ -952,7 +952,7 @@ python module tsygFort ! in
             real*8 :: theta0
             real*8 :: dt
         end subroutine t02_fialcos
-        subroutine t02_birk_shl(a,ps,x_sc,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_birk_shl(a,ps,x_sc,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real dimension(86) :: a
             real :: ps
             real :: x_sc
@@ -963,7 +963,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t02_birk_shl
-        subroutine t02_full_rc(iopr,ps,x,y,z,bxsrc,bysrc,bzsrc,bxprc,e_bypr__bzprc_er) ! in :tsygFort:T02.f
+        subroutine t02_full_rc(iopr,ps,x,y,z,bxsrc,bysrc,bzsrc,bxprc,e_bypr__bzprc_er) ! in :tsyg:T02.f
             integer :: iopr
             real*8 :: ps
             real*8 :: x
@@ -979,7 +979,7 @@ python module tsygFort ! in
             real*8 :: phi
             common /rcpar/ sc_sy,sc_pr,phi
         end subroutine t02_full_rc
-        subroutine t02_src_prc(iopr,sc_sy,sc_pr,phi,ps,x,y,z,bxsrc,e_bysrc____bzsrc_er,bxprc,byprc,bzprc) ! in :tsygFort:T02.f
+        subroutine t02_src_prc(iopr,sc_sy,sc_pr,phi,ps,x,y,z,bxsrc,e_bysrc____bzsrc_er,bxprc,byprc,bzprc) ! in :tsyg:T02.f
             integer :: iopr
             real*8 :: sc_sy
             real*8 :: sc_pr
@@ -994,7 +994,7 @@ python module tsygFort ! in
             real*8 :: byprc
             real*8 :: bzprc
         end subroutine t02_src_prc
-        subroutine t02_rc_symm(x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_rc_symm(x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real :: x
             real :: y
             real :: z
@@ -1002,13 +1002,13 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t02_rc_symm
-        function ap(r,sint,cost) ! in :tsygFort:T02.f
+        function ap(r,sint,cost) ! in :tsyg:T02.f
             real :: r
             real :: sint
             real :: cost
             double precision :: ap
         end function ap
-        subroutine t02_prc_symm(x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_prc_symm(x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real :: x
             real :: y
             real :: z
@@ -1016,13 +1016,13 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t02_prc_symm
-        function apprc(r,sint,cost) ! in :tsygFort:T02.f
+        function apprc(r,sint,cost) ! in :tsyg:T02.f
             real :: r
             real :: sint
             real :: cost
             double precision :: apprc
         end function apprc
-        subroutine t02_prc_quad(x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_prc_quad(x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real :: x
             real :: y
             real :: z
@@ -1030,19 +1030,19 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t02_prc_quad
-        function br_prc_q(r,sint,cost) ! in :tsygFort:T02.f
+        function br_prc_q(r,sint,cost) ! in :tsyg:T02.f
             real :: r
             real :: sint
             real :: cost
             double precision :: br_prc_q
         end function br_prc_q
-        function bt_prc_q(r,sint,cost) ! in :tsygFort:T02.f
+        function bt_prc_q(r,sint,cost) ! in :tsyg:T02.f
             real :: r
             real :: sint
             real :: cost
             double precision :: bt_prc_q
         end function bt_prc_q
-        subroutine t02_ffs(a,a0,da,f,fa,fs) ! in :tsygFort:T02.f
+        subroutine t02_ffs(a,a0,da,f,fa,fs) ! in :tsyg:T02.f
             real :: a
             real :: a0
             real :: da
@@ -1050,7 +1050,7 @@ python module tsygFort ! in
             real :: fa
             real :: fs
         end subroutine t02_ffs
-        subroutine t02_rc_shield(a,ps,x_sc,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_rc_shield(a,ps,x_sc,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real dimension(86) :: a
             real :: ps
             real :: x_sc
@@ -1061,7 +1061,7 @@ python module tsygFort ! in
             real :: by
             real :: bz
         end subroutine t02_rc_shield
-        subroutine t02_dipole(ps,x,y,z,bx,by,bz) ! in :tsygFort:T02.f
+        subroutine t02_dipole(ps,x,y,z,bx,by,bz) ! in :tsyg:T02.f
             real*8 :: ps
             real*8 :: x
             real*8 :: y
@@ -1071,7 +1071,7 @@ python module tsygFort ! in
             real*8 :: bz
         end subroutine t02_dipole
     end interface 
-end python module tsygFort
+end python module tsyg
 
 ! This file was auto-generated with f2py (version:2).
 ! See http://cens.ioc.ee/projects/f2py2e/

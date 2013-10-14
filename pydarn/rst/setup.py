@@ -17,7 +17,6 @@
 from distutils.core import setup, Extension
 import os
 
-rst = '/rst'
 
 dmap = Extension("dmapio",sources=["src/dmapio.c","src/rtime.c","src/dmap.c","src/convert.c"],include_dirs = ["src"])
 

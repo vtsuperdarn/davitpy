@@ -1,9 +1,9 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
 
-python module msisFort ! in 
-    interface  ! in :msisFort
-        subroutine gtd7(iyd,sec,alt,glat,glong,stl,f107a,f107,ap,mass,d,t) ! in :msisFort:nrlmsise00_sub.for
+python module msis ! in 
+    interface  ! in :msis
+        subroutine gtd7(iyd,sec,alt,glat,glong,stl,f107a,f107,ap,mass,d,t) ! in :msis:nrlmsise00_sub.for
             integer intent(in) :: iyd
             real intent(in) :: sec
             real intent(in) :: alt
