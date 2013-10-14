@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <Python.h>
 #include <datetime.h>
-#include <zlib.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -29,8 +28,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include "rtypes.h"
-#include "rtime.h"
 #include "rconvert.h"
+#include "rtime.h"
 #include "dmap.h"
 #include "structmember.h"
 #include "rprm.h"

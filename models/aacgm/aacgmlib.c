@@ -1,6 +1,5 @@
 #include <Python.h>
 #include <datetime.h>
-#include <zlib.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -11,10 +10,7 @@
 #include "rtime.h"
 #include "aacgm.h"
 #include "mlt.h"
-// #include "invmag.h"
 #include "AstAlg.h"
-#include "radar.h"
-#include "rpos.h"
 
 static PyObject *
 aacgm_wrap(PyObject *self, PyObject *args)
@@ -55,9 +51,9 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 		/* should raise an error here. */
 		if (nElem < 0)	return NULL; /* Not a list */
 		
-		PyObject *latOut = PyList_New(nElem);
-		PyObject *lonOut = PyList_New(nElem);
-		PyObject *heightOut = PyList_New(nElem);
+		PyObject *latOut = PyList_New(0);
+		PyObject *lonOut = PyList_New(0);
+		PyObject *heightOut = PyList_New(0);
 
 		for (i=0; i<nElem; i++) {
 			inlat = PyFloat_AsDouble( PyList_GetItem(latList, i) );
@@ -66,9 +62,9 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 			height = PyFloat_AsDouble( PyList_GetItem(heightList, i) );
 			AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 
-			PyList_SetItem(latOut, i, PyFloat_FromDouble(outLat)); 
-			PyList_SetItem(lonOut, i, PyFloat_FromDouble(outLon));
-			PyList_SetItem(heightOut, i, PyFloat_FromDouble(r)); 
+			PyList_Append(latOut, PyFloat_FromDouble(outLat)); 
+			PyList_Append(lonOut, PyFloat_FromDouble(outLon));
+			PyList_Append(heightOut, PyFloat_FromDouble(r)); 
 		}
 		
 		// PyObject *outList = PyList_New(0);
@@ -77,7 +73,7 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 		// PyList_Append(outList,PyFloat_FromDouble(outLon));
 		// PyList_Append(outList,PyFloat_FromDouble(height)); 
 		 
-		return Py_BuildValue("NNN", latOut, lonOut, heightOut);
+		return Py_BuildValue("OOO", latOut, lonOut, heightOut);
 	}
 	
 }

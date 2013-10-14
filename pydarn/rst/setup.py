@@ -43,12 +43,12 @@ aacgm = Extension("aacgmlib",sources=["src/aacgmlib.c","src/aacgm.c","src/altitu
 #                    #                   ],
 #        )
 
-setup (name = "dmapio",
+setup (name = "rst",
        version = "1.0",
        description = "lib to read dmap files",
        author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
        author_email = "ribeiro@vt.edu",
-       ext_modules = [aacgm]
+       ext_modules = [aacgm,dmap]
        )
        
        
