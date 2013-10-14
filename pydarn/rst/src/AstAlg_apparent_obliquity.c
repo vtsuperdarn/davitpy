@@ -69,8 +69,7 @@ double AstAlg_apparent_obliquity(double jd) {
     if (jd == last_jd) return last_eps;
 
     last_jd = jd;
-    last_eps = AstAlg_mean_obliquity(jd) + 
-	0.00256 * cos(AstAlg_DTOR * AstAlg_lunar_ascending_node(jd));
+    last_eps = AstAlg_mean_obliquity(jd) + 0.00256 * cos(AstAlg_DTOR * AstAlg_lunar_ascending_node(jd));
 
     return last_eps;
 }

@@ -18,17 +18,17 @@ get_files(os.getcwd())
 dmap = Extension("dmapio",sources=["pydarn/rst/src/dmapio.c","pydarn/rst/src/rtime.c","pydarn/rst/src/dmap.c","pydarn/rst/src/convert.c"],
                                     include_dirs = ["pydarn/rst/src"])
 
-aacgm = Extension("aacgmlib",sources=["models/aacgm/aacgmlib.c","models/aacgm/aacgm.c","models/aacgm/altitude_to_cgm.c",
-                "models/aacgm/cgm_to_altitude.c","models/aacgm/coeff.c","models/aacgm/convert_geo_coord.c","models/aacgm/math.c",
-                "models/aacgm/rylm.c","models/aacgm/AstAlg_apparent_obliquity.c","models/aacgm/AstAlg_apparent_solar_longitude.c", 
-                "models/aacgm/AstAlg_dday.c","models/aacgm/AstAlg_equation_of_time.c","models/aacgm/AstAlg_geometric_solar_longitude.c", 
-                "models/aacgm/AstAlg_jde.c","models/aacgm/AstAlg_jde2calendar.c", "models/aacgm/AstAlg_lunar_ascending_node.c", 
-                "models/aacgm/AstAlg_mean_lunar_longitude.c", "models/aacgm/AstAlg_mean_obliquity.c", "models/aacgm/AstAlg_mean_solar_anomaly.c", 
-                "models/aacgm/AstAlg_mean_solar_longitude.c", "models/aacgm/AstAlg_nutation_corr.c", "models/aacgm/AstAlg_solar_declination.c", 
-                "models/aacgm/AstAlg_solar_right_ascension.c","models/aacgm/mlt.c","models/aacgm/shval3.c","models/aacgm/dihf.c", 
-                "models/aacgm/interpshc.c","models/aacgm/extrapshc.c","models/aacgm/fft.c","models/aacgm/nrfit.c", \
-                "models/aacgm/magcmp.c", "models/aacgm/igrfcall.c", "models/aacgm/getshc.c"],
-                include_dirs = ["pydarn/rst/src","models/aacgm"])
+aacgm = Extension("aacgmlib",sources=["pydarn/rst/src/aacgmlib.c","pydarn/rst/src/aacgm.c","pydarn/rst/src/altitude_to_cgm.c",
+                "pydarn/rst/src/cgm_to_altitude.c","pydarn/rst/src/coeff.c","pydarn/rst/src/convert_geo_coord.c","pydarn/rst/src/math.c",
+                "pydarn/rst/src/rylm.c","pydarn/rst/src/AstAlg_apparent_obliquity.c","pydarn/rst/src/AstAlg_apparent_solar_longitude.c", 
+                "pydarn/rst/src/AstAlg_dday.c","pydarn/rst/src/AstAlg_equation_of_time.c","pydarn/rst/src/AstAlg_geometric_solar_longitude.c", 
+                "pydarn/rst/src/AstAlg_jde.c","pydarn/rst/src/AstAlg_jde2calendar.c", "pydarn/rst/src/AstAlg_lunar_ascending_node.c", 
+                "pydarn/rst/src/AstAlg_mean_lunar_longitude.c", "pydarn/rst/src/AstAlg_mean_obliquity.c", "pydarn/rst/src/AstAlg_mean_solar_anomaly.c", 
+                "pydarn/rst/src/AstAlg_mean_solar_longitude.c", "pydarn/rst/src/AstAlg_nutation_corr.c", "pydarn/rst/src/AstAlg_solar_declination.c", 
+                "pydarn/rst/src/AstAlg_solar_right_ascension.c","pydarn/rst/src/mlt.c","pydarn/rst/src/shval3.c","pydarn/rst/src/dihf.c", 
+                "pydarn/rst/src/interpshc.c","pydarn/rst/src/extrapshc.c","pydarn/rst/src/fft.c","pydarn/rst/src/nrfit.c", \
+                "pydarn/rst/src/magcmp.c", "pydarn/rst/src/igrfcall.c", "pydarn/rst/src/getshc.c"],
+                include_dirs = ["pydarn/rst/src"])
 
 setup(name='davitpy',
         version = "0.2",
