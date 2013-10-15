@@ -1,6 +1,9 @@
+import os
+
+os.environ['DISTUTILS_DEBUG'] = "1"
+
 from setuptools import setup, Extension
 from setuptools.command import install as _install
-import os
 
 
 # hwmfiles = ['models/hwm/makefile','models/hwm/README.md','models/hwm/apexcord.f90', \
@@ -30,20 +33,23 @@ dmap = Extension("dmapio",sources=['pydarn/rst/src/'+ x for x in os.listdir('pyd
 aacgm = Extension("aacgm",sources=['models/aacgm/'+ x for x in os.listdir('models/aacgm') if '.c' in x and 'c~' not in x])
 
 sources = []
-print ['pydarn/rst/src/'+ x for x in os.listdir('pydarn/rst/src') if '.h' in x]
-print os.listdir('install')
+
+scripts = ['install/'+ x for x in os.listdir('install') if 'readme' not in x]
+print scripts
+
 ################################################################################
 # get a list of all source files
+sources = []
 def get_files(dir):
         for f in os.listdir(dir):
                 if os.path.isdir(dir+'/'+f) and '__init__.py' in os.listdir(dir+'/'+f):
                         sources.append(dir+'/'+f)
                         get_files(dir+'/'+f)
 get_files(os.getcwd())
-################################################################################
-
 sources = [x.replace(os.getcwd()+'/','').replace('/','.') for x in sources]
 print sources
+################################################################################
+
 
 setup(name='davitpy',
         version = "0.2",
@@ -53,7 +59,7 @@ setup(name='davitpy',
         url = "https://github.com/vtsuperdarn/davitpy",
         packages = sources,
         zip_safe = False,
-        ext_modules = [dmap,aacgm],
+        #ext_modules = [dmap,aacgm],
         install_requires=['ipython','numpy','scipy','matplotlib','basemap','h5py', \
                             'tornado','paramiko','pymongo','mechanize','jinja2'],
         data_files=[#('models/iri', irifiles),
@@ -62,7 +68,7 @@ setup(name='davitpy',
                     # ('models/igrf', igrffiles),
                     # ('models/tsyganenko', tsygfiles),
                     # ('models/raydarn',raydarnfiles)
-                    ('install','readme'),],
-        scripts = ['install/'+ x for x in os.listdir('install')]
+                    ('install',['install/readme']),],
+        scripts = scripts
         )
 
