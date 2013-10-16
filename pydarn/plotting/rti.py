@@ -218,10 +218,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       continue
 
     #get/create a figure
-    if show:
-      rtiFig = plot.figure(figsize=(11,8.5))
-    else:
-      rtiFig = Figure(figsize=(14,14))
+    rtiFig = plot.figure(figsize=(11,8.5))
   
     #give the plot a title
     rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
@@ -318,12 +315,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   
     #handle the outputs
     if png == True:
-      if not show:
-        canvas = FigureCanvasAgg(rtiFig)
       rtiFig.savefig(sTime.strftime("%Y%m%d")+'_'+str(tbands[fplot][0])+'_'+str(tbands[fplot][1])+'.'+rad+'.png',dpi=dpi)
     if pdf:
-      if not show:
-        canvas = FigureCanvasAgg(rtiFig)
       rtiFig.savefig(sTime.strftime("%Y%m%d")+'_'+str(tbands[fplot][0])+'_'+str(tbands[fplot][1])+'.'+rad+'.pdf')
     if show:
       rtiFig.show()
