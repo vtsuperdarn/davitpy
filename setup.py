@@ -59,7 +59,7 @@ setup(name='davitpy',
         url = "https://github.com/vtsuperdarn/davitpy",
         packages = sources,
         zip_safe = False,
-        #ext_modules = [dmap,aacgm],
+        ext_modules = [dmap,aacgm],
         install_requires=['ipython','numpy','scipy','matplotlib','basemap','h5py', \
                             'tornado','paramiko','pymongo','mechanize','jinja2'],
         data_files=[#('models/iri', irifiles),
@@ -68,7 +68,8 @@ setup(name='davitpy',
                     # ('models/igrf', igrffiles),
                     # ('models/tsyganenko', tsygfiles),
                     # ('models/raydarn',raydarnfiles)
-                    ('install',['install/readme']),],
+                    ('install',['install/readme']),
+                    'profile.bash','profile.mac'],
         scripts = scripts
         )
 
