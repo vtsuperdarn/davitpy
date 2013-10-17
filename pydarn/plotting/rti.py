@@ -47,7 +47,7 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None, \
-              custType='fitex', tFreqBands=[], myFile=None,figure=None):
+              custType='fitex', tFreqBands=[], myFile=None,figure=None,xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -75,6 +75,10 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
     * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
     * **[figure]** (matplotlib.figure) figure object to plot on.  If None, a figure object will be created for you.
+    * **[xtick_size]**: (int) fontsize of xtick labels
+    * **[ytick_size]**: (int) fontsize of ytick labels
+    * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
+    * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -249,7 +253,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       
       #draw the axis
       ax = drawAxes(rtiFig,times[fplot],rad,cpid[fplot],bmnum,nrang[fplot],frang[fplot],rsep[fplot],p==len(params)-1,yrng=yrng,coords=coords,\
-                    pos=pos)
+                    pos=pos,xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,axvlines=axvlines)
   
       
       if(pArr == []): continue
@@ -338,7 +342,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   if retfig:
     return rtiFig
   
-def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72]):
+def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
   """draws empty axes for an rti plot
 
   **Args**:
@@ -354,6 +358,10 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
     * **[yrng]**: range of y axis, -1=autoscale (default)
     * **[coords]**: y axis coordinate system, acceptable values are 'geo', 'mag', 'gate', 'rng'
     * **[pos]**: position of the plot
+    * **[xtick_size]**: fontsize of xtick labels
+    * **[ytick_size]**: fontsize of ytick labels
+    * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
+    * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
   **Returns**:
     * **ax**: an axes object
     
@@ -412,14 +420,21 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
     for tick in ax.xaxis.get_major_ticks():
       tick.label.set_fontsize(0) 
   else:
+    if xticks is not None:
+      ax.xaxis.set_ticks(xticks)
+
+    if axvlines is not None:
+      for line in axvlines:
+        ax.axvline(line,color='0.25',ls='--')
+
     for tick in ax.xaxis.get_major_ticks():
-      tick.label.set_fontsize(9) 
+      tick.label.set_fontsize(xtick_size) 
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
     ax.xaxis.set_label_text('UT')
     
   #set ytick size
   for tick in ax.yaxis.get_major_ticks():
-    tick.label.set_fontsize(9) 
+    tick.label.set_fontsize(ytick_size) 
   #format y axis depending on coords
   if(coords == 'gate'): 
     ax.yaxis.set_label_text('Range gate',size=10)
