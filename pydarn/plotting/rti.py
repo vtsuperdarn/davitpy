@@ -47,7 +47,7 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None, \
-              custType='fitex', tFreqBands=[], myFile=None):
+              custType='fitex', tFreqBands=[], myFile=None,figure=None):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -74,6 +74,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
     * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
     * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
+    * **[figure]** (matplotlib.figure) figure object to plot on.  If None, a figure object will be created for you.
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -218,10 +219,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       continue
 
     #get/create a figure
-    if show:
-      rtiFig = plot.figure(figsize=(11,8.5))
+    if figure == None:
+        if show:
+          rtiFig = plot.figure(figsize=(11,8.5))
+        else:
+          rtiFig = Figure(figsize=(14,14))
     else:
-      rtiFig = Figure(figsize=(14,14))
+        rtiFig = figure
   
     #give the plot a title
     rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
