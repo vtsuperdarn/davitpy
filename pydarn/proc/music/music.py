@@ -1520,8 +1520,10 @@ def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
     kx_inx  = find_nearest_inx(currentData.kxVec,kx)
     ky_inx  = find_nearest_inx(currentData.kyVec,ky)
 
-    maxpos  = (kx_inx,ky_inx)
-    value   = data[kx_inx,ky_inx]
+    maxpos      = (kx_inx,ky_inx)
+    value       = data[kx_inx,ky_inx]
+
+    true_value  = currentData.karr[kx_inx,ky_inx] #Get the unscaled kArr value.
 
     if frequency == None:
         freq    = currentData.dominantFreq
@@ -1533,6 +1535,7 @@ def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
     info['area']        = -1
     info['order']       = -1
     info['max']         = value
+    info['true_max']    = true_value    #Unscaled kArr value
     info['maxpos']      = maxpos
     info['kx']          = currentData.kxVec[info['maxpos'][0]]
     info['ky']          = currentData.kyVec[info['maxpos'][1]]
