@@ -1447,20 +1447,35 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     #Feature detection...
     #Now lets do a little image processing...
     from scipy import ndimage
-    from skimage.morphology import watershed, is_local_maximum
+    from skimage.morphology import watershed
+    from skimage.feature import peak_local_max
+
     #sudo pip install cython
     #sudo pip install scikit-image
 
     data = scale_karr(currentData.karr)
 
-    mask = data > threshold
-    labels, nb = ndimage.label(mask)
+    mask        = data > threshold
+    labels, nb  = ndimage.label(mask)
 
     distance    = ndimage.distance_transform_edt(mask)
-    local_maxi  = is_local_maximum(distance,mask,np.ones(neighborhood))
+#    local_maxi  = is_local_maximum(distance,mask,np.ones(neighborhood))
+    local_maxi  = peak_local_max(distance,footprint=np.ones(neighborhood),indices=False)
 #    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
     markers,nb  = ndimage.label(local_maxi)
     labels      = watershed(-distance,markers,mask=mask)
+
+
+#    mask        = data > threshold
+#    labels, nb  = ndimage.label(mask)
+#
+#    distance    = ndimage.distance_transform_edt(mask)
+##    local_maxi  = is_local_maximum(distance,mask,np.ones(neighborhood))
+#    local_maxi  = peak_local_max(distance,labels=mask,footprint=np.ones(neighborhood))
+##    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
+#    markers,nb  = ndimage.label(local_maxi)
+#    labels      = watershed(-distance,markers,mask=mask)
+
 
     areas         = ndimage.sum(mask,labels,xrange(1,labels.max()+1))
     maxima        = ndimage.maximum(data,labels,xrange(1, labels.max()+1))
