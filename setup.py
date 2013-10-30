@@ -1,4 +1,5 @@
 import os
+import glob
 
 os.environ['DISTUTILS_DEBUG'] = "1"
 
@@ -27,49 +28,61 @@ from setuptools.command import install as _install
 # dmap = Extension("dmapio",sources=["pydarn/rst/src/dmapio.c","pydarn/rst/src/rtime.c", 
 #                     "pydarn/rst/src/dmap.c","pydarn/rst/src/convert.c"],include_dirs = ["src"])
 
-dmap = Extension("dmapio",sources=['pydarn/rst/src/'+ x for x in os.listdir('pydarn/rst/src') if '.c' in x],)
+dmap = Extension("dmapio",
+    sources=glob.glob('pydarn/rst/src/*.c'),)
 
+aacgm = Extension("aacgm",
+    sources=glob.glob('models/aacgm/*.c'),)
 
-aacgm = Extension("aacgm",sources=['models/aacgm/'+ x for x in os.listdir('models/aacgm') if '.c' in x and 'c~' not in x])
-
-sources = []
-
-scripts = ['install/'+ x for x in os.listdir('install') if 'readme' not in x]
+scripts = glob.glob('install/*.sh')
 print scripts
 
 ################################################################################
 # get a list of all source files
+pwd = os.getcwd()
 sources = []
-def get_files(dir):
-        for f in os.listdir(dir):
-                if os.path.isdir(dir+'/'+f) and '__init__.py' in os.listdir(dir+'/'+f):
-                        sources.append(dir+'/'+f)
-                        get_files(dir+'/'+f)
-get_files(os.getcwd())
-sources = [x.replace(os.getcwd()+'/','').replace('/','.') for x in sources]
+for root, dirs, files in os.walk(pwd):
+    if '__init__.py' in files:
+        sources.append('davitpy.'+'.'.join(
+            root.replace(pwd,'').strip('/').split('/')
+            ))
 print sources
 ################################################################################
 
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='davitpy',
-        version = "0.2",
-        description = "data visualization toolkit-python",
-        author = "VT SuperDARN Lab and friends",
-        author_email = "ajribeiro86@gmail.com",
-        url = "https://github.com/vtsuperdarn/davitpy",
-        packages = sources,
-        zip_safe = False,
-        ext_modules = [dmap,aacgm],
-        install_requires=['ipython','numpy','scipy','matplotlib','basemap','h5py', \
-                            'tornado','paramiko','pymongo','mechanize','jinja2'],
-        data_files=[#('models/iri', irifiles),
-                    # ('models/hwm', hwmfiles),
-                    # ('models/msis', msisfiles),
-                    # ('models/igrf', igrffiles),
-                    # ('models/tsyganenko', tsygfiles),
-                    # ('models/raydarn',raydarnfiles)
-                    ('install',['install/readme']),
-                    'profile.bash','profile.mac'],
-        scripts = scripts
-        )
+      version = "0.2",
+      description = "Space Science Toolkit",
+      author = "VT SuperDARN Lab and friends",
+      author_email = "ajribeiro86@gmail.com",
+      url = "",
+      download_url = "https://github.com/vtsuperdarn/davitpy",
+      packages = sources,
+      long_description = read('README.md'),
+      zip_safe = False,
+      ext_modules = [dmap,aacgm],
+      install_requires=['ipython','numpy','scipy',
+                        'matplotlib','basemap','h5py', 
+                        'tornado','paramiko','pymongo',
+                        'mechanize','jinja2'],
+      data_files=[#('models/iri', irifiles),
+                  # ('models/hwm', hwmfiles),
+                  # ('models/msis', msisfiles),
+                  # ('models/igrf', igrffiles),
+                  # ('models/tsyganenko', tsygfiles),
+                  # ('models/raydarn',raydarnfiles)
+                  ('install',['install/readme']),
+                  'profile.bash','profile.mac'],
+      scripts = scripts,
+      classifiers = [
+            "Development Status :: 4 - Beta",
+            "Topic :: Scientific/Engineering",
+            "Intended Audience :: Science/Research",
+            "License :: OSI Approved :: GNU General Public License (GPL)",
+            "Natural Language :: English",
+            "Programming Language :: Python"
+            ],
+      )
 
