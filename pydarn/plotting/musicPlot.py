@@ -25,8 +25,22 @@ from pydarn.radar.radUtils import getParamDict
 
 from pydarn.proc.music import getDataSet
 
+def daynight_terminator(date, lons):
+    """
+    date is datetime object (assumed UTC).
+    nlons is # of longitudes used to compute terminator."""
+    import mpl_toolkits.basemap.solar as solar
+    dg2rad = np.pi/180.
+    # compute greenwich hour angle and solar declination
+    # from datetime object (assumed UTC).
+    tau, dec = solar.epem(date)
+    # compute day/night terminator from hour angle, declination.
+    longitude = lons + tau
+    lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
+    return lats,tau,dec
+
 class musicFan(object):
-  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None,autoScale=False, plotZeros=False, markCell=None, **kwArgs):
+  def __init__(self,dataObject,dataSet='active',time=None,axis=None,fileName=None,scale=None,autoScale=False, plotZeros=False, markCell=None, plotTerminator=True, **kwArgs):
     from scipy import stats
     if fileName != None:
       from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -198,162 +212,225 @@ class musicFan(object):
             size='small',
             transform=axis.transAxes)
 
+    if plotTerminator:
+        m.nightshade(currentData.time[timeInx])
+
 class musicRTI(object):
-  def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, **kwArgs):
-    from scipy import stats
-    if fileName != None:
-      from matplotlib.backends.backend_agg import FigureCanvasAgg
-      from matplotlib.figure import Figure
-      if axis==None:
-        fig   = Figure()
-    else:
-      from matplotlib import pyplot as plt
-      plt.ion()
-      if axis==None:
-        fig   = plt.figure()
-
-    #Make some variables easier to get to...
-    currentData = getDataSet(dataObject,dataSet)
-    metadata    = currentData.metadata
-    latFull     = currentData.fov.latFull
-    lonFull     = currentData.fov.lonFull
-
-    coords      = metadata['coords']
-    if coords not in ['gate','range']:
-        print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
-        coords = 'gate'
-
-    #Translate parameter information from short to long form.
-    paramDict = getParamDict(metadata['param'])
-    if paramDict.has_key('label'):
-      param     = paramDict['param']
-      cbarLabel = paramDict['label']
-    else:
-      param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
-      cbarLabel = metadata['param']
-
-    #Set colorbar scale if not explicitly defined.
-    if(scale == None):
-        if autoScale:
-            sd          = stats.nanstd(np.abs(currentData.data),axis=None)
-            mean        = stats.nanmean(np.abs(currentData.data),axis=None)
-            scMax       = np.ceil(mean + 1.*sd)
-            if np.min(currentData.data) < 0:
-                scale   = scMax*np.array([-1.,1.])
-            else:
-                scale   = scMax*np.array([0.,1.])
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, **kwArgs):
+        from scipy import stats
+        if fileName != None:
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            from matplotlib.figure import Figure
+            if axis==None:
+                fig   = Figure()
         else:
-            if paramDict.has_key('range'):
-                scale = paramDict['range']
+            from matplotlib import pyplot as plt
+            plt.ion()
+            if axis==None:
+                fig   = plt.figure()
+
+        #Make some variables easier to get to...
+        currentData = getDataSet(dataObject,dataSet)
+        metadata    = currentData.metadata
+        latFull     = currentData.fov.latFull
+        lonFull     = currentData.fov.lonFull
+        latCenter   = currentData.fov.latCenter
+        lonCenter   = currentData.fov.lonCenter
+        time        = currentData.time
+        beamInx     = np.where(currentData.fov.beams == beam)[0]
+        radar_lats  = latCenter[beamInx,:]
+        nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+        # Calculate terminator. ########################################################
+        if plotTerminator:
+            daylight = np.ones([nrTimes,nrGates],np.bool)
+            for tm_inx in range(nrTimes):
+                tm                  = time[tm_inx]
+                term_lons           = lonCenter[beamInx,:]
+                term_lats,tau,dec   = daynight_terminator(tm,term_lons)
+
+                if dec > 0: # NH Summer
+                    day_inx = np.where(radar_lats < term_lats)[1]
+                else:
+                    day_inx = np.where(radar_lats > term_lats)[1]
+
+                if day_inx.size != 0:
+                    daylight[tm_inx,day_inx] = False
+        ################################################################################
+
+        coords      = metadata['coords']
+        if coords not in ['gate','range']:
+            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+            coords = 'gate'
+
+        #Translate parameter information from short to long form.
+        paramDict = getParamDict(metadata['param'])
+        if paramDict.has_key('label'):
+            param     = paramDict['param']
+            cbarLabel = paramDict['label']
+        else:
+            param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
+            cbarLabel = metadata['param']
+
+        #Set colorbar scale if not explicitly defined.
+        if(scale == None):
+            if autoScale:
+                sd          = stats.nanstd(np.abs(currentData.data),axis=None)
+                mean        = stats.nanmean(np.abs(currentData.data),axis=None)
+                scMax       = np.ceil(mean + 1.*sd)
+                if np.min(currentData.data) < 0:
+                    scale   = scMax*np.array([-1.,1.])
+                else:
+                    scale   = scMax*np.array([0.,1.])
             else:
-                scale = [-200,200]
+                if paramDict.has_key('range'):
+                    scale = paramDict['range']
+                else:
+                    scale = [-200,200]
 
-    #See if an axis is provided... if not, set one up!
-    if axis==None:
-      axis  = fig.add_subplot(111)
-    else:
-      fig   = axis.get_figure()
+        #See if an axis is provided... if not, set one up!
+        if axis==None:
+            axis  = fig.add_subplot(111)
+        else:
+            fig   = axis.get_figure()
 
-    #Get beam index...
-    beamInx = np.where(currentData.fov.beams == beam)[0]
-    if np.size(beamInx) == 0:
-      beamInx = 0
-      beam    = currentData.fov.beams[0]
+        if np.size(beamInx) == 0:
+            beamInx = 0
+            beam    = currentData.fov.beams[0]
 
-    #Plot the SuperDARN data!
-    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
-    verts = []
-    scan  = []
-    data  = np.squeeze(currentData.data[:,beamInx,:])
+        #Plot the SuperDARN data!
+        verts = []
+        scan  = []
+        data  = np.squeeze(currentData.data[:,beamInx,:])
 
-    rnge  = currentData.fov.gates
-    xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
-    time  = currentData.time
-    for tm in range(nrTimes-1):
-      for rg in range(nrGates-1):
-        if np.isnan(data[tm,rg]): continue
-        if data[tm,rg] == 0 and not plotZeros: continue
-        scan.append(data[tm,rg])
+        rnge  = currentData.fov.gates
+        xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
+        for tm in range(nrTimes-1):
+            for rg in range(nrGates-1):
+                if np.isnan(data[tm,rg]): continue
+                if data[tm,rg] == 0 and not plotZeros: continue
+                scan.append(data[tm,rg])
 
-        x1,y1 = xvec[tm+0],rnge[rg+0]
-        x2,y2 = xvec[tm+1],rnge[rg+0]
-        x3,y3 = xvec[tm+1],rnge[rg+1]
-        x4,y4 = xvec[tm+0],rnge[rg+1]
-        verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+                x1,y1 = xvec[tm+0],rnge[rg+0]
+                x2,y2 = xvec[tm+1],rnge[rg+0]
+                x3,y3 = xvec[tm+1],rnge[rg+1]
+                x4,y4 = xvec[tm+0],rnge[rg+1]
+                verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
-      cmap = matplotlib.cm.jet
-      bounds  = np.linspace(scale[0],scale[1],256)
-      norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-    else:
-      colors  = 'lasse'
-      cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+        if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
+            cmap = matplotlib.cm.jet
+            bounds  = np.linspace(scale[0],scale[1],256)
+            norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+        else:
+            colors  = 'lasse'
+            cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
 
-    pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-    pcoll.set_array(np.array(scan))
-    axis.add_collection(pcoll,autolim=False)
+        pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+        pcoll.set_array(np.array(scan))
+        axis.add_collection(pcoll,autolim=False)
 
-    if xlim == None:
-      xlim = (np.min(time),np.max(time))
-    axis.set_xlim(xlim)
+        # Plot the terminator! #########################################################
+        if plotTerminator:
+            #Plot the SuperDARN data!
+            term_verts = []
+            term_scan  = []
 
-    axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
-    axis.set_xlabel('Time [UT]')
+            rnge  = currentData.fov.gates
+            xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
+            for tm in range(nrTimes-1):
+                for rg in range(nrGates-1):
+                    if daylight[tm,rg]: continue
+                    term_scan.append(1)
 
-    if ylim == None:
-      ylim = (np.min(rnge),np.max(rnge))
-    axis.set_ylim(ylim)
-    axis.set_ylabel('Range Gate')
+                    x1,y1 = xvec[tm+0],rnge[rg+0]
+                    x2,y2 = xvec[tm+1],rnge[rg+0]
+                    x3,y3 = xvec[tm+1],rnge[rg+1]
+                    x4,y4 = xvec[tm+0],rnge[rg+1]
+                    term_verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    #Shade yBoundary Limits
-    if xBoundaryLimits == None:
-      if currentData.metadata.has_key('timeLimits'):
-          xBoundaryLimits = currentData.metadata['timeLimits']
+            term_pcoll = PolyCollection(np.array(term_verts),facecolors='0.45',linewidth=0,zorder=99,alpha=0.25)
+            axis.add_collection(term_pcoll,autolim=False)
+        ################################################################################
 
-    if xBoundaryLimits != None:
-      gray = '0.75'
-      axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
-      axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=150,alpha=0.5)
-      axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
-      axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
+        if xlim == None:
+            xlim = (np.min(time),np.max(time))
+        axis.set_xlim(xlim)
 
-    #Shade yBoundary Limits
-    if yBoundaryLimits == None:
-        if currentData.metadata.has_key('gateLimits') and coords == 'gate':
-            yBoundaryLimits = currentData.metadata['gateLimits']
+        axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
+        axis.set_xlabel('Time [UT]')
 
-        if currentData.metadata.has_key('rangeLimits') and coords == 'range':
-            yBoundaryLimits = currentData.metadata['rangeLimits']
+        if ylim == None:
+            ylim = (np.min(rnge),np.max(rnge))
+        axis.set_ylim(ylim)
+        axis.set_ylabel('Range Gate\nGeographic Latitude')
 
-    if yBoundaryLimits != None:
-        gray = '0.75'
-        axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
-        axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
-        axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
-        axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
+        yticks  = axis.get_yticks()
+        ytick_str    = []
+        for tck in yticks:
+            txt = []
+            txt.append('%d' % tck)
 
-    dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-    axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
-        + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
-        + xlim[1].strftime('%Y %b %d %H%M UT')
-        ) 
+            rg_inx = np.where(tck == currentData.fov.gates)[0]
+            if np.size(rg_inx) != 0:
+                lat = currentData.fov.latCenter[beamInx,rg_inx]
+                if np.isfinite(lat): 
+                    txt.append(u'%.1f$^o$' % lat)
+                else:
+                    txt.append('')
+            txt = '\n'.join(txt)
+            ytick_str.append(txt)
 
-#    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1)
-    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-    cbar.set_label(cbarLabel)
-    labels = cbar.ax.get_yticklabels()
-#    labels[-1].set_visible(False)
-    if currentData.metadata.has_key('gscat'):
-      if currentData.metadata['gscat'] == 1:
-        cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-#    txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
-    txt = 'Model: ' + metadata['model']
-    axis.text(1.01, 0, txt,
-            horizontalalignment='left',
-            verticalalignment='bottom',
-            rotation='vertical',
-            size='small',
-            transform=axis.transAxes)
+#        axis.set_yticklabels(ytick_str,rotation=90,ha='center',va='top')
+        axis.set_yticklabels(ytick_str,rotation=90,ma='center')
+
+
+        #Shade yBoundary Limits
+        if xBoundaryLimits == None:
+            if currentData.metadata.has_key('timeLimits'):
+                xBoundaryLimits = currentData.metadata['timeLimits']
+
+        if xBoundaryLimits != None:
+            gray = '0.75'
+            axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+            axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=150,alpha=0.5)
+            axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
+            axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
+
+        #Shade yBoundary Limits
+        if yBoundaryLimits == None:
+            if currentData.metadata.has_key('gateLimits') and coords == 'gate':
+                yBoundaryLimits = currentData.metadata['gateLimits']
+
+            if currentData.metadata.has_key('rangeLimits') and coords == 'range':
+                yBoundaryLimits = currentData.metadata['rangeLimits']
+
+        if yBoundaryLimits != None:
+            gray = '0.75'
+            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
+            axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
+            axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
+
+        dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
+        axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
+            + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
+            + xlim[1].strftime('%Y %b %d %H%M UT')
+            ) 
+
+        cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+        cbar.set_label(cbarLabel)
+        labels = cbar.ax.get_yticklabels()
+        if currentData.metadata.has_key('gscat'):
+            if currentData.metadata['gscat'] == 1:
+                cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+
+        txt = 'Model: ' + metadata['model']
+        axis.text(1.01, 0, txt,
+                horizontalalignment='left',
+                verticalalignment='bottom',
+                rotation='vertical',
+                size='small',
+                transform=axis.transAxes)
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
