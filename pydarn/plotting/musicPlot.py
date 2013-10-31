@@ -378,6 +378,8 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   ctrGateInx  = currentData.fov.relative_centerInx[1]
   ctrBeam     = currentData.fov.beams[ctrBeamInx]
   ctrGate     = currentData.fov.gates[ctrGateInx]
+  ctrLat      = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
+  ctrLon      = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
 
   if fig == None:
     fig   = Figure()
@@ -408,6 +410,8 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   text.append('Y-Range [km]: %i' % yRange)
   text.append('Lat Range [deg]: %.1f' % latRange)
   text.append('Lon Range [deg]: %.1f' % lonRange)
+  text.append('Center Lat [deg]: %.1f' % ctrLat)
+  text.append('Center Lon [deg]: %.1f' % ctrLon)
   text = '\n'.join(text)
   axis.text(0,0.75,text)
 
