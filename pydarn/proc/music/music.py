@@ -317,9 +317,35 @@ class musicArray(object):
     gateInx = 3
     dataInx = 4
 
-    beamTime  = sTime
-    scanNr    = np.uint64(0)
-    fov       = None
+    beamTime    = sTime
+    scanNr      = np.uint64(0)
+    fov         = None
+
+    # Create a place to store the prm data.
+    prm             = emptyObj()
+    prm.time        = []
+    prm.mplgs       = []
+    prm.nave        = []
+    prm.noisesearch = []
+    prm.scan        = []
+    prm.smsep       = []
+    prm.mplgexs     = []
+    prm.xcf         = []
+    prm.noisesky    = []
+    prm.rsep        = []
+    prm.mppul       = []
+    prm.inttsc      = []
+    prm.frang       = []
+    prm.bmazm       = []
+    prm.lagfr       = []
+    prm.ifmode      = []
+    prm.noisemean   = []
+    prm.tfreq       = []
+    prm.inttus      = []
+    prm.rxrise      = []
+    prm.mpinc       = []
+    prm.nrang       = []
+
     while beamTime < eTime:
       #Load one scan into memory.
       myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
@@ -335,6 +361,32 @@ class musicArray(object):
         #Get information from each beam in the scan.
         beamTime = myBeam.time 
         bmnum    = myBeam.bmnum
+
+        # Save all of the radar operational parameters.
+        prm.time.append(beamTime)
+        prm.mplgs.append(myBeam.prm.mplgs)
+        prm.nave.append(myBeam.prm.nave)
+        prm.noisesearch.append(myBeam.prm.noisesearch)
+        prm.scan.append(myBeam.prm.scan)
+        prm.smsep.append(myBeam.prm.smsep)
+        prm.mplgexs.append(myBeam.prm.mplgexs)
+        prm.xcf.append(myBeam.prm.xcf)
+        prm.noisesky.append(myBeam.prm.noisesky)
+        prm.rsep.append(myBeam.prm.rsep)
+        prm.mppul.append(myBeam.prm.mppul)
+        prm.inttsc.append(myBeam.prm.inttsc)
+        prm.frang.append(myBeam.prm.frang)
+        prm.bmazm.append(myBeam.prm.bmazm)
+        prm.lagfr.append(myBeam.prm.lagfr)
+        prm.ifmode.append(myBeam.prm.ifmode)
+        prm.noisemean.append(myBeam.prm.noisemean)
+        prm.tfreq.append(myBeam.prm.tfreq)
+        prm.inttus.append(myBeam.prm.inttus)
+        prm.rxrise.append(myBeam.prm.rxrise)
+        prm.mpinc.append(myBeam.prm.mpinc)
+        prm.nrang.append(myBeam.prm.nrang)
+
+        #Get the fitData.
         fitDataList = getattr(myBeam.fit,param)
         slist       = getattr(myBeam.fit,'slist')
         gflag       = getattr(myBeam.fit,'gflg')
@@ -362,10 +414,9 @@ class musicArray(object):
       #Advance to the next scan number.
       scanNr = scanNr + 1
 
-
     #Convert lists to numpy arrays.
-    timeArray = np.array(scanTimeList)
-    dataListArray = np.array(dataList)
+    timeArray       = np.array(scanTimeList)
+    dataListArray   = np.array(dataList)
 
     #Figure out what size arrays we need and initialize the arrays...
     nrTimes = np.max(dataListArray[:,scanInx]) + 1
@@ -425,6 +476,10 @@ class musicArray(object):
 
     #Set the new data active.
     newSigObj.setActive()
+
+    #Make prm data part of the object.
+    self.prm = prm
+
   def get_data_sets(self):
       #Return a sorted list of datasets associated with this music object.
       attrs = dir(self)
@@ -435,9 +490,6 @@ class musicArray(object):
             dataSets.append(item)
       dataSets.sort()
       return dataSets
-
-
-
 
 def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
   """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
