@@ -435,21 +435,22 @@ class musicRTI(object):
                 transform=axis.transAxes)
 
         # Plot frequency and noise information. ######################################## 
-        pos = list(axis.get_position().bounds)
+        if hasattr(dataObject,'prm'):
+            pos = list(axis.get_position().bounds)
 
-        super_plot_hgt  = 0.06
-        pos[3] = pos[3] - (2*super_plot_hgt)
-        axis.set_position(pos)
+            super_plot_hgt  = 0.06
+            pos[3] = pos[3] - (2*super_plot_hgt)
+            axis.set_position(pos)
 
-        curr_xlim   = axis.get_xlim()
-        curr_xticks = axis.get_xticks()
+            curr_xlim   = axis.get_xlim()
+            curr_xticks = axis.get_xticks()
 
-        pos[1] = pos[1] + pos[3]
-        pos[3] = super_plot_hgt
-        plotFreq(fig,dataObject.prm.time,dataObject.prm.tfreq,dataObject.prm.nave,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
+            pos[1] = pos[1] + pos[3]
+            pos[3] = super_plot_hgt
+            plotFreq(fig,dataObject.prm.time,dataObject.prm.tfreq,dataObject.prm.nave,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
 
-        pos[1] = pos[1] + super_plot_hgt
-        plotNoise(fig,dataObject.prm.time,dataObject.prm.noisesky,dataObject.prm.noisesearch,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
+            pos[1] = pos[1] + super_plot_hgt
+            plotNoise(fig,dataObject.prm.time,dataObject.prm.noisesky,dataObject.prm.noisesearch,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
