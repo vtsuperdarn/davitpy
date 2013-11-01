@@ -422,6 +422,8 @@ class musicRTI(object):
         cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
         cbar.set_label(cbarLabel)
         labels = cbar.ax.get_yticklabels()
+        labels[-1].set_visible(False)
+#        labels[0].set_visible(False)
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
                 cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
@@ -436,11 +438,17 @@ class musicRTI(object):
 
         # Plot frequency and noise information. ######################################## 
         if hasattr(dataObject,'prm'):
+            #Get current plot position and adjust it to fit in the freq and noise plots.
             pos = list(axis.get_position().bounds)
-
             super_plot_hgt  = 0.06
             pos[3] = pos[3] - (2*super_plot_hgt)
             axis.set_position(pos)
+
+            #Get current colorbar position and adjust it.
+            cbar_pos = list(cbar.ax.get_position().bounds)
+            cbar_pos[1] = pos[1]
+            cbar_pos[3] = pos[3]
+            cbar.ax.set_position(cbar_pos)
 
             curr_xlim   = axis.get_xlim()
             curr_xticks = axis.get_xticks()
