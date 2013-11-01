@@ -216,7 +216,7 @@ class musicFan(object):
         m.nightshade(currentData.time[timeInx])
 
 class musicRTI(object):
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, **kwArgs):
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', **kwArgs):
         """create an rti plot for a secified radar and time period from a data set in a musicObj.
 
         **Args**:
@@ -400,7 +400,7 @@ class musicRTI(object):
 
         if axvlines is not None:
             for line in axvlines:
-                axis.axvline(line,color='0.25',ls='--')
+                axis.axvline(line,color=axvline_color,ls='--')
 
         if xlim == None:
             xlim = (np.min(time),np.max(time))
@@ -433,7 +433,7 @@ class musicRTI(object):
         axis.set_yticklabels(ytick_str,rotation=90,ma='center')
 
 
-        #Shade yBoundary Limits
+        #Shade xBoundary Limits
         if xBoundaryLimits == None:
             if currentData.metadata.has_key('timeLimits'):
                 xBoundaryLimits = currentData.metadata['timeLimits']
@@ -459,6 +459,24 @@ class musicRTI(object):
             axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
             axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
+        
+            for bnd_item in yBoundaryLimits:
+                if coords == 'gate':
+                    txt = []
+                    txt.append('%d' % bnd_item)
+
+                    rg_inx = np.where(bnd_item == currentData.fov.gates)[0]
+                    if np.size(rg_inx) != 0:
+                        lat = currentData.fov.latCenter[beamInx,rg_inx]
+                        if np.isfinite(lat): 
+                            txt.append(u'%.1f$^o$' % lat)
+                        else:
+                            txt.append('')
+                    txt = '\n'.join(txt)
+                else:
+                    txt = '%.1f' % bnd_item
+                axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
+
 
         cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
         cbar.set_label(cbarLabel)
