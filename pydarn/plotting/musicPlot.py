@@ -413,12 +413,6 @@ class musicRTI(object):
             axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
 
-        dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-#        axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
-#            + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
-#            + xlim[1].strftime('%Y %b %d %H%M UT')
-#            ) 
-
         cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
         cbar.set_label(cbarLabel)
         labels = cbar.ax.get_yticklabels()
@@ -436,10 +430,12 @@ class musicRTI(object):
                 size='small',
                 transform=axis.transAxes)
 
+        #Get axis position information.
+        pos = list(axis.get_position().bounds)
+
         # Plot frequency and noise information. ######################################## 
         if hasattr(dataObject,'prm'):
-            #Get current plot position and adjust it to fit in the freq and noise plots.
-            pos = list(axis.get_position().bounds)
+            #Adjust current plot position to fit in the freq and noise plots.
             super_plot_hgt  = 0.06
             pos[3] = pos[3] - (2*super_plot_hgt)
             axis.set_position(pos)
@@ -459,6 +455,23 @@ class musicRTI(object):
 
             pos[1] = pos[1] + super_plot_hgt
             plotNoise(fig,dataObject.prm.time,dataObject.prm.noisesky,dataObject.prm.noisesearch,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
+
+        # Put a title on the RTI Plot. #################################################
+        title_y = (pos[1] + pos[3]) + 0.015
+        xmin    = pos[0]
+        xmax    = pos[0] + pos[2]
+
+        txt     = metadata['name']+'  ('+metadata['fType']+')'
+        fig.text(xmin,title_y,txt,ha='left',weight=550)
+
+        txt     = []
+        txt.append(xlim[0].strftime('%Y %b %d %H%M UT - ')+xlim[1].strftime('%Y %b %d %H%M UT'))
+        txt.append(currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
+        txt     = '\n'.join(txt)
+        fig.text((xmin+xmax)/2.,title_y,txt,weight=550,size='large',ha='center')
+
+        txt     = 'Beam '+str(beam)
+        fig.text(xmax,title_y,txt,weight=550,ha='right')
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
