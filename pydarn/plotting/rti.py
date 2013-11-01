@@ -47,7 +47,7 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None, \
-              custType='fitex', tFreqBands=[], myFile=None,figure=None,xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
+              custType='fitex', tFreqBands=[], myFile=None,figure=None,xtick_size=9,ytick_size=9,xticks=None,axvlines=None,plotTerminator=False):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -79,6 +79,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[ytick_size]**: (int) fontsize of ytick labels
     * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
     * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
+    * **[plotTerminator]**: (boolean) Overlay the day/night terminator.
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -91,6 +92,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
   Written by AJ 20121002
   Modified by Matt W. 20130715
+  Modified by Nathaniel F. 20131031 (added plotTerminator)
   """
   import os
     
@@ -264,12 +266,16 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       x=numpy.zeros(len(times[fplot])*2)
       tcnt = 0
 
+      dt_list   = []
       for i in range(len(times[fplot])):
         x[tcnt]=matplotlib.dates.date2num(times[fplot][i])
+        dt_list.append(times[fplot][i])
+
         if(i < len(times[fplot])-1):
           if(matplotlib.dates.date2num(times[fplot][i+1])-x[tcnt] > 4./1440.):
             tcnt += 1
             x[tcnt] = x[tcnt-1]+1./1440.
+            dt_list.append(matplotlib.dates.num2date(x[tcnt]))
         tcnt += 1
             
         if(pArr[i] == []): continue
@@ -281,15 +287,51 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
             elif gsct and gsflg[fplot][i][j] == 1:
               data[tcnt][slist[fplot][i][j]] = -100000.
   
+      if (coords != 'gate' and coords != 'rng') or plotTerminator == True:
+        site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[fplot][0])
+        myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[fplot][0],coords=coords)
+        myLat   = myFov.latCenter[bmnum]
+        myLon   = myFov.lonCenter[bmnum]
           
       if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
       elif(coords == 'rng'): y = numpy.linspace(frang[fplot][0],rmax*rsep[fplot][0],rmax+1)
-      else:
-        site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[fplot][0])
-        myFov = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[fplot][0],coords=coords)
-        y =  myFov.latFull[bmnum]
+      else: y = myFov.latFull[bmnum]
         
       X, Y = numpy.meshgrid(x[:tcnt], y)
+
+      # Calculate terminator. ########################################################
+      if plotTerminator:
+            def daynight_terminator(date, lons):
+                """
+                date is datetime object (assumed UTC).
+                """
+                import mpl_toolkits.basemap.solar as solar
+                dg2rad = np.pi/180.
+                # compute greenwich hour angle and solar declination
+                # from datetime object (assumed UTC).
+                tau, dec = solar.epem(date)
+                # compute day/night terminator from hour angle, declination.
+                longitude = lons + tau
+                lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
+                return lats,tau,dec
+
+            daylight = np.ones([len(dt_list),len(myLat)],np.bool)
+            for tm_inx in range(len(dt_list)):
+                tm                  = dt_list[tm_inx]
+                term_lats,tau,dec   = daynight_terminator(tm,myLon)
+
+                if dec > 0: # NH Summer
+                    day_inx = np.where(myLat < term_lats)[0]
+                else:
+                    day_inx = np.where(myLat > term_lats)[0]
+
+                if day_inx.size != 0:
+                    daylight[tm_inx,day_inx] = False
+     
+            from numpy import ma
+            daylight = ma.array(daylight,mask=daylight)
+            ax.pcolormesh(X, Y, daylight.T, lw=0,alpha=0.10,cmap=matplotlib.cm.binary_r,zorder=99)
+      ################################################################################
       
       cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
       
