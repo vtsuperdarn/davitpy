@@ -218,6 +218,8 @@ class musicFan(object):
 class musicRTI(object):
     def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, **kwArgs):
         from scipy import stats
+        from rti import plotFreq,plotNoise
+
         if fileName != None:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             from matplotlib.figure import Figure
@@ -290,7 +292,7 @@ class musicRTI(object):
 
         #See if an axis is provided... if not, set one up!
         if axis==None:
-            axis  = fig.add_subplot(111)
+            axis    = fig.add_subplot(111)
         else:
             fig   = axis.get_figure()
 
@@ -412,10 +414,10 @@ class musicRTI(object):
             axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
 
         dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-        axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
-            + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
-            + xlim[1].strftime('%Y %b %d %H%M UT')
-            ) 
+#        axis.set_title(metadata['name'] + (' Beam %i - ' % beam) + dataName
+#            + xlim[0].strftime('\n%Y %b %d %H%M UT - ')
+#            + xlim[1].strftime('%Y %b %d %H%M UT')
+#            ) 
 
         cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
         cbar.set_label(cbarLabel)
@@ -431,6 +433,23 @@ class musicRTI(object):
                 rotation='vertical',
                 size='small',
                 transform=axis.transAxes)
+
+        # Plot frequency and noise information. ######################################## 
+        pos = list(axis.get_position().bounds)
+
+        super_plot_hgt  = 0.06
+        pos[3] = pos[3] - (2*super_plot_hgt)
+        axis.set_position(pos)
+
+        curr_xlim   = axis.get_xlim()
+        curr_xticks = axis.get_xticks()
+
+        pos[1] = pos[1] + pos[3]
+        pos[3] = super_plot_hgt
+        plotFreq(fig,dataObject.prm.time,dataObject.prm.tfreq,dataObject.prm.nave,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
+
+        pos[1] = pos[1] + super_plot_hgt
+        plotNoise(fig,dataObject.prm.time,dataObject.prm.noisesky,dataObject.prm.noisesearch,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
   """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
