@@ -216,7 +216,51 @@ class musicFan(object):
         m.nightshade(currentData.time[timeInx])
 
 class musicRTI(object):
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, **kwArgs):
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, **kwArgs):
+        """create an rti plot for a secified radar and time period from a data set in a musicObj.
+
+        **Args**:
+          * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating the start time which you would like to plot
+          * **rad** (str): the 3 letter radar code, e.g. 'bks'
+          * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating th end time you would like plotted.  If this is None, 24 hours will be plotted.  default = None.
+          * **[bmnum] (int)**: The beam to plot.  default: 7
+          * **[fileType]** (str): The file type to be plotted, one of ['fitex','fitacf','lmfit'].  default = 'fitex'.
+          * **[params]** (list): a list of the fit parameters to plot, allowable values are: ['velocity', 'power', 'width', 'elevation', 'phi0'].  default: ['velocity', 'power', 'width']
+          * **[scales]** (list): a list of the min/max values for the color scale for each param.  If omitted, default scales will be used.  If present, the list should be n x 2 where n is the number of elements in the params list.  Use an empty list for default range, e.g. [[-250,300],[],[]].  default: [[-200,200],[0,30],[0,150]]
+          * **[channel]** (char): the channel you wish to plot, e.g. 'a', 'b', 'c', ...  default: 'a'
+          * **[coords]** (str): the coordinates to use for the y axis.  The allowable values are 'gate', 'rng', 'geo', 'mag' default: 'gate'
+          * **[colors]** (str): a string indicating what color bar to use, valid inputs are ['lasse','aj'].  default: 'lasse'
+          * **[yrng]** (list or -1): a list indicating the min and max values for the y axis in the chosen coordinate system, or a -1 indicating to plot everything.  default: -1.
+          * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray. default: False (ground scatter plotted normally)
+          * **[lowGray]** (boolean): a flag indicating whether to plot low velocity scatter as gray. default: False (low velocity scatter plotted normally)
+          * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow.
+          * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
+          * **[dpi]** (int): dots per inch if saving as png.  default = 300
+          * **[show]** (boolean): a flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
+          * **[retfig]** (boolean):  a flag indicating that you want the figure to be returned from the function.  Only the last figure in the list of frequency bands will be returned.  default = False
+          * **[filtered]** (boolean): a flag indicating whether to boxcar filter the data.  default = False (no filter)
+          * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
+          * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
+          * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
+          * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
+          * **[figure]** (matplotlib.figure) figure object to plot on.  If None, a figure object will be created for you.
+          * **[xtick_size]**: (int) fontsize of xtick labels
+          * **[ytick_size]**: (int) fontsize of ytick labels
+          * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
+          * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
+          * **[plotTerminator]**: (boolean) Overlay the day/night terminator.
+        **Returns**:
+          * Possibly figure, depending on the **retfig** keyword
+
+        **Example**:
+          ::
+          
+            import datetime as dt
+            pydarn.plotting.rti.plotRti(dt.datetime(2013,3,16), 'bks', eTime=dt.datetime(2013,3,16,14,30), bmnum=12, fileType='fitacf', scales=[[-500,500],[],[]], coords='geo',colors='aj', filtered=True, show=True)
+
+          
+        Written by Nathaniel A. Frissell Fall 2013
+        """
         from scipy import stats
         from rti import plotFreq,plotNoise
 
@@ -354,6 +398,10 @@ class musicRTI(object):
             axis.add_collection(term_pcoll,autolim=False)
         ################################################################################
 
+        if axvlines is not None:
+            for line in axvlines:
+                axis.axvline(line,color='0.25',ls='--')
+
         if xlim == None:
             xlim = (np.min(time),np.max(time))
         axis.set_xlim(xlim)
@@ -382,7 +430,6 @@ class musicRTI(object):
             txt = '\n'.join(txt)
             ytick_str.append(txt)
 
-#        axis.set_yticklabels(ytick_str,rotation=90,ha='center',va='top')
         axis.set_yticklabels(ytick_str,rotation=90,ma='center')
 
 
@@ -417,7 +464,6 @@ class musicRTI(object):
         cbar.set_label(cbarLabel)
         labels = cbar.ax.get_yticklabels()
         labels[-1].set_visible(False)
-#        labels[0].set_visible(False)
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
                 cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
