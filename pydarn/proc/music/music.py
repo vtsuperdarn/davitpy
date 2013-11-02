@@ -1,3 +1,66 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+.. module:: music
+    :synopsis: A module running the MUltiple SIgnal Classification (MUSIC) algorithm for the detection of
+    MSTIDs and wave-like structures in SuperDARN data.
+
+    For usage examples, please see the iPython notebook included in the docs folder of the DaViTPy distribution.
+
+    See Samson et al. [1990] and Bristow et al. [1994] for details.
+
+    Samson, J. C., R. A. Greenwald, J. M. Ruohoniemi, A. Frey, and K. B. Baker (1990), Goose Bay radar observations of Earth-reflected,
+        atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693–7709, doi:10.1029/JA095iA06p07693.
+
+.. moduleauthor:: Nathaniel A. Frissell, Fall 2013
+
+*********************
+**Module**: pydarn.plotting.rti
+*********************
+**Functions**:
+    * :func:`pydarn.proc.music.getDataSet`
+    * :func:`pydarn.proc.music.stringify_signal`
+    * :func:`pydarn.proc.music.stringify_signal_list`
+    * :func:`pydarn.proc.music.beamInterpolation`
+    * :func:`pydarn.proc.music.defineLimits`
+    * :func:`pydarn.proc.music.applyLimits`
+    * :func:`pydarn.proc.music.determineRelativePosition`
+    * :func:`pydarn.proc.music.timeInterpolation`
+    * :func:`pydarn.proc.music.filterTimes`
+    * :func:`pydarn.proc.music.detrend`
+    * :func:`pydarn.proc.music.nan_to_num`
+    * :func:`pydarn.proc.music.windowData`
+    * :func:`pydarn.proc.music.calculateFFT`
+    * :func:`pydarn.proc.music.calculateDlm`: Calculate the cross-spectral matrix of a musicArray/musicDataObj object.
+    * :func:`pydarn.proc.music.calculateKarr`: Calculate the two-dimensional horizonatal wavenumber array of a musicArray/musicDataObj object.
+    * :func:`pydarn.proc.music.simulator`: Insert a simulated MSTID into the processing chain.
+    * :func:`pydarn.proc.music.scale_karr`: Scale/normalize kArr for plotting and signal detection.
+    * :func:`pydarn.proc.music.detectSignals`
+    * :func:`pydarn.proc.music.add_signal`
+    * :func:`pydarn.proc.music.del_signal`
+
+**Classes**:
+    * :class:`pydarn.proc.music.emptyObj`
+    * :class:`pydarn.proc.music.SigDetect`
+    * :class:`pydarn.proc.music.musicDataObj`: Basic container for holding MUSIC data.
+    * :class:`pydarn.proc.music.musicArray`: Container object for holding musicDataObj's.
+    * :class:`pydarn.proc.music.filter`
+"""
+
 import numpy as np
 import datetime 
 import time
@@ -7,70 +70,52 @@ import pydarn
 
 Re = 6378   #Earth radius
 
-def sigObjCheck(dataObj):
-  """Determines if the called dataObj is a vtMUSIC or a vtMUSICArray object. 
-  :returns vtMUSIC: vtMUSIC object
-  """
-  if hasattr(dataObj,'data'):
-    vtMUSIC = dataObj
-  else:
-    vtMUSIC = dataObj.active
-
-  return sigobj
-
-def prepForProc(dataObj):
-  """Determines if the called signal is a vt sig or a vt sigStruct object. 
-  If it is a vt sig object, the active dataObj.active sigStruct object is returned.
-  The signal is truncated to its current valid time limits if necessary.
-  This also sets the called sigStruct to be the active sigStruct.
-  :returns vtMUSIC: vt sigStruct object
-  """
- 
-  vtMUSIC = sigObjCheck(dataObj)
-
-  #Remove times that are not valid.
-  vtMUSIC = vtMUSIC.truncate()
-  vtMUSIC.setActive()
-
-  return vtMUSIC
-
 def getDataSet(dataObj,dataSet='active'):
-  """Returns a specified dataSet object from a vtMUSIC object.  If the vtMUSIC object has the exact attribute
-  specified in the dataSet keyword, then that attribute is returned.  If not, all attributes of the vtMUSIC object
-  will be searched for attributes which contain the string specified in the dataSet keyword.  If more than one are
-  found, the last attribute of a sorted list will be returned.  If no attributes are found which contain the specified
-  string, the 'active' dataSet is returned.
+    """Returns a specified musicDataObj from a musicArray object.  If the musicArray object has the exact attribute
+    specified in the dataSet keyword, then that attribute is returned.  If not, all attributes of the musicArray object
+    will be searched for attributes which contain the string specified in the dataSet keyword.  If more than one are
+    found, the last attribute of a sorted list will be returned.  If no attributes are found which contain the specified
+    string, the 'active' dataSet is returned.
 
-  **Args**:
-      * **dataObj**:  vtMUSIC object
-      * **dataSet**:  which dataSet in the vtMUSIC object to process
-  **Returns**
-      * **currentData**: dataSet object
-  """
-  lst = dir(dataObj)
-  if dataSet not in lst:
-    tmp = []
-    for item in lst:
-      if dataSet in item:
-        tmp.append(item)
-    if len(tmp) == 0:
-      dataSet = 'active'
-    else:
-      tmp.sort()
-      dataSet = tmp[-1]
+    **Args**:
+        * **dataObj**:  musicArray object
+        * **dataSet**:  which dataSet in the musicArray object to process
+    **Returns**:
+        * **currentData**: musicDataObj object
 
-  currentData = getattr(dataObj,dataSet)
-  return currentData
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    lst = dir(dataObj)
+    if dataSet not in lst:
+        tmp = []
+        for item in lst:
+            if dataSet in item:
+                tmp.append(item)
+        if len(tmp) == 0:
+            dataSet = 'active'
+        else:
+            tmp.sort()
+            dataSet = tmp[-1]
+
+    currentData = getattr(dataObj,dataSet)
+    return currentData
 
 class emptyObj(object):
+    """Create an empty object.
+    """
     def __init__(self):
         pass
 
 def stringify_signal(sig):
-    """Method to convert a signal dictionaries into strings.
+    """Method to convert a signal information dictionary into a string.
 
-    **Returns**
-      * **sigInfo**: A dictionary of strings.
+    **Args**:
+        * **sig** (dict): Information about a detected signal.
+
+    **Returns**:
+      * **sigInfo** (string): String representation of the signal information.
+
+    Written by Nathaniel A. Frissell, Fall 2013
     """
     sigInfo = {}
     if sig.has_key('order'):
@@ -121,9 +166,14 @@ def stringify_signal_list(signal_list,sort_key='order'):
     """Method to convert a list of signal dictionaries into strings.
 
     **Args**:
-      * **sort_key**: Dictionary key to sort on, or None for no sort.
-    **Returns**
-      * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
+        * [**signal_list**] (dict): Information about a detected signal.
+        * **sort_key** (string or None): Dictionary key to sort on, or None for no sort. 'order' will sort the signal list
+            from strongest signal to weakest, as determined by the MUSIC algorithm.
+
+    **Returns**:
+        * [**stringInfo**] (string): String representation of the signal information.
+
+    Written by Nathaniel A. Frissell, Fall 2013
     """
 
     string_info = []
@@ -145,6 +195,12 @@ def stringify_signal_list(signal_list,sort_key='order'):
 
 class SigDetect(object):
     """Class to hold information about detected signals.
+
+    **Methods**:
+        * :func:`SigDetect.string`
+        * :func:`SigDetect.reorder`
+
+    Written by Nathaniel A. Frissell, Fall 2013
     """
     def __init__(self):
         pass
@@ -153,10 +209,14 @@ class SigDetect(object):
 
         **Returns**
           * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
+
+        Written by Nathaniel A. Frissell, Fall 2013
         """
         return stringify_signal_list(self.info)
     def reorder(self):
         """Method to sort items in .info by signal maximum value (from the scaled kArr) and update nrSignals.
+
+        Written by Nathaniel A. Frissell, Fall 2013
         """
         #Do the sorting...
         from operator import itemgetter
@@ -174,24 +234,32 @@ class SigDetect(object):
         #Update the nrSigs
         self.nrSigs = len(newlist)
 
-
-class music(object):
-  def __init__(self):
-   self.options = options
-   self.params  = params
-
 class musicDataObj(object):
+    """This class is the basic container for holding MUSIC data.
+
+    **Args**: 
+        * [**time**] (datetime.datetime): list of times corresponding to data
+        * [**data**] (numpy.array): 3-dimensional array of data
+        * **fov** (pydarn.radar.radFov.fov): Radar field-of-view object.
+        * **comment** (string): String to be appended to the history of this object
+        * **metadata** (**kwArgs): keywords sent to matplot lib, etc.
+
+    **Methods**:
+        * :func:`musicDataObj.copy`
+        * :func:`musicDataObj.setActive`
+        * :func:`musicDataObj.nyquistFrequency`
+        * :func:`musicDataObj.samplePeriod`
+        * :func:`musicDataObj.applyLimits`
+        * :func:`musicDataObj.setMetadata`
+        * :func:`musicDataObj.printMetadata`
+        * :func:`musicDataObj.appendHistory`
+        * :func:`musicDataObj.printHistory`
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+
     def __init__(self, time, data, fov=None, comment=None, parent=0, **metadata):
         self.parent = parent
-        """Define a vtMUSIC sigStruct object.
-
-        :param time: datetime.datetime list
-        :param data: 3-dimensional array of data
-        :param fov:  DaViTPy radar field of view object
-        :param comment: String to be appended to the history of this object
-        :param **metadata: keywords sent to matplot lib, etc.
-        :returns: sig object
-        """
 
         self.time     = np.array(time)
         self.data     = np.array(data)
@@ -202,12 +270,17 @@ class musicDataObj(object):
         self.history = {datetime.datetime.now():comment}
 
     def copy(self,newsig,comment):
-        """Copy a vtMUSIC object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
-        :param newsig: A string with the name for the new signal.
-        :param comment: A string comment describing the new signal.
-        :returns: sig object
+        """Copy a musicDataObj object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
+
+        **Args**:
+            * **newsig** (string): Name for the new musicDataObj object.
+            * **comment** (string): Comment describing the new musicDataObj object.
+        **Returns**:
+            * **newsigobj** (:class:`musicDataObj`): Copy of the original musicDataObj with new name and history entry.
+
+        Written by Nathaniel A. Frissell, Fall 2013
         """
-        
+
         serial = self.metadata['serial'] + 1
         newsig = '_'.join(['DS%03d' % serial,newsig])
 
@@ -228,22 +301,37 @@ class musicDataObj(object):
   
     def setActive(self):
         """Sets this signal as the currently active signal.
+
+        Written by Nathaniel A. Frissell, Fall 2013
         """
         self.parent.active = self
 
     def nyquistFrequency(self,timeVec=None):
         """Calculate the Nyquist frequency of a vt sigStruct signal.
-        :param timeVec: List of datetime.datetime to use instead of self.time.
-        :returns: nyq: Nyquist frequency of the signal in Hz.
+
+        **Args**:
+            * [**timeVec**] (datetime.datetime): List of datetime.datetime to use instead of self.time.
+
+        **Returns**:
+            * **nq** (float): Nyquist frequency of the signal in Hz.
+
+        Written by Nathaniel A. Frissell, Fall 2013
         """
+
         dt  = self.samplePeriod(timeVec=timeVec)
-        nyq = 1. / (2*dt)
+        nyq = float(1. / (2*dt))
         return nyq
 
     def samplePeriod(self,timeVec=None):
         """Calculate the sample period of a vt sigStruct signal.
-        :param timeVec: List of datetime.datetime to use instead of self.time.
-        :returns: samplePeriod: sample period of signal in seconds.
+
+        **Args**:
+            * [**timeVec**] (datetime.datetime): List of datetime.datetime to use instead of self.time.
+
+        **Returns**:
+            * **samplePeriod** (float): samplePeriod: sample period of signal in seconds.
+
+        Written by Nathaniel A. Frissell, Fall 2013
         """
         
         if timeVec == None: timeVec = self.time
@@ -269,31 +357,65 @@ class musicDataObj(object):
 
         return samplePeriod
 
-    def getAllMetaData(self):
-#        return dict(globalMetaData().items() + self.parent.metadata.items() + self.metadata.items())
-        return self.metadata
+    def applyLimits(self,rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
+        """Removes data outside of the rangeLimits, gateLimits, and timeLimits boundaries.
 
-    def setMetaData(self,**metadata):
+        **Args**:
+            * **dataObj** (:class:`musicArray`):      musicArray object
+            * **dataSet** (string):      which dataSet in the musicArray object to process
+            * **rangeLimits** (interable):  Two-element array defining the maximum and minumum slant ranges to use. [km]
+            * **gateLimits** (iterable):   Two-element array defining the maximum and minumum gates to use.
+            * **newSigName** (string):   String name of the attribute of the newly created signal.
+            * **comment** (string):      String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+
+        **Returns**:
+            * **newMusicDataObj** (:class:`musicDataObj`): New musicDataObj.  The musicDataObj is also stored in it's parent musicArray object.
+
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
+        return applyLimits(self.parent,self.metadata['dataSetName'],rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits,newDataSetName=newDataSetName,comment=comment)
+
+    def setMetadata(self,**metadata):
+        """Adds information to the current musicDataObj's metadata dictionary.
+        Metadata affects various plotting parameters and signal processing routinges.
+
+        **Args**:
+            * **metadata** (**kwArgs): keywords sent to matplot lib, etc.
+
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
         self.metadata = dict(self.metadata.items() + metadata.items())
 
-    def applyLimits(self,rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment='Limits Applied'):
-          tmp = applyLimits(self.parent,self.metadata['dataSetName'],rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits,newDataSetName=newDataSetName,comment=comment)
-          return tmp
-
-    def printHistory(self):
-        keys = self.history.keys()
-        keys.sort()
-        for key in keys:
-            print key,self.history[key]
-
     def printMetadata(self):
+        """Nicely print all of the metadata associated with the current musicDataObj object.
+
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
         keys = self.metadata.keys()
         keys.sort()
         for key in keys:
             print key+':',self.metadata[key]
 
-    def append_history(self,comment):
+    def appendHistory(self,comment):
+        """Add an entry to the processing history dictionary of the current musicDataObj object.
+
+        **Args**:
+            * **comment** (string): Infomation to add to history dictionary.
+
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
         self.history[datetime.datetime.now()] = '['+self.metadata['dataSetName']+'] '+comment
+
+    def printHistory(self):
+        """Nicely print all of the processing history associated with the current musicDataObj object.
+
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
+        keys = self.history.keys()
+        keys.sort()
+        for key in keys:
+            print key,self.history[key]
+
 
     
 class musicArray(object):
@@ -492,12 +614,12 @@ class musicArray(object):
       return dataSets
 
 def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
-  """Interpolates the data in a vtMUSIC object along the beams of the radar.  This method will ensure that no
+  """Interpolates the data in a musicArray object along the beams of the radar.  This method will ensure that no
   rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
 
   **Args**:
-      * **dataObj**:  vtMUSIC object
-      * **dataSet**:  which dataSet in the vtMUSIC object to process
+      * **dataObj**:  musicArray object
+      * **dataSet**:  which dataSet in the musicArray object to process
       * **comment**: String to be appended to the history of this object
       * **newSigName**: String name of the attribute of the newly created signal.
   """
@@ -541,8 +663,8 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
   with the center value of the range cell.  Gate limits always override range limits.
   Use the applyLimits() method to remove data outside of the data limits.
 
-  :param dataObj: vtMUSIC object
-  :param dataSet: which dataSet in the vtMUSIC object to process
+  :param dataObj: musicArray object
+  :param dataSet: which dataSet in the musicArray object to process
   :param rangeLimits: Two-element array defining the maximum and minumum slant ranges to use. [km]
   :param gateLimits: Two-element array defining the maximum and minumum gates to use.
   :param beamLimits: Two-element array defining the maximum and minumum beams to use.
@@ -576,8 +698,8 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
 def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
   """Removes data outside of the rangeLimits and gateLimits boundaries.
 
-  * **dataObj**:      vtMUSIC object
-  * **dataSet**:      which dataSet in the vtMUSIC object to process
+  * **dataObj**:      musicArray object
+  * **dataSet**:      which dataSet in the musicArray object to process
   * **rangeLimits**:  Two-element array defining the maximum and minumum slant ranges to use. [km]
   * **gateLimits**:   Two-element array defining the maximum and minumum gates to use.
   * **newSigName**:   String name of the attribute of the newly created signal.
@@ -678,7 +800,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
     return currentData
 
 def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
-  """Finds the center cell of the field-of-view of a vtMUSIC data object.
+  """Finds the center cell of the field-of-view of a musicArray data object.
   The range, azimuth, x-range, and y-range from the center to each cell in the FOV
   is calculated and saved to the FOV object. The following objects are added to
   dataObj.dataSet:
@@ -689,7 +811,7 @@ def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
     fov.relative_y:         Y-range relative to center cell [km]
 
   **Args**:
-      * **dataObj**:  vtMUSIC object
+      * **dataObj**:  musicArray object
       * **dataSet**:  name of dataSet to use
       * **altitude**: altitude added to Re = 6378.1 km [km]
   **Returns**:
@@ -732,11 +854,11 @@ def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
   return None
 
 def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated',comment='Time Linear Interpolation',timeRes=10,newTimeVec=None):
-  """Interpolates the data in a vtMUSIC object to a regular time grid.
+  """Interpolates the data in a musicArray object to a regular time grid.
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **comment**:    String to be appended to the history of this object
       * **newSigName**: String name of the attribute of the newly created signal.
       * **timeRes**:    time resolution of new time vector [seconds]
@@ -872,7 +994,7 @@ class filter(object):
     nyq = sigObj.nyquistFrequency()
 
     #Get metadata for cutoffs and numtaps.
-    md = sigObj.getAllMetaData()
+    md = sigObj.metadata
     if cutoff_high == None:
       if md.has_key('filter_cutoff_high'):
         cutoff_high = md['filter_cutoff_high']
@@ -1089,8 +1211,8 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
   """Linearly detrend a vtsig object.
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
       * **newSigName**: String name of the attribute of the newly created signal.
       * **type**:       {'linear', 'constant'}, optional
@@ -1123,8 +1245,8 @@ def nan_to_num(dataObj,dataSet='active',newDataSetName='nan_to_num',comment=None
   """Convert all NANs and INFs to finite numbers using numpy.nan_to_num().
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
       * **newSigName**: String name of the attribute of the newly created signal.
   """
@@ -1139,11 +1261,11 @@ def nan_to_num(dataObj,dataSet='active',newDataSetName='nan_to_num',comment=None
   newDataSet.setActive()
 
 def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,window='hann'):
-  """Apply a window to a vtMUSIC object.  The window is calculated using scipy.signal.get_window().
+  """Apply a window to a musicArray object.  The window is calculated using scipy.signal.get_window().
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
       * **newSigName**: String name of the attribute of the newly created signal.
       * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
@@ -1174,8 +1296,8 @@ def calculateFFT(dataObj,dataSet='active',comment=None):
   """Calculate the spectrum of an object.
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
   """
   import scipy as sp
@@ -1211,15 +1333,15 @@ def calculateFFT(dataObj,dataSet='active',comment=None):
   avg_psd = np.zeros(npf)
   for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
   currentData.dominantFreq = posFreqVec[np.argmax(avg_psd)]
-  currentData.append_history('Calculated FFT')
+  currentData.appendHistory('Calculated FFT')
   
 
 def calculateDlm(dataObj,dataSet='active',comment=None):
-  """Calculate the cross-spectral matrix of a vtMUSIC object. FFT must already have been calculated.
+  """Calculate the cross-spectral matrix of a musicaArray object. FFT must already have been calculated.
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
       * **newSigName**: String name of the attribute of the newly created signal.
       * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
@@ -1256,15 +1378,15 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
         spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
         currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
 
-  currentData.append_history('Calculated Cross-Spectral Matrix Dlm')
+  currentData.appendHistory('Calculated Cross-Spectral Matrix Dlm')
 
 def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0.001,threshold=0.15):
-  """Calculate the two-dimensional horizonatal wavenumber array of a vtMUSIC object.
+  """Calculate the two-dimensional horizonatal wavenumber array of a musicArray/musicDataObj object.
   Cross-spectrum array Dlm must already have been calculated.
 
   **Args**:
-      * **dataObj**:    vtMUSIC object
-      * **dataSet**:    which dataSet in the vtMUSIC object to process
+      * **dataObj**:    musicArray object
+      * **dataSet**:    which dataSet in the musicArray object to process
       * **kxMax**:      Maximum kx (East-West) wavenumber to calculate [rad/km]
       * **kyMax**:      Maximum ky (North-South) wavenumber to calculate [rad/km]
       * **dkx**:        kx resolution [rad/km]
@@ -1331,7 +1453,7 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
   currentData.karr  = kArr
   currentData.kxVec = kxVec
   currentData.kyVec = kyVec
-  currentData.append_history('Calculated kArr')
+  currentData.appendHistory('Calculated kArr')
 
 def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
   import utils
@@ -1559,7 +1681,7 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
         info['vel']         = (2.*np.pi/info['k']) * info['freq'] * 1000.
         sigDetect.info.append(info)
 
-    currentData.append_history('Detected KArr Signals')
+    currentData.appendHistory('Detected KArr Signals')
     currentData.sigDetect = sigDetect
     return currentData
 
@@ -1571,8 +1693,8 @@ def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
     **Args**:
         * **kx**:           Value of kx of new signal.
         * **ky**:           Value of ky of new signal.
-        * **dataObj**:      vtMUSIC object
-        * **dataSet**:      which dataSet in the vtMUSIC object to process
+        * **dataObj**:      musicArray object
+        * **dataSet**:      which dataSet in the musicArray object to process
         * **frequency**:    Frequency to use to calculate period, phase velocity, etc.  If None, 
                             the calculated dominant frequency will be used.
     **Returns**
@@ -1617,7 +1739,7 @@ def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
 
     currentData.sigDetect.info.append(info)
     currentData.sigDetect.reorder()
-    currentData.append_history('Appended Signal to sigDetect List')
+    currentData.appendHistory('Appended Signal to sigDetect List')
 
     return dataObj
 
@@ -1626,8 +1748,8 @@ def del_signal(order,dataObj,dataSet='active'):
 
     **Args**:
         * **order**:        Single value of list of signal orders (ID's) to be removed from the list.
-        * **dataObj**:      vtMUSIC object
-        * **dataSet**:      which dataSet in the vtMUSIC object to process
+        * **dataObj**:      musicArray object
+        * **dataSet**:      which dataSet in the musicArray object to process
 
     **Returns**
         * **currentData**: dataSet object
@@ -1642,5 +1764,5 @@ def del_signal(order,dataObj,dataSet='active'):
             currentData.sigDetect.info.remove(item)
 
     currentData.sigDetect.reorder()
-    currentData.append_history('Deleted Signals from sigDetect List')
+    currentData.appendHistory('Deleted Signals from sigDetect List')
     return dataObj
