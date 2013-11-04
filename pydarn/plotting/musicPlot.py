@@ -46,12 +46,12 @@ class musicFan(object):
       from matplotlib.backends.backend_agg import FigureCanvasAgg
       from matplotlib.figure import Figure
       if axis==None:
-        fig   = Figure()
+        fig   = Figure(figsize=(20,10))
     else:
       from matplotlib import pyplot as plt
       plt.ion()
       if axis==None:
-        fig   = plt.figure()
+        fig   = plt.figure(figsize=(20,10))
 
     #Make some variables easier to get to...
     currentData = getDataSet(dataObject,dataSet)
@@ -200,7 +200,7 @@ class musicFan(object):
     cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
     cbar.set_label(cbarLabel)
     labels = cbar.ax.get_yticklabels()
-#    labels[-1].set_visible(False)
+    labels[-1].set_visible(False)
     if currentData.metadata.has_key('gscat'):
       if currentData.metadata['gscat'] == 1:
         cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
@@ -268,12 +268,12 @@ class musicRTI(object):
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             from matplotlib.figure import Figure
             if axis==None:
-                fig   = Figure()
+                fig   = Figure(figsize=(20,10))
         else:
             from matplotlib import pyplot as plt
             plt.ion()
             if axis==None:
-                fig   = plt.figure()
+                fig   = plt.figure(figsize=(20,10))
 
         #Make some variables easier to get to...
         currentData = getDataSet(dataObject,dataSet)
