@@ -24,7 +24,7 @@
     See Samson et al. [1990] and Bristow et al. [1994] for details.
 
     Samson, J. C., R. A. Greenwald, J. M. Ruohoniemi, A. Frey, and K. B. Baker (1990), Goose Bay radar observations of Earth-reflected,
-        atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693–7709, doi:10.1029/JA095iA06p07693.
+        atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693-7709, doi:10.1029/JA095iA06p07693.
 
 .. moduleauthor:: Nathaniel A. Frissell, Fall 2013
 
@@ -453,7 +453,7 @@ class musicArray(object):
 
   **References**:
       Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
-          using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319–331, doi:10.1029/93JA01470.
+          using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319-331, doi:10.1029/93JA01470.
 
   Written by Nathaniel A. Frissell, Fall 2013
   """
@@ -772,7 +772,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
     if (currentData.metadata.has_key('timeLimits') == False and 
         currentData.metadata.has_key('beamLimits') == False and 
         currentData.metadata.has_key('gateLimits') == False):
-      print 'No limits were defined.  Data left unchanged.'
+#      print 'No limits were defined.  Data left unchanged.'
       return currentData
 
     newData     = currentData.copy(newDataSetName,comment)
@@ -845,6 +845,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
     commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
     key = max(newData.history.keys())
     newData.history[key] = commentStr
+    print commentStr
 
     newData.setActive()
     return newData
@@ -1144,9 +1145,8 @@ class filter(object):
         """
 
         if fig == None:
-            from matplotlib.backends.backend_agg import FigureCanvasAgg
-            from matplotlib.figure import Figure
-            fig = Figure()
+            from matplotlib import pyplot as plt
+            fig   = plt.figure(figsize=(20,10))
 
         if worN == None:
             if len(self.ir) > 512: worN = len(self.ir)
@@ -1207,10 +1207,10 @@ class filter(object):
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
+
         if fig == None:
-            from matplotlib.backends.backend_agg import FigureCanvasAgg
-            from matplotlib.figure import Figure
-            fig = Figure()
+            from matplotlib import pyplot as plt
+            fig   = plt.figure(figsize=(20,10))
 
         l = len(self.ir)
         impulse = np.repeat(0.,l); impulse[0] =1.
