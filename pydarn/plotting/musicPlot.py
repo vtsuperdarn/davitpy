@@ -772,83 +772,86 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
           xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
 
 def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
-  """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
-  This defaults to 9 cells of the FOV.
+    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
+    This defaults to 9 cells of the FOV.
 
-  **Args**:
-      * **dataObj**:  vtMUSIC object
-      * **dataSet**:  which dataSet in the vtMUSIC object to process
-      * **plotBeam**: list of beams to plot from
-      * **plotGates*: list of range gates to plot from
-      * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-      * **xlim**:     X-axis limits of all plots
-      * **ylim**:     Y-axis limits of all plots
-      * **xlabel**:   X-axis label
-      * **ylabel**:   Y-axis label
-      * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-        Data inside of the range will have a white background.
-      * **plotType**: {'real_imag'|'magnitude'|'phase'}
-  **Returns**:
-      * **fig**:      matplotlib figure object that was plotted to
-  """
-  currentData   = getattr(dataObj,dataSet)
+    **Args**:
+        * **dataObj**:  vtMUSIC object
+        * **dataSet**:  which dataSet in the vtMUSIC object to process
+        * **plotBeam**: list of beams to plot from
+        * **plotGates*: list of range gates to plot from
+        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * **xlim**:     X-axis limits of all plots
+        * **ylim**:     Y-axis limits of all plots
+        * **xlabel**:   X-axis label
+        * **ylabel**:   Y-axis label
+        * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+            Data inside of the range will have a white background.
+        * **plotType**: {'real_imag'|'magnitude'|'phase'}
 
-  if plotType == 'magnitude':
-    xData1        = currentData.freqVec
-    yData1        = np.abs(currentData.spectrum)
-    yData1_title  = 'Magnitude'
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
+    """
+    currentData   = getattr(dataObj,dataSet)
 
-    xData2        = None
-    yData2        = None
-    yData2_title  = None
+    if plotType == 'magnitude':
+        xData1        = currentData.freqVec
+        yData1        = np.abs(currentData.spectrum)
+        yData1_title  = 'Magnitude'
 
-    if xlim == None:
-      xlim = (0,np.max(xData1))
+        xData2        = None
+        yData2        = None
+        yData2_title  = None
 
-    if ylim == None:
-      ylim = (0,np.max(yData1))
-  elif plotType == 'phase':
-    xData1        = currentData.freqVec
-    yData1        = np.angle(currentData.spectrum)
-    yData1_title  = 'Magnitude'
+        if xlim == None:
+            xlim = (0,np.max(xData1))
 
-    xData2        = None
-    yData2        = None
-    yData2_title  = None
+        if ylim == None:
+            ylim = (0,np.max(yData1))
+    elif plotType == 'phase':
+        xData1        = currentData.freqVec
+        yData1        = np.angle(currentData.spectrum)
+        yData1_title  = 'Magnitude'
 
-    if xlim == None:
-      xlim = (0,np.max(xData1))
-  else:
-    xData1        = currentData.freqVec
-    yData1        = np.real(currentData.spectrum)
-    yData1_title  = 'Real Part'
+        xData2        = None
+        yData2        = None
+        yData2_title  = None
 
-    xData2      = currentData.freqVec
-    yData2      = np.imag(currentData.spectrum)
-    yData2_title  = 'Imaginary Part'
+        if xlim == None:
+            xlim = (0,np.max(xData1))
+    else:
+        xData1        = currentData.freqVec
+        yData1        = np.real(currentData.spectrum)
+        yData1_title  = 'Real Part'
 
-    if xlim == None:
-      xlim = (np.min(xData1),np.max(xData1))
-  
-  beams       = currentData.fov.beams
-  gates       = currentData.fov.gates
+        xData2      = currentData.freqVec
+        yData2      = np.imag(currentData.spectrum)
+        yData2_title  = 'Imaginary Part'
 
-  #Get the time limits.
-  timeLim = (np.min(currentData.time),np.max(currentData.time))
+        if xlim == None:
+            xlim = (np.min(xData1),np.max(xData1))
+      
+    beams       = currentData.fov.beams
+    gates       = currentData.fov.gates
 
-  #Get X-Axis title.
-  if xlabel == None:
-    xlabel = 'Frequency [Hz]'
+    #Get the time limits.
+    timeLim = (np.min(currentData.time),np.max(currentData.time))
 
-  if title == None:
-    title = []
-    title.append('Selected Cells: '+currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
-    title.append(currentData.metadata['code'][0].upper() + ': ' +
-        timeLim[0].strftime('%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M'))
-    title = '\n'.join(title)
+    #Get X-Axis title.
+    if xlabel == None:
+        xlabel = 'Frequency [Hz]'
 
-  multiPlot(xData1,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
-      xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
+    if title == None:
+        title = []
+        title.append('Selected Cells: '+currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
+        title.append(currentData.metadata['code'][0].upper() + ': ' +
+            timeLim[0].strftime('%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M'))
+        title = '\n'.join(title)
+
+    multiPlot(xData1,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
+          xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
+
+    return fig
 
 def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
     xData2=None,yData2=None,yData2_title=None,xBoundaryLimits=None):
