@@ -49,7 +49,6 @@ class musicFan(object):
         fig   = Figure(figsize=(20,10))
     else:
       from matplotlib import pyplot as plt
-      plt.ion()
       if axis==None:
         fig   = plt.figure(figsize=(20,10))
 
@@ -271,7 +270,6 @@ class musicRTI(object):
                 fig   = Figure(figsize=(20,10))
         else:
             from matplotlib import pyplot as plt
-            plt.ion()
             if axis==None:
                 fig   = plt.figure(figsize=(20,10))
 
@@ -538,82 +536,85 @@ class musicRTI(object):
         fig.text(xmax,title_y,txt,weight=550,ha='right')
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
-  """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
-     Also plots one scan of the chosen dataSet, with the center cell marked in black.
+    """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
+    Also plots one scan of the chosen dataSet, with the center cell marked in black.
 
-  **Args**:
-      * **dataObj**:  vtMUSIC object
-      * **dataSet**:  which dataSet in the vtMUSIC object to process
-      * **time**:     datetime.datetime object giving the start scan time to plot.  If None, first time will be used.
-      * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-  **Returns**:
-      * **fig**:      matplotlib figure object that was plotted to
-  """
-  currentData = getDataSet(dataObj,dataSet)
+    **Args**:
+        * **dataObj**:  vtMUSIC object
+        * **dataSet**:  which dataSet in the vtMUSIC object to process
+        * **time**:     datetime.datetime object giving the start scan time to plot.  If None, first time will be used.
+        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
 
-  from matplotlib.backends.backend_agg import FigureCanvasAgg
-  from matplotlib.figure import Figure
-  import matplotlib
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    if fig == None:
+        from matplotlib import pyplot as plt
+        fig   = plt.figure(figsize=(20,10))
 
-  #Get center of FOV.
-  ctrBeamInx  = currentData.fov.relative_centerInx[0]
-  ctrGateInx  = currentData.fov.relative_centerInx[1]
-  ctrBeam     = currentData.fov.beams[ctrBeamInx]
-  ctrGate     = currentData.fov.gates[ctrGateInx]
-  ctrLat      = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
-  ctrLon      = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
+    currentData = getDataSet(dataObj,dataSet)
 
-  if fig == None:
-    fig   = Figure()
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+    import matplotlib
 
-  gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
-  axis  = fig.add_subplot(gs[0:2, 1]) 
-  musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
+    #Get center of FOV.
+    ctrBeamInx  = currentData.fov.relative_centerInx[0]
+    ctrGateInx  = currentData.fov.relative_centerInx[1]
+    ctrBeam     = currentData.fov.beams[ctrBeamInx]
+    ctrGate     = currentData.fov.gates[ctrGateInx]
+    ctrLat      = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
+    ctrLon      = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
 
-  #Determine the color scale for plotting.
-  def myround(x, base=50):
+    gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
+    axis  = fig.add_subplot(gs[0:2, 1]) 
+    musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
+
+    #Determine the color scale for plotting.
+    def myround(x, base=50):
         return int(base * round(float(x)/base))
-  absnanmax  = np.nanmax(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
-  rnd     = myround(absnanmax)
-  scale   = (-rnd, rnd)
 
-  #Determine nanmaximum ranges.
-  xRange    = np.nanmax(currentData.fov.relative_x) - np.nanmin(currentData.fov.relative_x)
-  yRange    = np.nanmax(currentData.fov.relative_y) - np.nanmin(currentData.fov.relative_y)
-  latRange  = np.nanmax(currentData.fov.latCenter)  - np.nanmin(currentData.fov.latCenter)
-  lonRange  = np.nanmax(currentData.fov.lonCenter)  - np.nanmin(currentData.fov.lonCenter)
+    absnanmax  = np.nanmax(np.abs([currentData.fov.relative_x,currentData.fov.relative_y]))
+    rnd     = myround(absnanmax)
+    scale   = (-rnd, rnd)
 
-  axis  = fig.add_subplot(gs[0:2, 0]) 
-#    axis.set_visible(False)
+    #Determine nanmaximum ranges.
+    xRange    = np.nanmax(currentData.fov.relative_x) - np.nanmin(currentData.fov.relative_x)
+    yRange    = np.nanmax(currentData.fov.relative_y) - np.nanmin(currentData.fov.relative_y)
+    latRange  = np.nanmax(currentData.fov.latCenter)  - np.nanmin(currentData.fov.latCenter)
+    lonRange  = np.nanmax(currentData.fov.lonCenter)  - np.nanmin(currentData.fov.lonCenter)
 
-  axis.set_axis_off()
-  text = []
-  text.append('X-Range [km]: %i' % xRange)
-  text.append('Y-Range [km]: %i' % yRange)
-  text.append('Lat Range [deg]: %.1f' % latRange)
-  text.append('Lon Range [deg]: %.1f' % lonRange)
-  text.append('Center Lat [deg]: %.1f' % ctrLat)
-  text.append('Center Lon [deg]: %.1f' % ctrLon)
-  text = '\n'.join(text)
-  axis.text(0,0.75,text)
+    axis  = fig.add_subplot(gs[0:2, 0]) 
 
-  xlabel    = 'Beam'
-  ylabel    = 'Gate'
-  cbarLabel = 'Distance from Center [km]'
+    axis.set_axis_off()
+    text = []
+    text.append('X-Range [km]: %i' % xRange)
+    text.append('Y-Range [km]: %i' % yRange)
+    text.append('Lat Range [deg]: %.1f' % latRange)
+    text.append('Lon Range [deg]: %.1f' % lonRange)
+    text.append('Center Lat [deg]: %.1f' % ctrLat)
+    text.append('Center Lon [deg]: %.1f' % ctrLon)
+    text = '\n'.join(text)
+    axis.text(0,0.75,text)
 
-  axis   = fig.add_subplot(gs[2,0]) 
-  data    = currentData.fov.relative_y
-  title   = 'N-S Distance from Center'
-  title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
-  rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+    xlabel    = 'Beam'
+    ylabel    = 'Gate'
+    cbarLabel = 'Distance from Center [km]'
 
-  axis   = fig.add_subplot(gs[2,1]) 
-  data    = currentData.fov.relative_x
-  title   = 'E-W Distance from Center'
-  title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
-  rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+    axis   = fig.add_subplot(gs[2,0]) 
+    data    = currentData.fov.relative_y
+    title   = 'N-S Distance from Center'
+    title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
+    rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
 
-  return fig
+    axis   = fig.add_subplot(gs[2,1]) 
+    data    = currentData.fov.relative_x
+    title   = 'E-W Distance from Center'
+    title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
+    rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
+
+    return fig
 
 def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param='velocity',scale=None,cbarLabel=None):
   """Plots data on a range versus beam plot with a colorbar.
@@ -702,7 +703,6 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
 
     if fig == None:
         from matplotlib import pyplot as plt
-        plt.ion()
         fig   = plt.figure(figsize=(20,10))
 
     currentData = getDataSet(dataObj,dataSet)
