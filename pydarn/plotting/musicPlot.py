@@ -800,6 +800,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         xData1        = currentData.freqVec
         yData1        = np.abs(currentData.spectrum)
         yData1_title  = 'Magnitude'
+        ylabel        = 'Magnitude'
 
         xData2        = None
         yData2        = None
@@ -814,6 +815,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         xData1        = currentData.freqVec
         yData1        = np.angle(currentData.spectrum)
         yData1_title  = 'Magnitude'
+        ylabel        = 'Phase [rad]'
 
         xData2        = None
         yData2        = None
@@ -825,6 +827,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         xData1        = currentData.freqVec
         yData1        = np.real(currentData.spectrum)
         yData1_title  = 'Real Part'
+        ylabel        = 'Amplitude'
 
         xData2      = currentData.freqVec
         yData2      = np.imag(currentData.spectrum)
