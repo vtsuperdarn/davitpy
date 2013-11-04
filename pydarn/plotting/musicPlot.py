@@ -791,6 +791,8 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
 
     **Returns**:
         * **fig**:      matplotlib figure object that was plotted to
+
+    Written by Nathaniel A. Frissell, Fall 2013
     """
     currentData   = getattr(dataObj,dataSet)
 
@@ -855,156 +857,152 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
 
 def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
     xData2=None,yData2=None,yData2_title=None,xBoundaryLimits=None):
-  """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
-  This defaults to 9 cells of the FOV.
+    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
+    This defaults to 9 cells of the FOV.
 
-  **Args**:
-      * **dataObj**:  vtMUSIC object
-      * **dataSet**:  which dataSet in the vtMUSIC object to process
-      * **plotBeam**: list of beams to plot from
-      * **plotGates*: list of range gates to plot from
-      * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-      * **xlim**:     X-axis limits of all plots
-      * **ylim**:     Y-axis limits of all plots
-      * **xlabel**:   X-axis label
-      * **ylabel**:   Y-axis label
-      * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-        Data inside of the range will have a white background.
-  **Returns**:
-      * **fig**:      matplotlib figure object that was plotted to
-  """
-  from matplotlib import dates as md
+    **Args**:
+        * **dataObj**:  vtMUSIC object
+        * **dataSet**:  which dataSet in the vtMUSIC object to process
+        * **plotBeam**: list of beams to plot from
+        * **plotGates*: list of range gates to plot from
+        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * **xlim**:     X-axis limits of all plots
+        * **ylim**:     Y-axis limits of all plots
+        * **xlabel**:   X-axis label
+        * **ylabel**:   Y-axis label
+        * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+            Data inside of the range will have a white background.
 
-  #Calculate three default beams and gates to plot.
-  if plotBeam == None:
-    beamMin = min(beams)
-    beamMed = int(np.median(beams))
-    beamMax = max(beams)
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
+    
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    if fig == None:
+        from matplotlib import pyplot as plt
+        fig   = plt.figure(figsize=(20,10))
 
-    plotBeam     = np.array([beamMin,beamMed,beamMax])
+    from matplotlib import dates as md
 
-  if plotGate == None:
-    gateMin = min(gates)
-    gateMed = int(np.median(gates))
-    gateMax = max(gates)
+    #Calculate three default beams and gates to plot.
+    if plotBeam == None:
+        beamMin = min(beams)
+        beamMed = int(np.median(beams))
+        beamMax = max(beams)
 
-    plotGate     = np.array([gateMin,gateMed,gateMax])
+        plotBeam     = np.array([beamMin,beamMed,beamMax])
 
-  #Put things in the correct order.  Gates need to be backwards.
-  plotBeam.sort()
-  plotGate.sort()
-  plotGate = plotGate[::-1] #Reverse the order.
+    if plotGate == None:
+        gateMin = min(gates)
+        gateMed = int(np.median(gates))
+        gateMax = max(gates)
 
-  #Determine the indices of the beams and gates.
-  plotBeamInx = []
-  for item in plotBeam:
-    plotBeamInx.append(int(np.where(beams == item)[0]))
+        plotGate     = np.array([gateMin,gateMed,gateMax])
 
-  plotGateInx = []
-  for item in plotGate:
-    plotGateInx.append(int(np.where(gates == item)[0]))
+    #Put things in the correct order.  Gates need to be backwards.
+    plotBeam.sort()
+    plotGate.sort()
+    plotGate = plotGate[::-1] #Reverse the order.
 
-  plotBeamInx = np.array(plotBeamInx)
-  plotGateInx = np.array(plotGateInx)
+    #Determine the indices of the beams and gates.
+    plotBeamInx = []
+    for item in plotBeam:
+        plotBeamInx.append(int(np.where(beams == item)[0]))
 
-  nCols = len(plotBeam)
-  nRows = len(plotGate)
+    plotGateInx = []
+    for item in plotGate:
+        plotGateInx.append(int(np.where(gates == item)[0]))
 
-  if fig == None:
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
-    from matplotlib.figure import Figure
-    fig = Figure()
+    plotBeamInx = np.array(plotBeamInx)
+    plotGateInx = np.array(plotGateInx)
 
-  #Define x-axis range
-  if xlim == None:
-    tmpLim = []
-    tmpLim.append(min(xData1))
-    tmpLim.append(max(xData1))
-    if xData2 != None:
-      tmpLim.append(min(xData2))
-      tmpLim.append(max(xData2))
-    xlim = (min(tmpLim),max(tmpLim))
+    nCols = len(plotBeam)
+    nRows = len(plotGate)
 
-  #Autorange y-axis... make all plots have the same range.
-  data = []
-  if ylim == None:
-#    for rg,rgInx in zip(plotGate,plotGateInx):
-#      for bm,bmInx in zip(plotBeam,plotBeamInx):
-#        data.append(yData1[:,bmInx,rgInx])
-#        if yData2 != None:
-#          data.append(yData2[:,bmInx,rgInx])
+    #Define x-axis range
+    if xlim == None:
+        tmpLim = []
+        tmpLim.append(min(xData1))
+        tmpLim.append(max(xData1))
+        if xData2 != None:
+            tmpLim.append(min(xData2))
+            tmpLim.append(max(xData2))
+        xlim = (min(tmpLim),max(tmpLim))
 
+    #Autorange y-axis... make all plots have the same range.
+    data = []
+    if ylim == None:
+        for rg,rgInx in zip(plotGate,plotGateInx):
+            for bm,bmInx in zip(plotBeam,plotBeamInx):
+                for item in yData1[:,bmInx,rgInx]:
+                    data.append(item)
+                if yData2 != None:
+                    for item in yData2[:,bmInx,rgInx]:
+                        data.append(item)
+
+        mx  = np.nanmax(data)
+        mn  = np.nanmin(data)
+       
+        if np.logical_and(mx > 0,mn >= -0.001):
+            ylim = (0,mx)
+        elif np.logical_and(mn < 0, mx <= 0.001):
+            ylim = (mn,0)
+        elif abs(mx) >= abs(mn):
+            ylim = (-mx,mx)
+        elif abs(mn) > abs(mx):
+            ylim = (-abs(mn),abs(mn))
+
+    ii = 1
     for rg,rgInx in zip(plotGate,plotGateInx):
-      for bm,bmInx in zip(plotBeam,plotBeamInx):
-        for item in yData1[:,bmInx,rgInx]:
-          data.append(item)
-        if yData2 != None:
-          for item in yData2[:,bmInx,rgInx]:
-            data.append(item)
+        for bm,bmInx in zip(plotBeam,plotBeamInx):
+            axis = fig.add_subplot(nCols,nRows,ii)
+            l1, = axis.plot(xData1,yData1[:,bmInx,rgInx],label=yData1_title)
 
-    mx  = np.nanmax(data)
-    mn  = np.nanmin(data)
-   
-    if np.logical_and(mx > 0,mn >= -0.001):
-      ylim = (0,mx)
-    elif np.logical_and(mn < 0, mx <= 0.001):
-      ylim = (mn,0)
-    elif abs(mx) >= abs(mn):
-      ylim = (-mx,mx)
-    elif abs(mn) > abs(mx):
-      ylim = (-abs(mn),abs(mn))
+            if yData2 != None:
+                l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
 
-  ii = 1
-  for rg,rgInx in zip(plotGate,plotGateInx):
-    for bm,bmInx in zip(plotBeam,plotBeamInx):
-      axis = fig.add_subplot(nCols,nRows,ii)
-      l1, = axis.plot(xData1,yData1[:,bmInx,rgInx],label=yData1_title)
+            #Set axis limits.
+            axis.set_xlim(xlim)
+            axis.set_ylim(ylim)
 
-      if yData2 != None:
-        l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
+            #Special handling for time axes.
+            if xlabel == 'UT': 
+                axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
 
-      #Set axis limits.
-      axis.set_xlim(xlim)
-      axis.set_ylim(ylim)
+                labels = axis.get_xticklabels()
+                for label in labels:
+                    label.set_rotation(30)
 
-      #Special handling for time axes.
-      if xlabel == 'UT': 
-        axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
+            #Gray out area outside of the boundary.
+            if xBoundaryLimits != None:
+                gray = '0.75'
+                axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray)
+                axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray)
+                axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2)
+                axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2)
 
-        labels = axis.get_xticklabels()
-        for label in labels:
-          label.set_rotation(30)
+            text = 'Beam: %i, Gate: %i' % (bm, rg)
+            axis.text(0.02,0.92,text,transform=axis.transAxes)
 
-      #Gray out area outside of the boundary.
-      if xBoundaryLimits != None:
-        gray = '0.75'
-        axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray)
-        axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray)
-        axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2)
-        axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2)
+            #Only the first column gets labels.
+            if ii % nCols == 1:
+                axis.set_ylabel(ylabel)
 
-      text = 'Beam: %i, Gate: %i' % (bm, rg)
-      axis.text(0.02,0.92,text,transform=axis.transAxes)
+            #Only have the last row have time ticks
+            if ii <= (nRows-1)*nCols:
+                axis.xaxis.set_visible(False)
+            else:
+                axis.set_xlabel(xlabel)
 
-      #Only the first column gets labels.
-      if ii % nCols == 1:
-        axis.set_ylabel(ylabel)
+            ii = ii+1
 
-      #Only have the last row have time ticks
-      if ii <= (nRows-1)*nCols:
-        axis.xaxis.set_visible(False)
-      else:
-        axis.set_xlabel(xlabel)
+    if yData1_title != None and yData2_title != None:
+        fig.legend((l1,l2),(yData1_title,yData2_title),loc=(0.55,0.92))
 
-      ii = ii+1
+    if title != None:
+        fig.text(0.12,0.92,title,size=24)
 
-  if yData1_title != None and yData2_title != None:
-    fig.legend((l1,l2),(yData1_title,yData2_title),loc=(0.55,0.92))
-
-  if title != None:
-    fig.text(0.12,0.92,title,size=24)
-
-  return fig
+    return fig
 
 def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
   from scipy import stats
