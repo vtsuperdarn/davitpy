@@ -677,90 +677,99 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
 #  labels[0].set_visible(False)
 
 def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
-  """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
-  This defaults to 9 cells of the FOV.
+    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
+    This defaults to 9 cells of the FOV.
 
-  **Args**:
-      * **dataObj**:  vtMUSIC object
-      * **dataSet**:  which dataSet in the vtMUSIC object to process
-      * **plotBeam**: list of beams to plot from
-      * **plotGates*: list of range gates to plot from
-      * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-      * **xlim**:     X-axis limits of all plots
-      * **ylim**:     Y-axis limits of all plots
-      * **xlabel**:   X-axis label
-      * **ylabel**:   Y-axis label
-      * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-        Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
-        in the metadata, if they exist.
-  **Returns**:
-      * **fig**:      matplotlib figure object that was plotted to
-  """
-  currentData = getDataSet(dataObj,dataSet)
-  xData1      = currentData.time
-  yData1      = currentData.data
-  beams       = currentData.fov.beams
-  gates       = currentData.fov.gates
+    **Args**:
+        * **dataObj**:  vtMUSIC object
+        * **dataSet**:  which dataSet in the vtMUSIC object to process
+        * **plotBeam**: list of beams to plot from
+        * **plotGates*: list of range gates to plot from
+        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * **xlim**:     X-axis limits of all plots
+        * **ylim**:     Y-axis limits of all plots
+        * **xlabel**:   X-axis label
+        * **ylabel**:   Y-axis label
+        * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+            Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+            in the metadata, if they exist.
 
-  if dataObj2 != None and dataSet2 == None: dataSet2 == 'active'
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
 
-  if dataSet2 != None:
-    if dataObj2 != None:
-      currentData2  = getDataSet(dataObj2,dataSet2)
-    else:
-      currentData2  = getDataSet(dataObj,dataSet2)
-    xData2        = currentData2.time
-    yData2        = currentData2.data
-    yData2_title  = currentData2.history[max(currentData2.history.keys())]
-  else:
-    xData2 = None
-    yData2 = None
-    yData2_title = None
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
 
-  #Define x-axis range
-  if xlim == None:
-    tmpLim = []
-    tmpLim.append(min(xData1))
-    tmpLim.append(max(xData1))
-    if xData2 != None:
-      tmpLim.append(min(xData2))
-      tmpLim.append(max(xData2))
-    xlim = (min(tmpLim),max(tmpLim))
+    if fig == None:
+        from matplotlib import pyplot as plt
+        plt.ion()
+        fig   = plt.figure(figsize=(20,10))
 
-  #Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
-  if xBoundaryLimits == None:
-    tmpLim = []
-    if currentData.metadata.has_key('timeLimits'):
-      tmpLim.append(currentData.metadata['timeLimits'][0])
-      tmpLim.append(currentData.metadata['timeLimits'][1])
+    currentData = getDataSet(dataObj,dataSet)
+    xData1      = currentData.time
+    yData1      = currentData.data
+    beams       = currentData.fov.beams
+    gates       = currentData.fov.gates
+
+    if dataObj2 != None and dataSet2 == None: dataSet2 == 'active'
 
     if dataSet2 != None:
-      if currentData2.metadata.has_key('timeLimits'):
-        tmpLim.append(currentData2.metadata['timeLimits'][0])
-        tmpLim.append(currentData2.metadata['timeLimits'][1])
+        if dataObj2 != None:
+            currentData2  = getDataSet(dataObj2,dataSet2)
+        else:
+            currentData2  = getDataSet(dataObj,dataSet2)
+        xData2        = currentData2.time
+        yData2        = currentData2.data
+        yData2_title  = currentData2.history[max(currentData2.history.keys())]
+    else:
+        xData2 = None
+        yData2 = None
+        yData2_title = None
 
-    if tmpLim != []:
-      xBoundaryLimits = (min(tmpLim), max(tmpLim))
+    #Define x-axis range
+    if xlim == None:
+        tmpLim = []
+        tmpLim.append(min(xData1))
+        tmpLim.append(max(xData1))
+        if xData2 != None:
+            tmpLim.append(min(xData2))
+            tmpLim.append(max(xData2))
+        xlim = (min(tmpLim),max(tmpLim))
 
-  #Get X-Axis title.
-  if xlabel == None:
-    xlabel = 'UT'
+    #Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
+    if xBoundaryLimits == None:
+        tmpLim = []
+        if currentData.metadata.has_key('timeLimits'):
+            tmpLim.append(currentData.metadata['timeLimits'][0])
+            tmpLim.append(currentData.metadata['timeLimits'][1])
 
-  #Get Y-Axis title.
-  paramDict = getParamDict(currentData.metadata['param'])
-  if ylabel == None and paramDict.has_key('label'):
-    ylabel = paramDict['label']
+        if dataSet2 != None:
+          if currentData2.metadata.has_key('timeLimits'):
+            tmpLim.append(currentData2.metadata['timeLimits'][0])
+            tmpLim.append(currentData2.metadata['timeLimits'][1])
 
-  yData1_title = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing
-  if title == None:
-    title = []
-    title.append('Selected Cells: '+yData1_title)
-    title.append(currentData.metadata['code'][0].upper() + ': ' +
-        xlim[0].strftime('%Y %b %d %H:%M - ') + xlim[1].strftime('%Y %b %d %H:%M'))
-    title = '\n'.join(title)
+        if tmpLim != []:
+            xBoundaryLimits = (min(tmpLim), max(tmpLim))
 
-  multiPlot(xData1,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
-      xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
+    #Get X-Axis title.
+    if xlabel == None:
+        xlabel = 'UT'
+
+    #Get Y-Axis title.
+    paramDict = getParamDict(currentData.metadata['param'])
+    if ylabel == None and paramDict.has_key('label'):
+        ylabel = paramDict['label']
+
+    yData1_title = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing
+    if title == None:
+        title = []
+        title.append('Selected Cells: '+yData1_title)
+        title.append(currentData.metadata['code'][0].upper() + ': ' +
+            xlim[0].strftime('%Y %b %d %H:%M - ') + xlim[1].strftime('%Y %b %d %H:%M'))
+        title = '\n'.join(title)
+
+    multiPlot(xData1,yData1,beams,gates,yData1_title=yData1_title,fig=fig,xlim=xlim,ylim=ylim,xlabel=xlabel,ylabel=ylabel,title=title,
+          xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
 
 def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
   """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
