@@ -46,7 +46,7 @@
     * :func:`pydarn.proc.music.windowData`
     * :func:`pydarn.proc.music.calculateFFT`
     * :func:`pydarn.proc.music.calculateDlm`: Calculate the cross-spectral matrix of a musicArray/musicDataObj object.
-    * :func:`pydarn.proc.music.calculateKarr`: Calculate the two-dimensional horizonatal wavenumber array of a musicArray/musicDataObj object.
+    * :func:`pydarn.proc.music.calculateKarr`: Calculate the two-dimensional horizontal wavenumber array of a musicArray/musicDataObj object.
     * :func:`pydarn.proc.music.simulator`: Insert a simulated MSTID into the processing chain.
     * :func:`pydarn.proc.music.scale_karr`: Scale/normalize kArr for plotting and signal detection.
     * :func:`pydarn.proc.music.detectSignals`
@@ -79,7 +79,7 @@ def getDataSet(dataObj,dataSet='active'):
 
     **Args**:
         * **dataObj**:  musicArray object
-        * **dataSet**:  which dataSet in the musicArray object to process
+        * [**dataSet**]:  which dataSet in the musicArray object to process
     **Returns**:
         * **currentData**: musicDataObj object
 
@@ -113,7 +113,7 @@ def stringify_signal(sig):
         * **sig** (dict): Information about a detected signal.
 
     **Returns**:
-      * **sigInfo** (string): String representation of the signal information.
+      * **sigInfo** (str): String representation of the signal information.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -166,12 +166,12 @@ def stringify_signal_list(signal_list,sort_key='order'):
     """Method to convert a list of signal dictionaries into strings.
 
     **Args**:
-        * [**signal_list**] (dict): Information about a detected signal.
-        * **sort_key** (string or None): Dictionary key to sort on, or None for no sort. 'order' will sort the signal list
+        * **signal_list** (list of dict): Information about a detected signal.
+        * [**sort_key**] (string or None): Dictionary key to sort on, or None for no sort. 'order' will sort the signal list
             from strongest signal to weakest, as determined by the MUSIC algorithm.
 
     **Returns**:
-        * [**stringInfo**] (string): String representation of the signal information.
+        * **stringInfo** (list of str): String representation of the signal information.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -208,7 +208,7 @@ class SigDetect(object):
         """Method to convert a list of signal dictionaries into strings.
 
         **Returns**
-          * **stringInfo**: A list of dictionaries of strings for each of the detected signals.  The list is sorted by order.
+            * **stringInfo** (list of str): String representation of the signal information.
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
@@ -238,11 +238,12 @@ class musicDataObj(object):
     """This class is the basic container for holding MUSIC data.
 
     **Args**: 
-        * [**time**] (datetime.datetime): list of times corresponding to data
-        * [**data**] (numpy.array): 3-dimensional array of data
-        * **fov** (pydarn.radar.radFov.fov): Radar field-of-view object.
-        * **comment** (string): String to be appended to the history of this object
-        * **metadata** (**kwArgs): keywords sent to matplot lib, etc.
+        * **time** (list of datetime.datetime): list of times corresponding to data
+        * **data** (numpy.array): 3-dimensional array of data
+        * [**fov**] (pydarn.radar.radFov.fov): Radar field-of-view object.
+        * [**comment**] (str): String to be appended to the history of this object
+        * [**parent**] (:class:`musicArrau`): reference to parent musicArray object
+        * [**metadata**] (**kwArgs): keywords sent to matplot lib, etc.
 
     **Methods**:
         * :func:`musicDataObj.copy`
@@ -273,8 +274,8 @@ class musicDataObj(object):
         """Copy a musicDataObj object.  This deep copies data and metadata, updates the serial number, and logs a comment in the history.  Methods such as plot are kept as a reference.
 
         **Args**:
-            * **newsig** (string): Name for the new musicDataObj object.
-            * **comment** (string): Comment describing the new musicDataObj object.
+            * **newsig** (str): Name for the new musicDataObj object.
+            * **comment** (str): Comment describing the new musicDataObj object.
         **Returns**:
             * **newsigobj** (:class:`musicDataObj`): Copy of the original musicDataObj with new name and history entry.
 
@@ -310,7 +311,7 @@ class musicDataObj(object):
         """Calculate the Nyquist frequency of a vt sigStruct signal.
 
         **Args**:
-            * [**timeVec**] (datetime.datetime): List of datetime.datetime to use instead of self.time.
+            * [**timeVec**] (list of datetime.datetime): List of datetime.datetime to use instead of self.time.
 
         **Returns**:
             * **nq** (float): Nyquist frequency of the signal in Hz.
@@ -326,7 +327,7 @@ class musicDataObj(object):
         """Calculate the sample period of a vt sigStruct signal.
 
         **Args**:
-            * [**timeVec**] (datetime.datetime): List of datetime.datetime to use instead of self.time.
+            * [**timeVec**] (list of datetime.datetime): List of datetime.datetime to use instead of self.time.
 
         **Returns**:
             * **samplePeriod** (float): samplePeriod: sample period of signal in seconds.
@@ -361,12 +362,10 @@ class musicDataObj(object):
         """Removes data outside of the rangeLimits, gateLimits, and timeLimits boundaries.
 
         **Args**:
-            * **dataObj** (:class:`musicArray`):      musicArray object
-            * **dataSet** (string):      which dataSet in the musicArray object to process
-            * **rangeLimits** (interable):  Two-element array defining the maximum and minumum slant ranges to use. [km]
-            * **gateLimits** (iterable):   Two-element array defining the maximum and minumum gates to use.
-            * **newSigName** (string):   String name of the attribute of the newly created signal.
-            * **comment** (string):      String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+            * [**rangeLimits**] (interable): Two-element array defining the maximum and minumum slant ranges to use. [km]
+            * [**gateLimits**] (iterable): Two-element array defining the maximum and minumum gates to use.
+            * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+            * [**comment**] (str): String to be appended to the history of this object.
 
         **Returns**:
             * **newMusicDataObj** (:class:`musicDataObj`): New musicDataObj.  The musicDataObj is also stored in it's parent musicArray object.
@@ -419,12 +418,46 @@ class musicDataObj(object):
 
     
 class musicArray(object):
+  """This class is the basic container for holding MUSIC data.
+
+  **Args**: 
+      * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+      * [**sTime**] (datetime.datetime): start time UT (if None myPtr.sTime is used)
+      * [**eTime**] (datetime.datetime): end time UT (if None myPtr.eTime is used)
+      * [**param**] (str): Radar FIT parameter to load and process.  Any appropriate attribute of the FIT data structure is allowed.
+      * [**gscat**] (int): Ground scatter flag.
+                      0: all backscatter data 
+                      1: ground backscatter only
+                      2: ionospheric backscatter only
+                      3: all backscatter data with a ground backscatter flag.
+      * [**fovElevation**] (float or None): Passed directly to pydarn.radar.radFov.fov()
+      * [**fovModel**] (str): Scatter mapping model.
+                      'GS': Ground Scatter Mapping Model.  See Bristow et al. [1994]
+                      'IS': Standard SuperDARN scatter mapping model.
+      * [**fovCoords**] (str): Map coordinate system. WARNING: 'geo' is curently only tested coordinate system.
+
+  **Methods**:
+      * :func:`musicArray.get_data_sets`
+
+  **Example**:
+      ::
+
+          #Set basic event parameters.
+          rad         ='wal'
+          sTime       = datetime.datetime(2011,5,9,8,0)
+          eTime       = datetime.datetime(2011,5,9,19,0)
+          #Connect to a SuperDARN data source.
+          myPtr       = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime)
+          #Create the musicArray Object.
+          dataObj     = music.musicArray(myPtr,fovModel='GS')
+
+  **References**:
+      Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
+          using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319–331, doi:10.1029/93JA01470.
+
+  Written by Nathaniel A. Frissell, Fall 2013
+  """
   def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
-#    fov = pydarn.radar.radFov.fov(frang=180.0, rsep=45.0, site=None, nbeams=None, ngates=None, bmsep=None, recrise=None, siteLat=None, siteLon=None, siteBore=None, siteAlt=None, elevation=None, altitude=300.0, model='IS', coords='geo')
-#    0: plot all backscatter data 
-#    1: plot ground backscatter only
-#    2: plot ionospheric backscatter only
-#    3: plot all backscatter data with a ground backscatter flag.
 
     if sTime == None: sTime = myPtr.sTime
     if eTime == None: eTime = myPtr.eTime
@@ -603,25 +636,36 @@ class musicArray(object):
     self.prm = prm
 
   def get_data_sets(self):
-      #Return a sorted list of datasets associated with this music object.
-      attrs = dir(self)
+    """
+    Return a sorted list of musicDataObj's contained in this musicArray.
 
-      dataSets = []
-      for item in attrs:
+    **Returns**:
+        * **dataSets** (list of str): Names of musicDataObj's contained in this musicArray.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+
+    attrs = dir(self)
+
+    dataSets = []
+    for item in attrs:
         if item.startswith('DS'):
             dataSets.append(item)
-      dataSets.sort()
-      return dataSets
+    dataSets.sort()
+    return dataSets
 
 def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
   """Interpolates the data in a musicArray object along the beams of the radar.  This method will ensure that no
   rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
+  The result is stored as a new musicDataObj in the given musicArray object.
 
   **Args**:
-      * **dataObj**:  musicArray object
-      * **dataSet**:  which dataSet in the musicArray object to process
-      * **comment**: String to be appended to the history of this object
-      * **newSigName**: String name of the attribute of the newly created signal.
+      * **dataObj** (:class:`musicArray`):  musicArray object
+      * [**dataSet**] (str):  which dataSet in the musicArray object to process
+      * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+      * [**comment**] (str): String to be appended to the history of this object.
+
+  Written by Nathaniel A. Frissell, Fall 2013
   """
   from scipy.interpolate import interp1d
   currentData = getDataSet(dataObj,dataSet)
@@ -663,13 +707,15 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
   with the center value of the range cell.  Gate limits always override range limits.
   Use the applyLimits() method to remove data outside of the data limits.
 
-  :param dataObj: musicArray object
-  :param dataSet: which dataSet in the musicArray object to process
-  :param rangeLimits: Two-element array defining the maximum and minumum slant ranges to use. [km]
-  :param gateLimits: Two-element array defining the maximum and minumum gates to use.
-  :param beamLimits: Two-element array defining the maximum and minumum beams to use.
-  :param timeLimits: Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
-  :param newSigName: String name of the attribute of the newly created signal.
+  **Args**:
+      * **dataObj** (:class:`musicArray`):  musicArray object
+      * [**dataSet**] (str):  which dataSet in the musicArray object to process
+      * [**rangeLimits**] (iterable or None): Two-element array defining the maximum and minumum slant ranges to use. [km]
+      * [**gateLimits**] (iterable or None): Two-element array defining the maximum and minumum gates to use.
+      * [**beamLimits**] (iterable or None): Two-element array defining the maximum and minumum beams to use.
+      * [**timeLimits**] (iterable or None): Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
+
+  Written by Nathaniel A. Frissell, Fall 2013
   """
   currentData = getDataSet(dataObj,dataSet)
   try:
@@ -698,12 +744,20 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
 def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
   """Removes data outside of the rangeLimits and gateLimits boundaries.
 
-  * **dataObj**:      musicArray object
-  * **dataSet**:      which dataSet in the musicArray object to process
-  * **rangeLimits**:  Two-element array defining the maximum and minumum slant ranges to use. [km]
-  * **gateLimits**:   Two-element array defining the maximum and minumum gates to use.
-  * **newSigName**:   String name of the attribute of the newly created signal.
-  * **comment**:      String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+  **Args**:
+      * **dataObj** (:class:`musicArray`):  musicArray object
+      * [**dataSet**] (str):  which dataSet in the musicArray object to process
+      * [**rangeLimits**] (iterable or None): Two-element array defining the maximum and minumum slant ranges to use. [km]
+      * [**gateLimits**] (iterable or None): Two-element array defining the maximum and minumum gates to use.
+      * [**beamLimits**] (iterable or None): Two-element array defining the maximum and minumum beams to use.
+      * [**timeLimits**] (iterable or None): Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
+      * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+      * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+
+  **Returns**:
+      * **newData** (:class:`musicDataObj`): Processed version of input musicDataObj (if succeeded), or the original musicDataObj (if failed).
+
+  Written by Nathaniel A. Frissell, Fall 2013
   """
 
   if (rangeLimits != None) or (gateLimits != None) or (timeLimits != None):
@@ -800,69 +854,74 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
     return currentData
 
 def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
-  """Finds the center cell of the field-of-view of a musicArray data object.
-  The range, azimuth, x-range, and y-range from the center to each cell in the FOV
-  is calculated and saved to the FOV object. The following objects are added to
-  dataObj.dataSet:
-    fov.relative_centerInx: [beam, gate] index of the center cell
-    fov.relative_azm:       Azimuth relative to center cell [deg]
-    fov.relative_range:     Range relative to center cell [km]
-    fov.relative_x:         X-range relative to center cell [km]
-    fov.relative_y:         Y-range relative to center cell [km]
+    """Finds the center cell of the field-of-view of a musicArray data object.
+    The range, azimuth, x-range, and y-range from the center to each cell in the FOV
+    is calculated and saved to the FOV object. The following objects are added to
+    dataObj.dataSet:
+      fov.relative_centerInx: [beam, gate] index of the center cell
+      fov.relative_azm:       Azimuth relative to center cell [deg]
+      fov.relative_range:     Range relative to center cell [km]
+      fov.relative_x:         X-range relative to center cell [km]
+      fov.relative_y:         Y-range relative to center cell [km]
 
-  **Args**:
-      * **dataObj**:  musicArray object
-      * **dataSet**:  name of dataSet to use
-      * **altitude**: altitude added to Re = 6378.1 km [km]
-  **Returns**:
-      * **None**:  None.
-  """
-  import utils
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**altitude**] (float): altitude added to Re = 6378.1 km [km]
 
-  #Get the chosen dataset.
-  currentData = getDataSet(dataObj,dataSet)
+    **Returns**:
+        * **None**:  None.
 
-  #Determine center beam.
-  ctrBeamInx  = len(currentData.fov.beams)/2
-  ctrGateInx  = len(currentData.fov.gates)/2
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    import utils
 
-  currentData.fov.relative_centerInx = [ctrBeamInx, ctrGateInx]
+    #Get the chosen dataset.
+    currentData = getDataSet(dataObj,dataSet)
 
-  #Set arrays of lat1/lon1 to the center cell value.  Use this to calculate all other positions
-  #with numpy array math.
-  lat1 = np.zeros_like(currentData.fov.latCenter)   
-  lon1 = np.zeros_like(currentData.fov.latCenter)   
+    #Determine center beam.
+    ctrBeamInx  = len(currentData.fov.beams)/2
+    ctrGateInx  = len(currentData.fov.gates)/2
 
-  lat1[:] = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
-  lon1[:] = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
+    currentData.fov.relative_centerInx = [ctrBeamInx, ctrGateInx]
 
-  #Make lat2/lon2 the center position array of the dataset.
-  lat2    = currentData.fov.latCenter
-  lon2    = currentData.fov.lonCenter
+    #Set arrays of lat1/lon1 to the center cell value.  Use this to calculate all other positions
+    #with numpy array math.
+    lat1 = np.zeros_like(currentData.fov.latCenter)   
+    lon1 = np.zeros_like(currentData.fov.latCenter)   
 
-  #Calculate the azimuth and distance from the centerpoint to the endpoint.
-  azm     = utils.greatCircleAzm(lat1,lon1,lat2,lon2)
-  dist    = (Re + altitude)*utils.greatCircleDist(lat1,lon1,lat2,lon2)
+    lat1[:] = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
+    lon1[:] = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
 
-  #Save calculated values to the current data object, as well as calculate the
-  #X and Y relatvie positions of each cell.
-  currentData.fov.relative_azm    = azm
-  currentData.fov.relative_range  = dist
-  currentData.fov.relative_x      = dist * np.sin(np.radians(azm)) 
-  currentData.fov.relative_y      = dist * np.cos(np.radians(azm)) 
+    #Make lat2/lon2 the center position array of the dataset.
+    lat2    = currentData.fov.latCenter
+    lon2    = currentData.fov.lonCenter
 
-  return None
+    #Calculate the azimuth and distance from the centerpoint to the endpoint.
+    azm     = utils.greatCircleAzm(lat1,lon1,lat2,lon2)
+    dist    = (Re + altitude)*utils.greatCircleDist(lat1,lon1,lat2,lon2)
+
+    #Save calculated values to the current data object, as well as calculate the
+    #X and Y relatvie positions of each cell.
+    currentData.fov.relative_azm    = azm
+    currentData.fov.relative_range  = dist
+    currentData.fov.relative_x      = dist * np.sin(np.radians(azm)) 
+    currentData.fov.relative_y      = dist * np.cos(np.radians(azm)) 
+
+    return None
 
 def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated',comment='Time Linear Interpolation',timeRes=10,newTimeVec=None):
   """Interpolates the data in a musicArray object to a regular time grid.
 
   **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **comment**:    String to be appended to the history of this object
-      * **newSigName**: String name of the attribute of the newly created signal.
-      * **timeRes**:    time resolution of new time vector [seconds]
-      * **newTimeVec**: Sequence of datetime.datetime objects that data will be interpolated to.  This overides timeRes.
+      * **dataObj** (:class:`musicArray`):  musicArray object
+      * [**dataSet**] (str):  which dataSet in the musicArray object to process
+      * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+      * [**comment**] (str): String to be appended to the history of this object.
+      * [**timeRes**] (float):    time resolution of new time vector [seconds]
+      * [**newTimeVec**] (list of datetime.datetime): Sequence of datetime.datetime objects that data will be interpolated to.  This overides timeRes.
+
+  Written by Nathaniel A. Frissell, Fall 2013
   """
   from scipy.interpolate import interp1d
   import utils 
@@ -877,11 +936,6 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
     newTimeVec = [sTime]
     while newTimeVec[-1] < fTime:
       newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
-
-#  if newTimeVec == None:
-#    newTimeVec = [sTime]
-#    while len(newTimeVec) != 107:
-#      newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
 
   #Ensure that the new time vector is within the bounds of the actual data set.
   newTimeVec  = np.array(newTimeVec)
@@ -920,12 +974,16 @@ def filterTimes(sTime,eTime,timeRes,numTaps):
     This function will calcuate the full time period of data that needs to be loaded in order to provide filtered data
     for the event requested.
 
-    * **sTime**:    (datetime.datetime) Start time of event.
-    * **eTime**:    (datetime.datetime) End time of event.
-    * **timeRes**:  (float)  Time resolution in seconds of data to be sent to filter.
-    * **numtaps**:  (int)    Length of the filter 
+    **Args**:
+        * **sTime** (datetime.datetime): Start time of event.
+        * **eTime** (datetime.datetime): End time of event.
+        * **timeRes** (float): Time resolution in seconds of data to be sent to filter.
+        * **numtaps** (int): Length of the filter 
 
-    :returns: (newSTime, newETime)
+    **Returns**:
+        * **(newSTime, newETime)** (datetime.datetime, datetime.datetime): Start and end times of data that needs to be fed into the filter.
+
+    Written by Nathaniel A. Frissell, Fall 2013
     """
     td = datetime.timedelta(seconds=(numTaps*timeRes/2.))
     newSTime = sTime - td
@@ -933,7 +991,6 @@ def filterTimes(sTime,eTime,timeRes,numTaps):
     return (newSTime, newETime)
 
 class filter(object):
-  def __init__(self, dataObj, dataSet='active', numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newDataSetName='filtered'):
     """Filter a VT sig/sigStruct object and define a FIR filter object.
     If only cutoff_low is defined, this is a high pass filter.
     If only cutoff_high is defined, this is a low pass filter.
@@ -944,667 +1001,743 @@ class filter(object):
       http://mpastell.com/2010/01/18/fir-with-scipy/
 
     Metadata keys:
-      'filter_cutoff_low' --> cutoff_low
-      'filter_cutoff_high' --> cutoff_high
-      'filter_cutoff_numtaps' --> cutoff_numtaps
+      'filter_cutoff_low'   --> cutoff_low
+      'filter_cutoff_high'  --> cutoff_high
+      'filter_numtaps'      --> cutoff_numtaps
 
-    numtaps : int
-      Length of the filter (number of coefficients, i.e. the filter
-      order + 1).  `numtaps` must be even if a passband includes the
-      Nyquist frequency.
+    **Methods**:
+        * :func:`filter.plotTransferFunction`
+        * :func:`filter.plotImpulseResponse`
+        * :func:`filter.filter`
 
-    cutoff_low: float or 1D array_like
-        High pass cutoff frequency of filter (expressed in the same units as `nyq`)
-        OR an array of cutoff frequencies (that is, band edges). In the
-        latter case, the frequencies in `cutoff` should be positive and
-        monotonically increasing between 0 and `nyq`.  The values 0 and
-        `nyq` must not be included in `cutoff`.
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
 
-    cutoff_high: float or 1D array_like
-        Like cutoff_low, but this is the low pass cutoff frequency of the filter.
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
 
-    width : float or None
-        If `width` is not None, then assume it is the approximate width
-        of the transition region (expressed in the same units as `nyq`)
-        for use in Kaiser FIR filter design.  In this case, the `window`
-        argument is ignored.
+        * [**numtaps**] (int or None):
+            Length of the filter (number of coefficients, i.e. the filter
+            order + 1).  `numtaps` must be even if a passband includes the
+            Nyquist frequency.
 
-    window : string or tuple of string and parameter values
-        Desired window to use. See `scipy.signal.get_window` for a list
-        of windows and required parameters.
+            If dataObj.dataSet.metadata['filter_numptaps'] is set and this keyword is None,
+            the metadata value will be used.
 
-    pass_zero : bool
-        If True, the gain at the frequency 0 (i.e. the "DC gain") is 1.
-        Otherwise the DC gain is 0.
+        * [**cutoff_low**] (float, 1D array_like, or None):
+            High pass cutoff frequency of filter (expressed in the same units as `nyq`)
+            OR an array of cutoff frequencies (that is, band edges). In the
+            latter case, the frequencies in `cutoff` should be positive and
+            monotonically increasing between 0 and `nyq`.  The values 0 and
+            `nyq` must not be included in `cutoff`. If None, a low-pass filter will not
+            be applied.
 
-    scale : bool
-        Set to True to scale the coefficients so that the frequency
-        response is exactly unity at a certain frequency.
-        That frequency is either:
+            If dataObj.dataSet.metadata['filter_cutoff_low'] is set and this keyword is None,
+            the metadata value will be used.
+
+        * [**cutoff_high**] (float, 1D array_like, or None):
+            Like cutoff_low, but this is the low pass cutoff frequency of the filter.
+
+            If dataObj.dataSet.metadata['filter_cutoff_high'] is set and this keyword is None,
+            the metadata value will be used.
+
+        * [**width**] (float or None):
+            If `width` is not None, then assume it is the approximate width
+            of the transition region (expressed in the same units as `nyq`)
+            for use in Kaiser FIR filter design.  In this case, the `window`
+            argument is ignored.
+
+        * [**window**] (string or tuple of string and parameter values):
+            Desired window to use. See `scipy.signal.get_window` for a list
+            of windows and required parameters.
+
+        * [**pass_zero**] (bool):
+            If True, the gain at the frequency 0 (i.e. the "DC gain") is 1.
+            Otherwise the DC gain is 0.
+
+        * [**scale**] (bool):
+            Set to True to scale the coefficients so that the frequency
+            response is exactly unity at a certain frequency.
+            That frequency is either:
                   0 (DC) if the first passband starts at 0 (i.e. pass_zero is True);
                   `nyq` (the Nyquist rate) if the first passband ends at
                       `nyq` (i.e the filter is a single band highpass filter);
                   center of first passband otherwise.
 
-    :returns: filter object
+    Written by Nathaniel A. Frissell, Fall 2013
     """
-    import scipy as sp
+    def __init__(self, dataObj, dataSet='active', numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newDataSetName='filtered'):
+        import scipy as sp
+        
+        sigObj = getattr(dataObj,dataSet)
+        nyq = sigObj.nyquistFrequency()
+
+        #Get metadata for cutoffs and numtaps.
+        md = sigObj.metadata
+        if cutoff_high == None:
+            if md.has_key('filter_cutoff_high'):
+                cutoff_high = md['filter_cutoff_high']
+
+        if cutoff_low == None:
+            if md.has_key('filter_cutoff_low'):
+                cutoff_low = md['filter_cutoff_low']
+
+        if numtaps == None:
+            if md.has_key('filter_numtaps'):
+                numtaps = md['filter_numtaps']
+            else:
+                print 'WARNING: You must provide numtaps.'
+                return
+
+
+        if   cutoff_high != None:    #Low pass
+            lp = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+            d = lp
+
+        if   cutoff_low != None:    #High pass
+            hp = -sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_low, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+            hp[numtaps/2] = hp[numtaps/2] + 1
+            d = hp
+
+        if cutoff_high != None and cutoff_low != None:
+            d = -(lp+hp)
+            d[numtaps/2] = d[numtaps/2] + 1
+
+        if cutoff_high == None and cutoff_low == None:
+            print "WARNING!! You must define cutoff frequencies!"
+            return
     
-    sigObj = getattr(dataObj,dataSet)
-    nyq = sigObj.nyquistFrequency()
+        self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz,','Numtaps:',str(numtaps)])
+        self.cutoff_low   = cutoff_low
+        self.cutoff_high  = cutoff_high
+        self.nyq = nyq
+        self.ir = d
 
-    #Get metadata for cutoffs and numtaps.
-    md = sigObj.metadata
-    if cutoff_high == None:
-      if md.has_key('filter_cutoff_high'):
-        cutoff_high = md['filter_cutoff_high']
-
-    if cutoff_low == None:
-      if md.has_key('filter_cutoff_low'):
-        cutoff_low = md['filter_cutoff_low']
-
-    if numtaps == None:
-      if md.has_key('filter_numtaps'):
-        numtaps = md['filter_numtaps']
-      else:
-        print 'WARNING: You must provide numtaps.'
-        return
+        self.filter(dataObj,dataSet=dataSet,newDataSetName=newDataSetName)
 
 
-    if   cutoff_high != None:    #Low pass
-      lp = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
-      d = lp
+    def __str__(self):
+        return self.comment
 
-    if   cutoff_low != None:    #High pass
-      hp = -sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_low, width=width, window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
-      hp[numtaps/2] = hp[numtaps/2] + 1
-      d = hp
+    def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None,worN=None,fig=None):
+        import scipy as sp
+        """Plot the frequency and phase response of the filter object.
 
-    if cutoff_high != None and cutoff_low != None:
-      d = -(lp+hp)
-      d[numtaps/2] = d[numtaps/2] + 1
+        **Args**:
+            * [**xmin**] (None or float): Minimum value for x-axis.
+            * [**xmax**] (None or float): Maximum value for x-axis.
+            * [**ymin_mag**] (None or float): Minimum value for y-axis for the frequency response plot.
+            * [**ymax_mag**] (None or float): Maximum value for y-axis for the frequency response plot.
+            * [**ymin_phase**] (None or float): Minimum value for y-axis for the phase response plot.
+            * [**ymax_phase**] (None or float): Maximum value for y-axis for the phase response plot.
+            * [**worN**] (None or int):
+                passed to scipy.signal.freqz()
+                If None, then compute at 512 frequencies around the unit circle.
+                If the len(filter) > 512, then compute at len(filter) frequencies around the unit circle.
+                If a single integer, the compute at that many frequencies.
+                Otherwise, compute the response at frequencies given in worN
+            * [**fig**] (matplotlib.Figure or None): Figure object on which to plot.  If None, a figure will be created.
 
-    if cutoff_high == None and cutoff_low == None:
-      print "WARNING!! You must define cutoff frequencies!"
-      return
-    
-    self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz,','Numtaps:',str(numtaps)])
-    self.cutoff_low   = cutoff_low
-    self.cutoff_high  = cutoff_high
-    self.nyq = nyq
-    self.ir = d
+        ***Returns***:
+            * [**fig**] (matplotlib.Figure): Figure object containing the plot.
 
-    self.filter(dataObj,dataSet=dataSet,newDataSetName=newDataSetName)
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
 
+        if fig == None:
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            from matplotlib.figure import Figure
+            fig = Figure()
 
-  def __str__(self):
-    return self.comment
+        if worN == None:
+            if len(self.ir) > 512: worN = len(self.ir)
+            else: worN = None
+        else: pass
 
-  def plotTransferFunction(self,xmin=0,xmax=None,ymin_mag=-150,ymax_mag=5,ymin_phase=None,ymax_phase=None,worN=None,fig=None):
-    import scipy as sp
-    """Plot the frequency and phase response of the filter object.
+        w,h = sp.signal.freqz(self.ir,1,worN=worN)
+        h_dB = 20 * np.log10(abs(h))
+        axis = fig.add_subplot(211)
 
-    :param xmin: Minimum value for x-axis.
-    :param xmax: Maximum value for x-axis.
-    :param ymin_mag: Minimum value for y-axis for the frequency response plot.
-    :param ymax_mag: Maximum value for y-axis for the frequency response plot.
-    :param ymin_phase: Minimum value for y-axis for the phase response plot.
-    :param ymax_phase: Maximum value for y-axis for the phase response plot.
-    :param worN: worN : {None, int}, optional
-        passed to scipy.signal.freqz()
-        If None, then compute at 512 frequencies around the unit circle.
-        If the len(filter) > 512, then compute at len(filter) frequencies around the unit circle.
-        If a single integer, the compute at that many frequencies.
-        Otherwise, compute the response at frequencies given in worN
-    """
+        #Compute frequency vector.
+        w = w/max(w) * self.nyq
+        axis.plot(w,h_dB,'.-')
+        #mp.axvline(x=self.fMax,color='r',ls='--',lw=2)
 
-    if fig == None:
-      from matplotlib.backends.backend_agg import FigureCanvasAgg
-      from matplotlib.figure import Figure
-      fig = Figure()
+        if xmin is not None: axis.set_xlim(xmin=xmin)
+        if xmax is not None: axis.set_xlim(xmax=xmax)
+        if ymin_mag is not None: axis.set_ylim(ymin=ymin_mag)
+        if ymax_mag is not None: axis.set_ylim(ymax=ymax_mag)
 
-    if worN == None:
-      if len(self.ir) > 512: worN = len(self.ir)
-      else: worN = None
-    else: pass
+        axis.set_xlabel(r'Frequency (Hz)')
+        axis.set_ylabel('Magnitude (db)')
 
-    w,h = sp.signal.freqz(self.ir,1,worN=worN)
-    h_dB = 20 * np.log10(abs(h))
-    axis = fig.add_subplot(211)
-  
-    #Compute frequency vector.
-    w = w/max(w) * self.nyq
-    axis.plot(w,h_dB,'.-')
-    #mp.axvline(x=self.fMax,color='r',ls='--',lw=2)
+        axis.set_title(r'Frequency response')
 
-    if xmin is not None: axis.set_xlim(xmin=xmin)
-    if xmax is not None: axis.set_xlim(xmax=xmax)
-    if ymin_mag is not None: axis.set_ylim(ymin=ymin_mag)
-    if ymax_mag is not None: axis.set_ylim(ymax=ymax_mag)
+        axis = fig.add_subplot(212)
+        h_Phase = np.unwrap(np.arctan2(np.imag(h),np.real(h)))
+        axis.plot(w,h_Phase,'.-')
 
-    axis.set_xlabel(r'Frequency (Hz)')
-    axis.set_ylabel('Magnitude (db)')
+        if xmin is not None: axis.set_xlim(xmin=xmin)
+        if xmax is not None: axis.set_xlim(xmax=xmax)
+        if ymin_phase is not None: axis.set_ylim(ymin=ymin_phase)
+        if ymax_phase is not None: axis.set_ylim(ymax=ymax_phase)
 
-    axis.set_title(r'Frequency response')
+        axis.set_ylabel('Phase (radians)')
+        axis.set_xlabel(r'Frequency (Hz)')
+        axis.set_title(r'Phase response')
+        fig.suptitle(self.comment)
+        fig.subplots_adjust(hspace=0.5)
 
-    axis = fig.add_subplot(212)
-    h_Phase = np.unwrap(np.arctan2(np.imag(h),np.real(h)))
-    axis.plot(w,h_Phase,'.-')
+        return fig
 
-    if xmin is not None: axis.set_xlim(xmin=xmin)
-    if xmax is not None: axis.set_xlim(xmax=xmax)
-    if ymin_phase is not None: axis.set_ylim(ymin=ymin_phase)
-    if ymax_phase is not None: axis.set_ylim(ymax=ymax_phase)
+    def plotImpulseResponse(self,xmin=None,xmax=None,ymin_imp=None,ymax_imp=None,ymin_step=None,ymax_step=None,fig=None):
+        import scipy as sp
+        """Plot the frequency and phase response of the filter object.
 
-    axis.set_ylabel('Phase (radians)')
-    axis.set_xlabel(r'Frequency (Hz)')
-    axis.set_title(r'Phase response')
-    fig.suptitle(self.comment)
-    fig.subplots_adjust(hspace=0.5)
+        **Args**:
+            * [**xmin**] (None or float): Minimum value for x-axis.
+            * [**xmax**] (None or float): Maximum value for x-axis.
+            * [**ymin_imp**] (None or float): Minimum value for y-axis for the impulse response plot.
+            * [**ymax_imp**] (None or float): Maximum value for y-axis for the impulse response plot.
+            * [**ymin_step**] (None or float): Minimum value for y-axis for the step response plot.
+            * [**ymax_step**] (None or float): Maximum value for y-axis for the step response plot.
+            * [**fig**] (matplotlib.Figure or None): Figure object on which to plot.  If None, a figure will be created.
 
-    return fig
+        ***Returns***:
+            * [**fig**] (matplotlib.Figure): Figure object containing the plot.
 
-  def plotImpulseResponse(self,xmin=None,xmax=None,ymin_imp=None,ymax_imp=None,ymin_step=None,ymax_step=None,fig=None):
-    import scipy as sp
-    """Plot the frequency and phase response of the filter object.
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
+        if fig == None:
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            from matplotlib.figure import Figure
+            fig = Figure()
 
-    :param xmin: Minimum value for x-axis.
-    :param xmax: Maximum value for x-axis.
-    :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-    :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-    :param ymin_step: Minimum value for y-axis for the step response plot.
-    :param ymax_step: Maximum value for y-axis for the step response plot.
-    """
-    if fig == None:
-      from matplotlib.backends.backend_agg import FigureCanvasAgg
-      from matplotlib.figure import Figure
-      fig = Figure()
+        l = len(self.ir)
+        impulse = np.repeat(0.,l); impulse[0] =1.
+        x = np.arange(0,l)
+        response = sp.signal.lfilter(self.ir,1,impulse)
+        axis = fig.add_subplot(211)
+        axis.stem(x, response)
+        axis.set_ylabel('Amplitude')
+        axis.set_xlabel(r'n (samples)')
+        axis.set_title(r'Impulse response')
 
-    l = len(self.ir)
-    impulse = np.repeat(0.,l); impulse[0] =1.
-    x = np.arange(0,l)
-    response = sp.signal.lfilter(self.ir,1,impulse)
-    axis = fig.add_subplot(211)
-    axis.stem(x, response)
-    axis.set_ylabel('Amplitude')
-    axis.set_xlabel(r'n (samples)')
-    axis.set_title(r'Impulse response')
+        axis = fig.add_subplot(212)
+        step = np.cumsum(response)
+        axis.stem(x, step)
+        axis.set_ylabel('Amplitude')
+        axis.set_xlabel(r'n (samples)')
+        axis.set_title(r'Step response')
+        fig.suptitle(self.comment)
+        fig.subplots_adjust(hspace=0.5)
 
-    axis = fig.add_subplot(212)
-    step = np.cumsum(response)
-    axis.stem(x, step)
-    axis.set_ylabel('Amplitude')
-    axis.set_xlabel(r'n (samples)')
-    axis.set_title(r'Step response')
-    fig.suptitle(self.comment)
-    fig.subplots_adjust(hspace=0.5)
+        return fig
 
-    return fig
+    def filter(self,dataObj,dataSet='active',newDataSetName='filtered'):
+        """Apply the filter to a vtsig object.
 
-  def filter(self,dataObj,dataSet='active',newDataSetName='filtered'):
-      """Apply the filter to a vtsig object.
+        **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
 
-      :param vtsig: vtsig object
-      :param xmax: Maximum value for x-axis.
-      :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-      :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-      :param ymin_step: Minimum value for y-axis for the step response plot.
-      :param ymax_step: Maximum value for y-axis for the step response plot.
-      """
-      import scipy as sp
-      
-      sigobj = getattr(dataObj,dataSet)
-      vtsig  = sigobj.parent
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
+        import scipy as sp
 
-      nrTimes,nrBeams,nrGates = np.shape(sigobj.data)
+        sigobj = getattr(dataObj,dataSet)
+        vtsig  = sigobj.parent
 
-      #Filter causes a delay in the signal and also doesn't get the tail end of the signal...  Shift signal around, provide info about where the signal is valid.
-      shift = np.int32(-np.floor(len(self.ir)/2.))
+        nrTimes,nrBeams,nrGates = np.shape(sigobj.data)
 
-      start_line    = np.zeros(nrTimes)
-      start_line[0] = 1
-      start_line    = np.roll(start_line,shift)
+        #Filter causes a delay in the signal and also doesn't get the tail end of the signal...  Shift signal around, provide info about where the signal is valid.
+        shift = np.int32(-np.floor(len(self.ir)/2.))
 
-      tinx0 = abs(shift)
-      tinx1 = np.where(start_line == 1)[0][0]
+        start_line    = np.zeros(nrTimes)
+        start_line[0] = 1
+        start_line    = np.roll(start_line,shift)
 
-      val_tm0 = sigobj.time[tinx0]
-      val_tm1 = sigobj.time[tinx1]
+        tinx0 = abs(shift)
+        tinx1 = np.where(start_line == 1)[0][0]
 
-      filteredData = np.zeros_like(sigobj.data)
+        val_tm0 = sigobj.time[tinx0]
+        val_tm1 = sigobj.time[tinx1]
 
-      #Apply filter
-      for bm in range(nrBeams):
-        for rg in range(nrGates):
-          tmp = sp.signal.lfilter(self.ir,[1.0],sigobj.data[:,bm,rg])
-          tmp = np.roll(tmp,shift)
-          filteredData[:,bm,rg] = tmp[:]
+        filteredData = np.zeros_like(sigobj.data)
 
-      #Create new signal object.
-      newsigobj = sigobj.copy(newDataSetName,self.comment)
-      #Put in the filtered data.
-      newsigobj.data = copy.copy(filteredData)
-      newsigobj.time = copy.copy(sigobj.time)
+        #Apply filter
+        for bm in range(nrBeams):
+            for rg in range(nrGates):
+                tmp = sp.signal.lfilter(self.ir,[1.0],sigobj.data[:,bm,rg])
+                tmp = np.roll(tmp,shift)
+                filteredData[:,bm,rg] = tmp[:]
 
-      #Clear out ymin and ymax from metadata; make sure meta data block exists.
-      #If not, create it.
-      if hasattr(newsigobj,'metadata'):
-        delMeta = ['ymin','ymax','ylim']
-        for key in delMeta:
-          if newsigobj.metadata.has_key(key):
-            del newsigobj.metadata[key]
-      else:
-        newsigobj.metadata = {}
+        #Create new signal object.
+        newsigobj = sigobj.copy(newDataSetName,self.comment)
+        #Put in the filtered data.
+        newsigobj.data = copy.copy(filteredData)
+        newsigobj.time = copy.copy(sigobj.time)
 
-      newsigobj.metadata['timeLimits'] = (val_tm0,val_tm1)
+        #Clear out ymin and ymax from metadata; make sure meta data block exists.
+        #If not, create it.
 
-      key = 'title'
-      if newsigobj.metadata.has_key(key):
-        newsigobj.metadata[key] = ' '.join(['Filtered',newsigobj.metadata[key]])
-      else:
-        newsigobj.metadata[key] = 'Filtered'
+        if hasattr(newsigobj,'metadata'):
+            delMeta = ['ymin','ymax','ylim']
+            for key in delMeta:
+                if newsigobj.metadata.has_key(key):
+                    del newsigobj.metadata[key]
+        else:
+            newsigobj.metadata = {}
 
-      newsigobj.metadata['fir_filter'] = (self.cutoff_low,self.cutoff_high)
-      newsigobj.setActive()
+        newsigobj.metadata['timeLimits'] = (val_tm0,val_tm1)
+
+        key = 'title'
+        if newsigobj.metadata.has_key(key):
+            newsigobj.metadata[key] = ' '.join(['Filtered',newsigobj.metadata[key]])
+        else:
+            newsigobj.metadata[key] = 'Filtered'
+
+        newsigobj.metadata['fir_filter'] = (self.cutoff_low,self.cutoff_high)
+        newsigobj.setActive()
 
 def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,type='linear'):
-  """Linearly detrend a vtsig object.
+    """Linearly detrend a data in a musicArray/musicDataObj object.
 
-  **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-      * **newSigName**: String name of the attribute of the newly created signal.
-      * **type**:       {'linear', 'constant'}, optional
-                        The type of detrending. If type == 'linear' (default), the result of a linear least-squares fit to data
-                        is subtracted from data. If type == 'constant', only the mean of data is subtracted.
-  """
-  import scipy as sp
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
 
-  currentData = getDataSet(dataObj,dataSet)
-  currentData = currentData.applyLimits()
+        * [**type**] (str: {'linear', 'constant'}):
+            The type of detrending. If type == 'linear' (default), the result of a linear least-squares fit to data
+            is subtracted from data. If type == 'constant', only the mean of data is subtracted.
 
-  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    import scipy as sp
 
-  newDataArr= np.zeros_like(currentData.data)
-  for bm in range(nrBeams):
-    for rg in range(nrGates):
-        try:
-          newDataArr[:,bm,rg] = sp.signal.detrend(currentData.data[:,bm,rg],type=type)
-        except:
-          newDataArr[:,bm,rg] = np.nan
+    currentData = getDataSet(dataObj,dataSet)
+    currentData = currentData.applyLimits()
+
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+    newDataArr= np.zeros_like(currentData.data)
+    for bm in range(nrBeams):
+        for rg in range(nrGates):
+            try:
+                newDataArr[:,bm,rg] = sp.signal.detrend(currentData.data[:,bm,rg],type=type)
+            except:
+                newDataArr[:,bm,rg] = np.nan
   
-  if comment == None:
-    comment = type.capitalize() + ' detrend (scipy.signal.detrend)'
+    if comment == None:
+        comment = type.capitalize() + ' detrend (scipy.signal.detrend)'
       
-  newDataSet      = currentData.copy(newDataSetName,comment)
-  newDataSet.data = newDataArr
-  newDataSet.setActive()
+    newDataSet      = currentData.copy(newDataSetName,comment)
+    newDataSet.data = newDataArr
+    newDataSet.setActive()
 
 def nan_to_num(dataObj,dataSet='active',newDataSetName='nan_to_num',comment=None):
-  """Convert all NANs and INFs to finite numbers using numpy.nan_to_num().
+    """Convert all NANs and INFs to finite numbers using numpy.nan_to_num().
 
-  **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-      * **newSigName**: String name of the attribute of the newly created signal.
-  """
-  currentData = getDataSet(dataObj,dataSet)
-  currentData = currentData.applyLimits()
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
 
-  if comment == None:
-    comment = 'numpy.nan_to_num'
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    currentData = getDataSet(dataObj,dataSet)
+    currentData = currentData.applyLimits()
+
+    if comment == None:
+        comment = 'numpy.nan_to_num'
       
-  newDataSet      = currentData.copy(newDataSetName,comment)
-  newDataSet.data = np.nan_to_num(currentData.data)
-  newDataSet.setActive()
+    newDataSet      = currentData.copy(newDataSetName,comment)
+    newDataSet.data = np.nan_to_num(currentData.data)
+    newDataSet.setActive()
 
 def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,window='hann'):
-  """Apply a window to a musicArray object.  The window is calculated using scipy.signal.get_window().
+    """Apply a window to a musicArray object.  The window is calculated using scipy.signal.get_window().
 
-  **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-      * **newSigName**: String name of the attribute of the newly created signal.
-      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+        * [**window**] (str):     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
                         barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
                         slepian (needs width), chebwin (needs attenuation)
-  """
-  import scipy as sp
 
-  currentData = getDataSet(dataObj,dataSet)
-  currentData = currentData.applyLimits()
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    import scipy as sp
 
-  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+    currentData = getDataSet(dataObj,dataSet)
+    currentData = currentData.applyLimits()
 
-  win = sp.signal.get_window(window,nrTimes,fftbins=False)
-  newDataArr= np.zeros_like(currentData.data)
-  for bm in range(nrBeams):
-    for rg in range(nrGates):
-      newDataArr[:,bm,rg] = currentData.data[:,bm,rg] * win
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+
+    win = sp.signal.get_window(window,nrTimes,fftbins=False)
+    newDataArr= np.zeros_like(currentData.data)
+    for bm in range(nrBeams):
+        for rg in range(nrGates):
+            newDataArr[:,bm,rg] = currentData.data[:,bm,rg] * win
   
-  if comment == None:
-    comment = window.capitalize() + ' window applied (scipy.signal.get_window)'
+    if comment == None:
+        comment = window.capitalize() + ' window applied (scipy.signal.get_window)'
       
-  newDataSet      = currentData.copy(newDataSetName,comment)
-  newDataSet.data = newDataArr
-  newDataSet.setActive()
+    newDataSet      = currentData.copy(newDataSetName,comment)
+    newDataSet.data = newDataArr
+    newDataSet.setActive()
 
 def calculateFFT(dataObj,dataSet='active',comment=None):
-  """Calculate the spectrum of an object.
+    """Calculate the spectrum of an object.
 
-  **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-  """
-  import scipy as sp
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
 
-  currentData = getDataSet(dataObj,dataSet)
-  currentData = currentData.applyLimits()
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    import scipy as sp
 
-  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+    currentData = getDataSet(dataObj,dataSet)
+    currentData = currentData.applyLimits()
 
-  #Determine frequency axis.
-  nyq = currentData.nyquistFrequency()
-  freq_ax = np.arange(nrTimes,dtype='f8')
-  freq_ax = (freq_ax / max(freq_ax)) - 0.5
-  freq_ax = freq_ax * 2. * nyq
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
-  #Use complex64, not complex128!  If you use complex128, too much numerical noise will accumulate and the final plot will be bad!
-  newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex64)
-  for bm in range(nrBeams):
-    for rg in range(nrGates):
-      newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg])) / np.size(currentData.data[:,bm,rg])
+    #Determine frequency axis.
+    nyq = currentData.nyquistFrequency()
+    freq_ax = np.arange(nrTimes,dtype='f8')
+    freq_ax = (freq_ax / max(freq_ax)) - 0.5
+    freq_ax = freq_ax * 2. * nyq
+
+    #Use complex64, not complex128!  If you use complex128, too much numerical noise will accumulate and the final plot will be bad!
+    newDataArr= np.zeros((nrTimes,nrBeams,nrGates),dtype=np.complex64)
+    for bm in range(nrBeams):
+        for rg in range(nrGates):
+            newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg])) / np.size(currentData.data[:,bm,rg])
   
-  currentData.freqVec   = freq_ax
-  currentData.spectrum  = newDataArr
+    currentData.freqVec   = freq_ax
+    currentData.spectrum  = newDataArr
 
-  # Calculate the dominant frequency #############################################
-  posFreqInx  = np.where(currentData.freqVec >= 0)[0]
-  posFreqVec  = currentData.freqVec[posFreqInx]
-  npf         = len(posFreqVec) #Number of positive frequencies
+    # Calculate the dominant frequency #############################################
+    posFreqInx  = np.where(currentData.freqVec >= 0)[0]
+    posFreqVec  = currentData.freqVec[posFreqInx]
+    npf         = len(posFreqVec) #Number of positive frequencies
 
-  data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
+    data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
 
-  #Average Power Spectral Density
-  avg_psd = np.zeros(npf)
-  for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
-  currentData.dominantFreq = posFreqVec[np.argmax(avg_psd)]
-  currentData.appendHistory('Calculated FFT')
+    #Average Power Spectral Density
+    avg_psd = np.zeros(npf)
+    for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
+    currentData.dominantFreq = posFreqVec[np.argmax(avg_psd)]
+    currentData.appendHistory('Calculated FFT')
   
-
 def calculateDlm(dataObj,dataSet='active',comment=None):
-  """Calculate the cross-spectral matrix of a musicaArray object. FFT must already have been calculated.
+    """Calculate the cross-spectral matrix of a musicaArray object. FFT must already have been calculated.
 
-  **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **comment**:    String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-      * **newSigName**: String name of the attribute of the newly created signal.
-      * **window**:     boxcar, triang, blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris, nuttall,
-                        barthann, kaiser (needs beta), gaussian (needs std), general_gaussian (needs power, width),
-                        slepian (needs width), chebwin (needs attenuation)
-  """
-  currentData = getDataSet(dataObj,dataSet)
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
 
-  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
-  
-  nCells                    = nrBeams * nrGates
-  currentData.llLookupTable = np.zeros([5,nCells])
-  currentData.Dlm           = np.zeros([nCells,nCells],dtype=np.complex128)
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    currentData = getDataSet(dataObj,dataSet)
 
-  #Only use positive frequencies...
-  posInx = np.where(currentData.freqVec > 0)[0]
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
-  #Explicitly write out gate/range indices...
+    nCells                    = nrBeams * nrGates
+    currentData.llLookupTable = np.zeros([5,nCells])
+    currentData.Dlm           = np.zeros([nCells,nCells],dtype=np.complex128)
 
-  llList = []
-  for gg in xrange(nrGates):
-    for bb in xrange(nrBeams):
-      llList.append((bb,gg))
+    #Only use positive frequencies...
+    posInx = np.where(currentData.freqVec > 0)[0]
+
+    #Explicitly write out gate/range indices...
+
+    llList = []
+    for gg in xrange(nrGates):
+        for bb in xrange(nrBeams):
+            llList.append((bb,gg))
 
 
-  for ll in range(nCells):
-      llAI  = llList[ll]
-      ew_dist           = currentData.fov.relative_x[llAI]
-      ns_dist           = currentData.fov.relative_y[llAI]
-      currentData.llLookupTable[:,ll]  = [ll, currentData.fov.beams[llAI[0]], currentData.fov.gates[llAI[1]],ns_dist,ew_dist]
-      spectL            = currentData.spectrum[posInx,llAI[0],llAI[1]]
-      for mm in range(nCells):
-        mmAI  = llList[mm]
-        spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
-        currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
+    for ll in range(nCells):
+        llAI  = llList[ll]
+        ew_dist           = currentData.fov.relative_x[llAI]
+        ns_dist           = currentData.fov.relative_y[llAI]
+        currentData.llLookupTable[:,ll]  = [ll, currentData.fov.beams[llAI[0]], currentData.fov.gates[llAI[1]],ns_dist,ew_dist]
+        spectL            = currentData.spectrum[posInx,llAI[0],llAI[1]]
+        for mm in range(nCells):
+            mmAI  = llList[mm]
+            spectM          = currentData.spectrum[posInx,mmAI[0],mmAI[1]]
+            currentData.Dlm[ll,mm] = np.sum(spectL * np.conj(spectM))
 
-  currentData.appendHistory('Calculated Cross-Spectral Matrix Dlm')
+    currentData.appendHistory('Calculated Cross-Spectral Matrix Dlm')
 
 def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0.001,threshold=0.15):
-  """Calculate the two-dimensional horizonatal wavenumber array of a musicArray/musicDataObj object.
-  Cross-spectrum array Dlm must already have been calculated.
+    """Calculate the two-dimensional horizontal wavenumber array of a musicArray/musicDataObj object.
+    Cross-spectrum array Dlm must already have been calculated.
 
-  **Args**:
-      * **dataObj**:    musicArray object
-      * **dataSet**:    which dataSet in the musicArray object to process
-      * **kxMax**:      Maximum kx (East-West) wavenumber to calculate [rad/km]
-      * **kyMax**:      Maximum ky (North-South) wavenumber to calculate [rad/km]
-      * **dkx**:        kx resolution [rad/km]
-      * **dky**:        ky resolution [rad/km]
-      * **threshold**:  threshold of signals to detect as a fraction of the maximum eigenvalue
-  """
-  currentData = getDataSet(dataObj,dataSet)
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**kxMax**] (float):      Maximum kx (East-West) wavenumber to calculate [rad/km]
+        * [**kyMax**] (float):      Maximum ky (North-South) wavenumber to calculate [rad/km]
+        * [**dkx**] (float):        kx resolution [rad/km]
+        * [**dky**] (float):        ky resolution [rad/km]
+        * [**threshold**] (float):  threshold of signals to detect as a fraction of the maximum eigenvalue
 
-  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    currentData = getDataSet(dataObj,dataSet)
 
-  #Calculate eigenvalues, eigenvectors
-  eVals,eVecs = np.linalg.eig(np.transpose(dataObj.active.Dlm))
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
 
-  nkx     = np.ceil(2*kxMax/dkx)
-  if (nkx % 2) == 0: nkx = nkx+1
-  kxVec  = kxMax * (2*np.arange(nkx)/(nkx-1) - 1)
+    #Calculate eigenvalues, eigenvectors
+    eVals,eVecs = np.linalg.eig(np.transpose(dataObj.active.Dlm))
 
-  nky     = np.ceil(2*kyMax/dky)
-  if (nky % 2) == 0: nky = nky+1
-  kyVec  = kyMax * (2*np.arange(nky)/(nky-1) - 1)
+    nkx     = np.ceil(2*kxMax/dkx)
+    if (nkx % 2) == 0: nkx = nkx+1
+    kxVec  = kxMax * (2*np.arange(nkx)/(nkx-1) - 1)
 
-  nkx = int(nkx)
-  nky = int(nky)
+    nky     = np.ceil(2*kyMax/dky)
+    if (nky % 2) == 0: nky = nky+1
+    kyVec  = kyMax * (2*np.arange(nky)/(nky-1) - 1)
 
-  xm      = currentData.llLookupTable[4,:] #x is in the E-W direction.
-  ym      = currentData.llLookupTable[3,:] #y is in the N-S direction.
+    nkx = int(nkx)
+    nky = int(nky)
 
-  threshold   = 0.15
-  maxEval     = np.max(np.abs(eVals))
+    xm      = currentData.llLookupTable[4,:] #x is in the E-W direction.
+    ym      = currentData.llLookupTable[3,:] #y is in the N-S direction.
 
-  minEvalsInx = np.where(eVals <= threshold*maxEval)[0]
-  cnt         = np.size(minEvalsInx)
-  maxEvalsInx = np.where(eVals >  threshold*maxEval)[0]
-  nSigs       = np.size(maxEvalsInx)
+    threshold   = 0.15
+    maxEval     = np.max(np.abs(eVals))
 
-  if cnt < 3:
-      print 'Not enough small eigenvalues!'
-      import ipdb; ipdb.set_trace()
+    minEvalsInx = np.where(eVals <= threshold*maxEval)[0]
+    cnt         = np.size(minEvalsInx)
+    maxEvalsInx = np.where(eVals >  threshold*maxEval)[0]
+    nSigs       = np.size(maxEvalsInx)
 
-  print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
-  print 'Kx Max: ' + str(kxMax)
-  print 'Kx Res: ' + str(dkx)
-  print 'Ky Max: ' + str(kyMax)
-  print 'Ky Res: ' + str(dky)
-  print ''
-  print 'Signal Threshold:      ' + str(threshold)
-  print 'Number of Det Signals: ' + str(nSigs)
-  print 'Number of Noise Evals: ' + str(cnt)
+    if cnt < 3:
+        print 'Not enough small eigenvalues!'
+        import ipdb; ipdb.set_trace()
 
-  print 'Starting kArr Calculation...'
-  def vCalc(um,v):
-    return np.dot( np.conj(um), v) * np.dot( np.conj(v), um)
+    print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
+    print 'Kx Max: ' + str(kxMax)
+    print 'Kx Res: ' + str(dkx)
+    print 'Ky Max: ' + str(kyMax)
+    print 'Ky Res: ' + str(dky)
+    print ''
+    print 'Signal Threshold:      ' + str(threshold)
+    print 'Number of Det Signals: ' + str(nSigs)
+    print 'Number of Noise Evals: ' + str(cnt)
 
-  vList = [eVecs[:,minEvalsInx[ee]] for ee in xrange(cnt)]
-  kArr  = np.zeros((nkx,nky),dtype=np.complex64)
-  for kk_kx in xrange(nkx):
-    kx  = kxVec[kk_kx]
-    for kk_ky in xrange(nky):
-      ky  = kyVec[kk_ky]
-      um  = np.exp(1j*(kx*xm + ky*ym))
-      kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
-  t1 = datetime.datetime.now()
+    print 'Starting kArr Calculation...'
+    def vCalc(um,v):
+        return np.dot( np.conj(um), v) * np.dot( np.conj(v), um)
 
-  currentData.karr  = kArr
-  currentData.kxVec = kxVec
-  currentData.kyVec = kyVec
-  currentData.appendHistory('Calculated kArr')
+    vList = [eVecs[:,minEvalsInx[ee]] for ee in xrange(cnt)]
+    kArr  = np.zeros((nkx,nky),dtype=np.complex64)
+    for kk_kx in xrange(nkx):
+        kx  = kxVec[kk_kx]
+        for kk_ky in xrange(nky):
+            ky  = kyVec[kk_ky]
+            um  = np.exp(1j*(kx*xm + ky*ym))
+            kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
+    t1 = datetime.datetime.now()
 
-def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,noiseFactor=0):
-  import utils
-  currentData = getDataSet(dataObj,dataSet)
+    currentData.karr  = kArr
+    currentData.kxVec = kxVec
+    currentData.kyVec = kyVec
+    currentData.appendHistory('Calculated kArr')
 
-#Typical TID Parameters:
-#       Frequency:      0.0003 mHz
-#       Period:         55.5 min
-#       H. Wavelength:  314 km
-#       k:              0.02 /km
+def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,keepLocalRange=True,sigs=None,noiseFactor=0):
+    """Replace SuperDARN Data with simulated MSTID(s).  This is useful for understanding how the signal processing
+    routines of this module affect ideal data.
 
-  if keepLocalRange == True:
-    nx, ny  = np.shape(currentData.fov.relative_x)
-    xRange  = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
-    yRange  = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
+        * [**keepLocalRange**] (bool): If true, the locations calculated for the actual radar field of view will be used.  If false,
+            a linearly-spaced will replace the true grid.
+        * [**sigs**] (None or list of tuples): A list of tuples defining the characteristics of the simulated signal.  Sample list is as follows.
+            If this keyword is None, the values in this sample list are used as the default values.::
+                sigs = []
+                #           (amp,    kx,      ky,      f, phi, dcOffset)
+                sigs.append((  5,  0.01,  -0.010, 0.0004,   0,       5.))
+                sigs.append((  5, 0.022,  -0.023, 0.0004,   0,       5.))
 
-    xgrid   = currentData.fov.relative_x
-    ygrid   = currentData.fov.relative_y
-  else:
-    nx      = 16
-    xRange  = 800.
-    ny      = 25
-    yRange  = 600.
+            Each signal is evaluated as a cosine and then summed together.  The cosine evaluated is::
+                sig  = amp * np.cos(kx*xgrid + ky*ygrid - 2.*np.pi*f*t + phi) + dc
 
-    xvec    = np.linspace(-xRange/2.,xRange/2.,nx)
-    yvec    = np.linspace(-yRange/2.,yRange/2.,ny)
+        * [**noiseFactor**] (float): Add white gaussian noise to the simulated signal.  noiseFactor is a scalar such that:
+                noise             = noiseFactor*np.random.standard_normal(nSteps)
 
-    dx      = np.diff(xvec)[0]
-    dy      = np.diff(yvec)[0]
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    import utils
+    currentData = getDataSet(dataObj,dataSet)
 
-    xaxis   = np.append(xvec,xvec[-1]+dx)
-    yayis   = np.append(yvec,yvec[-1]+dy)
+    #Typical TID Parameters:
+    #       Frequency:      0.0003 mHz
+    #       Period:         55.5 min
+    #       H. Wavelength:  314 km
+    #       k:              0.02 /km
 
-    xgrid   = np.zeros((nx,ny))
-    ygrid   = np.zeros((nx,ny))
+    if keepLocalRange == True:
+        nx, ny  = np.shape(currentData.fov.relative_x)
+        xRange  = np.max(currentData.fov.relative_x) - np.min(currentData.fov.relative_x)
+        yRange  = np.max(currentData.fov.relative_y) - np.min(currentData.fov.relative_y)
 
-    for kk in xrange(nx): ygrid[kk,:] = yvec[:]
-    for kk in xrange(ny): xgrid[kk,:] = yvec[:]
+        xgrid   = currentData.fov.relative_x
+        ygrid   = currentData.fov.relative_y
+    else:
+        nx      = 16
+        xRange  = 800.
+        ny      = 25
+        yRange  = 600.
 
-  sigs = []
-  #sigs           = (amp,  kx,  ky,  f, phi, dcoffset)
-  sigs.append((5, 0.01 ,  -0.010, 0.0004, 0,  5.))
-  sigs.append((5, 0.022,  -0.023, 0.0004, 0,  5.))
-#  (2, -0.02,  0, 0.0006, 0)
-#  (4, -0.04,  0.04, 0.0006, 0)
-#  (2, -0.02, 0, 0.0005, 0)
-#  (30, -0.0141,  -0.0141, 0.0003, 0)
+        xvec    = np.linspace(-xRange/2.,xRange/2.,nx)
+        yvec    = np.linspace(-yRange/2.,yRange/2.,ny)
+
+        dx      = np.diff(xvec)[0]
+        dy      = np.diff(yvec)[0]
+
+        xaxis   = np.append(xvec,xvec[-1]+dx)
+        yayis   = np.append(yvec,yvec[-1]+dy)
+
+        xgrid   = np.zeros((nx,ny))
+        ygrid   = np.zeros((nx,ny))
+
+        for kk in xrange(nx): ygrid[kk,:] = yvec[:]
+        for kk in xrange(ny): xgrid[kk,:] = yvec[:]
+
+    if sigs == None:
+        #Set some default signals.
+        sigs = []
+        #           (amp,    kx,      ky,      f, phi, dcOffset)
+        sigs.append((  5,  0.01,  -0.010, 0.0004,   0,       5.))
+        sigs.append((  5, 0.022,  -0.023, 0.0004,   0,       5.))
   
-  secVec  = np.array(utils.datetimeToEpoch(currentData.time))
-  secVec  = secVec - secVec[0]
+    secVec  = np.array(utils.datetimeToEpoch(currentData.time))
+    secVec  = secVec - secVec[0]
 
-  nSteps  = len(secVec)
-  dt      = currentData.samplePeriod()
+    nSteps  = len(secVec)
+    dt      = currentData.samplePeriod()
 
-  dataArr = np.zeros((nSteps,nx,ny)) 
+    dataArr = np.zeros((nSteps,nx,ny)) 
 
-  for step in xrange(nSteps):
-    t = secVec[step]
-    for kk in xrange(len(sigs)):
-      amp     = sigs[kk][0]
-      kx      = sigs[kk][1]
-      ky      = sigs[kk][2]
-      f       = sigs[kk][3]
-      phi     = sigs[kk][4]
-      dc      = sigs[kk][5]
-        
-      if 1./dt <= 2.*f:
-        print 'WARNING: Nyquist Violation in f.'
-        print 'Signal #: %i' % kk
+    for step in xrange(nSteps):
+        t = secVec[step]
+        for kk in xrange(len(sigs)):
+            amp     = sigs[kk][0]
+            kx      = sigs[kk][1]
+            ky      = sigs[kk][2]
+            f       = sigs[kk][3]
+            phi     = sigs[kk][4]
+            dc      = sigs[kk][5]
 
-#      if 1./dx <= 2.*kx/(2.*np.pi):
-#        print 'WARNING: Nyquist Violation in kx.'
-#        print 'Signal #: %i' % kk
+            if 1./dt <= 2.*f:
+                print 'WARNING: Nyquist Violation in f.'
+                print 'Signal #: %i' % kk
+
+#            if 1./dx <= 2.*kx/(2.*np.pi):
+#                print 'WARNING: Nyquist Violation in kx.'
+#                print 'Signal #: %i' % kk
 #
-#      if 1./dy <= 2.*ky/(2.*np.pi):
-#        print 'WARNING: Nyquist Violation in ky.'
-#        print 'Signal #: %i' % kk
+#            if 1./dy <= 2.*ky/(2.*np.pi):
+#                print 'WARNING: Nyquist Violation in ky.'
+#                print 'Signal #: %i' % kk
 
-      temp    = amp * np.cos(kx*xgrid + ky*ygrid - 2.*np.pi*f*t + phi) + dc
-      dataArr[step,:,:] = dataArr[step,:,:] + temp
+            temp    = amp * np.cos(kx*xgrid + ky*ygrid - 2.*np.pi*f*t + phi) + dc
+            dataArr[step,:,:] = dataArr[step,:,:] + temp
 
-  #Signal RMS
-  sig_rms = np.zeros((nx,ny))
-  for xx in xrange(nx):
-    for yy in xrange(ny):
-      sig_rms[xx,yy] = np.sqrt(np.mean((dataArr[:,xx,yy])**2.))
-
-  noise_rms = np.zeros((nx,ny))
-  if noiseFactor > 0:
-    nf = noiseFactor
-    #Temporal White Noise
+    #Signal RMS
+    sig_rms = np.zeros((nx,ny))
     for xx in xrange(nx):
-      for yy in xrange(ny):
-        noise             = nf*np.random.standard_normal(nSteps)
-        noise_rms[xx,yy]  = np.sqrt(np.mean(noise**2))
-        dataArr[:,xx,yy]  = dataArr[:,xx,yy] + noise
+        for yy in xrange(ny):
+            sig_rms[xx,yy] = np.sqrt(np.mean((dataArr[:,xx,yy])**2.))
 
-  xx      = np.arange(ny)
-  mu      = (ny-1.)/2.
-  sigma2  = 10.0
-  sigma   = np.sqrt(sigma2)
-  rgDist  = 1./(sigma*np.sqrt(2.*np.pi)) * np.exp(-0.5 * ((xx-mu)/sigma)**2)
-  rgDist  = rgDist / np.max(rgDist)
+    noise_rms = np.zeros((nx,ny))
+    if noiseFactor > 0:
+        nf = noiseFactor
+        #Temporal White Noise
+        for xx in xrange(nx):
+            for yy in xrange(ny):
+                noise             = nf*np.random.standard_normal(nSteps)
+                noise_rms[xx,yy]  = np.sqrt(np.mean(noise**2))
+                dataArr[:,xx,yy]  = dataArr[:,xx,yy] + noise
 
-  mask    = np.zeros((nx,ny))
-  for nn in xrange(nx): mask[nn,:] = rgDist[:]
+    xx      = np.arange(ny)
+    mu      = (ny-1.)/2.
+    sigma2  = 10.0
+    sigma   = np.sqrt(sigma2)
+    rgDist  = 1./(sigma*np.sqrt(2.*np.pi)) * np.exp(-0.5 * ((xx-mu)/sigma)**2)
+    rgDist  = rgDist / np.max(rgDist)
 
-  mask3d  = np.zeros((nSteps,nx,ny))
-  for nn in xrange(nSteps): mask3d[nn,:,:] = mask[:]
+    mask    = np.zeros((nx,ny))
+    for nn in xrange(nx): mask[nn,:] = rgDist[:]
 
-  #Apply Range Gate Dependence
-  dataArr = dataArr * mask3d
+    mask3d  = np.zeros((nSteps,nx,ny))
+    for nn in xrange(nSteps): mask3d[nn,:,:] = mask[:]
 
-  snr     = (sig_rms/noise_rms)**2
-  snr_db  = 10.*np.log10(snr)
+    #Apply Range Gate Dependence
+    dataArr = dataArr * mask3d
 
-  if comment == None:
-    comment = 'Simulated data injected.'
+    snr     = (sig_rms/noise_rms)**2
+    snr_db  = 10.*np.log10(snr)
+
+    if comment == None:
+        comment = 'Simulated data injected.'
       
-  newDataSet      = currentData.copy(newDataSetName,comment)
-  newDataSet.data = dataArr
-  newDataSet.setActive()
+    newDataSet      = currentData.copy(newDataSetName,comment)
+    newDataSet.data = dataArr
+    newDataSet.setActive()
 
-  #OPENW,unit,'simstats.txt',/GET_LUN,WIDTH=300
-  #stats$  = ' Mean: '   + NUMSTR(MEAN(sig_rms),3)         $
-  #        + ' STDDEV: ' + NUMSTR(STDDEV(sig_rms),3)       $
-  #        + ' Var: '    + NUMSTR(STDDEV(sig_rms)^2,3)
-  #PRINTF,unit,'SIG_RMS'
-  #PRINTF,unit,stats$
-  #PRINTF,unit,sig_rms
-  #
-  #PRINTF,unit,''
-  #PRINTF,unit,'NOISE_RMS'
-  #stats$  = ' Mean: '   + NUMSTR(MEAN(noise_rms),3)         $
-  #        + ' STDDEV: ' + NUMSTR(STDDEV(noise_rms),3)       $
-  #        + ' Var: '    + NUMSTR(STDDEV(noise_rms)^2,3)
-  #PRINTF,unit,stats$
-  #PRINTF,unit,noise_rms
-  #
-  #PRINTF,unit,''
-  #PRINTF,unit,'SNR_DB'
-  #stats$  = ' Mean: '   + NUMSTR(MEAN(snr_db),3)         $
-  #        + ' STDDEV: ' + NUMSTR(STDDEV(snr_db),3)       $
-  #        + ' Var: '    + NUMSTR(STDDEV(snr_db)^2,3)
-  #PRINTF,unit,stats$
-  #PRINTF,unit,snr_db
-  #CLOSE,unit
+    #OPENW,unit,'simstats.txt',/GET_LUN,WIDTH=300
+    #stats$  = ' Mean: '   + NUMSTR(MEAN(sig_rms),3)         $
+    #        + ' STDDEV: ' + NUMSTR(STDDEV(sig_rms),3)       $
+    #        + ' Var: '    + NUMSTR(STDDEV(sig_rms)^2,3)
+    #PRINTF,unit,'SIG_RMS'
+    #PRINTF,unit,stats$
+    #PRINTF,unit,sig_rms
+    #
+    #PRINTF,unit,''
+    #PRINTF,unit,'NOISE_RMS'
+    #stats$  = ' Mean: '   + NUMSTR(MEAN(noise_rms),3)         $
+    #        + ' STDDEV: ' + NUMSTR(STDDEV(noise_rms),3)       $
+    #        + ' Var: '    + NUMSTR(STDDEV(noise_rms)^2,3)
+    #PRINTF,unit,stats$
+    #PRINTF,unit,noise_rms
+    #
+    #PRINTF,unit,''
+    #PRINTF,unit,'SNR_DB'
+    #stats$  = ' Mean: '   + NUMSTR(MEAN(snr_db),3)         $
+    #        + ' STDDEV: ' + NUMSTR(STDDEV(snr_db),3)       $
+    #        + ' Var: '    + NUMSTR(STDDEV(snr_db)^2,3)
+    #PRINTF,unit,stats$
+    #PRINTF,unit,snr_db
+    #CLOSE,unit
 
 def scale_karr(kArr):
     from scipy import stats
-    '''Scale/normalize kArr for plotting and signal detection.'''
+    """Scale/normalize kArr for plotting and signal detection.
+    
+    **Args**:
+        * **kArr** (2D numpy.array): Two-dimensional horizontal wavenumber array of a musicArray/musicDataObj object.
+
+    **Returns**:
+        * **data** (2D numpy.array): Scaled and normalized version of kArr.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     data        = np.abs(kArr) - np.min(np.abs(kArr))
 
     #Determine scale for colorbar.
@@ -1616,6 +1749,24 @@ def scale_karr(kArr):
     return data
 
 def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
+    """
+    Automatically detects local maxima/signals in a calculated kArr.  This routine uses the watershed
+    algorithm from the skimage image processing library.  Results are automatically stored in
+    dataObj.dataSet.sigDetect.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**threshold**] (float): Scaled input data must be above this value to be detected.  A higher number
+            will reduce the number of signals detected.
+        * [**neighborhood**] (int,int): Local region in which to search for peaks at every point in the image/array.
+            (10,10) will search a 10x10 pixel area.
+
+    **Returns**:
+        * **currentData**: musicDataObj object
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     currentData = getDataSet(dataObj,dataSet)
     ################################################################################
     #Feature detection...
@@ -1633,30 +1784,15 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     labels, nb  = ndimage.label(mask)
 
     distance    = ndimage.distance_transform_edt(mask)
-#    local_maxi  = is_local_maximum(distance,mask,np.ones(neighborhood))
     local_maxi  = peak_local_max(distance,footprint=np.ones(neighborhood),indices=False)
-#    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
     markers,nb  = ndimage.label(local_maxi)
     labels      = watershed(-distance,markers,mask=mask)
-
-
-#    mask        = data > threshold
-#    labels, nb  = ndimage.label(mask)
-#
-#    distance    = ndimage.distance_transform_edt(mask)
-##    local_maxi  = is_local_maximum(distance,mask,np.ones(neighborhood))
-#    local_maxi  = peak_local_max(distance,labels=mask,footprint=np.ones(neighborhood))
-##    local_maxi  = is_local_maximum(distance,mask,np.ones((5,5)))
-#    markers,nb  = ndimage.label(local_maxi)
-#    labels      = watershed(-distance,markers,mask=mask)
-
 
     areas         = ndimage.sum(mask,labels,xrange(1,labels.max()+1))
     maxima        = ndimage.maximum(data,labels,xrange(1, labels.max()+1))
     sortedMaxima  = np.sort(maxima)[::-1]
     maxpos        = ndimage.maximum_position(data,labels,xrange(1, labels.max()+1))
 
-#  class sigDetect: pass
     sigDetect = SigDetect()
     sigDetect.mask    = mask
     sigDetect.labels  = labels
@@ -1686,20 +1822,23 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     return currentData
 
 def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
-    '''Add a signal to the detected signal list.  All signals will be re-ordered according to value in the 
+    """Manually add a signal to the detected signal list.  All signals will be re-ordered according to value in the 
     scaled kArr.  Added signals can be distinguished from autodetected signals because 
     'labelInx' and 'area' will both be set to -1.
 
     **Args**:
-        * **kx**:           Value of kx of new signal.
-        * **ky**:           Value of ky of new signal.
-        * **dataObj**:      musicArray object
-        * **dataSet**:      which dataSet in the musicArray object to process
-        * **frequency**:    Frequency to use to calculate period, phase velocity, etc.  If None, 
+        * **kx** (float): Value of kx of new signal.
+        * **ky** (float): Value of ky of new signal.
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to process
+        * [**frequency**] (float): Frequency to use to calculate period, phase velocity, etc.  If None, 
                             the calculated dominant frequency will be used.
-    **Returns**
-        * **currentData**: dataSet object
-    '''
+
+    **Returns**:
+        * **currentData**: musicDataObj object
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     currentData = getDataSet(dataObj,dataSet)
     data = scale_karr(currentData.karr)
 
@@ -1741,19 +1880,22 @@ def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
     currentData.sigDetect.reorder()
     currentData.appendHistory('Appended Signal to sigDetect List')
 
-    return dataObj
+    return currentData
 
 def del_signal(order,dataObj,dataSet='active'):
-    '''Remove a signal to the detected signal list.
+    """Remove a signal to the detected signal list.
 
     **Args**:
         * **order**:        Single value of list of signal orders (ID's) to be removed from the list.
         * **dataObj**:      musicArray object
         * **dataSet**:      which dataSet in the musicArray object to process
 
-    **Returns**
-        * **currentData**: dataSet object
-    '''
+    **Returns**:
+        * **currentData**: musicDataObj object
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+
     currentData = getDataSet(dataObj,dataSet)
     data = scale_karr(currentData.karr)
 
@@ -1765,4 +1907,4 @@ def del_signal(order,dataObj,dataSet='active'):
 
     currentData.sigDetect.reorder()
     currentData.appendHistory('Deleted Signals from sigDetect List')
-    return dataObj
+    return currentData
