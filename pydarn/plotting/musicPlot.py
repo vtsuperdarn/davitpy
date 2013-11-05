@@ -700,11 +700,6 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-
-    if fig == None:
-        from matplotlib import pyplot as plt
-        fig   = plt.figure(figsize=(20,10))
-
     currentData = getDataSet(dataObj,dataSet)
     xData1      = currentData.time
     yData1      = currentData.data
@@ -1008,361 +1003,309 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
     return fig
 
 def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
-  from scipy import stats
+    if fig == None:
+        from matplotlib import pyplot as plt
+        fig   = plt.figure(figsize=(20,10))
 
-  currentData = getDataSet(dataObj,dataSet)
-  if fig == None:
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
-    from matplotlib.figure import Figure
-    fig = Figure()
+    from scipy import stats
 
-  nrFreqs,nrBeams,nrGates = np.shape(currentData.spectrum)
+    currentData = getDataSet(dataObj,dataSet)
 
-  if xlim == None:
-    posFreqInx  = np.where(currentData.freqVec >= 0)[0]
-  else:
-    posFreqInx  = np.where(np.logical_and(currentData.freqVec >= xlim[0],currentData.freqVec <= xlim[1]))[0]
+    nrFreqs,nrBeams,nrGates = np.shape(currentData.spectrum)
 
-  posFreqVec  = currentData.freqVec[posFreqInx]
-  npf         = len(posFreqVec) #Number of positive frequencies
+    if xlim == None:
+        posFreqInx  = np.where(currentData.freqVec >= 0)[0]
+    else:
+        posFreqInx  = np.where(np.logical_and(currentData.freqVec >= xlim[0],currentData.freqVec <= xlim[1]))[0]
 
-  data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
+    posFreqVec  = currentData.freqVec[posFreqInx]
+    npf         = len(posFreqVec) #Number of positive frequencies
 
-  #Determine scale for colorbar.
-  sd          = stats.nanstd(data,axis=None)
-  mean        = stats.nanmean(data,axis=None)
-  scMax       = mean + 2.*sd
-  scale       = scMax*np.array([0,1.])
+    data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
 
-  nXBins      = nrBeams * npf #number of bins we are going to plot
+    #Determine scale for colorbar.
+    sd          = stats.nanstd(data,axis=None)
+    mean        = stats.nanmean(data,axis=None)
+    scMax       = mean + 2.*sd
+    scale       = scMax*np.array([0,1.])
 
-  #Average Power Spectral Density
-  avg_psd = np.zeros(npf)
-  for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
+    nXBins      = nrBeams * npf #number of bins we are going to plot
 
-  #Do plotting here!
-  axis = fig.add_subplot(111)
+    #Average Power Spectral Density
+    avg_psd = np.zeros(npf)
+    for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
 
-  verts   = []
-  scan    = []
-  #Plot Spectrum
-  sep     = 0.1
-  for ff in range(npf):
-    for bb in range(nrBeams):
-      xx0      = nrBeams*(ff + 0.5*sep) + bb*(1-sep)
-      xx1      = xx0 + (1-sep)
-      for gg in range(nrGates):
-        scan.append(data[ff,bb,gg])
+    #Do plotting here!
+    axis = fig.add_subplot(111)
 
-        yy0  = gg
-        yy1  = gg + 1
+    verts   = []
+    scan    = []
+    #Plot Spectrum
+    sep     = 0.1
+    for ff in range(npf):
+        for bb in range(nrBeams):
+            xx0      = nrBeams*(ff + 0.5*sep) + bb*(1-sep)
+            xx1      = xx0 + (1-sep)
+            for gg in range(nrGates):
+                scan.append(data[ff,bb,gg])
+
+                yy0  = gg
+                yy1  = gg + 1
+
+                x1,y1 = xx0, yy0
+                x2,y2 = xx1, yy0
+                x3,y3 = xx1, yy1
+                x4,y4 = xx0, yy1
+                verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+    colors  = 'lasse'
+    if scale == None:
+        scale   = (np.min(scan),np.max(scan))
+    param = 'power'
+    cmap = matplotlib.cm.Blues_r
+
+    bounds  = np.linspace(scale[0],scale[1],256)
+    norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+
+    pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+    pcoll.set_array(np.array(scan))
+    axis.add_collection(pcoll,autolim=False)
+
+    #Colorbar
+    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+    cbar.set_label('ABS(Spectral Density)')
+    if currentData.metadata.has_key('gscat'):
+        if currentData.metadata['gscat'] == 1:
+            cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+
+    #Plot average values.
+    verts   = []
+    scan    = []
+    yy0      = nrGates
+    yy1      = nrGates + 1
+    for ff in range(npf):
+        scan.append(avg_psd[ff])
+
+        xx0      = nrBeams*(ff + 0.5*sep)
+        xx1      = xx0 + nrBeams*(1-sep)
 
         x1,y1 = xx0, yy0
         x2,y2 = xx1, yy0
         x3,y3 = xx1, yy1
         x4,y4 = xx0, yy1
+
         verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-  colors  = 'lasse'
-  if scale == None:
-    scale   = (np.min(scan),np.max(scan))
-  param = 'power'
-#  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
-  cmap = matplotlib.cm.Blues_r
-  
-  bounds  = np.linspace(scale[0],scale[1],256)
-  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+    param = 'power'
+    cmap = matplotlib.cm.winter
+    norm = matplotlib.colors.Normalize(vmin = 0, vmax = np.max(avg_psd))
+    pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+    pcoll.set_array(np.array(scan))
+    axis.add_collection(pcoll,autolim=False)
 
-  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-  pcoll.set_array(np.array(scan))
-  axis.add_collection(pcoll,autolim=False)
-
-  #Colorbar
-  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  cbar.set_label('ABS(Spectral Density)')
-  if currentData.metadata.has_key('gscat'):
-    if currentData.metadata['gscat'] == 1:
-      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-#  labels = cbar.ax.get_yticklabels()
-#  labels[-1].set_visible(False)
-#  labels[0].set_visible(False)
-
-  #Plot average values.
-  verts   = []
-  scan    = []
-  yy0      = nrGates
-  yy1      = nrGates + 1
-  for ff in range(npf):
-    scan.append(avg_psd[ff])
-
-    xx0      = nrBeams*(ff + 0.5*sep)
+    #Mark maximum PSD column.
+    maxInx = np.argmax(avg_psd)
+    xx0      = nrBeams*(maxInx + 0.5*sep)
     xx1      = xx0 + nrBeams*(1-sep)
 
     x1,y1 = xx0, yy0
     x2,y2 = xx1, yy0
     x3,y3 = xx1, yy1
     x4,y4 = xx0, yy1
+    mkv = np.array([[x1,y1],[x2,y2],[x3,y3],[x4,y4],[x1,y1]])
+    poly = Polygon(mkv,facecolor='Red',edgecolor='none',zorder=100)
+    axis.add_patch(poly)
 
-    verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+    #X-Labels
+    maxXTicks = 10.
+    modX      = np.ceil(npf / maxXTicks)
+    fCharSize= 0.60
 
-  param = 'power'
-  cmap = matplotlib.cm.winter
-  norm = matplotlib.colors.Normalize(vmin = 0, vmax = np.max(avg_psd))
-  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-  pcoll.set_array(np.array(scan))
-  axis.add_collection(pcoll,autolim=False)
+    xlabels = []
+    xpos    = []
+    for ff in range(npf-1):
+        if (ff % modX) != 0: continue
+        freqLabel = '%.2f'  % (posFreqVec[ff]*1000.)
+        if posFreqVec[ff] == 0:
+            periodLabel = 'Inf'
+        else:
+            periodLabel = '%i' % (1./posFreqVec[ff] / 60.)
+        xlabels.append(freqLabel+'\n'+periodLabel)
+        xpos.append(nrBeams* (ff + 0.1))
 
-  #Mark maximum PSD column.
-  maxInx = np.argmax(avg_psd)
-  xx0      = nrBeams*(maxInx + 0.5*sep)
-  xx1      = xx0 + nrBeams*(1-sep)
+    xlabels.append('freq [mHz]\nPer. [min]')
+    xpos.append(nrBeams* (npf-1 + 0.1))
 
-  x1,y1 = xx0, yy0
-  x2,y2 = xx1, yy0
-  x3,y3 = xx1, yy1
-  x4,y4 = xx0, yy1
-  mkv = np.array([[x1,y1],[x2,y2],[x3,y3],[x4,y4],[x1,y1]])
-  poly = Polygon(mkv,facecolor='Red',edgecolor='none',zorder=100)
-  axis.add_patch(poly)
+    axis.set_xticks(xpos)
+    axis.set_xticklabels(xlabels,ha='left')
 
-  #X-Labels
-  maxXTicks = 10.
-  modX      = np.ceil(npf / maxXTicks)
-  fCharSize= 0.60
+    #Y-Labels
+    maxYTicks       = 10.
+    modY            = np.ceil(nrGates/maxYTicks)
 
-  xlabels = []
-  xpos    = []
-  for ff in range(npf-1):
-    if (ff % modX) != 0: continue
-    freqLabel = '%.2f'  % (posFreqVec[ff]*1000.)
-    if posFreqVec[ff] == 0:
-      periodLabel = 'Inf'
-    else:
-      periodLabel = '%i' % (1./posFreqVec[ff] / 60.)
-    xlabels.append(freqLabel+'\n'+periodLabel)
-    xpos.append(nrBeams* (ff + 0.1))
+    ylabels = []
+    ypos    = []
+    for gg in range(nrGates):
+        if (gg % modY) != 0: continue
+        ylabels.append('%i' % currentData.fov.gates[gg])
+        ypos.append(gg+0.5)
+        
+    ylabels.append('Norm\nAvg\PSD') 
+    ypos.append(nrGates+0.5)
+    axis.set_yticks(ypos)
+    axis.set_yticklabels(ylabels)
+    axis.set_ylabel('Range Gate')
 
-  xlabels.append('freq [mHz]\nPer. [min]')
-  xpos.append(nrBeams* (npf-1 + 0.1))
+    for ff in range(npf):
+        axis.axvline(x=ff*nrBeams,color='k',lw=2)
 
-  axis.set_xticks(xpos)
-  axis.set_xticklabels(xlabels,ha='left')
+#    axis.set_xlim([0,nXBins])
+    axis.set_ylim([0,nrGates+1])
 
-  #Y-Labels
-  maxYTicks       = 10.
-  modY            = np.ceil(nrGates/maxYTicks)
+    xpos = 0.130
+    fig.text(xpos,0.99,'Full Spectrum View',fontsize=20,va='top')
+    #Get the time limits.
+    timeLim = (np.min(currentData.time),np.max(currentData.time))
+    md = currentData.metadata
 
-  ylabels = []
-  ypos    = []
-  for gg in range(nrGates):
-    if (gg % modY) != 0: continue
-    ylabels.append('%i' % currentData.fov.gates[gg])
-    ypos.append(gg+0.5)
-    
-  ylabels.append('Norm\nAvg\PSD') 
-  ypos.append(nrGates+0.5)
-  axis.set_yticks(ypos)
-  axis.set_yticklabels(ylabels)
-  axis.set_ylabel('Range Gate')
+    #Translate parameter information from short to long form.
+    paramDict = getParamDict(md['param'])
+    param     = paramDict['param']
+    cbarLabel = paramDict['label']
 
-  for ff in range(npf):
-    axis.axvline(x=ff*nrBeams,color='k',lw=2)
+    text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-  axis.set_xlim([0,nXBins])
-  axis.set_ylim([0,nrGates+1])
+    if md.has_key('fir_filter'):
+        filt = md['fir_filter']
+        if filt[0] == None:
+            low = 'None'
+        else:
+            low = '%.2f' % (1000. * filt[0])
+        if filt[1] == None:
+            high = 'None'
+        else:
+            high = '%.2f' % (1000. * filt[1])
 
-  xpos = 0.130
-  fig.text(xpos,0.99,'Full Spectrum View',fontsize=20,va='top')
-  #Get the time limits.
-  timeLim = (np.min(currentData.time),np.max(currentData.time))
-  md = currentData.metadata
+        text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
 
-  #Translate parameter information from short to long form.
-  paramDict = getParamDict(md['param'])
-  param     = paramDict['param']
-  cbarLabel = paramDict['label']
-
-  text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
-
-  if md.has_key('fir_filter'):
-    filt = md['fir_filter']
-    if filt[0] == None:
-      low = 'None'
-    else:
-      low = '%.2f' % (1000. * filt[0])
-    if filt[1] == None:
-      high = 'None'
-    else:
-      high = '%.2f' % (1000. * filt[1])
-
-    text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
-
-  fig.text(xpos,0.95,text,fontsize=14,va='top')
+    fig.text(xpos,0.95,text,fontsize=14,va='top')
 
 def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
-  import copy
-  from scipy import stats
+    if fig == None:
+        from matplotlib import pyplot as plt
+        fig   = plt.figure(figsize=(20,10))
 
-  currentData = getDataSet(dataObj,dataSet)
-  if fig == None:
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
-    from matplotlib.figure import Figure
-    fig = Figure()
+    import copy
+    from scipy import stats
 
-  data        = np.abs(currentData.Dlm)
+    currentData = getDataSet(dataObj,dataSet)
 
-  #Determine scale for colorbar.
-  sd          = stats.nanstd(data,axis=None)
-  mean        = stats.nanmean(data,axis=None)
-  scMax       = mean + 4.*sd
-  scale       = scMax*np.array([0,1.])
 
-  #Do plotting here!
-  axis = fig.add_subplot(111)
+    data        = np.abs(currentData.Dlm)
 
-  nrL, nrM = np.shape(data)
+    #Determine scale for colorbar.
+    sd          = stats.nanstd(data,axis=None)
+    mean        = stats.nanmean(data,axis=None)
+    scMax       = mean + 4.*sd
+    scale       = scMax*np.array([0,1.])
 
-  verts   = []
-  scan    = []
-  #Plot Spectrum
-  for ll in range(nrL):
-    xx0      = ll
-    xx1      = ll+1
-    for mm in range(nrM):
-      scan.append(data[ll,mm])
+    #Do plotting here!
+    axis = fig.add_subplot(111)
 
-      yy0  = mm
-      yy1  = mm + 1
+    nrL, nrM = np.shape(data)
 
-      x1,y1 = xx0, yy0
-      x2,y2 = xx1, yy0
-      x3,y3 = xx1, yy1
-      x4,y4 = xx0, yy1
-      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+    verts   = []
+    scan    = []
+    #Plot Spectrum
+    for ll in range(nrL):
+        xx0      = ll
+        xx1      = ll+1
+        for mm in range(nrM):
+            scan.append(data[ll,mm])
 
-  colors  = 'lasse'
-  if scale == None:
-    scale   = (np.min(scan),np.max(scan))
-#  param = 'power'
-#  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
-  cmap = matplotlib.cm.jet
-  bounds  = np.linspace(scale[0],scale[1],256)
-  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+            yy0  = mm
+            yy1  = mm + 1
 
-  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-  pcoll.set_array(np.array(scan))
-  axis.add_collection(pcoll,autolim=False)
+            x1,y1 = xx0, yy0
+            x2,y2 = xx1, yy0
+            x3,y3 = xx1, yy1
+            x4,y4 = xx0, yy1
+            verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-  #Colorbar
-  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  cbar.set_label('ABS(Spectral Density)')
-  if currentData.metadata.has_key('gscat'):
-    if currentData.metadata['gscat'] == 1:
-      cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-#  labels = cbar.ax.get_yticklabels()
-#  labels[-1].set_visible(False)
-#  labels[0].set_visible(False)
-  axis.set_xlim([0,nrL])
-  axis.set_ylim([0,nrM])
+    colors  = 'lasse'
+    if scale == None:
+        scale   = (np.min(scan),np.max(scan))
+    cmap = matplotlib.cm.jet
+    bounds  = np.linspace(scale[0],scale[1],256)
+    norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
 
-  axis.set_xlabel('l')
-  axis.set_ylabel('m')
+    pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+    pcoll.set_array(np.array(scan))
+    axis.add_collection(pcoll,autolim=False)
 
-  nrTimes, nrBeams, nrGates = np.shape(currentData.data)
-  ticks   = []
-  labels  = []
-  mod = int(np.floor(nrGates / 10))
-  for x in xrange(nrGates):
-    if x % mod != 0: continue
-    ll = nrBeams*x
-    ticks.append(ll)
-    txt = '%i\n%i' % (ll, currentData.fov.gates[x])
-    labels.append(txt)
-  
-  ticks.append(nrL)
-  xlabels = copy.copy(labels)
-  xlabels.append('l\ngate')
+    #Colorbar
+    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+    cbar.set_label('ABS(Spectral Density)')
+    if currentData.metadata.has_key('gscat'):
+        if currentData.metadata['gscat'] == 1:
+            cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+    #  labels[-1].set_visible(False)
+    axis.set_xlim([0,nrL])
+    axis.set_ylim([0,nrM])
 
-  axis.set_xticks(ticks)
-  axis.set_xticklabels(xlabels,ha='left')
+    axis.set_xlabel('l')
+    axis.set_ylabel('m')
 
-  ylabels = copy.copy(labels)
-  ylabels.append('m\ngate')
-  axis.set_yticks(ticks)
-  axis.set_yticklabels(ylabels)
-#
-#
-#  #Adjust x-ticks
-#  xticks  = axis.get_xticks()
-#  beams   = []
-#  gates   = []
-#  newLabels = []
-#  for x in xrange(len(xticks)):
-#    try:
-#      beams.append(currentData.llLookupTable[1,xticks[x]])
-#    except:
-#      beams.append(-1)
-#
-#    try:
-#      gates.append(currentData.llLookupTable[2,xticks[x]])
-#    except:
-#      gates.append(-1)
-#
-#    txt = '%i\n%i\n%i' % (xticks[x], beams[x], gates[x])
-#    newLabels.append(txt)
-#
-#  newLabels[-1] = 'l\nbeam\ngate'
-#  axis.set_xticklabels(newLabels)
-#
-#  #Adjust y-ticks
-#  yticks  = axis.get_yticks()
-#  beams   = []
-#  gates   = []
-#  newLabels = []
-#  for y in xrange(len(yticks)):
-#    try:
-#      beams.append(currentData.llLookupTable[1,yticks[y]])
-#    except:
-#      beams.append(-1)
-#
-#    try:
-#      gates.append(currentData.llLookupTable[2,yticks[y]])
-#    except:
-#      gates.append(-1)
-#
-#    txt = '%i\n%i\n%i' % (yticks[y], beams[y], gates[y])
-#    newLabels.append(txt)
-#
-#  newLabels[-1] = 'm\nbeam\ngate'
-#  axis.set_yticklabels(newLabels)
-#
-  xpos = 0.130
-  fig.text(xpos,0.99,'ABS(Cross Spectral Density Matrix Dlm)',fontsize=20,va='top')
-  #Get the time limits.
-  timeLim = (np.min(currentData.time),np.max(currentData.time))
-  md = currentData.metadata
+    nrTimes, nrBeams, nrGates = np.shape(currentData.data)
+    ticks   = []
+    labels  = []
+    mod = int(np.floor(nrGates / 10))
+    for x in xrange(nrGates):
+        if x % mod != 0: continue
+        ll = nrBeams*x
+        ticks.append(ll)
+        txt = '%i\n%i' % (ll, currentData.fov.gates[x])
+        labels.append(txt)
+      
+    ticks.append(nrL)
+    xlabels = copy.copy(labels)
+    xlabels.append('l\ngate')
 
-  #Translate parameter information from short to long form.
-  paramDict = getParamDict(md['param'])
-  param     = paramDict['param']
-  cbarLabel = paramDict['label']
+    axis.set_xticks(ticks)
+    axis.set_xticklabels(xlabels,ha='left')
 
-  text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
+    ylabels = copy.copy(labels)
+    ylabels.append('m\ngate')
+    axis.set_yticks(ticks)
+    axis.set_yticklabels(ylabels)
 
-  if md.has_key('fir_filter'):
-    filt = md['fir_filter']
-    if filt[0] == None:
-      low = 'None'
-    else:
-      low = '%.2f' % (1000. * filt[0])
-    if filt[1] == None:
-      high = 'None'
-    else:
-      high = '%.2f' % (1000. * filt[1])
+    xpos = 0.130
+    fig.text(xpos,0.99,'ABS(Cross Spectral Density Matrix Dlm)',fontsize=20,va='top')
+    #Get the time limits.
+    timeLim = (np.min(currentData.time),np.max(currentData.time))
+    md = currentData.metadata
 
-    text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+    #Translate parameter information from short to long form.
+    paramDict = getParamDict(md['param'])
+    param     = paramDict['param']
+    cbarLabel = paramDict['label']
 
-  fig.text(xpos,0.95,text,fontsize=14,va='top')
+    text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
+
+    if md.has_key('fir_filter'):
+        filt = md['fir_filter']
+        if filt[0] == None:
+            low = 'None'
+        else:
+            low = '%.2f' % (1000. * filt[0])
+        if filt[1] == None:
+            high = 'None'
+        else:
+            high = '%.2f' % (1000. * filt[1])
+
+        text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+
+    fig.text(xpos,0.95,text,fontsize=14,va='top')
 
 def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=5):
   currentData = getDataSet(dataObj,dataSet)
