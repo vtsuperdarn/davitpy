@@ -1538,6 +1538,7 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
     print 'Number of Noise Evals: ' + str(cnt)
 
     print 'Starting kArr Calculation...'
+    t0 = datetime.datetime.now()
     def vCalc(um,v):
         return np.dot( np.conj(um), v) * np.dot( np.conj(v), um)
 
@@ -1550,6 +1551,7 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
             um  = np.exp(1j*(kx*xm + ky*ym))
             kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
     t1 = datetime.datetime.now()
+    print 'Finished kArr Calculation.  Total time: ' + str(t1-t0)
 
     currentData.karr  = kArr
     currentData.kxVec = kxVec
@@ -1902,7 +1904,7 @@ def del_signal(order,dataObj,dataSet='active'):
     orderArr = np.array(order)
 
     for item in list(currentData.sigDetect.info):
-        if item['order'] in order:
+        if item['order'] in orderArr:
             currentData.sigDetect.info.remove(item)
 
     currentData.sigDetect.reorder()
