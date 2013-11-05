@@ -422,441 +422,439 @@ class musicDataObj(object):
 
     
 class musicArray(object):
-  """This class is the basic container for holding MUSIC data.
+    """This class is the basic container for holding MUSIC data.
 
-  **Args**: 
-      * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-      * [**sTime**] (datetime.datetime): start time UT (if None myPtr.sTime is used)
-      * [**eTime**] (datetime.datetime): end time UT (if None myPtr.eTime is used)
-      * [**param**] (str): Radar FIT parameter to load and process.  Any appropriate attribute of the FIT data structure is allowed.
-      * [**gscat**] (int): Ground scatter flag.
-                      0: all backscatter data 
-                      1: ground backscatter only
-                      2: ionospheric backscatter only
-                      3: all backscatter data with a ground backscatter flag.
-      * [**fovElevation**] (float or None): Passed directly to pydarn.radar.radFov.fov()
-      * [**fovModel**] (str): Scatter mapping model.
-                      'GS': Ground Scatter Mapping Model.  See Bristow et al. [1994]
-                      'IS': Standard SuperDARN scatter mapping model.
-      * [**fovCoords**] (str): Map coordinate system. WARNING: 'geo' is curently only tested coordinate system.
+    **Args**: 
+        * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
+        * [**sTime**] (datetime.datetime): start time UT (if None myPtr.sTime is used)
+        * [**eTime**] (datetime.datetime): end time UT (if None myPtr.eTime is used)
+        * [**param**] (str): Radar FIT parameter to load and process.  Any appropriate attribute of the FIT data structure is allowed.
+        * [**gscat**] (int): Ground scatter flag.
+                        0: all backscatter data 
+                        1: ground backscatter only
+                        2: ionospheric backscatter only
+                        3: all backscatter data with a ground backscatter flag.
+        * [**fovElevation**] (float or None): Passed directly to pydarn.radar.radFov.fov()
+        * [**fovModel**] (str): Scatter mapping model.
+                        'GS': Ground Scatter Mapping Model.  See Bristow et al. [1994]
+                        'IS': Standard SuperDARN scatter mapping model.
+        * [**fovCoords**] (str): Map coordinate system. WARNING: 'geo' is curently only tested coordinate system.
 
-  **Methods**:
-      * :func:`musicArray.get_data_sets`
+    **Methods**:
+        * :func:`musicArray.get_data_sets`
 
-  **Example**:
-      ::
+    **Example**:
+        ::
 
-          #Set basic event parameters.
-          rad         ='wal'
-          sTime       = datetime.datetime(2011,5,9,8,0)
-          eTime       = datetime.datetime(2011,5,9,19,0)
-          #Connect to a SuperDARN data source.
-          myPtr       = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime)
-          #Create the musicArray Object.
-          dataObj     = music.musicArray(myPtr,fovModel='GS')
+            #Set basic event parameters.
+            rad         ='wal'
+            sTime       = datetime.datetime(2011,5,9,8,0)
+            eTime       = datetime.datetime(2011,5,9,19,0)
+            #Connect to a SuperDARN data source.
+            myPtr       = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime)
+            #Create the musicArray Object.
+            dataObj     = music.musicArray(myPtr,fovModel='GS')
 
-  **References**:
-      Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
-          using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319-331, doi:10.1029/93JA01470.
+    **References**:
+        Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
+            using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319-331, doi:10.1029/93JA01470.
 
-  Written by Nathaniel A. Frissell, Fall 2013
-  """
-  def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
-
-    if sTime == None: sTime = myPtr.sTime
-    if eTime == None: eTime = myPtr.eTime
-
-    scanTimeList = []
-    dataList  = []
-    cpidList  = []
-    #Subscripts of columns in the dataList/dataArray
-    scanInx = 0
-    dateInx = 1
-    beamInx = 2
-    gateInx = 3
-    dataInx = 4
-
-    beamTime    = sTime
-    scanNr      = np.uint64(0)
-    fov         = None
-
-    # Create a place to store the prm data.
-    prm             = emptyObj()
-    prm.time        = []
-    prm.mplgs       = []
-    prm.nave        = []
-    prm.noisesearch = []
-    prm.scan        = []
-    prm.smsep       = []
-    prm.mplgexs     = []
-    prm.xcf         = []
-    prm.noisesky    = []
-    prm.rsep        = []
-    prm.mppul       = []
-    prm.inttsc      = []
-    prm.frang       = []
-    prm.bmazm       = []
-    prm.lagfr       = []
-    prm.ifmode      = []
-    prm.noisemean   = []
-    prm.tfreq       = []
-    prm.inttus      = []
-    prm.rxrise      = []
-    prm.mpinc       = []
-    prm.nrang       = []
-
-    while beamTime < eTime:
-      #Load one scan into memory.
-      myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
-      if myScan == None: break
-
-      for myBeam in myScan:
-        #Calculate the field of view if it has not yet been calculated.
-        if fov == None:
-          radStruct = pydarn.radar.radStruct.radar(radId=myPtr.stid)
-          site      = pydarn.radar.radStruct.site(radId=myPtr.stid,dt=sTime)
-          fov       = pydarn.radar.radFov.fov(frang=myBeam.prm.frang, rsep=myBeam.prm.rsep, site=site,elevation=fovElevation,model=fovModel,coords=fovCoords)
-
-        #Get information from each beam in the scan.
-        beamTime = myBeam.time 
-        bmnum    = myBeam.bmnum
-
-        # Save all of the radar operational parameters.
-        prm.time.append(beamTime)
-        prm.mplgs.append(myBeam.prm.mplgs)
-        prm.nave.append(myBeam.prm.nave)
-        prm.noisesearch.append(myBeam.prm.noisesearch)
-        prm.scan.append(myBeam.prm.scan)
-        prm.smsep.append(myBeam.prm.smsep)
-        prm.mplgexs.append(myBeam.prm.mplgexs)
-        prm.xcf.append(myBeam.prm.xcf)
-        prm.noisesky.append(myBeam.prm.noisesky)
-        prm.rsep.append(myBeam.prm.rsep)
-        prm.mppul.append(myBeam.prm.mppul)
-        prm.inttsc.append(myBeam.prm.inttsc)
-        prm.frang.append(myBeam.prm.frang)
-        prm.bmazm.append(myBeam.prm.bmazm)
-        prm.lagfr.append(myBeam.prm.lagfr)
-        prm.ifmode.append(myBeam.prm.ifmode)
-        prm.noisemean.append(myBeam.prm.noisemean)
-        prm.tfreq.append(myBeam.prm.tfreq)
-        prm.inttus.append(myBeam.prm.inttus)
-        prm.rxrise.append(myBeam.prm.rxrise)
-        prm.mpinc.append(myBeam.prm.mpinc)
-        prm.nrang.append(myBeam.prm.nrang)
-
-        #Get the fitData.
-        fitDataList = getattr(myBeam.fit,param)
-        slist       = getattr(myBeam.fit,'slist')
-        gflag       = getattr(myBeam.fit,'gflg')
-
-        if len(slist) > 1:
-          for (gate,data,flag) in zip(slist,fitDataList,gflag):
-            #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
-            if (gscat == 1) and (flag == 0): continue
-            if (gscat == 2) and (flag == 1): continue
-            tmp = (scanNr,beamTime,bmnum,gate,data)
-            dataList.append(tmp)
-        elif len(slist) == 1:
-          gate,data,flag = (slist[0],fitDataList[0],gflag[0])
-          #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
-          if (gscat == 1) and (flag == 0): continue
-          if (gscat == 2) and (flag == 1): continue
-          tmp = (scanNr,beamTime,bmnum,gate,data)
-          dataList.append(tmp)
-        else:
-          continue
-
-      #Determine the start time for each scan and save to list.
-      scanTimeList.append(min([x.time for x in myScan]))
-
-      #Advance to the next scan number.
-      scanNr = scanNr + 1
-
-    #Convert lists to numpy arrays.
-    timeArray       = np.array(scanTimeList)
-    dataListArray   = np.array(dataList)
-
-    #Figure out what size arrays we need and initialize the arrays...
-    nrTimes = np.max(dataListArray[:,scanInx]) + 1
-    nrBeams = np.max(dataListArray[:,beamInx]) + 1
-    nrGates = np.max(dataListArray[:,gateInx]) + 1
-
-    #Make sure the FOV is the same size as the data array.
-    if len(fov.beams) != nrBeams:
-      fov.beams         = fov.beams[0:nrBeams]
-      fov.latCenter     = fov.latCenter[0:nrBeams,:]
-      fov.lonCenter     = fov.lonCenter[0:nrBeams,:]
-      fov.slantRCenter  = fov.slantRCenter[0:nrBeams,:]
-      fov.latFull       = fov.latFull[0:nrBeams+1,:]
-      fov.lonFull       = fov.lonFull[0:nrBeams+1,:]
-      fov.slantRFull    = fov.slantRFull[0:nrBeams+1,:]
-
-    if len(fov.gates) != nrGates:
-      fov.gates         = fov.gates[0:nrGates]
-      fov.latCenter     = fov.latCenter[:,0:nrGates]
-      fov.lonCenter     = fov.lonCenter[:,0:nrGates]
-      fov.slantRCenter  = fov.slantRCenter[:,0:nrGates]
-      fov.latFull       = fov.latFull[:,0:nrGates+1]
-      fov.lonFull       = fov.lonFull[:,0:nrGates+1]
-      fov.slantRFull    = fov.slantRFull[:,0:nrGates+1]
-
-    #Convert the dataListArray into a 3 dimensional array.
-    dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
-    dataArray[:]  = np.nan
-    for inx in range(len(dataListArray)):
-      dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
-  
-    #Make metadata block to hold information about the processing.
-    metadata = {}
-    metadata['dType']     = myPtr.dType
-    metadata['stid']      = myPtr.stid
-    metadata['name']      = radStruct.name
-    metadata['code']      = radStruct.code
-    metadata['fType']     = myPtr.fType
-    metadata['cp']        = myPtr.cp
-    metadata['channel']   = myPtr.channel
-    metadata['sTime']     = sTime
-    metadata['eTime']     = eTime
-    metadata['param']     = param
-    metadata['gscat']     = gscat
-    metadata['elevation'] = fovElevation
-    metadata['model']     = fovModel
-    metadata['coords']    = fovCoords
-
-    dataSet = 'DS000_originalFit'
-    metadata['dataSetName'] = dataSet
-    metadata['serial']      = 0
-    comment = '['+dataSet+'] '+ 'Original Fit Data'
-    #Save data to be returned as self.variables
-    setattr(self,dataSet,musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment=comment))
-    newSigObj = getattr(self,dataSet)
-    setattr(newSigObj,'metadata',metadata)
-
-    #Set the new data active.
-    newSigObj.setActive()
-
-    #Make prm data part of the object.
-    self.prm = prm
-
-  def get_data_sets(self):
+    Written by Nathaniel A. Frissell, Fall 2013
     """
-    Return a sorted list of musicDataObj's contained in this musicArray.
+    def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
+        if sTime == None: sTime = myPtr.sTime
+        if eTime == None: eTime = myPtr.eTime
+
+        scanTimeList = []
+        dataList  = []
+        cpidList  = []
+        #Subscripts of columns in the dataList/dataArray
+        scanInx = 0
+        dateInx = 1
+        beamInx = 2
+        gateInx = 3
+        dataInx = 4
+
+        beamTime    = sTime
+        scanNr      = np.uint64(0)
+        fov         = None
+
+        # Create a place to store the prm data.
+        prm             = emptyObj()
+        prm.time        = []
+        prm.mplgs       = []
+        prm.nave        = []
+        prm.noisesearch = []
+        prm.scan        = []
+        prm.smsep       = []
+        prm.mplgexs     = []
+        prm.xcf         = []
+        prm.noisesky    = []
+        prm.rsep        = []
+        prm.mppul       = []
+        prm.inttsc      = []
+        prm.frang       = []
+        prm.bmazm       = []
+        prm.lagfr       = []
+        prm.ifmode      = []
+        prm.noisemean   = []
+        prm.tfreq       = []
+        prm.inttus      = []
+        prm.rxrise      = []
+        prm.mpinc       = []
+        prm.nrang       = []
+
+        while beamTime < eTime:
+            #Load one scan into memory.
+            myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
+            if myScan == None: break
+
+            for myBeam in myScan:
+                #Calculate the field of view if it has not yet been calculated.
+                if fov == None:
+                    radStruct = pydarn.radar.radStruct.radar(radId=myPtr.stid)
+                    site      = pydarn.radar.radStruct.site(radId=myPtr.stid,dt=sTime)
+                    fov       = pydarn.radar.radFov.fov(frang=myBeam.prm.frang, rsep=myBeam.prm.rsep, site=site,elevation=fovElevation,model=fovModel,coords=fovCoords)
+
+                #Get information from each beam in the scan.
+                beamTime = myBeam.time 
+                bmnum    = myBeam.bmnum
+
+                # Save all of the radar operational parameters.
+                prm.time.append(beamTime)
+                prm.mplgs.append(myBeam.prm.mplgs)
+                prm.nave.append(myBeam.prm.nave)
+                prm.noisesearch.append(myBeam.prm.noisesearch)
+                prm.scan.append(myBeam.prm.scan)
+                prm.smsep.append(myBeam.prm.smsep)
+                prm.mplgexs.append(myBeam.prm.mplgexs)
+                prm.xcf.append(myBeam.prm.xcf)
+                prm.noisesky.append(myBeam.prm.noisesky)
+                prm.rsep.append(myBeam.prm.rsep)
+                prm.mppul.append(myBeam.prm.mppul)
+                prm.inttsc.append(myBeam.prm.inttsc)
+                prm.frang.append(myBeam.prm.frang)
+                prm.bmazm.append(myBeam.prm.bmazm)
+                prm.lagfr.append(myBeam.prm.lagfr)
+                prm.ifmode.append(myBeam.prm.ifmode)
+                prm.noisemean.append(myBeam.prm.noisemean)
+                prm.tfreq.append(myBeam.prm.tfreq)
+                prm.inttus.append(myBeam.prm.inttus)
+                prm.rxrise.append(myBeam.prm.rxrise)
+                prm.mpinc.append(myBeam.prm.mpinc)
+                prm.nrang.append(myBeam.prm.nrang)
+
+                #Get the fitData.
+                fitDataList = getattr(myBeam.fit,param)
+                slist       = getattr(myBeam.fit,'slist')
+                gflag       = getattr(myBeam.fit,'gflg')
+
+                if len(slist) > 1:
+                    for (gate,data,flag) in zip(slist,fitDataList,gflag):
+                        #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
+                        if (gscat == 1) and (flag == 0): continue
+                        if (gscat == 2) and (flag == 1): continue
+                        tmp = (scanNr,beamTime,bmnum,gate,data)
+                        dataList.append(tmp)
+                elif len(slist) == 1:
+                    gate,data,flag = (slist[0],fitDataList[0],gflag[0])
+                    #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
+                    if (gscat == 1) and (flag == 0): continue
+                    if (gscat == 2) and (flag == 1): continue
+                    tmp = (scanNr,beamTime,bmnum,gate,data)
+                    dataList.append(tmp)
+                else:
+                    continue
+
+            #Determine the start time for each scan and save to list.
+            scanTimeList.append(min([x.time for x in myScan]))
+
+            #Advance to the next scan number.
+            scanNr = scanNr + 1
+
+        #Convert lists to numpy arrays.
+        timeArray       = np.array(scanTimeList)
+        dataListArray   = np.array(dataList)
+
+        #Figure out what size arrays we need and initialize the arrays...
+        nrTimes = np.max(dataListArray[:,scanInx]) + 1
+        nrBeams = np.max(dataListArray[:,beamInx]) + 1
+        nrGates = np.max(dataListArray[:,gateInx]) + 1
+
+        #Make sure the FOV is the same size as the data array.
+        if len(fov.beams) != nrBeams:
+          fov.beams         = fov.beams[0:nrBeams]
+          fov.latCenter     = fov.latCenter[0:nrBeams,:]
+          fov.lonCenter     = fov.lonCenter[0:nrBeams,:]
+          fov.slantRCenter  = fov.slantRCenter[0:nrBeams,:]
+          fov.latFull       = fov.latFull[0:nrBeams+1,:]
+          fov.lonFull       = fov.lonFull[0:nrBeams+1,:]
+          fov.slantRFull    = fov.slantRFull[0:nrBeams+1,:]
+
+        if len(fov.gates) != nrGates:
+          fov.gates         = fov.gates[0:nrGates]
+          fov.latCenter     = fov.latCenter[:,0:nrGates]
+          fov.lonCenter     = fov.lonCenter[:,0:nrGates]
+          fov.slantRCenter  = fov.slantRCenter[:,0:nrGates]
+          fov.latFull       = fov.latFull[:,0:nrGates+1]
+          fov.lonFull       = fov.lonFull[:,0:nrGates+1]
+          fov.slantRFull    = fov.slantRFull[:,0:nrGates+1]
+
+        #Convert the dataListArray into a 3 dimensional array.
+        dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
+        dataArray[:]  = np.nan
+        for inx in range(len(dataListArray)):
+          dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
+      
+        #Make metadata block to hold information about the processing.
+        metadata = {}
+        metadata['dType']     = myPtr.dType
+        metadata['stid']      = myPtr.stid
+        metadata['name']      = radStruct.name
+        metadata['code']      = radStruct.code
+        metadata['fType']     = myPtr.fType
+        metadata['cp']        = myPtr.cp
+        metadata['channel']   = myPtr.channel
+        metadata['sTime']     = sTime
+        metadata['eTime']     = eTime
+        metadata['param']     = param
+        metadata['gscat']     = gscat
+        metadata['elevation'] = fovElevation
+        metadata['model']     = fovModel
+        metadata['coords']    = fovCoords
+
+        dataSet = 'DS000_originalFit'
+        metadata['dataSetName'] = dataSet
+        metadata['serial']      = 0
+        comment = '['+dataSet+'] '+ 'Original Fit Data'
+        #Save data to be returned as self.variables
+        setattr(self,dataSet,musicDataObj(timeArray,dataArray,fov=fov,parent=self,comment=comment))
+        newSigObj = getattr(self,dataSet)
+        setattr(newSigObj,'metadata',metadata)
+
+        #Set the new data active.
+        newSigObj.setActive()
+
+        #Make prm data part of the object.
+        self.prm = prm
+
+    def get_data_sets(self):
+        """
+        Return a sorted list of musicDataObj's contained in this musicArray.
+
+        **Returns**:
+            * **dataSets** (list of str): Names of musicDataObj's contained in this musicArray.
+
+        Written by Nathaniel A. Frissell, Fall 2013
+        """
+
+        attrs = dir(self)
+
+        dataSets = []
+        for item in attrs:
+            if item.startswith('DS'):
+                dataSets.append(item)
+        dataSets.sort()
+        return dataSets
+
+def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
+    """Interpolates the data in a musicArray object along the beams of the radar.  This method will ensure that no
+    rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
+    The result is stored as a new musicDataObj in the given musicArray object.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    from scipy.interpolate import interp1d
+    currentData = getDataSet(dataObj,dataSet)
+
+    nrTimes = len(currentData.time)
+    nrBeams = len(currentData.fov.beams)
+    nrGates = len(currentData.fov.gates)
+
+    interpArr = np.zeros([nrTimes,nrBeams,nrGates])
+    for tt in range(nrTimes):
+        for bb in range(nrBeams):
+            rangeVec  = currentData.fov.slantRCenter[bb,:]
+            input_x   = copy.copy(rangeVec)
+            input_y   = currentData.data[tt,bb,:]
+
+            #If metadata['gateLimits'], select only those measurements...
+            if currentData.metadata.has_key('gateLimits'):
+                limits = currentData.metadata['gateLimits']
+                gateInx = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates <= limits[1]))[0]
+
+                if len(gateInx) < 2: continue
+                input_x   = input_x[gateInx]
+                input_y   = input_y[gateInx]
+
+            good      = np.where(np.isfinite(input_y))[0]
+            if len(good) < 2: continue
+            input_x   = input_x[good]
+            input_y   = input_y[good]
+
+            intFn     = interp1d(input_x,input_y,bounds_error=False,fill_value=0)
+            interpArr[tt,bb,:] = intFn(rangeVec)
+    newDataSet = currentData.copy(newDataSetName,comment)
+    newDataSet.data = interpArr
+    newDataSet.setActive()
+
+def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamLimits=None,timeLimits=None):
+    """Sets the range, gate, beam, and time limits for the chosen data set. This method only changes metadata;
+    it does not create a new data set or alter the data in any way.  If you specify rangeLimits, they will be changed to correspond
+    with the center value of the range cell.  Gate limits always override range limits.
+    Use the applyLimits() method to remove data outside of the data limits.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**rangeLimits**] (iterable or None): Two-element array defining the maximum and minumum slant ranges to use. [km]
+        * [**gateLimits**] (iterable or None): Two-element array defining the maximum and minumum gates to use.
+        * [**beamLimits**] (iterable or None): Two-element array defining the maximum and minumum beams to use.
+        * [**timeLimits**] (iterable or None): Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    currentData = getDataSet(dataObj,dataSet)
+    try:
+        if (rangeLimits != None) or (gateLimits != None):
+            if (rangeLimits != None) and (gateLimits == None):
+                inx = np.where(np.logical_and(currentData.fov.slantRCenter >= rangeLimits[0],currentData.fov.slantRCenter <= rangeLimits[1]))
+                gateLimits = [np.min(inx[1][:]),np.max(inx[1][:])]
+
+            if gateLimits != None:
+                rangeMin = np.int(np.min(currentData.fov.slantRCenter[:,gateLimits[0]]))
+                rangeMax = np.int(np.max(currentData.fov.slantRCenter[:,gateLimits[1]]))
+                rangeLimits = [rangeMin,rangeMax]
+
+            currentData.metadata['gateLimits']  = gateLimits
+            currentData.metadata['rangeLimits'] = rangeLimits
+
+        if beamLimits != None:
+            currentData.metadata['beamLimits'] = beamLimits
+
+        if timeLimits != None:
+            currentData.metadata['timeLimits'] = timeLimits
+
+    except:
+        print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
+
+def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
+    """Removes data outside of the rangeLimits and gateLimits boundaries.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**rangeLimits**] (iterable or None): Two-element array defining the maximum and minumum slant ranges to use. [km]
+        * [**gateLimits**] (iterable or None): Two-element array defining the maximum and minumum gates to use.
+        * [**beamLimits**] (iterable or None): Two-element array defining the maximum and minumum beams to use.
+        * [**timeLimits**] (iterable or None): Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
 
     **Returns**:
-        * **dataSets** (list of str): Names of musicDataObj's contained in this musicArray.
+        * **newData** (:class:`musicDataObj`): Processed version of input musicDataObj (if succeeded), or the original musicDataObj (if failed).
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
 
-    attrs = dir(self)
+    if (rangeLimits != None) or (gateLimits != None) or (timeLimits != None):
+        defineLimits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits)
 
-    dataSets = []
-    for item in attrs:
-        if item.startswith('DS'):
-            dataSets.append(item)
-    dataSets.sort()
-    return dataSets
+    currentData = getDataSet(dataObj,dataSet)
+    try:
+        #Make a copy of the current data set.
 
-def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
-  """Interpolates the data in a musicArray object along the beams of the radar.  This method will ensure that no
-  rangegates are missing data.  Ranges outside of metadata['gateLimits'] will be set to 0.
-  The result is stored as a new musicDataObj in the given musicArray object.
+        commentList = []
 
-  **Args**:
-      * **dataObj** (:class:`musicArray`):  musicArray object
-      * [**dataSet**] (str):  which dataSet in the musicArray object to process
-      * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
-      * [**comment**] (str): String to be appended to the history of this object.
+        if (currentData.metadata.has_key('timeLimits') == False and 
+            currentData.metadata.has_key('beamLimits') == False and 
+            currentData.metadata.has_key('gateLimits') == False):
+            return currentData
 
-  Written by Nathaniel A. Frissell, Fall 2013
-  """
-  from scipy.interpolate import interp1d
-  currentData = getDataSet(dataObj,dataSet)
+        newData     = currentData.copy(newDataSetName,comment)
+        #Apply the gateLimits
+        if currentData.metadata.has_key('gateLimits'):
+            limits      = currentData.metadata['gateLimits']
+            gateInx     = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates<= limits[1]))[0]
 
-  nrTimes = len(currentData.time)
-  nrBeams = len(currentData.fov.beams)
-  nrGates = len(currentData.fov.gates)
+            newData.data = newData.data[:,:,gateInx]
+            newData.fov.gates = newData.fov.gates[gateInx]
 
-  interpArr = np.zeros([nrTimes,nrBeams,nrGates])
-  for tt in range(nrTimes):
-    for bb in range(nrBeams):
-      rangeVec  = currentData.fov.slantRCenter[bb,:]
-      input_x   = copy.copy(rangeVec)
-      input_y   = currentData.data[tt,bb,:]
+            newData.fov.latCenter     = newData.fov.latCenter[:,gateInx] 
+            newData.fov.lonCenter     = newData.fov.lonCenter[:,gateInx] 
+            newData.fov.slantRCenter  = newData.fov.slantRCenter[:,gateInx] 
 
-      #If metadata['gateLimits'], select only those measurements...
-      if currentData.metadata.has_key('gateLimits'):
-        limits = currentData.metadata['gateLimits']
-        gateInx = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates <= limits[1]))[0]
+            #Update the full FOV.
+            #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
+            #(typically for computational speed reasons), we will have to do something else.
+            gateInxFull = np.append(gateInx,gateInx[-1]+1) #We need that extra gate since this is the full FOV.
+            newData.fov.latFull = newData.fov.latFull[:,gateInxFull] 
+            newData.fov.lonFull = newData.fov.lonFull[:,gateInxFull] 
+            newData.fov.slantRFull = newData.fov.slantRFull[:,gateInxFull] 
 
-        if len(gateInx) < 2: continue
-        input_x   = input_x[gateInx]
-        input_y   = input_y[gateInx]
+            commentList.append('gate: %i,%i' % tuple(limits))
+            rangeLim = (np.min(newData.fov.slantRCenter), np.max(newData.fov.slantRCenter))
+            commentList.append('range [km]: %i,%i' % rangeLim)
 
-      good      = np.where(np.isfinite(input_y))[0]
-      if len(good) < 2: continue
-      input_x   = input_x[good]
-      input_y   = input_y[good]
+            #Remove limiting item from metadata.
+            newData.metadata.pop('gateLimits')
+            if newData.metadata.has_key('rangeLimits'): newData.metadata.pop('rangeLimits')
+          
+        #Apply the beamLimits.
+        if currentData.metadata.has_key('beamLimits'):
+            limits      = currentData.metadata['beamLimits']
+            beamInx     = np.where(np.logical_and(currentData.fov.beams >= limits[0],currentData.fov.beams <= limits[1]))[0]
 
-      intFn     = interp1d(input_x,input_y,bounds_error=False,fill_value=0)
-      interpArr[tt,bb,:] = intFn(rangeVec)
-  newDataSet = currentData.copy(newDataSetName,comment)
-  newDataSet.data = interpArr
-  newDataSet.setActive()
+            newData.data = newData.data[:,beamInx,:]
+            newData.fov.beams = newData.fov.beams[beamInx]
 
-def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamLimits=None,timeLimits=None):
-  """Sets the range, gate, beam, and time limits for the chosen data set. This method only changes metadata;
-  it does not create a new data set or alter the data in any way.  If you specify rangeLimits, they will be changed to correspond
-  with the center value of the range cell.  Gate limits always override range limits.
-  Use the applyLimits() method to remove data outside of the data limits.
+            newData.fov.latCenter     = newData.fov.latCenter[beamInx,:] 
+            newData.fov.lonCenter     = newData.fov.lonCenter[beamInx,:] 
+            newData.fov.slantRCenter  = newData.fov.slantRCenter[beamInx,:] 
 
-  **Args**:
-      * **dataObj** (:class:`musicArray`):  musicArray object
-      * [**dataSet**] (str):  which dataSet in the musicArray object to process
-      * [**rangeLimits**] (iterable or None): Two-element array defining the maximum and minumum slant ranges to use. [km]
-      * [**gateLimits**] (iterable or None): Two-element array defining the maximum and minumum gates to use.
-      * [**beamLimits**] (iterable or None): Two-element array defining the maximum and minumum beams to use.
-      * [**timeLimits**] (iterable or None): Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
+            #Update the full FOV.
+            #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
+            #(typically for computational speed reasons), we will have to do something else.
+            beamInxFull = np.append(beamInx,beamInx[-1]+1) #We need that extra beam since this is the full FOV.
+            newData.fov.latFull = newData.fov.latFull[beamInxFull,:] 
+            newData.fov.lonFull = newData.fov.lonFull[beamInxFull,:] 
+            newData.fov.slantRFull = newData.fov.slantRFull[beamInxFull,:] 
 
-  Written by Nathaniel A. Frissell, Fall 2013
-  """
-  currentData = getDataSet(dataObj,dataSet)
-  try:
-    if (rangeLimits != None) or (gateLimits != None):
-      if (rangeLimits != None) and (gateLimits == None):
-        inx = np.where(np.logical_and(currentData.fov.slantRCenter >= rangeLimits[0],currentData.fov.slantRCenter <= rangeLimits[1]))
-        gateLimits = [np.min(inx[1][:]),np.max(inx[1][:])]
+            commentList.append('beam: %i,%i' % tuple(limits))
+            #Remove limiting item from metadata.
+            newData.metadata.pop('beamLimits')
+        
+        #Apply the time limits.
+        if currentData.metadata.has_key('timeLimits'):
+            limits      = currentData.metadata['timeLimits']
+            timeInx     = np.where(np.logical_and(currentData.time >= limits[0],currentData.time <= limits[1]))[0]
 
-      if gateLimits != None:
-        rangeMin = np.int(np.min(currentData.fov.slantRCenter[:,gateLimits[0]]))
-        rangeMax = np.int(np.max(currentData.fov.slantRCenter[:,gateLimits[1]]))
-        rangeLimits = [rangeMin,rangeMax]
+            newData.data = newData.data[timeInx,:,:]
+            newData.time = newData.time[timeInx]
 
-      currentData.metadata['gateLimits']  = gateLimits
-      currentData.metadata['rangeLimits'] = rangeLimits
+            commentList.append('time: '+limits[0].strftime('%Y-%m-%d/%H:%M,')+limits[1].strftime('%Y-%m-%d/%H:%M'))
+            #Remove limiting item from metadata.
+            newData.metadata.pop('timeLimits')
+            
+            #Update the history with what limits were applied.
+            comment = 'Limits Applied'
+            commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
+            key = max(newData.history.keys())
+            newData.history[key] = commentStr
+            print commentStr
 
-    if beamLimits != None:
-      currentData.metadata['beamLimits'] = beamLimits
-
-    if timeLimits != None:
-      currentData.metadata['timeLimits'] = timeLimits
-
-  except:
-    print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
-
-def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
-  """Removes data outside of the rangeLimits and gateLimits boundaries.
-
-  **Args**:
-      * **dataObj** (:class:`musicArray`):  musicArray object
-      * [**dataSet**] (str):  which dataSet in the musicArray object to process
-      * [**rangeLimits**] (iterable or None): Two-element array defining the maximum and minumum slant ranges to use. [km]
-      * [**gateLimits**] (iterable or None): Two-element array defining the maximum and minumum gates to use.
-      * [**beamLimits**] (iterable or None): Two-element array defining the maximum and minumum beams to use.
-      * [**timeLimits**] (iterable or None): Two-element array of datetime.datetime objects defining the maximum and minumum times to use.
-      * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
-      * [**comment**] (str): String to be appended to the history of this object.  Set to None for the Default comment (recommended).
-
-  **Returns**:
-      * **newData** (:class:`musicDataObj`): Processed version of input musicDataObj (if succeeded), or the original musicDataObj (if failed).
-
-  Written by Nathaniel A. Frissell, Fall 2013
-  """
-
-  if (rangeLimits != None) or (gateLimits != None) or (timeLimits != None):
-    defineLimits(dataObj,dataSet='active',rangeLimits=rangeLimits,gateLimits=gateLimits,timeLimits=timeLimits)
-
-  currentData = getDataSet(dataObj,dataSet)
-  try:
-    #Make a copy of the current data set.
-
-    commentList = []
-
-    if (currentData.metadata.has_key('timeLimits') == False and 
-        currentData.metadata.has_key('beamLimits') == False and 
-        currentData.metadata.has_key('gateLimits') == False):
-#      print 'No limits were defined.  Data left unchanged.'
-      return currentData
-
-    newData     = currentData.copy(newDataSetName,comment)
-    #Apply the gateLimits
-    if currentData.metadata.has_key('gateLimits'):
-      limits      = currentData.metadata['gateLimits']
-      gateInx     = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates<= limits[1]))[0]
-
-      newData.data = newData.data[:,:,gateInx]
-      newData.fov.gates = newData.fov.gates[gateInx]
-
-      newData.fov.latCenter     = newData.fov.latCenter[:,gateInx] 
-      newData.fov.lonCenter     = newData.fov.lonCenter[:,gateInx] 
-      newData.fov.slantRCenter  = newData.fov.slantRCenter[:,gateInx] 
-
-      #Update the full FOV.
-      #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
-      #(typically for computational speed reasons), we will have to do something else.
-      gateInxFull = np.append(gateInx,gateInx[-1]+1) #We need that extra gate since this is the full FOV.
-      newData.fov.latFull = newData.fov.latFull[:,gateInxFull] 
-      newData.fov.lonFull = newData.fov.lonFull[:,gateInxFull] 
-      newData.fov.slantRFull = newData.fov.slantRFull[:,gateInxFull] 
-
-      commentList.append('gate: %i,%i' % tuple(limits))
-      rangeLim = (np.min(newData.fov.slantRCenter), np.max(newData.fov.slantRCenter))
-      commentList.append('range [km]: %i,%i' % rangeLim)
-
-      #Remove limiting item from metadata.
-      newData.metadata.pop('gateLimits')
-      if newData.metadata.has_key('rangeLimits'): newData.metadata.pop('rangeLimits')
-      
-    #Apply the beamLimits.
-    if currentData.metadata.has_key('beamLimits'):
-      limits      = currentData.metadata['beamLimits']
-      beamInx     = np.where(np.logical_and(currentData.fov.beams >= limits[0],currentData.fov.beams <= limits[1]))[0]
-
-      newData.data = newData.data[:,beamInx,:]
-      newData.fov.beams = newData.fov.beams[beamInx]
-
-      newData.fov.latCenter     = newData.fov.latCenter[beamInx,:] 
-      newData.fov.lonCenter     = newData.fov.lonCenter[beamInx,:] 
-      newData.fov.slantRCenter  = newData.fov.slantRCenter[beamInx,:] 
-
-      #Update the full FOV.
-      #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
-      #(typically for computational speed reasons), we will have to do something else.
-      beamInxFull = np.append(beamInx,beamInx[-1]+1) #We need that extra beam since this is the full FOV.
-      newData.fov.latFull = newData.fov.latFull[beamInxFull,:] 
-      newData.fov.lonFull = newData.fov.lonFull[beamInxFull,:] 
-      newData.fov.slantRFull = newData.fov.slantRFull[beamInxFull,:] 
-
-      commentList.append('beam: %i,%i' % tuple(limits))
-      #Remove limiting item from metadata.
-      newData.metadata.pop('beamLimits')
-    
-    #Apply the time limits.
-    if currentData.metadata.has_key('timeLimits'):
-      limits      = currentData.metadata['timeLimits']
-      timeInx     = np.where(np.logical_and(currentData.time >= limits[0],currentData.time <= limits[1]))[0]
-
-      newData.data = newData.data[timeInx,:,:]
-      newData.time = newData.time[timeInx]
-
-      commentList.append('time: '+limits[0].strftime('%Y-%m-%d/%H:%M,')+limits[1].strftime('%Y-%m-%d/%H:%M'))
-      #Remove limiting item from metadata.
-      newData.metadata.pop('timeLimits')
-    
-    #Update the history with what limits were applied.
-    comment = 'Limits Applied'
-    commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
-    key = max(newData.history.keys())
-    newData.history[key] = commentStr
-    print commentStr
-
-    newData.setActive()
-    return newData
-  except:
-    if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
-    print 'Warning! Limits not applied.'
-    return currentData
+        newData.setActive()
+        return newData
+    except:
+        if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
+        print 'Warning! Limits not applied.'
+        return currentData
 
 def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
     """Finds the center cell of the field-of-view of a musicArray data object.
@@ -916,63 +914,63 @@ def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
     return None
 
 def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated',comment='Time Linear Interpolation',timeRes=10,newTimeVec=None):
-  """Interpolates the data in a musicArray object to a regular time grid.
+    """Interpolates the data in a musicArray object to a regular time grid.
 
-  **Args**:
-      * **dataObj** (:class:`musicArray`):  musicArray object
-      * [**dataSet**] (str):  which dataSet in the musicArray object to process
-      * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
-      * [**comment**] (str): String to be appended to the history of this object.
-      * [**timeRes**] (float):    time resolution of new time vector [seconds]
-      * [**newTimeVec**] (list of datetime.datetime): Sequence of datetime.datetime objects that data will be interpolated to.  This overides timeRes.
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**newDataSetName**] (str): Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
+        * [**comment**] (str): String to be appended to the history of this object.
+        * [**timeRes**] (float):    time resolution of new time vector [seconds]
+        * [**newTimeVec**] (list of datetime.datetime): Sequence of datetime.datetime objects that data will be interpolated to.  This overides timeRes.
 
-  Written by Nathaniel A. Frissell, Fall 2013
-  """
-  from scipy.interpolate import interp1d
-  import utils 
-  currentData = getDataSet(dataObj,dataSet)
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    from scipy.interpolate import interp1d
+    import utils 
+    currentData = getDataSet(dataObj,dataSet)
 
-  sTime = currentData.time[0]
-  sTime = datetime.datetime(sTime.year,sTime.month,sTime.day,sTime.hour,sTime.minute) #Make start time a round time.
-  fTime = currentData.time[-1]
+    sTime = currentData.time[0]
+    sTime = datetime.datetime(sTime.year,sTime.month,sTime.day,sTime.hour,sTime.minute) #Make start time a round time.
+    fTime = currentData.time[-1]
 
-  #Create new time vector.
-  if newTimeVec == None:
-    newTimeVec = [sTime]
-    while newTimeVec[-1] < fTime:
-      newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
+    #Create new time vector.
+    if newTimeVec == None:
+        newTimeVec = [sTime]
+        while newTimeVec[-1] < fTime:
+            newTimeVec.append(newTimeVec[-1] + datetime.timedelta(seconds=timeRes))
 
-  #Ensure that the new time vector is within the bounds of the actual data set.
-  newTimeVec  = np.array(newTimeVec)
-  good        = np.where(np.logical_and(newTimeVec > min(currentData.time),newTimeVec < max(currentData.time)))
-  newTimeVec  = newTimeVec[good]
-  newEpochVec = utils.datetimeToEpoch(newTimeVec)
+    #Ensure that the new time vector is within the bounds of the actual data set.
+    newTimeVec  = np.array(newTimeVec)
+    good        = np.where(np.logical_and(newTimeVec > min(currentData.time),newTimeVec < max(currentData.time)))
+    newTimeVec  = newTimeVec[good]
+    newEpochVec = utils.datetimeToEpoch(newTimeVec)
 
-  #Initialize interpolated data.
-  nrTimes = len(newTimeVec)
-  nrBeams = len(currentData.fov.beams)
-  nrGates = len(currentData.fov.gates)
+    #Initialize interpolated data.
+    nrTimes = len(newTimeVec)
+    nrBeams = len(currentData.fov.beams)
+    nrGates = len(currentData.fov.gates)
 
-  interpArr = np.zeros([nrTimes,nrBeams,nrGates])
+    interpArr = np.zeros([nrTimes,nrBeams,nrGates])
 
-  for rg in range(nrGates):
-    for bb in range(nrBeams):
-      input_x   = currentData.time[:]
-      input_y   = currentData.data[:,bb,rg]
+    for rg in range(nrGates):
+        for bb in range(nrBeams):
+            input_x   = currentData.time[:]
+            input_y   = currentData.data[:,bb,rg]
 
-      good      = np.where(np.isfinite(input_y))[0]
-      if len(good) < 2: continue
-      input_x   = input_x[good]
-      input_y   = input_y[good]
+            good      = np.where(np.isfinite(input_y))[0]
+            if len(good) < 2: continue
+            input_x   = input_x[good]
+            input_y   = input_y[good]
 
-      input_x   = utils.datetimeToEpoch(input_x)
+            input_x   = utils.datetimeToEpoch(input_x)
 
-      intFn     = interp1d(input_x,input_y,bounds_error=False)#,fill_value=0)
-      interpArr[:,bb,rg] = intFn(newEpochVec)
-  newDataSet = currentData.copy(newDataSetName,comment)
-  newDataSet.time = newTimeVec
-  newDataSet.data = interpArr
-  newDataSet.setActive()
+            intFn     = interp1d(input_x,input_y,bounds_error=False)#,fill_value=0)
+            interpArr[:,bb,rg] = intFn(newEpochVec)
+    newDataSet = currentData.copy(newDataSetName,comment)
+    newDataSet.time = newTimeVec
+    newDataSet.data = interpArr
+    newDataSet.setActive()
 
 def filterTimes(sTime,eTime,timeRes,numTaps):
     """The linear filter is going to cause a delay in the signal and also won't get to the end of the signal.
