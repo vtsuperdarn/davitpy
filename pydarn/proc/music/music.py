@@ -16,15 +16,19 @@
 
 """
 .. module:: music
-    :synopsis: A module running the MUltiple SIgnal Classification (MUSIC) algorithm for the detection of
+    :synopsis: A module for running the MUltiple SIgnal Classification (MUSIC) algorithm for the detection of
     MSTIDs and wave-like structures in SuperDARN data.
 
-    For usage examples, please see the iPython notebook included in the docs folder of the DaViTPy distribution.
+    For usage examples, please see the iPython notebooks included in the docs folder of the DaViTPy distribution.
 
-    See Samson et al. [1990] and Bristow et al. [1994] for details.
+    See Samson et al. [1990] and Bristow et al. [1994] for details regarding the MUSIC algorithm and SuperDARN-observed MSTIDs.
 
-    Samson, J. C., R. A. Greenwald, J. M. Ruohoniemi, A. Frey, and K. B. Baker (1990), Goose Bay radar observations of Earth-reflected,
-        atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693-7709, doi:10.1029/JA095iA06p07693.
+    **References**:
+        Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
+            using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319-331, doi:10.1029/93JA01470.
+
+        Samson, J. C., R. A. Greenwald, J. M. Ruohoniemi, A. Frey, and K. B. Baker (1990), Goose Bay radar observations of Earth-reflected,
+            atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693-7709, doi:10.1029/JA095iA06p07693.
 
 .. moduleauthor:: Nathaniel A. Frissell, Fall 2013
 

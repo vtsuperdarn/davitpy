@@ -1,13 +1,47 @@
-# Copyright (C) 2013  VT SuperDARN Lab
+# Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: pydarn.plotting 
-*********************
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-This module contains the following functions:
-    * :func:`utils.geoPack.geodToGeoc`: 
-        converts from geodetic to geocentric (and vice-versa)
+"""
+.. module:: musicPlot
+    :synopsis: A module for plotting objects created and processed with the pydarn.proc.music module.
+
+    Please see the pydarn.proc.music module documentation and the iPython notebooks included in the docs
+    folder of the DaViTPy distribution.
+
+.. moduleauthor:: Nathaniel A. Frissell, Fall 2013
+
+*********************
+**Module**: pydarn.plotting.rti
+*********************
+**Functions**:
+    * :func:`pydarn.plotting.daynight_terminator`
+    * :func:`pydarn.plotting.plotRelativeRanges`
+    * :func:`pydarn.plotting.rangeBeamPlot`
+    * :func:`pydarn.plotting.timeSeriesMultiPlot`
+    * :func:`pydarn.plotting.spectrumMultiPlot`
+    * :func:`pydarn.plotting.multiPlot`
+    * :func:`pydarn.plotting.plotFullSpectrum`
+    * :func:`pydarn.plotting.plotDlm`
+    * :func:`pydarn.plotting.plotKarr`
+    * :func:`pydarn.plotting.plotKarrDetected`
+    * :func:`pydarn.plotting.plotKarrAxis`
+
+**Classes**:
+    * :class:`pydarn.plotting.musicFan`
+    * :class:`pydarn.plotting.musicRTI`
 """
 
 import numpy as np
@@ -57,8 +91,8 @@ class musicFan(object):
     """Class to plot a fan plot using a pydarn.proc.music.musicArray object as the data source.
 
     **Args**:
-        * **dataObj** (:class:`musicArray`):  musicArray object
-        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * **dataObj** (:class:`pydarn.proc.music.musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to plot
         * [**time**] (None or datetime.datetime): Time scan plot.  If None, the first time in dataSet will be used.
         * [**axis**] (None or matplotlib.figure.axis): Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
         * [**scale**] (None or 2-Element iterable): Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
@@ -224,63 +258,39 @@ class musicFan(object):
             m.nightshade(currentData.time[timeInx])
 
 class musicRTI(object):
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,coords='gate',axis=None,fileName=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', **kwArgs):
-        """create an rti plot for a secified radar and time period from a data set in a musicObj.
+    """Class to create an RTI plot using a pydarn.proc.music.musicArray object as the data source.
 
-        **Args**:
-          * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating the start time which you would like to plot
-          * **rad** (str): the 3 letter radar code, e.g. 'bks'
-          * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating th end time you would like plotted.  If this is None, 24 hours will be plotted.  default = None.
-          * **[bmnum] (int)**: The beam to plot.  default: 7
-          * **[fileType]** (str): The file type to be plotted, one of ['fitex','fitacf','lmfit'].  default = 'fitex'.
-          * **[params]** (list): a list of the fit parameters to plot, allowable values are: ['velocity', 'power', 'width', 'elevation', 'phi0'].  default: ['velocity', 'power', 'width']
-          * **[scales]** (list): a list of the min/max values for the color scale for each param.  If omitted, default scales will be used.  If present, the list should be n x 2 where n is the number of elements in the params list.  Use an empty list for default range, e.g. [[-250,300],[],[]].  default: [[-200,200],[0,30],[0,150]]
-          * **[channel]** (char): the channel you wish to plot, e.g. 'a', 'b', 'c', ...  default: 'a'
-          * **[coords]** (str): the coordinates to use for the y axis.  The allowable values are 'gate', 'rng', 'geo', 'mag' default: 'gate'
-          * **[colors]** (str): a string indicating what color bar to use, valid inputs are ['lasse','aj'].  default: 'lasse'
-          * **[yrng]** (list or -1): a list indicating the min and max values for the y axis in the chosen coordinate system, or a -1 indicating to plot everything.  default: -1.
-          * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray. default: False (ground scatter plotted normally)
-          * **[lowGray]** (boolean): a flag indicating whether to plot low velocity scatter as gray. default: False (low velocity scatter plotted normally)
-          * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow.
-          * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
-          * **[dpi]** (int): dots per inch if saving as png.  default = 300
-          * **[show]** (boolean): a flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
-          * **[retfig]** (boolean):  a flag indicating that you want the figure to be returned from the function.  Only the last figure in the list of frequency bands will be returned.  default = False
-          * **[filtered]** (boolean): a flag indicating whether to boxcar filter the data.  default = False (no filter)
-          * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
-          * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
-          * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
-          * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
-          * **[figure]** (matplotlib.figure) figure object to plot on.  If None, a figure object will be created for you.
-          * **[xtick_size]**: (int) fontsize of xtick labels
-          * **[ytick_size]**: (int) fontsize of ytick labels
-          * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
-          * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
-          * **[plotTerminator]**: (boolean) Overlay the day/night terminator.
-        **Returns**:
-          * Possibly figure, depending on the **retfig** keyword
+    **Args**:
+        * **dataObj** (:class:`pydarn.proc.music.musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to plot
+        * [**beam**] (int): Beam number to plot.
+        * [**xlim**] (None or 2-element iterable of datetime.datetime): Limits for x-axis.
+        * [**ylim**] (None or 2-element iterable of floats): Limits for y-axis.
+        * [**axis**] (None or matplotlib.figure.axis): Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
+        * [**scale**] (None or 2-Element iterable): Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
+        * [**xBoundaryLimits**] (None or 2-element iterable of datetime.datetime): Mark a region of times on the RTI plot.  A green dashed vertical line will be plotted
+            at each of the boundary times.  The region of time outside of the boundary will be shaded gray.
+            If set to None, this will automatically be set to the timeLimits set in the metadata, if they exist.
+        * [**yBoundaryLimits**] (None or 2-element iterable of floats): Mark a region of range on the RTI plot.  A green dashed horizontal line will be plotted
+            at each of the boundary ranges.  The region of time outside of the boundary will be shaded gray.
+            If set to None, this will automatically be set to the gateLimits set in the metadata, if they exist.
+        * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
+        * [**plotTerminator**] (bool): If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
+            terminator resolution will match the resolution of the RTI plot data.
+        * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
+        * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
+        * [**kwArgs**] (**kwArgs): Keyword Arguments
 
-        **Example**:
-          ::
-          
-            import datetime as dt
-            pydarn.plotting.rti.plotRti(dt.datetime(2013,3,16), 'bks', eTime=dt.datetime(2013,3,16,14,30), bmnum=12, fileType='fitacf', scales=[[-500,500],[],[]], coords='geo',colors='aj', filtered=True, show=True)
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', **kwArgs):
 
-          
-        Written by Nathaniel A. Frissell Fall 2013
-        """
         from scipy import stats
         from rti import plotFreq,plotNoise
 
-        if fileName != None:
-            from matplotlib.backends.backend_agg import FigureCanvasAgg
-            from matplotlib.figure import Figure
-            if axis==None:
-                fig   = Figure(figsize=figsize)
-        else:
+        if axis == None:
             from matplotlib import pyplot as plt
-            if axis==None:
-                fig   = plt.figure(figsize=figsize)
+            fig   = plt.figure(figsize=figsize)
 
         #Make some variables easier to get to...
         currentData = getDataSet(dataObject,dataSet)
@@ -309,12 +319,16 @@ class musicRTI(object):
 
                 if day_inx.size != 0:
                     daylight[tm_inx,day_inx] = False
-        ################################################################################
 
-        coords      = metadata['coords']
-        if coords not in ['gate','range']:
-            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
-            coords = 'gate'
+#        The coords keyword needs to be tested better.  For now, just allow 'gate' only.
+#        Even in 'gate' mode, the geographic latitudes are plotted along with gate.
+#        if coords == None and metadata.has_key('coords'):
+#            coords      = metadata['coords']
+#
+#        if coords not in ['gate','range']:
+#            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+#            coords = 'gate'
+        coords  = 'gate'
 
         #Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
@@ -545,19 +559,21 @@ class musicRTI(object):
         fig.text(xmax,title_y,txt,weight=550,ha='right')
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
-    """Plots the N-S and E-W distance from the center cell of a field-of-view in a vtMUSIC object.
+    """Plots the N-S and E-W distance from the center cell of a field-of-view in a pydarn.proc.music.musicArray object.
     Also plots one scan of the chosen dataSet, with the center cell marked in black.
 
     **Args**:
-        * **dataObj**:  vtMUSIC object
-        * **dataSet**:  which dataSet in the vtMUSIC object to process
-        * **time**:     datetime.datetime object giving the start scan time to plot.  If None, first time will be used.
-        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**time**] (None or datetime.datetime): Time scan plot.  If None, the first time in dataSet will be used.
+        * [**fig**] (None of matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+
     **Returns**:
-        * **fig**:      matplotlib figure object that was plotted to
+        * [**fig**] (None of matplotlib.figure): matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
+
     if fig == None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -626,81 +642,80 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     return fig
 
 def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param='velocity',scale=None,cbarLabel=None):
-  """Plots data on a range versus beam plot with a colorbar.
+    """Plots data on a range versus beam plot with a colorbar.
 
-  **Args**:
-      * **currentData**:  vtMUSIC.dataSet object
-      * **data**:         nBeams x nGates Numpy array of data
-      * **axis**:         matplotlib axis object on which to plot
-      * **title**:        Title of plot.
-      * **xlabel**:       X-axis label
-      * **ylabel**:       Y-axis label
-      * **param**:        Parameter used for colorbar selection.
-      * **scale**:        Two-element colorbar scale.
-      * **cbarLabel**:    Colorbar label.
-  """
-  fig     = axis.get_figure()
+    **Args**:
+        * **currentData** (:class:`pydarn.proc.music.musicDataObj`): musicDataObj
+        * **data** (numpy.array): nBeams x nGates Numpy array of data
+        * **axis** (:class:`matplotlib.axis`): matplotlib axis object on which to plot
+        * [**title**] (None or str): Title of plot.
+        * [**xlabel**] (None or str): X-axis label
+        * [**ylabel**] (None or str): Y-axis label
+        * [**param**] (None or str): Parameter used for colorbar selection.
+        * [**scale**] (None or 2-element iterable): Two-element colorbar scale.
+        * [**cbarLabel**] (str): Colorbar label.
 
-  ngates  = len(currentData.fov.gates)
-  nbeams  = len(currentData.fov.beams)
-  verts   = []
-  scan    = []
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    fig     = axis.get_figure()
 
-  for bmInx in range(nbeams):
-    for rgInx in range(ngates):
-      scan.append(data[bmInx,rgInx])
+    ngates  = len(currentData.fov.gates)
+    nbeams  = len(currentData.fov.beams)
+    verts   = []
+    scan    = []
 
-      bm = currentData.fov.beams[bmInx]
-      rg = currentData.fov.gates[rgInx]
+    for bmInx in range(nbeams):
+        for rgInx in range(ngates):
+            scan.append(data[bmInx,rgInx])
 
-      x1,y1 = bm+0, rg+0
-      x2,y2 = bm+1, rg+0
-      x3,y3 = bm+1, rg+1
-      x4,y4 = bm+0, rg+1
-      verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+            bm = currentData.fov.beams[bmInx]
+            rg = currentData.fov.gates[rgInx]
 
-  if scale == None:
-    scale   = (np.min(scan),np.max(scan))
+            x1,y1 = bm+0, rg+0
+            x2,y2 = bm+1, rg+0
+            x3,y3 = bm+1, rg+1
+            x4,y4 = bm+0, rg+1
+            verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-#  colors  = 'lasse'
-#  cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
+    if scale == None:
+        scale   = (np.min(scan),np.max(scan))
 
-  cmap    = matplotlib.cm.jet
-  bounds  = np.linspace(scale[0],scale[1],256)
-  norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+    cmap    = matplotlib.cm.jet
+    bounds  = np.linspace(scale[0],scale[1],256)
+    norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
 
-  pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
-  pcoll.set_array(np.array(scan))
-  axis.add_collection(pcoll,autolim=False)
+    pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+    pcoll.set_array(np.array(scan))
+    axis.add_collection(pcoll,autolim=False)
 
-  axis.set_xlim(min(currentData.fov.beams), max(currentData.fov.beams)+1)
-  axis.set_ylim(min(currentData.fov.gates), max(currentData.fov.gates)+1)
+    axis.set_xlim(min(currentData.fov.beams), max(currentData.fov.beams)+1)
+    axis.set_ylim(min(currentData.fov.gates), max(currentData.fov.gates)+1)
 
-  if title != None: axis.set_title(title)
-  if xlabel != None: axis.set_xlabel(xlabel)
-  if ylabel != None: axis.set_ylabel(ylabel)
+    if title != None: axis.set_title(title)
+    if xlabel != None: axis.set_xlabel(xlabel)
+    if ylabel != None: axis.set_ylabel(ylabel)
 
-  cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-  if cbarLabel != None: cbar.set_label(cbarLabel)
-#  labels = cbar.ax.get_yticklabels()
-#  labels[-1].set_visible(False)
-#  labels[0].set_visible(False)
+    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+    if cbarLabel != None: cbar.set_label(cbarLabel)
 
 def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
-    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
+    """Plots 1D line time series of selected cells in a pydarn.proc.music.musicArray object.
     This defaults to 9 cells of the FOV.
 
     **Args**:
-        * **dataObj**:  vtMUSIC object
-        * **dataSet**:  which dataSet in the vtMUSIC object to process
-        * **plotBeam**: list of beams to plot from
-        * **plotGates*: list of range gates to plot from
-        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * **xlim**:     X-axis limits of all plots
-        * **ylim**:     Y-axis limits of all plots
-        * **xlabel**:   X-axis label
-        * **ylabel**:   Y-axis label
-        * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**dataObj2**] (:class:`pydarn.proc.music.musicArray`): A second musicArray object to be overlain on the the first dataObj plot.
+        * [**dataSet2**] (str):  which dataSet in the second musicArray to plot
+        * [**plotBeam**] (list of int): list of beams to plot from
+        * [**plotGate**] (list of int): list of range gates to plot from
+        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**xlim**] (None or 2-element iterable): X-axis limits of all plots
+        * [**ylim**] (None or 2-element iterable): Y-axis limits of all plots
+        * [**xlabel**] (None or str): X-axis label
+        * [**ylabel**] (None or str): Y-axis label
+        * [**title**] (None or str): Title of plot
+        * [**xBoundaryLimits**] (None or 2-element iterable) : Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
             Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
             in the metadata, if they exist.
 
@@ -776,22 +791,24 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
           xData2=xData2,yData2=yData2,yData2_title=yData2_title,xBoundaryLimits=xBoundaryLimits)
 
 def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
-    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
+    """Plots 1D line spectral plots of selected cells in a pydarn.proc.music.musicArray object.
     This defaults to 9 cells of the FOV.
 
     **Args**:
-        * **dataObj**:  vtMUSIC object
-        * **dataSet**:  which dataSet in the vtMUSIC object to process
-        * **plotBeam**: list of beams to plot from
-        * **plotGates*: list of range gates to plot from
-        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * **xlim**:     X-axis limits of all plots
-        * **ylim**:     Y-axis limits of all plots
-        * **xlabel**:   X-axis label
-        * **ylabel**:   Y-axis label
-        * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-            Data inside of the range will have a white background.
-        * **plotType**: {'real_imag'|'magnitude'|'phase'}
+        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**plotType**] (str): {'real_imag'|'magnitude'|'phase'}
+        * [**plotBeam**] (list of int): list of beams to plot from
+        * [**plotGate**] (list of int): list of range gates to plot from
+        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**xlim**] (None or 2-element iterable): X-axis limits of all plots
+        * [**ylim**] (None or 2-element iterable): Y-axis limits of all plots
+        * [**xlabel**] (None or str): X-axis label
+        * [**ylabel**] (None or str): Y-axis label
+        * [**title**] (None or str): Title of plot
+        * [**xBoundaryLimits**] (None or 2-element iterable) : Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+            Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+            in the metadata, if they exist.
 
     **Returns**:
         * **fig**:      matplotlib figure object that was plotted to
@@ -864,25 +881,33 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
 
 def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,
     xData2=None,yData2=None,yData2_title=None,xBoundaryLimits=None):
-    """Plots 1D line time series and spectral plots of selected cells in a vtMUSIC object.
-    This defaults to 9 cells of the FOV.
+    """Plots 1D time series or line spectral plots of selected cells in a 3d-array. Two data sets can be plotted simultaneously for comparison.
+    This defaults to 9 cells of the 3d-array.
 
     **Args**:
-        * **dataObj**:  vtMUSIC object
-        * **dataSet**:  which dataSet in the vtMUSIC object to process
-        * **plotBeam**: list of beams to plot from
-        * **plotGates*: list of range gates to plot from
-        * **fig**:      matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * **xlim**:     X-axis limits of all plots
-        * **ylim**:     Y-axis limits of all plots
-        * **xlabel**:   X-axis label
-        * **ylabel**:   Y-axis label
-        * **xBoundaryLimits**: 2 Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-            Data inside of the range will have a white background.
+        * **xData1** (1d list or numpy.array): x-axis values
+        * **yData1** (3d numpy.array): Data to plot.  First axis should correspond to xData1.
+        * [**beams**] (list): list identifying the beams present in the second axis of xData1.
+        * [**gates**] (list)  list identifying the gates present in the second axis of xData1.
+        * [**yData1_title**] (str): Name of yData1 data.
+        * [**plot_beam**] (list of int): list of beams to plot from (corresponds to yData1 second axis)
+        * [**plot_gate**] (list of int): list of range gates to plot from (corresponds to yData1 third axis)
+        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**xlim**] (None or 2-element iterable): X-axis limits of all plots
+        * [**ylim**] (None or 2-element iterable): Y-axis limits of all plots
+        * [**xlabel**] (None or str): X-axis label
+        * [**ylabel**] (None or str): Y-axis label
+        * [**title**] (None or str): Title of plot
+        * [**xData2**] (1d list or numpy.array): x-axis values of second data set
+        * [**yData1**] (3d numpy.array): Second data set data to plot.  First axis should correspond to xData1.
+        * [**yData2_title**] (str): Name of yData2 data.
+        * [**xBoundaryLimits**] (None or 2-element iterable) : Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+            Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+            in the metadata, if they exist.
 
     **Returns**:
         * **fig**:      matplotlib figure object that was plotted to
-    
+
     Written by Nathaniel A. Frissell, Fall 2013
     """
     if fig == None:
@@ -1012,6 +1037,22 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
     return fig
 
 def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
+    """Plot full spectrum of a pydarn.proc.music.musicArray object.  The spectrum must have already been calculated with
+    pydarn.proc.music.calculateFFT().
+
+    In this plot, major divisions on the x-axis are FFT bins.  Every bin contains one slice representing each beam of the given radar
+    data, from left to right.  The y-axis shows the range gates of the data object.  The color bar at the top of the plot shows which
+    FFT bin contains the most power when integrating over the entire bin.
+
+    **Args**:
+        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**xlim**] (None or 2-element iterable): X-axis limits in Hz
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+
     if fig == None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -1199,7 +1240,17 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
 
     fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
+def plotDlm(dataObj,dataSet='active',fig=None):
+    """Plot the cross spectral matrix of a pydarn.proc.music.musicArray object.  The cross-spectral matrix must have already
+    been calculated for the chosen data set using pydarn.proc.music.calculateDlm().
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     if fig == None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -1316,7 +1367,21 @@ def plotDlm(dataObj,dataSet='active',fig=None,type='magnitude'):
 
     fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=5):
+def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None):
+    """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
+    been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
+
+    If the chosen data set has signals stored in the sigDetect attribute, numbers identifying each of the signals will
+    be plotted on the kArr plot.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     if fig == None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -1355,7 +1420,25 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=5):
 
     fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude',maxSignals=5,roiPlot=True):
+def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=True):
+    """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
+    been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
+
+    Unlike plotKarr, this routine can plot a region-of-interest map showing features detected by pydarn.proc.music.detectSignals().
+
+    If the chosen data set has signals stored in the sigDetect attribute, numbers identifying each of the signals will
+    be plotted on the kArr plot.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
+        * [**roiPlot**] (bool): If true, a region of interest plot showing the features detected using pydarn.proc.music.detectSignals()
+            will be displayed alongside the kArr plot.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     if fig == None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -1487,13 +1570,30 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,type='magnitude',maxSigna
             pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
             tmpList = range(currentData.sigDetect.nrSigs)[::-1] #Force list to plot backwards so number 1 is on top!
             for signal in currentData.sigDetect.info:
-                if signal['order'] > maxSignals: continue 
+                if maxSignals != None:
+                    if signal['order'] > maxSignals: continue 
                 xpos = currentData.kxVec[signal['maxpos'][0]]
                 ypos = currentData.kyVec[signal['maxpos'][1]]
                 txt  = '%i' % signal['order']
                 axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
 
-def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=5):
+def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None):
+    """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
+    been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
+
+    If the chosen data set has signals stored in the sigDetect attribute, numbers identifying each of the signals will
+    be plotted on the kArr plot.
+
+    This routine will make the plot without titles, etc.  It is used as the foundation for plotKarr() and plotKarrDetected().
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`): musicArray object
+        * [**dataSet**] (str): which dataSet in the musicArray object to plot
+        * [**axis**] (matplotlib.figure.axis): matplotlib axis object that will be plotted to.  If not provided, this function will return.
+        * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
     if axis == None: return
     fig = axis.get_figure()
     from scipy import stats
@@ -1598,7 +1698,8 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=5):
     if hasattr(currentData,'sigDetect'):
         pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
         for signal in currentData.sigDetect.info:
-            if signal['order'] > maxSignals: continue 
+            if maxSignals != None:
+                if signal['order'] > maxSignals: continue 
             xpos = currentData.kxVec[signal['maxpos'][0]]
             ypos = currentData.kyVec[signal['maxpos'][1]]
             txt  = '%i' % signal['order']
