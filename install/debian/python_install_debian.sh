@@ -29,6 +29,8 @@ apt-get install -y python-mechanize
 pip install --upgrade pymongo
 apt-get install -y mpich2
 apt-get install -y gfortran
+pip install --upgrade cython
+pip install --upgrade scikit-image
 
 dir=$(pwd)
 

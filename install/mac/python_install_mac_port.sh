@@ -21,6 +21,9 @@ port install py${ver}-pymongo
 port install py${ver}-paramiko
 port install mpich +gcc47
 port install coreutils
+pip install --upgrade cython
+pip install --upgrade scikit-image
+
 
 dir=$(pwd)
 cd /tmp
