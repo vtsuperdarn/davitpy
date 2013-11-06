@@ -21,6 +21,7 @@ port install py${ver}-pymongo
 port install py${ver}-paramiko
 port install mpich +gcc47
 port install coreutils
+pip install --upgrade jinja2
 pip install --upgrade cython
 pip install --upgrade scikit-image
 

@@ -24,6 +24,7 @@ pip install --upgrade pymongo
 zypper install -y python-tornado
 zypper install -y libgfortran3
 zypper install -y hdf5 hdf5-devel
+pip install --upgrade jinja2
 pip install --upgrade cython
 pip install --upgrade scikit-image
 
