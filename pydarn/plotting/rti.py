@@ -465,9 +465,9 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
     if xticks is not None:
       ax.xaxis.set_ticks(xticks)
 
-    if axvlines is not None:
-      for line in axvlines:
-        ax.axvline(line,color='0.25',ls='--')
+  if axvlines is not None:
+    for line in axvlines:
+       ax.axvline(line,color='0.25',ls='--')
 
     for tick in ax.xaxis.get_major_ticks():
       tick.label.set_fontsize(xtick_size) 
@@ -600,7 +600,7 @@ def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
   
   
     
-def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
+def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06],xlim=None,xticks=None):
   """plots a noise panel at position pos
 
   **Args**:
@@ -609,6 +609,8 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
     * **sky**: a lsit of the noise.sky of the beam soundings
     * **search**: a list of the noise.search param
     * **[pos]**: position of the panel
+    * **[xlim]**: 2-element limits of the x-axis.  None for default.
+    * **[xticks]**: List of xtick poisitions.  None for default.
   **Returns**:
     * Nothing
     
@@ -618,6 +620,7 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
       plotNoise(rtiFig,times,nsky,nsch)
       
   Written by AJ 20121002
+  Modified by NAF 20131101
   """
   
   #read the data
@@ -636,6 +639,9 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
   #format the x axis
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
+
+  if xlim != None: ax.set_xlim(xlim)
+  if xticks != None: ax.set_xticks(xticks)
   
   #plot the sky noise data
   ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-', \
@@ -682,7 +688,7 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06]):
   transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
   ax2.add_line(l)
   
-def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
+def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
   """plots a frequency panel at position pos
 
   **Args**:
@@ -691,15 +697,18 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
     * **freq**: a lsit of the tfreq of the beam soundings
     * **search**: a list of the nave param
     * **[pos]**: position of the panel
+    * **[xlim]**: 2-element limits of the x-axis.  None for default.
+    * **[xticks]**: List of xtick poisitions.  None for default.
   **Returns**:
     *Nothing.
     
   **Example**:
     ::
 
-      plotNoise(rtiFig,times,tfreq,nave)
+      plotFreq(rtiFig,times,tfreq,nave)
       
   Written by AJ 20121002
+  Modified by NAF 20131101
   """
     
   #FIRST, DO THE TFREQ PLOTTING
@@ -718,14 +727,13 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06]):
   ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
   tz=None, xdate=True, ydate=False,markersize=2)
 
+  if xlim != None: ax.set_xlim(xlim)
+  if xticks != None: ax.set_xticks(xticks)
 
   ax.set_xticklabels([' '])
   #use only 2 major yticks
   ax.set_yticks([10,16])
   ax.set_yticklabels([' ',' '])
-
-
-
   
   xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
   xrng = (xmax-xmin)
