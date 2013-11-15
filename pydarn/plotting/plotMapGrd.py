@@ -27,6 +27,7 @@ class MapConv(object):
         * **[hemi]** : hemisphere - 'north' or 'south'
         * **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
         * **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
+        * **[filename]** (str): the mapex file name (will search for one by default)
     **Example**:
         ::
 
@@ -54,7 +55,7 @@ class MapConv(object):
     import matplotlib.cm as cm
 
     def __init__(self, startTime, mObj, 
-        axisHandle, hemi = 'north', 
+        axisHandle, hemi = 'north', fileName=fileName,
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
         import matplotlib.cm as cm
@@ -88,7 +89,8 @@ class MapConv(object):
         endTime = startTime + datetime.timedelta(minutes=2)
         grdPtr = sdDataOpen(startTime, hemi, eTime=endTime)
         self.grdData = sdDataReadRec(grdPtr)
-        mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
+        mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, 
+            fileName=fileName, fileType='mapex')
         self.mapData = sdDataReadRec(mapPtr)
 
     def overlayGridVel(self, pltColBar=True, 
