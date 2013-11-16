@@ -7,20 +7,23 @@
 ver=27
 
 port -n install python${ver}
-port -n install py${ver}-pip
-port -n install py${ver}-ipython
-port -n install py${ver}-numpy
-port -n install py${ver}-matplotlib
-port -n install py${ver}-matplotlib-basemap
-port -n install py${ver}-scipy
-port -n install py${ver}-h5py
-port -n install py${ver}-tornado
-port -n install py${ver}-zmq
-port -n install py${ver}-pil
-port -n install py${ver}-pymongo
-port -n install py${ver}-paramiko
 port -n install mpich +gcc47
 port -n install coreutils
+easy_install pip
+pip install --upgrade numpy
+pip install --upgrade matplotlib
+port -n install py${ver}-matplotlib-basemap
+pip install --upgrade scipy
+pip install --upgrade h5py
+pip install --upgrade pyzmq tornado pygments
+pip install --upgrade ipython
+python -c 'from IPython.external import mathjax; mathjax.install_mathjax()'
+pip install --upgrade PIL
+pip install --upgrade pymongo
+pip install --upgrade paramiko
+pip install --upgrade jinja2
+pip install --upgrade cython
+pip install --upgrade scikit-image
 
 dir=$(pwd)
 cd /tmp
