@@ -53,15 +53,20 @@ class fov(object):
             frang=180.0, rsep=45.0, site=None, \
             nbeams=None, ngates=None, bmsep=None, recrise=None, \
             siteLat=None, siteLon=None, siteBore=None, siteAlt=None, \
-            elevation=None, altitude=300., \
+            siteYear=None, elevation=None, altitude=300., \
             model='IS', coords='geo'):
         # Get fov
         from numpy import ndarray, array, arange, zeros, nan
         import models.aacgm as aacgm
         
         # Test that we have enough input arguments to work with
-        if not site and None in [nbeams, ngates, bmsep, recrise, siteLat, siteLon, siteBore, siteAlt]:
-            print 'calcFov: must provide either a site object or [nbeams, ngates, bmsep, recrise, siteLat, siteLon, siteBore, siteAlt].'
+        if not site and None in \
+        [nbeams, ngates, bmsep, recrise, 
+        siteLat, siteLon, siteBore, siteAlt
+        siteYear]:
+            print('calcFov: must provide either a site object or ' + \
+                '[nbeams, ngates, bmsep, recrise, siteLat,' + \
+                ' siteLon, siteBore, siteAlt, siteYear].')
             return
             
         # Then assign variables from the site object if necessary
@@ -74,6 +79,7 @@ class fov(object):
             if not siteLon: siteLon = site.geolon
             if not siteAlt: siteAlt = site.alt
             if not siteBore: siteBore = site.boresite
+            if not siteYear: siteYear = site.tval.year
             
         # Some type checking. Look out for arrays
         # If frang, rsep or recrise are arrays, then they should be of shape (nbeams,)
@@ -196,14 +202,18 @@ class fov(object):
 
                 if (sRangCenter[ig] != -1) and (sRangEdge[ig] != -1):
                   # Then calculate projections
-                  latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
-                              elevation=tElev, altitude=tAlt, model=model)
-                  latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
-                              elevation=tElev, altitude=tAlt, model=model)
+                  latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, 
+                            siteBore, bOffCenter[ib], sRangCenter[ig],
+                            elevation=tElev, altitude=tAlt, model=model)
+                  latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, 
+                            siteBore, bOffEdge[ib], sRangEdge[ig],
+                            elevation=tElev, altitude=tAlt, model=model)
                               
                   if(coords == 'mag'):
-                      latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,0.,0)
-                      latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,0.,0)
+                      latC, lonC, _ = aacgm.aacgmlib.aacgmConv(
+                        latC,lonC,0.,siteYear,0)
+                      latE, lonE, _ = aacgm.aacgmlib.aacgmConv(
+                        latE,lonE,0.,siteYear,0)
                 else:
                   latC, lonC = nan, nan
                   latE, lonE = nan, nan
