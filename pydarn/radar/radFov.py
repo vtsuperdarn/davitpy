@@ -61,13 +61,8 @@ class fov(object):
         
         # Test that we have enough input arguments to work with
         if not site and None in \
-<<<<<<< HEAD
         [nbeams, ngates, bmsep, recrise, 
         siteLat, siteLon, siteBore, siteAlt,
-=======
-        [nbeams, ngates, bmsep, recrise,
-        siteLat, siteLon, siteBore, siteAlt, 
->>>>>>> 5dcc5725697172c25550f18dcc55542e71341496
         siteYear]:
             print('calcFov: must provide either a site object or ' + \
                 '[nbeams, ngates, bmsep, recrise, siteLat,' + \

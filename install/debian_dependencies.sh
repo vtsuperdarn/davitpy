@@ -9,9 +9,6 @@ ver=2.7
 apt-get install -y python$ver
 apt-get install -d python-dev
 apt-get install -y python-pip
-apt-get install python-numpy
-pip install --upgrade ipython
-apt-get install -y ipython-notebook
 apt-get install -y python-zmq
 apt-get install -y python-imaging
 apt-get install -y mpich2
@@ -21,6 +18,8 @@ apt-get install -y python-matplotlib
 pip install --upgrade matplotlib
 apt-get install -y python-mpltoolkits.basemap
 pip install ipython
+pip install --upgrade ipython
+apt-get install -y ipython-notebook
 pip install numpy
 apt-get install -y python-scipy
 pip install matplotlib
