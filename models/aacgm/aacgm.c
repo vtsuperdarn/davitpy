@@ -83,7 +83,7 @@ int AACGMInit(int year) {
   if (year==0) year=DEFAULT_YEAR;
   year=(year/5)*5;
   sprintf(yrstr,"%4.4d",year);  
-  strcpy(fname,getenv("AACGM_DAT_PREFIX"));  
+  strcpy(fname,getenv("AACGM_DAVITPY_DAT_PREFIX"));  
   if (strlen(fname)==0) return -1;
   strcat(fname,yrstr);
   strcat(fname,".asc");

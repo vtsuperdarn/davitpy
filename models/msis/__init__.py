@@ -42,7 +42,7 @@ This module contains the following functions:
 """
 
 try: 
-    from msisFort import *
+    from msis import *
 except Exception as e:
     print __file__+' -> models.msis: ', e 
 

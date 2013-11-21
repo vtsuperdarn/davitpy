@@ -218,7 +218,7 @@ static PyMethodDef aacgmMethods[] =
 };
 
 PyMODINIT_FUNC
-initaacgmlib(void)
+initaacgm(void)
 {
-	(void) Py_InitModule("aacgmlib", aacgmMethods);
+	(void) Py_InitModule("aacgm", aacgmMethods);
 }

@@ -10,8 +10,7 @@ export DAVITPY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export PATH=${DAVITPY}/bin:${PATH}
 
-# Set path to DAVITPY
-export PYTHONPATH=$PYTHONPATH:$DAVITPY
+export AACGM_DAVITPY_DAT_PREFIX=${DAVITPY}/tables/aacgm/aacgm_coeffs
 
 # Set Database users
 export DBREADUSER='sd_dbread'
