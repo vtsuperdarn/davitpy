@@ -166,7 +166,7 @@ def hdwRead(fname, path=None):
 
 # *************************************************************
 class updateRadars(object):
-    """update local radar.sqlite from remote db database, or from local files if the database cannot be reached. 
+    """update local .radars.sqlite from remote db database, or from local files if the database cannot be reached. 
     Currently, the remote database is housed on the VT servers.
     
     **Members**: 
@@ -205,8 +205,8 @@ class updateRadars(object):
         dtfmt = '%Y-%m-%d %H:%M:%S'
         dttest = datetime.utcnow().strftime(dtfmt)
         # File path
-        self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.sql_file = 'radars.sqlite'
+        self.sql_path = os.environ['HOME']
+        self.sql_file = '.radars.sqlite'
         # MongoDB server
         self.db_user = os.environ['DBREADUSER']
         self.db_pswd = os.environ['DBREADPASS']
