@@ -11,23 +11,17 @@
 convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard Boundary.
 
 """
-from pydarn.sdio import *
-from pydarn.radar import *
-from utils import *
-from pydarn.plotting import *
-
 
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
 
     **Args**:
-        * **startTime** (datetime.datetime): start date and time of the data record
+        * **startTime** (datetime.datetime): start date and time of the data rec
         * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
         * **axisHandle** : the axis handle used
         * **[hemi]** : hemisphere - 'north' or 'south'
         * **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
         * **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
-        * **[filename]** (str): the mapex file name (will search for one by default)
     **Example**:
         ::
 
@@ -55,9 +49,12 @@ class MapConv(object):
     import matplotlib.cm as cm
 
     def __init__(self, startTime, mObj, 
-        axisHandle, hemi = 'north', fileName=fileName,
+        axisHandle, hemi = 'north', 
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
+        from pydarn.sdio import *
+        from pydarn.radar import *
+        from utils import *
         import matplotlib.cm as cm
         import numpy
         import matplotlib
@@ -89,8 +86,7 @@ class MapConv(object):
         endTime = startTime + datetime.timedelta(minutes=2)
         grdPtr = sdDataOpen(startTime, hemi, eTime=endTime)
         self.grdData = sdDataReadRec(grdPtr)
-        mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, 
-            fileName=fileName, fileType='mapex')
+        mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
         self.mapData = sdDataReadRec(mapPtr)
 
     def overlayGridVel(self, pltColBar=True, 
@@ -106,6 +102,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
+        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -177,7 +174,7 @@ class MapConv(object):
         **Example**:
             ::
 
-                (magn, azimuth) = MapConv.calcFitCnvVel()
+                ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
         """
         import datetime
         import numpy
@@ -348,7 +345,7 @@ class MapConv(object):
                 velAzm[velChkZeroInds] = numpy.rad2deg( numpy.arctan2( velFitVecs[1,velChkZeroInds], 
                     -velFitVecs[0,velChkZeroInds] ) )            
                         
-        return velMagn, velAzm
+        return mlatsPlot, mlonsPlot, velMagn, velAzm
 
     def calcCnvPots(self):
         """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
@@ -360,7 +357,7 @@ class MapConv(object):
         **Example**:
             ::
 
-                (lats, lons, pots) = MapConv.calcFitCnvVel()
+                (lats, lons, pots) = MapConv.calcCnvPots()
         """
         import datetime
         import numpy
@@ -558,6 +555,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
+        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -626,6 +624,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
+        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -634,12 +633,12 @@ class MapConv(object):
             self.grdData.sTime, self.grdData.eTime)
 
         # get the standard location parameters.
-        mlatsPlot = self.mapData.grid.vector.mlat
-        mlonsPlot = self.mapData.grid.vector.mlon
+        # mlatsPlot = self.mapData.grid.vector.mlat
+        # mlonsPlot = self.mapData.grid.vector.mlon
         stIds = self.mapData.grid.vector.stid
 
-        # get the fitted velocity magnitude and azimuth from calcFitCnvVel() function
-        ( velMagn, velAzm ) = self.calcFitCnvVel()
+        # get the fitted mlat, mlon, velocity magnitude and azimuth from calcFitCnvVel() function
+        ( mlatsPlot, mlonsPlot, velMagn, velAzm ) = self.calcFitCnvVel()
 
 
         for nn in range( len(mlatsPlot) ) :
