@@ -21,7 +21,7 @@ class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
 
     **Args**:
-        * **startTime** (datetime.datetime): start date and time of the data rec
+        * **startTime** (datetime.datetime): start date and time of the data record
         * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
         * **axisHandle** : the axis handle used
         * **[hemi]** : hemisphere - 'north' or 'south'
