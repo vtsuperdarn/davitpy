@@ -630,7 +630,7 @@ class MapConv(object):
 
         # dateString to overlay date on plot
         dateStr = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(
-            self.grdData.sTime, self.grdData.eTime)
+            self.mapData.sTime, self.mapData.eTime)
 
         # get the standard location parameters.
         # mlatsPlot = self.mapData.grid.vector.mlat
