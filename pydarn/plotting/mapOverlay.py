@@ -123,7 +123,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 # *************************************************************
 def overlayFov(Basemap, codes=None, ids=None, names=None, 
 				dateTime=None, all=False, 
-				maxGate=None, fovColor=None, fovAlpha=0.2, 
+				maxGate=None, rangeLimits=None, fovColor=None, fovAlpha=0.2, 
 				beams=None, beamsColors=None, hemi=None, fovObj=None, 
 				zorder=2, lineColor='k', lineWidth=1):
 	"""Overlay FoV position(s) on map
@@ -136,6 +136,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 		* **[dateTime]**: the date and time as a python datetime object
 		* **[all]**: set to true to plot all the radars (active ones)
 		* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
+                * **[rangeLimits]**: (2-element list) Plot only between the range gates specified.
 		* **[zorder]**: the overlay order number
 		* **[lineColor]**: FoV contour line color
 		* **[lineWidth]**: FoV contour line width
@@ -205,6 +206,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			if not site: continue
 			# Set number of gates to be plotted
 			eGate = site.maxgate-1 if not maxGate else maxGate
+
 			if not hasattr(Basemap, 'coords'): 
 				radFov = fov(site=site, ngates=eGate+1)
 			else:
@@ -212,6 +214,13 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 		else:
 			radFov = fovObj
 			eGate = len(fovObj.gates)
+
+                if rangeLimits is not None:
+                    sGate   = rangeLimits[0]
+                    eGate   = rangeLimits[1]
+                else:
+                    sGate   = 0
+
 		# Get radar coordinates in map projection
 		if hasattr(Basemap, 'coords'): 
 			x, y = Basemap(radFov.lonFull, radFov.latFull, coords=radFov.coords)
@@ -219,14 +228,14 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			x, y = Basemap(radFov.lonFull, radFov.latFull)
 		# Plot field of view
 		# Create contour
-		contourX = concatenate( (x[0,0:eGate], 
+		contourX = concatenate( (x[0,sGate:eGate], 
 								 x[:,eGate],
-								 x[-1,eGate::-1],
-								 x[-1::-1,0]) )
-		contourY = concatenate( (y[0,0:eGate], 
+								 x[-1,eGate:sGate:-1],
+								 x[-1::-1,sGate]) )
+		contourY = concatenate( (y[0,sGate:eGate], 
 								 y[:,eGate],
-								 y[-1,eGate::-1],
-								 y[-1::-1,0]) )
+								 y[-1,eGate:sGate:-1],
+								 y[-1::-1,sGate]) )
 		# Plot contour
 		Basemap.plot(contourX, contourY, 
 			color=lineColor, zorder=zorder, linewidth=lineWidth)
