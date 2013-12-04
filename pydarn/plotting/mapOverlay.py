@@ -123,7 +123,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 # *************************************************************
 def overlayFov(Basemap, codes=None, ids=None, names=None, 
 				dateTime=None, all=False, 
-				maxGate=None, rangeLimits=None, fovColor=None, fovAlpha=0.2, 
+				maxGate=None, rangeLimits=None, model='IS', fovColor=None, fovAlpha=0.2, 
 				beams=None, beamsColors=None, hemi=None, fovObj=None, 
 				zorder=2, lineColor='k', lineWidth=1):
 	"""Overlay FoV position(s) on map
@@ -137,6 +137,10 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 		* **[all]**: set to true to plot all the radars (active ones)
 		* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
                 * **[rangeLimits]**: (2-element list) Plot only between the range gates specified.
+                * **model**: 
+                    * **'IS'**: for ionopsheric scatter projection model (default)
+                    * **'GS'**: for ground scatter projection model
+                    * **None**: if you are really confident in your elevation or altitude values
 		* **[zorder]**: the overlay order number
 		* **[lineColor]**: FoV contour line color
 		* **[lineWidth]**: FoV contour line width
@@ -208,9 +212,9 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			eGate = site.maxgate-1 if not maxGate else maxGate
 
 			if not hasattr(Basemap, 'coords'): 
-				radFov = fov(site=site, ngates=eGate+1)
+				radFov = fov(site=site, ngates=eGate+1,model=model)
 			else:
-				radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords)
+				radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords, model=model)
 		else:
 			radFov = fovObj
 			eGate = len(fovObj.gates)
