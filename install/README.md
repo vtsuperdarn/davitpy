@@ -1,22 +1,32 @@
 INSTALLATION INSTRUCTION
 ========================
 
-These scripts are mostly necessary if you plan to use the provided DaViT-py launcher (which is nothing more than a
-customized ipython session). DaViT-py can also be used as a standalone python module by adding it to your $PYTHONPATH.
+These scripts are used to install the dependencies of DaViTPy
 
 This provides install scripts for DaViT-py
 
-	- python_install_yourOS.sh 
-	installs python and all required packages:
-		* ipython
-		* numpy
-		* scipy
-		* matplotlib
-		* mpltoolkits.basemap
-		* h5py
-		* Python Imaging Library (PIL)
-		* tornado (required for ipython notebook)
-		* 0MQ (required for ipython notebook)
-		
-	sets useful environment variables for the integrated DaViT-py launcher
+    - yourOS_dependencies.sh 
+    installs all required packages:
+        * python
+        * pip
+        * zmq
+        * Python Imaging Library (PIL)
+        * mpich2
+        * gfortran
+        * libhdf5
+        * h5py
+        * matplotlib
+        * basemap
+        * ipython
+        * ipython notebooks
+        * numpy
+        * scipy
+        * tornado (required for ipython notebook)
+        * paramiko (used for ssh)
+        * pymongo
+        * mechanize
+        * jinja2
+        * ecdsa
+        
+    sets useful environment variables for the integrated DaViT-py launcher
 

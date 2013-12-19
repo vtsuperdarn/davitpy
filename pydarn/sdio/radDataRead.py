@@ -44,7 +44,7 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',...  if this is set to None, data from ALL channels will be read. default = None
     * **[bmnum]** (int): the beam number which you want data for.  If this is set to None, data from all beams will be read. default = None
     * **[cp]** (int): the control program which you want data for.  If this is set to None, data from all cp's will be read.  default = None
-    * **[fileType]** (str):  The type of data you want to read.  valid inputs are: 'fitex','fitacf','lmfit','rawacf','iqdat'.   if you choose a fit file format and the specified one isn't found, we will search for one of the others.  Beware: if you ask for rawacf/iq data, these files are large and the data transfer might take a long time.  default = 'fitex'
+    * **[fileType]** (str):  The type of data you want to read.  valid inputs are: 'fitex','fitacf','rawacf','iqdat'.   if you choose a fit file format and the specified one isn't found, we will search for one of the others.  Beware: if you ask for rawacf/iq data, these files are large and the data transfer might take a long time.  default = 'fitex'
     * **[filtered]** (boolean): a boolean specifying whether you want the fit data to be boxcar filtered.  ONLY VALID FOR FIT.  default = False
     * **[src]** (str): the source of the data.  valid inputs are 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
@@ -83,8 +83,8 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
   assert(cp == None or isinstance(cp,int)), \
     'error, cp must be an int or None'
   assert(fileType == 'rawacf' or fileType == 'fitacf' or \
-    fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
-    'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
+    fileType == 'fitex' or fileType == 'iqdat'), \
+    'error, fileType must be one of: rawacf,fitacf,fitex,iqdat'
   assert(fileName == None or isinstance(fileName,str)), \
     'error, fileName must be None or a string'
   assert(isinstance(filtered,bool)), \
@@ -100,9 +100,11 @@ def radDataOpen(sTime,rad,eTime=None,channel=None,bmnum=None,cp=None, \
                       channel=channel,bmnum=bmnum,cp=cp)
   
   filelist = []
-  if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
-  elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
-  elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
+  # if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
+  # elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
+  # elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
+  if(fileType == 'fitex'): arr = ['fitex','fitacf']
+  elif(fileType == 'fitacf'): arr = ['fitacf','fitex']
   else: arr = [fileType]
 
   #move back a little in time because files often start at 2 mins after the hour
