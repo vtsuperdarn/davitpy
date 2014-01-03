@@ -290,6 +290,7 @@ class musicRTI(object):
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
+        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
@@ -1055,7 +1056,9 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
     return fig
 
-def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None):
+def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar_label = 'ABS(Spectral Density)',
+            plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, cbar_gstext_enable=True, **kwArgs):
     """Plot full spectrum of a pydarn.proc.music.musicArray object.  The spectrum must have already been calculated with
     pydarn.proc.music.calculateFFT().
 
@@ -1068,6 +1071,14 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None):
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
         * [**xlim**] (None or 2-element iterable): X-axis limits in Hz
+        * [**plot_title**] : If True, plot the title information
+        * [**cbar_label**] (str): Text for color bar label
+        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
+        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
+        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
+        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
+        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**cbar_gstext_enable**] (bool): Enable "Ground Scatter Only" text
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1144,11 +1155,17 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None):
     axis.add_collection(pcoll,autolim=False)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-    cbar.set_label('ABS(Spectral Density)')
-    if currentData.metadata.has_key('gscat'):
+    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+    cbar.set_label(cbar_label)
+    if not cbar_ticks:
+        labels = cbar.ax.get_yticklabels()
+        labels[-1].set_visible(False)
+    else:
+        cbar.set_ticks(cbar_ticks)
+
+    if currentData.metadata.has_key('gscat') and cbar_gstext_enable:
         if currentData.metadata['gscat'] == 1:
-            cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+            cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
     #Plot average values.
     verts   = []
@@ -1234,33 +1251,35 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None):
 #    axis.set_xlim([0,nXBins])
     axis.set_ylim([0,nrGates+1])
 
-    xpos = 0.130
-    fig.text(xpos,0.99,'Full Spectrum View',fontsize=20,va='top')
-    #Get the time limits.
-    timeLim = (np.min(currentData.time),np.max(currentData.time))
-    md = currentData.metadata
+    if plot_title:
+        xpos = 0.130
+        fig.text(xpos,0.99,'Full Spectrum View',fontsize=20,va='top')
 
-    #Translate parameter information from short to long form.
-    paramDict = getParamDict(md['param'])
-    param     = paramDict['param']
-    cbarLabel = paramDict['label']
+        #Get the time limits.
+        timeLim = (np.min(currentData.time),np.max(currentData.time))
+        md = currentData.metadata
 
-    text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
+        #Translate parameter information from short to long form.
+        paramDict = getParamDict(md['param'])
+        param     = paramDict['param']
+#        cbarLabel = paramDict['label']
 
-    if md.has_key('fir_filter'):
-        filt = md['fir_filter']
-        if filt[0] == None:
-            low = 'None'
-        else:
-            low = '%.2f' % (1000. * filt[0])
-        if filt[1] == None:
-            high = 'None'
-        else:
-            high = '%.2f' % (1000. * filt[1])
+        text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-        text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+        if md.has_key('fir_filter'):
+            filt = md['fir_filter']
+            if filt[0] == None:
+                low = 'None'
+            else:
+                low = '%.2f' % (1000. * filt[0])
+            if filt[1] == None:
+                high = 'None'
+            else:
+                high = '%.2f' % (1000. * filt[1])
 
-    fig.text(xpos,0.95,text,fontsize=14,va='top')
+            text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+
+        fig.text(xpos,0.95,text,fontsize=14,va='top')
 
 def plotDlm(dataObj,dataSet='active',fig=None):
     """Plot the cross spectral matrix of a pydarn.proc.music.musicArray object.  The cross-spectral matrix must have already
