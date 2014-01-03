@@ -289,8 +289,7 @@ class musicRTI(object):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', plot_info=True, plot_title=True, **kwArgs):
-
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', plot_info=True, plot_title=True, cbar_ticks=None, **kwArgs):
         from scipy import stats
         from rti import plotFreq,plotNoise
 
@@ -507,8 +506,12 @@ class musicRTI(object):
 
         cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
         cbar.set_label(cbarLabel)
-        labels = cbar.ax.get_yticklabels()
-        labels[-1].set_visible(False)
+        if not cbar_ticks:
+            labels = cbar.ax.get_yticklabels()
+            labels[-1].set_visible(False)
+        else:
+            cbar.set_ticks(cbar_ticks)
+
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
                 cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
