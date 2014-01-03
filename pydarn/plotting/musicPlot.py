@@ -285,11 +285,20 @@ class musicRTI(object):
         * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
         * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
         * [**plot_info**] : If True, plot frequency/noise plots
+        * [**plot_title**] : If True, plot the title information
+        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
+        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
+        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
+        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', plot_info=True, plot_title=True, cbar_ticks=None, **kwArgs):
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
+            xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None,
+            axvline_color='0.25', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
+            cbar_gstext_offset=-0.075,  **kwArgs):
+
         from scipy import stats
         from rti import plotFreq,plotNoise
 
@@ -504,7 +513,7 @@ class musicRTI(object):
                 axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
 
 
-        cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
         cbar.set_label(cbarLabel)
         if not cbar_ticks:
             labels = cbar.ax.get_yticklabels()
@@ -514,7 +523,7 @@ class musicRTI(object):
 
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
-                cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center')
 
         txt = 'Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
