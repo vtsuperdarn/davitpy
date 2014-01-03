@@ -297,7 +297,7 @@ class musicRTI(object):
     def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
             xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None,
             axvline_color='0.25', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075,  **kwArgs):
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
 
         from scipy import stats
         from rti import plotFreq,plotNoise
@@ -523,7 +523,7 @@ class musicRTI(object):
 
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
-                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center')
+                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
         txt = 'Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
