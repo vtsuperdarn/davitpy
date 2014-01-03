@@ -1055,7 +1055,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
     return fig
 
-def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
+def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None):
     """Plot full spectrum of a pydarn.proc.music.musicArray object.  The spectrum must have already been calculated with
     pydarn.proc.music.calculateFFT().
 
@@ -1071,10 +1071,6 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-
-    if fig == None:
-        from matplotlib import pyplot as plt
-        fig   = plt.figure(figsize=figsize)
 
     from scipy import stats
 
@@ -1105,7 +1101,14 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,xlim=None):
     for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
 
     #Do plotting here!
-    axis = fig.add_subplot(111)
+    if fig == None and axis == None:
+        from matplotlib import pyplot as plt
+        fig   = plt.figure(figsize=figsize)
+    elif axis is not None:
+        fig = axis.get_figure()
+
+    if axis == None:
+        axis = fig.add_subplot(111)
 
     verts   = []
     scan    = []
