@@ -284,11 +284,12 @@ class musicRTI(object):
             terminator resolution will match the resolution of the RTI plot data.
         * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
         * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
+        * [**info_plots**] : If True, plot frequency/noise plots
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', **kwArgs):
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', info_plots=True, **kwArgs):
 
         from scipy import stats
         from rti import plotFreq,plotNoise
@@ -524,7 +525,7 @@ class musicRTI(object):
         pos = list(axis.get_position().bounds)
 
         # Plot frequency and noise information. ######################################## 
-        if hasattr(dataObject,'prm'):
+        if hasattr(dataObject,'prm') and info_plots:
             #Adjust current plot position to fit in the freq and noise plots.
             super_plot_hgt  = 0.06
             pos[3] = pos[3] - (2*super_plot_hgt)
