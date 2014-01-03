@@ -104,7 +104,7 @@ class musicFan(object):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',time=None,axis=None,scale=None,autoScale=False, plotZeros=False, markCell=None, plotTerminator=True, **kwArgs):
+    def __init__(self,dataObject,dataSet='active',time=None,axis=None,scale=None,autoScale=False, plotZeros=False, markCell=None, plotTerminator=True, title=None, **kwArgs):
         if axis == None:
             from matplotlib import pyplot as plt
             fig   = plt.figure(figsize=figsize)
@@ -237,15 +237,20 @@ class musicFan(object):
             axis.add_patch(poly)
 
         dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-        axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
+        if title is None:
+            axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
+        else:
+            axis.set_title(title)
 
-        cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+#        cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.85,fraction=.1)
         cbar.set_label(cbarLabel)
         labels = cbar.ax.get_yticklabels()
         labels[-1].set_visible(False)
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
-                cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+#                cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+                cbar.ax.text(0.5,-0.115,'Ground\nscat\nonly',ha='center',fontsize=14)
         txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
                   horizontalalignment='left',
