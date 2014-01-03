@@ -289,7 +289,7 @@ class musicRTI(object):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', plot_info=True, **kwArgs):
+    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False, xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None, axvline_color='0.25', plot_info=True, plot_title=True, **kwArgs):
 
         from scipy import stats
         from rti import plotFreq,plotNoise
@@ -548,21 +548,22 @@ class musicRTI(object):
             plotNoise(fig,dataObject.prm.time,dataObject.prm.noisesky,dataObject.prm.noisesearch,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
 
         # Put a title on the RTI Plot. #################################################
-        title_y = (pos[1] + pos[3]) + 0.015
-        xmin    = pos[0]
-        xmax    = pos[0] + pos[2]
+        if plot_title:
+            title_y = (pos[1] + pos[3]) + 0.015
+            xmin    = pos[0]
+            xmax    = pos[0] + pos[2]
 
-        txt     = metadata['name']+'  ('+metadata['fType']+')'
-        fig.text(xmin,title_y,txt,ha='left',weight=550)
+            txt     = metadata['name']+'  ('+metadata['fType']+')'
+            fig.text(xmin,title_y,txt,ha='left',weight=550)
 
-        txt     = []
-        txt.append(xlim[0].strftime('%Y %b %d %H%M UT - ')+xlim[1].strftime('%Y %b %d %H%M UT'))
-        txt.append(currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
-        txt     = '\n'.join(txt)
-        fig.text((xmin+xmax)/2.,title_y,txt,weight=550,size='large',ha='center')
+            txt     = []
+            txt.append(xlim[0].strftime('%Y %b %d %H%M UT - ')+xlim[1].strftime('%Y %b %d %H%M UT'))
+            txt.append(currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
+            txt     = '\n'.join(txt)
+            fig.text((xmin+xmax)/2.,title_y,txt,weight=550,size='large',ha='center')
 
-        txt     = 'Beam '+str(beam)
-        fig.text(xmax,title_y,txt,weight=550,ha='right')
+            txt     = 'Beam '+str(beam)
+            fig.text(xmax,title_y,txt,weight=550,ha='right')
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     """Plots the N-S and E-W distance from the center cell of a field-of-view in a pydarn.proc.music.musicArray object.
