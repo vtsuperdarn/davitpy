@@ -1239,7 +1239,7 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
         ylabels.append('%i' % currentData.fov.gates[gg])
         ypos.append(gg+0.5)
         
-    ylabels.append('Norm\nAvg\PSD') 
+    ylabels.append('$\Sigma$PSD') 
     ypos.append(nrGates+0.5)
     axis.set_yticks(ypos)
     axis.set_yticklabels(ylabels)
