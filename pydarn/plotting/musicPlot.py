@@ -284,6 +284,7 @@ class musicRTI(object):
             terminator resolution will match the resolution of the RTI plot data.
         * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
         * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
+        * [**secondary_coords**] (str): Secondary coordate system for RTI plot y-axis ('lat' or 'range')
         * [**plot_info**] : If True, plot frequency/noise plots
         * [**plot_title**] : If True, plot the title information
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
@@ -297,7 +298,7 @@ class musicRTI(object):
     """
     def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
             xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None,
-            axvline_color='0.25', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
+            axvline_color='0.25', secondary_coords='lat', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
             cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
 
         from scipy import stats
@@ -448,7 +449,10 @@ class musicRTI(object):
         if ylim == None:
             ylim = (np.min(rnge),np.max(rnge))
         axis.set_ylim(ylim)
-        axis.set_ylabel('Range Gate\nGeographic Latitude')
+        if secondary_coords == 'range':
+            axis.set_ylabel('Range Gate\n%s Slant Range [km]' % metadata['model'])
+        else:
+            axis.set_ylabel('Range Gate\nGeographic Latitude')
 
         yticks  = axis.get_yticks()
         ytick_str    = []
@@ -458,11 +462,18 @@ class musicRTI(object):
 
             rg_inx = np.where(tck == currentData.fov.gates)[0]
             if np.size(rg_inx) != 0:
-                lat = currentData.fov.latCenter[beamInx,rg_inx]
-                if np.isfinite(lat): 
-                    txt.append(u'%.1f$^o$' % lat)
+                if secondary_coords == 'range':
+                    rang = currentData.fov.slantRCenter[beamInx,rg_inx]
+                    if np.isfinite(rang): 
+                        txt.append('%d' % rang)
+                    else:
+                        txt.append('')
                 else:
-                    txt.append('')
+                    lat = currentData.fov.latCenter[beamInx,rg_inx]
+                    if np.isfinite(lat): 
+                        txt.append(u'%.1f$^o$' % lat)
+                    else:
+                        txt.append('')
             txt = '\n'.join(txt)
             ytick_str.append(txt)
 
@@ -1408,7 +1419,9 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None):
+def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
+            plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
     been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
 
@@ -1420,6 +1433,13 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None):
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
         * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
+        * [**sig_fontsize**] (float): fontsize of signal markers
+        * [**plot_title**] : If True, plot the title information
+        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
+        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
+        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
+        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
+        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1431,35 +1451,37 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None):
 
     #Do plotting here!
     axis = fig.add_subplot(111,aspect='equal')
-    plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals)
+    plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals,
+            cbar_ticks=cbar_ticks, cbar_shrink=cbar_shrink, cbar_fraction=cbar_fraction,sig_fontsize=sig_fontsize,
+            cbar_gstext_offset=cbar_gstext_offset, cbar_gstext_fontsize=cbar_gstext_fontsize)
 
-    xpos = 0.130
-    fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
-    #Get the time limits.
-    timeLim = (np.min(currentData.time),np.max(currentData.time))
-    md = currentData.metadata
+    if plot_title:
+        xpos = 0.130
+        fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
+        #Get the time limits.
+        timeLim = (np.min(currentData.time),np.max(currentData.time))
+        md = currentData.metadata
 
-    #Translate parameter information from short to long form.
-    paramDict = getParamDict(md['param'])
-    param     = paramDict['param']
-    cbarLabel = paramDict['label']
+        #Translate parameter information from short to long form.
+        paramDict = getParamDict(md['param'])
+        param     = paramDict['param']
 
-    text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
+        text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-    if md.has_key('fir_filter'):
-        filt = md['fir_filter']
-        if filt[0] == None:
-            low = 'None'
-        else:
-            low = '%.2f' % (1000. * filt[0])
-        if filt[1] == None:
-            high = 'None'
-        else:
-            high = '%.2f' % (1000. * filt[1])
+        if md.has_key('fir_filter'):
+            filt = md['fir_filter']
+            if filt[0] == None:
+                low = 'None'
+            else:
+                low = '%.2f' % (1000. * filt[0])
+            if filt[1] == None:
+                high = 'None'
+            else:
+                high = '%.2f' % (1000. * filt[1])
 
-        text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
+            text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
 
-    fig.text(xpos,0.95,text,fontsize=14,va='top')
+        fig.text(xpos,0.95,text,fontsize=14,va='top')
 
 def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=True):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
@@ -1618,7 +1640,9 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
                 txt  = '%i' % signal['order']
                 axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
 
-def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None):
+def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,
+            cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
     been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
 
@@ -1632,6 +1656,12 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None):
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**axis**] (matplotlib.figure.axis): matplotlib axis object that will be plotted to.  If not provided, this function will return.
         * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
+        * [**sig_fontsize**] (float): fontsize of signal markers
+        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
+        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
+        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
+        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
+        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1684,12 +1714,22 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None):
     axis.axhline(color='0.82',lw=2,zorder=150)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-    cbar.set_label('ABS(Spectral Density)')
-    cbar.set_ticks(np.arange(10)/10.)
+    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+    cbar.set_label('Normalized Wavenumber Power')
+    if not cbar_ticks:
+        cbar_ticks = np.arange(10)/10.
+    cbar.set_ticks(cbar_ticks)
+
     if currentData.metadata.has_key('gscat'):
         if currentData.metadata['gscat'] == 1:
-            cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
+            cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+
+#    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
+#    cbar.set_label('ABS(Spectral Density)')
+#    cbar.set_ticks(np.arange(10)/10.)
+#    if currentData.metadata.has_key('gscat'):
+#        if currentData.metadata['gscat'] == 1:
+#            cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
 
     axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
     axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
@@ -1744,4 +1784,4 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None):
             xpos = currentData.kxVec[signal['maxpos'][0]]
             ypos = currentData.kyVec[signal['maxpos'][1]]
             txt  = '%i' % signal['order']
-            axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
+            axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=sig_fontsize,path_effects=pe)
