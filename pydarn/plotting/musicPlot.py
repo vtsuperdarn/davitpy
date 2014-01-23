@@ -487,8 +487,10 @@ class musicRTI(object):
 
         if xBoundaryLimits != None:
             gray = '0.75'
-            axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
-            axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=150,alpha=0.5)
+#            axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+#            axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=150,alpha=0.5)
+            axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=1)
+            axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=1)
             axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
 
