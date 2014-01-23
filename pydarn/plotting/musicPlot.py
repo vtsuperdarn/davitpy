@@ -45,6 +45,7 @@
 """
 
 import numpy as np
+import scipy as sp
 import datetime
 
 from matplotlib.collections import PolyCollection
@@ -279,6 +280,7 @@ class musicRTI(object):
         * [**yBoundaryLimits**] (None or 2-element iterable of floats): Mark a region of range on the RTI plot.  A green dashed horizontal line will be plotted
             at each of the boundary ranges.  The region of time outside of the boundary will be shaded gray.
             If set to None, this will automatically be set to the gateLimits set in the metadata, if they exist.
+        * [**ytick_lat_format**] (str):  %-style string format code for latitude y-tick labels
         * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
             terminator resolution will match the resolution of the RTI plot data.
@@ -296,8 +298,8 @@ class musicRTI(object):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
-            xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None,
+    def __init__(self,dataObject,dataSet='active',beam=7,coords='gate',xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
+            xBoundaryLimits=None, yBoundaryLimits=None, ytick_lat_format = '.0f', autoScale=False, plotTerminator=True, axvlines=None,
             axvline_color='0.25', secondary_coords='lat', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
             cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
 
@@ -335,16 +337,6 @@ class musicRTI(object):
 
                 if day_inx.size != 0:
                     daylight[tm_inx,day_inx] = False
-
-#        The coords keyword needs to be tested better.  For now, just allow 'gate' only.
-#        Even in 'gate' mode, the geographic latitudes are plotted along with gate.
-#        if coords == None and metadata.has_key('coords'):
-#            coords      = metadata['coords']
-#
-#        if coords not in ['gate','range']:
-#            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
-#            coords = 'gate'
-        coords  = 'gate'
 
         #Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
@@ -386,7 +378,20 @@ class musicRTI(object):
         scan  = []
         data  = np.squeeze(currentData.data[:,beamInx,:])
 
-        rnge  = currentData.fov.gates
+#        The coords keyword needs to be tested better.  For now, just allow 'gate' only.
+#        Even in 'gate' mode, the geographic latitudes are plotted along with gate.
+#        if coords == None and metadata.has_key('coords'):
+#            coords      = metadata['coords']
+#
+        if coords not in ['gate','range']:
+            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+            coords = 'gate'
+
+        if coords == 'gate':
+            rnge  = currentData.fov.gates
+        elif coords == 'range':
+            rnge  = currentData.fov.slantRFull[beam,:]
+
         xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
         for tm in range(nrTimes-1):
             for rg in range(nrGates-1):
@@ -414,25 +419,25 @@ class musicRTI(object):
 
         # Plot the terminator! #########################################################
         if plotTerminator:
-            #Plot the SuperDARN data!
-            term_verts = []
-            term_scan  = []
-
-            rnge  = currentData.fov.gates
-            xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
-            for tm in range(nrTimes-1):
-                for rg in range(nrGates-1):
-                    if daylight[tm,rg]: continue
-                    term_scan.append(1)
-
-                    x1,y1 = xvec[tm+0],rnge[rg+0]
-                    x2,y2 = xvec[tm+1],rnge[rg+0]
-                    x3,y3 = xvec[tm+1],rnge[rg+1]
-                    x4,y4 = xvec[tm+0],rnge[rg+1]
-                    term_verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
-
-            term_pcoll = PolyCollection(np.array(term_verts),facecolors='0.45',linewidth=0,zorder=99,alpha=0.25)
-            axis.add_collection(term_pcoll,autolim=False)
+            print 'Terminator functionality is disabled until further testing is completed.'
+#            term_verts = []
+#            term_scan  = []
+#
+#            rnge  = currentData.fov.gates
+#            xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
+#            for tm in range(nrTimes-1):
+#                for rg in range(nrGates-1):
+#                    if daylight[tm,rg]: continue
+#                    term_scan.append(1)
+#
+#                    x1,y1 = xvec[tm+0],rnge[rg+0]
+#                    x2,y2 = xvec[tm+1],rnge[rg+0]
+#                    x3,y3 = xvec[tm+1],rnge[rg+1]
+#                    x4,y4 = xvec[tm+0],rnge[rg+1]
+#                    term_verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+#
+#            term_pcoll = PolyCollection(np.array(term_verts),facecolors='0.45',linewidth=0,zorder=99,alpha=0.25)
+#            axis.add_collection(term_pcoll,autolim=False)
         ################################################################################
 
         if axvlines is not None:
@@ -449,36 +454,73 @@ class musicRTI(object):
         if ylim == None:
             ylim = (np.min(rnge),np.max(rnge))
         axis.set_ylim(ylim)
-        if secondary_coords == 'range':
-            axis.set_ylabel('Range Gate\n%s Slant Range [km]' % metadata['model'])
-        else:
-            axis.set_ylabel('Range Gate\nGeographic Latitude')
 
-        yticks  = axis.get_yticks()
-        ytick_str    = []
-        for tck in yticks:
-            txt = []
-            txt.append('%d' % tck)
-
-            rg_inx = np.where(tck == currentData.fov.gates)[0]
-            if np.size(rg_inx) != 0:
+        # Y-axis labeling ##############################################################
+        if coords == 'gate':
+            if secondary_coords:
                 if secondary_coords == 'range':
-                    rang = currentData.fov.slantRCenter[beamInx,rg_inx]
-                    if np.isfinite(rang): 
-                        txt.append('%d' % rang)
-                    else:
-                        txt.append('')
+                    axis.set_ylabel('Range Gate\n%s Slant Range [km]' % metadata['model'])
                 else:
-                    lat = currentData.fov.latCenter[beamInx,rg_inx]
-                    if np.isfinite(lat): 
-                        txt.append(u'%.1f$^o$' % lat)
-                    else:
+                    geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
+                    axis.set_ylabel('Range Gate\n%s Latitude' % geo_mag)
+
+                yticks  = axis.get_yticks()
+                ytick_str    = []
+                for tck in yticks:
+                    txt = []
+                    txt.append('%d' % tck)
+
+                    rg_inx = np.where(tck == currentData.fov.gates)[0]
+                    if np.size(rg_inx) != 0:
+                        if secondary_coords == 'range':
+                            rang = currentData.fov.slantRCenter[beamInx,rg_inx]
+                            if np.isfinite(rang): 
+                                txt.append('%d' % rang)
+                            else:
+                                txt.append('')
+                        else:
+                            lat = currentData.fov.latCenter[beamInx,rg_inx]
+                            if np.isfinite(lat): 
+                                txt.append((u'%'+ytick_lat_format+'$^o$') % lat)
+                            else:
+                                txt.append('')
+                    txt = '\n'.join(txt)
+                    ytick_str.append(txt)
+                axis.set_yticklabels(ytick_str,rotation=90,ma='center')
+            else:
+                axis.set_ylabel('Range Gate')
+        elif coords == 'range':
+            if secondary_coords == 'lat':
+                # Use linear interpolation to get the latitude associated with a particular range.
+                # Make sure we only include finite values in the interpolation function.
+                finite_inx  = np.where(np.isfinite(currentData.fov.latCenter[beam,:]))[0]
+                tmp_ranges  = currentData.fov.slantRCenter[beam,:][finite_inx]
+                tmp_lats    = currentData.fov.latCenter[beam,:][finite_inx]
+                tmp_fn      = sp.interpolate.interp1d(tmp_ranges,tmp_lats)
+
+                yticks  = axis.get_yticks()
+                ytick_str    = []
+                for tck in yticks:
+                    txt = []
+
+                    # Append Latitude
+                    try:
+                        lat = tmp_fn(tck)
+                        txt.append((u'%'+ytick_lat_format+'$^o$') % lat)
+                    except:
                         txt.append('')
-            txt = '\n'.join(txt)
-            ytick_str.append(txt)
 
-        axis.set_yticklabels(ytick_str,rotation=90,ma='center')
+                    # Append Range
+                    txt.append('%d' % tck)
+                    txt = '\n'.join(txt)
 
+                    ytick_str.append(txt) #Put both lat and range on same string
+                axis.set_yticklabels(ytick_str,rotation=90,ma='center') # Set yticklabels
+                # Label y-axis
+                geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
+                axis.set_ylabel('%s Latitude\n%s Slant Range [km]' % (geo_mag,metadata['model']))
+            else:
+                axis.set_ylabel('%s Slant Range [km]' % metadata['model'])
 
         #Shade xBoundary Limits
         if xBoundaryLimits == None:
