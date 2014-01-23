@@ -280,6 +280,7 @@ class musicRTI(object):
         * [**yBoundaryLimits**] (None or 2-element iterable of floats): Mark a region of range on the RTI plot.  A green dashed horizontal line will be plotted
             at each of the boundary ranges.  The region of time outside of the boundary will be shaded gray.
             If set to None, this will automatically be set to the gateLimits set in the metadata, if they exist.
+        * [**yticks**] (list): Where to put the ticks on the y-axis.
         * [**ytick_lat_format**] (str):  %-style string format code for latitude y-tick labels
         * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
@@ -299,7 +300,7 @@ class musicRTI(object):
     Written by Nathaniel A. Frissell, Fall 2013
     """
     def __init__(self,dataObject,dataSet='active',beam=7,coords='gate',xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
-            xBoundaryLimits=None, yBoundaryLimits=None, ytick_lat_format = '.0f', autoScale=False, plotTerminator=True, axvlines=None,
+            xBoundaryLimits=None, yBoundaryLimits=None, yticks=None, ytick_lat_format = '.0f', autoScale=False, plotTerminator=True, axvlines=None,
             axvline_color='0.25', secondary_coords='lat', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
             cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
 
@@ -454,6 +455,9 @@ class musicRTI(object):
         if ylim == None:
             ylim = (np.min(rnge),np.max(rnge))
         axis.set_ylim(ylim)
+
+        if yticks != None:
+            axis.set_yticks(yticks)
 
         # Y-axis labeling ##############################################################
         if coords == 'gate':
