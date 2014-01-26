@@ -101,6 +101,16 @@ class musicFan(object):
         * [**plotZeros**] (bool): If True, plot cells that are exactly 0.
         * [**markCell**] (None or 2-Element iterable): Mark the (beam, rangeGate) with black.
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
+        * [**plot_title**] (bool): If True, plot the title information
+        * [**title**] (str): Overide default title text.
+        * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
+                'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+        * [**plot_cbar**] (bool): If True, plot the color bar.
+        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
+        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
+        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
+        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
+        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
@@ -115,13 +125,14 @@ class musicFan(object):
         markCell                = None,
         plotTerminator          = True,
         plot_title              = True,
+        title                   = None,
         cmap_handling           = 'superdarn',
+        plot_cbar               = True,
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
         cbar_fraction           = 0.15,
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
-        title                   = None,
         **kwArgs):
 
         if axis == None:
@@ -262,17 +273,18 @@ class musicFan(object):
             else:
                 axis.set_title(title)
 
-        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
-        cbar.set_label(cbarLabel)
-        if cbar_ticks is None:
-            labels = cbar.ax.get_yticklabels()
-            labels[-1].set_visible(False)
-        else:
-            cbar.set_ticks(cbar_ticks)
+        if plot_cbar:
+            cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+            cbar.set_label(cbarLabel)
+            if cbar_ticks is None:
+                labels = cbar.ax.get_yticklabels()
+                labels[-1].set_visible(False)
+            else:
+                cbar.set_ticks(cbar_ticks)
 
-        if currentData.metadata.has_key('gscat'):
-            if currentData.metadata['gscat'] == 1:
-                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+            if currentData.metadata.has_key('gscat'):
+                if currentData.metadata['gscat'] == 1:
+                    cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
         txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
@@ -310,10 +322,11 @@ class musicRTI(object):
         * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
         * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
         * [**secondary_coords**] (str): Secondary coordate system for RTI plot y-axis ('lat' or 'range')
-        * [**plot_info**] : If True, plot frequency/noise plots
-        * [**plot_title**] : If True, plot the title information
+        * [**plot_info**] (bool): If True, plot frequency/noise plots
+        * [**plot_title**] (bool): If True, plot the title information
         * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
                 'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+        * [**plot_cbar**] (bool): If True, plot the color bar.
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
@@ -344,6 +357,7 @@ class musicRTI(object):
         plot_info               = True,
         plot_title              = True,
         cmap_handling           = 'superdarn',
+        plot_cbar               = True,
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
         cbar_fraction           = 0.15,
@@ -634,18 +648,18 @@ class musicRTI(object):
                     txt = '%.1f' % bnd_item
                 axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
 
+        if plot_cbar:
+            cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+            cbar.set_label(cbarLabel)
+            if cbar_ticks is None:
+                labels = cbar.ax.get_yticklabels()
+                labels[-1].set_visible(False)
+            else:
+                cbar.set_ticks(cbar_ticks)
 
-        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
-        cbar.set_label(cbarLabel)
-        if cbar_ticks is None:
-            labels = cbar.ax.get_yticklabels()
-            labels[-1].set_visible(False)
-        else:
-            cbar.set_ticks(cbar_ticks)
-
-        if currentData.metadata.has_key('gscat'):
-            if currentData.metadata['gscat'] == 1:
-                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+            if currentData.metadata.has_key('gscat'):
+                if currentData.metadata['gscat'] == 1:
+                    cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
         txt = 'Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
