@@ -106,16 +106,23 @@ class musicFan(object):
     Written by Nathaniel A. Frissell, Fall 2013
     """
     def __init__(self,dataObject,
-            dataSet             = 'active',
-            time                = None,
-            axis                = None,
-            scale               = None,
-            autoScale           = False,
-            plotZeros           = False,
-            markCell            = None,
-            plotTerminator      = True,
-            title               = None,
-            **kwArgs):
+        dataSet                 = 'active',
+        time                    = None,
+        axis                    = None,
+        scale                   = None,
+        autoScale               = False,
+        plotZeros               = False,
+        markCell                = None,
+        plotTerminator          = True,
+        plot_title              = True,
+        cmap_handling           = 'superdarn',
+        cbar_ticks              = None,
+        cbar_shrink             = 1.0,
+        cbar_fraction           = 0.15,
+        cbar_gstext_offset      = -0.075,
+        cbar_gstext_fontsize    = None,
+        title                   = None,
+        **kwArgs):
 
         if axis == None:
             from matplotlib import pyplot as plt
@@ -221,11 +228,11 @@ class musicFan(object):
                 x4,y4 = m(lonFull[bm+0,rg+1],latFull[bm+0,rg+1])
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-        if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
+        if (cmap_handling == 'matplotlib') or autoScale:
             cmap = matplotlib.cm.jet
             bounds  = np.linspace(scale[0],scale[1],256)
             norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-        else:
+        elif cmap_handling == 'superdarn':
             colors  = 'lasse'
             cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
 
@@ -249,20 +256,24 @@ class musicFan(object):
             axis.add_patch(poly)
 
         dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-        if title is None:
-            axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
-        else:
-            axis.set_title(title)
+        if plot_title:
+            if title is None:
+                axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
+            else:
+                axis.set_title(title)
 
-#        cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.85,fraction=.1)
+        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
         cbar.set_label(cbarLabel)
-        labels = cbar.ax.get_yticklabels()
-        labels[-1].set_visible(False)
+        if cbar_ticks is None:
+            labels = cbar.ax.get_yticklabels()
+            labels[-1].set_visible(False)
+        else:
+            cbar.set_ticks(cbar_ticks)
+
         if currentData.metadata.has_key('gscat'):
             if currentData.metadata['gscat'] == 1:
-#                cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-                cbar.ax.text(0.5,-0.115,'Ground\nscat\nonly',ha='center',fontsize=14)
+                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+
         txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
                   horizontalalignment='left',
