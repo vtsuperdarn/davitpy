@@ -105,7 +105,18 @@ class musicFan(object):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',time=None,axis=None,scale=None,autoScale=False, plotZeros=False, markCell=None, plotTerminator=True, title=None, **kwArgs):
+    def __init__(self,dataObject,
+            dataSet             = 'active',
+            time                = None,
+            axis                = None,
+            scale               = None,
+            autoScale           = False,
+            plotZeros           = False,
+            markCell            = None,
+            plotTerminator      = True,
+            title               = None,
+            **kwArgs):
+
         if axis == None:
             from matplotlib import pyplot as plt
             fig   = plt.figure(figsize=figsize)
@@ -488,10 +499,16 @@ class musicRTI(object):
         if coords == 'gate':
             if secondary_coords:
                 if secondary_coords == 'range':
-                    axis.set_ylabel('Range Gate\n%s Slant Range [km]' % metadata['model'])
+                    if metadata['model'] == 'IS':
+                        axis.set_ylabel('Range Gate\nSlant Range [km]')
+                    elif metadata['model'] == 'GS':
+                        axis.set_ylabel('Range Gate\nGS Mapped Range [km]')
                 else:
                     geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
-                    axis.set_ylabel('Range Gate\n%s Latitude' % geo_mag)
+                    if metadata['model'] == 'IS':
+                        axis.set_ylabel('Range Gate\n%s Latitude' % geo_mag)
+                    elif metadata['model'] == 'GS':
+                        axis.set_ylabel('Range Gate\nGS Mapped %s Latitude' % geo_mag)
 
                 yticks  = axis.get_yticks()
                 ytick_str    = []
@@ -547,9 +564,15 @@ class musicRTI(object):
                 axis.set_yticklabels(ytick_str,rotation=90,ma='center') # Set yticklabels
                 # Label y-axis
                 geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
-                axis.set_ylabel('%s Latitude\n%s Slant Range [km]' % (geo_mag,metadata['model']))
+                if metadata['model'] == 'IS':
+                    axis.set_ylabel('%s Latitude\nSlant Range [km]' % geo_mag)
+                elif metadata['model'] == 'GS':
+                    axis.set_ylabel('GS Mapped %s Latitude\nGS Mapped Range [km]' % geo_mag)
             else:
-                axis.set_ylabel('%s Slant Range [km]' % metadata['model'])
+                if metadata['model'] == 'IS':
+                    axis.set_ylabel('Slant Range [km]')
+                elif metadata['model'] == 'GS':
+                    axis.set_ylabel('GS Mapped Range [km]')
 
         axis.set_ylim(ylim)
         #Shade xBoundary Limits
