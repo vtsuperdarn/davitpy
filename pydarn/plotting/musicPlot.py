@@ -290,6 +290,8 @@ class musicRTI(object):
         * [**secondary_coords**] (str): Secondary coordate system for RTI plot y-axis ('lat' or 'range')
         * [**plot_info**] : If True, plot frequency/noise plots
         * [**plot_title**] : If True, plot the title information
+        * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
+                'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
@@ -319,6 +321,7 @@ class musicRTI(object):
         secondary_coords        = 'lat',
         plot_info               = True,
         plot_title              = True,
+        cmap_handling           = 'superdarn',
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
         cbar_fraction           = 0.15,
@@ -428,11 +431,11 @@ class musicRTI(object):
                 x4,y4 = xvec[tm+0],rnge[rg+1]
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-        if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
+        if (cmap_handling == 'matplotlib') or autoScale:
             cmap = matplotlib.cm.jet
             bounds  = np.linspace(scale[0],scale[1],256)
             norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-        else:
+        elif cmap_handling == 'superdarn':
             colors  = 'lasse'
             cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
 
@@ -600,7 +603,7 @@ class musicRTI(object):
 
         cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
         cbar.set_label(cbarLabel)
-        if not cbar_ticks:
+        if cbar_ticks is None:
             labels = cbar.ax.get_yticklabels()
             labels[-1].set_visible(False)
         else:
