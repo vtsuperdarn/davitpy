@@ -1104,6 +1104,7 @@ class filter(object):
         if cutoff_high != None and cutoff_low != None:
             d = -(lp+hp)
             d[numtaps/2] = d[numtaps/2] + 1
+            d = -1.*d #Needed to correct 180 deg phase shift.
 
         if cutoff_high == None and cutoff_low == None:
             print "WARNING!! You must define cutoff frequencies!"
