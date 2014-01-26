@@ -133,6 +133,7 @@ class musicFan(object):
         cbar_fraction           = 0.15,
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
+        basemap_dict            = {},
         **kwArgs):
 
         if axis == None:
@@ -212,7 +213,7 @@ class musicFan(object):
         dist = width/50.
 
         #draw the actual map we want
-        m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis)
+        m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis,**basemap_dict)
         m.drawparallels(np.arange(-80.,81.,10.),labels=[1,0,0,0])
         m.drawmeridians(np.arange(-180.,181.,20.),labels=[0,0,0,1])
         if(coords == 'geo'):
@@ -247,7 +248,8 @@ class musicFan(object):
             colors  = 'lasse'
             cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
 
-        pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+#        pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+        pcoll = PolyCollection(np.array(verts),edgecolors='face',closed=False,cmap=cmap,norm=norm,zorder=99)
         pcoll.set_array(np.array(scan))
         axis.add_collection(pcoll,autolim=False)
 
