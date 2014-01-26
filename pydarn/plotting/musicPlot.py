@@ -526,6 +526,7 @@ class musicRTI(object):
             else:
                 axis.set_ylabel('%s Slant Range [km]' % metadata['model'])
 
+        axis.set_ylim(ylim)
         #Shade xBoundary Limits
         if xBoundaryLimits == None:
             if currentData.metadata.has_key('timeLimits'):
@@ -550,8 +551,10 @@ class musicRTI(object):
 
         if yBoundaryLimits != None:
             gray = '0.75'
-            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
-            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
+#            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+#            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
+            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=1)
+            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=1)
             axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
         
