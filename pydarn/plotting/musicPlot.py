@@ -132,8 +132,6 @@ class musicFan(object):
         plotZeros               = False,
         markCell                = None,
         plotTerminator          = True,
-        plot_title              = True,
-        title                   = None,
         parallels_ticks         = None,
         meridians_ticks         = None,
         zoom                    = 1.,
@@ -149,6 +147,8 @@ class musicFan(object):
         model_text_size         = 'small',
         draw_coastlines         = True,
         basemap_dict            = {},
+        plot_title              = True,
+        title                   = None,
         **kwArgs):
 
         if axis == None:
@@ -411,6 +411,7 @@ class musicRTI(object):
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
         model_text_size         = 'small',
+        y_labelpad              = None,
         **kwArgs):
 
         from scipy import stats
@@ -573,15 +574,15 @@ class musicRTI(object):
             if secondary_coords:
                 if secondary_coords == 'range':
                     if metadata['model'] == 'IS':
-                        axis.set_ylabel('Range Gate\nSlant Range [km]')
+                        axis.set_ylabel('Range Gate\nSlant Range [km]',labelpad=y_labelpad)
                     elif metadata['model'] == 'GS':
-                        axis.set_ylabel('Range Gate\nGS Mapped Range [km]')
+                        axis.set_ylabel('Range Gate\nGS Mapped Range [km]',labelpad=y_labelpad)
                 else:
                     geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
                     if metadata['model'] == 'IS':
-                        axis.set_ylabel('Range Gate\n%s Latitude' % geo_mag)
+                        axis.set_ylabel('Range Gate\n%s Latitude' % geo_mag,labelpad=y_labelpad)
                     elif metadata['model'] == 'GS':
-                        axis.set_ylabel('Range Gate\nGS Mapped %s Latitude' % geo_mag)
+                        axis.set_ylabel('Range Gate\nGS Mapped %s Latitude' % geo_mag,labelpad=y_labelpad)
 
                 yticks  = axis.get_yticks()
                 ytick_str    = []
@@ -607,7 +608,7 @@ class musicRTI(object):
                     ytick_str.append(txt)
                 axis.set_yticklabels(ytick_str,rotation=90,ma='center')
             else:
-                axis.set_ylabel('Range Gate')
+                axis.set_ylabel('Range Gate',labelpad=y_labelpad)
         elif coords == 'range':
             if secondary_coords == 'lat':
                 # Use linear interpolation to get the latitude associated with a particular range.
@@ -638,14 +639,14 @@ class musicRTI(object):
                 # Label y-axis
                 geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
                 if metadata['model'] == 'IS':
-                    axis.set_ylabel('%s Latitude\nSlant Range [km]' % geo_mag)
+                    axis.set_ylabel('%s Latitude\nSlant Range [km]' % geo_mag,labelpad=y_labelpad)
                 elif metadata['model'] == 'GS':
-                    axis.set_ylabel('GS Mapped %s Latitude\nGS Mapped Range [km]' % geo_mag)
+                    axis.set_ylabel('GS Mapped %s Latitude\nGS Mapped Range [km]' % geo_mag,labelpad=y_labelpad)
             else:
                 if metadata['model'] == 'IS':
-                    axis.set_ylabel('Slant Range [km]')
+                    axis.set_ylabel('Slant Range [km]',labelpad=y_labelpad)
                 elif metadata['model'] == 'GS':
-                    axis.set_ylabel('GS Mapped Range [km]')
+                    axis.set_ylabel('GS Mapped Range [km]',labelpad=y_labelpad)
 
         axis.set_ylim(ylim)
         #Shade xBoundary Limits
