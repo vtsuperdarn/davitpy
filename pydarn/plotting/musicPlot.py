@@ -105,6 +105,9 @@ class musicFan(object):
         * [**title**] (str): Overide default title text.
         * [**parallels_ticks**] (list): Where to draw the parallel (latitude) lines
         * [**meridians_ticks**] (list): Where to draw the meridian (longitude) lines
+        * [**zoom**] (float): Multiply the map height and width by this factor (bigger number shows more area).
+        * [**lat_shift**] (float): Add this number to the computed lat_0 sent to basemap.
+        * [**lon_shift**] (float): Add this number to the computed lon_0 sent to basemap.
         * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
                 'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
         * [**plot_cbar**] (bool): If True, plot the color bar.
@@ -114,6 +117,7 @@ class musicFan(object):
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
         * [**model_text_size**] : fontsize of model and coordinate indicator text
+        * [**draw_coastlines**] (bool): If True, draw the coastlines.
         * [**basemap_dict**] (dict): dictionary of keywords sent to the basemap invocation
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
@@ -133,6 +137,8 @@ class musicFan(object):
         parallels_ticks         = None,
         meridians_ticks         = None,
         zoom                    = 1.,
+        lat_shift               = 0.,
+        lon_shift               = 0.,
         cmap_handling           = 'superdarn',
         plot_cbar               = True,
         cbar_ticks              = None,
@@ -141,6 +147,7 @@ class musicFan(object):
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
         model_text_size         = 'small',
+        draw_coastlines         = True,
         basemap_dict            = {},
         **kwArgs):
 
@@ -218,6 +225,7 @@ class musicFan(object):
         cx = minx + width/2.
         cy = miny + height/2.
         lon_0,lat_0 = tmpmap(cx, cy, inverse=True)
+        lon_0 = np.mean(goodLonFull)
         dist = width/50.
 
 
@@ -236,9 +244,11 @@ class musicFan(object):
         #Zoom!
         width       = zoom * width
         height      = zoom * height
+        lat_0       = lat_0 + lat_shift
+        lon_0       = lon_0 + lon_shift
 
         #draw the actual map we want
-        m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis,**basemap_dict)
+        m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**basemap_dict)
         if parallels_ticks is None:
             parallels_ticks = np.arange(-80.,81.,10.)
 
@@ -248,7 +258,7 @@ class musicFan(object):
         m.drawparallels(parallels_ticks,labels=[1,0,0,0])
         m.drawmeridians(meridians_ticks,labels=[0,0,0,1])
 
-        if(coords == 'geo'):
+        if(coords == 'geo') and draw_coastlines == True:
             m.drawcoastlines(linewidth=0.5,color='k')
             m.drawmapboundary(fill_color='w')
             m.fillcontinents(color='w', lake_color='w')
