@@ -100,6 +100,8 @@ class musicFan(object):
         * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
         * [**plotZeros**] (bool): If True, plot cells that are exactly 0.
         * [**markCell**] (None or 2-Element iterable): Mark the (beam, rangeGate) with black.
+        * [**markBeam**] (None or int): Mark a chosen beam.
+        * [**markBeam_dict**] (dict): dictionary of keywords defining markBeam line properties.
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
         * [**plot_title**] (bool): If True, plot the title information
         * [**title**] (str): Overide default title text.
@@ -131,6 +133,8 @@ class musicFan(object):
         autoScale               = False,
         plotZeros               = False,
         markCell                = None,
+        markBeam                = None,
+        markBeam_dict           = {'color':'white','lw':2},
         plotTerminator          = True,
         parallels_ticks         = None,
         meridians_ticks         = None,
@@ -309,6 +313,25 @@ class musicFan(object):
 
             poly = Polygon(mkv,facecolor='#000000',edgecolor='none',zorder=100)
             axis.add_patch(poly)
+
+        #Mark Beam
+        if markBeam != None:
+            beamInx = int(np.where(currentData.fov.beams == markBeam)[0])
+            startedMarking = False
+            for gateInx in range(ngates):
+                if goodLatLon[beamInx,gateInx] == False: continue
+                x1,y1 = m(lonFull[beamInx+0,gateInx+0],latFull[beamInx+0,gateInx+0])
+                x2,y2 = m(lonFull[beamInx+1,gateInx+0],latFull[beamInx+1,gateInx+0])
+                x3,y3 = m(lonFull[beamInx+1,gateInx+1],latFull[beamInx+1,gateInx+1])
+                x4,y4 = m(lonFull[beamInx+0,gateInx+1],latFull[beamInx+0,gateInx+1])
+                axis.plot([x1,x4],[y1,y4],zorder=150,**markBeam_dict)
+                axis.plot([x2,x3],[y2,y3],zorder=150,**markBeam_dict)
+                if not startedMarking:
+                    axis.plot([x1,x2],[y1,y2],zorder=150,**markBeam_dict)
+                    startedMarking = True
+                if gateInx == ngates-1:
+                    axis.plot([x3,x4],[y3,y4],zorder=150,**markBeam_dict)
+
 
         dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
         if plot_title:
