@@ -113,6 +113,8 @@ class musicFan(object):
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**model_text_size**] : fontsize of model and coordinate indicator text
+        * [**basemap_dict**] (dict): dictionary of keywords sent to the basemap invocation
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
@@ -138,6 +140,7 @@ class musicFan(object):
         cbar_fraction           = 0.15,
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
+        model_text_size         = 'small',
         basemap_dict            = {},
         **kwArgs):
 
@@ -322,7 +325,7 @@ class musicFan(object):
                   horizontalalignment='left',
                   verticalalignment='bottom',
                   rotation='vertical',
-                  size='small',
+                  size=model_text_size,
                   transform=axis.transAxes)
 
         if plotTerminator:
@@ -365,6 +368,7 @@ class musicRTI(object):
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**model_text_size**] : fontsize of model and coordinate indicator text
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
@@ -396,6 +400,7 @@ class musicRTI(object):
         cbar_fraction           = 0.15,
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
+        model_text_size         = 'small',
         **kwArgs):
 
         from scipy import stats
@@ -699,7 +704,7 @@ class musicRTI(object):
                 horizontalalignment='left',
                 verticalalignment='bottom',
                 rotation='vertical',
-                size='small',
+                size=model_text_size,
                 transform=axis.transAxes)
 
         #Get axis position information.
