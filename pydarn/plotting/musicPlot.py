@@ -103,6 +103,8 @@ class musicFan(object):
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
         * [**plot_title**] (bool): If True, plot the title information
         * [**title**] (str): Overide default title text.
+        * [**parallels_ticks**] (list): Where to draw the parallel (latitude) lines
+        * [**meridians_ticks**] (list): Where to draw the meridian (longitude) lines
         * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
                 'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
         * [**plot_cbar**] (bool): If True, plot the color bar.
@@ -126,6 +128,9 @@ class musicFan(object):
         plotTerminator          = True,
         plot_title              = True,
         title                   = None,
+        parallels_ticks         = None,
+        meridians_ticks         = None,
+        zoom                    = 1.,
         cmap_handling           = 'superdarn',
         plot_cbar               = True,
         cbar_ticks              = None,
@@ -225,10 +230,21 @@ class musicFan(object):
         if map_aspect > ax_aspect:
             height  = (width*bbox_height) / bbox_width
 
+        #Zoom!
+        width       = zoom * width
+        height      = zoom * height
+
         #draw the actual map we want
         m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis,**basemap_dict)
-        m.drawparallels(np.arange(-80.,81.,10.),labels=[1,0,0,0])
-        m.drawmeridians(np.arange(-180.,181.,20.),labels=[0,0,0,1])
+        if parallels_ticks is None:
+            parallels_ticks = np.arange(-80.,81.,10.)
+
+        if meridians_ticks is None:
+            meridians_ticks = np.arange(-180.,181.,20.)
+
+        m.drawparallels(parallels_ticks,labels=[1,0,0,0])
+        m.drawmeridians(meridians_ticks,labels=[0,0,0,1])
+
         if(coords == 'geo'):
             m.drawcoastlines(linewidth=0.5,color='k')
             m.drawmapboundary(fill_color='w')
@@ -311,6 +327,8 @@ class musicFan(object):
 
         if plotTerminator:
             m.nightshade(currentData.time[timeInx])
+
+        self.map_obj = m
 
 class musicRTI(object):
     """Class to create an RTI plot using a pydarn.proc.music.musicArray object as the data source.
