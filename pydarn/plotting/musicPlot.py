@@ -212,6 +212,19 @@ class musicFan(object):
         lon_0,lat_0 = tmpmap(cx, cy, inverse=True)
         dist = width/50.
 
+
+        #Fill the entire subplot area without changing the data aspect ratio.
+        bbox        = axis.get_window_extent()
+        bbox_width  = bbox.width
+        bbox_height = bbox.height
+        ax_aspect   = bbox_width / bbox_height
+        map_aspect  = width / height
+        if map_aspect < ax_aspect:
+            width   = (height*bbox_width) / bbox_height
+
+        if map_aspect > ax_aspect:
+            height  = (width*bbox_height) / bbox_width
+
         #draw the actual map we want
         m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis,**basemap_dict)
         m.drawparallels(np.arange(-80.,81.,10.),labels=[1,0,0,0])
