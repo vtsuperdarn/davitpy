@@ -1277,6 +1277,7 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
         * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**axis**] : Matplotlib axis object to plot on.
         * [**xlim**] (None or 2-element iterable): X-axis limits in Hz
         * [**plot_title**] : If True, plot the title information
         * [**cbar_label**] (str): Text for color bar label
@@ -1615,7 +1616,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
+def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fontsize=24,
             plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
             cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
@@ -1628,6 +1629,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
         * **dataObj** (:class:`musicArray`): musicArray object
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**axis**] : Matplotlib axis object to plot on.
         * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
         * [**sig_fontsize**] (float): fontsize of signal markers
         * [**plot_title**] : If True, plot the title information
@@ -1639,14 +1641,18 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    if fig == None:
+    if fig is None and axis is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
 
     currentData = getDataSet(dataObj,dataSet)
 
     #Do plotting here!
-    axis = fig.add_subplot(111,aspect='equal')
+    if axis is None:
+        axis = fig.add_subplot(111,aspect='equal')
+    else:
+        fig = axis.get_figure()
+
     plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals,
             cbar_ticks=cbar_ticks, cbar_shrink=cbar_shrink, cbar_fraction=cbar_fraction,sig_fontsize=sig_fontsize,
             cbar_gstext_offset=cbar_gstext_offset, cbar_gstext_fontsize=cbar_gstext_fontsize)
