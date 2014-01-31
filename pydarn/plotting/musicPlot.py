@@ -1274,6 +1274,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
         cbar_fraction           = 0.15,
+        cbar_pad                = 0.05,
         cbar_gstext_offset      = -0.075,
         cbar_gstext_fontsize    = None,
         cbar_gstext_enable      = True,
@@ -1375,9 +1376,9 @@ def plotFullSpectrum(dataObj,dataSet='active',
     axis.add_collection(pcoll,autolim=False)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
     cbar.set_label(cbar_label)
-    if not cbar_ticks:
+    if cbar_ticks is None:
         labels = cbar.ax.get_yticklabels()
         labels[-1].set_visible(False)
     else:
