@@ -1263,9 +1263,21 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
     return fig
 
-def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar_label = 'ABS(Spectral Density)',
-            plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, cbar_gstext_enable=True, **kwArgs):
+def plotFullSpectrum(dataObj,dataSet='active',
+        fig                     = None,
+        axis                    = None,
+        xlim                    = None,
+        normalize               = False,
+        scale                   = None,
+        cbar_label              = 'ABS(Spectral Density)',
+        plot_title              = True,
+        cbar_ticks              = None,
+        cbar_shrink             = 1.0,
+        cbar_fraction           = 0.15,
+        cbar_gstext_offset      = -0.075,
+        cbar_gstext_fontsize    = None,
+        cbar_gstext_enable      = True,
+        **kwArgs):
     """Plot full spectrum of a pydarn.proc.music.musicArray object.  The spectrum must have already been calculated with
     pydarn.proc.music.calculateFFT().
 
@@ -1307,11 +1319,15 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
 
     data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
 
+    if normalize:
+        data    = data / data.max()
+
     #Determine scale for colorbar.
     sd          = stats.nanstd(data,axis=None)
     mean        = stats.nanmean(data,axis=None)
     scMax       = mean + 2.*sd
-    scale       = scMax*np.array([0,1.])
+    if scale is None:
+        scale       = scMax*np.array([0,1.])
 
     nXBins      = nrBeams * npf #number of bins we are going to plot
 
@@ -1349,15 +1365,11 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
                 x4,y4 = xx0, yy1
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    colors  = 'lasse'
-    if scale == None:
-        scale   = (np.min(scan),np.max(scan))
     param = 'power'
     cmap = matplotlib.cm.Blues_r
 
     bounds  = np.linspace(scale[0],scale[1],256)
     norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-
     pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
@@ -1655,7 +1667,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
 
     plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals,
             cbar_ticks=cbar_ticks, cbar_shrink=cbar_shrink, cbar_fraction=cbar_fraction,sig_fontsize=sig_fontsize,
-            cbar_gstext_offset=cbar_gstext_offset, cbar_gstext_fontsize=cbar_gstext_fontsize)
+            cbar_gstext_offset=cbar_gstext_offset, cbar_gstext_fontsize=cbar_gstext_fontsize,**kwArgs)
 
     if plot_title:
         xpos = 0.130
@@ -1842,9 +1854,9 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
                 txt  = '%i' % signal['order']
                 axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
 
-def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,
+def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,x_labelpad=None,y_labelpad=None,
             cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None):
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None,cbar_pad=0.05):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
     been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
 
@@ -1916,7 +1928,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     axis.axhline(color='0.82',lw=2,zorder=150)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
     cbar.set_label('Normalized Wavenumber Power')
     if not cbar_ticks:
         cbar_ticks = np.arange(10)/10.
@@ -1952,7 +1964,8 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
         newLabels.append(txt)
 
     axis.set_xticklabels(newLabels)
-    axis.set_xlabel(u'kx [rad]\n$\lambda$ [km]',ha='center')
+    axis.set_xlabel(u'kx [rad]\n$\lambda$ [km]',ha='center',labelpad=x_labelpad)
+#    axis.set_xlabel('%f' % x_labelpad,ha='center',labelpad=x_labelpad)
 
     ticks     = axis.get_yticks()
     newLabels = []
@@ -1965,10 +1978,10 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             km_txt = ''
 
         rad_txt = '%.2f' % tck
-        txt = '\n'.join([rad_txt,km_txt])
+        txt = '\n'.join([km_txt,rad_txt])
         newLabels.append(txt)
-    axis.set_yticklabels(newLabels)
-    axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center')
+    axis.set_yticklabels(newLabels,rotation=90.)
+    axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center',labelpad=y_labelpad)
     # End add wavelength to x/y tick labels ######################################## 
 
     md = currentData.metadata
