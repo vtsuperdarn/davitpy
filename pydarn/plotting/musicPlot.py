@@ -553,25 +553,25 @@ class musicRTI(object):
 
         # Plot the terminator! #########################################################
         if plotTerminator:
-            print 'Terminator functionality is disabled until further testing is completed.'
-#            term_verts = []
-#            term_scan  = []
-#
-#            rnge  = currentData.fov.gates
-#            xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
-#            for tm in range(nrTimes-1):
-#                for rg in range(nrGates-1):
-#                    if daylight[tm,rg]: continue
-#                    term_scan.append(1)
-#
-#                    x1,y1 = xvec[tm+0],rnge[rg+0]
-#                    x2,y2 = xvec[tm+1],rnge[rg+0]
-#                    x3,y3 = xvec[tm+1],rnge[rg+1]
-#                    x4,y4 = xvec[tm+0],rnge[rg+1]
-#                    term_verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
-#
-#            term_pcoll = PolyCollection(np.array(term_verts),facecolors='0.45',linewidth=0,zorder=99,alpha=0.25)
-#            axis.add_collection(term_pcoll,autolim=False)
+#            print 'Terminator functionality is disabled until further testing is completed.'
+            term_verts = []
+            term_scan  = []
+
+            rnge  = currentData.fov.gates
+            xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
+            for tm in range(nrTimes-1):
+                for rg in range(nrGates-1):
+                    if daylight[tm,rg]: continue
+                    term_scan.append(1)
+
+                    x1,y1 = xvec[tm+0],rnge[rg+0]
+                    x2,y2 = xvec[tm+1],rnge[rg+0]
+                    x3,y3 = xvec[tm+1],rnge[rg+1]
+                    x4,y4 = xvec[tm+0],rnge[rg+1]
+                    term_verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+
+            term_pcoll = PolyCollection(np.array(term_verts),facecolors='0.45',linewidth=0,zorder=99,alpha=0.25)
+            axis.add_collection(term_pcoll,autolim=False)
         ################################################################################
 
         if axvlines is not None:
@@ -1269,8 +1269,9 @@ def plotFullSpectrum(dataObj,dataSet='active',
         xlim                    = None,
         normalize               = False,
         scale                   = None,
-        cbar_label              = 'ABS(Spectral Density)',
         plot_title              = True,
+        maxXTicks               = 10.,
+        cbar_label              = 'ABS(Spectral Density)',
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
         cbar_fraction           = 0.15,
@@ -1293,6 +1294,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
         * [**axis**] : Matplotlib axis object to plot on.
         * [**xlim**] (None or 2-element iterable): X-axis limits in Hz
         * [**plot_title**] : If True, plot the title information
+        * [**maxXTicks**] (int): Maximum number of xtick labels.
         * [**cbar_label**] (str): Text for color bar label
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
@@ -1427,9 +1429,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
     axis.add_patch(poly)
 
     #X-Labels
-    maxXTicks = 10.
-    modX      = np.ceil(npf / maxXTicks)
-    fCharSize= 0.60
+    modX      = np.ceil(npf / np.float(maxXTicks))
 
     xlabels = []
     xpos    = []
@@ -1439,7 +1439,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
         if posFreqVec[ff] == 0:
             periodLabel = 'Inf'
         else:
-            periodLabel = '%i' % (1./posFreqVec[ff] / 60.)
+            periodLabel = '%.0f' % (1./posFreqVec[ff] / 60.)
         xlabels.append(freqLabel+'\n'+periodLabel)
         xpos.append(nrBeams* (ff + 0.1))
 
