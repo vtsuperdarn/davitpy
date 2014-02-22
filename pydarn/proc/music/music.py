@@ -152,7 +152,10 @@ def stringify_signal(sig):
     if sig.has_key('period'):
         sigInfo['period']   = '%d' % np.round(sig['period']/60.)    # minutes
     if sig.has_key('vel'):
-        sigInfo['vel']      = '%d' % np.round(sig['vel'])           # km/s
+        if np.isinf(np.round(sig['vel'])):
+            sigInfo['vel']      = 'Inf'
+        else:
+            sigInfo['vel']      = '%d' % np.round(sig['vel'])           # km/s
     if sig.has_key('area'):
         sigInfo['area']     = '%d' % sig['area']                    # Pixels
     if sig.has_key('max'):
