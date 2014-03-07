@@ -33,7 +33,7 @@
 .. moduleauthor:: Nathaniel A. Frissell, Fall 2013
 
 *********************
-**Module**: pydarn.plotting.rti
+**Module**: pydarn.proc.muic
 *********************
 **Functions**:
     * :func:`pydarn.proc.music.getDataSet`
