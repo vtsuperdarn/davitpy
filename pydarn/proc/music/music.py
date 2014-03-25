@@ -886,7 +886,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
         return newData
     except:
         if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
-        print 'Warning! Limits not applied.'
+#        print 'Warning! Limits not applied.'
         return currentData
 
 def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
