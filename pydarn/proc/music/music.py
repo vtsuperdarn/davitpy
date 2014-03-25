@@ -747,6 +747,36 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
     except:
         print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
 
+def checkDataQuality(dataObj,dataSet='active',max_off_time=10,sTime=None,eTime=None):
+    """Mark the data set as bad (metadata['good_period'] = False) if the radar was not operational within the chosen time period
+    for a specified length of time.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**max_off_time**] (int/float): Maximum length in minutes radar may remain off.
+        * [**sTime**] (datetime.datetime): Starting time of checking period.  If None, min(currentData.time) is used.
+        * [**eTime**] (datetime.datetime): End time of checking period.  If None, max(currentData.time) is used.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    currentData = getDataSet(dataObj,dataSet)
+
+    if sTime is None:
+        sTime   = np.min(currentData.time)
+
+    if eTime is None:
+        eTime   = np.max(currentData.time)
+
+    time_vec    = currentData.time[np.logical_and(currentData.time > sTime, currentData.time < eTime)]
+    time_vec    = np.concatenate(([sTime],time_vec,[eTime]))
+    max_diff    = np.max(np.diff(time_vec))
+
+    if max_diff > datetime.timedelta(minutes=max_off_time):
+        currentData.setMetadata(good_period=False)
+
+    return dataObj
+
 def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
     """Removes data outside of the rangeLimits and gateLimits boundaries.
 
