@@ -774,6 +774,8 @@ def checkDataQuality(dataObj,dataSet='active',max_off_time=10,sTime=None,eTime=N
 
     if max_diff > datetime.timedelta(minutes=max_off_time):
         currentData.setMetadata(good_period=False)
+    else:
+        currentData.setMetadata(good_period=True)
 
     return dataObj
 
