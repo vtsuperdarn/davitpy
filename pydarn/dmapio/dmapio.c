@@ -431,7 +431,7 @@ read_dmap_rec(PyObject *self, PyObject *args)
   else
   {
     PyObject *beamData = PyDict_New();
-    int c,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang;
+    int c,yr=0,mo=0,dy=0,hr=0,mt=0,sc=0,us=0,i,j,k,nrang;
     double epoch;
     struct DataMap *ptr;
     struct DataMapScalar *s;
@@ -440,9 +440,9 @@ read_dmap_rec(PyObject *self, PyObject *args)
     
     nrang=0;
     Py_BEGIN_ALLOW_THREADS
-    PyFile_IncUseCount(f);
+    PyFile_IncUseCount((PyFileObject *)f);
     ptr = DataMapRead(fileno(fp));
-    PyFile_DecUseCount(f);
+    PyFile_DecUseCount((PyFileObject *)f);
     Py_END_ALLOW_THREADS
     
     if(ptr == NULL)
