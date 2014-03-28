@@ -188,10 +188,20 @@ def datetimeToEpoch(myDate):
       epoch = utils.timeUtils.datetimeToEpoch(dt.datetime(2012,7,10))
 
   Written by AJ 20120914
+  Modified by Nathaniel Frissell 20130729 - Added list support.
+  Modified by AJ 20130925 - fixed local time bug with conversion
+  Modified by Nathaniel Frissell 20130930 - Fixed list support.
   """
-  
-  import datetime,calendar
-  return calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
+  import datetime
+  import calendar
+  import numpy
+
+  if numpy.size(myDate) == 1:
+    unx = calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
+  else:
+    unx = [calendar.timegm(dt.timetuple())+dt.microsecond/1e6 for dt in myDate]
+
+  return unx
 
 def dateToDecYear(date):
   """Convert (`datetime <http://tinyurl.com/bl352yx>`_) object to decimal year

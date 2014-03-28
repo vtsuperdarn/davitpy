@@ -56,7 +56,7 @@ class fov(object):
             elevation=None, altitude=300., \
             model='IS', coords='geo'):
         # Get fov
-        from numpy import ndarray, array, arange, zeros
+        from numpy import ndarray, array, arange, zeros, nan
         import models.aacgm as aacgm
         
         # Test that we have enough input arguments to work with
@@ -118,8 +118,8 @@ class fov(object):
                     altitude = altitude[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
-                    altitude = np.append(altitude, altitude[-1,:].reshaphe(1,ngates), axis=0)
-                    altitude = np.append(altitude, altitude[:,-1].reshaphe(nbeams,1), axis=1)
+                    altitude = np.append(altitude, altitude[-1,:].reshape(1,ngates), axis=0)
+                    altitude = np.append(altitude, altitude[:,-1].reshape(nbeams,1), axis=1)
             else:
                 print 'getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0])
                 altitude = altitude[0] * ones((nbeams+1, ngates+1))
@@ -136,8 +136,8 @@ class fov(object):
                     elevation = elevation[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
-                    elevation = np.append(elevation, elevation[-1,:].reshaphe(1,ngates), axis=0)
-                    elevation = np.append(elevation, elevation[:,-1].reshaphe(nbeams,1), axis=1)
+                    elevation = np.append(elevation, elevation[-1,:].reshape(1,ngates), axis=0)
+                    elevation = np.append(elevation, elevation[:,-1].reshape(nbeams,1), axis=1)
             else:
                 print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
                 elevation = elevation[0] * ones((nbeams+1, ngates+1))
@@ -186,15 +186,27 @@ class fov(object):
                 else:
                     tElev = elevation[ib,ig]
                     tAlt = altitude[ib,ig]
-                # Then calculate projections
-                latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
-                            elevation=tElev, altitude=tAlt, model=model)
-                latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
-                            elevation=tElev, altitude=tAlt, model=model)
-                            
-                if(coords == 'mag'):
-                    latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,0.,0)
-                    latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,0.,0)
+
+                if model == 'GS':
+                  if (~isParamArray and ib == 0) or isParamArray:
+                    slantRangeCenter[ib,ig] = gsMapSlantRange(sRangCenter[ig],altitude=None,elevation=None)
+                    slantRangeFull[ib,ig]   = gsMapSlantRange(sRangEdge[ig],altitude=None,elevation=None)
+                    sRangCenter[ig]         = slantRangeCenter[ib,ig]
+                    sRangEdge[ig]           = slantRangeFull[ib,ig] 
+
+                if (sRangCenter[ig] != -1) and (sRangEdge[ig] != -1):
+                  # Then calculate projections
+                  latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
+                              elevation=tElev, altitude=tAlt, model=model)
+                  latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
+                              elevation=tElev, altitude=tAlt, model=model)
+                              
+                  if(coords == 'mag'):
+                      latC, lonC, _ = aacgm.aacgmlib.aacgmConv(latC,lonC,0.,0)
+                      latE, lonE, _ = aacgm.aacgmlib.aacgmConv(latE,lonE,0.,0)
+                else:
+                  latC, lonC = nan, nan
+                  latE, lonE = nan, nan
                     
                 # Save into output arrays
                 latCenter[ib, ig] = latC
@@ -394,4 +406,35 @@ See Milan et al. [1997] for more details on how this works.
         
     return degrees(boreOffset)
 
-    
+def gsMapSlantRange(slantRange,altitude=None,elevation=None):
+  """
+Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for more details.
+
+**INPUTS**:
+    * **slantRange**: normal slant range [km]
+    * **altitude**:   altitude [km] (defaults to 300 km)
+    * **elevation**:  elevation angle [degree]
+
+**OUTPUT**:
+    * **gsSlantRange**: ground scatter mapped slant range [km] (typically slightly less than 0.5*slantRange.
+      Will return -1 if (slantRange**2/4. - altitude**2 >= 0). This occurs when the scatter is too close and
+      this model breaks down.
+
+  """
+  from math import radians, degrees, sin, cos, asin, atan, sqrt, pi
+  from utils import Re, geoPack
+
+  # Make sure you have altitude, because these 2 projection models rely on it
+  if not elevation and not altitude:
+      # Set default altitude to 300 km
+      altitude = 300.0
+  elif elevation and not altitude:
+      # If you have elevation but not altitude, then you calculate altitude, and elevation will be adjusted anyway
+      altitude = sqrt( Re**2 + slantRange**2 + 2. * slantRange * Re * sin( radians(elevation) ) ) - Re
+
+  if (slantRange**2)/4. - altitude**2 >= 0:
+    gsSlantRange = Re * asin(sqrt(slantRange**2/4. - altitude**2)/Re) #From Bristow et al. [1994]
+  else:
+    gsSlantRange = -1
+
+  return gsSlantRange

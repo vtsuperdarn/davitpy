@@ -25,9 +25,13 @@ apt-get install -y python-zmq
 apt-get install -y python-imaging
 apt-get install -y python-paramiko
 apt-get install -y python-pymongo
+apt-get install -y python-mechanize
 pip install --upgrade pymongo
 apt-get install -y mpich2
 apt-get install -y gfortran
+pip install --upgrade jinja2
+pip install --upgrade cython
+pip install --upgrade scikit-image
 
 dir=$(pwd)
 

@@ -5,8 +5,10 @@ SOURCES='irisub.for irifun.for iriflip.for iritec.for igrf.for cira.for iridreg.
 
 all:
 	#f2py irisub.for -m iri -h iri.pyf
-	gfortran -w -O2 -fno-automatic -c *.for
-	f2py --fcompiler=gnu95 --f77flags="" -c iri.pyf *.for
+	#f2py --fcompiler=gnu95 -c iri.pyf *.for
+	#gfortran -w -O2 -fno-automatic -c -ffixed-line-length-0 -std=legacy *.for
+	f77 -w -c *.for
+
 
 clean:
 	find . -type f -name "*.so" | xargs rm -f

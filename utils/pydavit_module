@@ -1,7 +1,0 @@
-#%Module 1.0
-#
-#  DavitPy module for use with 'environment-modules' package:
-#
-prepend-path		PYTHONPATH	/usr/lib64/python2.7/site-packages/pydarn
-prepend-path            PATH            /usr/lib64/davitpy/bin
-setenv	 		DAVITPY		/usr/lib64/davitpy/

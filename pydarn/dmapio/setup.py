@@ -32,7 +32,7 @@ setup (name = "dmapio",
        ext_modules = [Extension("dmapio",
                                 sources=["dmapio.c"],
                                 include_dirs = [
-                                     "/usr/local/include/pydarn",
+#                                     "/usr/local/include/pydarn",
                                      rst+"/include/superdarn",
                                      rst+"/include/analysis",
                                      rst+"/include/base",

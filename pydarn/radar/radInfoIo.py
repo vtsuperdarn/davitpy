@@ -1,6 +1,9 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
+.. module:: radInfoIo
+   :synopsis: read/write radar information
+.. moduleauthor:: Sebastien
 *********************
 **Module**: pydarn.radar.radInfoIo
 *********************
@@ -11,7 +14,7 @@ and radar.dat files. It also provide a function to manually update the local rad
 using the remote db database (requires an active internet connection).
 
 **Classes**:
-	* :class:`pydarn.radar.radInfoIo.updateHdf5`
+	* :class:`pydarn.radar.radInfoIo.updateRadars`
 **Functions**:
 	* :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
 	* :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
@@ -26,12 +29,13 @@ def radarRead(path=None):
 		* [**path**] (str): path to radar.dat file; defaults to RST environment variable SD_RADAR
 	**Returns**:
 		* A dictionary with keys matching the radar.dat variables each containing values of length #radars.
+
 	**Example**:
 		::
 
 			radars = pydarn.radar.radarRead()
 			
-	written by Sebastien, 2012-09
+	Written by Sebastien, 2012-09
 	"""
 	import shlex
 	import os, sys
@@ -90,12 +94,13 @@ def hdwRead(fname, path=None):
 		* [**path**] (str): path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
 	**Returns**:
 		* A dictionary with keys matching the hdw.dat variables each containing values of length #site updates.
+
 	**Example**:
 		::
 
 			hdw = pydarn.radar.hdwRead('hdw.dat.bks')
 			
-	written by Sebastien, 2012-09
+	Written by Sebastien, 2012-09
 	"""
 	import os
 	import shlex
@@ -161,22 +166,23 @@ def hdwRead(fname, path=None):
 
 # *************************************************************
 class updateRadars(object):
-    """update local radar.sqlite from remote db database. Currently, the remote 
-    database is housed on the VT servers.
+    """update local radar.sqlite from remote db database, or from local files if the database cannot be reached. 
+    Currently, the remote database is housed on the VT servers.
     
     **Members**: 
         * **sql_path** (str): path to sqlite file
         * **sql_file** (str): sqlite file name
     **Methods**:
-        * :func:`sqlInit`
-        * :func:`sqlUpdate`
-        * :func:`dbConnect`
+        * :func:`updateRadars.sqlInit`
+        * :func:`updateRadars.sqlUpdate`
+        * :func:`updateRadars.dbConnect`
+
     **Example**:
         ::
 
             obj = pydarn.radar.updateRadars()
 
-    written by Sebastien, 2013-05
+    Written by Sebastien, 2013-05
     """
 
     def __init__(self):
@@ -199,7 +205,10 @@ class updateRadars(object):
         dtfmt = '%Y-%m-%d %H:%M:%S'
         dttest = datetime.utcnow().strftime(dtfmt)
         # File path
-        self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
+        try: 
+          self.sql_path=os.environ['DAVIT_TMPDIR']
+        except:
+          self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
         self.sql_file = 'radars.sqlite'
         # MongoDB server
         self.db_user = os.environ['DBREADUSER']
@@ -237,7 +246,10 @@ class updateRadars(object):
         self.dtype_inf = ["var TEXT", 
                           "description TEXT"]
 
-        self.sqlUpdate()
+        isUp = self.sqlUpdate()
+
+        if isUp:
+            print "Radars information has been updated."
 
 
     def dbConnect(self):
@@ -252,7 +264,7 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
-        print self.db_user,self.db_pswd,self.db_host,self.db_name
+        #print self.db_user,self.db_pswd,self.db_host, self.db_name
         uri="mongodb://%s:%s@%s/%s"  % (self.db_user, self.db_pswd, self.db_host, self.db_name)
         print uri
         try:
@@ -260,16 +272,19 @@ class updateRadars(object):
             dba = conn[self.db_name]
         except:
             print 'Could not connect to remote DB: ', sys.exc_info()[0]
-            return False
+            dba = False
 
-        try:
-            colSel = lambda colName: dba[colName].find()
+        if dba:
+            try:
+                colSel = lambda colName: dba[colName].find()
 
-            self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
-            return True
-        except:
-            print 'Could not get data from remote DB: ', sys.exc_info()[0]
-            return False
+                self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
+                return True
+            except:
+                print 'Could not get data from remote DB: ', sys.exc_info()[0]
+                return False
+        else:
+            return self.__readFromFiles()
 
 
     def sqlInit(self):
@@ -290,7 +305,7 @@ class updateRadars(object):
             with lite.connect(fname) as conn: pass
             return True
         except lite.Error, e:
-            print "sqlInit() Error %s:" % e.args[0]
+            print "sqlInit() Error %s: %s" % (e.args[0],fname)
             return False
 
 
@@ -372,4 +387,54 @@ class updateRadars(object):
             arr.append( entry )
 
         return arr
+
+
+    def __readFromFiles(self):
+        """Read hdw.dat and radar.dat into a slect-like dictionnary from local files
+        """
+        from datetime import datetime
+
+        # Build radar and hdw dictionnaries
+        radars = []
+        hdw = []
+        radarF = radarRead()
+        nradar = len(radarF['id'])
+        for irad in xrange( nradar ):
+            radars.append( {"id": radarF['id'][irad], 
+                            "cnum": radarF['cnum'][irad], 
+                            "code": radarF['code'][irad], 
+                            "name": radarF['name'][irad], 
+                            "operator": radarF['operator'][irad], 
+                            "hdwfname": radarF['hdwfname'][irad], 
+                            "status": radarF['status'][irad], 
+                            "stTime": radarF['stTime'][irad], 
+                            "edTime": radarF['edTime'][irad],
+                            "snum": 0} )
+            siteF = hdwRead(radarF['hdwfname'][irad])
+            if not siteF: continue
+            tsnum = 0 
+            for isit in xrange( len(siteF['tval']) ):
+                if siteF['tval'][isit] == 0: continue
+                tval = datetime(3000,1,1) if siteF['tval'][isit] == -1 else siteF['tval'][isit]
+                hdw.append( {"id": radarF['id'][irad],
+                             "tval": tval,
+                             "geolat": siteF['geolat'][isit],
+                             "geolon": siteF['geolon'][isit],
+                             "alt": siteF['alt'][isit], 
+                             "boresite": siteF['boresite'][isit],
+                             "bmsep": siteF['bmsep'][isit],
+                             "vdir": siteF['vdir'][isit],
+                             "tdiff": siteF['tdiff'][isit],
+                             "phidiff": siteF['phidiff'][isit],
+                             "recrise": siteF['recrise'][isit],
+                             "atten": siteF['atten'][isit],
+                             "maxatten": siteF['maxatten'][isit],
+                             "maxgate": siteF['maxgate'][isit],
+                             "maxbeam": siteF['maxbeam'][isit],
+                             "interfer": siteF['interfer'][isit]} )
+                tsnum += 1     
+            radars[-1]["snum"] = tsnum 
+
+        self.db_select = {'rad': radars, 'hdw': hdw, 'inf': [{"var": '',"description": ''}]}
         
+        return True

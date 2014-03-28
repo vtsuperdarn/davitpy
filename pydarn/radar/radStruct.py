@@ -1,6 +1,9 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
+.. module:: radStruct
+   :synopsis: Load and browse radar information
+.. moduleauthor:: Sebastien
 *********************
 **Module**: pydarn.radar.radStruct
 *********************
@@ -21,11 +24,11 @@ class network(object):
         * **nradar** (int): number of radars in class
         * **radars** (list): list of :class:`radar` objects
     **Methods**:
-        * :func:`getRadarById`
-        * :func:`getRadarByName`
-        * :func:`getRadarByCode`
-        * :func:`getRadarsByPosition`
-        * :func:`getAllCodes`
+        * :func:`network.getRadarById`
+        * :func:`network.getRadarByName`
+        * :func:`network.getRadarByCode`
+        * :func:`network.getRadarsByPosition`
+        * :func:`network.getAllCodes`
     **Example**:
         ::
 
@@ -53,8 +56,15 @@ class network(object):
 
         self.radars = []
         # Get DB name
-        rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+        try: 
+          rad_path=os.environ['DAVIT_TMPDIR']
+        except:
+          rad_path = os.path.dirname( os.path.abspath( __file__ ) )
         dbname = os.path.join(rad_path, 'radars.sqlite')
+
+        if not os.path.isfile(dbname):
+            print "%s not found" % dbname
+            return
 
         with lite.connect(dbname) as conn:
             cur = conn.cursor()
@@ -334,7 +344,8 @@ class radar(object):
         * **snum** (int): number of site objects (i.e. number of updates to the hdw.dat)
         * **sites** (list): list of :class:`site` objects
     **Methods**:
-        * :func:`getSiteByDate`
+        * :func:`radar.fillFromSqlite`
+        * :func:`radar.getSiteByDate`
     **Example**:
         ::
 
@@ -377,8 +388,15 @@ class radar(object):
 
         # If a radar is requested...
         if code or radId:
-            rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            try: 
+              rad_path=os.environ['DAVIT_TMPDIR']
+            except:
+              rad_path = os.path.dirname( os.path.abspath( __file__ ) )
             dbname = os.path.join(rad_path, 'radars.sqlite')
+
+            if not os.path.isfile(dbname):
+                print "%s not found" % dbname
+                return
 
             # if the radar code was provided, look for corresponding id
             if code:
@@ -387,7 +405,7 @@ class radar(object):
                     cur.execute('SELECT id,code FROM rad')
                     rows = cur.fetchall()
                 for row in rows:
-                    if code in pickle.loads(row[1]):
+                    if code in pickle.loads(row[1].encode('ascii')):
                         radId = row[0]
 
             self.fillFromSqlite(dbname, radId)
@@ -407,7 +425,12 @@ class radar(object):
         """
         from datetime import datetime
         import sqlite3 as lite
-        import pickle 
+        import pickle
+        import os
+
+        if not os.path.isfile(dbname):
+            print "%s not found" % dbname
+            return
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
@@ -420,10 +443,7 @@ class radar(object):
 
             self.id = row[0]
             self.cnum = row[1]
-            if isinstance(row[2], unicode):
-              self.code = pickle.loads(row[2].encode('ascii'))
-            else: 
-              self.code = pickle.loads(row[2])
+            self.code = pickle.loads(row[2].encode('ascii'))
             self.name = row[3]
             self.operator = row[4]
             self.hdwfname = row[5]
@@ -532,6 +552,11 @@ class site(object):
         * **maxatten** (int): maximum number of analog attenuation stages
         * **maxgate** (int): maximum number of range gates (assuming 45km gates)
         * **maxbeam** (int): maximum number of beams
+    **Methods**:
+        * :func:`site.fillFromSqlite`
+        * :func:`site.beamToAzim`
+        * :func:`site.azimToBeam`
+
     **Example**:
         ::
 
@@ -576,8 +601,15 @@ class site(object):
         self.maxgate = 0
         self.maxbeam = 0
         if radId or code: 
-            rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            try: 
+              rad_path=os.environ['DAVIT_TMPDIR']
+            except:
+              rad_path = os.path.dirname( os.path.abspath( __file__ ) )
             dbname = os.path.join(rad_path, 'radars.sqlite')
+
+            if not os.path.isfile(dbname):
+                print "%s not found" % dbname
+                return
 
             # if the radar code was provided, look for corresponding id
             if code:
@@ -586,7 +618,7 @@ class site(object):
                     cur.execute('SELECT id,code FROM rad')
                     rows = cur.fetchall()
                 for row in rows:
-                    if code in pickle.loads(row[1]):
+                    if code in pickle.loads(row[1].encode('ascii')):
                         radId = row[0]
 
             self.fillFromSqlite(dbname, radId, dt=dt)
@@ -609,14 +641,20 @@ class site(object):
         from datetime import datetime
         import sqlite3 as lite
         import pickle
+        import os
+
+        if not os.path.isfile(dbname):
+            print "%s not found" % dbname
+            return
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
             if dt:
-                cur.execute('SELECT * FROM hdw WHERE id=? and tval<=? ORDER BY tval DESC', (radId, dt))
+                cur.execute('SELECT * FROM hdw WHERE id=? and tval>=? ORDER BY tval ASC', (radId, dt))
+                row = cur.fetchone()
             else:
-                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval DESC', (radId,))
-            row = cur.fetchone()
+                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval ASC', (radId,))
+                row = cur.fetchall()[ind]
 
             self.id = row[0]
             self.tval = row[1]
@@ -633,10 +671,7 @@ class site(object):
             self.maxatten = row[12]
             self.maxgate = row[13]
             self.maxbeam = row[14]
-            if isinstance(row[15], unicode):
-              self.interfer = pickle.loads(row[15].encode('ascii'))
-            else:
-              self.interfer = pickle.loads(row[15])
+            self.interfer = pickle.loads(row[15].encode('ascii'))
             
     def __len__(self):
         """

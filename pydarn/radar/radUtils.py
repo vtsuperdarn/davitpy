@@ -7,6 +7,7 @@
 		
 **Functions**:
 	* :func:`getCpName`: get the name of a control program from cp id number
+	* :func:`getParamDict`: Get information about a parameter, including units, default ranges, and axis labels.
 
 """
 
@@ -41,4 +42,63 @@ def getCpName(cpid):
 	if(fabs(cpid) == 3501): return 'twofsound'
 	if(fabs(cpid) == 1200): return 'icescan'
 	return ''
+
+def getParamDict(param):
+  """Get information about a parameter, including units, default ranges, and axis labels.
+  
+  **Args**: 
+          * **param** (str): name of parameter
+  **Returns**:
+          * **paramDict** (str): dictionary containing information about the chosen parameter
+  **Example**:
+          ::
+
+                paramDict = getParamDict('w_l')
+                  
+  written by Nathaniel Frissell, 2013-07
+  """
+  import numpy as np
+
+  #Create empty dictionary.
+  paramDict = {}
+
+  if    param == 'p_l' or param == 'power':
+    paramDict['param']  =  'power'
+    paramDict['label']  = r'$\lambda$ Power [dB]'
+    paramDict['unit']   =  'dB'
+    paramDict['range']  = (0,30)
+  elif  param == 'p_s'  :
+    paramDict['param']  =  'power'
+    paramDict['label']  = r'$\sigma$ Power [dB]'
+    paramDict['unit']   =  'dB'
+    paramDict['range']  = (0,30)
+  elif  param == 'v' or param == 'velocity':
+    paramDict['param']  =  'velocity'
+    paramDict['label']  =  'Velocity [m/s]'
+    paramDict['unit']   =  'm/s'
+    paramDict['range']  =  (-500,500)
+  elif  param == 'w_l' or param == 'width':
+    paramDict['param']  =  'width'
+    paramDict['label']  = r'$\lambda$ Spectral Width [m/s]'
+    paramDict['unit']   =  'm/s'
+    paramDict['range']  =  (0,100)
+  elif  param == 'w_s'  : 
+    paramDict['param']  =  'width'
+    paramDict['label']  = r'$\sigma$ Spectral Width [m/s]'
+    paramDict['unit']   =  'm/s'
+    paramDict['range']  =  (0,100)
+  elif  param == 'elv'  :
+    paramDict['param']  =  'elevation'
+    paramDict['label']  =  'Elevation [deg]'
+    paramDict['unit']   =  'deg'
+    paramDict['range']  =  (10,30)
+  elif  param == 'phi0' :
+    paramDict['param']  =  'phi'
+    paramDict['label']  = r'$\phi_0$'
+    paramDict['unit']   =  'rad'
+    paramDict['range']  =  (-np.pi,np.pi)
+
+  return paramDict
+
+
 

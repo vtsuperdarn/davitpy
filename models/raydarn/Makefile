@@ -1,6 +1,6 @@
 # 
-FC := mpif90
-FFLAGS := -w -O2 -fbacktrace
+FC := mpif90 
+FFLAGS := -w -O2 
 
 EXEC := rtFort
 

@@ -26,7 +26,6 @@ This includes the following submodules:
 	* **ind**: indices; ie anything that isn't satellite data
 	* **sat**: satellite data
     * **rbsp**: rbsp footpoints
-	* **ampere**
 """
 
 try: import base
@@ -41,9 +40,9 @@ try: import sat
 except Exception,e: 
     print __file__+' -> gme.sat: ', e
 
-try: import ampere
-except Exception,e: 
-    print __file__+' -> gme.ampere: ', e
+#try: import ampere
+#except Exception,e: 
+#    print __file__+' -> gme.ampere: ', e
 
 try: import plotting
 except Exception,e: 

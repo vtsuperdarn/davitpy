@@ -16,7 +16,8 @@ Overlay information on maps
 # *************************************************************
 def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
 				annotate=True, all=False, hemi=None,
-				zorder=2, markerColor='k', markerSize=10, fontSize=10, xOffset=None):
+				zorder=2, markerColor='k', markerSize=10, 
+				fontSize=10, xOffset=None):
 	"""Overlay radar position(s) and name(s) on map 
 	
 	**Args**: 
@@ -32,7 +33,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		* **[markerColor]**:     
 		* **[markerSize]**: [point]    
 		* **[fontSize]**: [point]    
-		* **[xOffset]**: x-Offset of the annotation in map projection coordinates  
+		* **[xOffset]**: x-Offset of the annotation in points  
 	**Returns**:
 		* None
 	**Example**:
@@ -47,7 +48,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	from pydarn.radar import network
 	from datetime import datetime as dt
 	from datetime import timedelta
-	import matplotlib.pyplot as plt
+	from utils.plotUtils import textHighlighted
 	
 	# Set default date/time to now
 	if not dateTime:
@@ -99,22 +100,22 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		if not Basemap.xmin <= x <= Basemap.xmax: continue
 		if not Basemap.ymin <= y <= Basemap.ymax: continue
 		# Plot radar position
-		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=2)
+		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=zorder)
 		# Now add radar name
 		if annotate:
 			# If any of the other radar is too close...
-			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze']:
-				xOff = width*.005 if not xOffset else xOffset
-				ha = 'left'
-			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw']:
-				xOff = -width*.005 if not xOffset else xOffset
-				ha = 'right'
+			if rad.code[0] in ['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze', 'sys']:
+				xOff = 5 if not xOffset else xOffset
+				ha = 0
+			elif rad.code[0] in ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw', 'sye']:
+				xOff = -5 if not xOffset else xOffset
+				ha = 1
 			else: 
 				xOff = 0.0
-				ha = 'center'
+				ha = .5
 			# Plot radar name
-			plt.text(x + xOff, y - height*.01, rad.code[0].upper(), 
-				ha=ha, va='top', variant='small-caps', fontsize=fontSize, zorder=zorder)
+			textHighlighted((x, y), rad.code[0].upper(), xytext=(xOff, -5), 
+				text_alignment=(ha,1), variant='small-caps', fontsize=fontSize, zorder=zorder)
 
 	return
 
@@ -122,8 +123,8 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 # *************************************************************
 def overlayFov(Basemap, codes=None, ids=None, names=None, 
 				dateTime=None, all=False, 
-				maxGate=None, fovColor=None, fovAlpha=0.2, 
-				beams=None, hemi=None, fovObj=None, 
+				maxGate=None, rangeLimits=None, model='IS', fovColor=None, fovAlpha=0.2, 
+				beams=None, beamsColors=None, hemi=None, fovObj=None, 
 				zorder=2, lineColor='k', lineWidth=1):
 	"""Overlay FoV position(s) on map
 	
@@ -135,6 +136,11 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 		* **[dateTime]**: the date and time as a python datetime object
 		* **[all]**: set to true to plot all the radars (active ones)
 		* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
+                * **[rangeLimits]**: (2-element list) Plot only between the range gates specified.
+                * **model**: 
+                    * **'IS'**: for ionopsheric scatter projection model (default)
+                    * **'GS'**: for ground scatter projection model
+                    * **None**: if you are really confident in your elevation or altitude values
 		* **[zorder]**: the overlay order number
 		* **[lineColor]**: FoV contour line color
 		* **[lineWidth]**: FoV contour line width
@@ -142,7 +148,8 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 		* **[fovAlpha]**: field of view fill color transparency
 		* **[fovObj]**: a fov object. See pydarn.radar.radFov.fov
 		* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere
-		* **[beam]**: hightlight specified beams 
+		* **[beams]**: hightlight specified beams 
+		* **[beamsColors]**: colors of the hightlighted beams 
 	**Returns**:
 		* None
 	**Example**:
@@ -179,25 +186,19 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	
 	# Define how the radars to be plotted are identified (code, id or name)
 	if codes:
-		if isinstance(codes, str): codes = [codes]
-		nradars = len(codes)
 		input = {'meth': 'code', 'vals': codes}
 	elif ids:
-		try:
-			[c for c in ids]
-		except:
-			ids = [ids]
-		finally:
-			nradars = len(ids)
-			input = {'meth': 'id', 'vals': ids}
+		input = {'meth': 'id', 'vals': ids}
 	elif names:
-		if isinstance(names, str): names = [names]
-		nradars = len(names)
 		input = {'meth': 'name', 'vals': names}
-	elif fovObj == None:
-		print 'overlayRadar: no radars to plot'
+	else:
+		print 'overlayFov: no radars to plot'
 		return
-	else: nradars = 1
+	
+	# Check if radars is given as a list
+	if not isinstance(input['vals'], list): input['vals'] = [input['vals']]
+
+	nradars = len(input['vals'])
 	
 	# iterates through radars to be plotted
 	for ir in xrange(nradars):
@@ -209,13 +210,21 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			if not site: continue
 			# Set number of gates to be plotted
 			eGate = site.maxgate-1 if not maxGate else maxGate
+
 			if not hasattr(Basemap, 'coords'): 
-				radFov = fov(site=site, ngates=eGate+1)
+				radFov = fov(site=site, ngates=eGate+1,model=model)
 			else:
-				radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords)
+				radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords, model=model)
 		else:
 			radFov = fovObj
 			eGate = len(fovObj.gates)
+
+                if rangeLimits is not None:
+                    sGate   = rangeLimits[0]
+                    eGate   = rangeLimits[1]
+                else:
+                    sGate   = 0
+
 		# Get radar coordinates in map projection
 		if hasattr(Basemap, 'coords'): 
 			x, y = Basemap(radFov.lonFull, radFov.latFull, coords=radFov.coords)
@@ -223,21 +232,21 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			x, y = Basemap(radFov.lonFull, radFov.latFull)
 		# Plot field of view
 		# Create contour
-		contourX = concatenate( (x[0,0:eGate], 
+		contourX = concatenate( (x[0,sGate:eGate], 
 								 x[:,eGate],
-								 x[-1,eGate::-1],
-								 x[-1::-1,0]) )
-		contourY = concatenate( (y[0,0:eGate], 
+								 x[-1,eGate:sGate:-1],
+								 x[-1::-1,sGate]) )
+		contourY = concatenate( (y[0,sGate:eGate], 
 								 y[:,eGate],
-								 y[-1,eGate::-1],
-								 y[-1::-1,0]) )
+								 y[-1,eGate:sGate:-1],
+								 y[-1::-1,sGate]) )
 		# Plot contour
 		Basemap.plot(contourX, contourY, 
-			color=lineColor, zorder=4, linewidth=lineWidth)
+			color=lineColor, zorder=zorder, linewidth=lineWidth)
 		# Field of view fill
 		if fovColor:
 			contour = transpose( vstack((contourX,contourY)) )
-			patch = Polygon( contour, color=fovColor, alpha=fovAlpha)
+			patch = Polygon( contour, color=fovColor, alpha=fovAlpha, zorder=zorder)
 			gca().add_patch(patch)
 		# Beams fill
 		if beams:
@@ -247,7 +256,11 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 				beams = [beams]
 			for ib in beams:
 				if not (0 <= ib <= x.shape[0]): continue
-				bCol = ib/float(x.shape[0])
+				if not beamsColors:
+					bColRGB = ib/float(x.shape[0])
+					bCol = (bColRGB/2.,bColRGB,1)
+				else:
+					bCol = beamsColors[beams.index(ib)]
 				contourX = concatenate( (x[ib,0:eGate+1], 
 										 x[ib:ib+2,eGate],
 										 x[ib+1,eGate::-1],
@@ -257,7 +270,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 										 y[ib+1,eGate::-1],
 										 y[ib+1:ib-1:-1,0]) )
 				contour = transpose( vstack((contourX,contourY)) )
-				patch = Polygon( contour, color=(bCol/2.,bCol,1), alpha=.4)
+				patch = Polygon( contour, color=bCol, alpha=.4, zorder=zorder)
 				gca().add_patch(patch)
 	
 	return
