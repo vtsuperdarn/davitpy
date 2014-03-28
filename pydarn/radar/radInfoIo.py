@@ -211,10 +211,19 @@ class updateRadars(object):
           self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
         self.sql_file = 'radars.sqlite'
         # MongoDB server
-        self.db_user = os.environ['DBREADUSER']
-        self.db_pswd = os.environ['DBREADPASS']
-        self.db_host = os.environ['SDDB']
         self.db_name = 'radarInfo'
+        try:
+          self.db_user = os.environ['DBREADUSER']
+        except KeyError:
+          self.db_user = "" 
+        try:
+          self.db_pswd = os.environ['DBREADPASS']
+        except KeyError:
+          self.db_pswd = "" 
+        try:
+          self.db_host = os.environ['SDDB']
+        except KeyError:
+          self.db_host = "" 
 
         # Declare custom data types
         self.dtype_rad = ["id INT", 
