@@ -205,13 +205,25 @@ class updateRadars(object):
         dtfmt = '%Y-%m-%d %H:%M:%S'
         dttest = datetime.utcnow().strftime(dtfmt)
         # File path
-        self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
+        try: 
+          self.sql_path=os.environ['DAVIT_TMPDIR']
+        except:
+          self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
         self.sql_file = 'radars.sqlite'
         # MongoDB server
-        self.db_user = os.environ['DBREADUSER']
-        self.db_pswd = os.environ['DBREADPASS']
-        self.db_host = os.environ['SDDB']
         self.db_name = 'radarInfo'
+        try:
+          self.db_user = os.environ['DBREADUSER']
+        except KeyError:
+          self.db_user = "" 
+        try:
+          self.db_pswd = os.environ['DBREADPASS']
+        except KeyError:
+          self.db_pswd = "" 
+        try:
+          self.db_host = os.environ['SDDB']
+        except KeyError:
+          self.db_host = "" 
 
         # Declare custom data types
         self.dtype_rad = ["id INT", 
@@ -261,12 +273,11 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
-
+        #print self.db_user,self.db_pswd,self.db_host, self.db_name
+        uri="mongodb://%s:%s@%s/%s"  % (self.db_user, self.db_pswd, self.db_host, self.db_name)
+        print uri
         try:
-            conn = MongoClient( 'mongodb://{}:{}@{}/{}'.format(self.db_user,
-                                                                       self.db_pswd, 
-                                                                       self.db_host,
-                                                                       self.db_name) )
+            conn = MongoClient(uri) 
             dba = conn[self.db_name]
         except:
             print 'Could not connect to remote DB: ', sys.exc_info()[0]
@@ -303,7 +314,7 @@ class updateRadars(object):
             with lite.connect(fname) as conn: pass
             return True
         except lite.Error, e:
-            print "sqlInit() Error %s:" % e.args[0]
+            print "sqlInit() Error %s: %s" % (e.args[0],fname)
             return False
 
 
