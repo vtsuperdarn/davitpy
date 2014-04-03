@@ -14,8 +14,11 @@ For an explanation of the gridding and map potential fitting process, see Ruohon
 Prior to 2006, plain text files were used to store data.  Here is the key relating old format to new format:
 
 *.dat — > *.rawacf
+
 *.fit   —> *.fitacf/*.fitex
+
 *.grd —> *.grdmap/*.grdex
+
 *.map —> *.cnvmap/*.mapex
 
 IMPORTANT WARNING:  When old formats were used, both *.dat and *.fit were created at the radar site during the time of observations.  However, the old *.dat format was lossy.  Therefore, it is not possible to generate a good *.fit file from a *.dat file.  Instead, you should use the *.fit that was actually created at the radar.
