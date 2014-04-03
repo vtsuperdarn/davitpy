@@ -1,6 +1,6 @@
 SuperDARN data files in order of processing:
 
-1. `*.iqdat`: Raw voltage measurements, lowest level of data.  Currently archived, but not distributed or widely used.
+1. `*.iqdat`: Raw voltage measurements, lowest level of data.  Archived by some groups, but not distributed or widely used.
 2. `*.rawacf`: Raw autocorrelation files produced at each radar.  Routinely archived and distributed amongst all the SuperDARN institutions, not typically used for science.
 3. `*.fitacf/*.fitex`: Usable geophysical data for each radar, including doppler velocities, scatter power, spectral width, etc.  This has been derived from *.rawacf using `make_fit` or `make_fitex2` from the Radar Software Toolkit (RST).
 4. `*.grdmap/*.grdex`:  Combines data from all radars in a hemisphere into a single file into a grid with roughly equi-sized cells using make_grid from the RST.
