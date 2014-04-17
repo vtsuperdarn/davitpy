@@ -18,7 +18,7 @@ Prior to 2006, plain text files were used to store data.  Here is the key relati
 * `*.grd —> *.grdmap/*.grdex`
 * `*.map —> *.cnvmap/*.mapex`
 
-IMPORTANT WARNING:  When old formats were used, both *.dat and *.fit were created at the radar site during the time of observations.  However, the old *.dat format was lossy.  Therefore, it is not possible to generate a good *.fit file from a *.dat file.  Instead, you should use the *.fit that was actually created at the radar.
+IMPORTANT WARNING:  When old formats were used, both *.dat and *.fit were created at the radar site during the time of observations.  However, the process of making a *.fit file from a *.dat file has not been reliable.  Using the FITACF1.xx routine, additional data points were introduced when that are bad and do not represent the data recorded in the *.dat file.  Using the FITACF2.xx routine (introduced in January of 2007), good data points were lost in the resulting *.fit file.  Therefore, it is not possible to generate a good *.fit file from a *.dat file.  Instead, you should use the *.fit that was actually created at the radar.
 
 The easiest way to tell the difference between old format and new format is to try and open the file in a text editor.  If it shows up as plain text, you know you are working with an old format file.  New format files must be read using the dmapdump -d routine in RST.  All low-level processing of these data files is done by the RST.
 
