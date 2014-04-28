@@ -13,6 +13,9 @@
   * :func:`updateDbDict`
   * :func:`readFromDb`
   * :func:`mapDbFit`
+  * :func:`setDIRFORMAT` <- added to set new local directory format environment variable by AGB, 20140428
+  * :func:`setLEUser` <- added to set ION usernames and passwords by AGB, 20140428
+  * :func:`setIonDIRFORMAT` <- added to set local directory format for ION and ION type directory structures by AGB, 20140428
 """
 
 
@@ -407,3 +410,68 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
   
   #close the dmap file
   myFile.close()
+
+def setDIRFORMAT(dirtree=0, ftype=-1, radar=-1, year=-1, month=-1, day=-1):
+  '''
+  setDIRFORMAT: A routine to set the local directory format environment
+                variable to a specified format. Input values indicate order
+                of placement in directory structure, starting from 1.  Negative
+                values indicate the keywords are not to be used.
+
+  dirtree = Highest level directory for radar data (default is 0)
+  ftype   = Radar file type (default is -1)
+  radar   = Radar name code (default is -1)
+  year    = Four digit year (default is -1)
+  month   = Two digit month (default is -1)
+  day     = Two digit day of month (default is -1)
+
+  Example: setDIRFORMAT(0, 1, 2, 3) sets: "{dirtree}/{ftype}/{radar}/{year}/"
+           for a directory structure such as:
+           /Users/AGB/Data/fitacf/han/2002/20020703.0400.00.han.fitacf.bz2
+  '''
+  dirform = [-1] * 6
+
+  if dirtree >= 0: dirform[dirtree] = "{dirtree}"
+  if ftype >= 0: dirform[ftype] = "{ftype}/"
+  if radar >= 0: dirform[radar] = "{radar}/"
+  if year >= 0: dirform[year] = "{year}/"
+  if month >= 0: dirform[month] = "{month}/"
+  if day >= 0: dirform[day] = "{day}/"
+
+  formatstring = ""
+
+  for i in dirform:
+    if i != -1:
+      formatstring = "{:s}{:s}".format(formatstring, i)
+
+  if len(formatstring) > 1:
+    os.environ['DAVIT_DIRFORMAT'] = formatstring
+  else:
+    print "setDIRFORMAT ERROR: can't set DAVIT_DIRFORMAT environment variable"
+
+def setLEUser(ion_username, ion_password):
+  '''
+  setLEUser: A routine to set the local user's ION user name and password to
+             allow easy access to SuperDARN radar data stored at the University
+             of Leicester.
+
+  Input: ion_username = user's ION username
+         ion_password = user's ION password
+   '''
+
+  os.environ['LEUSER'] = ion_username
+  os.environ['LEPASS'] = ion_password
+
+def setIonDIRFORMAT(ion=True):
+  '''
+  setIonDIRFORMAT: A routine to set the local directory format environment
+                   variable to the University of Leicester's data storage
+                   directory format.  Named after the University of Leicester's
+                   data server, ION.  Also sets the DAVIT_LOCALDIR environment
+                   variable. 
+  '''
+
+  setDIRFORMAT(dirtree=0, ftype=1, radar=2, year=3)
+
+  if ion is True:
+    os.environ['DAVIT_LOCALDIR'] = "/"
