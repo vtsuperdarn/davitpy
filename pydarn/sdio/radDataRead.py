@@ -31,6 +31,7 @@
   * :func:`pydarn.sdio.radDataRead.radDataReadAll`
 """
 
+
 def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
                 custType='fitex',noCache=False):
@@ -206,7 +207,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
     try:
       for ftype in arr:
         print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,radcode,chan)
-        #deal with UAF naming convention by using the radcode
+        #deal with UAF naming convention
         fnames = ['*.%s.%s*' % (radcode,ftype)]
         for form in fnames:
           #iterate through all of the hours in the request
@@ -216,8 +217,9 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
           while ctime <= eTime:
             #directory on the data server
             ##################################################################
-            ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
-            ### TO MATCH YOUR DIRECTORY STRUCTURE
+            # AGB: The University of Leicester file storage structure, as well
+            #      as other non-VTech file storage directory structures can be
+            #      used by invoking the DAVIT_LOCALDIR environment variable.
             ##################################################################
             localdict={}
             try: 
@@ -231,7 +233,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
             localdict["radar"]  = rad 
             try:
               localdirformat = os.environ['DAVIT_DIRFORMAT']
-              myDir = localdirformat % localdict 
+              myDir = localdirformat.format(**localdict)
             except: 
               myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
             hrStr = ctime.strftime("%H")
@@ -253,9 +255,8 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                 command='cp '+filename+' '+outname
                 print command
                 os.system(command)
- 
+
               filelist.append(outname)
-              print outname  
               #HANDLE CACHEING NAME
               ff = string.replace(outname,tmpDir,'')
               #check the beginning time of the file (for cacheing)
@@ -263,7 +264,8 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
               if fileSt == None or t1 < fileSt: fileSt = t1
 
             ##################################################################
-            ### END SECTION YOU WILL HAVE TO CHANGE
+            # AGB: This is the end of the section that will need to be
+            #      changed if another type of file structure is required 
             ##################################################################
             ctime = ctime+dt.timedelta(hours=1)
           if(len(filelist) > 0):
@@ -280,11 +282,99 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
       print 'you probably have to edit radDataRead.py'
       print 'I will try to read from other sources'
       src=None
-        
+
+  # Adding a section to allow SFTP from ION, for UoL users
+
+  if((src == None or src == 'sftp') and myPtr.ptr == None and
+     len(filelist) == 0 and fileName == None):
+    if(os.environ.has_key('LEDB') and os.environ.has_key('LEUSER')
+       and os.environ.has_key('LEPASS')):
+      for ftype in arr:
+        print '\nLooking on ION for',ftype,'files'
+        try:
+          #deal with UAF naming convention
+          fnames = ['..........'+ftype]
+          if(channel == None): fnames.append('..\...\....\.a\.')
+          else: fnames.append('..........'+channel+'.'+ftype)
+          for form in fnames:
+            #create a transport object for use in sftp-ing
+            transport = p.Transport((os.environ['LEDB'], 22))
+            transport.connect(username=os.environ['LEUSER'],
+                              password=os.environ['LEPASS'])
+            sftp = p.SFTPClient.from_transport(transport)
+          
+            #iterate through all of the hours in the request
+            #ie, iterate through all possible file names
+            ctime = sTime.replace(minute=0)
+            if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
+            oldyr = ''
+            while ctime <= eTime:
+              #directory on the data server
+              myDir = '/{:s}/{:s}/{:s}/'.format(ftype,rad,ctime.strftime("%Y"))
+              hrStr = ctime.strftime("%H")
+              dateStr = ctime.strftime("%Y%m%d")
+              if(ctime.strftime("%Y") != oldyr):
+                #get a list of all the files in the directory
+                allFiles = sftp.listdir(myDir)
+                oldyr = ctime.strftime("%Y")
+              #create a regular expression to find files of this day and hour
+              regex = re.compile(dateStr+'.'+hrStr+form)
+              #go thorugh all the files in the directory
+              for aFile in allFiles:
+                #if we have a file match between a file and our regex
+                if(regex.match(aFile)): 
+                  print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
+                  filename = tmpDir+aFile
+                  #download the file via sftp
+                  sftp.get(myDir+aFile,filename)
+                  #unzip the compressed file
+                  if(string.find(filename,'.bz2') != -1):
+                    outname = string.replace(filename,'.bz2','')
+                    print 'bunzip2 -c '+filename+' > '+outname+'\n'
+                    os.system('bunzip2 -c '+filename+' > '+outname)
+                  elif(string.find(filename,'.gz') != -1):
+                    outname = string.replace(filename,'.gz','')
+                    print 'gunzip -c '+filename+' > '+outname+'\n'
+                    os.system('gunzip -c '+filename+' > '+outname)
+                  else:
+                    print 'It seems we have downloaded an uncompressed file :/'
+                    print 'Strange things might happen from here on out...'
+                  
+                  filelist.append(outname)
+                  print outname
+                  #HANDLE CACHEING NAME
+                  ff = string.replace(outname,tmpDir,'')
+                  #check the beginning time of the file
+                  t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),
+                                   int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+                  if fileSt == None or t1 < fileSt: fileSt = t1
+
+              ctime = ctime+dt.timedelta(hours=1)
+            if len(filelist) > 0 :
+              print 'found',ftype,'data on sftp server'
+              myPtr.fType,myPtr.dType = ftype,'dmap'
+              fileType = ftype
+              break
+          if len(filelist) > 0 : break
+          else:
+            print  'could not find',ftype,'data on ION'
+        except Exception,e:
+          print e
+          print 'problem reading from ION'
+    else:
+      print 'Environment variables needed to access ION not set'
+      print 'Must set: LEDB to ion.le.ac.uk'
+      print '          LEUSER to your ION user name'
+      print '          LEPASS to your ION password'
+      print 'LEDB should be set by default'
+      print 'The other two environment variables can be set for this session'
+      print 'by running pydarn.sdio.dbUtils.setLEUser'
+      print 'If you do not have access to ION, please try the VTech server'
+
   #finally, check the VT sftp server if we have not yet found files
   if (src == None or src == 'sftp') and myPtr.ptr == None and len(filelist) == 0 and fileName == None:
     for ftype in arr:
-      print '\nLooking on the remote SFTP server for',ftype,'files'
+      print '\nLooking on the VTech remote SFTP server for',ftype,'files'
       try:
         #deal with UAF naming convention
         fnames = ['..........'+ftype]
@@ -399,7 +489,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   else:
     print '\nSorry, we could not find any data for you :('
     return None
-  
+
 def radDataReadRec(myPtr):
   """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
