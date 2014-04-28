@@ -21,6 +21,7 @@ export DBREADPASS='5d'
 export SDDB='sd-work9.ece.vt.edu:27017'
 
 # Set SFTP DATABASE
+export LEDB='ion.le.ac.uk'
 export VTDB='sd-data.ece.vt.edu'
 
 
