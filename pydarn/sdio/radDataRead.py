@@ -204,6 +204,12 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
 
   #Next, LOOK LOCALLY FOR FILES
   if not cached and (src == None or src == 'local') and fileName == None:
+    # AGB: Let the user know which root directory will be searched for local data
+    try:
+       print "Looking for data locally in:", os.environ['DAVIT_LOCALDIR']
+    except:
+       print "Looking for data locally in: /sd-data"
+       
     try:
       for ftype in arr:
         print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,radcode,chan)
@@ -238,7 +244,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
               myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
             hrStr = ctime.strftime("%H")
             dateStr = ctime.strftime("%Y%m%d")
-            print myDir
+
             #iterate through all of the files which begin in this hour
             for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
               outname = string.replace(filename,myDir,tmpDir)
