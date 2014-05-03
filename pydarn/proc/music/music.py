@@ -482,6 +482,9 @@ class musicArray(object):
         scanNr      = np.uint64(0)
         fov         = None
 
+        # Create a list that can be used to store top-level messages.
+        self.messages   = []
+
         # Create a place to store the prm data.
         prm             = emptyObj()
         prm.time        = []
@@ -578,6 +581,11 @@ class musicArray(object):
         #Convert lists to numpy arrays.
         timeArray       = np.array(scanTimeList)
         dataListArray   = np.array(dataList)
+
+        # If no data, report and return.
+        if dataListArray.size == 0:
+            self.messages.append('No data for this time period.')
+            return
 
         #Figure out what size arrays we need and initialize the arrays...
         nrTimes = np.max(dataListArray[:,scanInx]) + 1
