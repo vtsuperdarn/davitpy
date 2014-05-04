@@ -465,6 +465,15 @@ class musicArray(object):
     Written by Nathaniel A. Frissell, Fall 2013
     """
     def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
+        # Create a list that can be used to store top-level messages.
+        self.messages   = []
+
+        no_data_message = 'No data for this time period.'
+        # If no data, report and return.
+        if myPtr is None:
+            self.messages.append(no_data_message)
+            return
+
         if sTime == None: sTime = myPtr.sTime
         if eTime == None: eTime = myPtr.eTime
 
@@ -482,8 +491,6 @@ class musicArray(object):
         scanNr      = np.uint64(0)
         fov         = None
 
-        # Create a list that can be used to store top-level messages.
-        self.messages   = []
 
         # Create a place to store the prm data.
         prm             = emptyObj()
@@ -584,7 +591,7 @@ class musicArray(object):
 
         # If no data, report and return.
         if dataListArray.size == 0:
-            self.messages.append('No data for this time period.')
+            self.messages.append(no_data_message)
             return
 
         #Figure out what size arrays we need and initialize the arrays...
@@ -616,7 +623,7 @@ class musicArray(object):
         dataArray[:]  = np.nan
         for inx in range(len(dataListArray)):
           dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
-      
+
         #Make metadata block to hold information about the processing.
         metadata = {}
         metadata['dType']     = myPtr.dType
