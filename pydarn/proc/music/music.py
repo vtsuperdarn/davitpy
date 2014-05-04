@@ -522,6 +522,7 @@ class musicArray(object):
             myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
             if myScan == None: break
 
+            goodScan = False # This flag turns to True as soon as good data is found for the scan.
             for myBeam in myScan:
                 #Calculate the field of view if it has not yet been calculated.
                 if fov == None:
@@ -569,6 +570,7 @@ class musicArray(object):
                         if (gscat == 2) and (flag == 1): continue
                         tmp = (scanNr,beamTime,bmnum,gate,data)
                         dataList.append(tmp)
+                        goodScan = True
                 elif len(slist) == 1:
                     gate,data,flag = (slist[0],fitDataList[0],gflag[0])
                     #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
@@ -576,14 +578,16 @@ class musicArray(object):
                     if (gscat == 2) and (flag == 1): continue
                     tmp = (scanNr,beamTime,bmnum,gate,data)
                     dataList.append(tmp)
+                    goodScan = True
                 else:
                     continue
 
-            #Determine the start time for each scan and save to list.
-            scanTimeList.append(min([x.time for x in myScan]))
+            if goodScan:
+                #Determine the start time for each scan and save to list.
+                scanTimeList.append(min([x.time for x in myScan]))
 
-            #Advance to the next scan number.
-            scanNr = scanNr + 1
+                #Advance to the next scan number.
+                scanNr = scanNr + 1
 
         #Convert lists to numpy arrays.
         timeArray       = np.array(scanTimeList)
