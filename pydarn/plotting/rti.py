@@ -465,9 +465,9 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
     if xticks is not None:
       ax.xaxis.set_ticks(xticks)
 
-  if axvlines is not None:
-    for line in axvlines:
-       ax.axvline(line,color='0.25',ls='--')
+    if axvlines is not None:
+      for line in axvlines:
+         ax.axvline(line,color='0.25',ls='--')
 
     for tick in ax.xaxis.get_major_ticks():
       tick.label.set_fontsize(xtick_size) 
