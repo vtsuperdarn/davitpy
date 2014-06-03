@@ -64,12 +64,12 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
 		PyObject *lonOut = PyList_New(nElem);
 		PyObject *heightOut = PyList_New(nElem);
 
+		AACGMInit(year);
 		for (i=0; i<nElem; i++) {
 			inlat = PyFloat_AsDouble( PyList_GetItem(latList, i) );
 			inlon = PyFloat_AsDouble( PyList_GetItem(lonList, i) );
 			inlon = fmod(inlon, 360.);
 			height = PyFloat_AsDouble( PyList_GetItem(heightList, i) );
-			AACGMInit(year);
 			AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
 
 			PyList_SetItem(latOut, i, PyFloat_FromDouble(outLat)); 
