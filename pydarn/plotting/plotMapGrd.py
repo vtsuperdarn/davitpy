@@ -18,7 +18,7 @@ class MapConv(object):
     **Args**:
         * **startTime** (datetime.datetime): start date and time of the data rec
         * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
-        * **axisHandle** : the axis handle used
+        * **axisHandle** : the axis handle used. Must be a subplot type (see example below).
         * **[hemi]** : hemisphere - 'north' or 'south'
         * **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
         * **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
@@ -319,14 +319,15 @@ class MapConv(object):
 
         # We'll calculate Bfld magnitude now, need to initialize some more stuff
         alti = 300. * 1000.
-        bFldPolar = -0.62e-4 
+        #bFldPolar = -0.62e-4 # Negative moved to its proper place in vel calculations below
+        bFldPolar = 0.62e-4 # Magnitude of B at the poles
         bFldMagn = bFldPolar * (1.-3.* alti/self.radEarthMtrs) \
-            *numpy.sqrt( 3.0*numpy.square( numpy.cos( theta ) ) + 1. )/2
+            *numpy.sqrt( 3.0*numpy.square( numpy.cos( theta ) ) + 1. )/2 # This is |B|, not B_r
 
         # get the velocity components from E-field
         velFitVecs = numpy.zeros( eFieldFit.shape )
-        velFitVecs[0,:] = eFieldFit[1,:] / bFldMagn
-        velFitVecs[1,:] = -eFieldFit[0,:] / bFldMagn
+        velFitVecs[0,:] = -(eFieldFit[1,:] / bFldMagn)
+        velFitVecs[1,:] = -(-eFieldFit[0,:] / bFldMagn)
 
         velMagn = numpy.sqrt( numpy.square( velFitVecs[0,:] ) + numpy.square( velFitVecs[1,:] ) )
         velChkZeroInds = numpy.where( velMagn != 0. )
