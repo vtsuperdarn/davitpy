@@ -11,13 +11,12 @@ This includes the following module(s):
 		defines the fundamental radar data types
 	radDataRead
 		contains the functions necessary for reading radar data
-	pygridIo
-		library for reading and writing pygrid files
+	fitexfilter
+		functions to filter fitex data
 	dbUtils
 		general utilities for database maintenance
-	dbRead
-		library for reading records from the database
-
+	fetchUtils
+		functions to retrieve remote or local files
 
 *******************************
 """
@@ -60,3 +59,9 @@ try:
 	from dbUtils import *
 except Exception,e: 
 	print 'problem importing dbUtils: ', e
+
+try:
+	import fetchUtils
+	from fetchUtils import *
+except Exception,e: 
+	print 'problem importing fetchUtils: ', e
