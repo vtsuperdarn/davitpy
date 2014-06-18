@@ -45,7 +45,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     scale=[],channel='a',coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
     velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
     poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False, \
-    show=True,png=False,pdf=False,dpi=500,tFreqBands=[]):
+    show=True,png=False,pdf=False,dpi=500,tFreqBands=[],myFilePtrs=[]):
 
   """A function to make a fan plot
   
@@ -78,6 +78,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
     * **[dpi]** (int): dots per inch if saving as png.  default = 300
     * **[tFreqBands]** (list): upper and lower bounds of frequency in kHz to be used.  Must be unset (or set to []) or have a pair for each radar, and for any band set to [] the default will be used.  default = [[8000,20000]], [[8000,20000],[8000,20000]], etc.
+    * **[myFilePtrs]** (list of pointers: :class:`pydarn.sdio.radDataTypes.radDataPtr`): A list of pointers, each to a specified file to use for the corresponding radar. Must have as many elements as there are radars in rad; use None to have a radar's data handled normally.  Example: [None,myPtr,None]. Default: empty list, files are opened normally.
   **Returns**:
     * Nothing
 
@@ -110,6 +111,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   assert(scale == [] or len(scale)==2), \
   'error, if present, scales must have 2 elements'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
+  assert(myFilePtrs == [] or len(myFilePtrs) == len(rad)),"error, if myFilePtrs is set it must have same number of elements as rad"
   
   #check freq band and set to default if needed
   assert(tFreqBands == [] or len(tFreqBands) == len(rad)),'error, if present, tFreqBands must have same number of elements as rad'
@@ -137,7 +139,9 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
   myFiles = []
   myBands = []
   for i in range(len(rad)):
-    f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
+    if(myFilePtrs == [] or myFilePtrs[i] == None):
+      f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
+    else: f = myFilePtrs[i]
     if(f != None): 
       myFiles.append(f)
       myBands.append(tbands[i])
