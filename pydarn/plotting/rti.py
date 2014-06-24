@@ -48,7 +48,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None, \
               custType='fitex', tFreqBands=None, myFile=None,figure=None,xtick_size=9,ytick_size=9, \
-              xticks=None,axvlines=None,plotTerminator=False,cpidFreq=None):
+              xticks=None,axvlines=None,plotTerminator=False,cpidFreq={}):
   """create an rti plot for a specified radar and time period
 
   **Args**:
@@ -81,7 +81,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
     * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
     * **[plotTerminator]**: (boolean) Overlay the day/night terminator.
-    * **[cpidFreq]**: (list of tuples) Select a transmitter frequency band only when a given CPID is active, otherwise plot all frequencies (cannot set cpidFreq and tFreqBands together).  Tuple consists of CPID (int) followed by a list or tuple giving the lower and upper bounds of the band as used for tFreqBands.  Example: cpidFreq=[(3501,(12000,13000)),(151,(10000,11000))]  Default: none.
+    * **[cpidFreq]**: (dictionary) Select a transmitter frequency band only when a given CPID is active, otherwise plot all frequencies (cannot set cpidFreq and tFreqBands together).  For each item key is CPID (as an int) and value is a list or tuple giving the lower and upper bounds of the band (as ints, as used for tFreqBands).  Example: cpidFreq={3501:(12000,13000),151:(10000,11000)}  Default: empty dict.
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -118,14 +118,10 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
   
-  assert(tFreqBands is None or cpidFreq is None),"error, cannot set tFreqBands and cpidFreq together"
-  cpidList = []
-  if cpidFreq is not None:
-    for cfPair in cpidFreq:
-      assert(len(cfPair) == 2 and isinstance(cfPair[0],int) and len(cfPair[1]) == 2),"error, cpidFreq incorrectly formed"
-      assert(cfPair[0] not in cpidList),"error, CPID used twice in cpidFreq"
-      cpidList.append(cfPair[0])
-
+  assert(not tFreqBands or not cpidFreq),"error, cannot set tFreqBands and cpidFreq together"
+  for cpidKey, freqPair in cpidFreq.iteritems():
+     assert(isinstance(cpidKey,int) and len(freqPair) == 2 and isinstance(freqPair[0],int) and isinstance(freqPair[1],int)),"error, cpidFreq incorrectly formed"
+     
   #assign any default color scales
   tscales = []
   for i in range(0,len(params)):
@@ -207,11 +203,9 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       for i in range(len(tbands)): #there will only be one in tbands if tFreqBands has not been set
         lowerFreq = tbands[i][0] #set the bounds now and they will be changed only if needed
         upperFreq = tbands[i][1]
-        if myBeam.cp in cpidList: #cpidList will be empty if tFreqBands has been set
-          for cfPair in cpidFreq:
-            if myBeam.cp == cfPair[0]: #cpidFreq has already been checked for repeated CPIDs
-              lowerFreq = cfPair[1][0]
-              upperFreq = cfPair[1][1]
+        if cpidFreq.get(myBeam.cp):
+          lowerFreq = cpidFreq[myBeam.cp][0]
+          upperFreq = cpidFreq[myBeam.cp][1]
         if myBeam.prm.tfreq >= lowerFreq and myBeam.prm.tfreq <= upperFreq:
           times[i].append(myBeam.time)
           cpid[i].append(myBeam.cp)
