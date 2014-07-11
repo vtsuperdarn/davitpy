@@ -27,3 +27,4 @@ radars.sqlite*
 radars.sqlite
 *.so
 rtFort
+docs/notebook/.ipynb_checkpoints

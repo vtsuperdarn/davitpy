@@ -26,6 +26,9 @@ pip install --upgrade h5py
 pip install --upgrade PIL
 pip install --upgrade pymongo
 pip install --upgrade paramiko
+pip install --upgrade jinja2
+pip install --upgrade cython
+pip install --upgrade scikit-image
 
 dir=$(pwd)
 cd /tmp

@@ -12,6 +12,10 @@
 #include "mlt.h"
 #include "AstAlg.h"
 
+#if PY_VERSION_HEX < 0x02050000
+  typedef int Py_ssize_t;
+#endif
+
 static PyObject *
 aacgm_wrap(PyObject *self, PyObject *args)
 {

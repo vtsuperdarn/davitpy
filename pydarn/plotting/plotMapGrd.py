@@ -11,11 +11,6 @@
 convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard Boundary.
 
 """
-from pydarn.sdio import *
-from pydarn.radar import *
-from utils import *
-from pydarn.plotting import *
-
 
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
@@ -57,6 +52,9 @@ class MapConv(object):
         axisHandle, hemi = 'north', 
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
+        from pydarn.sdio import *
+        from pydarn.radar import *
+        from utils import *
         import matplotlib.cm as cm
         import numpy
         import matplotlib
@@ -104,6 +102,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
+        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -175,7 +174,7 @@ class MapConv(object):
         **Example**:
             ::
 
-                (magn, azimuth) = MapConv.calcFitCnvVel()
+                ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
         """
         import datetime
         import numpy
@@ -346,7 +345,7 @@ class MapConv(object):
                 velAzm[velChkZeroInds] = numpy.rad2deg( numpy.arctan2( velFitVecs[1,velChkZeroInds], 
                     -velFitVecs[0,velChkZeroInds] ) )            
                         
-        return velMagn, velAzm
+        return mlatsPlot, mlonsPlot, velMagn, velAzm
 
     def calcCnvPots(self):
         """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
@@ -358,7 +357,7 @@ class MapConv(object):
         **Example**:
             ::
 
-                (lats, lons, pots) = MapConv.calcFitCnvVel()
+                (lats, lons, pots) = MapConv.calcCnvPots()
         """
         import datetime
         import numpy
@@ -556,6 +555,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
+        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -624,20 +624,21 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
+        from pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
         # dateString to overlay date on plot
         dateStr = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(
-            self.grdData.sTime, self.grdData.eTime)
+            self.mapData.sTime, self.mapData.eTime)
 
         # get the standard location parameters.
-        mlatsPlot = self.mapData.grid.vector.mlat
-        mlonsPlot = self.mapData.grid.vector.mlon
+        # mlatsPlot = self.mapData.grid.vector.mlat
+        # mlonsPlot = self.mapData.grid.vector.mlon
         stIds = self.mapData.grid.vector.stid
 
-        # get the fitted velocity magnitude and azimuth from calcFitCnvVel() function
-        ( velMagn, velAzm ) = self.calcFitCnvVel()
+        # get the fitted mlat, mlon, velocity magnitude and azimuth from calcFitCnvVel() function
+        ( mlatsPlot, mlonsPlot, velMagn, velAzm ) = self.calcFitCnvVel()
 
 
         for nn in range( len(mlatsPlot) ) :
