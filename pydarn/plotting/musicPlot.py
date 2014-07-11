@@ -45,6 +45,7 @@
 """
 
 import numpy as np
+import scipy as sp
 import datetime
 
 from matplotlib.collections import PolyCollection
@@ -99,12 +100,61 @@ class musicFan(object):
         * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
         * [**plotZeros**] (bool): If True, plot cells that are exactly 0.
         * [**markCell**] (None or 2-Element iterable): Mark the (beam, rangeGate) with black.
+        * [**markBeam**] (None or int): Mark a chosen beam.
+        * [**markBeam_dict**] (dict): dictionary of keywords defining markBeam line properties.
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
+        * [**plot_title**] (bool): If True, plot the title information
+        * [**title**] (str): Overide default title text.
+        * [**parallels_ticks**] (list): Where to draw the parallel (latitude) lines
+        * [**meridians_ticks**] (list): Where to draw the meridian (longitude) lines
+        * [**zoom**] (float): Multiply the map height and width by this factor (bigger number shows more area).
+        * [**lat_shift**] (float): Add this number to the computed lat_0 sent to basemap.
+        * [**lon_shift**] (float): Add this number to the computed lon_0 sent to basemap.
+        * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
+                'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+        * [**plot_cbar**] (bool): If True, plot the color bar.
+        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
+        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
+        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
+        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
+        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**model_text_size**] : fontsize of model and coordinate indicator text
+        * [**draw_coastlines**] (bool): If True, draw the coastlines.
+        * [**basemap_dict**] (dict): dictionary of keywords sent to the basemap invocation
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',time=None,axis=None,scale=None,autoScale=False, plotZeros=False, markCell=None, plotTerminator=True, title=None, **kwArgs):
+    def __init__(self,dataObject,
+        dataSet                 = 'active',
+        time                    = None,
+        axis                    = None,
+        scale                   = None,
+        autoScale               = False,
+        plotZeros               = False,
+        markCell                = None,
+        markBeam                = None,
+        markBeam_dict           = {'color':'white','lw':2},
+        plotTerminator          = True,
+        parallels_ticks         = None,
+        meridians_ticks         = None,
+        zoom                    = 1.,
+        lat_shift               = 0.,
+        lon_shift               = 0.,
+        cmap_handling           = 'superdarn',
+        plot_cbar               = True,
+        cbar_ticks              = None,
+        cbar_shrink             = 1.0,
+        cbar_fraction           = 0.15,
+        cbar_gstext_offset      = -0.075,
+        cbar_gstext_fontsize    = None,
+        model_text_size         = 'small',
+        draw_coastlines         = True,
+        basemap_dict            = {},
+        plot_title              = True,
+        title                   = None,
+        **kwArgs):
+
         if axis == None:
             from matplotlib import pyplot as plt
             fig   = plt.figure(figsize=figsize)
@@ -179,13 +229,40 @@ class musicFan(object):
         cx = minx + width/2.
         cy = miny + height/2.
         lon_0,lat_0 = tmpmap(cx, cy, inverse=True)
+        lon_0 = np.mean(goodLonFull)
         dist = width/50.
 
+
+        #Fill the entire subplot area without changing the data aspect ratio.
+        bbox        = axis.get_window_extent()
+        bbox_width  = bbox.width
+        bbox_height = bbox.height
+        ax_aspect   = bbox_width / bbox_height
+        map_aspect  = width / height
+        if map_aspect < ax_aspect:
+            width   = (height*bbox_width) / bbox_height
+
+        if map_aspect > ax_aspect:
+            height  = (width*bbox_height) / bbox_width
+
+        #Zoom!
+        width       = zoom * width
+        height      = zoom * height
+        lat_0       = lat_0 + lat_shift
+        lon_0       = lon_0 + lon_shift
+
         #draw the actual map we want
-        m = Basemap(projection='stere',width=width,height=height,lon_0=np.mean(goodLonFull),lat_0=lat_0,ax=axis)
-        m.drawparallels(np.arange(-80.,81.,10.),labels=[1,0,0,0])
-        m.drawmeridians(np.arange(-180.,181.,20.),labels=[0,0,0,1])
-        if(coords == 'geo'):
+        m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**basemap_dict)
+        if parallels_ticks is None:
+            parallels_ticks = np.arange(-80.,81.,10.)
+
+        if meridians_ticks is None:
+            meridians_ticks = np.arange(-180.,181.,20.)
+
+        m.drawparallels(parallels_ticks,labels=[1,0,0,0])
+        m.drawmeridians(meridians_ticks,labels=[0,0,0,1])
+
+        if(coords == 'geo') and draw_coastlines == True:
             m.drawcoastlines(linewidth=0.5,color='k')
             m.drawmapboundary(fill_color='w')
             m.fillcontinents(color='w', lake_color='w')
@@ -209,15 +286,16 @@ class musicFan(object):
                 x4,y4 = m(lonFull[bm+0,rg+1],latFull[bm+0,rg+1])
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-        if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
+        if (cmap_handling == 'matplotlib') or autoScale:
             cmap = matplotlib.cm.jet
             bounds  = np.linspace(scale[0],scale[1],256)
             norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-        else:
+        elif cmap_handling == 'superdarn':
             colors  = 'lasse'
             cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
 
-        pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+#        pcoll = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
+        pcoll = PolyCollection(np.array(verts),edgecolors='face',closed=False,cmap=cmap,norm=norm,zorder=99)
         pcoll.set_array(np.array(scan))
         axis.add_collection(pcoll,autolim=False)
 
@@ -236,31 +314,57 @@ class musicFan(object):
             poly = Polygon(mkv,facecolor='#000000',edgecolor='none',zorder=100)
             axis.add_patch(poly)
 
-        dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
-        if title is None:
-            axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
-        else:
-            axis.set_title(title)
+        #Mark Beam
+        if markBeam != None:
+            beamInx = int(np.where(currentData.fov.beams == markBeam)[0])
+            startedMarking = False
+            for gateInx in range(ngates):
+                if goodLatLon[beamInx,gateInx] == False: continue
+                x1,y1 = m(lonFull[beamInx+0,gateInx+0],latFull[beamInx+0,gateInx+0])
+                x2,y2 = m(lonFull[beamInx+1,gateInx+0],latFull[beamInx+1,gateInx+0])
+                x3,y3 = m(lonFull[beamInx+1,gateInx+1],latFull[beamInx+1,gateInx+1])
+                x4,y4 = m(lonFull[beamInx+0,gateInx+1],latFull[beamInx+0,gateInx+1])
+                axis.plot([x1,x4],[y1,y4],zorder=150,**markBeam_dict)
+                axis.plot([x2,x3],[y2,y3],zorder=150,**markBeam_dict)
+                if not startedMarking:
+                    axis.plot([x1,x2],[y1,y2],zorder=150,**markBeam_dict)
+                    startedMarking = True
+                if gateInx == ngates-1:
+                    axis.plot([x3,x4],[y3,y4],zorder=150,**markBeam_dict)
 
-#        cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=.85,fraction=.1)
-        cbar.set_label(cbarLabel)
-        labels = cbar.ax.get_yticklabels()
-        labels[-1].set_visible(False)
-        if currentData.metadata.has_key('gscat'):
-            if currentData.metadata['gscat'] == 1:
-#                cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
-                cbar.ax.text(0.5,-0.115,'Ground\nscat\nonly',ha='center',fontsize=14)
+
+        dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
+        if plot_title:
+            if title is None:
+                axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
+            else:
+                axis.set_title(title)
+
+        if plot_cbar:
+            cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+            cbar.set_label(cbarLabel)
+            if cbar_ticks is None:
+                labels = cbar.ax.get_yticklabels()
+                labels[-1].set_visible(False)
+            else:
+                cbar.set_ticks(cbar_ticks)
+
+            if currentData.metadata.has_key('gscat'):
+                if currentData.metadata['gscat'] == 1:
+                    cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+
         txt = 'Coordinates: ' + metadata['coords'] +', Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
                   horizontalalignment='left',
                   verticalalignment='bottom',
                   rotation='vertical',
-                  size='small',
+                  size=model_text_size,
                   transform=axis.transAxes)
 
         if plotTerminator:
             m.nightshade(currentData.time[timeInx])
+
+        self.map_obj = m
 
 class musicRTI(object):
     """Class to create an RTI plot using a pydarn.proc.music.musicArray object as the data source.
@@ -279,27 +383,61 @@ class musicRTI(object):
         * [**yBoundaryLimits**] (None or 2-element iterable of floats): Mark a region of range on the RTI plot.  A green dashed horizontal line will be plotted
             at each of the boundary ranges.  The region of time outside of the boundary will be shaded gray.
             If set to None, this will automatically be set to the gateLimits set in the metadata, if they exist.
+        * [**yticks**] (list): Where to put the ticks on the y-axis.
+        * [**ytick_lat_format**] (str):  %-style string format code for latitude y-tick labels
         * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
             terminator resolution will match the resolution of the RTI plot data.
         * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
         * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
         * [**secondary_coords**] (str): Secondary coordate system for RTI plot y-axis ('lat' or 'range')
-        * [**plot_info**] : If True, plot frequency/noise plots
-        * [**plot_title**] : If True, plot the title information
+        * [**plot_info**] (bool): If True, plot frequency/noise plots
+        * [**plot_title**] (bool): If True, plot the title information
+        * [**plot_range_limits_label**] (bool): If True, plot the label corresponding to the range limits on the right-hand y-axis.
+        * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
+                'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+        * [**plot_cbar**] (bool): If True, plot the color bar.
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**model_text_size**] : fontsize of model and coordinate indicator text
         * [**kwArgs**] (**kwArgs): Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,dataObject,dataSet='active',beam=7,xlim=None,ylim=None,axis=None,scale=None, plotZeros=False,
-            xBoundaryLimits=None, yBoundaryLimits=None, autoScale=False, plotTerminator=True, axvlines=None,
-            axvline_color='0.25', secondary_coords='lat', plot_info=True, plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
+    def __init__(self,dataObject,
+        dataSet                 = 'active',
+        beam                    = 7,
+        coords                  = 'gate',
+        xlim                    = None,
+        ylim                    = None,
+        axis                    = None,
+        scale                   = None,
+        plotZeros               = False, 
+        xBoundaryLimits         = None,
+        yBoundaryLimits         = None,
+        yticks                  = None,
+        ytick_lat_format        = '.0f',
+        autoScale               = False,
+        plotTerminator          = True,
+        axvlines                = None, 
+        axvline_color           = '0.25',
+        secondary_coords        = 'lat',
+        plot_info               = True,
+        plot_title              = True,
+        plot_range_limits_label = True,
+        cmap_handling           = 'superdarn',
+        plot_cbar               = True,
+        cbar_ticks              = None,
+        cbar_shrink             = 1.0,
+        cbar_fraction           = 0.15,
+        cbar_gstext_offset      = -0.075,
+        cbar_gstext_fontsize    = None,
+        model_text_size         = 'small',
+        y_labelpad              = None,
+        **kwArgs):
 
         from scipy import stats
         from rti import plotFreq,plotNoise
@@ -335,16 +473,6 @@ class musicRTI(object):
 
                 if day_inx.size != 0:
                     daylight[tm_inx,day_inx] = False
-
-#        The coords keyword needs to be tested better.  For now, just allow 'gate' only.
-#        Even in 'gate' mode, the geographic latitudes are plotted along with gate.
-#        if coords == None and metadata.has_key('coords'):
-#            coords      = metadata['coords']
-#
-#        if coords not in ['gate','range']:
-#            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
-#            coords = 'gate'
-        coords  = 'gate'
 
         #Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
@@ -386,7 +514,20 @@ class musicRTI(object):
         scan  = []
         data  = np.squeeze(currentData.data[:,beamInx,:])
 
-        rnge  = currentData.fov.gates
+#        The coords keyword needs to be tested better.  For now, just allow 'gate' only.
+#        Even in 'gate' mode, the geographic latitudes are plotted along with gate.
+#        if coords == None and metadata.has_key('coords'):
+#            coords      = metadata['coords']
+#
+        if coords not in ['gate','range']:
+            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+            coords = 'gate'
+
+        if coords == 'gate':
+            rnge  = currentData.fov.gates
+        elif coords == 'range':
+            rnge  = currentData.fov.slantRFull[beam,:]
+
         xvec  = [matplotlib.dates.date2num(x) for x in currentData.time]
         for tm in range(nrTimes-1):
             for rg in range(nrGates-1):
@@ -400,11 +541,11 @@ class musicRTI(object):
                 x4,y4 = xvec[tm+0],rnge[rg+1]
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-        if (scale[0] >= -1 and scale[1] <= 1) or autoScale:
+        if (cmap_handling == 'matplotlib') or autoScale:
             cmap = matplotlib.cm.jet
             bounds  = np.linspace(scale[0],scale[1],256)
             norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-        else:
+        elif cmap_handling == 'superdarn':
             colors  = 'lasse'
             cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
 
@@ -414,7 +555,7 @@ class musicRTI(object):
 
         # Plot the terminator! #########################################################
         if plotTerminator:
-            #Plot the SuperDARN data!
+#            print 'Terminator functionality is disabled until further testing is completed.'
             term_verts = []
             term_scan  = []
 
@@ -449,37 +590,90 @@ class musicRTI(object):
         if ylim == None:
             ylim = (np.min(rnge),np.max(rnge))
         axis.set_ylim(ylim)
-        if secondary_coords == 'range':
-            axis.set_ylabel('Range Gate\n%s Slant Range [km]' % metadata['model'])
-        else:
-            axis.set_ylabel('Range Gate\nGeographic Latitude')
 
-        yticks  = axis.get_yticks()
-        ytick_str    = []
-        for tck in yticks:
-            txt = []
-            txt.append('%d' % tck)
+        if yticks != None:
+            axis.set_yticks(yticks)
 
-            rg_inx = np.where(tck == currentData.fov.gates)[0]
-            if np.size(rg_inx) != 0:
+        # Y-axis labeling ##############################################################
+        if coords == 'gate':
+            if secondary_coords:
                 if secondary_coords == 'range':
-                    rang = currentData.fov.slantRCenter[beamInx,rg_inx]
-                    if np.isfinite(rang): 
-                        txt.append('%d' % rang)
-                    else:
-                        txt.append('')
+                    if metadata['model'] == 'IS':
+                        axis.set_ylabel('Range Gate\nSlant Range [km]',labelpad=y_labelpad)
+                    elif metadata['model'] == 'GS':
+                        axis.set_ylabel('Range Gate\nGS Mapped Range [km]',labelpad=y_labelpad)
                 else:
-                    lat = currentData.fov.latCenter[beamInx,rg_inx]
-                    if np.isfinite(lat): 
-                        txt.append(u'%.1f$^o$' % lat)
-                    else:
+                    geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
+                    if metadata['model'] == 'IS':
+                        axis.set_ylabel('Range Gate\n%s Latitude' % geo_mag,labelpad=y_labelpad)
+                    elif metadata['model'] == 'GS':
+                        axis.set_ylabel('Range Gate\nGS Mapped %s Latitude' % geo_mag,labelpad=y_labelpad)
+
+                yticks  = axis.get_yticks()
+                ytick_str    = []
+                for tck in yticks:
+                    txt = []
+                    txt.append('%d' % tck)
+
+                    rg_inx = np.where(tck == currentData.fov.gates)[0]
+                    if np.size(rg_inx) != 0:
+                        if secondary_coords == 'range':
+                            rang = currentData.fov.slantRCenter[beamInx,rg_inx]
+                            if np.isfinite(rang): 
+                                txt.append('%d' % rang)
+                            else:
+                                txt.append('')
+                        else:
+                            lat = currentData.fov.latCenter[beamInx,rg_inx]
+                            if np.isfinite(lat): 
+                                txt.append((u'%'+ytick_lat_format+'$^o$') % lat)
+                            else:
+                                txt.append('')
+                    txt = '\n'.join(txt)
+                    ytick_str.append(txt)
+                axis.set_yticklabels(ytick_str,rotation=90,ma='center')
+            else:
+                axis.set_ylabel('Range Gate',labelpad=y_labelpad)
+        elif coords == 'range':
+            if secondary_coords == 'lat':
+                # Use linear interpolation to get the latitude associated with a particular range.
+                # Make sure we only include finite values in the interpolation function.
+                finite_inx  = np.where(np.isfinite(currentData.fov.latCenter[beam,:]))[0]
+                tmp_ranges  = currentData.fov.slantRCenter[beam,:][finite_inx]
+                tmp_lats    = currentData.fov.latCenter[beam,:][finite_inx]
+                tmp_fn      = sp.interpolate.interp1d(tmp_ranges,tmp_lats)
+
+                yticks  = axis.get_yticks()
+                ytick_str    = []
+                for tck in yticks:
+                    txt = []
+
+                    # Append Latitude
+                    try:
+                        lat = tmp_fn(tck)
+                        txt.append((u'%'+ytick_lat_format+'$^o$') % lat)
+                    except:
                         txt.append('')
-            txt = '\n'.join(txt)
-            ytick_str.append(txt)
 
-        axis.set_yticklabels(ytick_str,rotation=90,ma='center')
+                    # Append Range
+                    txt.append('%d' % tck)
+                    txt = '\n'.join(txt)
 
+                    ytick_str.append(txt) #Put both lat and range on same string
+                axis.set_yticklabels(ytick_str,rotation=90,ma='center') # Set yticklabels
+                # Label y-axis
+                geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
+                if metadata['model'] == 'IS':
+                    axis.set_ylabel('%s Latitude\nSlant Range [km]' % geo_mag,labelpad=y_labelpad)
+                elif metadata['model'] == 'GS':
+                    axis.set_ylabel('GS Mapped %s Latitude\nGS Mapped Range [km]' % geo_mag,labelpad=y_labelpad)
+            else:
+                if metadata['model'] == 'IS':
+                    axis.set_ylabel('Slant Range [km]',labelpad=y_labelpad)
+                elif metadata['model'] == 'GS':
+                    axis.set_ylabel('GS Mapped Range [km]',labelpad=y_labelpad)
 
+        axis.set_ylim(ylim)
         #Shade xBoundary Limits
         if xBoundaryLimits == None:
             if currentData.metadata.has_key('timeLimits'):
@@ -504,8 +698,10 @@ class musicRTI(object):
 
         if yBoundaryLimits != None:
             gray = '0.75'
-            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
-            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
+#            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
+#            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
+            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=1)
+            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=1)
             axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
         
@@ -524,27 +720,28 @@ class musicRTI(object):
                     txt = '\n'.join(txt)
                 else:
                     txt = '%.1f' % bnd_item
-                axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
+                if plot_range_limits_label:
+                    axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
 
+        if plot_cbar:
+            cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+            cbar.set_label(cbarLabel)
+            if cbar_ticks is None:
+                labels = cbar.ax.get_yticklabels()
+                labels[-1].set_visible(False)
+            else:
+                cbar.set_ticks(cbar_ticks)
 
-        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
-        cbar.set_label(cbarLabel)
-        if not cbar_ticks:
-            labels = cbar.ax.get_yticklabels()
-            labels[-1].set_visible(False)
-        else:
-            cbar.set_ticks(cbar_ticks)
-
-        if currentData.metadata.has_key('gscat'):
-            if currentData.metadata['gscat'] == 1:
-                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+            if currentData.metadata.has_key('gscat'):
+                if currentData.metadata['gscat'] == 1:
+                    cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
         txt = 'Model: ' + metadata['model']
         axis.text(1.01, 0, txt,
                 horizontalalignment='left',
                 verticalalignment='bottom',
                 rotation='vertical',
-                size='small',
+                size=model_text_size,
                 transform=axis.transAxes)
 
         #Get axis position information.
@@ -1069,9 +1266,23 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
     return fig
 
-def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar_label = 'ABS(Spectral Density)',
-            plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, cbar_gstext_enable=True, **kwArgs):
+def plotFullSpectrum(dataObj,dataSet='active',
+        fig                     = None,
+        axis                    = None,
+        xlim                    = None,
+        normalize               = False,
+        scale                   = None,
+        plot_title              = True,
+        maxXTicks               = 10.,
+        cbar_label              = 'ABS(Spectral Density)',
+        cbar_ticks              = None,
+        cbar_shrink             = 1.0,
+        cbar_fraction           = 0.15,
+        cbar_pad                = 0.05,
+        cbar_gstext_offset      = -0.075,
+        cbar_gstext_fontsize    = None,
+        cbar_gstext_enable      = True,
+        **kwArgs):
     """Plot full spectrum of a pydarn.proc.music.musicArray object.  The spectrum must have already been calculated with
     pydarn.proc.music.calculateFFT().
 
@@ -1083,8 +1294,10 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
         * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**axis**] : Matplotlib axis object to plot on.
         * [**xlim**] (None or 2-element iterable): X-axis limits in Hz
         * [**plot_title**] : If True, plot the title information
+        * [**maxXTicks**] (int): Maximum number of xtick labels.
         * [**cbar_label**] (str): Text for color bar label
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
@@ -1112,11 +1325,15 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
 
     data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
 
+    if normalize:
+        data    = data / data.max()
+
     #Determine scale for colorbar.
     sd          = stats.nanstd(data,axis=None)
     mean        = stats.nanmean(data,axis=None)
     scMax       = mean + 2.*sd
-    scale       = scMax*np.array([0,1.])
+    if scale is None:
+        scale       = scMax*np.array([0,1.])
 
     nXBins      = nrBeams * npf #number of bins we are going to plot
 
@@ -1154,23 +1371,19 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
                 x4,y4 = xx0, yy1
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    colors  = 'lasse'
-    if scale == None:
-        scale   = (np.min(scan),np.max(scan))
     param = 'power'
     cmap = matplotlib.cm.Blues_r
 
     bounds  = np.linspace(scale[0],scale[1],256)
     norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
-
     pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
     cbar.set_label(cbar_label)
-    if not cbar_ticks:
+    if cbar_ticks is None:
         labels = cbar.ax.get_yticklabels()
         labels[-1].set_visible(False)
     else:
@@ -1219,9 +1432,7 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
     axis.add_patch(poly)
 
     #X-Labels
-    maxXTicks = 10.
-    modX      = np.ceil(npf / maxXTicks)
-    fCharSize= 0.60
+    modX      = np.ceil(npf / np.float(maxXTicks))
 
     xlabels = []
     xpos    = []
@@ -1231,7 +1442,7 @@ def plotFullSpectrum(dataObj,dataSet='active',fig=None,axis=None,xlim=None, cbar
         if posFreqVec[ff] == 0:
             periodLabel = 'Inf'
         else:
-            periodLabel = '%i' % (1./posFreqVec[ff] / 60.)
+            periodLabel = '%.0f' % (1./posFreqVec[ff] / 60.)
         xlabels.append(freqLabel+'\n'+periodLabel)
         xpos.append(nrBeams* (ff + 0.1))
 
@@ -1421,7 +1632,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     fig.text(xpos,0.95,text,fontsize=14,va='top')
 
-def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
+def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fontsize=24,
             plot_title=True, cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
             cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None, **kwArgs):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
@@ -1434,6 +1645,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
         * **dataObj** (:class:`musicArray`): musicArray object
         * [**dataSet**] (str): which dataSet in the musicArray object to plot
         * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+        * [**axis**] : Matplotlib axis object to plot on.
         * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
         * [**sig_fontsize**] (float): fontsize of signal markers
         * [**plot_title**] : If True, plot the title information
@@ -1445,17 +1657,21 @@ def plotKarr(dataObj,dataSet='active',fig=None,maxSignals=None, sig_fontsize=24,
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    if fig == None:
+    if fig is None and axis is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
 
     currentData = getDataSet(dataObj,dataSet)
 
     #Do plotting here!
-    axis = fig.add_subplot(111,aspect='equal')
+    if axis is None:
+        axis = fig.add_subplot(111,aspect='equal')
+    else:
+        fig = axis.get_figure()
+
     plotKarrAxis(dataObj,dataSet=dataSet,axis=axis,maxSignals=maxSignals,
             cbar_ticks=cbar_ticks, cbar_shrink=cbar_shrink, cbar_fraction=cbar_fraction,sig_fontsize=sig_fontsize,
-            cbar_gstext_offset=cbar_gstext_offset, cbar_gstext_fontsize=cbar_gstext_fontsize)
+            cbar_gstext_offset=cbar_gstext_offset, cbar_gstext_fontsize=cbar_gstext_fontsize,**kwArgs)
 
     if plot_title:
         xpos = 0.130
@@ -1642,9 +1858,9 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
                 txt  = '%i' % signal['order']
                 axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=24,path_effects=pe)
 
-def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,
+def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,x_labelpad=None,y_labelpad=None,
             cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None):
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None,cbar_pad=0.05):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
     been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
 
@@ -1716,7 +1932,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     axis.axhline(color='0.82',lw=2,zorder=150)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
+    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
     cbar.set_label('Normalized Wavenumber Power')
     if not cbar_ticks:
         cbar_ticks = np.arange(10)/10.
@@ -1752,7 +1968,8 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
         newLabels.append(txt)
 
     axis.set_xticklabels(newLabels)
-    axis.set_xlabel(u'kx [rad]\n$\lambda$ [km]',ha='center')
+    axis.set_xlabel(u'kx [rad]\n$\lambda$ [km]',ha='center',labelpad=x_labelpad)
+#    axis.set_xlabel('%f' % x_labelpad,ha='center',labelpad=x_labelpad)
 
     ticks     = axis.get_yticks()
     newLabels = []
@@ -1765,10 +1982,10 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             km_txt = ''
 
         rad_txt = '%.2f' % tck
-        txt = '\n'.join([rad_txt,km_txt])
+        txt = '\n'.join([km_txt,rad_txt])
         newLabels.append(txt)
-    axis.set_yticklabels(newLabels)
-    axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center')
+    axis.set_yticklabels(newLabels,rotation=90.)
+    axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center',labelpad=y_labelpad)
     # End add wavelength to x/y tick labels ######################################## 
 
     md = currentData.metadata

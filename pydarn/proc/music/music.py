@@ -33,7 +33,7 @@
 .. moduleauthor:: Nathaniel A. Frissell, Fall 2013
 
 *********************
-**Module**: pydarn.plotting.rti
+**Module**: pydarn.proc.muic
 *********************
 **Functions**:
     * :func:`pydarn.proc.music.getDataSet`
@@ -152,7 +152,10 @@ def stringify_signal(sig):
     if sig.has_key('period'):
         sigInfo['period']   = '%d' % np.round(sig['period']/60.)    # minutes
     if sig.has_key('vel'):
-        sigInfo['vel']      = '%d' % np.round(sig['vel'])           # km/s
+        if np.isinf(np.round(sig['vel'])):
+            sigInfo['vel']      = 'Inf'
+        else:
+            sigInfo['vel']      = '%d' % np.round(sig['vel'])           # km/s
     if sig.has_key('area'):
         sigInfo['area']     = '%d' % sig['area']                    # Pixels
     if sig.has_key('max'):
@@ -462,6 +465,15 @@ class musicArray(object):
     Written by Nathaniel A. Frissell, Fall 2013
     """
     def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
+        # Create a list that can be used to store top-level messages.
+        self.messages   = []
+
+        no_data_message = 'No data for this time period.'
+        # If no data, report and return.
+        if myPtr is None:
+            self.messages.append(no_data_message)
+            return
+
         if sTime == None: sTime = myPtr.sTime
         if eTime == None: eTime = myPtr.eTime
 
@@ -478,6 +490,7 @@ class musicArray(object):
         beamTime    = sTime
         scanNr      = np.uint64(0)
         fov         = None
+
 
         # Create a place to store the prm data.
         prm             = emptyObj()
@@ -509,6 +522,7 @@ class musicArray(object):
             myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
             if myScan == None: break
 
+            goodScan = False # This flag turns to True as soon as good data is found for the scan.
             for myBeam in myScan:
                 #Calculate the field of view if it has not yet been calculated.
                 if fov == None:
@@ -556,6 +570,7 @@ class musicArray(object):
                         if (gscat == 2) and (flag == 1): continue
                         tmp = (scanNr,beamTime,bmnum,gate,data)
                         dataList.append(tmp)
+                        goodScan = True
                 elif len(slist) == 1:
                     gate,data,flag = (slist[0],fitDataList[0],gflag[0])
                     #Get information from each gate in scan.  Skip record if the chosen ground scatter option is not met.
@@ -563,18 +578,25 @@ class musicArray(object):
                     if (gscat == 2) and (flag == 1): continue
                     tmp = (scanNr,beamTime,bmnum,gate,data)
                     dataList.append(tmp)
+                    goodScan = True
                 else:
                     continue
 
-            #Determine the start time for each scan and save to list.
-            scanTimeList.append(min([x.time for x in myScan]))
+            if goodScan:
+                #Determine the start time for each scan and save to list.
+                scanTimeList.append(min([x.time for x in myScan]))
 
-            #Advance to the next scan number.
-            scanNr = scanNr + 1
+                #Advance to the next scan number.
+                scanNr = scanNr + 1
 
         #Convert lists to numpy arrays.
         timeArray       = np.array(scanTimeList)
         dataListArray   = np.array(dataList)
+
+        # If no data, report and return.
+        if dataListArray.size == 0:
+            self.messages.append(no_data_message)
+            return
 
         #Figure out what size arrays we need and initialize the arrays...
         nrTimes = np.max(dataListArray[:,scanInx]) + 1
@@ -605,7 +627,7 @@ class musicArray(object):
         dataArray[:]  = np.nan
         for inx in range(len(dataListArray)):
           dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
-      
+
         #Make metadata block to hold information about the processing.
         metadata = {}
         metadata['dType']     = myPtr.dType
@@ -744,6 +766,38 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
     except:
         print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
 
+def checkDataQuality(dataObj,dataSet='active',max_off_time=10,sTime=None,eTime=None):
+    """Mark the data set as bad (metadata['good_period'] = False) if the radar was not operational within the chosen time period
+    for a specified length of time.
+
+    **Args**:
+        * **dataObj** (:class:`musicArray`):  musicArray object
+        * [**dataSet**] (str):  which dataSet in the musicArray object to process
+        * [**max_off_time**] (int/float): Maximum length in minutes radar may remain off.
+        * [**sTime**] (datetime.datetime): Starting time of checking period.  If None, min(currentData.time) is used.
+        * [**eTime**] (datetime.datetime): End time of checking period.  If None, max(currentData.time) is used.
+
+    Written by Nathaniel A. Frissell, Fall 2013
+    """
+    currentData = getDataSet(dataObj,dataSet)
+
+    if sTime is None:
+        sTime   = np.min(currentData.time)
+
+    if eTime is None:
+        eTime   = np.max(currentData.time)
+
+    time_vec    = currentData.time[np.logical_and(currentData.time > sTime, currentData.time < eTime)]
+    time_vec    = np.concatenate(([sTime],time_vec,[eTime]))
+    max_diff    = np.max(np.diff(time_vec))
+
+    if max_diff > datetime.timedelta(minutes=max_off_time):
+        currentData.setMetadata(good_period=False)
+    else:
+        currentData.setMetadata(good_period=True)
+
+    return dataObj
+
 def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLimits=None,newDataSetName='limitsApplied',comment=None):
     """Removes data outside of the rangeLimits and gateLimits boundaries.
 
@@ -853,7 +907,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
         return newData
     except:
         if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
-        print 'Warning! Limits not applied.'
+#        print 'Warning! Limits not applied.'
         return currentData
 
 def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
@@ -1104,6 +1158,7 @@ class filter(object):
         if cutoff_high != None and cutoff_low != None:
             d = -(lp+hp)
             d[numtaps/2] = d[numtaps/2] + 1
+            d = -1.*d #Needed to correct 180 deg phase shift.
 
         if cutoff_high == None and cutoff_low == None:
             print "WARNING!! You must define cutoff frequencies!"
