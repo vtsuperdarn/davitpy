@@ -393,6 +393,7 @@ class musicRTI(object):
         * [**secondary_coords**] (str): Secondary coordate system for RTI plot y-axis ('lat' or 'range')
         * [**plot_info**] (bool): If True, plot frequency/noise plots
         * [**plot_title**] (bool): If True, plot the title information
+        * [**plot_range_limits_label**] (bool): If True, plot the label corresponding to the range limits on the right-hand y-axis.
         * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
                 'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
         * [**plot_cbar**] (bool): If True, plot the color bar.
@@ -426,6 +427,7 @@ class musicRTI(object):
         secondary_coords        = 'lat',
         plot_info               = True,
         plot_title              = True,
+        plot_range_limits_label = True,
         cmap_handling           = 'superdarn',
         plot_cbar               = True,
         cbar_ticks              = None,
@@ -718,7 +720,8 @@ class musicRTI(object):
                     txt = '\n'.join(txt)
                 else:
                     txt = '%.1f' % bnd_item
-                axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
+                if plot_range_limits_label:
+                    axis.annotate(txt, (1.01, bnd_item) ,xycoords=('axes fraction','data'),rotation=90,ma='center')
 
         if plot_cbar:
             cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction)
