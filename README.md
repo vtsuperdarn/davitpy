@@ -65,16 +65,16 @@ That should be it!  You may want to restart your terminal once more just to make
 You need to have either homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/) installed on your system.
 
 Next, follow the instructions for Ubuntu, but for the dependencies script, choose one of the following:
+
     sudo ./python_install_mac_brew.sh
     sudo ./python_install_mac_port.sh
 
 (**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries)
     
 ####Usage
-To test davitpy and learn more about some of its functionality, please look at the included iPython notebooks.  These are found in:
-    davitpy/docs/notebook
+To test davitpy and learn more about some of its functionality, please look at the included iPython notebooks.  To run these:
 
-From this directory, type:
+    cd davitpy/docs/notebook
     davitpy-notebook
 
 This command will launch a web broswer with an interface that will allow you to run python code directly in a browsing window.  The browser should show a list of the demonstration notebooks.  If you do not see the demonstration notebooks, please make sure you are in the davitpy/doc/notebook/ directory before running the davitpy-notebook command.  To run code within a cell, place your cursor in the cell and press shift-enter.
