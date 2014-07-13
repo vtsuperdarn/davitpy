@@ -17,20 +17,18 @@ apt-get install -y libhdf5-serial-dev
 apt-get install -y python-matplotlib
 pip install --upgrade matplotlib
 apt-get install -y python-mpltoolkits.basemap
-pip install ipython
 pip install --upgrade ipython
 apt-get install -y ipython-notebook
-pip install numpy
+pip install --upgrade numpy
 apt-get install -y python-scipy
-pip install matplotlib
-pip install basemap
-pip install h5py
-pip install tornado
-pip install paramiko
-pip install pymongo
-pip install mechanize
-pip install jinja2
-pip install ecdsa
+pip install --upgrade basemap
+pip install --upgrade h5py
+pip install --upgrade tornado
+pip install --upgrade paramiko
+pip install --upgrade pymongo
+pip install --upgrade mechanize
+pip install --upgrade jinja2
+pip install --upgrade ecdsa
 
 
 dir=$(pwd)
