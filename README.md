@@ -40,6 +40,7 @@ This will create a new directory called 'davitpy' in your current directory (pro
     cd davitpy
 
 We need to install some dependencies using a script that makes calls to apt-get and pip.  To run this script:
+
     sudo ./install/debian_dependencies.sh
 
 Note that this script also modifies your ~/.bashrc file to set environment variables identifying the DaViTPy installation location, the SuperDARN database access information, and others.  Because of this, please close your terminal and open a new session to refresh your environment variables.
@@ -54,6 +55,7 @@ Next, do the actual davitpy install (from in the davitpy directory):
     sudo python setup.py install
 
 Now, do one more mastermake just to be safe:
+
     ./mastermake
 
 That should be it!  You may want to restart your terminal once more just to make sure the environment variables are refreshed.
