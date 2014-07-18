@@ -91,3 +91,6 @@ This version of davitpy does not support ray tracing.  For this functionality, p
 
 Please report any problems/comments using the Issues tab of the davitpy GitHub page, or use this link: https://github.com/vtsuperdarn/davitpy/issues
 
+###  Developers
+
+Please help us develop this code!  Important instructions can be found in docs/development instructions.  Also, please join our development Google group, davitpy-dev (https://groups.google.com/forum/#!forum/davitpy).
