@@ -20,62 +20,84 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
-'''
-fetchUtils.py, Angeline G. Burrell, UoL
+"""
+.. module:: pydarn.sdio.fetchUtils
+   :synopsis: Routines to fetch SuperDARN radar data locally and remotely
 
-Module: pydarn.sdio.fetchUtils
+.. moduleauthor:: Angeline G. Burrell, UoL
 
-Comments: Routines to fetch SuperDARN radar data locally and remotely
+************************************
+**Module**: pydarn.sdio.fetchUtils
+************************************
+
+**Functions**:
+  * :func:`pydarn.sdio.fetchUtils.uncompress_file`
+  * :func:`pydarn.sdio.fetchUtils.fetch_local_files`
+  * :func:`pydarn.sdio.fetchUtils.fetch_remote_files`
 
 Contains: uncompress_file    - uncompresses a file using various methods
           fetch_local_files  - uncompress and copy local files to a temporary
                                directory
           fetch_remote_files - download and uncompress files from a specified
                                server to a temporary directory
-'''
+"""
+
 import datetime as dt
-import os
 
 def uncompress_file(filename, outname=None, verbose=True):
-    '''
-    uncompress_file: a routine to perform an appropriate type of uncompression
-                     on a specified file.  Current extensions include:
-                         .bz2
-                         .gz
-                         .zip
+    """
+    A function to perform an appropriate type of uncompression on a specified 
+    file.  Current extensions include: bz2, gz, zip. This function does not 
+    removed the compressed file. Requires bunzip2, gunzip, and unzip to be 
+    installed.
 
-    Input: filename         (str): name of the compressed file
-           outname (nonetype/str): compressed name of the desired output file
-                                   (allows uncompressed file to be placed in
-                                   a different location) or None (if the
-                                   uncompressed file will stay in the same
-                                   directory).  (default=None)
-           verbose         (bool): Print warnings and errors? (default=True)
+    **Inputs**: 
+        * **filename**     (str): name of the compressed file
+        * **outname**      (nonetype/str): compressed name of the desired output file
+                                          (allows uncompressed file to be placed in
+                                          a different location) or None (if the
+                                          uncompressed file will stay in the same
+                                          directory).  (default=None)
+        * **verbose**      (bool): Print warnings and errors? (default=True)
 
-    Output: outname (nonetype/str): name of uncompressed file or None if the
-                                    command was unsuccessful or the compression 
-                                    method could not be determined
+    **Output**: 
+        * **outname**      (nonetype/str): name of uncompressed file or None if the
+                                          command was unsuccessful or the compression 
+                                          method could not be determined
 
-    '''
-    from copy import deepcopy as dc
+    """
+
+    #from copy import deepcopy as dc
+    import os
+
     rn = "uncompress_files"
-    command = None
 
-    if outname is None:
-        outname = dc(filename)
+    #Check the inputs
+    assert(isinstance(filename,str)), \
+    'error, filename must be a string'
+    assert(isinstance(outname,(str,type(None)))), \
+    'error, outname must be a string or None'
+    assert(isinstance(verbose,bool)), \
+    'error, verbose must be True or False'
 
-    if(filename.find('.bz2') != -1):
+    command = None  #Initialize command as None. It will be updated 
+                    #if a known file compression is found.
+
+    if (outname is None):
+        outname = filename #dc(filename)
+
+    if (filename.find('.bz2') != -1):
         outname = outname.replace('.bz2','')
         command = 'bunzip2 -c '+filename+' > '+outname
-    elif(filename.find('.gz') != -1):
+    elif (filename.find('.gz') != -1):
         outname = outname.replace('.gz','')
         command = 'gunzip -c '+filename+' > '+outname
-    elif(filename.find('.zip') != -1):
+    elif (filename.find('.zip') != -1):
         outname = outname.replace('.zip','')
         command = 'unzip -c '+filename+' > '+outname
-    elif(filename.find('.tar') != -1):
-        outname = outname.replace('.tar','')
-        command = 'tar -xf '+filename
+    #elif (filename.find('.tar') != -1):
+    #    outname = outname.replace('.tar','')
+    #    command = 'tar -xf '+filename
 
     if type(command) is str:
         try:
@@ -94,42 +116,54 @@ def uncompress_file(filename, outname=None, verbose=True):
 
     return outname
 
+
 def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
                       cycle_inc=dt.timedelta(hours=1), verbose=True):
-    '''
-    fetch_local_files: A routine to locate and retrieve file names from locally
-                      stored SuperDARN radar files that fit the input criteria.
+    """
+    A routine to locate and retrieve file names from locally stored SuperDARN 
+    radar files that fit the input criteria.
 
-    Input: stime      (datetime): data starting time
-           etime      (datetime): data ending time
-           rad             (str): 3 letter radar code (eg "han")
-           ftype           (str): radar file type ("fitex", "fitacf", "lmfit",
+    **Inputs**: 
+        * **stime** (datetime): data starting time
+        * **etime**      (datetime): data ending time
+        * **rad**             (str): 3 letter radar code (eg "han")
+        * **ftype**          (str): radar file type ("fitex", "fitacf", "lmfit",
                                   or "iqdat")
-           localdirfmt     (str): string defining the local directory structure
+        * **localdirfmt**     (str): string defining the local directory structure
                                   (eg "{dirtree}{ftype}/{year}/{month}/{day}/")
-           dirtree         (str): Local directory housing the SuperDARN data
+        * **dirtree**         (str): Local directory housing the SuperDARN data
                                   (must end with a "/")
-           tempdir         (str): Temporary directory in which to store
+        * **tempdir**         (str): Temporary directory in which to store
                                   uncompressed files (must end with a "/")
-           cycle_inc (timedelta): Time incriment between files (default=1 hour)
-           verbose        (bool): Print warnings or not? (default=True)
+        * **cycle_inc** (timedelta): Time incriment between files (default=1 hour)
+        * **verbose**        (bool): Print warnings or not? (default=True)
 
-    Output: file_stime (datetime): actual starting time for located files
+    **Output**: file_stime (datetime): actual starting time for located files
             filelist       (list): list of uncompressed files (including path)
 
-    Example: Fetches a day of locally stored data, sets directory format
-             environment variable to "{dirtree}{ftype}/{radar}/{year}/".  This
-             environment variable may eventually be phased out, so it is input
-             as a string in this routine.
+    **Example**:
+      
+      Fetches a day of locally stored data, sets directory format
+      environment variable to "{dirtree}{ftype}/{radar}/{year}/".  This
+      environment variable may eventually be phased out, so it is input
+      as a string in this routine.
 
-    import pydarn.sdio as sdio
+      :: 
+
+        import pydarn.sdio as sdio
+        import datetime as dt
+        import os
+
+        sdio.dbUtils.setDIRFORMAT(0, 1, 2, 3)
+        st_out, filelist = sdio.fetchUtils.fetch_local_files(dt.datetime(2002,6,20),
+            dt.datetime(2002,6,21), "han", "fitacf", os.environ['DAVIT_DIRFORMAT'],
+            "/Users/agb/Programs/Data/SuperDARN/", "/tmp/sd/")
+    """
+
+    
+    import os
     import glob
 
-    sdio.dbUtils.setDIRFORMAT(0, 1, 2, 3)
-    st_out, filelist = sdio.fetchUtils.fetch_local_files(dt.datetime(2002,6,20),
-        dt.datetime(2002,6,21), "han", "fitacf", os.environ['DAVIT_DIRFORMAT'],
-        "/Users/agb/Programs/Data/SuperDARN/", "/tmp/sd/")
-    '''
     rn = "fetch_local_files"
 
     # Test input
@@ -220,80 +254,95 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
     # Return the actual file start time and the list of uncompressed files
     return(file_stime, filelist)
 
+
 def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                        remotedirfmt, dirtree, tempdir, username=None,
                        password=False, port=None, channel='a',
-                       cycle_inc=dt.timedelta(hours=1), verbose=True):
-    '''
-    fetch_remote_files: A routine to locate and retrieve file names from
-                        remotely stored SuperDARN radar files that fit the
-                        input criteria.
+                       cycle_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
+    """
+    A routine to locate and retrieve file names from remotely stored 
+    SuperDARN radar files that fit the input criteria.
 
-    Input: stime       (datetime): data starting time
-           etime       (datetime): data ending time
-           rad              (str): 3 letter radar code (eg "han")
-           ftype            (str): radar file type ("fitex", "fitacf", "lmfit",
-                                   or "iqdat")
-           method           (str): remote connection method (eg sftp, http)
-           remotesite       (str): remote site address (eg 'sd-data.ece.vt.edu')
-           remotedirfmt     (str): string defining the remote directory
-                                   structure
-                                   (eg "{dirtree}{ftype}/{year}/{month}/{day}/")
-           dirtree          (str): Remote directory housing the SuperDARN data
-                                   (must end with a "/")
-           tempdir          (str): Temporary directory in which to store
-                                   uncompressed files (must end with a "/")
-           username    (none/str): Optional input for remote access
-           password    (bool/str): Optional input for remote access.  True will
-                                   prompt the user for a password, False
-                                   indicates no password is needed, unsecured
-                                   passwords may be entered as a string
-                                   (default=False)
-           port        (none/str): Optional input for http file access
-                                   (default=None)
-           channel          (str): 1-character string denoting the radar
-                                   channel (default='a')
-           cycle_inc  (timedelta): Time incriment between files (default=1 hour)
-           verbose         (bool): Print out warnings? (default=True)
+    **Inputs**: 
+      * **stime**       (datetime): data starting time
+      * **etime**       (datetime): data ending time
+      * **rad**              (str): 3 letter radar code (eg "han")
+      * **ftype**            (str): radar file type ("fitex", "fitacf", "lmfit",
+                                    or "iqdat")
+      * **method**           (str): remote connection method (eg sftp, http)
+      * **remotesite**       (str): remote site address (eg 'sd-data.ece.vt.edu')
+      * **remotedirfmt**     (str): string defining the remote directory
+                                    structure
+                                    (eg "{dirtree}{ftype}/{year}/{month}/{day}/")
+      * **dirtree**          (str): Remote directory housing the SuperDARN data
+                                    (must end with a "/")
+      * **tempdir**          (str): Temporary directory in which to store
+                                    uncompressed files (must end with a "/")
+      * **username**         (str): Optional input for remote access
+      * **password**    (bool/str): Optional input for remote access.  True will
+                                    prompt the user for a password, False
+                                    indicates no password is needed, unsecured
+                                    passwords may be entered as a string
+                                    (default=False)
+      * **port**             (str): Optional input for http file access
+                                    (default=None)
+      * **channel**          (str): 1-character string denoting the radar
+                                    channel (default='a')
+      * **cycle_inc**  (datetime.timedelta): Time incriment between files (default=1 hour)
+      * **fnamefmt**    (str/list): Optional string or list of file name formats (eg 
+                                    fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
+                                                '{date}.C0.{radar}.{ftype}'] 
+                                    or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
+      * **verbose**         (bool): Print out warnings? (default=True)
 
-    Output: file_stime (datetime): actual starting time for located files
-            filelist       (list): list of uncompressed files (including path)
+    **Outputs**: 
+      * **file_stime**  (datetime): actual starting time for located files
+      * **filelist**        (list): list of uncompressed files (including path)
 
-    Example: Fetches a day of remotely stored data from the Virginia Tech
+    **Example**: 
+             Fetches a day of remotely stored data from the Virginia Tech
              database, sets directory format environment variable to
              "{dirtree}{year}/{ftype}/{radar}/".  This environment variable may
              eventually be phased out, so it is input as a string in this
              routine.  The routine will prompt for a password and print out
              all warnings and advisements.
 
-    import pydarn.sdio as sdio
-    import datetime as dt
+      ::
 
-    sdio.dbUtils.setDIRFORMAT(0, 2, 3, 1)
-    print "You will be propmted for this password:", os.environ['DBREADPASS']
-    st_out,filelist = sdio.fetchUtils.fetch_remote_files(dt.datetime(2002,3,6),
-        dt.datetime(2002,3,7), "han", "fitacf", "sftp", "sd-data.ece.vt.edu",
-        os.environ['DAVIT_DIRFORMAT'], "/data/", "/tmp/", "sd_dbread", True)
+        import pydarn.sdio as sdio
+        import datetime as dt
 
-    print st_out
-    > "2002-03-06 00:00:00"
-    print filelist
-    > "['/tmp/20020306.0000.00.han.fitacf', '/tmp/20020306.0200.00.han.fitacf',
-        '/tmp/20020306.0400.00.han.fitacf', '/tmp/20020306.0600.00.han.fitacf',
-        '/tmp/20020306.0800.00.han.fitacf', '/tmp/20020306.1000.00.han.fitacf',
-        '/tmp/20020306.1200.00.han.fitacf', '/tmp/20020306.1400.00.han.fitacf',
-        '/tmp/20020306.1600.00.han.fitacf', '/tmp/20020306.1800.00.han.fitacf',
-        '/tmp/20020306.2000.00.han.fitacf', '/tmp/20020306.2200.00.han.fitacf',
-        '/tmp/20020307.0000.00.han.fitacf']"
-    '''
+        sdio.dbUtils.setDIRFORMAT(0, 2, 3, 1)
+        print "You will be propmted for this password:", os.environ['DBREADPASS']
+        st_out,filelist = sdio.fetchUtils.fetch_remote_files(dt.datetime(2002,3,6), \
+            dt.datetime(2002,3,7), "han", "fitacf", "sftp", "sd-data.ece.vt.edu", \
+            os.environ['DAVIT_DIRFORMAT'], "/data/", "/tmp/", "sd_dbread", True)
+
+        print st_out
+        > "2002-03-06 00:00:00"
+        print filelist
+        > "['/tmp/20020306.0000.00.han.fitacf', '/tmp/20020306.0200.00.han.fitacf',
+            '/tmp/20020306.0400.00.han.fitacf', '/tmp/20020306.0600.00.han.fitacf',
+            '/tmp/20020306.0800.00.han.fitacf', '/tmp/20020306.1000.00.han.fitacf',
+            '/tmp/20020306.1200.00.han.fitacf', '/tmp/20020306.1400.00.han.fitacf',
+            '/tmp/20020306.1600.00.han.fitacf', '/tmp/20020306.1800.00.han.fitacf',
+            '/tmp/20020306.2000.00.han.fitacf', '/tmp/20020306.2200.00.han.fitacf',
+            '/tmp/20020307.0000.00.han.fitacf']"
+    """
+
     # getpass allows passwords to be entered without them appearing onscreen
     import getpass
+    # paramiko is necessary to use sftp, pyCurl currently requires much fiddling
+    import paramiko as p
+
+    # NOTE: Could use the requests library instead ASR 18 July, 2014
+    # import requests
     # urllib is best at transferring files of any type using non-sftp protocols
     import urllib
     # urllib2 is best at finding the files available using non-sftp protocols
     import urllib2
-    # paramiko is necessary to use sftp, pyCurl currently requires much fiddling
-    import paramiko as p
+
+    import os
 
     rn = "fetch_remote_files"
 
@@ -328,6 +377,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         (rn, 'ERROR: port must be a string')
     assert(isinstance(channel, str) and len(channel) == 1), \
         (rn, 'ERROR: channel must be a one-character string')
+    assert(isinstance(fnamefmt, (type(None),str,list))), \
+        (rn, 'ERROR: fnamefmt must be None, str, or list')
     assert(isinstance(cycle_inc, dt.timedelta)), \
         (rn, 'ERROR: cycle_inc must be timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
@@ -367,8 +418,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         remoteaccfmt += ":{port}"
     remoteaccfmt += "{path}"
 
-    # Build the possible radar filenames for matching using re module
-    fname = ['......'+rad+'.'+ftype, '......'+rad+'.'+channel+'.'+ftype]
 
     #--------------------------------------------------------------------------
     # Perform method-specific initialization that does not require time info
@@ -379,22 +428,29 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
             transport.connect(username=remoteaccess['username'],
                               password=remoteaccess['password'])
         except:
-            print(rn, "ERROR: can't connect to", remotesite,
+            print (rn, "ERROR: can't connect to", remotesite,
                   "with username and password")
-            return(file_stime, filelist)
+            return (file_stime, filelist)
 
         try:
             sftp = p.SFTPClient.from_transport(transport)
         except:
             print rn, "ERROR: cannot engage sftp client at", remotesite
-            return(file_stime, filelist)
+            return (file_stime, filelist)
+
+
 
     #--------------------------------------------------------------------------
-    # Set the unchanging parts of the possible remote directory structure
-    remotestruct = dict()
-    remotestruct["dirtree"] = dirtree
-    remotestruct["ftype"] = ftype
-    remotestruct["radar"] = rad
+    # Build the possible radar filenames for matching using re module
+    #fname = ['......'+rad+'.'+ftype, '......'+rad+'.'+channel+'.'+ftype, 'C0.'+rad+'.'+ftype, '.C0.'+rad+'.'+channel+'.'+ftype]
+
+    if fnamefmt is None:
+        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
+        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
+                    '{date}.C0.{radar}.{ftype}', \
+                    '{date}.C0.{radar}.{channel}.{ftype}']
+
 
     #--------------------------------------------------------------------------
     # Iterate through all of the hours in the request (round the starting time
@@ -406,6 +462,14 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     #--------------------------------------------------------------------------
     # Initialize the list of remote filenames
     remotefiles = list()
+
+    #--------------------------------------------------------------------------
+    # Set the unchanging parts of the possible remote directory structure
+    remotestruct = dict()
+    remotestruct["dirtree"] = dirtree
+    remotestruct["ftype"] = ftype
+    remotestruct["radar"] = rad
+    remotestruct["channel"] = channel
 
     #--------------------------------------------------------------------------
     # Cycle through the specified times
@@ -456,13 +520,18 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         # Ensure that the list of remote files include those that can possibly
         # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
         if len(remotefiles) > 0 and max([len(rf) for rf in remotefiles]) > 21:
-            hour_str = ctime.strftime("%H")
-            date_str = ctime.strftime("%Y%m%d")
+            remotestruct["hour"] = ctime.strftime("%H")
+            remotestruct["date"] = ctime.strftime("%Y%m%d")
 
-            for form in fname:
+            for namefmt in fnamefmt:
+                   # if cust_fnamefmt:
+                name = namefmt.format(**remotestruct)
+                print name
+                   # fname.append(name)
+                   #   print fname
                 # Create a regular expression to find files of this time
-                regex = urllib.re.compile(date_str+'.'+hour_str+form)
-
+                #regex = urllib.re.compile(date_str+'.'+hour_str+form)
+                regex = urllib.re.compile(name)
                 # Go thorugh all the files in the directory
                 for rf in remotefiles:
                     #if we have a file match between a file and our regex
@@ -520,3 +589,39 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     # after deleting the dictionary structure containing the password
     del remoteaccess
     return(file_stime, filelist)
+
+
+def test_fetchutils():
+
+    tests = 3
+    success = 0
+
+    print "Testing fetchUtils.uncompress_files"
+    print "    Testing .zip"
+    try:
+        uncompress_file('20121107.0201.00.kod.d.fitacf.zip',outname='test.fitacf')
+        print "SUCCESS!"
+        success += 1
+    except:
+        print "FAILED!"
+
+    print "    Testing .bz2"
+    try:
+        uncompress_file('20121107.0201.00.kod.d.fitacf.bz2',outname='test.fitacf')
+        print "SUCCESS!"
+        success += 1
+    except:
+        print "FAILED!"
+
+    print "    Testing .gz"
+    try:
+        uncompress_file('20121107.0201.00.kod.d.fitacf.gz',outname='test.fitacf')
+        print "SUCCESS!"
+        success += 1
+    except:
+        print "FAILED!"
+
+    print "Finished testing. Success: {:s}/{:s}".format(str(success),str(tests))
+
+
+
