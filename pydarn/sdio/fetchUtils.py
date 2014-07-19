@@ -524,14 +524,12 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
             remotestruct["date"] = ctime.strftime("%Y%m%d")
 
             for namefmt in fnamefmt:
-                   # if cust_fnamefmt:
+                #fill in the date, time, and radar information using remotestruct
                 name = namefmt.format(**remotestruct)
-                print name
-                   # fname.append(name)
-                   #   print fname
+                
                 # Create a regular expression to find files of this time
-                #regex = urllib.re.compile(date_str+'.'+hour_str+form)
                 regex = urllib.re.compile(name)
+
                 # Go thorugh all the files in the directory
                 for rf in remotefiles:
                     #if we have a file match between a file and our regex
@@ -573,12 +571,12 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                             filelist.append(outfile)
 
                             # Use filename to find the file starting time
-                            ff = outfile.replace(tempdir, '')
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[14:16]))
-                            if file_stime == None or t1 < file_stime:
-                                file_stime = t1
+                            #ff = outfile.replace(tempdir, '')
+                            #t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
+                            #                 int(ff[6:8]), int(ff[9:11]),
+                            #                 int(ff[11:13]), int(ff[14:16]))
+                            #if file_stime == None or t1 < file_stime:
+                            #    file_stime = t1
 
         #----------------------------------------------------------------------
         # Move to the next time
@@ -588,8 +586,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     # Return the actual file start time and the list of uncompressed files
     # after deleting the dictionary structure containing the password
     del remoteaccess
-    return(file_stime, filelist)
-
+    #return (file_stime, filelist)
+    return filelist
 
 def test_fetchutils():
 
