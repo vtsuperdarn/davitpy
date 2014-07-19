@@ -258,7 +258,7 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
 def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                        remotedirfmt, dirtree, tempdir, username=None,
                        password=False, port=None, channel='a',
-                       cycle_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
+                       time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -288,7 +288,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                                     (default=None)
       * **channel**          (str): 1-character string denoting the radar
                                     channel (default='a')
-      * **cycle_inc**  (datetime.timedelta): Time incriment between files (default=1 hour)
+      * **time_inc**  (datetime.timedelta): Time incriment between files (default=1 hour)
       * **fnamefmt**    (str/list): Optional string or list of file name formats (eg 
                                     fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
                                                 '{date}.C0.{radar}.{ftype}'] 
@@ -379,8 +379,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         (rn, 'ERROR: channel must be a one-character string')
     assert(isinstance(fnamefmt, (type(None),str,list))), \
         (rn, 'ERROR: fnamefmt must be None, str, or list')
-    assert(isinstance(cycle_inc, dt.timedelta)), \
-        (rn, 'ERROR: cycle_inc must be timedelta object')
+    assert(isinstance(time_inc, dt.timedelta)), \
+        (rn, 'ERROR: time_inc must be timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
 
     #--------------------------------------------------------------------------
@@ -580,7 +580,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
         #----------------------------------------------------------------------
         # Move to the next time
-        ctime = ctime + cycle_inc
+        ctime = ctime + time_inc
 
     #--------------------------------------------------------------------------
     # Return the actual file start time and the list of uncompressed files
