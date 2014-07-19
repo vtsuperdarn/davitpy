@@ -14,14 +14,14 @@ Overlay information on maps
 
 
 # *************************************************************
-def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None, 
+def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None, 
 				annotate=True, all=False, hemi=None,
 				zorder=2, markerColor='k', markerSize=10, 
 				fontSize=10, xOffset=None):
 	"""Overlay radar position(s) and name(s) on map 
 	
 	**Args**: 
-		* **Basemap**: a python Basemap object on which to overplot the radar position(s)    
+		* **mapObj**: a python mapObj object on which to overplot the radar position(s)    
 		* **[codes]**: a list of radar 3-letter codes to plot    
 		* **[ids]**: a list of radar IDs to plot    
 		* **[names]**: a list of radar names to plot    
@@ -51,6 +51,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	from utils.plotUtils import textHighlighted
 	
 	# Set default date/time to now
+	if hasattr(mapObj,'dateTime'): dateTime=mapObj.dateTime
 	if not dateTime:
 		dateTime = dt.utcnow()
 	
@@ -76,8 +77,8 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 	if not isinstance(input['vals'], list): input['vals'] = [input['vals']]
 	
 	# Map width and height
-	width = Basemap.urcrnrx - Basemap.llcrnrx
-	height = Basemap.urcrnry - Basemap.llcrnry
+	width = mapObj.urcrnrx - mapObj.llcrnrx
+	height = mapObj.urcrnry - mapObj.llcrnry
 
 	if hemi is None:
 		hemiInt = 0
@@ -93,14 +94,14 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 		# Check for hemisphere specification
 		if site.geolat*hemiInt < 0: continue
 		# Get radar coordinates in map projection
-		if not hasattr(Basemap, 'coords'): 
-			x,y = Basemap(site.geolon, site.geolat)
+		if not hasattr(mapObj, 'coords'): # In this case it will automatically be geographical
+			x,y = mapObj(site.geolon, site.geolat)
 		else:
-			x,y = Basemap(site.geolon, site.geolat, coords='geo')
-		if not Basemap.xmin <= x <= Basemap.xmax: continue
-		if not Basemap.ymin <= y <= Basemap.ymax: continue
+			x,y = mapObj(site.geolon, site.geolat, coords='geo')  # Tell mapObj these are in geo so it will convert
+		if not mapObj.xmin <= x <= mapObj.xmax: continue  # Make sure the point is within the plot boundary
+		if not mapObj.ymin <= y <= mapObj.ymax: continue
 		# Plot radar position
-		Basemap.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=zorder)
+		mapObj.scatter(x, y, s=markerSize, marker='o', color=markerColor, zorder=zorder)
 		# Now add radar name
 		if annotate:
 			# If any of the other radar is too close...
@@ -121,7 +122,7 @@ def overlayRadar(Basemap, codes=None, ids=None, names=None, dateTime=None,
 
 
 # *************************************************************
-def overlayFov(Basemap, codes=None, ids=None, names=None, 
+def overlayFov(mapObj, codes=None, ids=None, names=None, 
 				dateTime=None, all=False, 
 				maxGate=None, rangeLimits=None, model='IS', fovColor=None, fovAlpha=0.2, 
 				beams=None, beamsColors=None, hemi=None, fovObj=None, 
@@ -129,7 +130,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	"""Overlay FoV position(s) on map
 	
 	**Args**: 
-		* **Basemap**: a python Basemap object on which to overplot the radar position(s)
+		* **mapObj**: a python mapObj object (based on Basemap) on which to overplot the radar position(s)
 		* **[codes]**: a list of radar 3-letter codes to plot
 		* **[ids]**: a list of radar IDs to plot
 		* **[names]**: a list of radar names to plot
@@ -175,6 +176,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 	from pylab import gca
 	
 	# Set default date/time to now
+	if hasattr(mapObj,'dateTime'): dateTime=mapObj.dateTime
 	if not dateTime:
 		dateTime = dt.utcnow()
 	
@@ -210,11 +212,11 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 			if not site: continue
 			# Set number of gates to be plotted
 			eGate = site.maxgate-1 if not maxGate else maxGate
-
-			if not hasattr(Basemap, 'coords'): 
+      # Get field of view of radar
+			if not hasattr(mapObj, 'coords'): # If there is no coords attribute set it will be geo
 				radFov = fov(site=site, ngates=eGate+1,model=model)
 			else:
-				radFov = fov(site=site, ngates=eGate+1, coords=Basemap.coords, model=model)
+				radFov = fov(site=site, ngates=eGate+1, coords=mapObj.coords, dateTime=dateTime,model=model) # Specify other coord system
 		else:
 			radFov = fovObj
 			eGate = len(fovObj.gates)
@@ -226,10 +228,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
                     sGate   = 0
 
 		# Get radar coordinates in map projection
-		if hasattr(Basemap, 'coords'): 
-			x, y = Basemap(radFov.lonFull, radFov.latFull, coords=radFov.coords)
-		else:
-			x, y = Basemap(radFov.lonFull, radFov.latFull)
+		x, y = mapObj(radFov.lonFull, radFov.latFull, coords=radFov.coords) # Tell mapObj the coords so it can convert
 		# Plot field of view
 		# Create contour
 		contourX = concatenate( (x[0,sGate:eGate], 
@@ -241,7 +240,7 @@ def overlayFov(Basemap, codes=None, ids=None, names=None,
 								 y[-1,eGate:sGate:-1],
 								 y[-1::-1,sGate]) )
 		# Plot contour
-		Basemap.plot(contourX, contourY, 
+		mapObj.plot(contourX, contourY, 
 			color=lineColor, zorder=zorder, linewidth=lineWidth)
 		# Field of view fill
 		if fovColor:

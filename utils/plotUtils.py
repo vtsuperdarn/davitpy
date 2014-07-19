@@ -17,6 +17,7 @@ Basic plotting tools
 
 """
 from mpl_toolkits import basemap
+from utils.coordUtils import coordConv
 
 
 ################################################################################
@@ -33,7 +34,7 @@ class mapObj(basemap.Basemap):
     ::
 
       # Create the map
-      myMap = utils.mapObj(boundinglat=30, coords='mag')
+      myMap = utils.mapObj(boundingLat=30, coords='mag')
       # Plot the geographic and geomagnetic North Poles
       # First convert from lat/lon to map projection coordinates...
       x, y = myMap(0., 90., coords='geo')
@@ -48,11 +49,11 @@ class mapObj(basemap.Basemap):
 
   """
 
-  def __init__(self, datetime=None, coords='geo', 
+  def __init__(self, coords='geo', 
     projection='stere', resolution='c', dateTime=None, 
-    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
+    lat_0=None, lon_0=None, boundingLat=None, width=None, height=None, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
-    grid=True, gridLabels=True, showCoords=True, **kwargs):
+    coastLineColor = None, grid=True, gridLabels=True, showCoords=True, **kwargs):
     """Create empty map 
     
     **Args**:    
@@ -65,7 +66,7 @@ class mapObj(basemap.Basemap):
       * **[fill_water]**: water color. Default is 'None'    
       * **[coords]**: 'geo'
       * **[showCoords]**: display coordinate system name in upper right corner
-      * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
+      * **[dateTime]** (datetime.datetime): necessary for MLT plots
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
     **Returns**:
       * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
@@ -83,72 +84,86 @@ class mapObj(basemap.Basemap):
     from copy import deepcopy
     import datetime as dt
 
+    # Define the possible coordinate systems
     self._coordsDict = {'mag': 'AACGM',
               'geo': 'Geographic',
               'mlt': 'MLT'}
 
-    if coords is 'mlt':             
-      print 'MLT coordinates not implemented yet.'
-      return
+    # Set the attribute to the dateTime kwarg so it stays with the object
+    self.dateTime=dateTime
 
-    if datetime is None:
-      datetime = dt.datetime.utcnow()
-    self.datetime = datetime
+    # If the map is in MLT we need to know the datetime
+    if coords is 'mlt':            
+      assert(dateTime is not None),"dateTime must be provided for MLT coordinates to work."
+
+    if dateTime is None:
+      dateTime = dt.datetime.utcnow()
+    self.dateTime = dateTime
 
     # Add an extra member to the Basemap class
+      # Check whether the given coords is one of the possible systems
     if coords is not None and coords not in self._coordsDict:
       print 'Invalid coordinate system given in coords ({}): setting "geo"'.format(coords)
+      # Set to default of geo
       coords = 'geo'
+    # Set the coords attribute
     self.coords = coords
 
     # Set map projection limits and center point depending on hemisphere selection
+      # Set the central latitude
     if lat_0 is None: 
-      lat_0 = 90.
-      if boundinglat: lat_0 = math.copysign(lat_0, boundinglat)
+      lat_0 = 90.  # Default value for central latitude
+      if boundingLat: lat_0 = math.copysign(lat_0, boundingLat)
+      #Set the central longitude
     if lon_0 is None: 
-      lon_0 = -100.
-      if self.coords == 'mag': 
-        _, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., self.datetime.year, 0)
-    if boundinglat:
-      width = height = 2*111e3*( abs(lat_0 - boundinglat) )
+      lon_0 = -100. # Default
+      lon_0, _ = coordConv(lon_0, 0., 'geo', self.coords, dateTime=dateTime)
+      lon_0 = lon_0[0]
+    if boundingLat:
+      width = height = 2*111e3*( abs(lat_0 - boundingLat) )
 
-    # Initialize map
+    # Initialize map with original Basemap
     super(mapObj, self).__init__(projection=projection, resolution=resolution, 
         lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
     # Add continents
-    if coords is not 'mlt' or dateTime is not None:
-      _ = self.drawcoastlines(linewidth=coastLineWidth)
-      # self.drawmapboundary(fill_color=fillOceans)
-      _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+    _ = self.drawcoastlines(linewidth=coastLineWidth,color=coastLineColor) #This programme is written in American.
+    _ = self.drawmapboundary(fill_color=fillOceans)
+    _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
     # Add coordinate spec
     if showCoords:
       _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
           rotation=-90., va='top', fontsize=8)
 
-    # draw parallels and meridians.
-    if grid:
-      parallels = np.arange(-80.,81.,20.)
-      out = self.drawparallels(parallels, color='.6', zorder=10)
-      # label parallels on map
-      if gridLabels: 
-        lablon = int(self.llcrnrlon/10)*10
-        rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
-        x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+    # Draw parallels and meridians.
+    if grid:                                              # Grid causes lines to be drawn
+      parallels = np.arange(-80.,81.,20.)                   # Parallels go from 80 S to 80 N, step 20
+      out = self.drawparallels(parallels, color='.6', zorder=10)  # Basemap draws those parallels on
+      # Label parallels on map
+      if gridLabels:                                      # Gridlabels:  labels the lines
+        lablon = int(self.llcrnrlon/10)*10                  # Labels go along a meridian from the corner
+        rotate_label = (lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.)  # Rotation of text along parallel
+        x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)  # Convert to plot coords
         for ix,iy,ip in zip(x,y,parallels):
-          if not self.xmin <= ix <= self.xmax: continue
-          if not self.ymin <= iy <= self.ymax: continue
+          if not self.xmin <= ix <= self.xmax: continue 
+          if not self.ymin <= iy <= self.ymax: continue   # Skip any points outside the bounds of the plot
           _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-              rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
-      # label meridians on bottom and left
-      meridians = np.arange(-180.,181.,20.)
-      if gridLabels: 
-        merLabels = [False,False,False,True]
+              rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')   # draw the labels
+      # Label meridians on bottom and left
+        # MLT marks every hour, otherwise go from 180 W to 180 E, step 20
+      meridians = (np.arange(0.,361.,15.) if coords == 'mlt' else np.arange(-180.,181.,20.))  
+        # MLT needs the degrees converted to time, otherwise just print degrees
+      merFmt = ((lambda x: '%g' % (x*24./360.)) if coords == 'mlt' else '%g')
+      if gridLabels:  # Label the lines
+        # Left and bottom (old way just bottom, see commented-out bit)
+        merLabels = [True,False,False,True]# if coords == 'mlt' else [False,False,False,True])
       else: 
+        # No labels at all in this case
         merLabels = [False,False,False,False]
-      # draw meridians
-      out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+      # Draw meridians
+      #if not round:
+      out = self.drawmeridians(meridians, labels=merLabels, fmt=merFmt, color='.6', zorder=10)
 
   
   def __call__(self, x, y, inverse=False, coords=None):
@@ -157,77 +172,57 @@ class mapObj(basemap.Basemap):
     import numpy as np
     import inspect
 
-    if coords is not None and coords not in self._coordsDict:
-      print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
-      coords = None
+    # Convert inputs to numpy arrays or there will be type problems later
+    shape=np.array(x).shape
 
-    if coords and coords != self.coords:
-      trans = coords+'-'+self.coords
-      if trans in ['geo-mag','mag-geo']:
-        flag = 0 if trans == 'geo-mag' else 1
+    # Do the coordinate conversion
+    x, y = coordConv(x, y, coords, self.coords, dateTime=self.dateTime)
+    x, y = np.array(x).reshape(shape), np.array(y).reshape(shape)  # Convert results to numpy arrays for further use
+
+    # Convert into plot coordinates
+    # x and y are now in self.coords
+    if hasattr(self,'coords'):
+      if self.coords is 'geo':
+        return basemap.Basemap.__call__(self, x, y, inverse=inverse)  # Just convert directly
+
+      elif self.coords is 'mag' or self.coords is 'mlt':
+        # Find out how the call was made
         try:
-          nx, ny = len(x), len(y)
-          xt = np.array(x)
-          yt = np.array(y)
-          shape = xt.shape    
-          y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [0.]*nx, 
-            self.datetime.year, flag)
-          x = np.array(x).reshape(shape)
-          y = np.array(y).reshape(shape)
-        except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, 0., 
-            self.datetime.year, flag)
-
-
-    if self.coords is 'geo':
-      return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-
-    elif self.coords is 'mag':
-      try:
-        callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
-      except: 
-        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-      if isinstance(y, float) and abs(y) == 90.:
-        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-      if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-        if not inverse:
-          try:
-            nx, ny = len(x), len(y)
-            x = np.array(x)
-            y = np.array(y)
-            shape = x.shape
-            yout, xout, _ = aacgm.aacgmConvArr(
-              list(y.flatten()), list(x.flatten()), [0.]*nx, 
-              self.datetime.year, 0)
-            xout = np.array(xout).reshape(shape)
-            yout = np.array(yout).reshape(shape)
-          except TypeError:
-            yout, xout, _ = aacgm.aacgmConv(y, x, 0., 
-              self.datetime.year, 0)
-          return basemap.Basemap.__call__(self, xout, yout, inverse=inverse)
-        else:
+          callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
+        except: 
           return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-      else:
-        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+        # At the pole...???
+        if isinstance(y, float) and abs(y) == 90.:
+          return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+          
+        # If the call was from _readboundarydata special handling is needed
+        if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
+          if not inverse:
+            shape = np.array(x).shape
+            x, y = coordConv(x, y, 'geo', self.coords, dateTime=self.dateTime)
+            x, y = np.array(x).reshape(shape), np.array(y).reshape(shape)
+            plotx, ploty = basemap.Basemap.__call__(self, x, y, inverse=inverse)
+          else:
+            plotx, ploty = basemap.Basemap.__call__(self, x, y, inverse=inverse)
+        else:
+          plotx, ploty = basemap.Basemap.__call__(self, x, y, inverse=inverse)
+        return plotx, ploty
 
-    elif self.coords is 'mlt':
-      print 'Not implemented'
+    else:
       callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
-
 
   def _readboundarydata(self, name, as_polygons=False):
     from models import aacgm
     from copy import deepcopy
     import _geoslib
     import numpy as np
+    
+    # MLT needs datetime
+    if self.coords is 'mlt': assert(self.dateTime is not None), "dateTime must be specified for MLT to work."
 
-    if self.coords is 'mag':
-      nPts = len(self._boundarypolyll.boundary[:, 0])
-      lats, lons, _ = aacgm.aacgmConvArr(
-              list(self._boundarypolyll.boundary[:, 1]), 
-              list(self._boundarypolyll.boundary[:, 0]), 
-              [0.]*nPts, self.datetime.year, 1)
+    if self.coords is 'mag' or self.coords is 'mlt':
+      lons, lats = coordConv(list(self._boundarypolyll.boundary[:, 0]), 
+          list(self._boundarypolyll.boundary[:, 1]), self.coords, 'geo', dateTime=self.dateTime)
       b = np.asarray([lons,lats]).T
       oldgeom = deepcopy(self._boundarypolyll)
       newgeom = _geoslib.Polygon(b).fix()
@@ -602,3 +597,4 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 
     ab.set_zorder(zorder)
     ax.add_artist(ab)
+# Copyright (C) 2012  VT SuperDARN Lab

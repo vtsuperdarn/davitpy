@@ -18,10 +18,11 @@ class MapConv(object):
     **Args**:
         * **startTime** (datetime.datetime): start date and time of the data rec
         * **mObj** (utils.plotUtils.mapObj): the map object you want data to be overlayed on.
-        * **axisHandle** : the axis handle used
+        * **axisHandle** : the axis handle used. Must be a subplot type (see example below).
         * **[hemi]** : hemisphere - 'north' or 'south'
         * **[maxVelScale]** : maximum velocity to be used for plotting, min is zero so scale is [0,1000]
-        * **[plotCoords]** (str): coordinates of the plot, only use either 'mag' or 'mlt'
+        * **[fileName]** (str): special file name
+        * **[custType]** (str): file type of fileName
     **Example**:
         ::
 
@@ -45,12 +46,14 @@ class MapConv(object):
             mapDatObj.overlayHMB()
                     
     written by Bharat Kunduri and Sebastien de Larquier, 2013-08
+    modified my Matt Wessel 201309
     """
     import matplotlib.cm as cm
 
-    def __init__(self, startTime, mObj, 
-        axisHandle, hemi = 'north', 
-        maxVelScale = 1000., plotCoords = 'mag'):
+    def __init__(self, startTime, mObj, \
+        axisHandle, hemi = 'north', \
+        maxVelScale = 1000., \
+        fileType=None,fileName=None,custType=None):
         import datetime
         from pydarn.sdio import *
         from pydarn.radar import *
@@ -66,6 +69,7 @@ class MapConv(object):
         self.maxVelPlot = maxVelScale
         self.axisHandle = axisHandle
         self.mObj = mObj
+        self.startTime = startTime
 
         #check if the mapObj is indicating the same hemisphere as data requested
         if hemi == "north" :
@@ -73,21 +77,35 @@ class MapConv(object):
         else :
             assert( mObj.boundarylats[0] < 0. ),"Map object is using one hemisphere and data the other"
 
-        # check if hemi and coords keywords are correct
+        # check if keywords are correct
         assert(hemi == "north" or hemi == "south"),"error, hemi should either be 'north' or 'south'"
-        assert(plotCoords == 'mag' or coords == 'mlt'),"error, coords must be one of 'mag' or 'mlt'"
+        if fileName: assert(custType),"error, must specify custType for fileName"
+        if custType: assert(fileName),"error, must specify fileName for custType"
 
         self.hemi = hemi
-        self.plotCoords = plotCoords
 
         # Read the corresponding data record from both map and grid files. 
         # This is the way I'm setting stuff up to avoid confusion of reading and plotting seperately.
         # Just give the date/hemi and the code reads the corresponding rec
         endTime = startTime + datetime.timedelta(minutes=2)
-        grdPtr = sdDataOpen(startTime, hemi, eTime=endTime)
-        self.grdData = sdDataReadRec(grdPtr)
-        mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
-        self.mapData = sdDataReadRec(mapPtr)
+        if not fileName:
+          if not fileType:
+            grdPtr = sdDataOpen(startTime, hemi, eTime=endTime)
+            self.grdData = sdDataReadRec(grdPtr)
+            mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
+            self.mapData = sdDataReadRec(mapPtr)
+          elif fileType == 'map':
+            mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType = fileType)
+            self.mapData = sdDataReadRec(mapPtr)
+            self.grdData = self.mapData.grid
+          else:
+            print "To use grdex and mapex together leave fileType unset. To use just map file, set fileType='map'"
+            return None
+        else:
+          mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType=fileType, fileName=fileName, custType=custType)
+          self.mapData = sdDataReadRec(mapPtr)
+          self.grdData=self.mapData.grid
+
 
     def overlayGridVel(self, pltColBar=True, 
         overlayRadNames=True, annotateTime=True, 
@@ -129,18 +147,11 @@ class MapConv(object):
                 *numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), 
                 numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) ) \
                 *numpy.sin(numpy.deg2rad( endLat ) ) ) )
-                        
-            # depending on whether we have 'mag' or 'mlt' coords, calculate endLon
-            if self.plotCoords == 'mag' :
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
-            elif self.plotCoords == 'mlt' :
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
-            else :
-                print 'Check the coords'
+            endLon = mlonsPlot[nn] + numpy.degrees( delLon )
 
             # get the start and end vecs
-            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords )
-            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords=self.plotCoords )
+            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords='mag')
+            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords='mag')
             
             # Plot the start point and then append the vector indicating magn. and azimuth
             self.grdPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, 
@@ -477,15 +488,6 @@ class MapConv(object):
         else :
             print 'LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero'
 
-        # mlt conversion stuff
-        if self.plotCoords == 'mlt' :
-            epoch = timeUtils.datetimeToEpoch(strtTime)
-            mltDef = aacgm.mltFromEpoch(epoch,0.0) * 15.
-            lonShftFit += mltDef
-            gridArr[1,:] = numpy.mod( ( gridArr[1,:] + lonShftFit ) / 15., 24. )
-        else :
-            gridArr[1,:] = ( gridArr[1,:] + lonShftFit ) 
-
         latCntr = gridArr[0,:].reshape( ( 181, 60 ) )
         lonCntr = gridArr[1,:].reshape( ( 181, 60 ) )
         
@@ -511,7 +513,7 @@ class MapConv(object):
         ( latCntr, lonCntr, potCntr ) = self.calcCnvPots()
 
         #plot the contours
-        xCnt, yCnt = self.mObj( lonCntr, latCntr, coords=self.plotCoords )
+        xCnt, yCnt = self.mObj( lonCntr, latCntr, coords='mag')
         cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, 
             zorder = 2.,
             vmax=potCntr.max(), vmin=potCntr.min(), 
@@ -532,7 +534,7 @@ class MapConv(object):
                 MapConv.overlayHMB()
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
-            self.mapData.model.boundarymlat, coords = self.plotCoords )
+            self.mapData.model.boundarymlat, coords = 'mag')
         grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, 
             linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
         grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, 
@@ -576,19 +578,12 @@ class MapConv(object):
                 numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
                 *numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
             endLat = numpy.degrees( endLat )
-            
             delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(numpy.deg2rad( endLat ) ) ) )
-            
-            if self.plotCoords == 'mag' :
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
-            elif self.plotCoords == 'mlt' :
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
-            else :
-                print 'Check the coords.'
+            endLon = mlonsPlot[nn] + numpy.degrees( delLon )
                 
             
-            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
-            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords = self.plotCoords)
+            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords='mag')
+            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords = 'mag')
 
             self.mapModelPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,
                 vmin=0, vmax=self.maxVelPlot, alpha=0.7, 
@@ -603,8 +598,7 @@ class MapConv(object):
             cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
         # Check and annotate time
         if annotateTime :
-            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, 
-                ha="center", xycoords="axes fraction",
+            self.axisHandle.annotate( dateStr, xy=(0.5, 1.), fontsize=12, ha="center", xycoords="axes fraction",
                 bbox=dict(boxstyle='round,pad=0.2', fc="w", alpha=0.3) )
 
     def overlayMapFitVel(self, pltColBar=True, 
@@ -648,24 +642,17 @@ class MapConv(object):
                 + numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
                 *numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
             endLat = numpy.degrees( endLat )
-            
             delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) ) \
                 *numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), 
                 numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) ) \
                 *numpy.sin(numpy.deg2rad( endLat ) ) ) )
-            
-            if self.plotCoords == 'mag' :
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
-            elif self.plotCoords == 'mlt' :
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
-            else :
-                print 'Check the coords.'
+            endLon = mlonsPlot[nn] + numpy.degrees( delLon )
                 
             
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], 
-                coords=self.plotCoords)
+                coords='mag')
             xVecEnd, yVecEnd = self.mObj(endLon, endLat, 
-                coords = self.plotCoords)
+                coords = 'mag')
 
             self.mapFitPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, 
                 c=velMagn[nn], s=10.,
