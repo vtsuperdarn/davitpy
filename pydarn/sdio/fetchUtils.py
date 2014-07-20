@@ -189,9 +189,8 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     file_stime = None
     filelist = list()
 
-    # Start building the radar file name using the UAF naming convention:
-    # YYYYmmdd.HHMM.??.rad.ftype.extention
-    #fname = '*.{:s}.{:s}*'.format(rad, ftype)
+    #--------------------------------------------------------------------------
+    # Build the possible radar filenames for matching using re module
 
     if fnamefmt is None:
         #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
@@ -199,6 +198,9 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
                     '{date}.{hour}......{radar}.{channel}.{ftype}', \
                     '{date}.C0.{radar}.{ftype}', \
                     '{date}.C0.{radar}.{channel}.{ftype}']
+    if isinstance(fnamefmt,str):
+        fnamefmt = list(fnamefmt)
+      
 
     #--------------------------------------------------------------------------
     # Set the unchanging parts of the possible remote directory structure
@@ -214,36 +216,33 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
 
     while ctime <= etime:
 
-        # Set the temporal parts of the possible local directory structure
+        # set the temporal parts of the possible local directory structure
         localstruct["year"] = "{:4d}".format(ctime.year)
         localstruct["month"] = "{:2d}".format(ctime.month)
         localstruct["day"] = "{:2d}".format(ctime.day)
         localstruct["hour"] = ctime.strftime("%H")
         localstruct["date"] = ctime.strftime("%Y%m%d")
         
-        # Build the name of the local files (uses wildcards)
+        # get the files in the directory (need to check for 
+        # every ctime in case we change directories)
         local_dir = localdirfmt.format(**localstruct)
         files = os.listdir(local_dir)
 
-        #files = "{:s}{:s}.{:s}{:s}".format(local_dir, ctime.strftime("%Y%m%d"),
-        #                                   ctime.strftime("%H"), fname)
-
+        # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
-            #fill in the date, time, and radar information using remotestruct
-            name = namefmt.format(**localstruct)
 
+            # create a regular expression to check for the desired files
+            name = namefmt.format(**localstruct)
             regex = re.compile(name)
 
             # Go thorugh all the files in the directory
             for lf in files:
+
                 #if we have a file match between a file and our regex
                 if(regex.match(lf)):
-        # Find and uncompress files which begin in this hour, saving the
-        # names of the uncompressed files for the output
-        #for filename in glob.glob(files):
-                    # Begin to construct the name for the uncompressed file
+
+                    # copy the file to outdir
                     outname = os.path.join(outdir,lf)
-                    print outname
                     command='cp {:s} {:s}'.format(os.path.join(local_dir,lf), outname)
                     try:    
                         os.system(command)
@@ -251,37 +250,20 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
                     except:
                         if verbose: print rn, "WARNING: unable to perform [",command,"]"
 
-                    
+                    # attempt to unzip the compressed file
+                    uncompressed = uncompress_file(outname, None, verbose)
 
-            # Unzip the compressed file
-                    outfile = uncompress_file(outname, None, verbose)
-                # Then this is probably an uncompressed file
-                        
-                     #   try:
-                      #      os.system(command)
-                      #      outfile = outname
-                      #      if verbose: print rn, "ADVISEMENT: performed [",command,"]"
-                     #   except:
-                      #      if verbose:
-                      #      print rn, "WARNING: unable to perform [",command,"]"
-
-                    if type(outfile) is str:
-                    # Save name of uncompressed file for output
-                        filelist.append(outfile)
+                    if type(uncompressed) is str:
+                    # save name of uncompressed file for output
+                        filelist.append(uncompressed)
                     else:
+                    # file wasn't compressed, use outname
                         filelist.append(outname)
 
-                # Ensure that the actual data start time is recorded
-                   # ff = outname.replace(outdir, '')
-                    #check the beginning time of the file
-                   # t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]), int(ff[6:8]),
-                   #                  int(ff[9:11]), int(ff[11:13]), int(ff[14:16]))
-                   # if file_stime == None or t1 < file_stime: file_stime = t1
-
-        # Advance the cycle time by the specified incriment
+        # Advance the cycle time by the specified increment
         ctime = ctime + time_inc
 
-    # Return the actual file start time and the list of uncompressed files
+    # Return the list of uncompressed files
     return filelist
 
 
@@ -469,7 +451,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
     #--------------------------------------------------------------------------
     # Build the possible radar filenames for matching using re module
-    #fname = ['......'+rad+'.'+ftype, '......'+rad+'.'+channel+'.'+ftype, 'C0.'+rad+'.'+ftype, '.C0.'+rad+'.'+channel+'.'+ftype]
 
     if fnamefmt is None:
         #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
@@ -477,7 +458,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                     '{date}.{hour}......{radar}.{channel}.{ftype}', \
                     '{date}.C0.{radar}.{ftype}', \
                     '{date}.C0.{radar}.{channel}.{ftype}']
-
+    if isinstance(fnamefmt,str):
+        fnamefmt = list(fnamefmt)
 
     #--------------------------------------------------------------------------
     # Iterate through all of the hours in the request (round the starting time
@@ -596,14 +578,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
                             filelist.append(outfile)
 
-                            # Use filename to find the file starting time
-                            #ff = outfile.replace(outdir, '')
-                            #t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                            #                 int(ff[6:8]), int(ff[9:11]),
-                            #                 int(ff[11:13]), int(ff[14:16]))
-                            #if file_stime == None or t1 < file_stime:
-                            #    file_stime = t1
-
         #----------------------------------------------------------------------
         # Move to the next time
         ctime = ctime + time_inc
@@ -614,6 +588,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     del remoteaccess
     #return (file_stime, filelist)
     return filelist
+
 
 def test_fetchutils():
 
