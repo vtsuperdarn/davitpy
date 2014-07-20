@@ -256,7 +256,7 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
 
 
 def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
-                       remotedirfmt, dirtree, tempdir, username=None,
+                       remotedirfmt, dirtree, outdir, username=None,
                        password=False, port=None, channel='a',
                        time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
     """
@@ -276,7 +276,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                                     (eg "{dirtree}{ftype}/{year}/{month}/{day}/")
       * **dirtree**          (str): Remote directory housing the SuperDARN data
                                     (must end with a "/")
-      * **tempdir**          (str): Temporary directory in which to store
+      * **outdir**          (str): Temporary directory in which to store
                                     uncompressed files (must end with a "/")
       * **username**         (str): Optional input for remote access
       * **password**    (bool/str): Optional input for remote access.  True will
@@ -366,9 +366,9 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     assert(isinstance(remotedirfmt, str)), \
         (rn, 'ERROR: remotedirfmt must be a string')
     assert(isinstance(dirtree, str)), (rn, 'ERROR: dirtree must be a string')
-    assert(isinstance(tempdir, str) and tempdir[-1] == "/"), \
-        (rn, 'ERROR: tempdir must be a string ending in "/"')
-    assert(os.path.isdir(tempdir)), (rn, "ERROR: tempdir is not a directory")
+    assert(isinstance(outdir, str) and outdir[-1] == "/"), \
+        (rn, 'ERROR: outdir must be a string ending in "/"')
+    assert(os.path.isdir(outdir)), (rn, "ERROR: outdir is not a directory")
     assert(isinstance(username, str) or username is None), \
         (rn, 'ERROR: username must be a string or None')
     assert(isinstance(password, str) or isinstance(password, bool)), \
@@ -534,7 +534,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                 for rf in remotefiles:
                     #if we have a file match between a file and our regex
                     if(regex.match(rf)):
-                        tf = "{:s}{:s}".format(tempdir, rf)
+                        tf = "{:s}{:s}".format(outdir, rf)
 
                         if method is "sftp":
                             # Use the open sftp connection to get the file
@@ -571,7 +571,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                             filelist.append(outfile)
 
                             # Use filename to find the file starting time
-                            #ff = outfile.replace(tempdir, '')
+                            #ff = outfile.replace(outdir, '')
                             #t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
                             #                 int(ff[6:8]), int(ff[9:11]),
                             #                 int(ff[11:13]), int(ff[14:16]))
