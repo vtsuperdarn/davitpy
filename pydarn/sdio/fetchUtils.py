@@ -214,6 +214,16 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     ctime = stime.replace(minute=0, second=0, microsecond=0)
     if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
 
+
+    # construct a checkstruct dictionary to detect if changes in ctime
+    # lead to a change in directory to limit how often directories are listed
+    time_keys = ["year","month","day","hour","date"]
+    keys_in_localdir = [x for x in time_keys if localdirfmt.find('{'+x+'}') > 0 ]
+
+    checkstruct={}
+    for key in keys_in_localdir:
+      checkstruct[key]=''
+
     while ctime <= etime:
 
         # set the temporal parts of the possible local directory structure
@@ -223,10 +233,17 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
         localstruct["hour"] = ctime.strftime("%H")
         localstruct["date"] = ctime.strftime("%Y%m%d")
         
-        # get the files in the directory (need to check for 
-        # every ctime in case we change directories)
-        local_dir = localdirfmt.format(**localstruct)
-        files = os.listdir(local_dir)
+        # check for a directory change
+        dir_change = 0
+        for key in keys_in_localdir:
+            if (checkstruct[key] != localstruct[key]):
+                checkstruct[key] = localstruct[key]    
+                dir_change = 1   
+
+        # get the files in the directory if directory has changed
+        if dir_change:
+          local_dir = localdirfmt.format(**localstruct)
+          files = os.listdir(local_dir)
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
@@ -480,6 +497,16 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     remotestruct["channel"] = channel
 
     #--------------------------------------------------------------------------
+    # construct a checkstruct dictionary to detect if changes in ctime
+    # lead to a change in directory to limit how often directories are listed
+    time_keys = ["year","month","day","hour","date"]
+    keys_in_remotedir = [x for x in time_keys if remotedirfmt.find('{'+x+'}') > 0 ]
+
+    checkstruct={}
+    for key in keys_in_remotedir:
+      checkstruct[key]=''
+
+    #--------------------------------------------------------------------------
     # Cycle through the specified times
     while ctime <= etime:
         #----------------------------------------------------------------------
@@ -487,14 +514,23 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         remotestruct["year"] = "{:04d}".format(ctime.year)
         remotestruct["month"] = "{:02d}".format(ctime.month)
         remotestruct["day"] = "{:02d}".format(ctime.day)
+        remotestruct["hour"] = ctime.strftime("%H")
+        remotestruct["date"] = ctime.strftime("%Y%m%d")
 
         #----------------------------------------------------------------------
         # Build the name of the remote files (uses wildcards)
         path = remotedirfmt.format(**remotestruct)
-        if(remoteaccess.has_key('path') is False
-           or path is not remoteaccess['path']):
-            remoteaccess['path'] = path
+        remoteaccess['path'] = path
 
+        # check for a directory change
+        dir_change = 0
+        for key in keys_in_remotedir:
+            if (checkstruct[key] != remotestruct[key]):
+                checkstruct[key] = remotestruct[key]    
+                dir_change = 1   
+    
+        # get the files in the directory if directory has changed
+        if dir_change:
             # Get a list of all the files in the new remote directory
             if method is "sftp":
                 try:
@@ -512,12 +548,12 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                     # Extract the available files.  Assumes that the filename
                     # will be the first reference in the line
                     remotefiles = [f[f.find('<a href="')+9:
-                                     f[f.find('<a href="')+9:-1].find('">')
-                                     +f.find('<a href="')+9]
-                                   for f in response.readlines()
-                                   if f.find('<a href="') >= 0]
+                                 f[f.find('<a href="')+9:-1].find('">')
+                                 +f.find('<a href="')+9]
+                               for f in response.readlines()
+                               if f.find('<a href="') >= 0]
 
-                    # Close the connection
+                        # Close the connection
                     response.close()
                 except:
                     if verbose:
@@ -527,9 +563,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         # Search through the remote files for the ones we want and download them
         # Ensure that the list of remote files include those that can possibly
         # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
-        if len(remotefiles) > 0 and max([len(rf) for rf in remotefiles]) > 21:
-            remotestruct["hour"] = ctime.strftime("%H")
-            remotestruct["date"] = ctime.strftime("%Y%m%d")
+        if len(remotefiles) > 0:
 
             for namefmt in fnamefmt:
                 #fill in the date, time, and radar information using remotestruct
