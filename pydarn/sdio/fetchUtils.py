@@ -117,8 +117,9 @@ def uncompress_file(filename, outname=None, verbose=True):
     return outname
 
 
-def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
-                      cycle_inc=dt.timedelta(hours=1), verbose=True):
+def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a',
+                      time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
+
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
     radar files that fit the input criteria.
@@ -130,12 +131,10 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
         * **ftype**          (str): radar file type ("fitex", "fitacf", "lmfit",
                                   or "iqdat")
         * **localdirfmt**     (str): string defining the local directory structure
-                                  (eg "{dirtree}{ftype}/{year}/{month}/{day}/")
-        * **dirtree**         (str): Local directory housing the SuperDARN data
-                                  (must end with a "/")
-        * **tempdir**         (str): Temporary directory in which to store
+                                  (eg "{ftype}/{year}/{month}/{day}/")
+        * **outdir**         (str): Temporary directory in which to store
                                   uncompressed files (must end with a "/")
-        * **cycle_inc** (timedelta): Time incriment between files (default=1 hour)
+        * **time_inc** (timedelta): Time incriment between files (default=1 hour)
         * **verbose**        (bool): Print warnings or not? (default=True)
 
     **Output**: file_stime (datetime): actual starting time for located files
@@ -144,7 +143,7 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
     **Example**:
       
       Fetches a day of locally stored data, sets directory format
-      environment variable to "{dirtree}{ftype}/{radar}/{year}/".  This
+      environment variable to "{ftype}/{radar}/{year}/".  This
       environment variable may eventually be phased out, so it is input
       as a string in this routine.
 
@@ -161,8 +160,7 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
     """
 
     
-    import os
-    import glob
+    import os, glob, re
 
     rn = "fetch_local_files"
 
@@ -178,13 +176,12 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
         (rn, 'ERROR: ftype must be one of: rawacf, fitacf, fitex, lmfit, iqdat')
     assert(isinstance(localdirfmt, str) and localdirfmt[-1] == "/"), \
         (rn, 'ERROR: localdirfmt must be a string ending in "/"')
-    assert(isinstance(dirtree, str) and dirtree[-1] == "/"), \
-        (rn, 'ERROR: dirtree must be a string ending in "/"')
-    assert(os.path.isdir(dirtree)), (rn, "ERROR: dirtree is not a directory")
-    assert(isinstance(tempdir, str) and tempdir[-1] == "/"), \
-        (rn, 'ERROR: tempdir must be a string ending in "/"')
-    assert(os.path.isdir(tempdir)), (rn, "ERROR: tempdir is not a directory")
-    assert(isinstance(cycle_inc, dt.timedelta)), \
+    assert(isinstance(outdir, str) and outdir[-1] == "/"), \
+        (rn, 'ERROR: outdir must be a string ending in "/"')
+    assert(os.path.isdir(outdir)), (rn, "ERROR: outdir is not a directory")
+    assert(isinstance(fnamefmt, (type(None),str,list))), \
+        (rn, 'ERROR: fnamefmt must be None, str, or list')
+    assert(isinstance(time_inc, dt.timedelta)), \
         (rn, 'ERROR: cycle_inc must be a timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
 
@@ -194,13 +191,21 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
 
     # Start building the radar file name using the UAF naming convention:
     # YYYYmmdd.HHMM.??.rad.ftype.extention
-    fname = '*.{:s}.{:s}*'.format(rad, ftype)
+    #fname = '*.{:s}.{:s}*'.format(rad, ftype)
 
-    # Set the unchanging parts of the possible local directory structure
+    if fnamefmt is None:
+        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
+        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
+                    '{date}.C0.{radar}.{ftype}', \
+                    '{date}.C0.{radar}.{channel}.{ftype}']
+
+    #--------------------------------------------------------------------------
+    # Set the unchanging parts of the possible remote directory structure
     localstruct = dict()
-    localstruct['dirtree'] = dirtree
-    localstruct["ftype"] = ftype 
-    localstruct["radar"] = rad 
+    localstruct["ftype"] = ftype
+    localstruct["radar"] = rad
+    localstruct["channel"] = channel
 
     # Iterate through all of the hours in the request (round the starting time
     # down to the nearest even hour)
@@ -208,55 +213,80 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, dirtree, tempdir,
     if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
 
     while ctime <= etime:
+
         # Set the temporal parts of the possible local directory structure
         localstruct["year"] = "{:4d}".format(ctime.year)
         localstruct["month"] = "{:2d}".format(ctime.month)
         localstruct["day"] = "{:2d}".format(ctime.day)
+        localstruct["hour"] = ctime.strftime("%H")
+        localstruct["date"] = ctime.strftime("%Y%m%d")
         
         # Build the name of the local files (uses wildcards)
         local_dir = localdirfmt.format(**localstruct)
-        files = "{:s}{:s}.{:s}{:s}".format(local_dir, ctime.strftime("%Y%m%d"),
-                                           ctime.strftime("%H"), fname)
+        files = os.listdir(local_dir)
 
+        #files = "{:s}{:s}.{:s}{:s}".format(local_dir, ctime.strftime("%Y%m%d"),
+        #                                   ctime.strftime("%H"), fname)
+
+        for namefmt in fnamefmt:
+            #fill in the date, time, and radar information using remotestruct
+            name = namefmt.format(**localstruct)
+
+            regex = re.compile(name)
+
+            # Go thorugh all the files in the directory
+            for lf in files:
+                #if we have a file match between a file and our regex
+                if(regex.match(lf)):
         # Find and uncompress files which begin in this hour, saving the
         # names of the uncompressed files for the output
-        for filename in glob.glob(files):
-            # Begin to construct the name for the uncompressed file
-            outname = filename.replace(local_dir, tempdir)
+        #for filename in glob.glob(files):
+                    # Begin to construct the name for the uncompressed file
+                    outname = os.path.join(outdir,lf)
+                    print outname
+                    command='cp {:s} {:s}'.format(os.path.join(local_dir,lf), outname)
+                    try:    
+                        os.system(command)
+                        if verbose: print rn, "ADVISEMENT: performed [",command,"]"
+                    except:
+                        if verbose: print rn, "WARNING: unable to perform [",command,"]"
+
+                    
 
             # Unzip the compressed file
-            outfile = uncompress_file(filename, outname, verbose)
-            if outfile is None:
+                    outfile = uncompress_file(outname, None, verbose)
                 # Then this is probably an uncompressed file
-                command='cp {:s} {:s}'.format(filename, outname)
-                try:
-                    os.system(command)
-                    outfile = outname
-                    if verbose: print rn, "ADVISEMENT: performed [",command,"]"
-                except:
-                    if verbose:
-                        print rn, "WARNING: unable to perform [",command,"]"
+                        
+                     #   try:
+                      #      os.system(command)
+                      #      outfile = outname
+                      #      if verbose: print rn, "ADVISEMENT: performed [",command,"]"
+                     #   except:
+                      #      if verbose:
+                      #      print rn, "WARNING: unable to perform [",command,"]"
 
-            if type(outfile) is str:
-                # Save name of uncompressed file for output
-                filelist.append(outname)
+                    if type(outfile) is str:
+                    # Save name of uncompressed file for output
+                        filelist.append(outfile)
+                    else:
+                        filelist.append(outname)
 
                 # Ensure that the actual data start time is recorded
-                ff = outname.replace(tempdir, '')
-                #check the beginning time of the file
-                t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]), int(ff[6:8]),
-                                 int(ff[9:11]), int(ff[11:13]), int(ff[14:16]))
-                if file_stime == None or t1 < file_stime: file_stime = t1
+                   # ff = outname.replace(outdir, '')
+                    #check the beginning time of the file
+                   # t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]), int(ff[6:8]),
+                   #                  int(ff[9:11]), int(ff[11:13]), int(ff[14:16]))
+                   # if file_stime == None or t1 < file_stime: file_stime = t1
 
         # Advance the cycle time by the specified incriment
-        ctime = ctime + cycle_inc
+        ctime = ctime + time_inc
 
     # Return the actual file start time and the list of uncompressed files
-    return(file_stime, filelist)
+    return filelist
 
 
 def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
-                       remotedirfmt, dirtree, outdir, username=None,
+                       remotedirfmt, outdir, username=None,
                        password=False, port=None, channel='a',
                        time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
     """
@@ -273,9 +303,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
       * **remotesite**       (str): remote site address (eg 'sd-data.ece.vt.edu')
       * **remotedirfmt**     (str): string defining the remote directory
                                     structure
-                                    (eg "{dirtree}{ftype}/{year}/{month}/{day}/")
-      * **dirtree**          (str): Remote directory housing the SuperDARN data
-                                    (must end with a "/")
+                                    (eg "{ftype}/{year}/{month}/{day}/")
       * **outdir**          (str): Temporary directory in which to store
                                     uncompressed files (must end with a "/")
       * **username**         (str): Optional input for remote access
@@ -302,7 +330,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     **Example**: 
              Fetches a day of remotely stored data from the Virginia Tech
              database, sets directory format environment variable to
-             "{dirtree}{year}/{ftype}/{radar}/".  This environment variable may
+             "{year}/{ftype}/{radar}/".  This environment variable may
              eventually be phased out, so it is input as a string in this
              routine.  The routine will prompt for a password and print out
              all warnings and advisements.
@@ -365,7 +393,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         (rn, 'ERROR: remotesite must be a string')
     assert(isinstance(remotedirfmt, str)), \
         (rn, 'ERROR: remotedirfmt must be a string')
-    assert(isinstance(dirtree, str)), (rn, 'ERROR: dirtree must be a string')
     assert(isinstance(outdir, str) and outdir[-1] == "/"), \
         (rn, 'ERROR: outdir must be a string ending in "/"')
     assert(os.path.isdir(outdir)), (rn, "ERROR: outdir is not a directory")
@@ -466,7 +493,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     #--------------------------------------------------------------------------
     # Set the unchanging parts of the possible remote directory structure
     remotestruct = dict()
-    remotestruct["dirtree"] = dirtree
     remotestruct["ftype"] = ftype
     remotestruct["radar"] = rad
     remotestruct["channel"] = channel
