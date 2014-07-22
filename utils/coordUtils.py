@@ -27,7 +27,7 @@
   * :func:`utils.coordUtils.coordConv`: Convert between geographic, AACGM, and MLT coordinates
   * :func:`utils.coordUtils.planeRot`: Rotate coordinates in the plane
 
-Written by Matt W.
+Written by Matt W. based on code by...Sebastien?
 """
 
 from models import aacgm
