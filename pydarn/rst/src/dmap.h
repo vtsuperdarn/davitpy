@@ -150,7 +150,7 @@ void *DataMapStoreArray(struct DataMap *ptr,
 int DataMapRemoveArray(struct DataMap *ptr,char *name,int type,int dim);
 
 void *DataMapFindArray(struct DataMap *ptr,char *name,int type,int dim,
-		       int **rng);
+		       int32 **rng);
 
 
 int DataMapSetFreeArray(struct DataMap *ptr,char *name,int type,int dim);
