@@ -49,7 +49,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
 
       lon, lat = coordConv(lon, lat, 'geo', 'mlt', dateTime=datetime(2012,3,12,0,56))
       
-  written by Matt W., 2013-09
+  written by Matt W., 2013-09 based on code by...Sebastien?
   """
   # Define acceptable coordinate systems
   coordsDict = {'mag': 'AACGM',
