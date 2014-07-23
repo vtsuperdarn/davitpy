@@ -75,7 +75,9 @@ class radDataPtr():
     import os,glob,string
     from pydarn.radar import network
     import utils
-
+    import paramiko as p
+    import re
+    
     self.sTime = sTime
     self.eTime = eTime
     self.stid = stid
