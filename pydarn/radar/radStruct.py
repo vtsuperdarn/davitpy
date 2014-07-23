@@ -56,7 +56,11 @@ class network(object):
 
         self.radars = []
         # Get DB name
-        rad_path = os.environ['HOME']
+        try: 
+          rad_path=os.environ['DAVIT_TMPDIR']
+        except:
+          try:  rad_path=os.environ['HOME']
+          except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
         dbname = os.path.join(rad_path, '.radars.sqlite')
 
         if not os.path.isfile(dbname):
@@ -385,8 +389,11 @@ class radar(object):
 
         # If a radar is requested...
         if code or radId:
-            rad_path = os.environ['HOME']
-            dbname = os.path.join(rad_path, '.radars.sqlite')
+            try: 
+              rad_path=os.environ['DAVIT_TMPDIR']
+            except:
+              rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            dbname = os.path.join(rad_path, 'radars.sqlite')
 
             if not os.path.isfile(dbname):
                 print "%s not found" % dbname
@@ -595,8 +602,11 @@ class site(object):
         self.maxgate = 0
         self.maxbeam = 0
         if radId or code: 
-            rad_path = os.environ['HOME']
-            dbname = os.path.join(rad_path, '.radars.sqlite')
+            try: 
+              rad_path=os.environ['DAVIT_TMPDIR']
+            except:
+              rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            dbname = os.path.join(rad_path, 'radars.sqlite')
 
             if not os.path.isfile(dbname):
                 print "%s not found" % dbname
