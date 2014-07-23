@@ -67,6 +67,9 @@ def coordConv(lon, lat, start, end, dateTime=None):
   # MLT requires a datetime
   if start == 'mlt' or end == 'mlt': 
     assert(dateTime is not None),"dateTime must be provided for MLT coordinates to work."
+  # mag requires a datetime
+  if start == 'mag' or end == 'mag': 
+    assert(dateTime is not None),"dateTime must be provided for MAG coordinates to work."
 
   # Make the inputs into numpy arrays because single element lists have no 'len'
   lon = np.array(lon)
@@ -82,7 +85,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
       latt = lat
       nlon, nlat = np.size(lont), np.size(latt)   # Sizes
       shape = lont.shape                          # Shape of array
-      lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, flag) # Convert either way
+      lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, dateTime.year,flag) # Convert either way
       lon = np.array(lon).reshape(shape)        # Put results into numpy array and reshape
       lat = np.array(lat).reshape(shape)
     # Geographical and MLT conversions
@@ -102,7 +105,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
           if mag > 180.: mag -= 360.                              # Put in -180 to 180 range
           lon_mag.append(mag)                                     # Stick on end of the list
         lont = np.array(lon_mag).reshape(shape)                   # Make into a numpy array
-        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, flag) # Convert mag to geo
+        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, dateTime.year, flag) # Convert mag to geo
         lon = np.array(lon).reshape(shape)                        # Make into numpy arrays
         lat = np.array(lat).reshape(shape)
       else:
@@ -111,7 +114,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
         latt = lat
         nlon, nlat = np.size(lont), np.size(latt)
         shape = lont.shape    
-        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, flag) # Convert geo to mag
+        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, dateTime.year, flag) # Convert geo to mag
         for lonel in range(nlon):
           mlt = aacgm.mltFromYmdhms(dateTime.year,dateTime.month,dateTime.day,
               dateTime.hour,dateTime.minute,dateTime.second,lon[lonel]) # Get MLT from mag lon
@@ -183,14 +186,14 @@ if __name__ == "__main__":
     print "Single coord pair tests"
     print "geo to geo, mag to mag, mlt to mlt, ashes to ashes; these results should be ([50.7],[34.5])"
     print coordConv(50.7,34.5,'geo','geo')
-    print coordConv(50.7,34.5,'mag','mag')
+    print coordConv(50.7,34.5,'mag','mag',dateTime=datetime(2013,7,23,12,6,34))
     print coordConv(50.7,34.5,'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34))
     print "geo to mag, this result should be ([122.89],[29.69])"
-    print coordConv(50.7,34.5,'geo','mag')
+    print coordConv(50.7,34.5,'geo','mag',dateTime=datetime(2013,7,23,12,6,34))
     print "geo to mlt, this result should be ([229.12],[29.69])"
     print coordConv(50.7,34.5,'geo','mlt',dateTime=datetime(2013,7,23,12,6,34))
     print "mag to geo, this result should be ([50.7],[34.5])"
-    print coordConv(122.89,29.69,'mag','geo')
+    print coordConv(122.89,29.69,'mag','geo',dateTime=datetime(2013,7,23,12,6,34))
     print "mlt to geo, this result should be ([50.7,34.5])"
     print coordConv(229.12,29.69,'mlt','geo',dateTime=datetime(2013,7,23,12,6,34))
     print "mag to mlt, this result should be ([229.12],[29.69])"
@@ -201,14 +204,14 @@ if __name__ == "__main__":
     print "Coord array tests"
     print "geo to geo, mag to mag, mlt to mlt; these results should be ([50.7,53.8],[34.5,40.2])"
     print coordConv([50.7,53.8],[34.5,40.2],'geo','geo')
-    print coordConv([50.7,53.8],[34.5,40.2],'mag','mag')
+    print coordConv([50.7,53.8],[34.5,40.2],'mag','mag',dateTime=datetime(2013,7,23,12,6,34))
     print coordConv([50.7,53.8],[34.5,40.2],'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34))
     print "geo to mag, this result should be ([122.89,126.15],[29.69,35.84])"
-    print coordConv([50.7,53.8],[34.5,40.2],'geo','mag')
+    print coordConv([50.7,53.8],[34.5,40.2],'geo','mag',dateTime=datetime(2013,7,23,12,6,34))
     print "geo to mlt, this result should be ([229.12,232.38],[29.69,35.84])"
     print coordConv([50.7,53.8],[34.5,40.2],'geo','mlt',dateTime=datetime(2013,7,23,12,6,34))
     print "mag to geo, this result should be ([50.7,53.8],[34.5,40.2])"
-    print coordConv([122.89,126.15],[29.69,35.84],'mag','geo')
+    print coordConv([122.89,126.15],[29.69,35.84],'mag','geo',dateTime=datetime(2013,7,23,12,6,34))
     print "mlt to geo, this result should be ([50.7,53.8],[34.5,40.2])"
     print coordConv([229.12,232.38],[29.69,35.84],'mlt','geo',dateTime=datetime(2013,7,23,12,6,34))
     print "mag to mlt, this result should be ([229.12,232.38],[29.69,35.84])"
