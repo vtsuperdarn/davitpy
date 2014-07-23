@@ -320,6 +320,7 @@ class prmData(radBaseData):
     * **noisemean**  (float): mean noise level
     * **noisesky**  (float): sky noise level
     * **noisesearch**  (float): freq search noise level
+    * **txpl** (int): transmit pulse length in us
 
   Written by AJ 20121130
   """
@@ -350,7 +351,8 @@ class prmData(radBaseData):
     self.noisemean = None   #mean noise level
     self.noisesky = None    #sky noise level
     self.noisesearch = None #freq search noise level
-    
+    self.txpl = None        #transmit pulse length in us
+
     #if we are copying a structure, do that
     if(prmDict != None): self.updateValsFromDict(prmDict)
 
