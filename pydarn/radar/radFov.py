@@ -161,9 +161,9 @@ class fov(object):
         lonCenter = zeros((nbeams+1, ngates+1), dtype='float')
         
         # Calculate deviation from boresight for center of beam
-        bOffCenter = bmsep * (beams - nbeams/2.0)
+        bOffCenter = bmsep * (beams - (nbeams - 1)/2.0)
         # Calculate deviation from boresight for edge of beam
-        bOffEdge = bmsep * (beams - nbeams/2.0 - 0.5)
+        bOffEdge = bmsep * (beams - (nbeams - 1)/2.0 - 0.5)
         
         # Iterates through beams
         for ib in beams:
