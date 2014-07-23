@@ -29,6 +29,7 @@ typedef double int64;
   /* This defines the int16, int32, and int64 types */
 
   #include <limits.h>
+  #include <Python.h>
   #ifdef WORD_BIT
     #if WORD_BIT == 16
       typedef char int8;
