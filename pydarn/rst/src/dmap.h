@@ -150,14 +150,14 @@ void *DataMapStoreArray(struct DataMap *ptr,
 int DataMapRemoveArray(struct DataMap *ptr,char *name,int type,int dim);
 
 void *DataMapFindArray(struct DataMap *ptr,char *name,int type,int dim,
-		       int32 **rng);
+		       int **rng);
 
 
 int DataMapSetFreeArray(struct DataMap *ptr,char *name,int type,int dim);
 
 int DataMapSize(struct DataMap *write);
 
-char *DataMapEncodeBuffer(struct DataMap *ptr,int *size);
+unsigned char *DataMapEncodeBuffer(struct DataMap *ptr,int *size);
 
 int DataMapWrite(int fid,struct DataMap *ptr);
  
@@ -169,7 +169,7 @@ int DataMapFwrite(FILE *fp,struct DataMap *ptr);
 
 struct DataMap *DataMapFread(FILE *fp);
 
-struct DataMap *DataMapDecodeBuffer(char *buf,int size);
+struct DataMap *DataMapDecodeBuffer(unsigned char *buf,int size);
 
 struct DataMap *DataMapReadBlock(int fid,int *s);
 struct DataMap *DataMapFreadBlock(FILE *fp,int *s);
