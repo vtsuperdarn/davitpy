@@ -46,27 +46,33 @@ class fov(object):
             * **'GS'**: for ground scatter projection model
             * **None**: if you are really confident in your elevation or altitude values
             * ... more to come
-        * **coords**: 'geo', 'mag'
+        * **coords**: 'geo', 'mag', 'mlt'
+        * **dateTime**: date and time as a python datetime object
 
     """
     def __init__(self, \
             frang=180.0, rsep=45.0, site=None, \
             nbeams=None, ngates=None, bmsep=None, recrise=None, \
             siteLat=None, siteLon=None, siteBore=None, siteAlt=None, \
-            siteYear=None, elevation=None, altitude=300., \
+            dateTime=None, elevation=None, altitude=300., \
             model='IS', coords='geo'):
         # Get fov
         from numpy import ndarray, array, arange, zeros, nan
         import models.aacgm as aacgm
-        
+        from utils.coordUtils import coordConv
+        import datetime as dt        
+
+        #Make sure dateTime is given if there will be an MLT calculation
+        if coords is 'mlt': assert(dateTime is not None), "dateTime must be specified for MLT to work."
+
         # Test that we have enough input arguments to work with
         if not site and None in \
         [nbeams, ngates, bmsep, recrise, 
         siteLat, siteLon, siteBore, siteAlt,
-        siteYear]:
+        dateTime]:
             print('calcFov: must provide either a site object or ' + \
                 '[nbeams, ngates, bmsep, recrise, siteLat,' + \
-                ' siteLon, siteBore, siteAlt, siteYear].')
+                ' siteLon, siteBore, siteAlt, dateTime].')
             return
             
         # Then assign variables from the site object if necessary
@@ -79,7 +85,7 @@ class fov(object):
             if not siteLon: siteLon = site.geolon
             if not siteAlt: siteAlt = site.alt
             if not siteBore: siteBore = site.boresite
-            if not siteYear: siteYear = site.tval.year
+            if not dateTime: dateTime = dt.datetime(site.tval.year,1,1)
             
         # Some type checking. Look out for arrays
         # If frang, rsep or recrise are arrays, then they should be of shape (nbeams,)
@@ -202,18 +208,15 @@ class fov(object):
 
                 if (sRangCenter[ig] != -1) and (sRangEdge[ig] != -1):
                   # Then calculate projections
-                  latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, 
-                            siteBore, bOffCenter[ib], sRangCenter[ig],
-                            elevation=tElev, altitude=tAlt, model=model)
-                  latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, 
-                            siteBore, bOffEdge[ib], sRangEdge[ig],
-                            elevation=tElev, altitude=tAlt, model=model)
-                              
-                  if(coords == 'mag'):
-                      latC, lonC, _ = aacgm.aacgmlib.aacgmConv(
-                        latC,lonC,0.,siteYear,0)
-                      latE, lonE, _ = aacgm.aacgmlib.aacgmConv(
-                        latE,lonE,0.,siteYear,0)
+                  latC, lonC = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffCenter[ib], sRangCenter[ig], \
+                              elevation=tElev, altitude=tAlt, model=model)
+                  latE, lonE = calcFieldPnt(siteLat, siteLon, siteAlt*1e-3, siteBore, bOffEdge[ib], sRangEdge[ig], \
+                              elevation=tElev, altitude=tAlt, model=model)
+                  # Convert to other coordinate system if needed
+                  if coords is 'mag' or coords is 'mlt':
+                      lonC, latC = coordConv(lonC, latC, 'geo', coords, dateTime=dateTime)
+                      lonE, latE = coordConv(lonE, latE, 'geo', coords, dateTime=dateTime)
+                      lonC, latC, lonE, latE = lonC[0], latC[0], lonE[0], latE[0]
                 else:
                   latC, lonC = nan, nan
                   latE, lonE = nan, nan

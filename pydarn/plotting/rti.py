@@ -47,7 +47,8 @@ from matplotlib.figure import Figure
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
               pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None, \
-              custType='fitex', tFreqBands=[], myFile=None,figure=None,xtick_size=9,ytick_size=9,xticks=None,axvlines=None,plotTerminator=False):
+              custType='fitex', tFreqBands=None, myFile=None,figure=None,xtick_size=9,ytick_size=9, \
+              xticks=None,axvlines=None,plotTerminator=False,cpidFreq={}):
   """create an rti plot for a secified radar and time period
 
   **Args**:
@@ -72,7 +73,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[filtered]** (boolean): a flag indicating whether to boxcar filter the data.  default = False (no filter)
     * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
     * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
-    * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
+    * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [(8000,20000)]
     * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
     * **[figure]** (matplotlib.figure) figure object to plot on.  If None, a figure object will be created for you.
     * **[xtick_size]**: (int) fontsize of xtick labels
@@ -80,6 +81,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
     * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
     * **[plotTerminator]**: (boolean) Overlay the day/night terminator.
+    * **[cpidFreq]**: (dictionary) Select a transmitter frequency band only when a given CPID is active, otherwise plot all frequencies (cannot set cpidFreq and tFreqBands together).  For each item key is CPID (as an int) and value is a list or tuple giving the lower and upper bounds of the band (as ints, as used for tFreqBands).  Example: cpidFreq={3501:(12000,13000),151:(10000,11000)}  Default: empty dict. 
   **Returns**:
     * Possibly figure, depending on the **retfig** keyword
 
@@ -116,6 +118,10 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   'error, yrng must equal -1 or be a list with the 2nd element larger than the first'
   assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
 
+  assert(not tFreqBands or not cpidFreq),"error, cannot set tFreqBands and cpidFreq together"
+  for cpidKey, freqPair in cpidFreq.iteritems():
+    assert(isinstance(cpidKey,int) and len(freqPair) == 2 and isinstance(freqPair[0],int) and isinstance(freqPair[1],int)),"error, cpidFreq incorrectly formed"
+
   #assign any default color scales
   tscales = []
   for i in range(0,len(params)):
@@ -130,7 +136,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
 
   #assign default frequency band
   tbands = []
-  if tFreqBands == []: tbands.append([8000,20000])
+  if tFreqBands is None: tbands.append((8000,20000))
   else: 
     for band in tFreqBands: 
       #make sure that starting frequncy is less than the ending frequency for each band
@@ -194,8 +200,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   while(myBeam != None):
     if(myBeam.time > eTime): break
     if(myBeam.bmnum == bmnum and (sTime <= myBeam.time)):
-      for i in range(len(tbands)):
-        if myBeam.prm.tfreq >= tbands[i][0] and myBeam.prm.tfreq <= tbands[i][1]:
+      for i in range(len(tbands)): #there will only be one in tbands if tFreqBands has not been set
+        lowerFreq = tbands[i][0] #set the bounds now and they will be changed only if needed
+        upperFreq = tbands[i][1]
+        if cpidFreq.get(myBeam.cp):
+              lowerFreq = cpidFreq[myBeam.cp][0]
+              upperFreq = cpidFreq[myBeam.cp][1]
+        if myBeam.prm.tfreq >= lowerFreq and myBeam.prm.tfreq <= upperFreq:
           times[i].append(myBeam.time)
           cpid[i].append(myBeam.cp)
           nave[i].append(myBeam.prm.nave)
@@ -225,13 +236,10 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       continue
 
     #get/create a figure
-    if figure == None:
-        if show:
-          rtiFig = plot.figure(figsize=(11,8.5))
-        else:
-          rtiFig = Figure(figsize=(14,14))
-    else:
-        rtiFig = figure
+    #if show:
+    rtiFig = plot.figure(figsize=(11,8.5))
+    #else:
+    #  rtiFig = Figure(figsize=(14,14))
   
     #give the plot a title
     rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
@@ -465,9 +473,9 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
     if xticks is not None:
       ax.xaxis.set_ticks(xticks)
 
-  if axvlines is not None:
-    for line in axvlines:
-       ax.axvline(line,color='0.25',ls='--')
+    if axvlines is not None:
+      for line in axvlines:
+         ax.axvline(line,color='0.25',ls='--')
 
     for tick in ax.xaxis.get_major_ticks():
       tick.label.set_fontsize(xtick_size) 
