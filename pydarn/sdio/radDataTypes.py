@@ -349,8 +349,8 @@ class radDataPtr():
                                 #check the beginning time of the file
                                 t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
                                 if fileSt == None or t1 < fileSt: fileSt = t1
-
-                            ctime = ctime+dt.timedelta(hours=1)
+                        # Ctime increment needs to happen outside of the aFile loop.
+                        ctime = ctime+dt.timedelta(hours=1)
                     if len(filelist) > 0 :
                         print 'found',ftype,'data on sftp server'
                         self.fType,self.dType = ftype,'dmap'
@@ -1037,3 +1037,70 @@ class iqData(radBaseData):
     for key,var in self.__dict__.iteritems():
       myStr += '%s = %s \n' % (key,var)
     return myStr
+
+if __name__=="__main__":
+  import os
+  import datetime
+  import hashlib
+  try:
+      tmpDir=os.environ['DAVIT_TMPDIR']
+  except:
+      tmpDir = '/tmp/sd/'
+
+  rad='fhe'
+  channel=None
+  fileType='fitacf'
+  filtered=False
+  sTime=datetime.datetime(2012,11,1,0,0)
+  eTime=datetime.datetime(2012,11,1,4,0)
+  expected_filename="20121031.220100.20121101.040000.fhe.fitacf"
+  expected_path=os.path.join(tmpDir,expected_filename)
+  expected_filesize=26684193
+  expected_md5sum="9de702d7a0371b9e53f6ea01c076eccb"
+  print "Expected File:",expected_path
+
+  print "\nRunning sftp grab example for radDataPtr."
+  print "Environment variables used:"
+  print "  VTDB:", os.environ['VTDB']
+  print "  DBREADUSER:", os.environ['DBREADUSER']
+  print "  DBREADPASS:", os.environ['DBREADPASS']
+  src='sftp'
+  if os.path.isfile(expected_path):
+    os.remove(expected_path)
+  VTptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
+  if os.path.isfile(expected_path):
+    statinfo = os.stat(expected_path)
+    print "Actual File Size:  ", statinfo.st_size
+    print "Expected File Size:", expected_filesize 
+    md5sum=hashlib.md5(expected_path).hexdigest()
+    print "Actual Md5sum:  ",md5sum
+    print "Expected Md5sum:",expected_md5sum
+    if expected_md5sum!=md5sum:
+      print "Error: Cached dmap file has unexpected md5sum."
+  else:
+    print "Error: Failed to create expected cache file"
+  VTptr.close()
+  del VTptr
+
+  print "\nRunning local grab example for radDataPtr."
+  print "Environment variables used:"
+  print "  DAVIT_LOCALDIR:", os.environ['DAVIT_LOCALDIR']
+  print "  DAVIT_DIRFORMAT:", os.environ['DAVIT_DIRFORMAT']
+  src='local'
+  if os.path.isfile(expected_path):
+    os.remove(expected_path)
+  localptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
+  if os.path.isfile(expected_path):
+    statinfo = os.stat(expected_path)
+    print "Actual File Size:  ", statinfo.st_size
+    print "Expected File Size:", expected_filesize 
+    md5sum=hashlib.md5(expected_path).hexdigest()
+    print "Actual Md5sum:  ",md5sum
+    print "Expected Md5sum:",expected_md5sum
+    if expected_md5sum!=md5sum:
+      print "Error: Cached dmap file has unexpected md5sum."
+  else:
+    print "Error: Failed to create expected cache file"
+  localptr.close()
+  del localptr
+
