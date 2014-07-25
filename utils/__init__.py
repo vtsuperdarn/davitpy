@@ -11,6 +11,7 @@ This subpackage contains various utilities for DaViT-py
     * :mod:`utils.geoPack`: geographic transformations
     * :mod:`utils.timeUtils`: date/time manipulations 
     * :mod:`utils.calcSun`: solar position calculator
+    * :mod:`utils.coordUtils`: coordinate system tools
 
 """
 try:
@@ -32,6 +33,11 @@ try:
     from calcSun import *
 except Exception, e:
     print __file__+' -> utils.calcSun: ', e
+
+try:
+    from coordUtils import *
+except Exception, e:
+    print __file__+' -> utils.coordUtils: ', e
 
 
 # *************************************************************
