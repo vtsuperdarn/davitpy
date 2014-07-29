@@ -370,6 +370,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     import urllib2
 
     import os
+    import re
 
     rn = "fetch_remote_files"
 
