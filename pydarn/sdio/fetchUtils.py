@@ -370,6 +370,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     import urllib2
 
     import os
+    import re
 
     rn = "fetch_remote_files"
 
@@ -570,7 +571,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                 name = namefmt.format(**remotestruct)
                 
                 # Create a regular expression to find files of this time
-                regex = urllib.re.compile(name)
+                regex = re.compile(name)
 
                 # Go thorugh all the files in the directory
                 for rf in remotefiles:
