@@ -145,21 +145,21 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     **Example**:
       
-      Fetches a day of locally stored data, sets directory format
-      environment variable to "{ftype}/{radar}/{year}/".  This
-      environment variable may eventually be phased out, so it is input
-      as a string in this routine.
+      Fetches one locally stored fitacf file stored in a directory structure
+      given by localdirfmt. The file name format is specified by the fnamefmt 
+      arguement. 
 
       :: 
 
-        import pydarn.sdio as sdio
+        from pydarn.sdio import fetchUtils
         import datetime as dt
         import os
 
-        sdio.dbUtils.setDIRFORMAT(0, 1, 2, 3)
-        st_out, filelist = sdio.fetchUtils.fetch_local_files(dt.datetime(2002,6,20),
-            dt.datetime(2002,6,21), "han", "fitacf", os.environ['DAVIT_DIRFORMAT'],
-            "/Users/agb/Programs/Data/SuperDARN/", "/tmp/sd/")
+        filelist = fetchUtils.fetch_local_files(dt.datetime(2002,6,20), \
+            dt.datetime(2002,6,21), '/sd-data/{year}/{month}/',{'ftype':'fitacf'}, \
+            "/tmp/sd/",'{date}.{hour}......{radar}.{channel}.{ftype}', \
+            time_inc=timedelta(hours=2),verbose=False)
+
     """
 
     
@@ -182,7 +182,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         (rn, 'ERROR: fnamefmt must be str or list')
     assert(isinstance(time_inc, dt.timedelta)), \
         (rn, 'ERROR: cycle_inc must be a timedelta object')
-    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
+    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
 
     #--------------------------------------------------------------------------
@@ -305,34 +305,27 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
       * **filelist**        (list): list of uncompressed files (including path)
 
     **Example**: 
-             Fetches a day of remotely stored data from the Virginia Tech
-             database, sets directory format environment variable to
-             "{year}/{ftype}/{radar}/".  This environment variable may
-             eventually be phased out, so it is input as a string in this
-             routine.  The routine will prompt for a password and print out
-             all warnings and advisements.
+             Fetches 3 remotely stored fitex files from the Virginia Tech
+             database using sftp. The directory structure is specified by
+             the remotedirfmt argument. The file name format is specified 
+             by the fnamefmt arguement. 
 
       ::
 
-        import pydarn.sdio as sdio
+        from pydarn.sdio import fetchUtils
         import datetime as dt
 
-        sdio.dbUtils.setDIRFORMAT(0, 2, 3, 1)
-        print "You will be propmted for this password:", os.environ['DBREADPASS']
-        st_out,filelist = sdio.fetchUtils.fetch_remote_files(dt.datetime(2002,3,6), \
-            dt.datetime(2002,3,7), "han", "fitacf", "sftp", "sd-data.ece.vt.edu", \
-            os.environ['DAVIT_DIRFORMAT'], "/data/", "/tmp/", "sd_dbread", True)
+        fitex = fetchUtils.fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2), \
+                 'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', \ 
+                 {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/', \
+                 '{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', \
+                 password='5d', time_inc=timedelta(hours=2),verbose=False)
 
-        print st_out
-        > "2002-03-06 00:00:00"
-        print filelist
-        > "['/tmp/20020306.0000.00.han.fitacf', '/tmp/20020306.0200.00.han.fitacf',
-            '/tmp/20020306.0400.00.han.fitacf', '/tmp/20020306.0600.00.han.fitacf',
-            '/tmp/20020306.0800.00.han.fitacf', '/tmp/20020306.1000.00.han.fitacf',
-            '/tmp/20020306.1200.00.han.fitacf', '/tmp/20020306.1400.00.han.fitacf',
-            '/tmp/20020306.1600.00.han.fitacf', '/tmp/20020306.1800.00.han.fitacf',
-            '/tmp/20020306.2000.00.han.fitacf', '/tmp/20020306.2200.00.han.fitacf',
-            '/tmp/20020307.0000.00.han.fitacf']"
+        print fitex
+        ['/tmp/sd/20131130.2201.00.mcm.a.fitex',
+         '/tmp/sd/20131201.0000.04.mcm.a.fitex',
+         '/tmp/sd/20131201.0201.00.mcm.a.fitex']
+
     """
 
     # getpass allows passwords to be entered without them appearing onscreen
@@ -373,14 +366,14 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     assert(isinstance(username, str) or username is None), \
         (rn, 'ERROR: username must be a string or None')
     assert(isinstance(password, str) or isinstance(password, bool)), \
-        (rn, 'ERROR: password must be a string or Boolian')
+        (rn, 'ERROR: password must be a string or Boolean')
     assert(isinstance(port, str) or port is None), \
         (rn, 'ERROR: port must be a string')
     assert(isinstance(fnamefmt, (str,list))), \
         (rn, 'ERROR: fnamefmt must be str or list')
     assert(isinstance(time_inc, dt.timedelta)), \
         (rn, 'ERROR: time_inc must be timedelta object')
-    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
+    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
     #--------------------------------------------------------------------------
     # Initialize the unchanging parts of the remote access (not *) (not used +)
@@ -416,12 +409,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     #--------------------------------------------------------------------------
     # Build the possible radar filenames for matching using re module
 
-    if fnamefmt is None:
-        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
-        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
-                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
-                    '{date}.C0.{radar}.{ftype}', \
-                    '{date}.C0.{radar}.{channel}.{ftype}']
     if isinstance(fnamefmt,str):
         fnamefmt = [fnamefmt]
 
