@@ -117,7 +117,7 @@ def uncompress_file(filename, outname=None, verbose=True):
     return outname
 
 
-def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a',
+def fetch_local_files(stime, etime, ftype, localdirfmt, outdir, rad=None, channel='a',
                       time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
 
     """
@@ -127,13 +127,15 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     **Inputs**: 
         * **stime** (datetime): data starting time
         * **etime**      (datetime): data ending time
-        * **rad**             (str): 3 letter radar code (eg "han")
         * **ftype**          (str): radar file type ("fitex", "fitacf", "lmfit",
                                   or "iqdat")
         * **localdirfmt**     (str): string defining the local directory structure
                                   (eg "{ftype}/{year}/{month}/{day}/")
         * **outdir**         (str): Temporary directory in which to store
                                   uncompressed files (must end with a "/")
+        * **rad**             (str): 3 letter radar code (eg "han")
+        * **channel**          (str): 1-character string denoting the radar
+                                    channel (default='a')
         * **time_inc** (timedelta): Time incriment between files (default=1 hour)
         * **verbose**        (bool): Print warnings or not? (default=True)
 
@@ -169,11 +171,8 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
         (rn, 'ERROR: stime must be datetime object')
     assert(isinstance(etime,dt.datetime)), \
         (rn, 'ERROR: eTime must be datetime object')
-    assert(isinstance(rad,str) and len(rad) == 3), \
-        (rn, 'ERROR: rad must be a 3 char string')
-    assert(ftype == 'rawacf' or ftype == 'fitacf' or ftype == 'fitex' or
-           ftype == 'lmfit' or ftype == 'iqdat'), \
-        (rn, 'ERROR: ftype must be one of: rawacf, fitacf, fitex, lmfit, iqdat')
+    assert(isinstance(ftype,str)), \
+        (rn, 'ERROR: ftype must be a string. For example one of: rawacf, fitacf, fitex, lmfit, iqdat, map, mapex, etc.')
     assert(isinstance(localdirfmt, str) and localdirfmt[-1] == "/"), \
         (rn, 'ERROR: localdirfmt must be a string ending in "/"')
     assert(isinstance(outdir, str) and outdir[-1] == "/"), \
@@ -201,6 +200,15 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     if isinstance(fnamefmt,str):
         fnamefmt = list(fnamefmt)
       
+    #--------------------------------------------------------------------------
+    #if {radar} is in localdirfmt or fnamefmt then require rad to be set
+
+    assert(not ((localdirfmt.find('{radar}') >= 0) and (rad is None))), \
+        (rn, 'ERROR: {radar} in remotedirfmt but rad not set!')
+
+    for name in fnamefmt:
+        assert(not ((name.find('{radar}') >= 0) and (rad is None))), \
+            (rn, 'ERROR: {radar} in fnamefmt but rad not set!')
 
     #--------------------------------------------------------------------------
     # Set the unchanging parts of the possible remote directory structure
@@ -284,8 +292,8 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     return filelist
 
 
-def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
-                       remotedirfmt, outdir, username=None,
+def fetch_remote_files(stime, etime, ftype, method, remotesite, 
+                       remotedirfmt, outdir, rad=None, username=None,
                        password=False, port=None, channel='a',
                        time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
     """
@@ -295,9 +303,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     **Inputs**: 
       * **stime**       (datetime): data starting time
       * **etime**       (datetime): data ending time
-      * **rad**              (str): 3 letter radar code (eg "han")
-      * **ftype**            (str): radar file type ("fitex", "fitacf", "lmfit",
-                                    or "iqdat")
+      * **ftype**            (str): radar file type (for example: "fitex", "fitacf", "lmfit",
+                                    "iqdat","map","mapex")
       * **method**           (str): remote connection method (eg sftp, http)
       * **remotesite**       (str): remote site address (eg 'sd-data.ece.vt.edu')
       * **remotedirfmt**     (str): string defining the remote directory
@@ -305,6 +312,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                                     (eg "{ftype}/{year}/{month}/{day}/")
       * **outdir**          (str): Temporary directory in which to store
                                     uncompressed files (must end with a "/")
+      * **rad**              (str): 3 letter radar code (eg "han")
       * **username**         (str): Optional input for remote access
       * **password**    (bool/str): Optional input for remote access.  True will
                                     prompt the user for a password, False
@@ -380,11 +388,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         (rn, 'ERROR: stime must be datetime object')
     assert(isinstance(etime,dt.datetime)), \
         (rn, 'ERROR: eTime must be datetime object')
-    assert(isinstance(rad,str) and len(rad) == 3), \
-        (rn, 'ERROR: rad must be a 3 char string')
-    assert(ftype == 'rawacf' or ftype == 'fitacf' or ftype == 'fitex' or
-           ftype == 'lmfit' or ftype == 'iqdat'), \
-        (rn, 'ERROR: ftype must be one of: rawacf, fitacf, fitex, lmfit, iqdat')
+    assert(isinstance(ftype,str)), \
+        (rn, 'ERROR: ftype must be a string. For example one of: rawacf, fitacf, fitex, lmfit, iqdat, map, mapex, etc.')
     assert(method == 'sftp' or method == 'http' or method == 'ftp' or
            method == 'file'), \
         (rn, 'ERROR: method must be one of: sftp, http, ftp, or file.',
@@ -447,6 +452,28 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
 
     #--------------------------------------------------------------------------
+    # Build the possible radar filenames for matching using re module
+
+    if fnamefmt is None:
+        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
+        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
+                    '{date}.C0.{radar}.{ftype}', \
+                    '{date}.C0.{radar}.{channel}.{ftype}']
+    if isinstance(fnamefmt,str):
+        fnamefmt = [fnamefmt]
+
+    #--------------------------------------------------------------------------
+    #if {radar} is in remotedirfmt or fnamefmt then require rad to be set
+
+    assert(not ((remotedirfmt.find('{radar}') >= 0) and (rad is None))), \
+        (rn, 'ERROR: {radar} in remotedirfmt but rad not set!')
+
+    for name in fnamefmt:
+        assert(not ((name.find('{radar}') >= 0) and (rad is None))), \
+            (rn, 'ERROR: {radar} in fnamefmt but rad not set!')
+
+    #--------------------------------------------------------------------------
     # Perform method-specific initialization that does not require time info
     if method is "sftp":
         #create a transport object for use in sftp-ing
@@ -467,17 +494,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
 
 
-    #--------------------------------------------------------------------------
-    # Build the possible radar filenames for matching using re module
-
-    if fnamefmt is None:
-        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
-        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
-                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
-                    '{date}.C0.{radar}.{ftype}', \
-                    '{date}.C0.{radar}.{channel}.{ftype}']
-    if isinstance(fnamefmt,str):
-        fnamefmt = list(fnamefmt)
 
     #--------------------------------------------------------------------------
     # Iterate through all of the hours in the request (round the starting time
@@ -658,4 +674,54 @@ def test_fetchutils():
     print "Finished testing. Success: {:s}/{:s}".format(str(success),str(tests))
 
 
+
+
+
+
+if __name__=="__main__":
+
+    import os
+    from datetime import datetime,timedelta
+
+    print "*************************************************"
+    print "*************************************************"
+    print "    Running examples of fetch_remote_files..."
+    print "*************************************************"
+    print "*************************************************"
+
+    print "Attempting to fetch a mapex file from the VT server..."
+    mapexFiles = fetch_remote_files(datetime(2012,11,24), datetime(2012,11,24,23,59),'mapex','sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/north/', '/tmp/sd/',username='sd_dbread', password='5d', time_inc=timedelta(days=1),fnamefmt='{date}.north.{ftype}',verbose=False)
+
+    print "Expected the file: ['/tmp/sd/20121124.north.mapex']"
+    print "Received the file: " + str(mapexFiles)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch map files from the usask server..."
+    mapFiles = fetch_remote_files(datetime(2001,11,24), datetime(2001,11,24,23,59),'map','sftp','chapman.usask.ca','mapfiles/{year}/{month}/', '/tmp/sd/', username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),fnamefmt=['{date}.{ftype}','{date}s.{ftype}'],verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20011124.map', '/tmp/sd/20011124s.map']"
+    print "Received the files: " + str(mapFiles)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch a fitex file from the VT server..."
+    fitex = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'fitex','sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', '/tmp/sd/', username='sd_dbread', password='5d', time_inc=timedelta(hours=2),rad='sas',verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20121124.0402.00.sas.fitex', '/tmp/sd/20121124.0602.00.sas.fitex']"
+    print "Received the files: " + str(fitex)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch fitacf files from the usask server..."
+    fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'fitacf','sftp','chapman.usask.ca','fitcon/{year}/{month}/', '/tmp/sd/', username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),rad='sas',verbose=False)
+
+    print "Expected the file: ['/tmp/sd/20121124.C0.sas.fitacf']"
+    print "Received the file: " + str(fitacf)
 
