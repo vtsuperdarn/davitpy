@@ -237,7 +237,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, 
                          lon_0=lon_0, llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat,
                          urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat,
-                         coastLineWidth=0.5, coastLinecolor='k',
+                         coastLineWidth=0.5, coastLineColor='k',
                          fillOceans='w',fillContinents='w', fillLakes='w')
     #overlay fields of view, if desired
     if(fov == 1):
