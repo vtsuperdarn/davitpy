@@ -1057,7 +1057,7 @@ if __name__=="__main__":
   expected_filename="20121031.220100.20121101.040000.fhe.fitacf"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=26684193
-  expected_md5sum="9de702d7a0371b9e53f6ea01c076eccb"
+  expected_md5sum="de3b53ce99d2c2c16d00eb214e768690"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for radDataPtr."
@@ -1073,7 +1073,7 @@ if __name__=="__main__":
     statinfo = os.stat(expected_path)
     print "Actual File Size:  ", statinfo.st_size
     print "Expected File Size:", expected_filesize 
-    md5sum=hashlib.md5(expected_path).hexdigest()
+    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
     print "Actual Md5sum:  ",md5sum
     print "Expected Md5sum:",expected_md5sum
     if expected_md5sum!=md5sum:
@@ -1112,7 +1112,7 @@ if __name__=="__main__":
     statinfo = os.stat(expected_path)
     print "Actual File Size:  ", statinfo.st_size
     print "Expected File Size:", expected_filesize 
-    md5sum=hashlib.md5(expected_path).hexdigest()
+    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
     print "Actual Md5sum:  ",md5sum
     print "Expected Md5sum:",expected_md5sum
     if expected_md5sum!=md5sum:
