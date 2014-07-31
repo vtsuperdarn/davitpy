@@ -383,7 +383,8 @@ class radDataPtr():
 
         #filter(if desired) and open the file
         if(not filtered):
-            self.open(tmpName)
+            self.__filename=tmpName
+            self.open()
         else:
             if not fileType+'f' in tmpName:
                 try:
@@ -396,7 +397,8 @@ class radDataPtr():
             else:
                 fTmpName = tmpName
             try:
-                self.open(fTmpName)
+                self.__filename=fTmpName
+                self.open()
             except Exception,e:
                 print 'problem opening file'
                 print e
@@ -432,11 +434,10 @@ class radDataPtr():
       return beam
 
 
-  def open(self,filename):
-      """open a dmap file by filename."""
+  def open(self):
+      """open the associated dmap filename."""
       import os
-      self.__filename=filename
-      self.__fd = os.open(filename,os.O_RDONLY)
+      self.__fd = os.open(self.__filename,os.O_RDONLY)
       self.__ptr = os.fdopen(self.__fd)
 
   def createIndex(self):
@@ -1079,7 +1080,24 @@ if __name__=="__main__":
       print "Error: Cached dmap file has unexpected md5sum."
   else:
     print "Error: Failed to create expected cache file"
-  VTptr.close()
+  print "Let's read two records from the remote sftp server:"
+  try:
+    ptr=VTptr
+    beam  = ptr.readRec()
+    print beam.time
+    beam  = ptr.readRec()
+    print beam.time
+    print "Close pointer"
+    ptr.close()
+    print "reopen pointer"
+    ptr.open()
+    print "Should now be back at beginning:"
+    beam  = ptr.readRec()
+    print beam.time
+  except:
+    print "record read failed for some reason"
+
+  ptr.close()
   del VTptr
 
   print "\nRunning local grab example for radDataPtr."
@@ -1101,6 +1119,23 @@ if __name__=="__main__":
       print "Error: Cached dmap file has unexpected md5sum."
   else:
     print "Error: Failed to create expected cache file"
-  localptr.close()
+  print "Let's read two records:"
+  try:
+    ptr=localptr
+    beam  = ptr.readRec()
+    print beam.time
+    beam  = ptr.readRec()
+    print beam.time
+    print "Close pointer"
+    ptr.close()
+    print "reopen pointer"
+    ptr.open()
+    print "Should now be back at beginning:"
+    beam  = ptr.readRec()
+    print beam.time
+  except:
+    print "record read failed for some reason"
+  ptr.close()
+  
   del localptr
 
