@@ -49,10 +49,11 @@ class mapObj(basemap.Basemap):
   """
 
   def __init__(self, datetime=None, coords='geo', 
-    projection='stere', resolution='c', dateTime=None, 
+    projection='stere', resolution='c',
     lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
-    grid=True, gridLabels=True, showCoords=True, **kwargs):
+    coastLineColor=None, grid=True, gridLabels=True, showCoords=True, 
+    **kwargs):
     """Create empty map 
     
     **Args**:    
@@ -65,7 +66,7 @@ class mapObj(basemap.Basemap):
       * **[fill_water]**: water color. Default is 'None'    
       * **[coords]**: 'geo'
       * **[showCoords]**: display coordinate system name in upper right corner
-      * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
+      * **[datetime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
     **Returns**:
       * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
@@ -112,15 +113,14 @@ class mapObj(basemap.Basemap):
     if boundinglat:
       width = height = 2*111e3*( abs(lat_0 - boundinglat) )
 
-    # Initialize map
+    # Initialize map with original Basemap
     super(mapObj, self).__init__(projection=projection, resolution=resolution, 
         lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
     # Add continents
-    if coords is not 'mlt' or dateTime is not None:
-      _ = self.drawcoastlines(linewidth=coastLineWidth)
-      # self.drawmapboundary(fill_color=fillOceans)
-      _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+    _ = self.drawcoastlines(linewidth=coastLineWidth, color=coastLineColor)
+    _ = self.drawmapboundary(fill_color=fillOceans)
+    _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
     # Add coordinate spec
     if showCoords:
