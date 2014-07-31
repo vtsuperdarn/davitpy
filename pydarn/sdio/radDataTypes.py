@@ -97,9 +97,9 @@ class radDataPtr():
     self.__ptr =  None
 
     #check inputs
-    assert(isinstance(sTime,dt.datetime)), \
+    assert(isinstance(self.sTime,dt.datetime)), \
       'error, sTime must be datetime object'
-    assert(eTime == None or isinstance(eTime,dt.datetime)), \
+    assert(self.eTime == None or isinstance(self.eTime,dt.datetime)), \
       'error, eTime must be datetime object or None'
     assert(channel == None or (isinstance(channel,str) and len(channel) == 1)), \
       'error, channel must be None or a 1-letter string'
@@ -139,7 +139,7 @@ class radDataPtr():
     else: arr = [fileType]
 
     #move back a little in time because files often start at 2 mins after the hour
-    sTime = sTime-dt.timedelta(minutes=4)
+    self.sTime = self.sTime-dt.timedelta(minutes=4)
     #a temporary directory to store a temporary file
     try:
       tmpDir=os.environ['DAVIT_TMPDIR']
@@ -172,7 +172,7 @@ class radDataPtr():
                 print 'cp '+fileName+' '+outname
             filelist.append(outname)
             self.dType = 'dmap'
-            fileSt = sTime
+            fileSt = self.sTime
         except Exception, e:
             print e
             print 'problem reading file',fileName
@@ -188,7 +188,7 @@ class radDataPtr():
                         t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
                         t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
                         #check if file covers our timespan
-                        if t1 <= sTime and t2 >= eTime:
+                        if t1 <= self.sTime and t2 >= self.eTime:
                             cached = True
                             filelist.append(f)
                             print 'Found cached file: %s' % f
@@ -203,7 +203,7 @@ class radDataPtr():
                         t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
                         t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
                         #check if file covers our timespan
-                        if t1 <= sTime and t2 >= eTime:
+                        if t1 <= self.sTime and t2 >= self.eTime:
                             cached = True
                             filelist.append(f)
                             print 'Found cached file: %s' % f
@@ -222,9 +222,9 @@ class radDataPtr():
                 for form in fnames:
                     #iterate through all of the hours in the request
                     #ie, iterate through all possible file names
-                    ctime = sTime.replace(minute=0)
+                    ctime = self.sTime.replace(minute=0)
                     if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-                    while ctime <= eTime:
+                    while ctime <= self.eTime:
                         #directory on the data server
                         ##################################################################
                         ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
@@ -307,10 +307,10 @@ class radDataPtr():
 
                     #iterate through all of the hours in the request
                     #ie, iterate through all possible file names
-                    ctime = sTime.replace(minute=0)
+                    ctime = self.sTime.replace(minute=0)
                     if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
                     oldyr = ''
-                    while ctime <= eTime:
+                    while ctime <= self.eTime:
                         #directory on the data server
                         myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
                         hrStr = ctime.strftime("%H")
@@ -370,7 +370,7 @@ class radDataPtr():
             #choose a temp file name with time span info for cacheing
             tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
               fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
-              eTime.strftime("%Y%m%d"),eTime.strftime("%H%M%S"),radcode,fileType)
+              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
             print 'cat '+string.join(filelist)+' > '+tmpName
             os.system('cat '+string.join(filelist)+' > '+tmpName)
             for filename in filelist:
