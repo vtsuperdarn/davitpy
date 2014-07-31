@@ -48,7 +48,7 @@ class mapObj(basemap.Basemap):
 
   """
 
-  def __init__(self, datetime=None, coords='geo', 
+  def __init__(self, date_time=None, coords='geo', 
     projection='stere', resolution='c',
     lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
@@ -66,7 +66,7 @@ class mapObj(basemap.Basemap):
       * **[fill_water]**: water color. Default is 'None'    
       * **[coords]**: 'geo'
       * **[showCoords]**: display coordinate system name in upper right corner
-      * **[datetime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
+      * **[date_time]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
     **Returns**:
       * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
@@ -92,9 +92,9 @@ class mapObj(basemap.Basemap):
       print 'MLT coordinates not implemented yet.'
       return
 
-    if datetime is None:
-      datetime = dt.datetime.utcnow()
-    self.datetime = datetime
+    if date_time is None:
+      date_time = dt.datetime.utcnow()
+    self.date_time = date_time
 
     # Add an extra member to the Basemap class
     if coords is not None and coords not in self._coordsDict:
@@ -109,7 +109,7 @@ class mapObj(basemap.Basemap):
     if lon_0 is None: 
       lon_0 = -100.
       if self.coords == 'mag': 
-        _, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., self.datetime.year, 0)
+        _, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., self.date_time.year, 0)
     if boundinglat:
       width = height = 2*111e3*( abs(lat_0 - boundinglat) )
 
@@ -172,12 +172,12 @@ class mapObj(basemap.Basemap):
           shape = xt.shape    
           y, x, _ = aacgm.aacgmConvArr(
             list(yt.flatten()), list(xt.flatten()), [0.]*nx, 
-            self.datetime.year, flag)
+            self.date_time.year, flag)
           x = np.array(x).reshape(shape)
           y = np.array(y).reshape(shape)
         except TypeError as e:
           y, x, _ = aacgm.aacgmConv(y, x, 0., 
-            self.datetime.year, flag)
+            self.date_time.year, flag)
 
 
     if self.coords is 'geo':
@@ -199,12 +199,12 @@ class mapObj(basemap.Basemap):
             shape = x.shape
             yout, xout, _ = aacgm.aacgmConvArr(
               list(y.flatten()), list(x.flatten()), [0.]*nx, 
-              self.datetime.year, 0)
+              self.date_time.year, 0)
             xout = np.array(xout).reshape(shape)
             yout = np.array(yout).reshape(shape)
           except TypeError:
             yout, xout, _ = aacgm.aacgmConv(y, x, 0., 
-              self.datetime.year, 0)
+              self.date_time.year, 0)
           return basemap.Basemap.__call__(self, xout, yout, inverse=inverse)
         else:
           return basemap.Basemap.__call__(self, x, y, inverse=inverse)
@@ -227,7 +227,7 @@ class mapObj(basemap.Basemap):
       lats, lons, _ = aacgm.aacgmConvArr(
               list(self._boundarypolyll.boundary[:, 1]), 
               list(self._boundarypolyll.boundary[:, 0]), 
-              [0.]*nPts, self.datetime.year, 1)
+              [0.]*nPts, self.date_time.year, 1)
       b = np.asarray([lons,lats]).T
       oldgeom = deepcopy(self._boundarypolyll)
       newgeom = _geoslib.Polygon(b).fix()
