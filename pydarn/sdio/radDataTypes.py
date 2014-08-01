@@ -62,12 +62,13 @@ class radDataPtr():
   **Methods**:
     * **open** 
     * **close** 
-    * **offsetSeek** 
-    * **offsetTell** 
-    * **rewind** 
-    * **readRec** 
-    * **readScan** 
-    * **readAll** 
+    * **createIndex** : Index the offsets for all records and scan boundaries
+    * **offsetSeek** : Seek file to requested byte offset, checking to make sure it in the record index
+    * **offsetTell** : Current byte offset
+    * **rewind** : rewind file back to the beginning 
+    * **readRec** : read record at current file offset
+    * **readScan** : read scan associated with current record
+    * **readAll**  : read all records
     
   Written by AJ 20130108
   """
@@ -479,7 +480,7 @@ class radDataPtr():
         return setDmapOffset(self.__fd,offset)
       else:
         if self.recordIndex is None:        
-          return getDmapOffset(self.__fd)
+          self.createIndex()
         if offset in self.recordIndex.values():
           return setDmapOffset(self.__fd,offset)
         else:
