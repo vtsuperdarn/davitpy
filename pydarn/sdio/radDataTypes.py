@@ -62,7 +62,9 @@ class radDataPtr():
   **Methods**:
     * **open** 
     * **close** 
-    * **seek** 
+    * **offsetSeek** 
+    * **offsetTell** 
+    * **rewind** 
     * **readRec** 
     * **readScan** 
     * **readAll** 
@@ -468,16 +470,25 @@ class radDataPtr():
       self.scanStartIndex=scanStartDict
       return recordDict,scanStartDict
 
-  def offsetSeek(self,offset):
-      """jump to dmap record at supplied byte offset. 
+  def offsetSeek(self,offset,force=False):
+      """jump to dmap record at supplied byte offset.
+         Require offset to be in record index list unless forced. 
       """
-      from pydarn.dmapio import setDmapOffset 
-      return setDmapOffset(self.__fd,offset)
+      from pydarn.dmapio import setDmapOffset,getDmapOffset 
+      if force:
+        return setDmapOffset(self.__fd,offset)
+      else:
+        if self.recordIndex is None:        
+          return getDmapOffset(self.__fd)
+        if offset in self.recordIndex.values():
+          return setDmapOffset(self.__fd,offset)
+        else:
+          return getDmapOffset(self.__fd)
 
   def offsetTell(self):
       """jump to dmap record at supplied byte offset. 
       """
-      from pydarn.dmapio import getDmapOffset,setDmapOffset
+      from pydarn.dmapio import getDmapOffset
       return getDmapOffset(self.__fd)
 
   def rewind(self):
@@ -1094,6 +1105,13 @@ if __name__=="__main__":
     print "Should now be back at beginning:"
     beam  = ptr.readRec()
     print beam.time
+    print "What is the current offset:"
+    print ptr.offsetTell()
+    print "Try to seek to offset 4, shouldn't work:"
+    print ptr.offsetSeek(4)
+    print "What is the current offset:"
+    print ptr.offsetTell()
+
   except:
     print "record read failed for some reason"
 
