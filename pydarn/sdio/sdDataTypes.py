@@ -53,12 +53,23 @@ class sdDataPtr():
     self.eTime = eTime
     self.hemi = hemi
     self.fType = None
-    
+    self.fd = None 
+
+  def close(self):
+    import os
+    if self.ptr is not None:
+      self.ptr.close()
+      self.fd=None
+ 
+ 
   def __repr__(self):
     myStr = 'sdDataPtr\n'
     for key,var in self.__dict__.iteritems():
       myStr += key+' = '+str(var)+'\n'
     return myStr
+
+  def __del__(self):
+    self.close()
 
 class sdBaseData():
   """a base class for the porocessed SD data types.  This allows for single definition of common routines
@@ -356,3 +367,4 @@ class sdModel(sdBaseData):
     self.boundarymlon = None
 
     if(dataDict != None): self.updateValsFromDict(dataDict)
+

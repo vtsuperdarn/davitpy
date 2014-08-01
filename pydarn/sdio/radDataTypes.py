@@ -41,8 +41,7 @@ alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
 class radDataPtr():
   """A class which contains a pipeline to a data source
   
-  **Attrs**:
-    * **ptr** (file or mongodb query object): the data pointer (different depending on mongodo or dmap)
+  **Public Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
     * **stid** (int): station id of the request
@@ -51,27 +50,551 @@ class radDataPtr():
     * **cp** (int): control prog id of the request
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
     * **fBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): the first beam of the next scan, useful for when reading into scan objects
+    * **recordIndex** (dict): look up dictionary for file offsets for all records 
+    * **scanStartIndex** (dict): look up dictionary for file offsets for scan start records
+  **Private Attrs**:
+    * **ptr** (file or mongodb query object): the data pointer (different depending on mongodo or dmap)
+    * **fd** (int): the file descriptor 
+    * **filtered** (bool): use Filtered datafile 
+    * **nocache** (bool):  do not use cached files, regenerate tmp files 
+    * **src** (str):  local or sftp 
+
   **Methods**:
-    * Nothing.
+    * **open** 
+    * **close** 
+    * **seek** 
+    * **readRec** 
+    * **readScan** 
+    * **readAll** 
     
   Written by AJ 20130108
   """
-  def __init__(self,ptr=None,sTime=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None):
-    self.ptr = ptr
+  def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None, \
+                fileType=None,filtered=False, src=None,fileName=None,noCache=False):
+    import datetime as dt
+    import os,glob,string
+    from pydarn.radar import network
+    import utils
+    import paramiko as p
+    import re
+    
     self.sTime = sTime
     self.eTime = eTime
     self.stid = stid
     self.channel = channel
     self.bmnum = bmnum
     self.cp = cp
-    self.fType = None
+    self.fType = fileType
+    self.dType = None
     self.fBeam = None
-    
+    self.recordIndex = None
+    self.scanStartIndex = None
+    self.__filename = fileName 
+    self.__filtered = filtered
+    self.__nocache  = noCache
+    self.__src = src
+    self.__fd = None
+    self.__ptr =  None
+
+    #check inputs
+    assert(isinstance(self.sTime,dt.datetime)), \
+      'error, sTime must be datetime object'
+    assert(self.eTime == None or isinstance(self.eTime,dt.datetime)), \
+      'error, eTime must be datetime object or None'
+    assert(channel == None or (isinstance(channel,str) and len(channel) == 1)), \
+      'error, channel must be None or a 1-letter string'
+    assert(bmnum == None or isinstance(bmnum,int)), \
+      'error, bmnum must be an int or None'
+    assert(cp == None or isinstance(cp,int)), \
+      'error, cp must be an int or None'
+    assert(fileType == 'rawacf' or fileType == 'fitacf' or \
+      fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
+      'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
+    assert(fileName == None or isinstance(fileName,str)), \
+      'error, fileName must be None or a string'
+    assert(isinstance(filtered,bool)), \
+      'error, filtered must be True of False'
+    assert(src == None or src == 'local' or src == 'sftp'), \
+      'error, src must be one of None,local,sftp'
+
+    if radcode is not None:
+      assert(isinstance(radcode,str)), \
+        'error, radcode must be None or a string'
+      segments=radcode.split(".")
+      try: rad=segments[0]
+      except: rad=None
+      try: chan=segments[1]
+      except: chan=None
+      assert(isinstance(rad,str) and len(rad) == 3), \
+        'error, rad must be a 3 char string'
+      self.stid=int(network().getRadarByCode(rad).id)
+
+    if(self.eTime == None):
+      self.eTime = self.sTime+dt.timedelta(days=1)
+
+    filelist = []
+    if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
+    elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
+    elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
+    else: arr = [fileType]
+
+    #move back a little in time because files often start at 2 mins after the hour
+    self.sTime = self.sTime-dt.timedelta(minutes=4)
+    #a temporary directory to store a temporary file
+    try:
+      tmpDir=os.environ['DAVIT_TMPDIR']
+    except:
+      tmpDir = '/tmp/sd/'
+    d = os.path.dirname(tmpDir)
+    if not os.path.exists(d):
+      os.makedirs(d)
+
+    cached = False
+    fileSt = None
+
+    #FIRST, check if a specific filename was given
+    if fileName != None:
+        try:
+            if(not os.path.isfile(fileName)):
+                print 'problem reading',fileName,':file does not exist'
+                return None
+            outname = tmpDir+str(int(utils.datetimeToEpoch(dt.datetime.now())))
+            if(string.find(fileName,'.bz2') != -1):
+                outname = string.replace(fileName,'.bz2','')
+                print 'bunzip2 -c '+fileName+' > '+outname+'\n'
+                os.system('bunzip2 -c '+fileName+' > '+outname)
+            elif(string.find(fileName,'.gz') != -1):
+                outname = string.replace(fileName,'.gz','')
+                print 'gunzip -c '+fileName+' > '+outname+'\n'
+                os.system('gunzip -c '+fileName+' > '+outname)
+            else:
+                os.system('cp '+fileName+' '+outname)
+                print 'cp '+fileName+' '+outname
+            filelist.append(outname)
+            self.dType = 'dmap'
+            fileSt = self.sTime
+        except Exception, e:
+            print e
+            print 'problem reading file',fileName
+            return None
+    #Next, check for a cached file
+    if fileName == None and not noCache:
+        try:
+            if True:
+                for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,radcode,fileType)):
+                    try:
+                        ff = string.replace(f,tmpDir,'')
+                        #check time span of file
+                        t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+                        t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+                        #check if file covers our timespan
+                        if t1 <= self.sTime and t2 >= self.eTime:
+                            cached = True
+                            filelist.append(f)
+                            print 'Found cached file: %s' % f
+                            break
+                    except Exception,e:
+                        print e
+            if not cached:
+                for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
+                    try:
+                        ff = string.replace(f,tmpDir,'')
+                        #check time span of file
+                        t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+                        t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+                        #check if file covers our timespan
+                        if t1 <= self.sTime and t2 >= self.eTime:
+                            cached = True
+                            filelist.append(f)
+                            print 'Found cached file: %s' % f
+                            break
+                    except Exception,e:
+                        print e
+        except Exception,e:
+            print e
+    #Next, LOOK LOCALLY FOR FILES
+    if not cached and (src == None or src == 'local') and fileName == None:
+        try:
+            for ftype in arr:
+                print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,radcode,chan)
+                #deal with UAF naming convention by using the radcode
+                fnames = ['*.%s.%s*' % (radcode,ftype)]
+                for form in fnames:
+                    #iterate through all of the hours in the request
+                    #ie, iterate through all possible file names
+                    ctime = self.sTime.replace(minute=0)
+                    if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
+                    while ctime <= self.eTime:
+                        #directory on the data server
+                        ##################################################################
+                        ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
+                        ### TO MATCH YOUR DIRECTORY STRUCTURE
+                        ##################################################################
+                        localdict={}
+                        try:
+                            localdict["dirtree"]=os.environ['DAVIT_LOCALDIR']
+                        except:
+                            localdict["dirtree"]="/sd-data/"
+                        localdict["year"] = "%04d" % ctime.year
+                        localdict["month"]= "%02d" % ctime.month
+                        localdict["day"]  = "%02d" % ctime.day
+                        localdict["ftype"]  = ftype
+                        localdict["radar"]  = rad
+                        try:
+                            localdirformat = os.environ['DAVIT_DIRFORMAT']
+                            myDir = localdirformat % localdict
+                        except:
+                            myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+                        hrStr = ctime.strftime("%H")
+                        dateStr = ctime.strftime("%Y%m%d")
+                        print myDir
+                        #iterate through all of the files which begin in this hour
+                        for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
+                            outname = string.replace(filename,myDir,tmpDir)
+                            #unzip the compressed file
+                            if(string.find(filename,'.bz2') != -1):
+                                outname = string.replace(outname,'.bz2','')
+                                print 'bunzip2 -c '+filename+' > '+outname+'\n'
+                                os.system('bunzip2 -c '+filename+' > '+outname)
+                            elif(string.find(filename,'.gz') != -1):
+                                outname = string.replace(outname,'.gz','')
+                                print 'gunzip -c '+filename+' > '+outname+'\n'
+                                os.system('gunzip -c '+filename+' > '+outname)
+                            else:
+                                command='cp '+filename+' '+outname
+                                print command
+                                os.system(command)
+
+                            filelist.append(outname)
+                            print outname
+                            #HANDLE CACHEING NAME
+                            ff = string.replace(outname,tmpDir,'')
+                            #check the beginning time of the file (for cacheing)
+                            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+                            if fileSt == None or t1 < fileSt: fileSt = t1
+                        ##################################################################
+                        ### END SECTION YOU WILL HAVE TO CHANGE
+                        ##################################################################
+                        ctime = ctime+dt.timedelta(hours=1)
+                    if(len(filelist) > 0):
+                        print 'found',ftype,'data in local files'
+                        self.fType,self.dType = ftype,'dmap'
+                        fileType = ftype
+                        break
+                if(len(filelist) > 0): break
+                else:
+                    print  'could not find',ftype,'data in local files'
+        except Exception, e:
+            print e
+            print 'problem reading local data, perhaps you are not at VT?'
+            print 'you probably have to edit radDataRead.py'
+            print 'I will try to read from other sources'
+            src=None
+    #finally, check the VT sftp server if we have not yet found files
+    if (src == None or src == 'sftp') and self.__ptr == None and len(filelist) == 0 and fileName == None:
+        for ftype in arr:
+            print '\nLooking on the remote SFTP server for',ftype,'files'
+            try:
+                #deal with UAF naming convention
+                fnames = ['..........'+ftype]
+                if(channel == None): fnames.append('..\...\....\.a\.')
+                else: fnames.append('..........'+channel+'.'+ftype)
+                for form in fnames:
+                    #create a transport object for use in sftp-ing
+                    transport = p.Transport((os.environ['VTDB'], 22))
+                    transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
+                    sftp = p.SFTPClient.from_transport(transport)
+
+                    #iterate through all of the hours in the request
+                    #ie, iterate through all possible file names
+                    ctime = self.sTime.replace(minute=0)
+                    if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
+                    oldyr = ''
+                    while ctime <= self.eTime:
+                        #directory on the data server
+                        myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
+                        hrStr = ctime.strftime("%H")
+                        dateStr = ctime.strftime("%Y%m%d")
+                        if(ctime.strftime("%Y") != oldyr):
+                            #get a list of all the files in the directory
+                            allFiles = sftp.listdir(myDir)
+                            oldyr = ctime.strftime("%Y")
+                        #create a regular expression to find files of this day, at this hour
+                        regex = re.compile(dateStr+'.'+hrStr+form)
+                        #go thorugh all the files in the directory
+                        for aFile in allFiles:
+                            #if we have a file match between a file and our regex
+                            if(regex.match(aFile)):
+                                print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
+                                filename = tmpDir+aFile
+                                #download the file via sftp
+                                sftp.get(myDir+aFile,filename)
+                                #unzip the compressed file
+                                if(string.find(filename,'.bz2') != -1):
+                                    outname = string.replace(filename,'.bz2','')
+                                    print 'bunzip2 -c '+filename+' > '+outname+'\n'
+                                    os.system('bunzip2 -c '+filename+' > '+outname)
+                                elif(string.find(filename,'.gz') != -1):
+                                    outname = string.replace(filename,'.gz','')
+                                    print 'gunzip -c '+filename+' > '+outname+'\n'
+                                    os.system('gunzip -c '+filename+' > '+outname)
+                                else:
+                                    print 'It seems we have downloaded an uncompressed file :/'
+                                    print 'Strange things might happen from here on out...'
+
+                                filelist.append(outname)
+
+                                #HANDLE CACHEING NAME
+                                ff = string.replace(outname,tmpDir,'')
+                                #check the beginning time of the file
+                                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
+                                if fileSt == None or t1 < fileSt: fileSt = t1
+                        # Ctime increment needs to happen outside of the aFile loop.
+                        ctime = ctime+dt.timedelta(hours=1)
+                    if len(filelist) > 0 :
+                        print 'found',ftype,'data on sftp server'
+                        self.fType,self.dType = ftype,'dmap'
+                        fileType = ftype
+                        break
+                if len(filelist) > 0 : break
+                else:
+                    print  'could not find',ftype,'data on sftp server'
+            except Exception,e:
+                print e
+                print 'problem reading from sftp server'
+    #check if we have found files
+    if len(filelist) != 0:
+        #concatenate the files into a single file
+        if not cached:
+            print 'Concatenating all the files in to one'
+            #choose a temp file name with time span info for cacheing
+            tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
+              fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
+              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
+            print 'cat '+string.join(filelist)+' > '+tmpName
+            os.system('cat '+string.join(filelist)+' > '+tmpName)
+            for filename in filelist:
+                print 'rm '+filename
+                os.system('rm '+filename)
+        else:
+            tmpName = filelist[0]
+            self.fType = fileType
+            self.dType = 'dmap'
+
+        #filter(if desired) and open the file
+        if(not filtered):
+            self.__filename=tmpName
+            self.open()
+        else:
+            if not fileType+'f' in tmpName:
+                try:
+                    fTmpName = tmpName+'f'
+                    print 'fitexfilter '+tmpName+' > '+fTmpName
+                    os.system('fitexfilter '+tmpName+' > '+fTmpName)
+                except Exception,e:
+                    print 'problem filtering file, using unfiltered'
+                    fTmpName = tmpName
+            else:
+                fTmpName = tmpName
+            try:
+                self.__filename=fTmpName
+                self.open()
+            except Exception,e:
+                print 'problem opening file'
+                print e
+    if(self.__ptr != None):
+        if(self.dType == None): self.dType = 'dmap'
+    else:
+        print '\nSorry, we could not find any data for you :('
+
+
+
+
   def __repr__(self):
-    myStr = 'radDataPtr\n'
+    myStr = 'radDataPtr: \n'
     for key,var in self.__dict__.iteritems():
-      myStr += key+' = '+str(var)+'\n'
+      if isinstance(var,radBaseData) or isinstance(var,radDataPtr) or  isinstance(var,type({})):
+        myStr += '%s = %s \n' % (key,'object')
+      else:
+        myStr += '%s = %s \n' % (key,var)
     return myStr
+
+  def __del__(self):
+    self.close() 
+
+
+  def __iter__(self):
+    return self
+
+  def next(self):
+    beam=self.readRec()
+    if beam is None:
+      raise StopIteration
+    else:
+      return beam
+
+
+  def open(self):
+      """open the associated dmap filename."""
+      import os
+      self.__fd = os.open(self.__filename,os.O_RDONLY)
+      self.__ptr = os.fdopen(self.__fd)
+
+  def createIndex(self):
+      import datetime as dt
+      from pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
+      recordDict={}
+      scanStartDict={}
+      starting_offset=self.offsetTell()
+      #rewind back to start of file
+      self.rewind()
+      while(1):
+          #read the next record from the dmap file
+          offset= getDmapOffset(self.__fd)
+          dfile = readDmapRec(self.__fd)
+          if(dfile is None):
+              #if we dont have valid data, clean up, get out
+              print '\nreached end of data'
+              break
+          else:
+              if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
+                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime) : 
+                  rectime = dt.datetime.utcfromtimestamp(dfile['time'])
+                  recordDict[rectime]=offset
+                  if dfile['scan']==1: scanStartDict[rectime]=offset
+      #reset back to before building the index 
+      self.offsetSeek(starting_offset)
+      self.recordIndex=recordDict
+      self.scanStartIndex=scanStartDict
+      return recordDict,scanStartDict
+
+  def offsetSeek(self,offset):
+      """jump to dmap record at supplied byte offset. 
+      """
+      from pydarn.dmapio import setDmapOffset 
+      return setDmapOffset(self.__fd,offset)
+
+  def offsetTell(self):
+      """jump to dmap record at supplied byte offset. 
+      """
+      from pydarn.dmapio import getDmapOffset,setDmapOffset
+      return getDmapOffset(self.__fd)
+
+  def rewind(self):
+      """jump to beginning of dmap file."""
+      from pydarn.dmapio import setDmapOffset 
+      return setDmapOffset(self.__fd,0)
+
+  def readScan(self):
+      """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+  
+      .. note::
+        This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
+
+      **Returns**:
+        * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData`): an object filled with the data we are after.  *will return None when finished reading*
+    
+      """
+      from pydarn.sdio import scanData
+      #Save the radDataPtr's bmnum setting temporarily and set it to None
+      orig_beam=self.bmnum
+      self.bmnum=None
+
+      if self.__ptr.closed:
+          print 'error, your file pointer is closed'
+          return None
+
+      myScan = scanData()
+      myBeam=self.readRec()
+      if(myBeam.prm.scan == 1):  
+        firstflg=True
+        myScan.append(myBeam)
+      else:
+        if self.fBeam != None:
+          myScan.append(self.fBeam)
+          firstflg = False
+        else:
+          firstflg = True
+
+      while(1):
+        myBeam=self.readRec()
+        if myBeam is None: 
+          break
+        if(myBeam.prm.scan == 0 or firstflg):
+          myScan.append(myBeam)
+          firstflg = False
+          continue
+        else:
+          self.fBeam = myBeam
+          break 
+      self.bmnum=orig_beam
+
+      return myScan
+
+
+
+  def readRec(self):
+     """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+     **Returns**:
+     * **myBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
+     """
+     from pydarn.sdio.radDataTypes import radDataPtr, beamData, \
+     fitData, prmData, rawData, iqData, alpha
+     import pydarn, datetime as dt
+
+     #check input
+     if(self.__ptr == None):
+         print 'error, your pointer does not point to any data'
+         return None
+     if self.__ptr.closed:
+         print 'error, your file pointer is closed'
+         return None
+     myBeam = beamData()
+     #do this until we reach the requested start time
+     #and have a parameter match
+     while(1):
+         offset=pydarn.dmapio.getDmapOffset(self.__fd)
+         dfile = pydarn.dmapio.readDmapRec(self.__fd)
+         #check for valid data
+         if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
+             #if we dont have valid data, clean up, get out
+             print '\nreached end of data'
+             #self.close()
+             return None
+         #check that we're in the time window, and that we have a 
+         #match for the desired params
+         if dfile['channel'] < 2: channel = 'a'
+         else: channel = alpha[dfile['channel']-1]
+         if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
+               dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and \
+               (self.stid == None or self.stid == dfile['stid']) and
+               (self.channel == None or self.channel == channel) and
+               (self.bmnum == None or self.bmnum == dfile['bmnum']) and
+               (self.cp == None or self.cp == dfile['cp'])):
+             #fill the beamdata object
+             myBeam.updateValsFromDict(dfile)
+             myBeam.recordDict=dfile
+             myBeam.fType = self.fType
+             myBeam.fPtr = self
+             myBeam.offset = offset
+             #file prm object
+             myBeam.prm.updateValsFromDict(dfile)
+             if myBeam.fType == "rawacf":
+                 myBeam.rawacf.updateValsFromDict(dfile)
+             if myBeam.fType == "iqdat":
+                 myBeam.iqdat.updateValsFromDict(dfile)
+             if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or myBeam.fType == 'lmfit'):
+                 myBeam.fit.updateValsFromDict(dfile)
+             if myBeam.fit.slist == None:
+                 myBeam.fit.slist = []
+             return myBeam
+
+  def close(self):
+    """close associated dmap file."""
+    import os
+    if self.__ptr is not None:
+      self.__ptr.close()
+      self.__fd=None
 
 class radBaseData():
   """a base class for the radar data types.  This allows for single definition of common routines
@@ -278,8 +801,10 @@ class beamData(radBaseData):
     self.rawacf = rawData(parent=self)
     self.prm = prmData()
     self.iqdat = iqData()
+    self.recordDict = None 
     self.fType = None
-    
+    self.offset = None
+    self.fPtr = None 
     #if we are intializing from an object, do that
     if(beamDict != None): self.updateValsFromDict(beamDict)
     
@@ -287,10 +812,10 @@ class beamData(radBaseData):
     import datetime as dt
     myStr = 'Beam record FROM: '+str(self.time)+'\n'
     for key,var in self.__dict__.iteritems():
-      if not isinstance(var,radBaseData):
-        myStr += key+' = '+str(var)+'\n'
+      if isinstance(var,radBaseData) or isinstance(var,radDataPtr) or isinstance(var,type({})):
+        myStr += '%s  = %s \n' % (key,'object')
       else:
-        myStr += '%s = %s \n' % (key,'object')
+        myStr += '%s  = %s \n' % (key,var)
     return myStr
     
 class prmData(radBaseData):
@@ -314,13 +839,13 @@ class prmData(radBaseData):
     * **rsep**  (int): range gate separation in km
     * **xcf**  (int): xcf flag
     * **tfreq**  (int): transmit freq in kHz
+    * **txpl**  (int): transmit pulse length in us 
     * **ifmode**  (int): if mode flag
     * **ptab**  (mppul length list): pulse table
     * **ltab**  (mplgs x 2 length list): lag table
     * **noisemean**  (float): mean noise level
     * **noisesky**  (float): sky noise level
     * **noisesearch**  (float): freq search noise level
-    * **txpl** (int): transmit pulse length in us
 
   Written by AJ 20121130
   """
@@ -345,14 +870,14 @@ class prmData(radBaseData):
     self.rsep = None        #range gate separation in km
     self.xcf = None         #xcf flag
     self.tfreq = None       #transmit freq in kHz
+    self.txpl = None       #transmit freq in kHz
     self.ifmode = None      #if mode flag
     self.ptab = None        #pulse table
     self.ltab = None        #lag table
     self.noisemean = None   #mean noise level
     self.noisesky = None    #sky noise level
     self.noisesearch = None #freq search noise level
-    self.txpl = None        #transmit pulse length in us
-
+    
     #if we are copying a structure, do that
     if(prmDict != None): self.updateValsFromDict(prmDict)
 
@@ -360,7 +885,7 @@ class prmData(radBaseData):
     import datetime as dt
     myStr = 'Prm data: \n'
     for key,var in self.__dict__.iteritems():
-      myStr += key+' = '+str(var)+'\n'
+      myStr += '%s  = %s \n' % (key,var)
     return myStr
 
 class fitData(radBaseData):
@@ -423,13 +948,14 @@ class fitData(radBaseData):
     import datetime as dt
     myStr = 'Fit data: \n'
     for key,var in self.__dict__.iteritems():
-      myStr += key+' = '+str(var)+'\n'
+      myStr += '%s = %s \n' % (key,var)
     return myStr
 
 class rawData(radBaseData):
   """a class to contain the rawacf data from a radar beam sounding, extends :class:`pydarn.sdio.radDataTypes.radBaseData`
   
   **Attrs**:
+    * **pwr0** (nrang length list): acf lag0 pwr 
     * **acfd** (nrang x mplgs x 2 length list): acf data
     * **xcfd** (nrang x mplgs x 2 length list): xcf data
   
@@ -443,6 +969,7 @@ class rawData(radBaseData):
 
   #initialize the struct
   def __init__(self, rawDict=None, parent=None):
+    self.pwr0 = []      #acf data
     self.acfd = []      #acf data
     self.xcfd = []      #xcf data
     self.parent = parent #reference to parent beam
@@ -453,7 +980,7 @@ class rawData(radBaseData):
     import datetime as dt
     myStr = 'Raw data: \n'
     for key,var in self.__dict__.iteritems():
-      myStr += key+' = '+str(var)+'\n'
+      myStr += '%s = %s \n' % (key,var)
     return myStr
 
 class iqData(radBaseData):
@@ -509,5 +1036,106 @@ class iqData(radBaseData):
     import datetime as dt
     myStr = 'IQ data: \n'
     for key,var in self.__dict__.iteritems():
-      myStr += key+' = '+str(var)+'\n'
+      myStr += '%s = %s \n' % (key,var)
     return myStr
+
+if __name__=="__main__":
+  import os
+  import datetime
+  import hashlib
+  try:
+      tmpDir=os.environ['DAVIT_TMPDIR']
+  except:
+      tmpDir = '/tmp/sd/'
+
+  rad='fhe'
+  channel=None
+  fileType='fitacf'
+  filtered=False
+  sTime=datetime.datetime(2012,11,1,0,0)
+  eTime=datetime.datetime(2012,11,1,4,0)
+  expected_filename="20121031.220100.20121101.040000.fhe.fitacf"
+  expected_path=os.path.join(tmpDir,expected_filename)
+  expected_filesize=26684193
+  expected_md5sum="de3b53ce99d2c2c16d00eb214e768690"
+  print "Expected File:",expected_path
+
+  print "\nRunning sftp grab example for radDataPtr."
+  print "Environment variables used:"
+  print "  VTDB:", os.environ['VTDB']
+  print "  DBREADUSER:", os.environ['DBREADUSER']
+  print "  DBREADPASS:", os.environ['DBREADPASS']
+  src='sftp'
+  if os.path.isfile(expected_path):
+    os.remove(expected_path)
+  VTptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
+  if os.path.isfile(expected_path):
+    statinfo = os.stat(expected_path)
+    print "Actual File Size:  ", statinfo.st_size
+    print "Expected File Size:", expected_filesize 
+    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
+    print "Actual Md5sum:  ",md5sum
+    print "Expected Md5sum:",expected_md5sum
+    if expected_md5sum!=md5sum:
+      print "Error: Cached dmap file has unexpected md5sum."
+  else:
+    print "Error: Failed to create expected cache file"
+  print "Let's read two records from the remote sftp server:"
+  try:
+    ptr=VTptr
+    beam  = ptr.readRec()
+    print beam.time
+    beam  = ptr.readRec()
+    print beam.time
+    print "Close pointer"
+    ptr.close()
+    print "reopen pointer"
+    ptr.open()
+    print "Should now be back at beginning:"
+    beam  = ptr.readRec()
+    print beam.time
+  except:
+    print "record read failed for some reason"
+
+  ptr.close()
+  del VTptr
+
+  print "\nRunning local grab example for radDataPtr."
+  print "Environment variables used:"
+  print "  DAVIT_LOCALDIR:", os.environ['DAVIT_LOCALDIR']
+  print "  DAVIT_DIRFORMAT:", os.environ['DAVIT_DIRFORMAT']
+  src='local'
+  if os.path.isfile(expected_path):
+    os.remove(expected_path)
+  localptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
+  if os.path.isfile(expected_path):
+    statinfo = os.stat(expected_path)
+    print "Actual File Size:  ", statinfo.st_size
+    print "Expected File Size:", expected_filesize 
+    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
+    print "Actual Md5sum:  ",md5sum
+    print "Expected Md5sum:",expected_md5sum
+    if expected_md5sum!=md5sum:
+      print "Error: Cached dmap file has unexpected md5sum."
+  else:
+    print "Error: Failed to create expected cache file"
+  print "Let's read two records:"
+  try:
+    ptr=localptr
+    beam  = ptr.readRec()
+    print beam.time
+    beam  = ptr.readRec()
+    print beam.time
+    print "Close pointer"
+    ptr.close()
+    print "reopen pointer"
+    ptr.open()
+    print "Should now be back at beginning:"
+    beam  = ptr.readRec()
+    print beam.time
+  except:
+    print "record read failed for some reason"
+  ptr.close()
+  
+  del localptr
+

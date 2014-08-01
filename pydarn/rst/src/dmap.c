@@ -27,6 +27,7 @@
   
 */ 
 
+#include <Python.h>
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
@@ -646,14 +647,14 @@ void *DataMapFindArray(struct DataMap *ptr,
 
 }
 
-char *DataMapEncodeBuffer(struct DataMap *ptr,int *size) {
+unsigned char *DataMapEncodeBuffer(struct DataMap *ptr,int *size) {
   int c,x,m,n;
   char **tmp;
   void *tbuf;
   int tsze;
   struct DataMapScalar *s=NULL;
   struct DataMapArray *a=NULL;
-  char *buf=NULL;
+  unsigned char *buf=NULL;
   int off=0;
   int sze=0;
 
@@ -863,7 +864,7 @@ char *DataMapEncodeBuffer(struct DataMap *ptr,int *size) {
 
 
 int DataMapWrite(int fid,struct DataMap *ptr) {
-  char *buf=NULL;
+  unsigned char *buf=NULL;
   int sze=0,st=0,cnt=0;
   buf=DataMapEncodeBuffer(ptr,&sze);
   if (buf==NULL) return -1;
@@ -967,7 +968,7 @@ char *DataMapReadString(int fid) {
   return ptr;
 }
 
-struct DataMap *DataMapDecodeBuffer(char *buf,int size) {
+struct DataMap *DataMapDecodeBuffer(unsigned char *buf,int size) {
   int c,x,n,i,e;
   int32 sn,an;
   int32 code,sze;
@@ -1359,7 +1360,7 @@ struct DataMap *DataMapDecodeBuffer(char *buf,int size) {
 
 
 struct DataMap *DataMapReadBlock(int fid,int *s) {
-  char *buf=NULL;
+  unsigned char *buf=NULL;
   struct DataMap *ptr;
   int32 code,sze,*iptr;
   int size=0,cnt=0,num=0,st=0;   
