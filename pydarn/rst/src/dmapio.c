@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
  
-#include <stdio.h>
 #include <Python.h>
+#include <stdio.h>
 #include <datetime.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -40,26 +40,62 @@ void parsePyPrm(struct RadarParm *prm, PyObject *pyprm)
 }*/
 
 static PyObject *
+get_dmap_offset(PyObject *self, PyObject *args)
+{
+  int fd;
+  long offset;
+  FILE* fp=NULL;
+  if(!PyArg_ParseTuple(args, "i", &fd))
+    return NULL;
+  else
+  {
+    PyObject *recordOffset = NULL;
+    fp = fdopen(fd,"r");
+    offset=ftell(fp);
+    recordOffset=PyInt_FromLong(offset);
+    return recordOffset;
+  }  
+}
+
+static PyObject *
+set_dmap_offset(PyObject *self, PyObject *args)
+{
+  int fd;
+  long offset,noffset;
+  FILE* fp=NULL;
+  if(!PyArg_ParseTuple(args, "il", &fd,&offset))
+    return NULL;
+  else
+  {
+    fp = fdopen(fd,"r");
+    fseek(fp,offset,SEEK_SET);
+    noffset=ftell(fp);
+    if (noffset==offset) {
+      Py_RETURN_TRUE;
+    } else {
+      Py_RETURN_FALSE;
+    }
+  }  
+}
+
+
+static PyObject *
 read_dmap_rec(PyObject *self, PyObject *args)
 {
-  PyObject* f;
-  if(!PyArg_ParseTuple(args, "O", &f))
+  int fd;
+  if(!PyArg_ParseTuple(args, "i", &fd))
     return NULL;
   else
   {
     PyObject *beamData = PyDict_New();
-    int c,yr,mo,dy,hr,mt,sc,us,i,j,k,nrang;
+    int c,yr=0,mo=0,dy=0,hr=0,mt=0,sc=0,us=0,nrang=0,i,j,k;
     double epoch;
     struct DataMap *ptr;
     struct DataMapScalar *s;
     struct DataMapArray *a;
-    FILE * fp = PyFile_AsFile(f);
-    
-    nrang=0;
+
     Py_BEGIN_ALLOW_THREADS
-    PyFile_IncUseCount(f);
-    ptr = DataMapRead(fileno(fp));
-    PyFile_DecUseCount(f);
+    ptr = DataMapRead(fd);
     Py_END_ALLOW_THREADS
     
     if(ptr == NULL)
@@ -247,6 +283,9 @@ read_dmap_rec(PyObject *self, PyObject *args)
 static PyMethodDef dmapioMethods[] = 
 {
   {"readDmapRec",  read_dmap_rec, METH_VARARGS, "read a dmap record"},
+  {"getDmapOffset",  get_dmap_offset, METH_VARARGS, "get current dmap file offset"},
+  {"setDmapOffset",  set_dmap_offset, METH_VARARGS, "set dmap file offset"},
+
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

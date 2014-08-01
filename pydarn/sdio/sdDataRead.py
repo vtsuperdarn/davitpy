@@ -294,8 +294,8 @@ def sdDataOpen(sTime,hemi='north',eTime=None,fileType='grdex',src=None,fileName=
       myPtr.dType = 'dmap'
 
     #filter(if desired) and open the file
-    myPtr.ptr = open(tmpName,'r')
-
+    myPtr.fd = os.open(tmpName,os.O_RDONLY)
+    myPtr.ptr = os.fdopen(myPtr.fd)
   if myPtr.ptr != None: 
     return myPtr
   else:
@@ -349,7 +349,7 @@ def sdDataReadRec(myPtr):
   #do this until we reach the requested start time
   #and have a parameter match
   while(1):
-    dfile = pydarn.dmapio.readDmapRec(myPtr.ptr)
+    dfile = pydarn.dmapio.readDmapRec(myPtr.fd)
     #check for valid data
     try:
       dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
@@ -416,8 +416,8 @@ def sdDataReadAll(myPtr):
   #and have a parameter match
   while(1):
 
-    dfile = pydarn.dmapio.readDmapRec(myPtr.ptr)
-
+    dfile = pydarn.dmapio.readDmapRec(myPtr.fd)
+    print "python tell:",myPtr.ptr.tell()
     #check for valid data
     try:
       dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
@@ -452,3 +452,4 @@ def sdDataReadAll(myPtr):
   else:
     print 'No data found, returning None'
     return None
+
