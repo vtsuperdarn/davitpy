@@ -260,8 +260,8 @@ class radDataPtr():
                 #they will be assigned by an environment variable and then
                 #if that fails, they will default to the VT server
                 remotesite = os.environ['VTDB']
-                username = os.environ['VTDBREADUSER']
-                password = os.environ['VTDBREADPASS']
+                username = os.environ['DBREADUSER']
+                password = os.environ['DBREADPASS']
                 remotedirfmt = 'data/{year}/{ftype}/{radar}/'
                 remotedict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
