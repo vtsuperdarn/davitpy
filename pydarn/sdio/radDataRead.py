@@ -34,7 +34,7 @@
 
 def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
-                custType='fitex',noCache=False):
+                custType='fitex',noCache=False,verbose=False):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -79,7 +79,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   from pydarn.sdio import radDataPtr
   myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,channel=channel,bmnum=bmnum,cp=cp, \
                 fileType=fileType,filtered=filtered, src=src,fileName=fileName, \
-                noCache=False)
+                noCache=noCache,verbose=verbose)
   return myPtr
   
 def radDataReadRec(myPtr):
