@@ -50,7 +50,7 @@ class mapObj(basemap.Basemap):
 
   def __init__(self, datetime=None, coords='geo', 
     projection='stere', resolution='c', dateTime=None, 
-    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
+    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, draw=True 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
     grid=True, gridLabels=True, showCoords=True, **kwargs):
     """Create empty map 
@@ -60,6 +60,7 @@ class mapObj(basemap.Basemap):
       * **[lon_0]**: center meridian (default is -70E)    
       * **[lat_0]**: center latitude (default is -90E)
       * **[boundingLat]**: bounding latitude (default it +/-20)    
+      * **[draw]**: set to "False" to skip initial drawing of map
       * **[grid]**: show/hide parallels and meridians grid    
       * **[fill_continents]**: continent color. Default is 'grey'    
       * **[fill_water]**: water color. Default is 'None'    
@@ -116,39 +117,40 @@ class mapObj(basemap.Basemap):
     super(mapObj, self).__init__(projection=projection, resolution=resolution, 
         lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
-    # Add continents
-    if coords is not 'mlt' or dateTime is not None:
-      _ = self.drawcoastlines(linewidth=coastLineWidth)
-      # self.drawmapboundary(fill_color=fillOceans)
-      _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+    if draw:
+      # Add continents
+      if coords is not 'mlt' or dateTime is not None:
+        _ = self.drawcoastlines(linewidth=coastLineWidth)
+        # self.drawmapboundary(fill_color=fillOceans)
+        _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
-    # Add coordinate spec
-    if showCoords:
-      _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
+      # Add coordinate spec
+      if showCoords:
+        _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
           rotation=-90., va='top', fontsize=8)
 
-    # draw parallels and meridians.
-    if grid:
-      parallels = np.arange(-80.,81.,20.)
-      out = self.drawparallels(parallels, color='.6', zorder=10)
-      # label parallels on map
-      if gridLabels: 
-        lablon = int(self.llcrnrlon/10)*10
-        rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
-        x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
-        for ix,iy,ip in zip(x,y,parallels):
-          if not self.xmin <= ix <= self.xmax: continue
-          if not self.ymin <= iy <= self.ymax: continue
-          _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+      # draw parallels and meridians.
+      if grid:
+        parallels = np.arange(-80.,81.,20.)
+        out = self.drawparallels(parallels, color='.6', zorder=10)
+        # label parallels on map
+        if gridLabels: 
+          lablon = int(self.llcrnrlon/10)*10
+          rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
+          x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+          for ix,iy,ip in zip(x,y,parallels):
+            if not self.xmin <= ix <= self.xmax: continue
+            if not self.ymin <= iy <= self.ymax: continue
+            _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
               rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
-      # label meridians on bottom and left
-      meridians = np.arange(-180.,181.,20.)
-      if gridLabels: 
-        merLabels = [False,False,False,True]
-      else: 
-        merLabels = [False,False,False,False]
-      # draw meridians
-      out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+        # label meridians on bottom and left
+        meridians = np.arange(-180.,181.,20.)
+        if gridLabels: 
+          merLabels = [False,False,False,True]
+        else: 
+          merLabels = [False,False,False,False]
+        # draw meridians
+        out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
 
   
   def __call__(self, x, y, inverse=False, coords=None):
