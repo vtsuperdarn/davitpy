@@ -131,9 +131,7 @@ def radDataReadScan(myPtr):
     
   Written by AJ 20130110
   """
-  from pydarn.sdio import radDataPtr, beamData, fitData, prmData, \
-    rawData, iqData, alpha, scanData
-  import pydarn, datetime as dt
+  from pydarn.sdio import radDataPtr
   
   #check input
   assert(isinstance(myPtr,radDataPtr)),\
