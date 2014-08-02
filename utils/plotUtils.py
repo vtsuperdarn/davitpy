@@ -161,7 +161,7 @@ class mapObj(basemap.Basemap):
         out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
 
   
-  def __call__(self, x, y, inverse=False, coords=None):
+  def __call__(self, x, y, inverse=False, coords=None,altitude=0.):
     from models import aacgm
     from copy import deepcopy
     import numpy as np
@@ -181,12 +181,12 @@ class mapObj(basemap.Basemap):
           yt = np.array(y)
           shape = xt.shape    
           y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [0.]*nx, 
+            list(yt.flatten()), list(xt.flatten()), [altitude]*nx, 
             self.datetime.year, flag)
           x = np.array(x).reshape(shape)
           y = np.array(y).reshape(shape)
         except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, 0., 
+          y, x, _ = aacgm.aacgmConv(y, x, altitude, 
             self.datetime.year, flag)
 
 
@@ -208,7 +208,7 @@ class mapObj(basemap.Basemap):
             y = np.array(y)
             shape = x.shape
             yout, xout, _ = aacgm.aacgmConvArr(
-              list(y.flatten()), list(x.flatten()), [0.]*nx, 
+              list(y.flatten()), list(x.flatten()), [altitude]*nx, 
               self.datetime.year, 0)
             xout = np.array(xout).reshape(shape)
             yout = np.array(yout).reshape(shape)
@@ -639,5 +639,11 @@ if __name__ == "__main__":
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
                          lat_0=lat_0, lon_0=lon_0,resolution='l')
   print "running plt.show to initilize plots, should have an figure 2 window with a mapi\nClose figure window to continue with example"
-  print "Examples concluded"
   plt.show()
+  print "Lets test some calling options"
+  print tmpmap2(120,20,coords="mag",altitude=0.)
+  print tmpmap2(120,20,coords="mag",altitude=300.)
+  
+  print tmpmap2(0,0,coords="mag",inverse=True,altitude=0.)
+  print tmpmap2(0,0,coords="mag",inverse=True,altitude=300.)
+  print "Examples concluded"
