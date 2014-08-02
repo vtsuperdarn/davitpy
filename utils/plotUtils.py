@@ -50,7 +50,7 @@ class mapObj(basemap.Basemap):
 
   def __init__(self, datetime=None, coords='geo', 
     projection='stere', resolution='c', dateTime=None, 
-    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, draw=True 
+    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, draw=True, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
     grid=True, gridLabels=True, showCoords=True, **kwargs):
     """Create empty map 
@@ -78,12 +78,15 @@ class mapObj(basemap.Basemap):
     written by Sebastien, 2013-02
     """
     from models import aacgm
-    import numpy as np
-    from pylab import text
     import math
     from copy import deepcopy
     import datetime as dt
-
+    self._coastLineWidth=coastLineWidth
+    self._fillContinents=fillContinents
+    self._fillLakes=fillLakes
+    self._showCoords=showCoords
+    self._grid=grid
+    self._gridLabels=gridLabels
     self._coordsDict = {'mag': 'AACGM',
               'geo': 'Geographic',
               'mlt': 'MLT'}
@@ -118,23 +121,28 @@ class mapObj(basemap.Basemap):
         lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
     if draw:
+      self.draw()
+
+  def draw(self):
+      import numpy as np
+      from pylab import text
       # Add continents
       if coords is not 'mlt' or dateTime is not None:
-        _ = self.drawcoastlines(linewidth=coastLineWidth)
+        _ = self.drawcoastlines(linewidth=self._coastLineWidth)
         # self.drawmapboundary(fill_color=fillOceans)
-        _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
 
       # Add coordinate spec
-      if showCoords:
+      if self._showCoords:
         _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
           rotation=-90., va='top', fontsize=8)
 
       # draw parallels and meridians.
-      if grid:
+      if self._grid:
         parallels = np.arange(-80.,81.,20.)
         out = self.drawparallels(parallels, color='.6', zorder=10)
         # label parallels on map
-        if gridLabels: 
+        if self._gridLabels: 
           lablon = int(self.llcrnrlon/10)*10
           rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
           x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
@@ -145,7 +153,7 @@ class mapObj(basemap.Basemap):
               rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
         # label meridians on bottom and left
         meridians = np.arange(-180.,181.,20.)
-        if gridLabels: 
+        if self._gridLabels: 
           merLabels = [False,False,False,True]
         else: 
           merLabels = [False,False,False,False]
@@ -604,3 +612,32 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 
     ab.set_zorder(zorder)
     ax.add_artist(ab)
+
+if __name__ == "__main__":
+  import pylab as plt
+  print "Simple tests for plotUtils"
+  coords='geo'
+  lat_0=20.
+  lon_0=150.
+  print "Setting up figure 1 and axis"
+  fig=plt.figure(1)
+  ax=None
+  print "Init a mapObj instance with draw==False"
+  tmpmap1 = mapObj(coords=coords,projection='stere', draw=False, 
+                         llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax)
+  print "running plt.show to initilize plots, should have an empty figure 1 window"
+  plt.show()
+  print "call the draw method for tmpmap1"
+  tmpmap1.draw()
+  print "running plt.show to initilize plots, should have an figure 1 window with a map\nClose figure window to continue with example"
+  plt.show()
+  fig=plt.figure(2)
+  ax=None
+  print "Init a mapObj instance with draw==True"
+  tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
+                         llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
+                         lat_0=lat_0, lon_0=lon_0,resolution='l')
+  print "running plt.show to initilize plots, should have an figure 2 window with a mapi\nClose figure window to continue with example"
+  print "Examples concluded"
+  plt.show()
