@@ -392,8 +392,9 @@ class radar(object):
             try: 
               rad_path=os.environ['DAVIT_TMPDIR']
             except:
-              rad_path = os.path.dirname( os.path.abspath( __file__ ) )
-            dbname = os.path.join(rad_path, 'radars.sqlite')
+              try:  rad_path=os.environ['HOME']
+              except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            dbname = os.path.join(rad_path, '.radars.sqlite')
 
             if not os.path.isfile(dbname):
                 print "%s not found" % dbname
@@ -605,8 +606,9 @@ class site(object):
             try: 
               rad_path=os.environ['DAVIT_TMPDIR']
             except:
-              rad_path = os.path.dirname( os.path.abspath( __file__ ) )
-            dbname = os.path.join(rad_path, 'radars.sqlite')
+              try:  rad_path=os.environ['HOME']
+              except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+            dbname = os.path.join(rad_path, '.radars.sqlite')
 
             if not os.path.isfile(dbname):
                 print "%s not found" % dbname
