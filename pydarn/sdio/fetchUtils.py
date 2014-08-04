@@ -117,8 +117,8 @@ def uncompress_file(filename, outname=None, verbose=True):
     return outname
 
 
-def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a',
-                      time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
+def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
+                      time_inc=dt.timedelta(hours=1), verbose=True):
 
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
@@ -127,13 +127,16 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     **Inputs**: 
         * **stime** (datetime): data starting time
         * **etime**      (datetime): data ending time
-        * **rad**             (str): 3 letter radar code (eg "han")
-        * **ftype**          (str): radar file type ("fitex", "fitacf", "lmfit",
-                                  or "iqdat")
         * **localdirfmt**     (str): string defining the local directory structure
-                                  (eg "{ftype}/{year}/{month}/{day}/")
-        * **outdir**         (str): Temporary directory in which to store
-                                  uncompressed files (must end with a "/")
+                                     (eg "{ftype}/{year}/{month}/{day}/")
+        * **localdict**      (dict): Contains keys for non-time related information in remotedirfmt 
+                                     and fnamefmt (eg remotedict={'ftype':'fitex','radar':'sas','channel':'a'})
+        * **outdir**          (str): Temporary directory in which to store
+                                     uncompressed files (must end with a "/")
+        * **fnamefmt**   (str/list): Optional string or list of file name formats (eg 
+                                     fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
+                                                '{date}.C0.{radar}.{ftype}'] 
+                                     or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
         * **time_inc** (timedelta): Time incriment between files (default=1 hour)
         * **verbose**        (bool): Print warnings or not? (default=True)
 
@@ -142,73 +145,53 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
 
     **Example**:
       
-      Fetches a day of locally stored data, sets directory format
-      environment variable to "{ftype}/{radar}/{year}/".  This
-      environment variable may eventually be phased out, so it is input
-      as a string in this routine.
+      Fetches one locally stored fitacf file stored in a directory structure
+      given by localdirfmt. The file name format is specified by the fnamefmt 
+      arguement. 
 
       :: 
 
-        import pydarn.sdio as sdio
+        from pydarn.sdio import fetchUtils
         import datetime as dt
         import os
 
-        sdio.dbUtils.setDIRFORMAT(0, 1, 2, 3)
-        st_out, filelist = sdio.fetchUtils.fetch_local_files(dt.datetime(2002,6,20),
-            dt.datetime(2002,6,21), "han", "fitacf", os.environ['DAVIT_DIRFORMAT'],
-            "/Users/agb/Programs/Data/SuperDARN/", "/tmp/sd/")
+        filelist = fetchUtils.fetch_local_files(dt.datetime(2002,6,20), \
+            dt.datetime(2002,6,21), '/sd-data/{year}/{month}/',{'ftype':'fitacf'}, \
+            "/tmp/sd/",'{date}.{hour}......{radar}.{channel}.{ftype}', \
+            time_inc=timedelta(hours=2),verbose=False)
+
     """
 
     
     import os, glob, re
 
     rn = "fetch_local_files"
+    filelist = []
 
     # Test input
     assert(isinstance(stime, dt.datetime)), \
         (rn, 'ERROR: stime must be datetime object')
     assert(isinstance(etime,dt.datetime)), \
         (rn, 'ERROR: eTime must be datetime object')
-    assert(isinstance(rad,str) and len(rad) == 3), \
-        (rn, 'ERROR: rad must be a 3 char string')
-    assert(ftype == 'rawacf' or ftype == 'fitacf' or ftype == 'fitex' or
-           ftype == 'lmfit' or ftype == 'iqdat'), \
-        (rn, 'ERROR: ftype must be one of: rawacf, fitacf, fitex, lmfit, iqdat')
     assert(isinstance(localdirfmt, str) and localdirfmt[-1] == "/"), \
         (rn, 'ERROR: localdirfmt must be a string ending in "/"')
     assert(isinstance(outdir, str) and outdir[-1] == "/"), \
         (rn, 'ERROR: outdir must be a string ending in "/"')
     assert(os.path.isdir(outdir)), (rn, "ERROR: outdir is not a directory")
-    assert(isinstance(fnamefmt, (type(None),str,list))), \
-        (rn, 'ERROR: fnamefmt must be None, str, or list')
+    assert(isinstance(fnamefmt, (str,list))), \
+        (rn, 'ERROR: fnamefmt must be str or list')
     assert(isinstance(time_inc, dt.timedelta)), \
         (rn, 'ERROR: cycle_inc must be a timedelta object')
-    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
+    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
-    # Initialize output
-    file_stime = None
-    filelist = list()
 
     #--------------------------------------------------------------------------
-    # Build the possible radar filenames for matching using re module
+    # If fnamefmt isn't a list, make it one.
 
-    if fnamefmt is None:
-        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
-        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
-                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
-                    '{date}.C0.{radar}.{ftype}', \
-                    '{date}.C0.{radar}.{channel}.{ftype}']
     if isinstance(fnamefmt,str):
-        fnamefmt = list(fnamefmt)
+        fnamefmt = [fnamefmt]
       
-
     #--------------------------------------------------------------------------
-    # Set the unchanging parts of the possible remote directory structure
-    localstruct = dict()
-    localstruct["ftype"] = ftype
-    localstruct["radar"] = rad
-    localstruct["channel"] = channel
-
     # Iterate through all of the hours in the request (round the starting time
     # down to the nearest even hour)
     ctime = stime.replace(minute=0, second=0, microsecond=0)
@@ -227,29 +210,29 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     while ctime <= etime:
 
         # set the temporal parts of the possible local directory structure
-        localstruct["year"] = "{:4d}".format(ctime.year)
-        localstruct["month"] = "{:2d}".format(ctime.month)
-        localstruct["day"] = "{:2d}".format(ctime.day)
-        localstruct["hour"] = ctime.strftime("%H")
-        localstruct["date"] = ctime.strftime("%Y%m%d")
+        localdict["year"] = "{:4d}".format(ctime.year)
+        localdict["month"] = "{:2d}".format(ctime.month)
+        localdict["day"] = "{:2d}".format(ctime.day)
+        localdict["hour"] = ctime.strftime("%H")
+        localdict["date"] = ctime.strftime("%Y%m%d")
         
         # check for a directory change
         dir_change = 0
         for key in keys_in_localdir:
-            if (checkstruct[key] != localstruct[key]):
-                checkstruct[key] = localstruct[key]    
+            if (checkstruct[key] != localdict[key]):
+                checkstruct[key] = localdict[key]    
                 dir_change = 1   
 
         # get the files in the directory if directory has changed
         if dir_change:
-          local_dir = localdirfmt.format(**localstruct)
+          local_dir = localdirfmt.format(**localdict)
           files = os.listdir(local_dir)
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
 
             # create a regular expression to check for the desired files
-            name = namefmt.format(**localstruct)
+            name = namefmt.format(**localdict)
             regex = re.compile(name)
 
             # Go thorugh all the files in the directory
@@ -284,10 +267,9 @@ def fetch_local_files(stime, etime, rad, ftype, localdirfmt, outdir, channel='a'
     return filelist
 
 
-def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
-                       remotedirfmt, outdir, username=None,
-                       password=False, port=None, channel='a',
-                       time_inc=dt.timedelta(hours=1), fnamefmt=None, verbose=True):
+def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
+                       remotedict, outdir, fnamefmt, username=None, password=False,
+                       port=None, time_inc=dt.timedelta(hours=1),  verbose=True):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -295,16 +277,18 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     **Inputs**: 
       * **stime**       (datetime): data starting time
       * **etime**       (datetime): data ending time
-      * **rad**              (str): 3 letter radar code (eg "han")
-      * **ftype**            (str): radar file type ("fitex", "fitacf", "lmfit",
-                                    or "iqdat")
       * **method**           (str): remote connection method (eg sftp, http)
       * **remotesite**       (str): remote site address (eg 'sd-data.ece.vt.edu')
       * **remotedirfmt**     (str): string defining the remote directory
-                                    structure
-                                    (eg "{ftype}/{year}/{month}/{day}/")
-      * **outdir**          (str): Temporary directory in which to store
+                                    structure (eg "{ftype}/{year}/{month}/{day}/")
+      * **remotedict**      (dict): Contains keys for non-time related information in remotedirfmt 
+                                    and fnamefmt (eg remotedict={'ftype':'fitex','radar':'sas','channel':'a'})
+      * **outdir**           (str): Temporary directory in which to store
                                     uncompressed files (must end with a "/")
+      * **fnamefmt**    (str/list): Optional string or list of file name formats (eg 
+                                    fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
+                                                '{date}.C0.{radar}.{ftype}'] 
+                                    or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
       * **username**         (str): Optional input for remote access
       * **password**    (bool/str): Optional input for remote access.  True will
                                     prompt the user for a password, False
@@ -313,13 +297,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
                                     (default=False)
       * **port**             (str): Optional input for http file access
                                     (default=None)
-      * **channel**          (str): 1-character string denoting the radar
-                                    channel (default='a')
       * **time_inc**  (datetime.timedelta): Time incriment between files (default=1 hour)
-      * **fnamefmt**    (str/list): Optional string or list of file name formats (eg 
-                                    fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
-                                                '{date}.C0.{radar}.{ftype}'] 
-                                    or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
       * **verbose**         (bool): Print out warnings? (default=True)
 
     **Outputs**: 
@@ -327,34 +305,27 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
       * **filelist**        (list): list of uncompressed files (including path)
 
     **Example**: 
-             Fetches a day of remotely stored data from the Virginia Tech
-             database, sets directory format environment variable to
-             "{year}/{ftype}/{radar}/".  This environment variable may
-             eventually be phased out, so it is input as a string in this
-             routine.  The routine will prompt for a password and print out
-             all warnings and advisements.
+             Fetches 3 remotely stored fitex files from the Virginia Tech
+             database using sftp. The directory structure is specified by
+             the remotedirfmt argument. The file name format is specified 
+             by the fnamefmt arguement. 
 
       ::
 
-        import pydarn.sdio as sdio
+        from pydarn.sdio import fetchUtils
         import datetime as dt
 
-        sdio.dbUtils.setDIRFORMAT(0, 2, 3, 1)
-        print "You will be propmted for this password:", os.environ['DBREADPASS']
-        st_out,filelist = sdio.fetchUtils.fetch_remote_files(dt.datetime(2002,3,6), \
-            dt.datetime(2002,3,7), "han", "fitacf", "sftp", "sd-data.ece.vt.edu", \
-            os.environ['DAVIT_DIRFORMAT'], "/data/", "/tmp/", "sd_dbread", True)
+        fitex = fetchUtils.fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2), \
+                 'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', \ 
+                 {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/', \
+                 '{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', \
+                 password='5d', time_inc=timedelta(hours=2),verbose=False)
 
-        print st_out
-        > "2002-03-06 00:00:00"
-        print filelist
-        > "['/tmp/20020306.0000.00.han.fitacf', '/tmp/20020306.0200.00.han.fitacf',
-            '/tmp/20020306.0400.00.han.fitacf', '/tmp/20020306.0600.00.han.fitacf',
-            '/tmp/20020306.0800.00.han.fitacf', '/tmp/20020306.1000.00.han.fitacf',
-            '/tmp/20020306.1200.00.han.fitacf', '/tmp/20020306.1400.00.han.fitacf',
-            '/tmp/20020306.1600.00.han.fitacf', '/tmp/20020306.1800.00.han.fitacf',
-            '/tmp/20020306.2000.00.han.fitacf', '/tmp/20020306.2200.00.han.fitacf',
-            '/tmp/20020307.0000.00.han.fitacf']"
+        print fitex
+        ['/tmp/sd/20131130.2201.00.mcm.a.fitex',
+         '/tmp/sd/20131201.0000.04.mcm.a.fitex',
+         '/tmp/sd/20131201.0201.00.mcm.a.fitex']
+
     """
 
     # getpass allows passwords to be entered without them appearing onscreen
@@ -373,6 +344,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     import re
 
     rn = "fetch_remote_files"
+    filelist = []
 
     #--------------------------------------------------------------------------
     # Test input
@@ -380,11 +352,6 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         (rn, 'ERROR: stime must be datetime object')
     assert(isinstance(etime,dt.datetime)), \
         (rn, 'ERROR: eTime must be datetime object')
-    assert(isinstance(rad,str) and len(rad) == 3), \
-        (rn, 'ERROR: rad must be a 3 char string')
-    assert(ftype == 'rawacf' or ftype == 'fitacf' or ftype == 'fitex' or
-           ftype == 'lmfit' or ftype == 'iqdat'), \
-        (rn, 'ERROR: ftype must be one of: rawacf, fitacf, fitex, lmfit, iqdat')
     assert(method == 'sftp' or method == 'http' or method == 'ftp' or
            method == 'file'), \
         (rn, 'ERROR: method must be one of: sftp, http, ftp, or file.',
@@ -399,21 +366,14 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     assert(isinstance(username, str) or username is None), \
         (rn, 'ERROR: username must be a string or None')
     assert(isinstance(password, str) or isinstance(password, bool)), \
-        (rn, 'ERROR: password must be a string or Boolian')
+        (rn, 'ERROR: password must be a string or Boolean')
     assert(isinstance(port, str) or port is None), \
         (rn, 'ERROR: port must be a string')
-    assert(isinstance(channel, str) and len(channel) == 1), \
-        (rn, 'ERROR: channel must be a one-character string')
-    assert(isinstance(fnamefmt, (type(None),str,list))), \
-        (rn, 'ERROR: fnamefmt must be None, str, or list')
+    assert(isinstance(fnamefmt, (str,list))), \
+        (rn, 'ERROR: fnamefmt must be str or list')
     assert(isinstance(time_inc, dt.timedelta)), \
         (rn, 'ERROR: time_inc must be timedelta object')
-    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolian')
-
-    #--------------------------------------------------------------------------
-    # Initialize output
-    file_stime = None
-    filelist = list()
+    assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
     #--------------------------------------------------------------------------
     # Initialize the unchanging parts of the remote access (not *) (not used +)
@@ -447,6 +407,12 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
 
     #--------------------------------------------------------------------------
+    # Build the possible radar filenames for matching using re module
+
+    if isinstance(fnamefmt,str):
+        fnamefmt = [fnamefmt]
+
+    #--------------------------------------------------------------------------
     # Perform method-specific initialization that does not require time info
     if method is "sftp":
         #create a transport object for use in sftp-ing
@@ -457,27 +423,14 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         except:
             print (rn, "ERROR: can't connect to", remotesite,
                   "with username and password")
-            return (file_stime, filelist)
+            return filelist
 
         try:
             sftp = p.SFTPClient.from_transport(transport)
         except:
             print rn, "ERROR: cannot engage sftp client at", remotesite
-            return (file_stime, filelist)
+            return filelist
 
-
-
-    #--------------------------------------------------------------------------
-    # Build the possible radar filenames for matching using re module
-
-    if fnamefmt is None:
-        #If no filename format is supplied, try the 2 hour style and UAF, or the 1 day style and UAF
-        fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
-                    '{date}.{hour}......{radar}.{channel}.{ftype}', \
-                    '{date}.C0.{radar}.{ftype}', \
-                    '{date}.C0.{radar}.{channel}.{ftype}']
-    if isinstance(fnamefmt,str):
-        fnamefmt = list(fnamefmt)
 
     #--------------------------------------------------------------------------
     # Iterate through all of the hours in the request (round the starting time
@@ -488,14 +441,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
 
     #--------------------------------------------------------------------------
     # Initialize the list of remote filenames
-    remotefiles = list()
-
-    #--------------------------------------------------------------------------
-    # Set the unchanging parts of the possible remote directory structure
-    remotestruct = dict()
-    remotestruct["ftype"] = ftype
-    remotestruct["radar"] = rad
-    remotestruct["channel"] = channel
+    remotefiles = []
 
     #--------------------------------------------------------------------------
     # construct a checkstruct dictionary to detect if changes in ctime
@@ -512,22 +458,22 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     while ctime <= etime:
         #----------------------------------------------------------------------
         # Set the temporal parts of the possible remote directory structure
-        remotestruct["year"] = "{:04d}".format(ctime.year)
-        remotestruct["month"] = "{:02d}".format(ctime.month)
-        remotestruct["day"] = "{:02d}".format(ctime.day)
-        remotestruct["hour"] = ctime.strftime("%H")
-        remotestruct["date"] = ctime.strftime("%Y%m%d")
+        remotedict["year"] = "{:04d}".format(ctime.year)
+        remotedict["month"] = "{:02d}".format(ctime.month)
+        remotedict["day"] = "{:02d}".format(ctime.day)
+        remotedict["hour"] = ctime.strftime("%H")
+        remotedict["date"] = ctime.strftime("%Y%m%d")
 
         #----------------------------------------------------------------------
         # Build the name of the remote files (uses wildcards)
-        path = remotedirfmt.format(**remotestruct)
+        path = remotedirfmt.format(**remotedict)
         remoteaccess['path'] = path
 
         # check for a directory change
         dir_change = 0
         for key in keys_in_remotedir:
-            if (checkstruct[key] != remotestruct[key]):
-                checkstruct[key] = remotestruct[key]    
+            if (checkstruct[key] != remotedict[key]):
+                checkstruct[key] = remotedict[key]    
                 dir_change = 1   
     
         # get the files in the directory if directory has changed
@@ -567,8 +513,8 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
         if len(remotefiles) > 0:
 
             for namefmt in fnamefmt:
-                #fill in the date, time, and radar information using remotestruct
-                name = namefmt.format(**remotestruct)
+                #fill in the date, time, and radar information using remotedict
+                name = namefmt.format(**remotedict)
                 
                 # Create a regular expression to find files of this time
                 regex = re.compile(name)
@@ -621,7 +567,7 @@ def fetch_remote_files(stime, etime, rad, ftype, method, remotesite,
     # Return the actual file start time and the list of uncompressed files
     # after deleting the dictionary structure containing the password
     del remoteaccess
-    #return (file_stime, filelist)
+
     return filelist
 
 
@@ -656,6 +602,58 @@ def test_fetchutils():
         print "FAILED!"
 
     print "Finished testing. Success: {:s}/{:s}".format(str(success),str(tests))
+
+
+
+
+
+
+if __name__=="__main__":
+
+    import os
+    from datetime import datetime,timedelta
+
+    print "*************************************************"
+    print "*************************************************"
+    print "    Running examples of fetch_remote_files..."
+    print "*************************************************"
+    print "*************************************************"
+
+    print "Attempting to fetch a mapex file from the VT server..."
+    mapexFiles = fetch_remote_files(datetime(2012,11,24), datetime(2012,11,24,23,59),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/north/',{'ftype':'mapex'}, '/tmp/sd/','{date}.north.{ftype}', username='sd_dbread', password='5d', time_inc=timedelta(days=1), verbose=False)
+
+    print "Expected the file: ['/tmp/sd/20121124.north.mapex']"
+    print "Received the file: " + str(mapexFiles)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch map files from the usask server..."
+    mapFiles = fetch_remote_files(datetime(2001,11,24), datetime(2001,11,24,23,59),'sftp','chapman.usask.ca','mapfiles/{year}/{month}/',{'ftype':'map'}, '/tmp/sd/',['{date}.{ftype}','{date}s.{ftype}'], username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20011124.map', '/tmp/sd/20011124s.map']"
+    print "Received the files: " + str(mapFiles)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch a fitex file from the VT server..."
+    fitex = fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', time_inc=timedelta(hours=2),verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20131130.2201.00.mcm.a.fitex','/tmp/sd/20131201.0000.04.mcm.a.fitex','/tmp/sd/20131201.0201.00.mcm.a.fitex']"
+    print "Received the files: " + str(fitex)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch fitacf files from the usask server..."
+    fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'sftp','chapman.usask.ca','fitcon/{year}/{month}/', {'ftype':'fitacf','radar':'sas'}, '/tmp/sd/', '{date}.C0.{radar}.{ftype}', username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),verbose=False)
+
+    print "Expected the file: ['/tmp/sd/20121124.C0.sas.fitacf']"
+    print "Received the file: " + str(fitacf)
 
 
 
