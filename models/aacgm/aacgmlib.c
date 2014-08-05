@@ -28,11 +28,11 @@ aacgm_wrap(PyObject *self, PyObject *args)
     else
     {
         inlon = fmod(inlon, 360.);
-        fprintf(stderr,"%d\n",year);
+        /*fprintf(stderr,"%d\n",year);*/
         AACGMInit(year);
         
         AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
-        fprintf(stderr,"in\n");
+        /*fprintf(stderr,"in\n");*/
         return Py_BuildValue("ddd", outLat, outLon, r);
     }
     
