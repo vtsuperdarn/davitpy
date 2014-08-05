@@ -20,13 +20,13 @@ export DBREADPASS='5d'
 export SDDB='sd-work9.ece.vt.edu:27017'
 
 # Set SFTP DATABASE
-export VTDB='sd-data.ece.vt.edu'
+export DB='sd-data.ece.vt.edu'
 
 
 # IN LIEU OF CONFIGURATION FILE LIKE
 # MATPLOTLIBRC
 
-export VTDB_PORT='22'
+export DB_PORT='22'
 
 # Set default temporary directory
 export DAVIT_TMPDIR='/tmp/sd/'

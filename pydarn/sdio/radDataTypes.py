@@ -74,9 +74,9 @@ class radDataPtr():
   """
   def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None, \
                 fileType=None,filtered=False, src=None,fileName=None,noCache=False,verbose=False, \
-                localdirfmt=None, localfnamefmt=None, localdict=None, remotedirfmt=None,          \
-                remotefnamefmt=None, remotedict=None, localtimeinc=None, remotetimeinc=None,      \
-                remotesite=None, username=None, port=None, password=None):
+                local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,          \
+                remotefnamefmt=None, remote_dict=None, local_timeinc=None, remote_timeinc=None,      \
+                remote_site=None, username=None, port=None, password=None):
 
     import datetime as dt
     import os,glob,string
@@ -145,7 +145,7 @@ class radDataPtr():
     else: arr = [fileType]
 
     #round sTime down to the nearest hour because files often start at 2 mins after the hour
-    sTime = sTime-dt.timedelta(minutes=sTime.minute) - dt.timedelta(seconds=sTime.second)
+    sTime = sTime-dt.timedelta(minutes=sTime.minute+2) - dt.timedelta(seconds=sTime.second)
 
     #a temporary directory to store a temporary file
     try:
@@ -227,37 +227,37 @@ class radDataPtr():
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
 
-                if localdirfmt is None:
+                if local_dirfmt is None:
                     try:
-                        localdirfmt = os.environ['DAVIT_LOCAL_DIRFORMAT']
+                        local_dirfmt = os.environ['DAVIT_LOCAL_DIRFORMAT']
                     except:
-                        localdirfmt = '/sd-data/{year}/{ftype}/{radar}/'
-                        print 'Environment variable DAVIT_LOCAL_DIRFORMAT not set, using default:',localdirfmt
+                        local_dirfmt = '/sd-data/{year}/{ftype}/{radar}/'
+                        print 'Environment variable DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
 
-                if localdict is None:
-                    localdict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
+                if local_dict is None:
+                    local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
 
-                if localfnamefmt is None:
+                if local_fnamefmt is None:
                     try:
-                        localfnamefmt = os.environ['DAVIT_LOCAL_FNAMEFMT'].split(',')
+                        local_fnamefmt = os.environ['DAVIT_LOCAL_FNAMEFMT'].split(',')
                     except:
-                        localfnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                        local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',localfnamefmt
+                        print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
 
-                if localtimeinc is None:
+                if local_timeinc is None:
                     try:
-                        localtimeinc = dt.timedelta(hours=int(os.environ['DAVIT_LOCAL_TIMEINC']))
+                        local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_LOCAL_TIMEINC']))
                     except:
-                        localtimeinc = dt.timedelta(hours=2)
-                        print 'Environment variable DAVIT_LOCAL_TIMEINC not set, using default:',localtimeinc
+                        local_timeinc = dt.timedelta(hours=2)
+                        print 'Environment variable DAVIT_LOCAL_TIMEINC not set, using default:',local_timeinc
                 
                 outdir = tmpDir
 
 
                 #fetch the local files
-                filelist = fetch_local_files(sTime, eTime, localdirfmt, localdict, outdir, \
-                localfnamefmt, time_inc=localtimeinc, verbose=verbose)
+                filelist = fetch_local_files(sTime, eTime, local_dirfmt, local_dict, outdir, \
+                local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
 
                 if(len(filelist) > 0):
                     print 'found',ftype,'data in local files'
@@ -283,12 +283,12 @@ class radDataPtr():
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
 
-                if remotesite is None:
+                if remote_site is None:
                     try:
-                        remotesite = os.environ['VTDB']
+                        remote_site = os.environ['DB']
                     except:
-                        remotesite = 'sd-data.ece.vt.edu'
-                        print 'Environment variable VTDB not set, using default:',remotesite
+                        remote_site = 'sd-data.ece.vt.edu'
+                        print 'Environment variable DB not set, using default:',remote_site
                 if username is None:
                     try:
                         username = os.environ['DBREADUSER']
@@ -301,14 +301,14 @@ class radDataPtr():
                     except:
                         password = '5d'
                         print 'Environment variable DBREADPASS not set, using default:',password
-                if remotedirfmt is None:
+                if remote_dirfmt is None:
                     try:
-                        remotedirfmt = os.environ['DAVIT_REMOTE_DIRFORMAT']
+                        remote_dirfmt = os.environ['DAVIT_REMOTE_DIRFORMAT']
                     except:
-                        remotedirfmt = 'data/{year}/{ftype}/{radar}/'
-                        print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remotedirfmt
-                if remotedict is None:
-                    remotedict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
+                        remote_dirfmt = 'data/{year}/{ftype}/{radar}/'
+                        print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
+                if remote_dict is None:
+                    remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 if remotefnamefmt is None:
                     try:
                         remotefnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
@@ -318,22 +318,22 @@ class radDataPtr():
                         print 'Environment variable DAVIT_REMOTE_FNAMEFMT not set, using default:',remotefnamefmt
                 if port is None:
                     try:
-                        port = os.environ['VTDB_PORT']
+                        port = os.environ['DB_PORT']
                     except:
                         port = '22'
-                        print 'Environment variable VTDB_PORT not set, using default:',port
-                if remotetimeinc is None:
+                        print 'Environment variable DB_PORT not set, using default:',port
+                if remote_timeinc is None:
                     try:
-                        remotetimeinc = dt.timedelta(hours=int(os.environ['DAVIT_REMOTE_TIMEINC']))
+                        remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_REMOTE_TIMEINC']))
                     except:
-                        remotetimeinc = dt.timedelta(hours=2)
-                        print 'Environment variable DAVIT_REMOTE_TIMEINC not set, using default:',remotetimeinc
+                        remote_timeinc = dt.timedelta(hours=2)
+                        print 'Environment variable DAVIT_REMOTE_TIMEINC not set, using default:',remote_timeinc
                 outdir = tmpDir
 
                 #Now fetch the files
-                filelist = fetch_remote_files(sTime, eTime, 'sftp', remotesite, \
-                    remotedirfmt, remotedict, outdir, remotefnamefmt, username=username, \
-                    password=password, port=port, time_inc=remotetimeinc, verbose=verbose)
+                filelist = fetch_remote_files(sTime, eTime, 'sftp', remote_site, \
+                    remote_dirfmt, remote_dict, outdir, remotefnamefmt, username=username, \
+                    password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
 
                 if len(filelist) > 0 :
                     print 'found',ftype,'data on sftp server'
@@ -1056,8 +1056,8 @@ if __name__=="__main__":
 
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
-  print "  VTDB:", os.environ['VTDB']
-  print "  VTDB_PORT:",os.environ['VTDB_PORT']
+  print "  DB:", os.environ['DB']
+  print "  DB_PORT:",os.environ['DB_PORT']
   print "  DBREADUSER:", os.environ['DBREADUSER']
   print "  DBREADPASS:", os.environ['DBREADPASS']
   print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']

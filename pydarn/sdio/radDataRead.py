@@ -34,10 +34,10 @@
 
 def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
                 fileType='fitex',filtered=False, src=None,fileName=None, \
-                noCache=False,verbose=False,localdirfmt=None,            \
-                localfnamefmt=None,localdict=None,remotedirfmt=None,     \
-                remotefnamefmt=None,remotedict=None,localtimeinc=None,   \
-                remotetimeinc=None,remotesite=None,username=None,        \
+                noCache=False,verbose=False,local_dirfmt=None,           \
+                local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
+                remote_fnamefmt=None,remote_dict=None,local_timeinc=None,\
+                remote_timeinc=None,remote_site=None,username=None,      \
                 password=None, port=None):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
@@ -58,19 +58,35 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
 
   **ENVIRONMENT Variables**:
-    * DAVIT_TMPDIR :  Directory used for davitpy temporary file cache. 
-    * DAVIT_TMPEXPIRE :  Length of time that cached temporary files are valid. After which they will be regenerated.  Example: DAVIT_TMPEXPIRE='2h'  will reuse temp files in the cache for 2 hours since last access 
-    * DAVIT_LOCALDIR :  Used to set base directory tree for local file look up
-    * DAVIT_DIRFORMAT : Python string dictionary capable format string appended to local file base directory tree for use with directory structures which encode radar name, channel or date information.
-    Currently supported dictionary keys which can be used: 
-    "dirtree" : base directory tree  
-    "year"  : 0 padded 4 digit year 
-    "month" : 0 padded 2 digit month 
-    "day"   : 0 padded 2 digit day 
-    "ftype" : filetype string
-    "radar" : 3-chr radarcode 
+    * DB                     : Used to specify the DB address (overridden by remote_site)
+    * DB_PORT                : Used to specify the DB port
+    * DBREADUSER             : Used to specify the DB user username
+    * DBREADPASS             : Used to specify the DB user password
+    * DAVIT_REMOTE_DIRFORMAT : Used to specify the remote data directory structure.
+    * DAVIT_REMOTE_FNAMEFMT  : Used to specify the remote filename format.
+    * DAVIT_REMOTE_TIMEINC   : Used to specify the remote time increment between files.
+    * DAVIT_LOCAL_DIRFORMAT  : Used to specify the local data directory structure
+    * DAVIT_LOCAL_FNAMEFMT   : Used to specify the local filename format.
+    * DAVIT_LOCAL_TIMEINC    : Used to specify the local time increment between files.
+    * DAVIT_TMPDIR           : Directory used for davitpy temporary file cache. 
+
+    The evironment variables are python dictionary capable formatted strings appended encode radar name, channel, and/or date information. Currently supported dictionary keys which can be used are: 
+
+    "date"    : datetime.datetime.strftime("%Y%m%d")
+    "year"    : 0 padded 4 digit year 
+    "month"   : 0 padded 2 digit month 
+    "day"     : 0 padded 2 digit day 
+    "hour"    : 0 padded 2 digit day 
+    "ftype"   : filetype string
+    "radar"   : 3-chr radarcode 
+    "channel" : single character string, ex) 'a'
 
     
+
+#in hours
+export DAVIT_REMOTE_TIMEINC='2'
+export DAVIT_LOCAL_TIMEINC='2'
+
   **Example**:
     ::
     
@@ -81,14 +97,14 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
   """
   from pydarn.sdio import radDataPtr
   myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,            \
-                channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,     \
-                filtered=filtered,src=src,fileName=fileName,             \
-                noCache=noCache,verbose=verbose,localdirfmt=localdirfmt, \
-                localfnamefmt=localfnamefmt,localdict=localdict,         \
-                remotedirfmt=remotedirfmt,remotefnamefmt=remotefnamefmt, \
-                remotedict=remotedict,localtimeinc=localtimeinc,         \
-                remotetimeinc=remotetimeinc,remotesite=remotesite,       \
-                username=username,port=port,password=password)
+               channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,      \
+               filtered=filtered,src=src,fileName=fileName,              \
+               noCache=noCache,verbose=verbose,local_dirfmt=local_dirfmt,\
+               local_fnamefmt=local_fnamefmt,local_dict=local_dict,      \
+               remote_dirfmt=remote_dirfmt,remote_dict=remote_dict,      \
+               remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,  \
+               local_timeinc=local_timeinc,remote_timeinc=remote_timeinc,\
+               username=username,port=port,password=password)
   return myPtr
   
 def radDataReadRec(myPtr):
