@@ -145,9 +145,6 @@ class radDataPtr():
     elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
     else: arr = [fileType]
 
-    #round sTime down to the nearest hour because files often start at 2 mins after the hour
-    self.sTime = self.sTime-dt.timedelta(minutes=self.sTime.minute+2) - dt.timedelta(seconds=self.sTime.second)
-
     #a temporary directory to store a temporary file
     if tmpdir is None:
       try:
@@ -1050,10 +1047,10 @@ if __name__=="__main__":
   filtered=False
   sTime=datetime.datetime(2012,11,1,0,0)
   eTime=datetime.datetime(2012,11,1,4,0)
-  expected_filename="20121031.220100.20121101.040000.fhe.fitacf"
+  expected_filename="20121101.000000.20121101.040000.fhe.fitacf"
   expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=26684193
-  expected_md5sum="de3b53ce99d2c2c16d00eb214e768690"
+  expected_filesize=19377805
+  expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for radDataPtr."
