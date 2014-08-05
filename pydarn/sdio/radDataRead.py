@@ -38,7 +38,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
                 local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
                 remote_fnamefmt=None,remote_dict=None,local_timeinc=None,\
                 remote_timeinc=None,remote_site=None,username=None,      \
-                password=None, port=None):
+                password=None, port=None,tmpdir=None):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -54,21 +54,35 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     * **[src]** (str): the source of the data.  valid inputs are 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
     * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
+    * **[verbose]** (boolean): Be very verbose about file fetching and reading. default=False
+    * **[remote_site]** (str): The remote data server's address.
+    * **[port]** (str): The port number to use for remote_site.
+    * **[username]** (str): Username for remote_site.
+    * **[password]** (str/bool): Password for remote_site. If password is set to True, the user is prompted for the remote_site password.
+    * **[remote_dirfmt]** (str): The remote_site directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}'
+    * **[remote_fnamefmt]** (str/list): The remote_site file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
+    * **[remote_timeinc]** (str): The time increment between remote_site files. Must be given in hours.
+    * **[local_dirfmt]** (str): The local directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}' 
+    * **[local_fnamefmt]** (str/list): The local file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
+    * **[local_timeinc]** (str): The time increment between locally stored files. Must be given in hours.
+    * **[tmpdir]** (str): The directory in which to store temporary files.
+
+
   **Returns**:
     * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
 
   **ENVIRONMENT Variables**:
-    * DB                     : Used to specify the DB address (overridden by remote_site)
-    * DB_PORT                : Used to specify the DB port
-    * DBREADUSER             : Used to specify the DB user username
-    * DBREADPASS             : Used to specify the DB user password
-    * DAVIT_REMOTE_DIRFORMAT : Used to specify the remote data directory structure.
-    * DAVIT_REMOTE_FNAMEFMT  : Used to specify the remote filename format.
-    * DAVIT_REMOTE_TIMEINC   : Used to specify the remote time increment between files.
-    * DAVIT_LOCAL_DIRFORMAT  : Used to specify the local data directory structure
-    * DAVIT_LOCAL_FNAMEFMT   : Used to specify the local filename format.
-    * DAVIT_LOCAL_TIMEINC    : Used to specify the local time increment between files.
-    * DAVIT_TMPDIR           : Directory used for davitpy temporary file cache. 
+    * DB                     : Used to specify the DB address (overridden by remote_site).
+    * DB_PORT                : Used to specify the DB port (overridden by port).
+    * DBREADUSER             : Used to specify the DB user username (overridden by username).
+    * DBREADPASS             : Used to specify the DB user password (overridden by password).
+    * DAVIT_REMOTE_DIRFORMAT : Used to specify the remote data directory structure (overridden by remote_dirfmt).
+    * DAVIT_REMOTE_FNAMEFMT  : Used to specify the remote filename format (overridden by remote_fnamefmt).
+    * DAVIT_REMOTE_TIMEINC   : Used to specify the remote time increment between files (overridden by remote_timeinc).
+    * DAVIT_LOCAL_DIRFORMAT  : Used to specify the local data directory structure (overridden by local_dirfmt).
+    * DAVIT_LOCAL_FNAMEFMT   : Used to specify the local filename format (overridden by local_fnamefmt).
+    * DAVIT_LOCAL_TIMEINC    : Used to specify the local time increment between files (overridden by local_timeinc).
+    * DAVIT_TMPDIR           : Directory used for davitpy temporary file cache (overridden by tmpdir).
 
     The evironment variables are python dictionary capable formatted strings appended encode radar name, channel, and/or date information. Currently supported dictionary keys which can be used are: 
 
@@ -81,17 +95,12 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     "radar"   : 3-chr radarcode 
     "channel" : single character string, ex) 'a'
 
-    
-
-#in hours
-export DAVIT_REMOTE_TIMEINC='2'
-export DAVIT_LOCAL_TIMEINC='2'
 
   **Example**:
     ::
     
       import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+      myPtr = pydarn.sdio.radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
     
   Written by AJ 20130110
   """
@@ -104,7 +113,8 @@ export DAVIT_LOCAL_TIMEINC='2'
                remote_dirfmt=remote_dirfmt,remote_dict=remote_dict,      \
                remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,  \
                local_timeinc=local_timeinc,remote_timeinc=remote_timeinc,\
-               username=username,port=port,password=password)
+               username=username,port=port,password=password,            \
+               tmpdir=tmpdir)
   return myPtr
   
 def radDataReadRec(myPtr):

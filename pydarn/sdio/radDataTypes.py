@@ -59,6 +59,7 @@ class radDataPtr():
     * **nocache** (bool):  do not use cached files, regenerate tmp files 
     * **src** (str):  local or sftp 
 
+
   **Methods**:
     * **open** 
     * **close** 
@@ -75,8 +76,8 @@ class radDataPtr():
   def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None, \
                 fileType=None,filtered=False, src=None,fileName=None,noCache=False,verbose=False, \
                 local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,          \
-                remotefnamefmt=None, remote_dict=None, local_timeinc=None, remote_timeinc=None,      \
-                remote_site=None, username=None, port=None, password=None):
+                remote_fnamefmt=None, remote_dict=None, local_timeinc=None, remote_timeinc=None,      \
+                remote_site=None, username=None, port=None, password=None,tmpdir=None):
 
     import datetime as dt
     import os,glob,string
@@ -148,10 +149,11 @@ class radDataPtr():
     sTime = sTime-dt.timedelta(minutes=sTime.minute+2) - dt.timedelta(seconds=sTime.second)
 
     #a temporary directory to store a temporary file
-    try:
-      tmpDir=os.environ['DAVIT_TMPDIR']
-    except:
-      tmpDir = '/tmp/sd/'
+    if tmpdir is None:
+      try:
+        tmpDir=os.environ['DAVIT_TMPDIR']
+      except:
+        tmpDir = '/tmp/sd/'
     d = os.path.dirname(tmpDir)
     if not os.path.exists(d):
       os.makedirs(d)
@@ -309,13 +311,13 @@ class radDataPtr():
                         print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
-                if remotefnamefmt is None:
+                if remote_fnamefmt is None:
                     try:
-                        remotefnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
+                        remote_fnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
                     except:
-                        remotefnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                        remote_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                                           '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        print 'Environment variable DAVIT_REMOTE_FNAMEFMT not set, using default:',remotefnamefmt
+                        print 'Environment variable DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt
                 if port is None:
                     try:
                         port = os.environ['DB_PORT']
@@ -332,7 +334,7 @@ class radDataPtr():
 
                 #Now fetch the files
                 filelist = fetch_remote_files(sTime, eTime, 'sftp', remote_site, \
-                    remote_dirfmt, remote_dict, outdir, remotefnamefmt, username=username, \
+                    remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
 
                 if len(filelist) > 0 :
