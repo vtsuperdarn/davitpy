@@ -32,9 +32,13 @@
   * :func:`pydarn.sdio.radDataRead.radDataCreateIndex`
 """
 
-def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
+def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
                 fileType='fitex',filtered=False, src=None,fileName=None, \
-                noCache=False,verbose=False):
+                noCache=False,verbose=False,localdirfmt=None,            \
+                localfnamefmt=None,localdict=None,remotedirfmt=None,     \
+                remotefnamefmt=None,remotedict=None,localtimeinc=None,   \
+                remotetimeinc=None,remotesite=None,username=None,        \
+                password=None, port=None):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -76,9 +80,15 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
   Written by AJ 20130110
   """
   from pydarn.sdio import radDataPtr
-  myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,channel=channel,bmnum=bmnum,cp=cp, \
-                fileType=fileType,filtered=filtered, src=src,fileName=fileName, \
-                noCache=noCache,verbose=verbose)
+  myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,            \
+                channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,     \
+                filtered=filtered,src=src,fileName=fileName,             \
+                noCache=noCache,verbose=verbose,localdirfmt=localdirfmt, \
+                localfnamefmt=localfnamefmt,localdict=localdict,         \
+                remotedirfmt=remotedirfmt,remotefnamefmt=remotefnamefmt, \
+                remotedict=remotedict,localtimeinc=localtimeinc,         \
+                remotetimeinc=remotetimeinc,remotesite=remotesite,       \
+                username=username,port=port,password=password)
   return myPtr
   
 def radDataReadRec(myPtr):

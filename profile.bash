@@ -23,3 +23,22 @@ export SDDB='sd-work9.ece.vt.edu:27017'
 export VTDB='sd-data.ece.vt.edu'
 
 
+# IN LIEU OF CONFIGURATION FILE LIKE
+# MATPLOTLIBRC
+
+export VTDB_PORT='22'
+
+# Set default temporary directory
+export DAVIT_TMPDIR='/tmp/sd/'
+
+export DAVIT_REMOTE_DIRFORMAT='data/{year}/{ftype}/{radar}/'
+export DAVIT_REMOTE_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
+
+export DAVIT_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{radar}/'
+export DAVIT_LOCAL_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
+
+#in hours
+export DAVIT_REMOTE_TIMEINC='2'
+export DAVIT_LOCAL_TIMEINC='2'
+
+
