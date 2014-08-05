@@ -146,7 +146,7 @@ class radDataPtr():
     else: arr = [fileType]
 
     #round sTime down to the nearest hour because files often start at 2 mins after the hour
-    sTime = sTime-dt.timedelta(minutes=sTime.minute+2) - dt.timedelta(seconds=sTime.second)
+    self.sTime = self.sTime-dt.timedelta(minutes=self.sTime.minute+2) - dt.timedelta(seconds=self.sTime.second)
 
     #a temporary directory to store a temporary file
     if tmpdir is None:
@@ -258,7 +258,7 @@ class radDataPtr():
 
 
                 #fetch the local files
-                filelist = fetch_local_files(sTime, eTime, local_dirfmt, local_dict, outdir, \
+                filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                 local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
 
                 if(len(filelist) > 0):
@@ -333,7 +333,7 @@ class radDataPtr():
                 outdir = tmpDir
 
                 #Now fetch the files
-                filelist = fetch_remote_files(sTime, eTime, 'sftp', remote_site, \
+                filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
 
