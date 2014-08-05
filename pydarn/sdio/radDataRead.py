@@ -34,7 +34,7 @@
 
 def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
                 fileType='fitex',filtered=False, src=None,fileName=None, \
-                custType='fitex',noCache=False,verbose=False):
+                noCache=False,verbose=False):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -49,7 +49,6 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
     * **[filtered]** (boolean): a boolean specifying whether you want the fit data to be boxcar filtered.  ONLY VALID FOR FIT.  default = False
     * **[src]** (str): the source of the data.  valid inputs are 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
-    * **[custType]** (str): if fileName is specified, the filetype of the file.  default='fitex'
     * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
   **Returns**:
     * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
