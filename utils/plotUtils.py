@@ -622,7 +622,7 @@ if __name__ == "__main__":
   tmpmap1 = mapObj(coords=coords,projection='stere', draw=False, 
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
                          lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax)
-  print "running plt.show to initilize plots, should have an empty figure 1 window"
+  print "running plt.show to initilize plots, should have an empty figure 1 window\nClose figure window to continue with example"
   plt.show()
   print "call the draw method for tmpmap1"
   tmpmap1.draw()
@@ -634,7 +634,7 @@ if __name__ == "__main__":
   tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
                          lat_0=lat_0, lon_0=lon_0,resolution='l')
-  print "running plt.show to initilize plots, should have an figure 2 window with a mapi\nClose figure window to continue with example"
+  print "running plt.show to initilize plots, should have an figure 2 window with a map\nClose figure window to continue with example"
   plt.show()
 
   print "\nTesting some coordinate transformations."
