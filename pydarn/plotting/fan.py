@@ -234,15 +234,11 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myFig = plot.figure(figsize=(12,8))
     
     #draw the actual map we want
-    myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, lon_0=lon_0,
-                                             llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon,
-                                             urcrnrlat=urcrnrlat)
-    myMap.drawparallels(numpy.arange(-80.,81.,10.),labels=[1,0,0,0])
-    myMap.drawmeridians(numpy.arange(-180.,181.,20.),labels=[0,0,0,1])
-    #if(coords == 'geo'):
-    myMap.drawcoastlines(linewidth=0.5,color='k')
-    myMap.drawmapboundary(fill_color='w')
-    myMap.fillcontinents(color='w', lake_color='w')
+    myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, 
+                         lon_0=lon_0, llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat,
+                         urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat,
+                         coastLineWidth=0.5, coastLineColor='k',
+                         fillOceans='w',fillContinents='w', fillLakes='w')
     #overlay fields of view, if desired
     if(fov == 1):
         for i,r in enumerate(rad):
