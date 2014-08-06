@@ -83,7 +83,9 @@ class mapObj(basemap.Basemap):
     from copy import deepcopy
     import datetime as dt
     self._coastLineWidth=coastLineWidth
+    self._coastLineColor=coastLineColor
     self._fillContinents=fillContinents
+    self._fillOceans=fillOceans
     self._fillLakes=fillLakes
     self._showCoords=showCoords
     self._grid=grid
@@ -128,9 +130,9 @@ class mapObj(basemap.Basemap):
       import numpy as np
       from pylab import text
       # Add continents
-      _ = self.drawcoastlines(linewidth=coastLineWidth, color=coastLineColor)
-      _ = self.drawmapboundary(fill_color=fillOceans)
-      _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+      _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
+      _ = self.drawmapboundary(fill_color=self._fillOceans)
+      _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
 
       # Add coordinate spec
       if self._showCoords:
