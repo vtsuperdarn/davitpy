@@ -178,7 +178,7 @@ class mapObj(basemap.Basemap):
 
     #Next do the conversion if lat/lon coord system change first, then calculation of x,y map coords (inverse=False)
     elif coords and (coords != self.coords) and (inverse is False):
-      trans = self.coords+'-'+self.coords
+      trans = coords+'-'+self.coords
       if trans in ['geo-mag','mag-geo']: #Add 'geo-mlt', 'mlt-geo', for mlt support
         flag = 0 if trans == 'geo-mag' else 1
         try:
@@ -217,40 +217,6 @@ class mapObj(basemap.Basemap):
             self.datetime.year, flag)
       return y, x
 
-#    if self.coords is 'geo':
-#      return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-#
-#    elif self.coords is 'mag':
-#      try:
-#        callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
-#      except: 
-#        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-#      if isinstance(y, float) and abs(y) == 90.:
-#        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-#      if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-#        if not inverse:
-#          try:
-#            nx, ny = len(x), len(y)
-#            x = np.array(x)
-#            y = np.array(y)
-#            shape = x.shape
-#            yout, xout, _ = aacgm.aacgmConvArr(
-#              list(y.flatten()), list(x.flatten()), [altitude]*nx, 
-#              self.datetime.year, 0)
-#            xout = np.array(xout).reshape(shape)
-#            yout = np.array(yout).reshape(shape)
-#          except TypeError:
-#            yout, xout, _ = aacgm.aacgmConv(y, x, 0., 
-#              self.datetime.year, 0)
-#          return basemap.Basemap.__call__(self, xout, yout, inverse=inverse)
-#        else:
-#          return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-#      else:
-#        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-
-    elif self.coords is 'mlt':
-      print 'Not implemented'
-      callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
 
 
   def _readboundarydata(self, name, as_polygons=False):
@@ -717,5 +683,21 @@ if __name__ == "__main__":
   lon,lat = map1(x,y,inverse=True,coords='geo')
   print "    Expected: ",58.8384430722,175.311901385
   print "    Received: ",lon,lat
+
+  print "\n  Converting geo lat/lon from a mag map to map x/y."
+  print "  mag lat/lon to map x/y"
+  map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, \
+               urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',draw=False)
+  x,y = map1(175.311901385,58.8384430722,coords='geo')
+  print "    Expected: ",14900062.142,-14366347.2577
+  print "    Received: ",x,y
+
+  print "\n  Converting mag lat/lon from a geo map to map x/y."
+  print "  mag lat/lon to map x/y"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, \
+               urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',draw=False)
+  x,y = map1(-59.9940107681,59.9324622167,coords='mag')
+  print "    Expected: ",14902099.9295,-14362212.9526
+  print "    Received: ",x,y
 
   print "Tests concluded"
