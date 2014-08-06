@@ -570,6 +570,7 @@ def addColorbar(mappable, ax):
 
 ################################################################################
 ################################################################################
+
 def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0), 
   zorder=None, text_alignment=(0,0), xycoords='data', 
   textcoords='offset points', **kwargs):
@@ -640,10 +641,42 @@ if __name__ == "__main__":
                          lat_0=lat_0, lon_0=lon_0,resolution='l')
   print "running plt.show to initilize plots, should have an figure 2 window with a mapi\nClose figure window to continue with example"
   plt.show()
-  print "Lets test some calling options"
-  print tmpmap2(120,20,coords="mag",altitude=0.)
-  print tmpmap2(120,20,coords="mag",altitude=300.)
-  
-  print tmpmap2(0,0,coords="mag",inverse=True,altitude=0.)
-  print tmpmap2(0,0,coords="mag",inverse=True,altitude=300.)
-  print "Examples concluded"
+
+  print "\nTesting some coordinate transformations."
+  print "  Converting geo lat/lon to map x/y to geo lat/lon."
+  print "  geo lat/lon to map x/y"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, \
+               urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',draw=False)
+  x,y = map1(-120,54)
+  print "    Expected: ",14898932.7446,-14364789.7586
+  print "    Received: ",x,y
+  print "  map x/y to geo lat/lon"
+  lon,lat = map1(x,y,inverse=True,coords='geo')
+  print "    Expected: ",-119.99999999999999, 54.000000000000014
+  print "    Received: ",lon,lat
+
+  print "\n  Converting geo lat/lon to map x/y to mag lat/lon."
+  print "  geo lat/lon to map x/y"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, \
+               urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',draw=False)
+  x,y = map1(-120,54)
+  print "    Expected: ",14898932.7446,-14364789.7586
+  print "    Received: ",x,y
+  print "  map x/y to mag lat/lon"
+  lon,lat = map1(x,y,inverse=True,coords='mag')
+  print "    Expected: ",59.9324622167,-59.9940107681
+  print "    Received: ",lon,lat
+
+  print "\n  Converting mag lat/lon to map x/y to geo lat/lon."
+  print "  mag lat/lon to map x/y"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, \
+               urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',draw=False)
+  x,y = map1(-120,54)
+  print "    Expected: ",14898932.7446,-14364789.7586
+  print "    Received: ",x,y
+  print "  map x/y to geo lat/lon"
+  lon,lat = map1(x,y,inverse=True,coords='geo')
+  print "    Expected: ",58.8384430722,175.311901385
+  print "    Received: ",lon,lat
+
+  print "Tests concluded"
