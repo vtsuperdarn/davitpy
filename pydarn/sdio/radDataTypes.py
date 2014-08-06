@@ -466,8 +466,8 @@ class radDataPtr():
                   recordDict[rectime]=offset
                   if dfile['scan']==1: scanStartDict[rectime]=offset
       #reset back to before building the index 
-      self.offsetSeek(starting_offset)
       self.recordIndex=recordDict
+      self.offsetSeek(starting_offset)
       self.scanStartIndex=scanStartDict
       return recordDict,scanStartDict
 

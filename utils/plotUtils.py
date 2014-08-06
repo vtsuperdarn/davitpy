@@ -48,9 +48,9 @@ class mapObj(basemap.Basemap):
 
   """
 
-  def __init__(self, date_time=None, coords='geo', 
-    projection='stere', resolution='c',
-    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, 
+  def __init__(self, datetime=None, coords='geo', 
+    projection='stere', resolution='c', dateTime=None, 
+    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, draw=True, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
     coastLineColor=None, grid=True, gridLabels=True, showCoords=True, 
     **kwargs):
@@ -61,6 +61,7 @@ class mapObj(basemap.Basemap):
       * **[lon_0]**: center meridian (default is -70E)    
       * **[lat_0]**: center latitude (default is -90E)
       * **[boundingLat]**: bounding latitude (default it +/-20)    
+      * **[draw]**: set to "False" to skip initial drawing of map
       * **[grid]**: show/hide parallels and meridians grid    
       * **[fill_continents]**: continent color. Default is 'grey'    
       * **[fill_water]**: water color. Default is 'None'    
@@ -78,12 +79,15 @@ class mapObj(basemap.Basemap):
     written by Sebastien, 2013-02
     """
     from models import aacgm
-    import numpy as np
-    from pylab import text
     import math
     from copy import deepcopy
     import datetime as dt
-
+    self._coastLineWidth=coastLineWidth
+    self._fillContinents=fillContinents
+    self._fillLakes=fillLakes
+    self._showCoords=showCoords
+    self._grid=grid
+    self._gridLabels=gridLabels
     self._coordsDict = {'mag': 'AACGM',
               'geo': 'Geographic',
               'mlt': 'MLT'}
@@ -117,41 +121,47 @@ class mapObj(basemap.Basemap):
     super(mapObj, self).__init__(projection=projection, resolution=resolution, 
         lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
 
+    if draw:
+      self.draw()
+
+  def draw(self):
+      import numpy as np
+      from pylab import text
     # Add continents
     _ = self.drawcoastlines(linewidth=coastLineWidth, color=coastLineColor)
     _ = self.drawmapboundary(fill_color=fillOceans)
     _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
-    # Add coordinate spec
-    if showCoords:
-      _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
+      # Add coordinate spec
+      if self._showCoords:
+        _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
           rotation=-90., va='top', fontsize=8)
 
-    # draw parallels and meridians.
-    if grid:
-      parallels = np.arange(-80.,81.,20.)
-      out = self.drawparallels(parallels, color='.6', zorder=10)
-      # label parallels on map
-      if gridLabels: 
-        lablon = int(self.llcrnrlon/10)*10
-        rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
-        x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
-        for ix,iy,ip in zip(x,y,parallels):
-          if not self.xmin <= ix <= self.xmax: continue
-          if not self.ymin <= iy <= self.ymax: continue
-          _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+      # draw parallels and meridians.
+      if self._grid:
+        parallels = np.arange(-80.,81.,20.)
+        out = self.drawparallels(parallels, color='.6', zorder=10)
+        # label parallels on map
+        if self._gridLabels: 
+          lablon = int(self.llcrnrlon/10)*10
+          rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
+          x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+          for ix,iy,ip in zip(x,y,parallels):
+            if not self.xmin <= ix <= self.xmax: continue
+            if not self.ymin <= iy <= self.ymax: continue
+            _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
               rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
-      # label meridians on bottom and left
-      meridians = np.arange(-180.,181.,20.)
-      if gridLabels: 
-        merLabels = [False,False,False,True]
-      else: 
-        merLabels = [False,False,False,False]
-      # draw meridians
-      out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+        # label meridians on bottom and left
+        meridians = np.arange(-180.,181.,20.)
+        if self._gridLabels: 
+          merLabels = [False,False,False,True]
+        else: 
+          merLabels = [False,False,False,False]
+        # draw meridians
+        out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
 
   
-  def __call__(self, x, y, inverse=False, coords=None):
+  def __call__(self, x, y, inverse=False, coords=None,altitude=0.):
     from models import aacgm
     from copy import deepcopy
     import numpy as np
@@ -171,14 +181,13 @@ class mapObj(basemap.Basemap):
           yt = np.array(y)
           shape = xt.shape    
           y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [0.]*nx, 
-            self.date_time.year, flag)
+            list(yt.flatten()), list(xt.flatten()), [altitude]*nx, 
+            self.datetime.year, flag)
           x = np.array(x).reshape(shape)
           y = np.array(y).reshape(shape)
         except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, 0., 
-            self.date_time.year, flag)
-
+          y, x, _ = aacgm.aacgmConv(y, x, altitude, 
+            self.datetime.year, flag)
 
     if self.coords is 'geo':
       return basemap.Basemap.__call__(self, x, y, inverse=inverse)
@@ -198,8 +207,8 @@ class mapObj(basemap.Basemap):
             y = np.array(y)
             shape = x.shape
             yout, xout, _ = aacgm.aacgmConvArr(
-              list(y.flatten()), list(x.flatten()), [0.]*nx, 
-              self.date_time.year, 0)
+              list(y.flatten()), list(x.flatten()), [altitude]*nx, 
+              self.datetime.year, 0)
             xout = np.array(xout).reshape(shape)
             yout = np.array(yout).reshape(shape)
           except TypeError:
@@ -602,3 +611,38 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 
     ab.set_zorder(zorder)
     ax.add_artist(ab)
+
+if __name__ == "__main__":
+  import pylab as plt
+  print "Simple tests for plotUtils"
+  coords='geo'
+  lat_0=20.
+  lon_0=150.
+  print "Setting up figure 1 and axis"
+  fig=plt.figure(1)
+  ax=None
+  print "Init a mapObj instance with draw==False"
+  tmpmap1 = mapObj(coords=coords,projection='stere', draw=False, 
+                         llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax)
+  print "running plt.show to initilize plots, should have an empty figure 1 window"
+  plt.show()
+  print "call the draw method for tmpmap1"
+  tmpmap1.draw()
+  print "running plt.show to initilize plots, should have an figure 1 window with a map\nClose figure window to continue with example"
+  plt.show()
+  fig=plt.figure(2)
+  ax=None
+  print "Init a mapObj instance with draw==True"
+  tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
+                         llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
+                         lat_0=lat_0, lon_0=lon_0,resolution='l')
+  print "running plt.show to initilize plots, should have an figure 2 window with a mapi\nClose figure window to continue with example"
+  plt.show()
+  print "Lets test some calling options"
+  print tmpmap2(120,20,coords="mag",altitude=0.)
+  print tmpmap2(120,20,coords="mag",altitude=300.)
+  
+  print tmpmap2(0,0,coords="mag",inverse=True,altitude=0.)
+  print tmpmap2(0,0,coords="mag",inverse=True,altitude=300.)
+  print "Examples concluded"
