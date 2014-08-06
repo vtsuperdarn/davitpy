@@ -52,7 +52,8 @@ class mapObj(basemap.Basemap):
     projection='stere', resolution='c', dateTime=None, 
     lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, draw=True, 
     fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
-    grid=True, gridLabels=True, showCoords=True, **kwargs):
+    coastLineColor=None, grid=True, gridLabels=True, showCoords=True, 
+    **kwargs):
     """Create empty map 
     
     **Args**:    
@@ -84,7 +85,9 @@ class mapObj(basemap.Basemap):
     self.lat_0=lat_0
     self.lon_0=lon_0
     self._coastLineWidth=coastLineWidth
+    self._coastLineColor=coastLineColor
     self._fillContinents=fillContinents
+    self._fillOceans=fillOceans
     self._fillLakes=fillLakes
     self._showCoords=showCoords
     self._grid=grid
@@ -119,7 +122,7 @@ class mapObj(basemap.Basemap):
     if boundinglat:
       width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
-    # Initialize map
+    # Initialize map with original Basemap
     super(mapObj, self).__init__(projection=projection, resolution=resolution, 
         lat_0=self.lat_0, lon_0=self.lon_0, width=width, height=height, **kwargs)
 
@@ -130,10 +133,9 @@ class mapObj(basemap.Basemap):
       import numpy as np
       from pylab import text
       # Add continents
-      if self.coords is not 'mlt' or dateTime is not None:
-        _ = self.drawcoastlines(linewidth=self._coastLineWidth)
-        # self.drawmapboundary(fill_color=fillOceans)
-        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
+      _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
+      _ = self.drawmapboundary(fill_color=self._fillOceans)
+      _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
 
       # Add coordinate spec
       if self._showCoords:
@@ -218,8 +220,6 @@ class mapObj(basemap.Basemap):
           y, x, _ = aacgm.aacgmConv(y, x, altitude, 
             self.datetime.year, flag)
       return y, x
-
-
 
   def _readboundarydata(self, name, as_polygons=False):
     from models import aacgm
