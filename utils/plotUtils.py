@@ -67,7 +67,7 @@ class mapObj(basemap.Basemap):
       * **[fill_water]**: water color. Default is 'None'    
       * **[coords]**: 'geo'
       * **[showCoords]**: display coordinate system name in upper right corner
-      * **[date_time]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
+      * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
     **Returns**:
       * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
@@ -96,9 +96,9 @@ class mapObj(basemap.Basemap):
       print 'MLT coordinates not implemented yet.'
       return
 
-    if date_time is None:
-      date_time = dt.datetime.utcnow()
-    self.date_time = date_time
+    if datetime is None:
+      datetime = dt.datetime.utcnow()
+    self.datetime = datetime
 
     # Add an extra member to the Basemap class
     if coords is not None and coords not in self._coordsDict:
@@ -113,7 +113,7 @@ class mapObj(basemap.Basemap):
     if lon_0 is None: 
       lon_0 = -100.
       if self.coords == 'mag': 
-        _, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., self.date_time.year, 0)
+        _, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., self.datetime.year, 0)
     if boundinglat:
       width = height = 2*111e3*( abs(lat_0 - boundinglat) )
 
@@ -127,10 +127,10 @@ class mapObj(basemap.Basemap):
   def draw(self):
       import numpy as np
       from pylab import text
-    # Add continents
-    _ = self.drawcoastlines(linewidth=coastLineWidth, color=coastLineColor)
-    _ = self.drawmapboundary(fill_color=fillOceans)
-    _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
+      # Add continents
+      _ = self.drawcoastlines(linewidth=coastLineWidth, color=coastLineColor)
+      _ = self.drawmapboundary(fill_color=fillOceans)
+      _ = self.fillcontinents(color=fillContinents, lake_color=fillLakes)
 
       # Add coordinate spec
       if self._showCoords:
@@ -213,7 +213,7 @@ class mapObj(basemap.Basemap):
             yout = np.array(yout).reshape(shape)
           except TypeError:
             yout, xout, _ = aacgm.aacgmConv(y, x, 0., 
-              self.date_time.year, 0)
+              self.datetime.year, 0)
           return basemap.Basemap.__call__(self, xout, yout, inverse=inverse)
         else:
           return basemap.Basemap.__call__(self, x, y, inverse=inverse)
@@ -236,7 +236,7 @@ class mapObj(basemap.Basemap):
       lats, lons, _ = aacgm.aacgmConvArr(
               list(self._boundarypolyll.boundary[:, 1]), 
               list(self._boundarypolyll.boundary[:, 0]), 
-              [0.]*nPts, self.date_time.year, 1)
+              [0.]*nPts, self.datetime.year, 1)
       b = np.asarray([lons,lats]).T
       oldgeom = deepcopy(self._boundarypolyll)
       newgeom = _geoslib.Polygon(b).fix()
