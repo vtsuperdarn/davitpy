@@ -59,6 +59,7 @@ class radDataPtr():
     * **nocache** (bool):  do not use cached files, regenerate tmp files 
     * **src** (str):  local or sftp 
 
+
   **Methods**:
     * **open** 
     * **close** 
@@ -73,13 +74,16 @@ class radDataPtr():
   Written by AJ 20130108
   """
   def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None, \
-                fileType=None,filtered=False, src=None,fileName=None,noCache=False):
+                fileType=None,filtered=False, src=None,fileName=None,noCache=False,verbose=False, \
+                local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,          \
+                remote_fnamefmt=None, remote_dict=None, local_timeinc=None, remote_timeinc=None,      \
+                remote_site=None, username=None, port=None, password=None,tmpdir=None):
+
     import datetime as dt
     import os,glob,string
     from pydarn.radar import network
     import utils
-    import paramiko as p
-    import re
+    from pydarn.sdio.fetchUtils import fetch_local_files, fetch_remote_files
     
     self.sTime = sTime
     self.eTime = eTime
@@ -141,19 +145,17 @@ class radDataPtr():
     elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
     else: arr = [fileType]
 
-    #move back a little in time because files often start at 2 mins after the hour
-    self.sTime = self.sTime-dt.timedelta(minutes=4)
     #a temporary directory to store a temporary file
-    try:
-      tmpDir=os.environ['DAVIT_TMPDIR']
-    except:
-      tmpDir = '/tmp/sd/'
+    if tmpdir is None:
+      try:
+        tmpDir=os.environ['DAVIT_TMPDIR']
+      except:
+        tmpDir = '/tmp/sd/'
     d = os.path.dirname(tmpDir)
     if not os.path.exists(d):
       os.makedirs(d)
 
     cached = False
-    fileSt = None
 
     #FIRST, check if a specific filename was given
     if fileName != None:
@@ -175,7 +177,7 @@ class radDataPtr():
                 print 'cp '+fileName+' '+outname
             filelist.append(outname)
             self.dType = 'dmap'
-            fileSt = self.sTime
+
         except Exception, e:
             print e
             print 'problem reading file',fileName
@@ -219,149 +221,128 @@ class radDataPtr():
     if not cached and (src == None or src == 'local') and fileName == None:
         try:
             for ftype in arr:
-                print "\nLooking locally for %s files : rad %s chan: %s" % (ftype,radcode,chan)
-                #deal with UAF naming convention by using the radcode
-                fnames = ['*.%s.%s*' % (radcode,ftype)]
-                for form in fnames:
-                    #iterate through all of the hours in the request
-                    #ie, iterate through all possible file names
-                    ctime = self.sTime.replace(minute=0)
-                    if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-                    while ctime <= self.eTime:
-                        #directory on the data server
-                        ##################################################################
-                        ### IF YOU ARE A USER NOT AT VT, YOU PROBABLY HAVE TO CHANGE THIS
-                        ### TO MATCH YOUR DIRECTORY STRUCTURE
-                        ##################################################################
-                        localdict={}
-                        try:
-                            localdict["dirtree"]=os.environ['DAVIT_LOCALDIR']
-                        except:
-                            localdict["dirtree"]="/sd-data/"
-                        localdict["year"] = "%04d" % ctime.year
-                        localdict["month"]= "%02d" % ctime.month
-                        localdict["day"]  = "%02d" % ctime.day
-                        localdict["ftype"]  = ftype
-                        localdict["radar"]  = rad
-                        try:
-                            localdirformat = os.environ['DAVIT_DIRFORMAT']
-                            myDir = localdirformat % localdict
-                        except:
-                            myDir = '/sd-data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
-                        hrStr = ctime.strftime("%H")
-                        dateStr = ctime.strftime("%Y%m%d")
-                        print myDir
-                        #iterate through all of the files which begin in this hour
-                        for filename in glob.glob(myDir+dateStr+'.'+hrStr+form):
-                            outname = string.replace(filename,myDir,tmpDir)
-                            #unzip the compressed file
-                            if(string.find(filename,'.bz2') != -1):
-                                outname = string.replace(outname,'.bz2','')
-                                print 'bunzip2 -c '+filename+' > '+outname+'\n'
-                                os.system('bunzip2 -c '+filename+' > '+outname)
-                            elif(string.find(filename,'.gz') != -1):
-                                outname = string.replace(outname,'.gz','')
-                                print 'gunzip -c '+filename+' > '+outname+'\n'
-                                os.system('gunzip -c '+filename+' > '+outname)
-                            else:
-                                command='cp '+filename+' '+outname
-                                print command
-                                os.system(command)
+                print "\nLooking locally for %s files with rad: %s chan: %s" % (ftype,radcode,chan)
+                #If the following aren't already, in the near future
+                #they will be assigned by a configuration dictionary 
+                #much like matplotlib's rcsetup.py (matplotlibrc)
 
-                            filelist.append(outname)
-                            print outname
-                            #HANDLE CACHEING NAME
-                            ff = string.replace(outname,tmpDir,'')
-                            #check the beginning time of the file (for cacheing)
-                            t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
-                            if fileSt == None or t1 < fileSt: fileSt = t1
-                        ##################################################################
-                        ### END SECTION YOU WILL HAVE TO CHANGE
-                        ##################################################################
-                        ctime = ctime+dt.timedelta(hours=1)
-                    if(len(filelist) > 0):
-                        print 'found',ftype,'data in local files'
-                        self.fType,self.dType = ftype,'dmap'
-                        fileType = ftype
-                        break
-                if(len(filelist) > 0): break
+                if local_dirfmt is None:
+                    try:
+                        local_dirfmt = os.environ['DAVIT_LOCAL_DIRFORMAT']
+                    except:
+                        local_dirfmt = '/sd-data/{year}/{ftype}/{radar}/'
+                        print 'Environment variable DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
+
+                if local_dict is None:
+                    local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
+
+                if local_fnamefmt is None:
+                    try:
+                        local_fnamefmt = os.environ['DAVIT_LOCAL_FNAMEFMT'].split(',')
+                    except:
+                        local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                '{date}.{hour}......{radar}.{channel}.{ftype}']
+                        print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
+
+                if local_timeinc is None:
+                    try:
+                        local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_LOCAL_TIMEINC']))
+                    except:
+                        local_timeinc = dt.timedelta(hours=2)
+                        print 'Environment variable DAVIT_LOCAL_TIMEINC not set, using default:',local_timeinc
+                
+                outdir = tmpDir
+
+
+                #fetch the local files
+                filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
+                local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
+
+                if(len(filelist) > 0):
+                    print 'found',ftype,'data in local files'
+                    self.fType,self.dType = ftype,'dmap'
+                    fileType = ftype
+                    break
+
                 else:
                     print  'could not find',ftype,'data in local files'
+
         except Exception, e:
             print e
-            print 'problem reading local data, perhaps you are not at VT?'
-            print 'you probably have to edit radDataRead.py'
-            print 'I will try to read from other sources'
+            print 'There was a problem reading local data, perhaps you are not at VT?'
+            print 'Will attempt fetching data from remote.'
             src=None
     #finally, check the VT sftp server if we have not yet found files
     if (src == None or src == 'sftp') and self.__ptr == None and len(filelist) == 0 and fileName == None:
         for ftype in arr:
             print '\nLooking on the remote SFTP server for',ftype,'files'
             try:
-                #deal with UAF naming convention
-                fnames = ['..........'+ftype]
-                if(channel == None): fnames.append('..\...\....\.a\.')
-                else: fnames.append('..........'+channel+'.'+ftype)
-                for form in fnames:
-                    #create a transport object for use in sftp-ing
-                    transport = p.Transport((os.environ['VTDB'], 22))
-                    transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
-                    sftp = p.SFTPClient.from_transport(transport)
+                
+                #If the following aren't already, in the near future
+                #they will be assigned by a configuration dictionary 
+                #much like matplotlib's rcsetup.py (matplotlibrc)
 
-                    #iterate through all of the hours in the request
-                    #ie, iterate through all possible file names
-                    ctime = self.sTime.replace(minute=0)
-                    if ctime.hour % 2 == 1: ctime = ctime.replace(hour=ctime.hour-1)
-                    oldyr = ''
-                    while ctime <= self.eTime:
-                        #directory on the data server
-                        myDir = '/data/'+ctime.strftime("%Y")+'/'+ftype+'/'+rad+'/'
-                        hrStr = ctime.strftime("%H")
-                        dateStr = ctime.strftime("%Y%m%d")
-                        if(ctime.strftime("%Y") != oldyr):
-                            #get a list of all the files in the directory
-                            allFiles = sftp.listdir(myDir)
-                            oldyr = ctime.strftime("%Y")
-                        #create a regular expression to find files of this day, at this hour
-                        regex = re.compile(dateStr+'.'+hrStr+form)
-                        #go thorugh all the files in the directory
-                        for aFile in allFiles:
-                            #if we have a file match between a file and our regex
-                            if(regex.match(aFile)):
-                                print 'copying file '+myDir+aFile+' to '+tmpDir+aFile
-                                filename = tmpDir+aFile
-                                #download the file via sftp
-                                sftp.get(myDir+aFile,filename)
-                                #unzip the compressed file
-                                if(string.find(filename,'.bz2') != -1):
-                                    outname = string.replace(filename,'.bz2','')
-                                    print 'bunzip2 -c '+filename+' > '+outname+'\n'
-                                    os.system('bunzip2 -c '+filename+' > '+outname)
-                                elif(string.find(filename,'.gz') != -1):
-                                    outname = string.replace(filename,'.gz','')
-                                    print 'gunzip -c '+filename+' > '+outname+'\n'
-                                    os.system('gunzip -c '+filename+' > '+outname)
-                                else:
-                                    print 'It seems we have downloaded an uncompressed file :/'
-                                    print 'Strange things might happen from here on out...'
+                if remote_site is None:
+                    try:
+                        remote_site = os.environ['DB']
+                    except:
+                        remote_site = 'sd-data.ece.vt.edu'
+                        print 'Environment variable DB not set, using default:',remote_site
+                if username is None:
+                    try:
+                        username = os.environ['DBREADUSER']
+                    except:
+                        username = 'sd_dbread'
+                        print 'Environment variable DBREADUSER not set, using default:',username
+                if password is None:
+                    try:
+                        password = os.environ['DBREADPASS']
+                    except:
+                        password = '5d'
+                        print 'Environment variable DBREADPASS not set, using default:',password
+                if remote_dirfmt is None:
+                    try:
+                        remote_dirfmt = os.environ['DAVIT_REMOTE_DIRFORMAT']
+                    except:
+                        remote_dirfmt = 'data/{year}/{ftype}/{radar}/'
+                        print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
+                if remote_dict is None:
+                    remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
+                if remote_fnamefmt is None:
+                    try:
+                        remote_fnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
+                    except:
+                        remote_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+                                          '{date}.{hour}......{radar}.{channel}.{ftype}']
+                        print 'Environment variable DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt
+                if port is None:
+                    try:
+                        port = os.environ['DB_PORT']
+                    except:
+                        port = '22'
+                        print 'Environment variable DB_PORT not set, using default:',port
+                if remote_timeinc is None:
+                    try:
+                        remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_REMOTE_TIMEINC']))
+                    except:
+                        remote_timeinc = dt.timedelta(hours=2)
+                        print 'Environment variable DAVIT_REMOTE_TIMEINC not set, using default:',remote_timeinc
+                outdir = tmpDir
 
-                                filelist.append(outname)
+                #Now fetch the files
+                filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
+                    remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
+                    password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
 
-                                #HANDLE CACHEING NAME
-                                ff = string.replace(outname,tmpDir,'')
-                                #check the beginning time of the file
-                                t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[14:16]))
-                                if fileSt == None or t1 < fileSt: fileSt = t1
-                        # Ctime increment needs to happen outside of the aFile loop.
-                        ctime = ctime+dt.timedelta(hours=1)
-                    if len(filelist) > 0 :
-                        print 'found',ftype,'data on sftp server'
-                        self.fType,self.dType = ftype,'dmap'
-                        fileType = ftype
-                        break
-                if len(filelist) > 0 : break
+                if len(filelist) > 0 :
+                    print 'found',ftype,'data on sftp server'
+                    self.fType,self.dType = ftype,'dmap'
+                    fileType = ftype
+                    break
+
                 else:
                     print  'could not find',ftype,'data on sftp server'
+
             except Exception,e:
                 print e
                 print 'problem reading from sftp server'
@@ -372,7 +353,7 @@ class radDataPtr():
             print 'Concatenating all the files in to one'
             #choose a temp file name with time span info for cacheing
             tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
-              fileSt.strftime("%Y%m%d"),fileSt.strftime("%H%M%S"), \
+              self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
               self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
             print 'cat '+string.join(filelist)+' > '+tmpName
             os.system('cat '+string.join(filelist)+' > '+tmpName)
@@ -1066,17 +1047,22 @@ if __name__=="__main__":
   filtered=False
   sTime=datetime.datetime(2012,11,1,0,0)
   eTime=datetime.datetime(2012,11,1,4,0)
-  expected_filename="20121031.220100.20121101.040000.fhe.fitacf"
+  expected_filename="20121101.000000.20121101.040000.fhe.fitacf"
   expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=26684193
-  expected_md5sum="de3b53ce99d2c2c16d00eb214e768690"
+  expected_filesize=19377805
+  expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
-  print "  VTDB:", os.environ['VTDB']
+  print "  DB:", os.environ['DB']
+  print "  DB_PORT:",os.environ['DB_PORT']
   print "  DBREADUSER:", os.environ['DBREADUSER']
   print "  DBREADPASS:", os.environ['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
     os.remove(expected_path)
@@ -1121,8 +1107,11 @@ if __name__=="__main__":
 
   print "\nRunning local grab example for radDataPtr."
   print "Environment variables used:"
-  print "  DAVIT_LOCALDIR:", os.environ['DAVIT_LOCALDIR']
-  print "  DAVIT_DIRFORMAT:", os.environ['DAVIT_DIRFORMAT']
+  print "  DAVIT_LOCAL_DIRFORMAT:", os.environ['DAVIT_LOCAL_DIRFORMAT']
+  print "  DAVIT_LOCAL_FNAMEFMT:", os.environ['DAVIT_LOCAL_FNAMEFMT']
+  print "  DAVIT_LOCAL_TIMEINC:", os.environ['DAVIT_LOCAL_TIMEINC']
+  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+
   src='local'
   if os.path.isfile(expected_path):
     os.remove(expected_path)

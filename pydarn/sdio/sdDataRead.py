@@ -215,7 +215,7 @@ def sdDataOpen(sTime,hemi='north',eTime=None,fileType='grdex',src=None,fileName=
       try:
         form = '......'+ftype
         #create a transport object for use in sftp-ing
-        transport = p.Transport((os.environ['VTDB'], 22))
+        transport = p.Transport((os.environ['DB'], 22))
         transport.connect(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'])
         sftp = p.SFTPClient.from_transport(transport)
         

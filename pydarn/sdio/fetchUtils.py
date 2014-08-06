@@ -210,9 +210,9 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     while ctime <= etime:
 
         # set the temporal parts of the possible local directory structure
-        localdict["year"] = "{:4d}".format(ctime.year)
-        localdict["month"] = "{:2d}".format(ctime.month)
-        localdict["day"] = "{:2d}".format(ctime.day)
+        localdict["year"] = "{:04d}".format(ctime.year)
+        localdict["month"] = "{:02d}".format(ctime.month)
+        localdict["day"] = "{:02d}".format(ctime.day)
         localdict["hour"] = ctime.strftime("%H")
         localdict["date"] = ctime.strftime("%Y%m%d")
         
