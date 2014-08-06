@@ -81,6 +81,8 @@ class mapObj(basemap.Basemap):
     import math
     from copy import deepcopy
     import datetime as dt
+    self.lat_0=lat_0
+    self.lon_0=lon_0
     self._coastLineWidth=coastLineWidth
     self._fillContinents=fillContinents
     self._fillLakes=fillLakes
@@ -107,19 +109,19 @@ class mapObj(basemap.Basemap):
     self.coords = coords
 
     # Set map projection limits and center point depending on hemisphere selection
-    if lat_0 is None: 
-      lat_0 = 90.
-      if boundinglat: lat_0 = math.copysign(lat_0, boundinglat)
-    if lon_0 is None: 
-      lon_0 = -100.
+    if self.lat_0 is None: 
+      self.lat_0 = 90.
+      if boundinglat: self.lat_0 = math.copysign(self.lat_0, boundinglat)
+    if self.lon_0 is None: 
+      self.lon_0 = -100.
       if self.coords == 'mag': 
-        _, lon_0, _ = aacgm.aacgmConv(0., lon_0, 0., self.datetime.year, 0)
+        _, self.lon_0, _ = aacgm.aacgmConv(0., self.lon_0, 0., self.datetime.year, 0)
     if boundinglat:
-      width = height = 2*111e3*( abs(lat_0 - boundinglat) )
+      width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
     # Initialize map
     super(mapObj, self).__init__(projection=projection, resolution=resolution, 
-        lat_0=lat_0, lon_0=lon_0, width=width, height=height, **kwargs)
+        lat_0=self.lat_0, lon_0=self.lon_0, width=width, height=height, **kwargs)
 
     if draw:
       self.draw()
@@ -128,14 +130,14 @@ class mapObj(basemap.Basemap):
       import numpy as np
       from pylab import text
       # Add continents
-      if coords is not 'mlt' or dateTime is not None:
+      if self.coords is not 'mlt' or dateTime is not None:
         _ = self.drawcoastlines(linewidth=self._coastLineWidth)
         # self.drawmapboundary(fill_color=fillOceans)
         _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
 
       # Add coordinate spec
       if self._showCoords:
-        _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[coords]+' coordinates', 
+        _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
           rotation=-90., va='top', fontsize=8)
 
       # draw parallels and meridians.
@@ -145,7 +147,7 @@ class mapObj(basemap.Basemap):
         # label parallels on map
         if self._gridLabels: 
           lablon = int(self.llcrnrlon/10)*10
-          rotate_label = lablon - lon_0 if lat_0 >= 0 else lon_0 - lablon + 180.
+          rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
           x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
           for ix,iy,ip in zip(x,y,parallels):
             if not self.xmin <= ix <= self.xmax: continue
