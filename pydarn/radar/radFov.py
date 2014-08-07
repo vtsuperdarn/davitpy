@@ -448,3 +448,13 @@ Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for m
     gsSlantRange = -1
 
   return gsSlantRange
+
+if __name__=="__main__":
+    from pydarn.radar import radStruct
+    from datetime import datetime
+    
+    print "Create a site object for Saskatoon, 2012-01-01 00:02 UT"
+    site_sas = radStruct.site(code="sas", dt=datetime(2012,1,1,0,2))
+    print "Create a fov object using that site, coords are geo"
+    fov1 = fov(site=site_sas)
+    print fov1
