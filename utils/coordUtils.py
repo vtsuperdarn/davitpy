@@ -187,44 +187,70 @@ def planeRot(x, y, theta):
 if __name__ == "__main__":
     from datetime import datetime
 
+    print
     print "All of these results may have varying sigfigs"
-
+    print
     print "Single coord pair tests"
-    print "geo to geo, mag to mag, mlt to mlt, ashes to ashes; these results should be ([50.7],[34.5])"
-    print coordConv(50.7,34.5,'geo','geo')
-    print coordConv(50.7,34.5,'mag','mag',dateTime=datetime(2013,7,23,12,6,34))
-    print coordConv(50.7,34.5,'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34))
-    print "geo to mag, this result should be ([123.53805352405843], [29.419420613372086])"
-    print coordConv(50.7,34.5,'geo','mag',dateTime=datetime(2013,7,23,12,6,34))
-    print "geo to mlt, this result should be ([229.16163697416806], [29.419420613372086])"
-    print coordConv(50.7,34.5,'geo','mlt',dateTime=datetime(2013,7,23,12,6,34))
-    print "mag to geo, this result should be ([50.7],[34.5])"
-    print coordConv(123.53805352405843,29.419420613372086,'mag','geo',dateTime=datetime(2013,7,23,12,6,34))
-    print "mlt to geo, this result should be ([50.7,34.5])"
-    print coordConv(229.16163697416806,29.419420613372086,'mlt','geo',dateTime=datetime(2013,7,23,12,6,34))
-    print "mag to mlt, this result should be ([229.16163697416806], [29.419420613372086])"
-
-    print coordConv(123.53805352405843,29.419420613372086,'mag','mlt',dateTime=datetime(2013,7,23,12,6,34))
-    print "mlt to mag, this result should be ([123.53805352405843], [29.419420613372086])"
-
-    print coordConv(229.16163697416806,29.419420613372086,'mlt','mag',dateTime=datetime(2013,7,23,12,6,34))
-
+    print
+    print "geo to geo, mag to mag, mlt to mlt, ashes to ashes"
+    print "Expected:  ([50.700000000000003], [34.5])"
+    print "Result:    " + str(coordConv(50.7,34.5,300.,'geo','geo'))
+    print "Result:    " + str(coordConv(50.7,34.5,300.,'mag','mag',dateTime=datetime(2013,7,23,12,6,34)))
+    print "Result:    " + str(coordConv(50.7,34.5,300.,'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "geo to mag"
+    print "Expected: ([123.71642616363432], [31.582924632749929])"
+    print "Result:   " + str(coordConv(50.7,34.5,300.,'geo','mag',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "geo to mlt"
+    print "Expected: ([229.34000961374397], [31.582924632749929])"
+    print "Result:   " + str(coordConv(50.7,34.5,300.,'geo','mlt',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mag to geo"
+    print "Expected: ([50.563320914903102], [32.408924471374895])"
+    print "Result:   " + str(coordConv(123.53805352405843,29.419420613372086,300.,'mag','geo',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mlt to geo"
+    print "Expected: ([50.563320914903137], [32.408924471374895])"
+    print "Result:   " + str(coordConv(229.16163697416806,29.419420613372086,300.,'mlt','geo',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mag to mlt"
+    print "Expected: ([229.16163697416806], [29.419420613372086])"
+    print "Result:   " + str(coordConv(123.53805352405843,29.419420613372086,300.,'mag','mlt',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mlt to mag"
+    print "Expected: ([123.53805352405843], [29.419420613372086])"
+    print "Result:   " + str(coordConv(229.16163697416806,29.419420613372086,300.,'mlt','mag',dateTime=datetime(2013,7,23,12,6,34)))
+    print
     print "Coord array tests"
-    print "geo to geo, mag to mag, mlt to mlt; these results should be ([50.7,53.8],[34.5,40.2])"
-    print coordConv([50.7,53.8],[34.5,40.2],'geo','geo')
-    print coordConv([50.7,53.8],[34.5,40.2],'mag','mag',dateTime=datetime(2013,7,23,12,6,34))
-    print coordConv([50.7,53.8],[34.5,40.2],'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34))
-    print "geo to mag, this result should be ([123.53805352405843, 126.76454464467615], [29.419420613372086, 35.725172012254788])"
-    print coordConv([50.7,53.8],[34.5,40.2],'geo','mag',dateTime=datetime(2013,7,23,12,6,34))
-    print "geo to mlt, this result should be ([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788])"
-    print coordConv([50.7,53.8],[34.5,40.2],'geo','mlt',dateTime=datetime(2013,7,23,12,6,34))
-    print "mag to geo, this result should be ([50.7,53.8],[34.5,40.2])"
-    print coordConv([123.53805352405843, 126.76454464467615],[29.419420613372086, 35.725172012254788],'mag','geo',dateTime=datetime(2013,7,23,12,6,34))
-    print "mlt to geo, this result should be ([50.7,53.8],[34.5,40.2])"
-    print coordConv([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788],'mlt','geo',dateTime=datetime(2013,7,23,12,6,34))
-    print "mag to mlt, this result should be ([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788])"
-
-    print coordConv([123.53805352405843, 126.76454464467615],[29.419420613372086, 35.725172012254788],'mag','mlt',dateTime=datetime(2013,7,23,12,6,34))
-    print "mlt to mag, this result should be ([123.53805352405843, 126.76454464467615], [29.419420613372086, 35.725172012254788])"
-
-    print coordConv([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788],'mlt','mag',dateTime=datetime(2013,7,23,12,6,34))
+    print
+    print "geo to geo, mag to mag, mlt to mlt"
+    print "Expected: ([50.700000000000003, 53.799999999999997], [34.5, 40.200000000000003])"
+    print "Result    " + str(coordConv([50.7,53.8],[34.5,40.2],300.,'geo','geo'))
+    print "Result    " + str(coordConv([50.7,53.8],[34.5,40.2],300.,'mag','mag',dateTime=datetime(2013,7,23,12,6,34)))
+    print "Result    " + str(coordConv([50.7,53.8],[34.5,40.2],300.,'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "geo to mag"
+    print "Expected: ([123.65800072339718, 126.97463420949806], [30.892913121194589, 37.369211032553089])"
+    print "Result    " + str(coordConv([50.7,53.8],[34.5,40.2],[200.,300.],'geo','mag',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "geo to mlt"
+    print "Expected: ([229.28158417350679, 232.59821765960771], [30.892913121194589, 37.369211032553089])"
+    print "Result    " + str(coordConv([50.7,53.8],[34.5,40.2],[200.,300.],'geo','mlt',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mag to geo"
+    print "Expected: ([50.615511474515607, 53.648287906901672], [33.150771171950133, 38.637420715148586])"
+    print "Result    " + str(coordConv([123.53805352405843, 126.76454464467615],[29.419420613372086, 35.725172012254788],[200.,300.],'mag','geo',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mlt to geo"
+    print "Expected: ([50.563320914903137, 53.648287906901672], [32.408924471374895, 38.637420715148586])"
+    print "Result    " + str(coordConv([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788],300.,'mlt','geo',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mag to mlt"
+    print "Expected: ([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788])"
+    print "Result    " + str(coordConv([123.53805352405843, 126.76454464467615],[29.419420613372086, 35.725172012254788],300.,'mag','mlt',dateTime=datetime(2013,7,23,12,6,34)))
+    print
+    print "mlt to mag"
+    print "Expected: ([123.53805352405843, 126.76454464467615], [29.419420613372086, 35.725172012254788])"
+    print "Result    " + str(coordConv([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788],200.,'mlt','mag',dateTime=datetime(2013,7,23,12,6,34)))
+    print
