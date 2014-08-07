@@ -78,10 +78,12 @@ class mapObj(basemap.Basemap):
         
     written by Sebastien, 2013-02
     """
-    from models import aacgm
     import math
     from copy import deepcopy
     import datetime as dt
+
+    from utils import coordConv
+
     self.lat_0=lat_0
     self.lon_0=lon_0
     self._coastLineWidth=coastLineWidth
@@ -95,10 +97,6 @@ class mapObj(basemap.Basemap):
     self._coordsDict = {'mag': 'AACGM',
               'geo': 'Geographic',
               'mlt': 'MLT'}
-
-    if coords is 'mlt':             
-      print 'MLT coordinates not implemented yet.'
-      return
 
     if datetime is None and dateTime is None:
       print "Warning, datetime/dateTime not specified, using current time."
@@ -128,8 +126,9 @@ class mapObj(basemap.Basemap):
       if boundinglat: self.lat_0 = math.copysign(self.lat_0, boundinglat)
     if self.lon_0 is None: 
       self.lon_0 = -100.
-      if self.coords == 'mag': 
-        _, self.lon_0, _ = aacgm.aacgmConv(0., self.lon_0, 0., self.datetime.year, 0)
+      if self.coords != "geo":
+        self.lon_0, _ = coordConv(self.lon_0, 0., 0., "geo", "mag",
+                                  dateTime=self.datetime)
     if boundinglat:
       width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
@@ -178,10 +177,11 @@ class mapObj(basemap.Basemap):
 
   
   def __call__(self, x, y, inverse=False, coords=None,altitude=0.):
-    from models import aacgm
     from copy import deepcopy
     import numpy as np
     import inspect
+
+    from utils import coordConv
 
     if coords is not None and coords not in self._coordsDict:
       print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
@@ -192,7 +192,7 @@ class mapObj(basemap.Basemap):
     #will get plotted in the wrong location...
     from_mpl_readboundary=False
 
-    if self.coords is 'mag': # or self.coords is 'mlt':  #Need to add this for mlt support later
+    if self.coords != "geo":
       try:
         callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
       except:
@@ -202,22 +202,7 @@ class mapObj(basemap.Basemap):
         from_mpl_readboundary = True
 
     if from_mpl_readboundary:  #if call was from drawcoastlines, etc. then we do something different
-
-      #For mlt support, need to add if self.coords is 'mlt': then convert mlt to mlon.
-
-      try:
-        nx, ny = len(x), len(y)
-        xt = np.array(x)
-        yt = np.array(y)
-        shape = xt.shape    
-        y, x, _ = aacgm.aacgmConvArr(
-          list(yt.flatten()), list(xt.flatten()), [0]*nx, 
-          self.datetime.year, 0)
-        x = np.array(x).reshape(shape)
-        y = np.array(y).reshape(shape)
-      except TypeError as e:
-        y, x, _ = aacgm.aacgmConv(y, x, 0, 
-          self.datetime.year, 0)
+        x, y = coordConv(x, y, 0., "geo", self.coords, dateTime=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
     #Second, if the call was not from drawcoastlines, etc. do the conversion 
@@ -227,57 +212,25 @@ class mapObj(basemap.Basemap):
 
     #Next do the conversion if lat/lon coord system change first, then calculation of x,y map coords (inverse=False)
     elif coords and (coords != self.coords) and (inverse is False):
-      trans = coords+'-'+self.coords
-      if trans in ['geo-mag','mag-geo']: #Add 'geo-mlt', 'mlt-geo', for mlt support
-        flag = 0 if trans == 'geo-mag' else 1
-        try:
-          nx, ny = len(x), len(y)
-          xt = np.array(x)
-          yt = np.array(y)
-          shape = xt.shape    
-          y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [altitude]*nx, 
-            self.datetime.year, flag)
-          x = np.array(x).reshape(shape)
-          y = np.array(y).reshape(shape)
-        except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, altitude, 
-            self.datetime.year, flag)
+      x, y = coordConv(x, y, altitude, coords, self.coords, dateTime=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
     #Finally do the conversion if calculation of x,y map coords first, then lat/lon coord system change (inverse=True)
     elif coords and (coords != self.coords) and (inverse is True):
       x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
-      trans = self.coords+'-'+coords
-      if trans in ['geo-mag','mag-geo']: #Add 'geo-mlt', 'mlt-geo', for mlt support
-        flag = 0 if trans == 'geo-mag' else 1
-        try:
-          nx, ny = len(x), len(y)
-          xt = np.array(x)
-          yt = np.array(y)
-          shape = xt.shape    
-          y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [altitude]*nx, 
-            self.datetime.year, flag)
-          x = np.array(x).reshape(shape)
-          y = np.array(y).reshape(shape)
-        except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, altitude, 
-            self.datetime.year, flag)
-      return y, x
+      return coordConv(x, y, altitude, self.coords, coords, dateTime=self.datetime)
 
   def _readboundarydata(self, name, as_polygons=False):
-    from models import aacgm
     from copy import deepcopy
     import _geoslib
     import numpy as np
 
-    if self.coords is 'mag':
-      nPts = len(self._boundarypolyll.boundary[:, 0])
-      lats, lons, _ = aacgm.aacgmConvArr(
-              list(self._boundarypolyll.boundary[:, 1]), 
-              list(self._boundarypolyll.boundary[:, 0]), 
-              [0.]*nPts, self.datetime.year, 1)
+    from utils import coordConv
+
+    if self.coords != "geo":
+      lons, lats = coordConv(list(self._boundarypolyll.boundary[:, 0]),
+                             list(self._boundarypolyll.boundary[:, 1]), 0.,
+                             self.coords, "geo", dateTime=self.datetime)
       b = np.asarray([lons,lats]).T
       oldgeom = deepcopy(self._boundarypolyll)
       newgeom = _geoslib.Polygon(b).fix()
