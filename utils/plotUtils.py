@@ -176,8 +176,42 @@ class mapObj(basemap.Basemap):
       print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
       coords = None
 
-    #First do the conversion if we aren't changing between lat/lon coordinate systems
-    if (coords is None) or (coords is self.coords):
+    #First we need to check and see if drawcoastlines() or a similar method is calling
+    #because if we are in a coordinate system differing from 'geo' then the coastlines
+    #will get plotted in the wrong location...
+    from_mpl_readboundary=False
+
+    if self.coords is 'mag': # or self.coords is 'mlt':  #Need to add this for mlt support later
+      try:
+        callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
+      except:
+        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+      if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
+        from_mpl_readboundary = True
+
+    if from_mpl_readboundary:  #if call was from drawcoastlines, etc. then we do something different
+
+      #For mlt support, need to add if self.coords is 'mlt': then convert mlt to mlon.
+
+      try:
+        nx, ny = len(x), len(y)
+        xt = np.array(x)
+        yt = np.array(y)
+        shape = xt.shape    
+        y, x, _ = aacgm.aacgmConvArr(
+          list(yt.flatten()), list(xt.flatten()), [0]*nx, 
+          self.datetime.year, 0)
+        x = np.array(x).reshape(shape)
+        y = np.array(y).reshape(shape)
+      except TypeError as e:
+        y, x, _ = aacgm.aacgmConv(y, x, 0, 
+          self.datetime.year, 0)
+      return basemap.Basemap.__call__(self, x, y, inverse=False)
+
+    #Second, if the call was not from drawcoastlines, etc. do the conversion 
+    #if we aren't changing between lat/lon coordinate systems
+    elif (coords is None) or (coords is self.coords):
       return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
     #Next do the conversion if lat/lon coord system change first, then calculation of x,y map coords (inverse=False)
