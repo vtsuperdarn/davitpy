@@ -33,12 +33,13 @@ Written by Matt W. based on code by...Sebastien?
 from models import aacgm
 import numpy as np
 
-def coordConv(lon, lat, start, end, dateTime=None):
+def coordConv(lon, lat, altitude, start, end, dateTime=None):
   """Convert between geographical, AACGM, and MLT coordinates.  dateTime must be set to use MLT.
   
   **Args**: 
       * **lon**: longitude (MLT must be in degrees, not hours)
       * **lat**: latitude
+      * **altitude**: altitude to be used (km).
       * **start**: coordinate system of input. Options: 'geo', 'mag', 'mlt'
       * **end**: desired output coordinate system. Options: 'geo', 'mag', 'mlt'
       * **[dateTime]**: python datetime object. Default: None
@@ -47,7 +48,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
   **Example**:
     ::
 
-      lon, lat = coordConv(lon, lat, 'geo', 'mlt', dateTime=datetime(2012,3,12,0,56))
+      lon, lat = coordConv(lon, lat, alt, 'geo', 'mlt', dateTime=datetime(2012,3,12,0,56))
       
   written by Matt W., 2013-09 based on code by...Sebastien?
   """
@@ -74,6 +75,11 @@ def coordConv(lon, lat, start, end, dateTime=None):
   # Make the inputs into numpy arrays because single element lists have no 'len'
   lon = np.array(lon)
   lat = np.array(lat)
+  alt = np.array(altitude)
+  
+  # Test whether we are using the same altitude for everything.
+  if np.size(alt) == 1:
+    altitude = [altitude]*np.size(lon)
 
   # If there is an actual conversion to do...
   if start and end and start != end:
@@ -85,7 +91,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
       latt = lat
       nlon, nlat = np.size(lont), np.size(latt)   # Sizes
       shape = lont.shape                          # Shape of array
-      lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, dateTime.year,flag) # Convert either way
+      lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), altitude, dateTime.year,flag) # Convert either way
       lon = np.array(lon).reshape(shape)        # Put results into numpy array and reshape
       lat = np.array(lat).reshape(shape)
     # Geographical and MLT conversions
@@ -105,7 +111,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
           if mag > 180.: mag -= 360.                              # Put in -180 to 180 range
           lon_mag.append(mag)                                     # Stick on end of the list
         lont = np.array(lon_mag).reshape(shape)                   # Make into a numpy array
-        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, dateTime.year, flag) # Convert mag to geo
+        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), altitude, dateTime.year, flag) # Convert mag to geo
         lon = np.array(lon).reshape(shape)                        # Make into numpy arrays
         lat = np.array(lat).reshape(shape)
       else:
@@ -114,7 +120,7 @@ def coordConv(lon, lat, start, end, dateTime=None):
         latt = lat
         nlon, nlat = np.size(lont), np.size(latt)
         shape = lont.shape    
-        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), [0.]*nlon, dateTime.year, flag) # Convert geo to mag
+        lat, lon, _ = aacgm.aacgmConvArr(list(latt.flatten()), list(lont.flatten()), altitude, dateTime.year, flag) # Convert geo to mag
         for lonel in range(nlon):
           mlt = aacgm.mltFromYmdhms(dateTime.year,dateTime.month,dateTime.day,
               dateTime.hour,dateTime.minute,dateTime.second,lon[lonel]) # Get MLT from mag lon
