@@ -453,8 +453,14 @@ if __name__=="__main__":
     from pydarn.radar import radStruct
     from datetime import datetime
     
-    print "Create a site object for Saskatoon, 2012-01-01 00:02 UT"
+    print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
     site_sas = radStruct.site(code="sas", dt=datetime(2012,1,1,0,2))
-    print "Create a fov object using that site, coords are geo"
+    print "Create a fov object using that site, coords are geo."
     fov1 = fov(site=site_sas)
+    print "This is the result:"
     print fov1
+    print "Now create a fov object with mag coords.  This will fail if \
+            aacgm is not called properly."
+    fov2 = fov(site=site_sas, coords="mag")
+    print "This is the result:"
+    print fov2
