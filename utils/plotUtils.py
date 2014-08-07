@@ -111,7 +111,8 @@ class mapObj(basemap.Basemap):
       print "Warning, setting dateTime to datetime"
       dateTime = datetime
     else:
-      assert(1==2),"Cannot set datetime and dateTime to different times!"
+      assert(datetime == dateTime),\
+              "Cannot set datetime and dateTime to different times!"
     self.datetime = datetime
     self.dateTime = dateTime
 
@@ -621,6 +622,11 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 
 if __name__ == "__main__":
   import pylab as plt
+  from datetime import datetime
+  
+  time = datetime(2014,8,7,18,30)
+  time2 = datetime(2014,8,8,0,0)
+
   print "Simple tests for plotUtils"
   coords='geo'
   lat_0=20.
@@ -712,4 +718,32 @@ if __name__ == "__main__":
   print "    Expected: ",14902099.9295,-14362212.9526
   print "    Received: ",x,y
 
-  print "Tests concluded"
+  print "Testing datetime/dateTime checking."
+  print "Setting only datetime:"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
+                urcrnrlon=170, urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',
+                draw=False, datetime = time)
+  print "datetime: "+str(map1.datetime)
+  print "dateTime: "+str(map1.dateTime)
+  print "Setting only dateTime:"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
+                urcrnrlon=170, urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',
+                draw=False, dateTime = time)
+  print "datetime: "+str(map1.datetime)
+  print "dateTime: "+str(map1.dateTime)
+  print "Setting both the same:"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
+                urcrnrlon=170, urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',
+                draw=False, datetime = time, dateTime = time)
+  print "datetime: "+str(map1.datetime)
+  print "dateTime: "+str(map1.dateTime)
+  print "Setting neither:"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
+                urcrnrlon=170, urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',
+                draw=False)
+  print "datetime: "+str(map1.datetime)
+  print "dateTime: "+str(map1.dateTime)
+  print "Setting to different times, should fail:"
+  map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
+                urcrnrlon=170, urcrnrlat=40,lat_0=54,lon_0=-120,resolution='l',
+                draw=False, datetime = time, dateTime = time2)
