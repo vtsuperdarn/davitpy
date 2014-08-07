@@ -645,6 +645,9 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 
 if __name__ == "__main__":
   import pylab as plt
+  from datetime import datetime
+
+  time = datetime(2014,8,7,18,30)
   print "Simple tests for plotUtils"
   coords='geo'
   lat_0=20.
@@ -655,7 +658,7 @@ if __name__ == "__main__":
   print "Init a mapObj instance with draw==False"
   tmpmap1 = mapObj(coords=coords,projection='stere', draw=False, 
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
-                         lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax)
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax,datetime=time,dateTime=time)
   print "running plt.show to initilize plots, should have an empty figure 1 window\nClose figure window to continue with example"
   plt.show()
   print "call the draw method for tmpmap1"
@@ -667,8 +670,23 @@ if __name__ == "__main__":
   print "Init a mapObj instance with draw==True"
   tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
-                         lat_0=lat_0, lon_0=lon_0,resolution='l')
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',datetime=time,dateTime=time)
   print "running plt.show to initilize plots, should have an figure 2 window with a map\nClose figure window to continue with example"
+  plt.show()
+  fig=plt.figure(3)
+  ax=None
+  coords="mag"
+  print "Init a mapObj instance with draw==True and coords mag."
+  print "The inputs have been converted to magnetic beforehand so the"
+  print "map should show the same region."
+  tmpmap3 = mapObj(coords=coords,projection='stere', draw=True,
+                         llcrnrlon=172.63974536615848, 
+                         llcrnrlat=-8.8093703108623647, 
+                         urcrnrlon=-121.21238751130332, 
+                         urcrnrlat=33.758571820294179,
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',
+                         datetime=time, dateTime=time)
+  print "running plt.show to initilize plots, should have a figure 3 window with a map\nClose figure window to continue with example"
   plt.show()
 
   print "\nTesting some coordinate transformations."
