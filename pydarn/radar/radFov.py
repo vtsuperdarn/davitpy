@@ -210,9 +210,9 @@ class fov(object):
                             elevation=tElev, altitude=tAlt, model=model)
                               
                   if(coords == 'mag'):
-                      latC, lonC, _ = aacgm.aacgmlib.aacgmConv(
+                      latC, lonC, _ = aacgm.aacgmConv(
                         latC,lonC,0.,siteYear,0)
-                      latE, lonE, _ = aacgm.aacgmlib.aacgmConv(
+                      latE, lonE, _ = aacgm.aacgmConv(
                         latE,lonE,0.,siteYear,0)
                 else:
                   latC, lonC = nan, nan
@@ -459,8 +459,8 @@ if __name__=="__main__":
     fov1 = fov(site=site_sas)
     print "This is the result:"
     print fov1
-    print "Now create a fov object with mag coords.  This will fail if \
-            aacgm is not called properly."
+    print "Now create a fov object with mag coords.  This will fail if"
+    print "aacgm is not called properly."
     fov2 = fov(site=site_sas, coords="mag")
     print "This is the result:"
     print fov2
