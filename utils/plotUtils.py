@@ -100,10 +100,20 @@ class mapObj(basemap.Basemap):
       print 'MLT coordinates not implemented yet.'
       return
 
-    if datetime is None:
-      print "Warning, datetime not specified, using current time."
+    if datetime is None and dateTime is None:
+      print "Warning, datetime/dateTime not specified, using current time."
       datetime = dt.datetime.utcnow()
+      dateTime = datetime
+    elif datetime is None and dateTime is not None:
+      print "Warning, setting datetime to dateTime"
+      datetime = dateTime
+    elif datetime is not None and dateTime is None:
+      print "Warning, setting dateTime to datetime"
+      dateTime = datetime
+    else:
+      assert(1==2),"Cannot set datetime and dateTime to different times!"
     self.datetime = datetime
+    self.dateTime = dateTime
 
     # Add an extra member to the Basemap class
     if coords is not None and coords not in self._coordsDict:
