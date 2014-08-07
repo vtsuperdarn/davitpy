@@ -665,20 +665,18 @@ if __name__ == "__main__":
   tmpmap1.draw()
   print "running plt.show to initilize plots, should have an figure 1 window with a map\nClose figure window to continue with example"
   plt.show()
-  fig=plt.figure(2)
+  print "Making plot in geo and mag for comparison."
+  fig2=plt.figure(2)
   ax=None
   print "Init a mapObj instance with draw==True"
   tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
                          lat_0=lat_0, lon_0=lon_0,resolution='l',datetime=time,dateTime=time)
-  print "running plt.show to initilize plots, should have an figure 2 window with a map\nClose figure window to continue with example"
-  plt.show()
-  fig=plt.figure(3)
+  fig3=plt.figure(3)
   ax=None
   coords="mag"
-  print "Init a mapObj instance with draw==True and coords mag."
-  print "The inputs have been converted to magnetic beforehand so the"
-  print "map should show the same region."
+  print "The inputs for the mag plot have been converted to magnetic"
+  print "beforehand so the maps should show the same region."
   tmpmap3 = mapObj(coords=coords,projection='stere', draw=True,
                          llcrnrlon=172.63974536615848, 
                          llcrnrlat=-8.8093703108623647, 
@@ -686,7 +684,7 @@ if __name__ == "__main__":
                          urcrnrlat=33.758571820294179,
                          lat_0=lat_0, lon_0=lon_0,resolution='l',
                          datetime=time, dateTime=time)
-  print "running plt.show to initilize plots, should have a figure 3 window with a map\nClose figure window to continue with example"
+  print "running plt.show to initilize plots, should have figure 2 and Fig 3 windows with a map\nClose figure window to continue with example"
   plt.show()
 
   print "\nTesting some coordinate transformations."
