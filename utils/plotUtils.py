@@ -187,8 +187,42 @@ class mapObj(basemap.Basemap):
       print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
       coords = None
 
-    #First do the conversion if we aren't changing between lat/lon coordinate systems
-    if (coords is None) or (coords is self.coords):
+    #First we need to check and see if drawcoastlines() or a similar method is calling
+    #because if we are in a coordinate system differing from 'geo' then the coastlines
+    #will get plotted in the wrong location...
+    from_mpl_readboundary=False
+
+    if self.coords is 'mag': # or self.coords is 'mlt':  #Need to add this for mlt support later
+      try:
+        callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
+      except:
+        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+      if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
+        from_mpl_readboundary = True
+
+    if from_mpl_readboundary:  #if call was from drawcoastlines, etc. then we do something different
+
+      #For mlt support, need to add if self.coords is 'mlt': then convert mlt to mlon.
+
+      try:
+        nx, ny = len(x), len(y)
+        xt = np.array(x)
+        yt = np.array(y)
+        shape = xt.shape    
+        y, x, _ = aacgm.aacgmConvArr(
+          list(yt.flatten()), list(xt.flatten()), [0]*nx, 
+          self.datetime.year, 0)
+        x = np.array(x).reshape(shape)
+        y = np.array(y).reshape(shape)
+      except TypeError as e:
+        y, x, _ = aacgm.aacgmConv(y, x, 0, 
+          self.datetime.year, 0)
+      return basemap.Basemap.__call__(self, x, y, inverse=False)
+
+    #Second, if the call was not from drawcoastlines, etc. do the conversion 
+    #if we aren't changing between lat/lon coordinate systems
+    elif (coords is None) or (coords is self.coords):
       return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
     #Next do the conversion if lat/lon coord system change first, then calculation of x,y map coords (inverse=False)
@@ -623,7 +657,6 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 if __name__ == "__main__":
   import pylab as plt
   from datetime import datetime
-  
   time = datetime(2014,8,7,18,30)
   time2 = datetime(2014,8,8,0,0)
 
@@ -637,20 +670,33 @@ if __name__ == "__main__":
   print "Init a mapObj instance with draw==False"
   tmpmap1 = mapObj(coords=coords,projection='stere', draw=False, 
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
-                         lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax)
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',ax=ax,datetime=time,dateTime=time)
   print "running plt.show to initilize plots, should have an empty figure 1 window\nClose figure window to continue with example"
   plt.show()
   print "call the draw method for tmpmap1"
   tmpmap1.draw()
   print "running plt.show to initilize plots, should have an figure 1 window with a map\nClose figure window to continue with example"
   plt.show()
-  fig=plt.figure(2)
+  print "Making plot in geo and mag for comparison."
+  fig2=plt.figure(2)
   ax=None
   print "Init a mapObj instance with draw==True"
   tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
                          llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
-                         lat_0=lat_0, lon_0=lon_0,resolution='l')
-  print "running plt.show to initilize plots, should have an figure 2 window with a map\nClose figure window to continue with example"
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',datetime=time,dateTime=time)
+  fig3=plt.figure(3)
+  ax=None
+  coords="mag"
+  print "The inputs for the mag plot have been converted to magnetic"
+  print "beforehand so the maps should show the same region."
+  tmpmap3 = mapObj(coords=coords,projection='stere', draw=True,
+                         llcrnrlon=172.63974536615848, 
+                         llcrnrlat=-8.8093703108623647, 
+                         urcrnrlon=-121.21238751130332, 
+                         urcrnrlat=33.758571820294179,
+                         lat_0=lat_0, lon_0=lon_0,resolution='l',
+                         datetime=time, dateTime=time)
+  print "running plt.show to initilize plots, should have figure 2 and Fig 3 windows with a map\nClose figure window to continue with example"
   plt.show()
 
   print "\nTesting some coordinate transformations."
