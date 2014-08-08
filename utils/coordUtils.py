@@ -72,7 +72,7 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
   if start == 'mag' or end == 'mag': 
     assert(dateTime is not None),"dateTime must be provided for MAG coordinates to work."
 
-  # Check whether the inputs are lists.
+  # Sanitise inputs.
   if isinstance(lon, int):
     lon = float(lon)
     lat = float(lat)
