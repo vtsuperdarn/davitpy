@@ -176,7 +176,7 @@ class mapObj(basemap.Basemap):
         out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
 
   
-  def __call__(self, x, y, inverse=False, coords=None,altitude=0.):
+  def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
     from copy import deepcopy
     import numpy as np
     import inspect
@@ -187,38 +187,38 @@ class mapObj(basemap.Basemap):
       print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
       coords = None
 
-    #First we need to check and see if drawcoastlines() or a similar method is calling
-    #because if we are in a coordinate system differing from 'geo' then the coastlines
-    #will get plotted in the wrong location...
-    from_mpl_readboundary=False
-
-    if self.coords != "geo":
-      try:
-        callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
-      except:
-        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-
-      if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-        from_mpl_readboundary = True
-
-    if from_mpl_readboundary:  #if call was from drawcoastlines, etc. then we do something different
-        x, y = coordConv(x, y, 0., "geo", self.coords, dateTime=self.datetime)
-      return basemap.Basemap.__call__(self, x, y, inverse=False)
-
-    #Second, if the call was not from drawcoastlines, etc. do the conversion 
-    #if we aren't changing between lat/lon coordinate systems
-    elif (coords is None) or (coords is self.coords):
+    # First we need to check and see if drawcoastlines() or a similar 
+    # method is calling because if we are in a coordinate system 
+    # differing from 'geo' then the coastlines will get plotted 
+    # in the wrong location...
+    try:
+      callerFile, _, callerName = \
+              inspect.getouterframes(inspect.currentframe())[1][1:4]
+    except:
       return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
-    #Next do the conversion if lat/lon coord system change first, then calculation of x,y map coords (inverse=False)
-    elif coords and (coords != self.coords) and (inverse is False):
-      x, y = coordConv(x, y, altitude, coords, self.coords, dateTime=self.datetime)
+    # If call was from drawcoastlines, etc. then we do something different
+    if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
+      x, y = coordConv(x, y, 0., "geo", self.coords, dateTime=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
-    #Finally do the conversion if calculation of x,y map coords first, then lat/lon coord system change (inverse=True)
-    elif coords and (coords != self.coords) and (inverse is True):
+    # If the call was not from drawcoastlines, etc. do the conversion.
+
+    # If we aren't changing between lat/lon coordinate systems:
+    elif coords is None:
+      return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+    # If inverse is true do the calculation of x,y map coords first, 
+    # then lat/lon coord system change.
+    elif inverse:
       x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
       return coordConv(x, y, altitude, self.coords, coords, dateTime=self.datetime)
+
+    # If inverse is false do the lat/lon coord system change first, 
+    # then calculation of x,y map coords.
+    else:
+      x, y = coordConv(x, y, altitude, coords, self.coords, dateTime=self.datetime)
+      return basemap.Basemap.__call__(self, x, y, inverse=False)
 
   def _readboundarydata(self, name, as_polygons=False):
     from copy import deepcopy
