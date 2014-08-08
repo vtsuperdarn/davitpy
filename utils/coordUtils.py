@@ -72,6 +72,9 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
   if start == 'mag' or end == 'mag': 
     assert(dateTime is not None),"dateTime must be provided for MAG coordinates to work."
 
+  # Check whether the inputs are lists.
+    is_list = isinstance(lon, list)
+
   # Make the inputs into numpy arrays because single element lists have no 'len'
   lon = np.array(lon)
   lat = np.array(lat)
@@ -155,12 +158,12 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
         lon = np.array(lon_mlt).reshape(shape)
         lat = lat.reshape(shape)
 
-  if np.size(lon.flatten()) == 1:
-    lon = list(lon.flatten())[0]
-    lat = list(lat.flatten())[0]
-  else:
+  if is_list:
     lon = list(lon.flatten())
     lat = list(lat.flatten())
+  else:
+    lon = list(lon.flatten())[0]
+    lat = list(lat.flatten())[0]
   return lon, lat
 
 ########################################################################
