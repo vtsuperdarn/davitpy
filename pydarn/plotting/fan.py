@@ -217,7 +217,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
 
     tmpmap = utils.mapObj(coords=coords,projection='stere', width=10.0**3, 
-                                                height=10.0**3, lat_0=lat_0, lon_0=lon_0)
+                          height=10.0**3, lat_0=lat_0, lon_0=lon_0,
+                          datetime = sTime)
     x,y = tmpmap(lonFull,latFull)
     minx = x.min()*1.05     #since we don't want the map to cut off labels or
     miny = y.min()*1.05     #FOVs of the radars we should alter the extrema a bit.
@@ -238,7 +239,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
                          lon_0=lon_0, llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat,
                          urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat,
                          coastLineWidth=0.5, coastLineColor='k',
-                         fillOceans='w',fillContinents='w', fillLakes='w')
+                         fillOceans='w',fillContinents='w', fillLakes='w',
+                         datetime = sTime)
     #overlay fields of view, if desired
     if(fov == 1):
         for i,r in enumerate(rad):
