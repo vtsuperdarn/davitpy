@@ -30,9 +30,6 @@
 Written by Matt W. based on code by...Sebastien?
 """
 
-from models import aacgm
-import numpy as np
-
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
   """Convert between geographical, AACGM, and MLT coordinates.  dateTime must be set to use MLT.
   
@@ -52,6 +49,9 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
       
   written by Matt W., 2013-09 based on code by...Sebastien?
   """
+  from models import aacgm
+  import numpy as np
+
   # Define acceptable coordinate systems
   coordsDict = {'mag': 'AACGM',
             'geo': 'Geographic',
@@ -73,7 +73,14 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
     assert(dateTime is not None),"dateTime must be provided for MAG coordinates to work."
 
   # Check whether the inputs are lists.
-  is_list = isinstance(lon, list)
+  if isinstance(lon, int):
+    lon = float(lon)
+    lat = float(lat)
+  is_float = isinstance(lon, float)
+  is_list = isinstance(lon, (list, tuple))
+  if not (is_float or is_list):
+    assert(isinstance(lon, np.ndarray)),\
+            "Must input int, float, list, or numpy array."
 
   # Make the inputs into numpy arrays because single element lists have no 'len'
   lon = np.array(lon)
@@ -161,9 +168,12 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
   if is_list:
     lon = list(lon.flatten())
     lat = list(lat.flatten())
-  else:
+  elif is_float:
     lon = list(lon.flatten())[0]
     lat = list(lat.flatten())[0]
+
+  # Otherwise it stays a numpy array.
+
   return lon, lat
 
 ########################################################################
@@ -186,6 +196,8 @@ def planeRot(x, y, theta):
       
   written by Matt W., 2013-09
   """
+  import numpy as np
+
   oldx, oldy = np.array(x), np.array(y)
   x = oldx*np.cos(theta) + oldy*np.sin(theta)
   y = -oldx*np.sin(theta) + oldy*np.cos(theta)
@@ -195,40 +207,57 @@ def planeRot(x, y, theta):
 # Some testing stuff
 if __name__ == "__main__":
     from datetime import datetime
+    import numpy
 
     print
     print "All of these results may have varying sigfigs"
     print
     print "Single coord pair tests"
     print
-    print "geo to geo, mag to mag, mlt to mlt, ashes to ashes"
+    print "Test of list -> list"
     print "Expected:  ([50.700000000000003], [34.5])"
+    print "Result:    " + str(coordConv([50.7],[34.5],300.,'geo','geo'))
+    print
+    print "Test of float -> float"
+    print "Expected:  (50.700000000000003, 34.5)"
+    print "Result:    " + str(coordConv(50.7,34.5,300.,'geo','geo'))
+    print
+    print "Test of int -> float"
+    print "Expected:  (50.0, 34.0)"
+    print "Result:    " + str(coordConv(50,34,300.,'geo','geo'))
+    print
+    print "Test of numpy array -> numpy array"
+    print "Expected:  (array([ 50.7]), array([ 34.5]))"
+    print "Result:    " + str(coordConv(numpy.array([50.7]),numpy.array([34.5]),300.,'geo','geo'))
+    print
+    print "geo to geo, mag to mag, mlt to mlt, ashes to ashes"
+    print "Expected:  (50.700000000000003, 34.5)"
     print "Result:    " + str(coordConv(50.7,34.5,300.,'geo','geo'))
     print "Result:    " + str(coordConv(50.7,34.5,300.,'mag','mag',dateTime=datetime(2013,7,23,12,6,34)))
     print "Result:    " + str(coordConv(50.7,34.5,300.,'mlt','mlt',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "geo to mag"
-    print "Expected: ([123.71642616363432], [31.582924632749929])"
+    print "Expected: (123.71642616363432, 31.582924632749929)"
     print "Result:   " + str(coordConv(50.7,34.5,300.,'geo','mag',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "geo to mlt"
-    print "Expected: ([229.34000961374397], [31.582924632749929])"
+    print "Expected: (229.34000961374397, 31.582924632749929)"
     print "Result:   " + str(coordConv(50.7,34.5,300.,'geo','mlt',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "mag to geo"
-    print "Expected: ([50.563320914903102], [32.408924471374895])"
+    print "Expected: (50.563320914903102, 32.408924471374895)"
     print "Result:   " + str(coordConv(123.53805352405843,29.419420613372086,300.,'mag','geo',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "mlt to geo"
-    print "Expected: ([50.563320914903137], [32.408924471374895])"
+    print "Expected: (50.563320914903137, 32.408924471374895)"
     print "Result:   " + str(coordConv(229.16163697416806,29.419420613372086,300.,'mlt','geo',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "mag to mlt"
-    print "Expected: ([229.16163697416806], [29.419420613372086])"
+    print "Expected: (229.16163697416806, 29.419420613372086)"
     print "Result:   " + str(coordConv(123.53805352405843,29.419420613372086,300.,'mag','mlt',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "mlt to mag"
-    print "Expected: ([123.53805352405843], [29.419420613372086])"
+    print "Expected: (123.53805352405843, 29.419420613372086)"
     print "Result:   " + str(coordConv(229.16163697416806,29.419420613372086,300.,'mlt','mag',dateTime=datetime(2013,7,23,12,6,34)))
     print
     print "Coord array tests"
