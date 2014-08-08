@@ -73,7 +73,7 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
     assert(dateTime is not None),"dateTime must be provided for MAG coordinates to work."
 
   # Check whether the inputs are lists.
-    is_list = isinstance(lon, list)
+  is_list = isinstance(lon, list)
 
   # Make the inputs into numpy arrays because single element lists have no 'len'
   lon = np.array(lon)
