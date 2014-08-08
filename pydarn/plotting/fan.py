@@ -28,7 +28,7 @@
     * :func:`pydarn.plotting.fan.overlayFan`
 """
     
-import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+import pydarn,numpy,math,matplotlib,calendar,utils,pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
@@ -137,7 +137,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myFiles = []
     myBands = []
     for i in range(len(rad)):
-        f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
+        f = radDataOpen(sTime,rad[i],sTime+dt.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
         if(f != None): 
             myFiles.append(f)
             myBands.append(tbands[i])
@@ -278,7 +278,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
     tz = dt.datetime.now()
     cols = []
-    bndTime = sTime + datetime.timedelta(seconds=interval)
+    bndTime = sTime + dt.timedelta(seconds=interval)
     
     ft = 'None'
     #go though all files
