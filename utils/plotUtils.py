@@ -174,7 +174,6 @@ class mapObj(basemap.Basemap):
           merLabels = [False,False,False,False]
         # draw meridians
         out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
-
   
   def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
     from copy import deepcopy
