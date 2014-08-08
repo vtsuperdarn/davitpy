@@ -264,7 +264,7 @@ class mapObj(basemap.Basemap):
         except TypeError as e:
           y, x, _ = aacgm.aacgmConv(y, x, altitude, 
             self.datetime.year, flag)
-      return y, x
+      return x, y
 
   def _readboundarydata(self, name, as_polygons=False):
     from models import aacgm
