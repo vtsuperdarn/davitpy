@@ -155,7 +155,13 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
         lon = np.array(lon_mlt).reshape(shape)
         lat = lat.reshape(shape)
 
-  return list(lon.flatten()),list(lat.flatten())
+  if np.size(lon.flatten()) == 1:
+    lon = list(lon.flatten())[0]
+    lat = list(lat.flatten())[0]
+  else:
+    lon = list(lon.flatten())
+    lat = list(lat.flatten())
+  return lon, lat
 
 ########################################################################
 ########################################################################
