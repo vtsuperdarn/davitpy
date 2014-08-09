@@ -210,7 +210,8 @@ if __name__ == "__main__":
     import numpy
 
     print
-    print "All of these results may have varying sigfigs"
+    print "All of these results may have varying sigfigs."
+    print "The expected values were found on a 32-bit system."
     print
     print "Single coord pair tests"
     print
