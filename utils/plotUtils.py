@@ -211,12 +211,14 @@ class mapObj(basemap.Basemap):
     # then lat/lon coord system change.
     elif inverse:
       x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
-      return coordConv(x, y, altitude, self.coords, coords, dateTime=self.datetime)
+      return coordConv(x, y, altitude, self.coords, coords, 
+                       dateTime=self.datetime)
 
     # If inverse is false do the lat/lon coord system change first, 
     # then calculation of x,y map coords.
     else:
-      x, y = coordConv(x, y, altitude, coords, self.coords, dateTime=self.datetime)
+      x, y = coordConv(x, y, altitude, coords, self.coords, 
+                       dateTime=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
   def _readboundarydata(self, name, as_polygons=False):
