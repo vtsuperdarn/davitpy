@@ -103,7 +103,6 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
     if np.size(alt) == 1:
         altitude = [altitude]*np.size(lon)
 
-<<<<<<< HEAD
     # If there is an actual conversion to do:
     if start and end and start != end:
         # Set the conversion specifier.
