@@ -510,3 +510,24 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
             myFig.gca().add_collection(lcoll)
 
             return intensities,lcoll
+
+if __name__=="__main__":
+    from datetime import datetime
+
+    time = datetime(2014,8,7,18,30)
+    
+    print "Testing some of the plotFan stuff.  Time used is:"
+    print time
+    print "Generating a plot of Saskatoon and Hankasalmi velocity"
+    print "in geographic coords with ground scatter on."
+    plotFan(time, ["sas","han"], param="velocity", coords="geo", gsct=True, 
+            show=True)
+    print "Now a plot of power."
+    plotFan(time, ["sas","han"], param="power", coords="geo", gsct=True, 
+            show=True)
+    print "Now change to magnetic coords."
+    plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
+            show=True)
+    print "Now generate a png instead of showing the plot."
+    plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
+            show=False, png=True)
