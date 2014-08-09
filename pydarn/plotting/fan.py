@@ -28,7 +28,7 @@
     * :func:`pydarn.plotting.fan.overlayFan`
 """
     
-import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+import pydarn,numpy,math,matplotlib,calendar,utils,pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
@@ -137,7 +137,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myFiles = []
     myBands = []
     for i in range(len(rad)):
-        f = radDataOpen(sTime,rad[i],sTime+datetime.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
+        f = radDataOpen(sTime,rad[i],sTime+dt.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
         if(f != None): 
             myFiles.append(f)
             myBands.append(tbands[i])
@@ -217,7 +217,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
 
     tmpmap = utils.mapObj(coords=coords,projection='stere', width=10.0**3, 
-                                                height=10.0**3, lat_0=lat_0, lon_0=lon_0)
+                          height=10.0**3, lat_0=lat_0, lon_0=lon_0,
+                          datetime = sTime)
     x,y = tmpmap(lonFull,latFull)
     minx = x.min()*1.05     #since we don't want the map to cut off labels or
     miny = y.min()*1.05     #FOVs of the radars we should alter the extrema a bit.
@@ -238,7 +239,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
                          lon_0=lon_0, llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat,
                          urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat,
                          coastLineWidth=0.5, coastLineColor='k',
-                         fillOceans='w',fillContinents='w', fillLakes='w')
+                         fillOceans='w',fillContinents='w', fillLakes='w',
+                         datetime = sTime)
     #overlay fields of view, if desired
     if(fov == 1):
         for i,r in enumerate(rad):
@@ -276,7 +278,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
     tz = dt.datetime.now()
     cols = []
-    bndTime = sTime + datetime.timedelta(seconds=interval)
+    bndTime = sTime + dt.timedelta(seconds=interval)
     
     ft = 'None'
     #go though all files
