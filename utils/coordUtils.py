@@ -81,46 +81,44 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
                    "geo": "Geographic",
                    "mlt": "MLT"}
     
-    # List all systems that use AACGM.
+    # List all systems that require altitude.
+    alti_sys = ["mag", "mlt"]
+
+    # List all systems that require date_time.
+    dt_sys = ["mag", "mlt"]
+
+    # List all systems in the AACGM family.
     aacgm_sys = ["mag", "mlt"]
 
     # Create a string of coord systems for printing to the terminal.
-    for num, sys in enumerate(coords_dict.keys()):
-        if num == 0:
-            coords_string = coords_dict[sys] + " (" + sys + ")"
-        elif num < len(coords_dict.keys()) - 1:
-            coords_string = coords_string + ", " + coords_dict[sys] + \
-                    " (" + sys + ")"
-        elif len(coords_dict.keys()) < 3:
-            coords_string = coords_string + " and " + coords_dict[sys] + \
-                    " (" + sys + ")"
-        else:
-            coords_string = coords_string + ", and " + coords_dict[sys] + \
-                    " (" + sys + ")"
+    coords_string = ""
+    for code, name in coords_dict.iteritems():
+        coords_string += "\n" + name + " (" + code + ")"
     
-    # Create a string of AACGM systems for printing to the terminal.
-    for num, sys in enumerate(aacgm_sys):
-        if num == 0:
-            aacgm_string = coords_dict[sys] + " (" + sys + ")"
-        elif num < len(aacgm_sys) - 1:
-            aacgm_string = aacgm_string + ", " + coords_dict[sys] + \
-                    " (" + sys + ")"
-        elif len(aacgm_sys) < 3:
-            aacgm_string = aacgm_string + " or " + coords_dict[sys] + \
-                    " (" + sys + ")"
-        else:
-            aacgm_string = aacgm_string + ", or " + coords_dict[sys] + \
-                    " (" + sys + ")"
+    # Create a string for printing of systems requiring altitude.
+    alti_string = ""
+    for code in alti_sys:
+        alti_string += "\n" + coords_dict[code] + " (" + code + ")"
+
+    # Create a string for printing of systems requiring datetime.
+    dt_string = ""
+    for code in dt_sys:
+        dt_string += "\n" + coords_dict[code] + " (" + code + ")"
 
     # Check that the coordinates are possible.
     assert(start in coords_dict and end in coords_dict),\
             "Start coords are " + start + " and end coords are " +\
-            end + ".  Options for coords are " + coords_string
+            end + ".\nOptions for coords are: " + coords_string
 
-    # AACGM systems require a datetime and altitude.
-    if start in aacgm_sys or end in aacgm_sys:
-        assert(date_time is not None and altitude is not None),\
-                "altitude and date_time must be provided for " + aacgm_string
+    # Check whether altitude is needed and provided.
+    if start in alti_sys or end in alti_sys:
+        assert(altitude is not None),\
+                "altitude must be provided for: " + alti_string
+    
+    # Check whether date_time is needed and provided.
+    if start in dt_sys or end in dt_sys:
+        assert(date_time is not None),\
+                "date_time must be provided for: " + dt_string
 
     # Sanitise inputs.
     if isinstance(lon, int):
