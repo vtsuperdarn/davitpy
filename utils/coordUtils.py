@@ -34,12 +34,12 @@
 Written by Matt W.
 """
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
-    """coordConv has been renamed coord_conv, and dateTime has been 
+    """coordConv has been renamed coord_conv and dateTime has been 
         renamed date_time for PEP 8 compliance.  Please use those 
         from now on.  Also altitude is now optional.
     """
     from utils.coordUtils import coord_conv
-    print "coordConv has been renamed coord_conv, and dateTime has"
+    print "coordConv has been renamed coord_conv and dateTime has"
     print "been renamed date_time for PEP 8 compliance.  Please use"
     print "those from now on.  Also altitude is now optional."
     return coord_conv(lon, lat, start, end, altitude=altitude, 
@@ -71,24 +71,45 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
     original version written by Matt W., 2013-09,
         based on code by...Sebastien?
     brand new version by Matt W., 2014-08
+    
+    A how-to for expansion of this function to handle new coordinate
+        systems is included in the code comments.
     """
     import numpy as np
     
     from models import aacgm
+
+    ####################################################################
+    #                                                                  #
+    # Sections of code that must be modified to add new coordinate     #
+    # systems are highlighted by pound-lines (like this comment is)    #
+    # and are provided with instructions in the comments.              #
+    #                                                                  #
+    ####################################################################
+
+    ####################################################################
+    # Coordinate systems are named and listed in this block. Add a new 
+    # system to coords_dict with a code (for start and end) and a name.
+    # Add the code to the list for the family it belongs to, or create a
+    # new list if adding a new family.  Finally, add the code to the 
+    # appropriate list if the system requires altitude or date_time.
 
     # Define acceptable coordinate systems.
     coords_dict = {"mag": "AACGM",
                    "geo": "Geographic",
                    "mlt": "MLT"}
     
+    # List all systems in the AACGM family.
+    aacgm_sys = ["mag", "mlt"]
+
     # List all systems that require altitude.
     alti_sys = ["mag", "mlt"]
 
     # List all systems that require date_time.
     dt_sys = ["mag", "mlt"]
 
-    # List all systems in the AACGM family.
-    aacgm_sys = ["mag", "mlt"]
+    # End of system list block.
+    ####################################################################
 
     # Create a string of coord systems for printing to the terminal.
     coords_string = ""
@@ -144,14 +165,28 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
         if np.size(alt) == 1:
             altitude = [altitude]*np.size(lon)
 
+    ####################################################################
+    # FROM conversions for system families are performed in this 
+    # section.  Within the family of the start system, convert into the 
+    # base system for that family.  If the end system is not in the same
+    # family, end by converting from the base system into geographic.
+    #
+    # Add new systems and families by following the example of the AACGM 
+    # family block.
+
     # Check whether there is a conversion to do.
     if start != end:
 
-        # Handle conversions from AACGM systems.
+        ################################################################
+        # AACGM family FROM conversions.
+        # This is the reason for having the aacgm_sys list:
         if start in aacgm_sys:
 
-            # Convert all other AACGM systems to AACGM.
+            # Convert all other AACGM systems to AACGM.  Follow the
+            # example of the MLT block to add new systems within the
+            # family.
 
+            ############################################################
             # Convert MLT to AACGM
             if start == "mlt":
                 # Convert MLT from degrees to hours.
@@ -171,6 +206,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
                 # Covert from (0,360) to (-180,180).
                 lon[np.where(lon > 180.)] -= 360.
                 start = "mag"
+
+            # End of MLT FROM block.
+            ############################################################
         
             # Now it is in AACGM.  
             assert(start == "mag"),"Error, should be in AACGM now"
@@ -183,15 +221,35 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
                 lon = np.array(lon).reshape(shape)
                 lat = np.array(lat).reshape(shape)
                 start = "geo"
+        
+        # End of AACGM family FROM block.
+        ################################################################
+
+    # End of FROM block.
+    ####################################################################
 
     # Now it is in:
-    # AACGM if the end is also an AACGM system
-    # geo if the end is not an AACGM system
+    # AACGM if the start and end are in an AACGM system
+    # geo otherwise
+    # Add to this list for new system families to help keep track.
 
-    # Check whether there is still a conversion to do.
+    ####################################################################
+    # TO conversions for system families are performed in this 
+    # section.  If the start system was not in the same family as the
+    # end system (i.e., it is now in geographic), convert into the base 
+    # system for the family of the end system.  Then convert within the
+    # family to the end system.
+    #
+    # Add new systems and families by following the example of the AACGM 
+    # family block.
+    
+    # Check whether there is still a conversion to do.  If the
+    # conversion is to geographic or to the base system of whatever
+    # family the start was in, then all the work is done.
     if start != end:
 
-        # Handle conversions to AACGM systems.
+        ################################################################
+        # AACGM family TO conversions.
         if end in aacgm_sys:
             # If it isn't in AACGM already it's in geo.
             if start == "geo":
@@ -205,9 +263,12 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
             # It is in AACGM now.
             assert(start == "mag"),"Error, should be in AACGM now"
 
-            # Convert AACGM to all other AACGM systems.
+            # Convert AACGM to all other AACGM systems.  Follow the
+            # example of the MLT block to add new systems within the
+            # family.
 
-            # Handle conversions to MLT.
+            ############################################################
+            # MLT TO conversions.
             if end == "mlt":
                 for num, el in enumerate(lon):
                     # Find MLT from magnetic lon and datetime.
@@ -223,6 +284,15 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
                 # Convert from (0,360) to (-180,180).
                 lon[np.where(lon > 180.)] -= 360.
                 start = "mlt"
+            
+            # End of MLT TO block.
+            ############################################################
+
+        # End of AACGM family TO block.
+        ################################################################
+
+    # End of TO block.
+    ####################################################################
 
     # Now it should be in the end system.
     assert(start == end),"Error, not in correct end system...?????"
