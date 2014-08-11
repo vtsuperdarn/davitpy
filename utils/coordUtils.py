@@ -59,9 +59,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
         * **[altitude]**: altitude to be used (km).
         * **[date_time]**: python datetime object. Default: None
     **Returns**:
-        * **lon, lat**: (float, list, or numpy array) MLT is in degrees, not
-            hours.  Output type is the same as input type (except int becomes
-            float)
+        * **lon, lat**: (float, list, or numpy array) MLT is in degrees,
+            not hours.  Output type is the same as input type (except 
+            int becomes float)
     **Example**:
         ::
         import utils
