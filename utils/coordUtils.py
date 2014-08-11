@@ -36,26 +36,27 @@ Written by Matt W.
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
     """coordConv has been renamed coord_conv, and dateTime has been 
         renamed date_time for PEP 8 compliance.  Please use those 
-        from now on.
+        from now on.  Also altitude is now optional.
     """
     from utils.coordUtils import coord_conv
     print "coordConv has been renamed coord_conv, and dateTime has"
     print "been renamed date_time for PEP 8 compliance.  Please use"
-    print "those from now on."
-    return coord_conv(lon, lat, altitude, start, end, date_time=dateTime)
+    print "those from now on.  Also altitude is now optional."
+    return coord_conv(lon, lat, start, end, altitude=altitude, 
+                      date_time=dateTime)
 
-def coord_conv(lon, lat, altitude, start, end, date_time=None):
+def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
     """Convert between geographical, AACGM, and MLT coordinates.  
         date_time must be set to use any AACGM systems.
   
     **Args**: 
         * **lon**: longitude (MLT must be in degrees, not hours)
         * **lat**: latitude
-        * **altitude**: altitude to be used (km).
         * **start**: coordinate system of input. Options: 'geo', 'mag',
             'mlt'
         * **end**: desired output coordinate system. Options: 'geo', 
             'mag', 'mlt'
+        * **[altitude]**: altitude to be used (km).
         * **[date_time]**: python datetime object. Default: None
     **Returns**:
         * **lon, lat**: (float, list, or numpy array) MLT is in degrees, not
@@ -116,10 +117,10 @@ def coord_conv(lon, lat, altitude, start, end, date_time=None):
             "Start coords are " + start + " and end coords are " +\
             end + ".  Options for coords are " + coords_string
 
-    # AACGM systems require a datetime.
+    # AACGM systems require a datetime and altitude.
     if start in aacgm_sys or end in aacgm_sys:
-        assert(date_time is not None),\
-                "date_time must be provided for " + aacgm_string
+        assert(date_time is not None and altitude is not None),\
+                "altitude and date_time must be provided for " + aacgm_string
 
     # Sanitise inputs.
     if isinstance(lon, int):
@@ -140,9 +141,10 @@ def coord_conv(lon, lat, altitude, start, end, date_time=None):
     shape = np.shape(lon)
 
     # Test whether we are using the same altitude for everything.
-    alt = np.array(altitude)
-    if np.size(alt) == 1:
-        altitude = [altitude]*np.size(lon)
+    if altitude is not None:
+        alt = np.array(altitude)
+        if np.size(alt) == 1:
+            altitude = [altitude]*np.size(lon)
 
     # Check whether there is a conversion to do.
     if start != end:
@@ -275,85 +277,118 @@ if __name__ == "__main__":
     print "The expected values were found on a 32-bit system."
     print
     print "Test of redirection function coordConv"
-    print coordConv(50.7, 34.5, 300., "geo", "geo")
+    print coordConv(50.7, 34.5, 300., "geo", "geo", 
+                    dateTime=datetime(2012,1,1,0,2))
     print
     print "Single coord pair tests"
     print
     print "Test of list -> list"
     print "Expected:  ([50.700000000000003], [34.5])"
-    print "Result:    " + str(coord_conv([50.7],[34.5],300.,'geo','geo'))
+    print "Result:    " + str(coord_conv([50.7],[34.5],'geo','geo'))
     print
     print "Test of float -> float"
     print "Expected:  (50.700000000000003, 34.5)"
-    print "Result:    " + str(coord_conv(50.7,34.5,300.,'geo','geo'))
+    print "Result:    " + str(coord_conv(50.7,34.5,'geo','geo'))
     print
     print "Test of int -> float"
     print "Expected:  (50.0, 34.0)"
-    print "Result:    " + str(coord_conv(50,34,300.,'geo','geo'))
+    print "Result:    " + str(coord_conv(50,34,'geo','geo'))
     print
     print "Test of numpy array -> numpy array"
     print "Expected:  (array([ 50.7]), array([ 34.5]))"
-    print "Result:    " + str(coord_conv(numpy.array([50.7]),numpy.array([34.5]),300.,'geo','geo'))
+    print "Result:    " + str(coord_conv(numpy.array([50.7]),
+                                         numpy.array([34.5]),'geo','geo'))
     print
     print "geo to geo, mag to mag, mlt to mlt, ashes to ashes"
     print "Expected:  (50.700000000000003, 34.5)"
-    print "Result:    " + str(coord_conv(50.7,34.5,300.,'geo','geo'))
-    print "Result:    " + str(coord_conv(50.7,34.5,300.,'mag','mag',date_time=datetime(2013,7,23,12,6,34)))
-    print "Result:    " + str(coord_conv(50.7,34.5,300.,'mlt','mlt',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:    " + str(coord_conv(50.7,34.5,'geo','geo'))
+    print "Result:    " + str(coord_conv(50.7,34.5,'mag','mag',altitude=300.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:    " + str(coord_conv(50.7,34.5,'mlt','mlt',altitude=300.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
     print
     print "geo to mag"
     print "Expected: (123.71642616363432, 31.582924632749929)"
-    print "Result:   " + str(coord_conv(50.7,34.5,300.,'geo','mag',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:   " + str(coord_conv(50.7,34.5,'geo','mag',altitude=300.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
     print
     print "geo to mlt"
     print "Expected: (-130.65999038625603, 31.582924632749929)"
-    print "Result:   " + str(coord_conv(50.7,34.5,300.,'geo','mlt',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:   " + str(coord_conv(50.7,34.5,'geo','mlt',altitude=300.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mag to geo"
     print "Expected: (50.563320914903102, 32.408924471374895)"
-    print "Result:   " + str(coord_conv(123.53805352405843,29.419420613372086,300.,'mag','geo',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:   " + str(coord_conv(123.53805352405843,29.419420613372086,
+            'mag','geo',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mlt to geo"
     print "Expected: (50.563320914903137, 32.408924471374895)"
-    print "Result:   " + str(coord_conv(229.16163697416806,29.419420613372086,300.,'mlt','geo',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:   " + str(coord_conv(229.16163697416806,29.419420613372086,
+            'mlt','geo',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mag to mlt"
     print "Expected: (-130.83836302583194, 29.419420613372086)"
-    print "Result:   " + str(coord_conv(123.53805352405843,29.419420613372086,300.,'mag','mlt',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:   " + str(coord_conv(123.53805352405843,29.419420613372086,
+            'mag','mlt',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mlt to mag"
     print "Expected: (123.53805352405843, 29.419420613372086)"
-    print "Result:   " + str(coord_conv(229.16163697416806,29.419420613372086,300.,'mlt','mag',date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:   " + str(coord_conv(229.16163697416806,29.419420613372086,
+            'mlt','mag',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
     print
     print "Coord array tests"
     print
     print "geo to geo, mag to mag, mlt to mlt"
-    print "Expected: ([50.700000000000003, 53.799999999999997], [34.5, 40.200000000000003])"
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],300.,'geo','geo'))
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],300.,'mag','mag',date_time=datetime(2013,7,23,12,6,34)))
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],300.,'mlt','mlt',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([50.700000000000003, 53.799999999999997], \
+[34.5, 40.200000000000003])"
+    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'geo','geo'))
+    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'mag','mag',
+                        altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
+    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'mlt','mlt',
+                        altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
     print
     print "geo to mag"
-    print "Expected: ([123.65800072339718, 126.97463420949806], [30.892913121194589, 37.369211032553089])"
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],[200.,300.],'geo','mag',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([123.65800072339718, 126.97463420949806], \
+[30.892913121194589, 37.369211032553089])"
+    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'geo','mag',
+                altitude=[200.,300.],date_time=datetime(2013,7,23,12,6,34)))
     print
     print "geo to mlt"
-    print "Expected: ([-130.71841582649319, -127.40178234039229], [30.892913121194589, 37.369211032553089])"
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],[200.,300.],'geo','mlt',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([-130.71841582649319, -127.40178234039229], \
+[30.892913121194589, 37.369211032553089])"
+    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'geo','mlt',
+                altitude=[200.,300.],date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mag to geo"
-    print "Expected: ([50.615511474515607, 53.648287906901672], [33.150771171950133, 38.637420715148586])"
-    print "Result    " + str(coord_conv([123.53805352405843, 126.76454464467615],[29.419420613372086, 35.725172012254788],[200.,300.],'mag','geo',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([50.615511474515607, 53.648287906901672], \
+[33.150771171950133, 38.637420715148586])"
+    print "Result    " + str(coord_conv([123.53805352405843, 
+                126.76454464467615],[29.419420613372086, 35.725172012254788],
+                'mag','geo',altitude=[200.,300.],
+                date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mlt to geo"
-    print "Expected: ([50.563320914903137, 53.648287906901672], [32.408924471374895, 38.637420715148586])"
-    print "Result    " + str(coord_conv([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788],300.,'mlt','geo',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([50.563320914903137, 53.648287906901672], \
+[32.408924471374895, 38.637420715148586])"
+    print "Result    " + str(coord_conv([229.16163697416806, 
+                232.38812809478577], [29.419420613372086, 35.725172012254788],
+                'mlt','geo',altitude=300.,
+                date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mag to mlt"
-    print "Expected: ([-130.83836302583194, -127.61187190521423], [29.419420613372086, 35.725172012254788])"
-    print "Result    " + str(coord_conv([123.53805352405843, 126.76454464467615],[29.419420613372086, 35.725172012254788],300.,'mag','mlt',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([-130.83836302583194, -127.61187190521423], \
+[29.419420613372086, 35.725172012254788])"
+    print "Result    " + str(coord_conv([123.53805352405843, 
+                126.76454464467615],[29.419420613372086, 35.725172012254788],
+                'mag','mlt',altitude=300.,
+                date_time=datetime(2013,7,23,12,6,34)))
     print
     print "mlt to mag"
-    print "Expected: ([123.53805352405843, 126.76454464467615], [29.419420613372086, 35.725172012254788])"
-    print "Result    " + str(coord_conv([229.16163697416806, 232.38812809478577], [29.419420613372086, 35.725172012254788],200.,'mlt','mag',date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected: ([123.53805352405843, 126.76454464467615], \
+[29.419420613372086, 35.725172012254788])"
+    print "Result    " + str(coord_conv([229.16163697416806, 
+                232.38812809478577], [29.419420613372086, 35.725172012254788],
+                'mlt','mag',altitude=200.,
+                date_time=datetime(2013,7,23,12,6,34)))
     print
