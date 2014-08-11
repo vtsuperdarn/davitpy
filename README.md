@@ -24,6 +24,8 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 
 We recommend using Ubuntu 14.04 with this DaViTPy.  Although Macintosh install scripts are provided, more active development, testing, and use occurs in the Linux environment.  We do not currently offer any Windows support, although you are more than welcome to try and make it work in any environment you choose.  Please be aware that much of the included code (especially the models) is fortran code  (i.e. MSIS, IRI, IGRF, etc...) wrapped with python wrappers. This means that these models must be compiled with a fortran compiler on your machine before running.  This is normally taken care of in the installation process listed below, but it is useful to know that this is a potential source of problems for making DaViTPy work.
 
+**Please note that currently DaViTpy needs to be installed and run from BASH.**
+
 ####Ubuntu
 Please use Ubuntu 14.04.  Older versions may not install compatible versions of the dependencies.
 
