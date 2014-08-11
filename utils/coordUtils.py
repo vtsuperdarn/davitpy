@@ -46,7 +46,7 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
 
 def coord_conv(lon, lat, altitude, start, end, date_time=None):
     """Convert between geographical, AACGM, and MLT coordinates.  
-        dateTime must be set to use any AACGM systems.
+        date_time must be set to use any AACGM systems.
   
     **Args**: 
         * **lon**: longitude (MLT must be in degrees, not hours)
@@ -67,7 +67,8 @@ def coord_conv(lon, lat, altitude, start, end, date_time=None):
         lon, lat = utils.coord_conv(lon, lat, 'geo', 'mlt', 
                              date_time=datetime(2012,3,12,0,56))
         
-    original version written by Matt W., 2013-09 based on code by...Sebastien?
+    original version written by Matt W., 2013-09,
+        based on code by...Sebastien?
     brand new version by Matt W., 2014-08
     """
     import numpy as np
@@ -82,30 +83,39 @@ def coord_conv(lon, lat, altitude, start, end, date_time=None):
     # List all systems that use AACGM.
     aacgm_sys = ["mag", "mlt"]
 
-    # Create a string of these for printing to the terminal.
+    # Create a string of coord systems for printing to the terminal.
+    for num, sys in enumerate(coords_dict.keys()):
+        if num == 0:
+            coords_string = coords_dict[sys] + " (" + sys + ")"
+        elif num < len(coords_dict.keys()) - 1:
+            coords_string = coords_string + ", " + coords_dict[sys] + \
+                    " (" + sys + ")"
+        elif len(coords_dict.keys()) < 3:
+            coords_string = coords_string + " and " + coords_dict[sys] + \
+                    " (" + sys + ")"
+        else:
+            coords_string = coords_string + ", and " + coords_dict[sys] + \
+                    " (" + sys + ")"
+    
+    # Create a string of AACGM systems for printing to the terminal.
     for num, sys in enumerate(aacgm_sys):
         if num == 0:
             aacgm_string = coords_dict[sys] + " (" + sys + ")"
         elif num < len(aacgm_sys) - 1:
-            aacgm_string = aacgm_string + ", " + coords_dict[sys] + " (" +\
-                    sys + ")"
+            aacgm_string = aacgm_string + ", " + coords_dict[sys] + \
+                    " (" + sys + ")"
         elif len(aacgm_sys) < 3:
-            aacgm_string = aacgm_string + " or " + coords_dict[sys] + " (" +\
-                    sys + ")"
+            aacgm_string = aacgm_string + " or " + coords_dict[sys] + \
+                    " (" + sys + ")"
         else:
-            aacgm_string = aacgm_string + ", or " + coords_dict[sys] + " (" +\
-                    sys + ")"
+            aacgm_string = aacgm_string + ", or " + coords_dict[sys] + \
+                    " (" + sys + ")"
 
     # Check that the coordinates are possible.
-    if end not in coords_dict:
-        print "Invalid end coordinate system given ({}):"
-        print "setting 'mag'".format(end)
-        end = "mag"
-    if start not in coords_dict:
-        print "Invalid start coordinate system given ({}):"
-        print "setting '{}'".format(start,end)
-        start = end 
-    
+    assert(start in coords_dict and end in coords_dict),\
+            "Start coords are " + start + " and end coords are " +\
+            end + ".  Options for coords are " + coords_string
+
     # AACGM systems require a datetime.
     if start in aacgm_sys or end in aacgm_sys:
         assert(date_time is not None),\
