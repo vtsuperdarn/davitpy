@@ -138,18 +138,15 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             end + ".\nOptions for coords are: " + coords_string
 
     # Check whether altitude is needed and provided.
-    if start in alti_sys or end in alti_sys:
+    if start in alti_sys or end in alti_sys or end_altitude is not None:
         assert(altitude is not None),\
-                "altitude must be provided for: " + alti_string
+                "altitude must be provided for: " + alti_string +\
+                "\nto perform altitude conversions"
     
     # Check whether date_time is needed and provided.
     if start in dt_sys or end in dt_sys:
         assert(date_time is not None),\
                 "date_time must be provided for: " + dt_string
-
-    if end_altitude is not None:
-        assert(altitude is not None),\
-                "Need start altitude to do altitude conversion!"
 
     # Sanitise inputs.
     if isinstance(lon, int):
@@ -485,3 +482,33 @@ if __name__ == "__main__":
                 'mlt','mag',altitude=200.,
                 date_time=datetime(2013,7,23,12,6,34)))
     print
+    print "Altitude conversion tests"
+    print "mlt at 300 to mlt at 200"
+    print "Expected: (50.672783138859764, 53.443261761838208)"
+    print "Result:   " + str(coord_conv(50.7,53.8,"mlt","mlt",
+                                        altitude=300., end_altitude=200.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
+    print
+    print "mlt at 300 to mag at 200"
+    print "Expected: (-54.950800311249871, 53.443261761838208)"
+    print "Result:   " + str(coord_conv(50.7,53.8,"mlt","mag",
+                                        altitude=300., end_altitude=200.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
+    print
+    print "mag at 300 to mlt at 200"
+    print "Expected: (156.31132401765453, 53.423480021345064)"
+    print "Result:   " + str(coord_conv(50.7,53.8,"mag","mlt",
+                                        altitude=300., end_altitude=200.,
+                                        date_time=datetime(2013,7,23,12,6,34)))
+    print
+    print "testing with lists, mag to mag"
+    print "Expected: ([-130.82669554662644, -127.53759707536527], [29.04361718657001, 34.973380997519293])"
+    print "Result    " + str(coord_conv([229.16163697416806, 
+                232.38812809478577], [29.419420613372086, 35.725172012254788],
+                'mag','mag',altitude=[200.,300.], end_altitude=[150.,175.],
+                date_time=datetime(2013,7,23,12,6,34)))
+    print "OTHER TESTS:  these tests will fail because of asserts so"
+    print "they should be done in an interpreter."
+    print "-set start or end to a fictional system code like abc"
+    print "-set start or end to mlt or mag and don't supply altitude"
+    print "-same but don't supply date_time"
