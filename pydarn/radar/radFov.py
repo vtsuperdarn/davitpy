@@ -46,7 +46,10 @@ class fov(object):
             * **'GS'**: for ground scatter projection model
             * **None**: if you are really confident in your elevation or altitude values
             * ... more to come
-        * **coords**: 'geo', 'mag'
+        * **coords**: 'geo', 'mag', 'mlt', others to come
+        * **date_time**: (datetime.datetime object) the datetime for 
+            which the FOV is desired.  Required for mag and mlt, and
+            possibly others in the future.  Default:  None
 
     """
     def __init__(self, \
@@ -54,10 +57,13 @@ class fov(object):
             nbeams=None, ngates=None, bmsep=None, recrise=None, \
             siteLat=None, siteLon=None, siteBore=None, siteAlt=None, \
             siteYear=None, elevation=None, altitude=300., \
-            model='IS', coords='geo'):
+            model='IS', coords='geo', date_time=None):
         # Get fov
         from numpy import ndarray, array, arange, zeros, nan
+        
         import models.aacgm as aacgm
+        from utils.coordUtils import coordConv
+        #from utils.coordUtils import coord_conv
         
         # Test that we have enough input arguments to work with
         if not site and None in \
@@ -68,6 +74,10 @@ class fov(object):
                 '[nbeams, ngates, bmsep, recrise, siteLat,' + \
                 ' siteLon, siteBore, siteAlt, siteYear].')
             return
+
+        # date_time checking is handled by coord_conv, and it already
+        # knows all of the possibly coord systems, so no need to do it
+        # here.
             
         # Then assign variables from the site object if necessary
         if site:
@@ -209,11 +219,18 @@ class fov(object):
                             siteBore, bOffEdge[ib], sRangEdge[ig],
                             elevation=tElev, altitude=tAlt, model=model)
                               
-                  if(coords == 'mag'):
-                      latC, lonC, _ = aacgm.aacgmConv(
-                        latC,lonC,0.,siteYear,0)
-                      latE, lonE, _ = aacgm.aacgmConv(
-                        latE,lonE,0.,siteYear,0)
+                  if(coords != 'geo'):
+                      # Should altitude be tAlt or zero?
+                      lonC, latC = coordConv(lonC, latC, 0., "geo", coords,
+                                              dateTime=date_time)
+                      lonE, latE = coordConv(lonE, latE, 0., "geo", coords,
+                                              dateTime=date_time)
+                      #lonC, latC = coord_conv(lonC, latC, "geo", coords,
+                                              #altitude=0.,
+                                              #date_time=date_time)
+                      #lonE, latE = coord_conv(lonE, latE, "geo", coords,
+                                              #altitude=0.,
+                                              #date_time=date_time)
                 else:
                   latC, lonC = nan, nan
                   latE, lonE = nan, nan
@@ -292,6 +309,10 @@ evaluated to accomodate altitude and range.
     
     # Make sure we have enough input stuff
     # if (not model) and (not elevation or not altitude): model = 'IS'
+
+    # Only geo is implemented.
+    assert(coords == "geo"),\
+            "Only geographic (geo) is implemented in calcFieldPnt."
     
     # Now let's get to work
     # Classic Ionospheric/Ground scatter projection model
@@ -453,14 +474,19 @@ if __name__=="__main__":
     from pydarn.radar import radStruct
     from datetime import datetime
     
+    time = datetime(2012,1,1,0,2)
     print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
-    site_sas = radStruct.site(code="sas", dt=datetime(2012,1,1,0,2))
+    site_sas = radStruct.site(code="sas", dt=time)
     print "Create a fov object using that site, coords are geo."
     fov1 = fov(site=site_sas)
     print "This is the result:"
     print fov1
     print "Now create a fov object with mag coords.  This will fail if"
     print "aacgm is not called properly."
-    fov2 = fov(site=site_sas, coords="mag")
+    fov2 = fov(site=site_sas, coords="mag", date_time=time)
     print "This is the result:"
     print fov2
+    print "Now do the same but with MLT."
+    fov3 = fov(site=site_sas, coords="mlt", date_time=time)
+    print "This is the result:"
+    print fov3
