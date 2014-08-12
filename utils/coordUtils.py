@@ -45,7 +45,8 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
     return coord_conv(lon, lat, start, end, altitude=altitude, 
                       date_time=dateTime)
 
-def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
+def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
+               end_altitude=None):
     """Convert between geographical, AACGM, and MLT coordinates.  
         date_time must be set to use any AACGM systems.
   
@@ -56,8 +57,12 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
             'mlt'
         * **end**: desired output coordinate system. Options: 'geo', 
             'mag', 'mlt'
-        * **[altitude]**: altitude to be used (km).
-        * **[date_time]**: python datetime object. Default: None
+        * **[altitude]**: altitude to be used (km).  Can be int/float or
+            list of same size as lon and lat.  Default:  None
+        * **[date_time]**: python datetime object.  Default:  None
+        * **[end_altitude]**: used for conversions from coords at one
+            altitude to coords at another.  In km.  Can be int/float or
+            list of same size as lon and lat.  Default:  None
     **Returns**:
         * **lon, lat**: (float, list, or numpy array) MLT is in degrees,
             not hours.  Output type is the same as input type (except 
@@ -65,8 +70,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
     **Example**:
         ::
         import utils
-        lon, lat = utils.coord_conv(lon, lat, 'geo', 'mlt', 
-                             date_time=datetime(2012,3,12,0,56))
+        lon, lat = utils.coord_conv(lon, lat, 'geo', 'mlt',
+                                    altitude=300.,
+                                    date_time=datetime(2012,3,12,0,56))
         
     original version written by Matt W., 2013-09,
         based on code by...Sebastien?
@@ -141,6 +147,10 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
         assert(date_time is not None),\
                 "date_time must be provided for: " + dt_string
 
+    if end_altitude is not None:
+        assert(altitude is not None),\
+                "Need start altitude to do altitude conversion!"
+
     # Sanitise inputs.
     if isinstance(lon, int):
         lon = float(lon)
@@ -165,6 +175,14 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
         if np.size(alt) == 1:
             altitude = [altitude]*np.size(lon)
 
+    if end_altitude is not None:
+        e_alt = np.array(end_altitude)
+        if np.size(e_alt) == 1:
+            end_altitude = [end_altitude]*np.size(lon)
+
+    # Set a flag that we are doing and altitude conversion.
+    alt_conv = (end_altitude is not None and end_altitude != altitude)
+
     ####################################################################
     # FROM conversions for system families are performed in this 
     # section.  Within the family of the start system, convert into the 
@@ -175,7 +193,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
     # family block.
 
     # Check whether there is a conversion to do.
-    if start != end:
+    if start != end or alt_conv:
 
         ################################################################
         # AACGM family FROM conversions.
@@ -213,8 +231,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
             # Now it is in AACGM.  
             assert(start == "mag"),"Error, should be in AACGM now"
 
-            # If the end result is not an AACGM system, convert to geo.
-            if end not in aacgm_sys:
+            # If the end result is not an AACGM system or there is an
+            # altitude conversion, convert to geo.
+            if (end not in aacgm_sys) or alt_conv:
                 lat, lon, _ = aacgm.aacgmConvArr(list(lat.flatten()), 
                                                 list(lon.flatten()), altitude,
                                                 date_time.year,1)
@@ -232,6 +251,12 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None):
     # AACGM if the start and end are in an AACGM system
     # geo otherwise
     # Add to this list for new system families to help keep track.
+
+    # If there is an altitude conversion, it will be in geo now and the
+    # next step is to convert to the end system even if it's the same
+    # as the start system.  When we do that we want to set:
+    if alt_conv:
+        altitude = end_altitude
 
     ####################################################################
     # TO conversions for system families are performed in this 
