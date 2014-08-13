@@ -368,176 +368,235 @@ if __name__ == "__main__":
     print
     print "Test of redirection function coordConv"
     print coordConv(50.7, 34.5, 300., "geo", "geo", 
-                    dateTime=datetime(2012,1,1,0,2))
+                    dateTime=datetime(2012, 1, 1, 0, 2))
     print
     print "Single coord pair tests"
     print
     print "Test of list -> list"
     print "Expected for 32-bit system:  ([50.700000000000003], [34.5])"
     print "Expected for 64-bit system:  ([50.700000000000003], [34.5])"
-    print "Result:    " + str(coord_conv([50.7],[34.5],'geo','geo'))
+    print "Result:                      " + \
+str(coord_conv([50.7], [34.5], 'geo', 'geo'))
     print
     print "Test of float -> float"
     print "Expected for 32-bit system:  (50.700000000000003, 34.5)"
     print "Expected for 64-bit system:  (50.700000000000003, 34.5)" 
-    print "Result:    " + str(coord_conv(50.7,34.5,'geo','geo'))
+    print "Result:                      " + \
+str(coord_conv(50.7, 34.5, 'geo', 'geo'))
     print
     print "Test of int -> float"
     print "Expected for 32-bit system:  (50.0, 34.0)"
     print "Expected for 64-bit system:  (50.0, 34.0)"
-    print "Result:    " + str(coord_conv(50,34,'geo','geo'))
+    print "Result:                      " + \
+str(coord_conv(50, 34, 'geo', 'geo'))
     print
     print "Test of numpy array -> numpy array"
     print "Expected for 32-bit system:  (array([ 50.7]), array([ 34.5]))"
     print "Expected for 64-bit system:  (array([ 50.7]), array([ 34.5]))"
-    print "Result:    " + str(coord_conv(numpy.array([50.7]),
-                                         numpy.array([34.5]),'geo','geo'))
+    print "Result:                      " + \
+str(coord_conv(numpy.array([50.7]), numpy.array([34.5]), 'geo', 'geo'))
     print
     print "geo to geo, mag to mag, mlt to mlt, ashes to ashes"
     print "Expected for 32-bit system: (50.700000000000003, 34.5)"
     print "Expected for 64-bit system: (50.700000000000003, 34.5)"
-    print "Result:    " + str(coord_conv(50.7,34.5,'geo','geo'))
-    print "Result:    " + str(coord_conv(50.7,34.5,'mag','mag',altitude=300.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
-    print "Result:    " + str(coord_conv(50.7,34.5,'mlt','mlt',altitude=300.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv(50.7, 34.5, 'geo', 'geo'))
+    print "Result:                     " + \
+str(coord_conv(50.7, 34.5, 'mag', 'mag', altitude=300., 
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
+    print "Result:                     " + \
+str(coord_conv(50.7, 34.5, 'mlt', 'mlt', altitude=300.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "geo to mag"
-    print "Expected for 32-bit system: (123.71642616363432, 31.582924632749929)"
-    print "Expected for 64-bit system: (123.7164261636343, 31.582924632749936)"
-    print "Result:   " + str(coord_conv(50.7,34.5,'geo','mag',altitude=300.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system: " +\
+"(123.71642616363432, 31.582924632749929)"
+    print "Expected for 64-bit system: " +\
+"(123.7164261636343, 31.582924632749936)"
+    print "Result:                     " + \
+str(coord_conv(50.7, 34.5, 'geo', 'mag', altitude=300.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "geo to mlt"
-    print "Expected for 32-bit system:  (-130.65999038625603, 31.582924632749929)"
-    print "Expected for 64-bit system:  (-130.65999038625606, 31.582924632749936)"
-    print "Result:   " + str(coord_conv(50.7,34.5,'geo','mlt',altitude=300.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system:  " +\
+"(-130.65999038625603, 31.582924632749929)"
+    print "Expected for 64-bit system:  " +\
+"(-130.65999038625606, 31.582924632749936)"
+    print "Result:                      " + \
+str(coord_conv(50.7, 34.5, 'geo', 'mlt', altitude=300.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mag to geo"
-    print "Expected for 32-bit system:  (50.563320914903102, 32.408924471374895)"
-    print "Expected for 64-bit system:  (50.563320914903116, 32.408924471374867)" 
-    print "Result:   " + str(coord_conv(123.53805352405843,29.419420613372086,
-            'mag','geo',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system:  " +\
+"(50.563320914903102, 32.408924471374895)"
+    print "Expected for 64-bit system:  " +\
+"(50.563320914903116, 32.408924471374867)" 
+    print "Result:                      " + \
+str(coord_conv(123.53805352405843, 29.419420613372086,
+               'mag', 'geo', altitude=300.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mlt to geo"
-    print "Expected for 32-bit system: (50.563320914903137, 32.408924471374895)"
-    print "Expected for 64-bit system: (50.563320914903088, 32.408924471374867)"
-    print "Result:   " + str(coord_conv(229.16163697416806,29.419420613372086,
-            'mlt','geo',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system: " +\
+"(50.563320914903137, 32.408924471374895)"
+    print "Expected for 64-bit system: " +\
+"(50.563320914903088, 32.408924471374867)"
+    print "Result:                     " + \
+str(coord_conv(229.16163697416806, 29.419420613372086,
+               'mlt', 'geo', altitude=300.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mag to mlt"
-    print "Expected for 32-bit system: (-130.83836302583194, 29.419420613372086)"
-    print "Expected for 64-bit system: (-130.83836302583194, 29.419420613372086)"
-    print "Result:   " + str(coord_conv(123.53805352405843,29.419420613372086,
-            'mag','mlt',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system: " +\
+"(-130.83836302583194, 29.419420613372086)"
+    print "Expected for 64-bit system: " +\
+"(-130.83836302583194, 29.419420613372086)"
+    print "Result:                     " + \
+str(coord_conv(123.53805352405843, 29.419420613372086,
+               'mag', 'mlt', altitude=300.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mlt to mag"
-    print "Expected for 32-bit system:  (123.53805352405843, 29.419420613372086)"
-    print "Expected for 64-bit system:  (123.53805352405841, 29.419420613372086)"
-    print "Result:   " + str(coord_conv(229.16163697416806,29.419420613372086,
-            'mlt','mag',altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system:  " +\
+"(123.53805352405843, 29.419420613372086)"
+    print "Expected for 64-bit system:  " +\
+"(123.53805352405841, 29.419420613372086)"
+    print "Result:                      " + \
+str(coord_conv(229.16163697416806, 29.419420613372086,
+            'mlt', 'mag', altitude=300.,
+            date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "Coord array tests"
     print
     print "geo to geo, mag to mag, mlt to mlt"
-    print "Expected for 32-bit system: ([50.700000000000003, 53.799999999999997], \
+    print "Expected for 32-bit system: " +\
+"([50.700000000000003, 53.799999999999997], \
 [34.5, 40.200000000000003])"
-    print "Expected for 64-bit system: ([50.700000000000003, 53.799999999999997], \
+    print "Expected for 64-bit system: " +\
+"([50.700000000000003, 53.799999999999997], \
 [34.5, 40.200000000000003])"
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'geo','geo'))
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'mag','mag',
-                        altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'mlt','mlt',
-                        altitude=300.,date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([50.7, 53.8], [34.5, 40.2], 'geo', 'geo'))
+    print "Result:                     " + \
+str(coord_conv([50.7, 53.8], [34.5, 40.2], 'mag', 'mag',
+               altitude=300., date_time=datetime(2013, 7, 23, 12, 6, 34)))
+    print "Result:                     " + \
+str(coord_conv([50.7, 53.8], [34.5, 40.2], 'mlt', 'mlt',
+               altitude=300., date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "geo to mag"
-    print "Expected for 32-bit system: ([123.65800072339718, 126.97463420949806], \
+    print "Expected for 32-bit system: " +\
+"([123.65800072339718, 126.97463420949806], \
 [30.892913121194589, 37.369211032553089])"
-    print "Expected for 64-bit system: ([123.65800072339719, 126.97463420949806], \
+    print "Expected for 64-bit system: " +\
+"([123.65800072339719, 126.97463420949806], \
 [30.892913121194589, 37.36921103255311])" 
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'geo','mag',
-                altitude=[200.,300.],date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([50.7, 53.8], [34.5, 40.2], 'geo', 'mag',
+                altitude=[200., 300.],
+                date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "geo to mlt"
-    print "Expected for 32-bit system: ([-130.71841582649319, -127.40178234039229], \
+    print "Expected for 32-bit system: " +\
+"([-130.71841582649319, -127.40178234039229], \
 [30.892913121194589, 37.369211032553089])"
-    print "Expected for 64-bit system: ([-130.71841582649316, -127.40178234039229], \
+    print "Expected for 64-bit system: " +\
+"([-130.71841582649316, -127.40178234039229], \
 [30.892913121194589, 37.36921103255311])"
-    print "Result    " + str(coord_conv([50.7,53.8],[34.5,40.2],'geo','mlt',
-                altitude=[200.,300.],date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([50.7, 53.8], [34.5, 40.2], 'geo', 'mlt',
+                altitude=[200., 300.],
+                date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mag to geo"
-    print "Expected for 32-bit system: ([50.615511474515607, 53.648287906901672], \
+    print "Expected for 32-bit system: " +\
+"([50.615511474515607, 53.648287906901672], \
 [33.150771171950133, 38.637420715148586])"
-    print "Expected for 64-bit system: ([50.615511474515607, 53.648287906901686], \
+    print "Expected for 64-bit system: " +\
+"([50.615511474515607, 53.648287906901686], \
 [33.150771171950126, 38.637420715148593])"
-    print "Result    " + str(coord_conv([123.53805352405843, 
-                126.76454464467615],[29.419420613372086, 35.725172012254788],
-                'mag','geo',altitude=[200.,300.],
-                date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([123.53805352405843, 126.76454464467615], 
+               [29.419420613372086, 35.725172012254788], 'mag', 'geo',
+               altitude=[200., 300.], 
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mlt to geo"
-    print "Expected for 32-bit system: ([50.563320914903137, 53.648287906901672], \
+    print "Expected for 32-bit system: " +\
+"([50.563320914903137, 53.648287906901672], \
 [32.408924471374895, 38.637420715148586])"
-    print "Expected for 64-bit system: ([50.563320914903088, 53.648287906901686], \
+    print "Expected for 64-bit system: " +\
+"([50.563320914903088, 53.648287906901686], \
 [32.408924471374867, 38.637420715148593])"
-    print "Result    " + str(coord_conv([229.16163697416806, 
-                232.38812809478577], [29.419420613372086, 35.725172012254788],
-                'mlt','geo',altitude=300.,
-                date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([229.16163697416806, 232.38812809478577], 
+               [29.419420613372086, 35.725172012254788], 'mlt', 'geo',
+               altitude=300., date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mag to mlt"
-    print "Expected for 32-bit system: ([-130.83836302583194, -127.61187190521423], \
+    print "Expected for 32-bit system: " +\
+"([-130.83836302583194, -127.61187190521423], \
 [29.419420613372086, 35.725172012254788])"
-    print "Expected for 64-bit system: [-130.83836302583194, -127.61187190521423], \
+    print "Expected for 64-bit system: " +\
+"([-130.83836302583194, -127.61187190521423], \
 [29.419420613372086, 35.725172012254788])"
-    print "Result    " + str(coord_conv([123.53805352405843, 
-                126.76454464467615],[29.419420613372086, 35.725172012254788],
-                'mag','mlt',altitude=300.,
-                date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([123.53805352405843, 126.76454464467615],
+               [29.419420613372086, 35.725172012254788], 'mag', 'mlt',
+               altitude=300., date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mlt to mag"
-    print "Expected for 32-bit system: ([123.53805352405843, 126.76454464467615], \
+    print "Expected for 32-bit system: " +\
+"([123.53805352405843, 126.76454464467615], \
 [29.419420613372086, 35.725172012254788])"
-    print "Expected for 64-bit system: ([123.53805352405841, 126.76454464467616], \
+    print "Expected for 64-bit system: " +\
+"([123.53805352405841, 126.76454464467616], \
 [29.419420613372086, 35.725172012254788])" 
-    print "Result    " + str(coord_conv([229.16163697416806, 
-                232.38812809478577], [29.419420613372086, 35.725172012254788],
-                'mlt','mag',altitude=200.,
-                date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([229.16163697416806, 232.38812809478577], 
+               [29.419420613372086, 35.725172012254788], 'mlt', 'mag',
+               altitude=200., date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "Altitude conversion tests"
     print "mlt at 300 to mlt at 200"
-    print "Expected for 32-bit system: (50.672783138859764, 53.443261761838208)"
-    print "Expected for 64-bit system: (50.672783138859778, 53.443261761838208)"
-    print "Result:   " + str(coord_conv(50.7,53.8,"mlt","mlt",
-                                        altitude=300., end_altitude=200.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system: " +\
+"(50.672783138859764, 53.443261761838208)"
+    print "Expected for 64-bit system: " +\
+"(50.672783138859778, 53.443261761838208)"
+    print "Result:                     " + \
+str(coord_conv(50.7, 53.8, "mlt", "mlt", altitude=300., end_altitude=200.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mlt at 300 to mag at 200"
-    print "Expected for 32-bit system: (-54.950800311249871, 53.443261761838208)"
-    print "Expected for 64-bit system: (-54.950800311249857, 53.443261761838208)" 
-    print "Result:   " + str(coord_conv(50.7,53.8,"mlt","mag",
-                                        altitude=300., end_altitude=200.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system: " +\
+"(-54.950800311249871, 53.443261761838208)"
+    print "Expected for 64-bit system: " +\
+"(-54.950800311249857, 53.443261761838208)" 
+    print "Result:                     " + \
+str(coord_conv(50.7, 53.8, "mlt", "mag", altitude=300., end_altitude=200.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "mag at 300 to mlt at 200"
-    print "Expected for 32-bit system: (156.31132401765453, 53.423480021345064)"
-    print "Expected for 64-bit system: (156.3113240176545, 53.423480021345057)"
-    print "Result:   " + str(coord_conv(50.7,53.8,"mag","mlt",
-                                            altitude=300., end_altitude=200.,
-                                        date_time=datetime(2013,7,23,12,6,34)))
+    print "Expected for 32-bit system: " +\
+"(156.31132401765453, 53.423480021345064)"
+    print "Expected for 64-bit system: " +\
+"(156.3113240176545, 53.423480021345057)"
+    print "Result:                     " + \
+str(coord_conv(50.7, 53.8, "mag", "mlt", altitude=300., end_altitude=200.,
+               date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "testing with lists, mag to mag"
-    print "Expected for 32-bit system: ([-130.82669554662644, -127.53759707536527], \
+    print "Expected for 32-bit system: " +\
+"([-130.82669554662644, -127.53759707536527], \
 [29.04361718657001, 34.973380997519293])"
-    print "Expected for 64-bit system: [-130.82669554662647, -127.53759707536523], \
+    print "Expected for 64-bit system: " +\
+"([-130.82669554662647, -127.53759707536523], \
 [29.043617186570032, 34.973380997519286])"
-    print "Result    " + str(coord_conv([229.16163697416806, 
-                232.38812809478577], [29.419420613372086, 35.725172012254788],
-                'mag','mag',altitude=[200.,300.], end_altitude=[150.,175.],
-                date_time=datetime(2013,7,23,12,6,34)))
+    print "Result:                     " + \
+str(coord_conv([229.16163697416806, 232.38812809478577], 
+               [29.419420613372086, 35.725172012254788], 'mag', 'mag', 
+               altitude=[200., 300.], end_altitude=[150., 175.], 
+               date_time= datetime(2013, 7, 23, 12, 6, 34)))
     print "OTHER TESTS:  these tests will fail because of asserts so"
     print "they should be done in an interpreter."
     print "-set start or end to a fictional system code like abc"
