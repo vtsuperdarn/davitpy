@@ -65,8 +65,7 @@ class fov(object):
         from numpy import ndarray, array, arange, zeros, nan
         
         import models.aacgm as aacgm
-        from utils.coordUtils import coordConv
-        #from utils.coordUtils import coord_conv
+        from utils.coordUtils import coord_conv
         
         # Test that we have enough input arguments to work with
         if not site and None in \
@@ -245,17 +244,12 @@ class fov(object):
                             elevation=tElev, altitude=tAlt, model=model)
                               
                   if(coords != 'geo'):
-                      # Should altitude be tAlt or zero?
-                      lonC, latC = coordConv(lonC, latC, t_c_alt, "geo", coords,
-                                              dateTime=date_time)
-                      lonE, latE = coordConv(lonE, latE, t_c_alt, "geo", coords,
-                                              dateTime=date_time)
-                      #lonC, latC = coord_conv(lonC, latC, "geo", coords,
-                                              #altitude=t_c_alt,
-                                              #date_time=date_time)
-                      #lonE, latE = coord_conv(lonE, latE, "geo", coords,
-                                              #altitude=t_c_alt,
-                                              #date_time=date_time)
+                      lonC, latC = coord_conv(lonC, latC, "geo", coords,
+                                              altitude=t_c_alt,
+                                              date_time=date_time)
+                      lonE, latE = coord_conv(lonE, latE, "geo", coords,
+                                              altitude=t_c_alt,
+                                              date_time=date_time)
                 else:
                   latC, lonC = nan, nan
                   latE, lonE = nan, nan
