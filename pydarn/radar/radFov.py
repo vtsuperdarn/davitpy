@@ -50,6 +50,9 @@ class fov(object):
         * **date_time**: (datetime.datetime object) the datetime for 
             which the FOV is desired.  Required for mag and mlt, and
             possibly others in the future.  Default:  None
+        * **coord_alt**: like altitude, but only used for conversion 
+            from geographic to other coordinate systems.  Default: 0.
+
 
     """
     def __init__(self, \
@@ -57,7 +60,7 @@ class fov(object):
             nbeams=None, ngates=None, bmsep=None, recrise=None, \
             siteLat=None, siteLon=None, siteBore=None, siteAlt=None, \
             siteYear=None, elevation=None, altitude=300., \
-            model='IS', coords='geo', date_time=None):
+            model='IS', coords='geo', date_time=None, coord_alt=0.):
         # Get fov
         from numpy import ndarray, array, arange, zeros, nan
         
@@ -157,6 +160,26 @@ class fov(object):
             else:
                 print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
                 elevation = elevation[0] * ones((nbeams+1, ngates+1))
+
+        # Do for coord_alt what we just did for altitude.
+        if isinstance(coord_alt, ndarray):
+            if coord_alt.ndim == 1:
+                if coord_alt.size != ngates:
+                    print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                    coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
+                # Array is adjusted to add on extra beam/gate edge by copying the last element and replicating the whole array as many times as beams
+                else: coord_alt = np.resize( np.append(coord_alt, coord_alt[-1]), (nbeams+1,ngates+1) )
+            elif coord_alt.ndim == 2:
+                if coord_alt.shape != (nbeams, ngates):
+                    print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                    coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
+                # Array is adjusted to add on extra beam/gate edge by copying the last row and column
+                else: 
+                    coord_alt = np.append(coord_alt, coord_alt[-1,:].reshape(1,ngates), axis=0)
+                    coord_alt = np.append(coord_alt, coord_alt[:,-1].reshape(nbeams,1), axis=1)
+            else:
+                print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
         
         # Generate beam/gate arrays
         beams = arange(nbeams+1)
@@ -203,6 +226,8 @@ class fov(object):
                     tElev = elevation[ib,ig]
                     tAlt = altitude[ib,ig]
 
+                t_c_alt = coord_alt[ib, ig] if isinstance(coord_alt, ndarray) else coord_alt
+
                 if model == 'GS':
                   if (~isParamArray and ib == 0) or isParamArray:
                     slantRangeCenter[ib,ig] = gsMapSlantRange(sRangCenter[ig],altitude=None,elevation=None)
@@ -221,15 +246,15 @@ class fov(object):
                               
                   if(coords != 'geo'):
                       # Should altitude be tAlt or zero?
-                      lonC, latC = coordConv(lonC, latC, 0., "geo", coords,
+                      lonC, latC = coordConv(lonC, latC, t_c_alt, "geo", coords,
                                               dateTime=date_time)
-                      lonE, latE = coordConv(lonE, latE, 0., "geo", coords,
+                      lonE, latE = coordConv(lonE, latE, t_c_alt, "geo", coords,
                                               dateTime=date_time)
                       #lonC, latC = coord_conv(lonC, latC, "geo", coords,
-                                              #altitude=0.,
+                                              #altitude=t_c_alt,
                                               #date_time=date_time)
                       #lonE, latE = coord_conv(lonE, latE, "geo", coords,
-                                              #altitude=0.,
+                                              #altitude=t_c_alt,
                                               #date_time=date_time)
                 else:
                   latC, lonC = nan, nan
