@@ -733,7 +733,7 @@ if __name__ == "__main__":
   print "    Received: ",x,y
   print "  map x/y to mag lat/lon"
   lon,lat = map1(x,y,inverse=True,coords='mag')
-  print "    Expected: ",59.9324622167,-59.9940107681
+  print "    Expected: ",-59.9940107681,59.9324622167
   print "    Received: ",lon,lat
 
   print "\n  Converting mag lat/lon to map x/y to geo lat/lon."
@@ -745,7 +745,7 @@ if __name__ == "__main__":
   print "    Received: ",x,y
   print "  map x/y to geo lat/lon"
   lon,lat = map1(x,y,inverse=True,coords='geo')
-  print "    Expected: ",58.8384430722,175.311901385
+  print "    Expected: ",175.311901385,58.8384430722
   print "    Received: ",lon,lat
 
   print "\n  Converting geo lat/lon from a mag map to map x/y."
