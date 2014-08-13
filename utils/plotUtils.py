@@ -82,7 +82,7 @@ class mapObj(basemap.Basemap):
     from copy import deepcopy
     import datetime as dt
 
-    from utils import coordConv
+    from utils import coord_conv
 
     self.lat_0=lat_0
     self.lon_0=lon_0
@@ -127,8 +127,8 @@ class mapObj(basemap.Basemap):
     if self.lon_0 is None: 
       self.lon_0 = -100.
       if self.coords != "geo":
-        self.lon_0, _ = coordConv(self.lon_0, 0., 0., "geo", "mag",
-                                  dateTime=self.datetime)
+        self.lon_0, _ = coord_conv(self.lon_0, 0., "geo", "mag",
+                                   altitude=0., date_time=self.datetime)
     if boundinglat:
       width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
@@ -180,7 +180,7 @@ class mapObj(basemap.Basemap):
     import numpy as np
     import inspect
 
-    from utils import coordConv
+    from utils import coord_conv
 
     if coords is not None and coords not in self._coordsDict:
       print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
@@ -198,7 +198,8 @@ class mapObj(basemap.Basemap):
 
     # If call was from drawcoastlines, etc. then we do something different
     if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-      x, y = coordConv(x, y, 0., "geo", self.coords, dateTime=self.datetime)
+      x, y = coord_conv(x, y, "geo", self.coords, altitude=0.,
+                        date_time=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
     # If the call was not from drawcoastlines, etc. do the conversion.
@@ -211,14 +212,14 @@ class mapObj(basemap.Basemap):
     # then lat/lon coord system change.
     elif inverse:
       x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
-      return coordConv(x, y, altitude, self.coords, coords, 
-                       dateTime=self.datetime)
+      return coord_conv(x, y, self.coords, coords, altitude=altitude,
+                       date_time=self.datetime)
 
     # If inverse is false do the lat/lon coord system change first, 
     # then calculation of x,y map coords.
     else:
-      x, y = coordConv(x, y, altitude, coords, self.coords, 
-                       dateTime=self.datetime)
+      x, y = coord_conv(x, y, coords, self.coords, altitude=altitude,
+                       date_time=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
   def _readboundarydata(self, name, as_polygons=False):
@@ -226,12 +227,13 @@ class mapObj(basemap.Basemap):
     import _geoslib
     import numpy as np
 
-    from utils import coordConv
+    from utils import coord_conv
 
     if self.coords != "geo":
-      lons, lats = coordConv(list(self._boundarypolyll.boundary[:, 0]),
-                             list(self._boundarypolyll.boundary[:, 1]), 0.,
-                             self.coords, "geo", dateTime=self.datetime)
+      lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
+                             list(self._boundarypolyll.boundary[:, 1]),
+                             self.coords, "geo", altitude=0.,
+                             date_time=self.datetime)
       b = np.asarray([lons,lats]).T
       oldgeom = deepcopy(self._boundarypolyll)
       newgeom = _geoslib.Polygon(b).fix()
