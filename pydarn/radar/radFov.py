@@ -211,20 +211,9 @@ class fov(object):
             
             # Calculate coordinates for Edge and Center of the current beam
             for ig in gates:
-                # This is a bit redundant, but I could not think of any other way to deal with the array-or-not-array issue
-                if not isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-                    tElev = elevation
-                    tAlt = altitude
-                elif isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-                    tElev = elevation
-                    tAlt = altitude[ib,ig]
-                elif isinstance(elevation, ndarray) and not isinstance(altitude, ndarray):
-                    tElev = elevation[ib,ig]
-                    tAlt = altitude
-                else:
-                    tElev = elevation[ib,ig]
-                    tAlt = altitude[ib,ig]
-
+                # Handle array-or-not question.
+                tAlt = altitude[ib, ig] if isinstance(altitude, ndarray) else altitude
+                tElev = elevation[ib, ig] if isinstance(elevation, ndarray) else elevation
                 t_c_alt = coord_alt[ib, ig] if isinstance(coord_alt, ndarray) else coord_alt
 
                 if model == 'GS':
