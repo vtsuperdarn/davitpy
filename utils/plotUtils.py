@@ -65,7 +65,7 @@ class mapObj(basemap.Basemap):
       * **[grid]**: show/hide parallels and meridians grid    
       * **[fill_continents]**: continent color. Default is 'grey'    
       * **[fill_water]**: water color. Default is 'None'    
-      * **[coords]**: 'geo'
+      * **[coords]**: default is 'geo'
       * **[showCoords]**: display coordinate system name in upper right corner
       * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
@@ -94,6 +94,7 @@ class mapObj(basemap.Basemap):
     self._showCoords=showCoords
     self._grid=grid
     self._gridLabels=gridLabels
+    # This dict should be updated to include all systems in coord_conv.
     self._coordsDict = {'mag': 'AACGM',
               'geo': 'Geographic',
               'mlt': 'MLT'}
@@ -115,9 +116,8 @@ class mapObj(basemap.Basemap):
     self.dateTime = dateTime
 
     # Add an extra member to the Basemap class
-    if coords is not None and coords not in self._coordsDict:
-      print 'Invalid coordinate system given in coords ({}): setting "geo"'.format(coords)
-      coords = 'geo'
+    if coords is not None:
+        assert(coords in self._coordsDict),"coords must be geo, mag, or mlt"
     self.coords = coords
 
     # Set map projection limits and center point depending on hemisphere selection
@@ -127,7 +127,7 @@ class mapObj(basemap.Basemap):
     if self.lon_0 is None: 
       self.lon_0 = -100.
       if self.coords != "geo":
-        self.lon_0, _ = coord_conv(self.lon_0, 0., "geo", "mag",
+        self.lon_0, _ = coord_conv(self.lon_0, 0., "geo", self.coords,
                                    altitude=0., date_time=self.datetime)
     if boundinglat:
       width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
@@ -182,9 +182,8 @@ class mapObj(basemap.Basemap):
 
     from utils import coord_conv
 
-    if coords is not None and coords not in self._coordsDict:
-      print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
-      coords = None
+    if coords is not None:
+        assert(coords in self._coordsDict),"Coords must be geo, mag, or mlt"
 
     # First we need to check and see if drawcoastlines() or a similar 
     # method is calling because if we are in a coordinate system 
@@ -229,20 +228,17 @@ class mapObj(basemap.Basemap):
 
     from utils import coord_conv
 
-    if self.coords != "geo":
-      lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
-                             list(self._boundarypolyll.boundary[:, 1]),
-                             self.coords, "geo", altitude=0.,
-                             date_time=self.datetime)
-      b = np.asarray([lons,lats]).T
-      oldgeom = deepcopy(self._boundarypolyll)
-      newgeom = _geoslib.Polygon(b).fix()
-      self._boundarypolyll = newgeom
-      out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
-      self._boundarypolyll = oldgeom
-      return out
-    else: 
-      return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+    lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
+                            list(self._boundarypolyll.boundary[:, 1]),
+                            self.coords, "geo", altitude=0.,
+                            date_time=self.datetime)
+    b = np.asarray([lons,lats]).T
+    oldgeom = deepcopy(self._boundarypolyll)
+    newgeom = _geoslib.Polygon(b).fix()
+    self._boundarypolyll = newgeom
+    out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+    self._boundarypolyll = oldgeom
+    return out
 
 
 ################################################################################
