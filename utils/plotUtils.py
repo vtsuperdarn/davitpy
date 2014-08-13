@@ -25,7 +25,8 @@ class mapObj(basemap.Basemap):
   """This class wraps arround :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
   
   **Members**: 
-    * **coords** (str): map coordinate system ('geo', 'mag', 'mlt').
+    * **coords** (str): map coordinate system.  Anything handled by
+        utils.coordUtils is acceptable (see get_coord_dict)
     * all members of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>) 
   **Methods**:
     * all methods of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
@@ -82,7 +83,7 @@ class mapObj(basemap.Basemap):
     from copy import deepcopy
     import datetime as dt
 
-    from utils import coord_conv
+    from utils import coord_conv, get_coord_dict
 
     self.lat_0=lat_0
     self.lon_0=lon_0
@@ -94,10 +95,7 @@ class mapObj(basemap.Basemap):
     self._showCoords=showCoords
     self._grid=grid
     self._gridLabels=gridLabels
-    # This dict should be updated to include all systems in coord_conv.
-    self._coordsDict = {'mag': 'AACGM',
-              'geo': 'Geographic',
-              'mlt': 'MLT'}
+    self._coordsDict, self._coords_string = get_coord_dict()
 
     if datetime is None and dateTime is None:
       print "Warning, datetime/dateTime not specified, using current time."
@@ -115,9 +113,12 @@ class mapObj(basemap.Basemap):
     self.datetime = datetime
     self.dateTime = dateTime
 
-    # Add an extra member to the Basemap class
-    if coords is not None:
-        assert(coords in self._coordsDict),"coords must be geo, mag, or mlt"
+    # Still a good idea to check whether coords are possible, because
+    # there may be no call to coord_conv within this init.
+    assert(coords in self._coordsDict),\
+            "coords set to " + coords + ",\n" + self.coords_string
+
+    # Add an extra member to the Basemap class.
     self.coords = coords
 
     # Set map projection limits and center point depending on hemisphere selection
@@ -125,10 +126,8 @@ class mapObj(basemap.Basemap):
       self.lat_0 = 90.
       if boundinglat: self.lat_0 = math.copysign(self.lat_0, boundinglat)
     if self.lon_0 is None: 
-      self.lon_0 = -100.
-      if self.coords != "geo":
-        self.lon_0, _ = coord_conv(self.lon_0, 0., "geo", self.coords,
-                                   altitude=0., date_time=self.datetime)
+      self.lon_0, _ = coord_conv(-100., 0., "geo", self.coords,
+                                 altitude=0., date_time=self.datetime)
     if boundinglat:
       width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
@@ -181,9 +180,6 @@ class mapObj(basemap.Basemap):
     import inspect
 
     from utils import coord_conv
-
-    if coords is not None:
-        assert(coords in self._coordsDict),"Coords must be geo, mag, or mlt"
 
     # First we need to check and see if drawcoastlines() or a similar 
     # method is calling because if we are in a coordinate system 
