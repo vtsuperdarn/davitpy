@@ -59,7 +59,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         * **[scale]** (list): the min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
         * **[channel] (char)**: the channel for which to plot data.  default = 'a'
         * **[coords]** (str): the coordinate system to use, valid 
-            inputs are anything handled by coord_conv.  Default:  geo
+            inputs are anything handled by coord_conv (see 
+            utils.get_coord_dict).  Default:  geo
         * **[colors]** (str): the color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
         * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray.  default = False
         * **[fov]**  (boolean): a flag indicating whether to overplot the radar fields of view.  default = True
