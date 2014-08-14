@@ -25,7 +25,8 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 		* **[codes]**: a list of radar 3-letter codes to plot    
 		* **[ids]**: a list of radar IDs to plot    
 		* **[names]**: a list of radar names to plot    
-		* **[dateTime]**: the date and time as a python datetime object    
+		* **[dateTime]**: DO NOT USE, deprecated.  Automatically set to
+            mapObj.dateTime
 		* **[annotate]**: wether or not to show the radar(s) name(s)       
 		* **[all]**: set to true to plot all the radars (active ones) 
 		* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere   
@@ -51,8 +52,10 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 	from utils.plotUtils import textHighlighted
 	
 	# Set default date/time to now
-	if not dateTime:
-		dateTime = dt.utcnow()
+    if dateTime is not None:
+        print "Warning, setting dateTime to mapObj.dateTime +\
+instead: " + mapObj.dateTime
+    dateTime = mapObj.dateTime
 	
 	# Load radar structure
 	NetworkObj = network()
@@ -133,7 +136,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 		* **[codes]**: a list of radar 3-letter codes to plot
 		* **[ids]**: a list of radar IDs to plot
 		* **[names]**: a list of radar names to plot
-		* **[dateTime]**: the date and time as a python datetime object
+		* **[dateTime]**: DO NOT USE, deprecated.  Set to 
+            mapObj.dateTime automatically.
 		* **[all]**: set to true to plot all the radars (active ones)
 		* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
                 * **[rangeLimits]**: (2-element list) Plot only between the range gates specified.
@@ -174,9 +178,11 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	from matplotlib.patches import Polygon
 	from pylab import gca
 	
-	# Set default date/time to now
-	if not dateTime:
-		dateTime = dt.utcnow()
+	# Set default date/time.
+    if dateTime is not None:
+        print "Warning:  mapObj dateTime being used instead: " + \
+mapObj.dateTime
+    dateTime = mapObj.dateTime#dt.utcnow()
 	
 	# Load radar structure
 	NetworkObj = network()
@@ -214,7 +220,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 			if not hasattr(mapObj, 'coords'): 
 				radFov = fov(site=site, ngates=eGate+1,model=model)
 			else:
-				radFov = fov(site=site, ngates=eGate+1, coords=mapObj.coords, model=model)
+				radFov = fov(site=site, ngates=eGate+1, coords=mapObj.coords, 
+                             model=model, date_time=dateTime)
 		else:
 			radFov = fovObj
 			eGate = len(fovObj.gates)
