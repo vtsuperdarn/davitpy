@@ -28,9 +28,11 @@
     
     * :func:`utils.coordUtils.coordConv`: Kept for back-compat, calls
         coord_conv
-    * :func:`utils.coordUtils.coord_conv`: Convert between geographic, 
-        AACGM, and MLT coordinates
+    * :func:`utils.coordUtils.coord_conv`: Convert between coordinate
+        systems
     * :func:`utils.coordUtils.planeRot`: Rotate coordinates in the plane
+    * :func:`utils.coordUtils.get_coord_dict`: Returns a dict and string
+        describing possible coordinate systems
 
 Written by Matt W.
 """
@@ -85,6 +87,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     import numpy as np
     
     from models import aacgm
+    from utils.coordUtils import get_coord_dict
 
     ####################################################################
     #                                                                  #
@@ -101,10 +104,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # new list if adding a new family.  Finally, add the code to the 
     # appropriate list if the system requires altitude or date_time.
 
-    # Define acceptable coordinate systems.
-    coords_dict = {"mag": "AACGM",
-                   "geo": "Geographic",
-                   "mlt": "MLT"}
+    # Define acceptable coordinate systems in the function 
+    # get_coord_dict
     
     # List all systems in the AACGM family.
     aacgm_sys = ["mag", "mlt"]
@@ -118,11 +119,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # End of system list block.
     ####################################################################
 
-    # Create a string of coord systems for printing to the terminal.
-    coords_string = ""
-    for code, name in coords_dict.iteritems():
-        coords_string += "\n" + name + " (" + code + ")"
-    
+    coords_dict, coords_string = get_coord_dict()
+
     # Create a string for printing of systems requiring altitude.
     alti_string = ""
     for code in alti_sys:
@@ -136,7 +134,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # Check that the coordinates are possible.
     assert(start in coords_dict and end in coords_dict),\
             "Start coords are " + start + " and end coords are " +\
-            end + ".\nOptions for coords are: " + coords_string
+            end + ".\n" + coords_string
 
     # Check whether altitude is needed and provided.
     if start in alti_sys or end in alti_sys or end_altitude is not None:
@@ -356,6 +354,38 @@ def planeRot(x, y, theta):
     y = -oldx*np.sin(theta) + oldy*np.cos(theta)
 
     return x, y
+
+
+def get_coord_dict():
+    """A function to return the coordinate dictionary and a string
+        listing the possible coordinates for use.
+
+    **Returns**:
+        * **coord_dict, coord_string**: the dictionary and string
+    **Example**:
+        ::
+        from utils.coordUtils import get_coord_dict
+        coord_dict, coord_string = get_coord_dict()
+        print coord_string
+        > Possible coordinate systems are:
+          AACGM (mag)
+          Geographic (geo)
+          MLT (mlt)
+
+    written by Matt W., 2014-08
+    """
+    # Define the dictionary.
+    coord_dict = {"mag": "AACGM",
+                   "geo": "Geographic",
+                   "mlt": "MLT"}
+
+    # Create a string of coord systems for printing to the terminal.
+    coord_string = "Possible coordinate systems are:"
+    for code, name in coord_dict.iteritems():
+        coord_string += "\n" + name + " (" + code + ")"
+
+    return coord_dict, coord_string
+
 
 # Some testing stuff.
 if __name__ == "__main__":
