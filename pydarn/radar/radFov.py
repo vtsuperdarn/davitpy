@@ -46,7 +46,8 @@ class fov(object):
             * **'GS'**: for ground scatter projection model
             * **None**: if you are really confident in your elevation or altitude values
             * ... more to come
-        * **coords**: 'geo', 'mag', 'mlt', others to come
+        * **coords**: anything accepted by coord_conv; see
+            get_coord_dict.  Default:  geo
         * **date_time**: (datetime.datetime object) the datetime for 
             which the FOV is desired.  Required for mag and mlt, and
             possibly others in the future.  Default:  None
@@ -78,7 +79,7 @@ class fov(object):
             return
 
         # date_time checking is handled by coord_conv, and it already
-        # knows all of the possibly coord systems, so no need to do it
+        # knows all of the possible coord systems, so no need to do it
         # here.
             
         # Then assign variables from the site object if necessary
