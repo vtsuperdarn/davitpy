@@ -25,9 +25,9 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 		* **[codes]**: a list of radar 3-letter codes to plot    
 		* **[ids]**: a list of radar IDs to plot    
 		* **[names]**: a list of radar names to plot    
-		* **[dateTime]**: DO NOT USE, deprecated.  Automatically set to
-            mapObj.dateTime
-		* **[annotate]**: wether or not to show the radar(s) name(s)       
+		* **[dateTime]**: a datetime.datetime object to use for the radar.
+            Default: uses mapObj.dateTime
+        * **[annotate]**: wether or not to show the radar(s) name(s)       
 		* **[all]**: set to true to plot all the radars (active ones) 
 		* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere   
 		* **[zorder]**: the overlay order number    
@@ -51,11 +51,13 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 	from datetime import timedelta
 	from utils.plotUtils import textHighlighted
 	
-	# Set default date/time to now
+	# Set dateTime.
     if dateTime is not None:
-        print "Warning, setting dateTime to mapObj.dateTime +\
-instead: " + mapObj.dateTime
-    dateTime = mapObj.dateTime
+        if dateTime != mapObj.dateTime:
+            print "Warning, dateTime is " + dateTime + \
+                    ", not mapObj.dateTime " + mapObj.dateTime
+    else:
+        dateTime = mapObj.dateTime
 	
 	# Load radar structure
 	NetworkObj = network()
@@ -136,8 +138,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 		* **[codes]**: a list of radar 3-letter codes to plot
 		* **[ids]**: a list of radar IDs to plot
 		* **[names]**: a list of radar names to plot
-		* **[dateTime]**: DO NOT USE, deprecated.  Set to 
-            mapObj.dateTime automatically.
+		* **[dateTime]**: a datetime.datetime object to use for the FOV.
+            Default: uses mapObj.dateTime
 		* **[all]**: set to true to plot all the radars (active ones)
 		* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
                 * **[rangeLimits]**: (2-element list) Plot only between the range gates specified.
@@ -178,11 +180,13 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	from matplotlib.patches import Polygon
 	from pylab import gca
 	
-	# Set default date/time.
+	# Set dateTime.
     if dateTime is not None:
-        print "Warning:  mapObj dateTime being used instead: " + \
-mapObj.dateTime
-    dateTime = mapObj.dateTime#dt.utcnow()
+        if dateTime != mapObj.dateTime:
+            print "Warning, dateTime is " + dateTime + \
+                    ", not mapObj.dateTime " + mapObj.dateTime
+    else:
+        dateTime = mapObj.dateTime
 	
 	# Load radar structure
 	NetworkObj = network()
