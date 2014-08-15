@@ -26,8 +26,8 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 		* **[ids]**: a list of radar IDs to plot    
 		* **[names]**: a list of radar names to plot    
 		* **[dateTime]**: a datetime.datetime object to use for the radar.
-            Default: uses mapObj.dateTime
-        * **[annotate]**: wether or not to show the radar(s) name(s)       
+			Default: uses mapObj.dateTime
+		* **[annotate]**: wether or not to show the radar(s) name(s)       
 		* **[all]**: set to true to plot all the radars (active ones) 
 		* **[hemi]**: 'north' or 'south', ignore radars from the other hemisphere   
 		* **[zorder]**: the overlay order number    
@@ -139,7 +139,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 		* **[ids]**: a list of radar IDs to plot
 		* **[names]**: a list of radar names to plot
 		* **[dateTime]**: a datetime.datetime object to use for the FOV.
-            Default: uses mapObj.dateTime
+			Default: uses mapObj.dateTime
 		* **[all]**: set to true to plot all the radars (active ones)
 		* **[maxGate]**: Maximum number of gates to be plotted. Defaults to hdw.dat information.
                 * **[rangeLimits]**: (2-element list) Plot only between the range gates specified.
