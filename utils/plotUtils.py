@@ -25,7 +25,8 @@ class mapObj(basemap.Basemap):
   """This class wraps arround :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
   
   **Members**: 
-    * **coords** (str): map coordinate system ('geo', 'mag', 'mlt').
+    * **coords** (str): map coordinate system.  Anything handled by
+        utils.coordUtils is acceptable (see get_coord_dict)
     * all members of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>) 
   **Methods**:
     * all methods of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
@@ -65,7 +66,7 @@ class mapObj(basemap.Basemap):
       * **[grid]**: show/hide parallels and meridians grid    
       * **[fill_continents]**: continent color. Default is 'grey'    
       * **[fill_water]**: water color. Default is 'None'    
-      * **[coords]**: 'geo'
+      * **[coords]**: default is 'geo'
       * **[showCoords]**: display coordinate system name in upper right corner
       * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
       * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
@@ -78,10 +79,12 @@ class mapObj(basemap.Basemap):
         
     written by Sebastien, 2013-02
     """
-    from models import aacgm
     import math
     from copy import deepcopy
     import datetime as dt
+
+    from utils import coord_conv, get_coord_dict
+
     self.lat_0=lat_0
     self.lon_0=lon_0
     self._coastLineWidth=coastLineWidth
@@ -92,13 +95,7 @@ class mapObj(basemap.Basemap):
     self._showCoords=showCoords
     self._grid=grid
     self._gridLabels=gridLabels
-    self._coordsDict = {'mag': 'AACGM',
-              'geo': 'Geographic',
-              'mlt': 'MLT'}
-
-    if coords is 'mlt':             
-      print 'MLT coordinates not implemented yet.'
-      return
+    self._coordsDict, self._coords_string = get_coord_dict()
 
     if datetime is None and dateTime is None:
       print "Warning, datetime/dateTime not specified, using current time."
@@ -116,10 +113,12 @@ class mapObj(basemap.Basemap):
     self.datetime = datetime
     self.dateTime = dateTime
 
-    # Add an extra member to the Basemap class
-    if coords is not None and coords not in self._coordsDict:
-      print 'Invalid coordinate system given in coords ({}): setting "geo"'.format(coords)
-      coords = 'geo'
+    # Still a good idea to check whether coords are possible, because
+    # there may be no call to coord_conv within this init.
+    assert(coords in self._coordsDict),\
+            "coords set to " + coords + ",\n" + self.coords_string
+
+    # Add an extra member to the Basemap class.
     self.coords = coords
 
     # Set map projection limits and center point depending on hemisphere selection
@@ -127,9 +126,8 @@ class mapObj(basemap.Basemap):
       self.lat_0 = 90.
       if boundinglat: self.lat_0 = math.copysign(self.lat_0, boundinglat)
     if self.lon_0 is None: 
-      self.lon_0 = -100.
-      if self.coords == 'mag': 
-        _, self.lon_0, _ = aacgm.aacgmConv(0., self.lon_0, 0., self.datetime.year, 0)
+      self.lon_0, _ = coord_conv(-100., 0., "geo", self.coords,
+                                 altitude=0., date_time=self.datetime)
     if boundinglat:
       width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
@@ -175,118 +173,68 @@ class mapObj(basemap.Basemap):
           merLabels = [False,False,False,False]
         # draw meridians
         out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
-
   
-  def __call__(self, x, y, inverse=False, coords=None,altitude=0.):
-    from models import aacgm
+  def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
     from copy import deepcopy
     import numpy as np
     import inspect
 
-    if coords is not None and coords not in self._coordsDict:
-      print 'Invalid coordinate system given in coords ({}): setting "{}"'.format(coords, self.coords)
-      coords = None
+    from utils import coord_conv
 
-    #First we need to check and see if drawcoastlines() or a similar method is calling
-    #because if we are in a coordinate system differing from 'geo' then the coastlines
-    #will get plotted in the wrong location...
-    from_mpl_readboundary=False
-
-    if self.coords is 'mag': # or self.coords is 'mlt':  #Need to add this for mlt support later
-      try:
-        callerFile, _, callerName = inspect.getouterframes(inspect.currentframe())[1][1:4]
-      except:
-        return basemap.Basemap.__call__(self, x, y, inverse=inverse)
-
-      if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-        from_mpl_readboundary = True
-
-    if from_mpl_readboundary:  #if call was from drawcoastlines, etc. then we do something different
-
-      #For mlt support, need to add if self.coords is 'mlt': then convert mlt to mlon.
-
-      try:
-        nx, ny = len(x), len(y)
-        xt = np.array(x)
-        yt = np.array(y)
-        shape = xt.shape    
-        y, x, _ = aacgm.aacgmConvArr(
-          list(yt.flatten()), list(xt.flatten()), [0]*nx, 
-          self.datetime.year, 0)
-        x = np.array(x).reshape(shape)
-        y = np.array(y).reshape(shape)
-      except TypeError as e:
-        y, x, _ = aacgm.aacgmConv(y, x, 0, 
-          self.datetime.year, 0)
-      return basemap.Basemap.__call__(self, x, y, inverse=False)
-
-    #Second, if the call was not from drawcoastlines, etc. do the conversion 
-    #if we aren't changing between lat/lon coordinate systems
-    elif (coords is None) or (coords is self.coords):
+    # First we need to check and see if drawcoastlines() or a similar 
+    # method is calling because if we are in a coordinate system 
+    # differing from 'geo' then the coastlines will get plotted 
+    # in the wrong location...
+    try:
+      callerFile, _, callerName = \
+              inspect.getouterframes(inspect.currentframe())[1][1:4]
+    except:
       return basemap.Basemap.__call__(self, x, y, inverse=inverse)
 
-    #Next do the conversion if lat/lon coord system change first, then calculation of x,y map coords (inverse=False)
-    elif coords and (coords != self.coords) and (inverse is False):
-      trans = coords+'-'+self.coords
-      if trans in ['geo-mag','mag-geo']: #Add 'geo-mlt', 'mlt-geo', for mlt support
-        flag = 0 if trans == 'geo-mag' else 1
-        try:
-          nx, ny = len(x), len(y)
-          xt = np.array(x)
-          yt = np.array(y)
-          shape = xt.shape    
-          y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [altitude]*nx, 
-            self.datetime.year, flag)
-          x = np.array(x).reshape(shape)
-          y = np.array(y).reshape(shape)
-        except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, altitude, 
-            self.datetime.year, flag)
+    # If call was from drawcoastlines, etc. then we do something different
+    if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
+      x, y = coord_conv(x, y, "geo", self.coords, altitude=0.,
+                        date_time=self.datetime)
       return basemap.Basemap.__call__(self, x, y, inverse=False)
 
-    #Finally do the conversion if calculation of x,y map coords first, then lat/lon coord system change (inverse=True)
-    elif coords and (coords != self.coords) and (inverse is True):
+    # If the call was not from drawcoastlines, etc. do the conversion.
+
+    # If we aren't changing between lat/lon coordinate systems:
+    elif coords is None:
+      return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+    # If inverse is true do the calculation of x,y map coords first, 
+    # then lat/lon coord system change.
+    elif inverse:
       x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
-      trans = self.coords+'-'+coords
-      if trans in ['geo-mag','mag-geo']: #Add 'geo-mlt', 'mlt-geo', for mlt support
-        flag = 0 if trans == 'geo-mag' else 1
-        try:
-          nx, ny = len(x), len(y)
-          xt = np.array(x)
-          yt = np.array(y)
-          shape = xt.shape    
-          y, x, _ = aacgm.aacgmConvArr(
-            list(yt.flatten()), list(xt.flatten()), [altitude]*nx, 
-            self.datetime.year, flag)
-          x = np.array(x).reshape(shape)
-          y = np.array(y).reshape(shape)
-        except TypeError as e:
-          y, x, _ = aacgm.aacgmConv(y, x, altitude, 
-            self.datetime.year, flag)
-      return x, y
+      return coord_conv(x, y, self.coords, coords, altitude=altitude,
+                       date_time=self.datetime)
+
+    # If inverse is false do the lat/lon coord system change first, 
+    # then calculation of x,y map coords.
+    else:
+      x, y = coord_conv(x, y, coords, self.coords, altitude=altitude,
+                       date_time=self.datetime)
+      return basemap.Basemap.__call__(self, x, y, inverse=False)
 
   def _readboundarydata(self, name, as_polygons=False):
-    from models import aacgm
     from copy import deepcopy
     import _geoslib
     import numpy as np
 
-    if self.coords is 'mag':
-      nPts = len(self._boundarypolyll.boundary[:, 0])
-      lats, lons, _ = aacgm.aacgmConvArr(
-              list(self._boundarypolyll.boundary[:, 1]), 
-              list(self._boundarypolyll.boundary[:, 0]), 
-              [0.]*nPts, self.datetime.year, 1)
-      b = np.asarray([lons,lats]).T
-      oldgeom = deepcopy(self._boundarypolyll)
-      newgeom = _geoslib.Polygon(b).fix()
-      self._boundarypolyll = newgeom
-      out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
-      self._boundarypolyll = oldgeom
-      return out
-    else: 
-      return basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+    from utils import coord_conv
+
+    lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
+                            list(self._boundarypolyll.boundary[:, 1]),
+                            self.coords, "geo", altitude=0.,
+                            date_time=self.datetime)
+    b = np.asarray([lons,lats]).T
+    oldgeom = deepcopy(self._boundarypolyll)
+    newgeom = _geoslib.Polygon(b).fix()
+    self._boundarypolyll = newgeom
+    out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+    self._boundarypolyll = oldgeom
+    return out
 
 
 ################################################################################
