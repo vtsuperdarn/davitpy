@@ -52,12 +52,12 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 	from utils.plotUtils import textHighlighted
 	
 	# Set dateTime.
-    if dateTime is not None:
-        if dateTime != mapObj.dateTime:
-            print "Warning, dateTime is " + dateTime + \
-                    ", not mapObj.dateTime " + mapObj.dateTime
-    else:
-        dateTime = mapObj.dateTime
+	if dateTime is not None:
+		if dateTime != mapObj.dateTime:
+			print "Warning, dateTime is " + dateTime + \
+					", not mapObj.dateTime " + mapObj.dateTime
+	else:
+		dateTime = mapObj.dateTime
 	
 	# Load radar structure
 	NetworkObj = network()
@@ -182,11 +182,11 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	
 	# Set dateTime.
 	if dateTime is not None:
-        if dateTime != mapObj.dateTime:
-            print "Warning, dateTime is " + dateTime + \
-                    ", not mapObj.dateTime " + mapObj.dateTime
-    else:
-        dateTime = mapObj.dateTime
+		if dateTime != mapObj.dateTime:
+			print "Warning, dateTime is " + dateTime + \
+					", not mapObj.dateTime " + mapObj.dateTime
+	else:
+		dateTime = mapObj.dateTime
 	
 	# Load radar structure
 	NetworkObj = network()
