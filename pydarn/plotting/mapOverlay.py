@@ -181,7 +181,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	from pylab import gca
 	
 	# Set dateTime.
-    if dateTime is not None:
+	if dateTime is not None:
         if dateTime != mapObj.dateTime:
             print "Warning, dateTime is " + dateTime + \
                     ", not mapObj.dateTime " + mapObj.dateTime
