@@ -285,3 +285,21 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 				gca().add_patch(patch)
 	
 	return
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from datetime import datetime
+
+    import utils
+
+    fig = plt.figure()
+    ax = fig.add_axes()
+    mo = utils.mapObj(lat_0=90., lon_0=0., boundinglat=40.,
+                      dateTime=datetime(2012,1,1,0,2), coords="mlt",
+                      projection="stere")
+    overlayRadar(mo, codes="sas")
+    overlayRadar(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
+    overlayFov(mo, codes="sas")
+    overlayFov(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
+    fig.show()
