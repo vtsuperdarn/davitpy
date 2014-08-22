@@ -293,13 +293,22 @@ if __name__ == "__main__":
 
     import utils
 
+    print "Creating figure and axes"
     fig = plt.figure()
     ax = fig.add_axes()
+    print "Creating map object for datetime(2012,1,1,0,2) in mlt"
     mo = utils.mapObj(lat_0=90., lon_0=0., boundinglat=40.,
                       dateTime=datetime(2012,1,1,0,2), coords="mlt",
                       projection="stere")
+    print "overlayRadar"
     overlayRadar(mo, codes="sas")
+    print "overlayRadar for datetime(2012,1,1,1,2);"
+    print "should produce warning about different time"
     overlayRadar(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
+    print "overlayFov"
     overlayFov(mo, codes="sas")
+    print "overlayFov for datetime(2012,1,1,1,2);"
+    print "should produce warning about different time"
     overlayFov(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
-    fig.show()
+    print "Showing plot"
+    plt.show()
