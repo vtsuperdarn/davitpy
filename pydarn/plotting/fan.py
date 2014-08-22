@@ -58,7 +58,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         * **[filtered]** (boolean): a flag indicating whether the data should be boxcar filtered.  default = False
         * **[scale]** (list): the min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
         * **[channel] (char)**: the channel for which to plot data.  default = 'a'
-        * **[coords]** (str): the coordinate system to use, valid 
+        * **[coords]** (str): the coordinate system to use; valid 
             inputs are anything handled by coord_conv (see 
             utils.get_coord_dict).  Default:  geo
         * **[colors]** (str): the color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
@@ -175,14 +175,16 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         sites.append(site)
         # Make lists of site lats and lons.  latC and lonC are used
         # for finding the map centre.
-        xlon, xlat = coord_conv(site.geolon, site.geolat, "geo", coords, altitude=0., 
-                                date_time=t)
+        xlon, xlat = coord_conv(site.geolon, site.geolat, "geo", coords, 
+                                altitude=0., date_time=t)
         latFull.append(xlat)
         lonFull.append(xlon)
         latC.append(xlat])
         lonC.append(xlon)
-        myFov = pydarn.radar.radFov.fov(site=site,rsep=allBeams[i].prm.rsep,\
-                        ngates=allBeams[i].prm.nrang+1,nbeams=site.maxbeam,coords=coords)
+        myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,\
+                                        ngates=allBeams[i].prm.nrang+1,
+                                        nbeams=site.maxbeam, coords=coords,
+                                        date_time=t)
         fovs.append(myFov)
         for b in range(0,site.maxbeam+1):
             for k in range(0,allBeams[i].prm.nrang+1):
@@ -409,8 +411,10 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
     if(site == None):
         site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
     if(fov == None):
-        fov = pydarn.radar.radFov.fov(site=site,rsep=myData[0].prm.rsep,\
-        ngates=myData[0].prm.nrang+1,nbeams= site.maxbeam,coords=coords) 
+        fov = pydarn.radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
+                                      ngates=myData[0].prm.nrang+1,
+                                      nbeams= site.maxbeam, coords=coords,
+                                      date_time=myData[0].time) 
     
     if(isinstance(myData,pydarn.sdio.beamData)): myData = [myData]
     
