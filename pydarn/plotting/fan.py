@@ -533,6 +533,9 @@ if __name__=="__main__":
     print "Now change to magnetic coords."
     plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
             show=True)
+    print "Now change to MLT coords."
+    plotFan(time, ["sas","han"], param="power", coords="mlt", gsct=True, 
+            show=True)
     print "Now generate a png instead of showing the plot."
     plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
             show=False, png=True)
