@@ -33,10 +33,10 @@ from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-def DataPtr(dataType,*kwargs):
+def DataPtr(dataType,**kwargs):
 
     if dataType=='dmap':
-        return dmapFile(dataType)
+        return dmapFile(dataType, **kwargs)
 
 
 class ParentPtr(object):
@@ -82,8 +82,8 @@ class ParentPtr(object):
         self.recordIndex = None
         self.scanStartIndex = None
         self.__filename = fileName 
-        self.__fd = None
-        self.__ptr =  None
+        #self.__fd = None
+        #self.__ptr =  None
 
 
 
@@ -107,12 +107,12 @@ class dmapFile(ParentPtr):
     Written by ASR 20140822
     """
 
-    def __init__(self,dataType,*kwargs):
+    def __init__(self,dataType,**kwargs):
         #self.members=['__del__','__iter__','next','open', \
         #              'createIndex','offsetSeek','offsetTell', \
         #              'rewind','read','close']
 
-        super(dmapFile,self).__init__(dataType=dataType,*kwargs)
+        super(dmapFile,self).__init__(dataType=dataType,**kwargs)
 
 
     def __del__(self):
@@ -131,7 +131,7 @@ class dmapFile(ParentPtr):
     def open(self):
         """open the associated filename."""
         import os
-        self.__fd = os.open(self.__filename,os.O_RDONLY)
+        self.__fd = os.open(self._ParentPtr__filename,os.O_RDONLY)
         self.__ptr = os.fdopen(self.__fd)
 
     def createIndex(self):
