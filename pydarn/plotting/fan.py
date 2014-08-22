@@ -179,7 +179,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
                                 altitude=0., date_time=t)
         latFull.append(xlat)
         lonFull.append(xlon)
-        latC.append(xlat])
+        latC.append(xlat)
         lonC.append(xlon)
         myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,\
                                         ngates=allBeams[i].prm.nrang+1,
