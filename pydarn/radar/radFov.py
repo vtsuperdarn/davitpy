@@ -483,19 +483,36 @@ if __name__=="__main__":
     from pydarn.radar import radStruct
     from datetime import datetime
     
+    print
+    print "Testing radFov"
+    print "Expected and result samples are from the fov's"
+    print "fov.latCenter[0][0:4] and fov.lonCenter[0][0:4]"
+    print "(in that order) on a 32-bit machine"
+    print
     time = datetime(2012,1,1,0,2)
     print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
     site_sas = radStruct.site(code="sas", dt=time)
+    print
     print "Create a fov object using that site, coords are geo."
     fov1 = fov(site=site_sas)
-    print "This is the result:"
-    print fov1
+    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
+    print "Result:   " + str(fov1.latCenter[0][0:4])
+    print "Expected: [-106.87506589 -106.80488558 -106.77349475 -106.75811049]"
+    print "Result:   " + str(fov1.lonCenter[0][0:4])
+    print "coords of result are " + fov1.coords
+    print
     print "Now create a fov object with mag coords."
-    print "This will fail if aacgm is not called properly."
     fov2 = fov(site=site_sas, coords="mag", date_time=time)
-    print "This is the result:"
-    print fov2
-    print "Now do the same but with MLT."
+    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
+    print "Result:   " + str(fov2.latCenter[0][0:4])
+    print "Expected: [-43.22579758 -43.25962883 -43.33474048 -43.42848079]"
+    print "Result:   " + str(fov2.lonCenter[0][0:4])
+    print "coords of result are " + fov2.coords
+    print
+    print "Another fov, now in MLT"
     fov3 = fov(site=site_sas, coords="mlt", date_time=time)
-    print "This is the result:"
-    print fov3
+    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
+    print "Result:   " + str(fov3.latCenter[0][0:4])
+    print "Expected: [-121.24209635 -121.27592761 -121.35103925 -121.44477957]"
+    print "Result:   " + str(fov3.lonCenter[0][0:4])
+    print "coords of result are " + fov3.coords
