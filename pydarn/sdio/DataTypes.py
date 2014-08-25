@@ -149,9 +149,9 @@ class DataPtr(object):
     def open(self):
         """open the associated filename."""
         import os
-        self.__fd = os.open(self.__filename,os.O_RDONLY)
-        self.__ptr = os.fdopen(self.__fd)
-  
+        self._fd = os.open(self._filename,os.O_RDONLY)
+        self._ptr = os.fdopen(self._fd)
+ 
     def close(self):
         """
            Close the associated file.
@@ -182,9 +182,9 @@ class DataPtr(object):
         from pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
         recordDict={}
         scanStartDict={}
-        starting_offset=self.offsetTell()
+        starting_offset=self.__offsetTellDmap()
         #rewind back to start of file
-        self.rewind()
+        self.__rewindDmap()
         while(1):
             #read the next record from the dmap file
             offset= getDmapOffset(self._fd)
@@ -201,7 +201,7 @@ class DataPtr(object):
                     if dfile['scan']==1: scanStartDict[rectime]=offset
         #reset back to before building the index 
         self.recordIndex=recordDict
-        self.offsetSeek(starting_offset)
+        self.__offsetSeekDmap(starting_offset)
         self.scanStartIndex=scanStartDict
         return recordDict,scanStartDict
 
@@ -219,7 +219,7 @@ class DataPtr(object):
             return setDmapOffset(self._fd,offset)
         else:
             if self.recordIndex is None:        
-                self.createIndex()
+                self.__createIndexDmap()
             if offset in self.recordIndex.values():
                 return setDmapOffset(self._fd,offset)
             else:
@@ -308,123 +308,84 @@ class DataPtr(object):
 
 class testing(DataPtr):
 
-  def __init__(self):
+  def __init__(self,sTime,dataType,eTime,filename):
     import datetime as dt
-    super(testing,self).__init__(dt.datetime(2012,11,1),'dmap',eTime=None)
+    super(testing,self).__init__(sTime,dataType,eTime=eTime,fileName=filename)
 
 
 if __name__=="__main__":
   import os
   import datetime
   import hashlib
-  try:
-      tmpDir=os.environ['DAVIT_TMPDIR']
-  except:
-      tmpDir = '/tmp/sd/'
+  import pydarn
+  from pydarn.sdio.fetchUtils import fetch_remote_files
 
-  rad='fhe'
-  channel=None
-  fileType='fitacf'
-  filtered=False
-  sTime=datetime.datetime(2012,11,1,0,0)
-  eTime=datetime.datetime(2012,11,1,4,0)
-  expected_filename="20121101.000000.20121101.040000.fhe.fitacf"
-  expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=19377805
-  expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
-  print "Expected File:",expected_path
+  print "##############################"
+  print " TESTING THE DataPtr class..."
+  print "##############################"
 
-  print "\nRunning sftp grab example for radDataPtr."
-  print "Environment variables used:"
-  print "  DB:", os.environ['DB']
-  print "  DB_PORT:",os.environ['DB_PORT']
-  print "  DBREADUSER:", os.environ['DBREADUSER']
-  print "  DBREADPASS:", os.environ['DBREADPASS']
-  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
-  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
-  src='sftp'
-  if os.path.isfile(expected_path):
-    os.remove(expected_path)
-  VTptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
-  if os.path.isfile(expected_path):
-    statinfo = os.stat(expected_path)
-    print "Actual File Size:  ", statinfo.st_size
-    print "Expected File Size:", expected_filesize 
-    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
-    print "Actual Md5sum:  ",md5sum
-    print "Expected Md5sum:",expected_md5sum
-    if expected_md5sum!=md5sum:
-      print "Error: Cached dmap file has unexpected md5sum."
-  else:
-    print "Error: Failed to create expected cache file"
-  print "Let's read two records from the remote sftp server:"
-  try:
-    ptr=VTptr
-    beam  = ptr.readRec()
-    print beam.time
-    beam  = ptr.readRec()
-    print beam.time
-    print "Close pointer"
-    ptr.close()
-    print "reopen pointer"
-    ptr.open()
-    print "Should now be back at beginning:"
-    beam  = ptr.readRec()
-    print beam.time
-    print "What is the current offset:"
-    print ptr.offsetTell()
-    print "Try to seek to offset 4, shouldn't work:"
-    print ptr.offsetSeek(4)
-    print "What is the current offset:"
-    print ptr.offsetTell()
+  sTime = datetime.datetime(2012,11,24,4)
+  eTime = datetime.datetime(2012,11,24,5)
 
-  except:
-    print "record read failed for some reason"
-
-  ptr.close()
-  del VTptr
-
-  print "\nRunning local grab example for radDataPtr."
-  print "Environment variables used:"
-  print "  DAVIT_LOCAL_DIRFORMAT:", os.environ['DAVIT_LOCAL_DIRFORMAT']
-  print "  DAVIT_LOCAL_FNAMEFMT:", os.environ['DAVIT_LOCAL_FNAMEFMT']
-  print "  DAVIT_LOCAL_TIMEINC:", os.environ['DAVIT_LOCAL_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
-
-  src='local'
-  if os.path.isfile(expected_path):
-    os.remove(expected_path)
-  localptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
-  if os.path.isfile(expected_path):
-    statinfo = os.stat(expected_path)
-    print "Actual File Size:  ", statinfo.st_size
-    print "Expected File Size:", expected_filesize 
-    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
-    print "Actual Md5sum:  ",md5sum
-    print "Expected Md5sum:",expected_md5sum
-    if expected_md5sum!=md5sum:
-      print "Error: Cached dmap file has unexpected md5sum."
-  else:
-    print "Error: Failed to create expected cache file"
-  print "Let's read two records:"
-  try:
-    ptr=localptr
-    beam  = ptr.readRec()
-    print beam.time
-    beam  = ptr.readRec()
-    print beam.time
-    print "Close pointer"
-    ptr.close()
-    print "reopen pointer"
-    ptr.open()
-    print "Should now be back at beginning:"
-    beam  = ptr.readRec()
-    print beam.time
-  except:
-    print "record read failed for some reason"
-  ptr.close()
   
-  del localptr
+  print " TRYING TO WORK WITH THE DMAP DATATYPE"
+  print " FETCHING A SUPERDARN FITEX FILE......"
+  files = fetch_remote_files(sTime, eTime, \
+          'sftp','sd-data.ece.vt.edu','data/{year}/{ftype}/{radar}/', \
+          {'radar':'mcm','ftype':'fitex','channel':'a'},'/tmp/sd/', \
+          ['{date}.{hour}......{radar}.{ftype}', \
+           '{date}.{hour}......{radar}.{channel}.{ftype}'], \
+          username='sd_dbread', password='5d', \
+          verbose=False, time_inc=datetime.timedelta(hours=2))
+  print "   Fetched the file: " + files[0] + "\n"
+
+
+  print " INITIALIZING A CLASS THAT INHERITS FROM DataPtr"
+  t=pydarn.sdio.DataTypes.testing(sTime,'dmap',eTime,files[0])
+  print "   ...it worked! (Success!)"
+
+
+  print " Opening the file..."
+  t.open()
+  print "   ...it worked! (Success!)"
+
+
+  print "Reading a line of the file..."
+  dfile = t.read()
+  if isinstance(dfile,dict):
+    print "   SUCCESS!"
+  else:
+    print "   FAILED!"
+
+
+  print " Getting file offsets as a function of timestamp..."
+  index, _ = t.createIndex()
+  if isinstance(index,dict):
+    print "   SUCCESS!"
+  else:
+    print "   FAILED!"
+
+
+  print " Seeking to file offset at datetime(2012,11,24,4,4,39,141000)"
+  t.offsetSeek(index[datetime.datetime(2012,11,24,4,4,39,141000)])
+  offset = t.offsetTell()
+  dfile = t.read()
+  print " Seeked to time: " + str(datetime.datetime.utcfromtimestamp(dfile['time']))
+  print " Telling the file offset..."
+  print " Should get: " + str(index[datetime.datetime(2012,11,24,4,4,39,141000)]) + " and we got: "+str(offset)
+
+
+  print " Rewinding the file..."
+  t.rewind()
+  print "    ...rewound! (Success!)"
+
+
+  print " Closing the file..."
+  t.close()
+  print "    ...closed! (Success!)"
+  print "\n ALL DONE TESTING"
+  
+
+
+  
 
