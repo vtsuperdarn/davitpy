@@ -16,8 +16,8 @@
 
 """
 .. module:: DataTypes
-   :synopsis: the parent class needed for reading data (dmap, hdf5)
-.. moduleauthor:: Ashton, 20140822, generalized from radDataTypes.py by Jef Spaleta
+   :synopsis: the parent class needed for reading data (dmap, hdf5 (soon?))
+.. moduleauthor:: Ashton Reimer, 20140822, generalized from radDataTypes.py by Jef Spaleta
 
 *********************
 **Module**: pydarn.sdio.DataTypes
@@ -27,15 +27,6 @@
   * :class:`pydarn.sdio.DataTypes.DataPtr`
 
 """
-
-
-from utils import twoWayDict
-alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
-          'n','o','p','q','r','s','t','u','v','w','x','y','z']
-
-
-
-
 
 class DataPtr(object):
     """A generalized data pointer class which contains general methods for reading 
@@ -61,7 +52,7 @@ class DataPtr(object):
       * **offsetTell** : Current byte offset
       * **rewind** : rewind file back to the beginning 
       * **read** : read record at current file offset in to a dictionary
-     
+ 
     Written by ASR 20140822
     """
 
@@ -90,8 +81,6 @@ class DataPtr(object):
     #        dictionary, where __read = {'dmap':self.__readDmap} points
     #        to the __readDmap method for the dmap data type.
     #####################
-
-
 
     def __init__(self,sTime,dataType,eTime=None,fileName=None):
 
@@ -306,84 +295,85 @@ class DataPtr(object):
 
 
 
-class testing(DataPtr):
 
-  def __init__(self,sTime,dataType,eTime,filename):
-    import datetime as dt
-    super(testing,self).__init__(sTime,dataType,eTime=eTime,fileName=filename)
+#Class used for testing
+class testing(DataPtr):
+    def __init__(self,sTime,dataType,eTime,filename):
+        import datetime as dt
+        super(testing,self).__init__(sTime,dataType,eTime=eTime,fileName=filename)
 
 
 if __name__=="__main__":
-  import os
-  import datetime
-  import hashlib
-  import pydarn
-  from pydarn.sdio.fetchUtils import fetch_remote_files
 
-  print "##############################"
-  print " TESTING THE DataPtr class..."
-  print "##############################"
+    import datetime
+    import pydarn
+    from pydarn.sdio.fetchUtils import fetch_remote_files
 
-  sTime = datetime.datetime(2012,11,24,4)
-  eTime = datetime.datetime(2012,11,24,5)
+    print "##############################"
+    print " TESTING THE DataPtr class..."
+    print "##############################"
+
+    sTime = datetime.datetime(2012,11,24,4)
+    eTime = datetime.datetime(2012,11,24,5)
 
   
-  print " TRYING TO WORK WITH THE DMAP DATATYPE"
-  print " FETCHING A SUPERDARN FITEX FILE......"
-  files = fetch_remote_files(sTime, eTime, \
-          'sftp','sd-data.ece.vt.edu','data/{year}/{ftype}/{radar}/', \
-          {'radar':'mcm','ftype':'fitex','channel':'a'},'/tmp/sd/', \
-          ['{date}.{hour}......{radar}.{ftype}', \
-           '{date}.{hour}......{radar}.{channel}.{ftype}'], \
-          username='sd_dbread', password='5d', \
-          verbose=False, time_inc=datetime.timedelta(hours=2))
-  print "   Fetched the file: " + files[0] + "\n"
+    print " TRYING TO WORK WITH THE DMAP DATATYPE"
+    print " FETCHING A SUPERDARN FITEX FILE......"
+    files = fetch_remote_files(sTime, eTime, \
+            'sftp','sd-data.ece.vt.edu','data/{year}/{ftype}/{radar}/', \
+            {'radar':'mcm','ftype':'fitex','channel':'a'},'/tmp/sd/', \
+            ['{date}.{hour}......{radar}.{ftype}', \
+             '{date}.{hour}......{radar}.{channel}.{ftype}'], \
+            username='sd_dbread', password='5d', \
+            verbose=False, time_inc=datetime.timedelta(hours=2))
+    print "   Fetched the file: " + files[0] + "\n"
 
 
-  print " INITIALIZING A CLASS THAT INHERITS FROM DataPtr"
-  t=pydarn.sdio.DataTypes.testing(sTime,'dmap',eTime,files[0])
-  print "   ...it worked! (Success!)"
+    print " INITIALIZING A CLASS THAT INHERITS FROM DataPtr"
+    t=pydarn.sdio.DataTypes.testing(sTime,'dmap',eTime,files[0])
+    print "   ...it worked! (Success!)"
 
 
-  print " Opening the file..."
-  t.open()
-  print "   ...it worked! (Success!)"
+    print " Opening the file..."
+    t.open()
+    print "   ...it worked! (Success!)"
 
 
-  print "Reading a line of the file..."
-  dfile = t.read()
-  if isinstance(dfile,dict):
-    print "   SUCCESS!"
-  else:
-    print "   FAILED!"
+    print "Reading a line of the file..."
+    dfile = t.read()
+    if isinstance(dfile,dict):
+        print "   SUCCESS!"
+    else:
+        print "   FAILED!"
 
 
-  print " Getting file offsets as a function of timestamp..."
-  index, _ = t.createIndex()
-  if isinstance(index,dict):
-    print "   SUCCESS!"
-  else:
-    print "   FAILED!"
+    print " Getting file offsets as a function of timestamp..."
+    index, _ = t.createIndex()
+    if isinstance(index,dict):
+        print "   SUCCESS!"
+    else:
+        print "   FAILED!"
 
 
-  print " Seeking to file offset at datetime(2012,11,24,4,4,39,141000)"
-  t.offsetSeek(index[datetime.datetime(2012,11,24,4,4,39,141000)])
-  offset = t.offsetTell()
-  dfile = t.read()
-  print " Seeked to time: " + str(datetime.datetime.utcfromtimestamp(dfile['time']))
-  print " Telling the file offset..."
-  print " Should get: " + str(index[datetime.datetime(2012,11,24,4,4,39,141000)]) + " and we got: "+str(offset)
+    print " Seeking to file offset at datetime(2012,11,24,4,4,39,141000)"
+    t.offsetSeek(index[datetime.datetime(2012,11,24,4,4,39,141000)])
+    offset = t.offsetTell()
+    dfile = t.read()
+    print " Seeked to time: " + str(datetime.datetime.utcfromtimestamp(dfile['time']))
+    print " Telling the file offset..."
+    print " Should get: " + str(index[datetime.datetime(2012,11,24,4,4,39,141000)]) + \
+          " and we got: "+str(offset)
 
 
-  print " Rewinding the file..."
-  t.rewind()
-  print "    ...rewound! (Success!)"
+    print " Rewinding the file..."
+    t.rewind()
+    print "    ...rewound! (Success!)"
 
 
-  print " Closing the file..."
-  t.close()
-  print "    ...closed! (Success!)"
-  print "\n ALL DONE TESTING"
+    print " Closing the file..."
+    t.close()
+    print "    ...closed! (Success!)"
+    print "\n ALL DONE TESTING"
   
 
 
