@@ -46,7 +46,14 @@ class fov(object):
             * **'GS'**: for ground scatter projection model
             * **None**: if you are really confident in your elevation or altitude values
             * ... more to come
-        * **coords**: 'geo', 'mag'
+        * **coords**: anything accepted by coord_conv; see
+            utils.get_coord_dict.  Default:  geo
+        * **date_time**: (datetime.datetime object) the datetime for 
+            which the FOV is desired.  Required for mag and mlt, and
+            possibly others in the future.  Default:  None
+        * **coord_alt**: like altitude, but only used for conversion 
+            from geographic to other coordinate systems.  Default: 0.
+
 
     """
     def __init__(self, \
@@ -54,10 +61,12 @@ class fov(object):
             nbeams=None, ngates=None, bmsep=None, recrise=None, \
             siteLat=None, siteLon=None, siteBore=None, siteAlt=None, \
             siteYear=None, elevation=None, altitude=300., \
-            model='IS', coords='geo'):
+            model='IS', coords='geo', date_time=None, coord_alt=0.):
         # Get fov
         from numpy import ndarray, array, arange, zeros, nan
+        
         import models.aacgm as aacgm
+        from utils.coordUtils import coord_conv
         
         # Test that we have enough input arguments to work with
         if not site and None in \
@@ -68,6 +77,10 @@ class fov(object):
                 '[nbeams, ngates, bmsep, recrise, siteLat,' + \
                 ' siteLon, siteBore, siteAlt, siteYear].')
             return
+
+        # date_time checking is handled by coord_conv, and it already
+        # knows all of the possible coord systems, so no need to do it
+        # here.
             
         # Then assign variables from the site object if necessary
         if site:
@@ -147,6 +160,26 @@ class fov(object):
             else:
                 print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
                 elevation = elevation[0] * ones((nbeams+1, ngates+1))
+
+        # Do for coord_alt what we just did for altitude.
+        if isinstance(coord_alt, ndarray):
+            if coord_alt.ndim == 1:
+                if coord_alt.size != ngates:
+                    print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                    coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
+                # Array is adjusted to add on extra beam/gate edge by copying the last element and replicating the whole array as many times as beams
+                else: coord_alt = np.resize( np.append(coord_alt, coord_alt[-1]), (nbeams+1,ngates+1) )
+            elif coord_alt.ndim == 2:
+                if coord_alt.shape != (nbeams, ngates):
+                    print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                    coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
+                # Array is adjusted to add on extra beam/gate edge by copying the last row and column
+                else: 
+                    coord_alt = np.append(coord_alt, coord_alt[-1,:].reshape(1,ngates), axis=0)
+                    coord_alt = np.append(coord_alt, coord_alt[:,-1].reshape(nbeams,1), axis=1)
+            else:
+                print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
         
         # Generate beam/gate arrays
         beams = arange(nbeams+1)
@@ -179,19 +212,10 @@ class fov(object):
             
             # Calculate coordinates for Edge and Center of the current beam
             for ig in gates:
-                # This is a bit redundant, but I could not think of any other way to deal with the array-or-not-array issue
-                if not isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-                    tElev = elevation
-                    tAlt = altitude
-                elif isinstance(altitude, ndarray) and not isinstance(elevation, ndarray):
-                    tElev = elevation
-                    tAlt = altitude[ib,ig]
-                elif isinstance(elevation, ndarray) and not isinstance(altitude, ndarray):
-                    tElev = elevation[ib,ig]
-                    tAlt = altitude
-                else:
-                    tElev = elevation[ib,ig]
-                    tAlt = altitude[ib,ig]
+                # Handle array-or-not question.
+                tAlt = altitude[ib, ig] if isinstance(altitude, ndarray) else altitude
+                tElev = elevation[ib, ig] if isinstance(elevation, ndarray) else elevation
+                t_c_alt = coord_alt[ib, ig] if isinstance(coord_alt, ndarray) else coord_alt
 
                 if model == 'GS':
                   if (~isParamArray and ib == 0) or isParamArray:
@@ -209,11 +233,13 @@ class fov(object):
                             siteBore, bOffEdge[ib], sRangEdge[ig],
                             elevation=tElev, altitude=tAlt, model=model)
                               
-                  if(coords == 'mag'):
-                      latC, lonC, _ = aacgm.aacgmConv(
-                        latC,lonC,0.,siteYear,0)
-                      latE, lonE, _ = aacgm.aacgmConv(
-                        latE,lonE,0.,siteYear,0)
+                  if(coords != 'geo'):
+                      lonC, latC = coord_conv(lonC, latC, "geo", coords,
+                                              altitude=t_c_alt,
+                                              date_time=date_time)
+                      lonE, latE = coord_conv(lonE, latE, "geo", coords,
+                                              altitude=t_c_alt,
+                                              date_time=date_time)
                 else:
                   latC, lonC = nan, nan
                   latE, lonE = nan, nan
@@ -292,6 +318,10 @@ evaluated to accomodate altitude and range.
     
     # Make sure we have enough input stuff
     # if (not model) and (not elevation or not altitude): model = 'IS'
+
+    # Only geo is implemented.
+    assert(coords == "geo"),\
+            "Only geographic (geo) is implemented in calcFieldPnt."
     
     # Now let's get to work
     # Classic Ionospheric/Ground scatter projection model
@@ -453,14 +483,36 @@ if __name__=="__main__":
     from pydarn.radar import radStruct
     from datetime import datetime
     
+    print
+    print "Testing radFov"
+    print "Expected and result samples are from the fov's"
+    print "fov.latCenter[0][0:4] and fov.lonCenter[0][0:4]"
+    print "(in that order) on a 32-bit machine"
+    print
+    time = datetime(2012,1,1,0,2)
     print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
-    site_sas = radStruct.site(code="sas", dt=datetime(2012,1,1,0,2))
+    site_sas = radStruct.site(code="sas", dt=time)
+    print
     print "Create a fov object using that site, coords are geo."
     fov1 = fov(site=site_sas)
-    print "This is the result:"
-    print fov1
-    print "Now create a fov object with mag coords.  This will fail if"
-    print "aacgm is not called properly."
-    fov2 = fov(site=site_sas, coords="mag")
-    print "This is the result:"
-    print fov2
+    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
+    print "Result:   " + str(fov1.latCenter[0][0:4])
+    print "Expected: [-106.87506589 -106.80488558 -106.77349475 -106.75811049]"
+    print "Result:   " + str(fov1.lonCenter[0][0:4])
+    print "coords of result are " + fov1.coords
+    print
+    print "Now create a fov object with mag coords."
+    fov2 = fov(site=site_sas, coords="mag", date_time=time)
+    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
+    print "Result:   " + str(fov2.latCenter[0][0:4])
+    print "Expected: [-43.22579758 -43.25962883 -43.33474048 -43.42848079]"
+    print "Result:   " + str(fov2.lonCenter[0][0:4])
+    print "coords of result are " + fov2.coords
+    print
+    print "Another fov, now in MLT"
+    fov3 = fov(site=site_sas, coords="mlt", date_time=time)
+    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
+    print "Result:   " + str(fov3.latCenter[0][0:4])
+    print "Expected: [-121.24209635 -121.27592761 -121.35103925 -121.44477957]"
+    print "Result:   " + str(fov3.lonCenter[0][0:4])
+    print "coords of result are " + fov3.coords
