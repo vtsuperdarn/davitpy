@@ -33,6 +33,10 @@ from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
+
+
+
+
 class DataPtr(object):
     """A generalized data pointer class which contains general methods for reading 
        various data file (dmap, hdf5, etc.) types into SuperDARN data types (fit, raw, iqdat, map, etc.).
@@ -89,7 +93,7 @@ class DataPtr(object):
 
 
 
-    def __init__(self,sTime,fileName,dataType,eTime=None):
+    def __init__(self,sTime,dataType,eTime=None,fileName=None):
 
         import pydarn
         import datetime as dt
@@ -108,8 +112,8 @@ class DataPtr(object):
         #Check input variables
         assert(isinstance(sTime,dt.datetime)), \
             'Error, sTime must be datetime object'
-        assert(isinstance(fileName,str)), \
-            "Error, fileName not specified!"
+        #assert(isinstance(fileName,str)), \
+        #    "Error, fileName not specified!"
         assert(dataType in dataTypeList), \
             "Error, dataType: " +str(dataType)+" not supported. "+ \
             "Supported data types: "+str(dataTypeList)
@@ -122,9 +126,9 @@ class DataPtr(object):
         self.dType = dataType
         self.recordIndex = None
         self.scanStartIndex = None
-        self.__filename = fileName 
-        self.__fd = None
-        self.__ptr =  None
+        self._filename = fileName 
+        self._fd = None
+        self._ptr =  None
 
         #Set the data Type specific methods
         self.read = __read[dataType]
@@ -153,9 +157,9 @@ class DataPtr(object):
            Close the associated file.
         """
         import os
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd=None
+        if self._ptr is not None:
+            self._ptr.close()
+            self._fd=None
 
 
     # BEGIN DATA TYPE SPECIFIC HIDDEN METHODS
@@ -183,8 +187,8 @@ class DataPtr(object):
         self.rewind()
         while(1):
             #read the next record from the dmap file
-            offset= getDmapOffset(self.__fd)
-            dfile = readDmapRec(self.__fd)
+            offset= getDmapOffset(self._fd)
+            dfile = readDmapRec(self._fd)
             if(dfile is None):
                 #if we dont have valid data, clean up, get out
                 print '\nreached end of data'
@@ -212,14 +216,14 @@ class DataPtr(object):
 
         from pydarn.dmapio import setDmapOffset,getDmapOffset 
         if force:
-            return setDmapOffset(self.__fd,offset)
+            return setDmapOffset(self._fd,offset)
         else:
             if self.recordIndex is None:        
                 self.createIndex()
             if offset in self.recordIndex.values():
-                return setDmapOffset(self.__fd,offset)
+                return setDmapOffset(self._fd,offset)
             else:
-                return getDmapOffset(self.__fd)
+                return getDmapOffset(self._fd)
 
     def __offsetTellDmap(self):
         """
@@ -231,7 +235,7 @@ class DataPtr(object):
         # on self.dType (for future other data file support ie. hdf5)
 
         from pydarn.dmapio import getDmapOffset
-        return getDmapOffset(self.__fd)
+        return getDmapOffset(self._fd)
 
     def __rewindDmap(self):
         """
@@ -241,7 +245,7 @@ class DataPtr(object):
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
         from pydarn.dmapio import setDmapOffset 
-        return setDmapOffset(self.__fd,0)
+        return setDmapOffset(self._fd,0)
 
     def __readDmap(self):
        """
@@ -258,18 +262,18 @@ class DataPtr(object):
        import pydarn, datetime as dt
 
        #check input
-       if(self.__ptr == None):
+       if(self._ptr == None):
            print 'error, your pointer does not point to any data'
            return None
-       if self.__ptr.closed:
+       if self._ptr.closed:
            print 'error, your file pointer is closed'
            return None
 
        #do this until we reach the requested start time
        #and have a parameter match
        while(1):
-           offset = pydarn.dmapio.getDmapOffset(self.__fd)
-           dfile = pydarn.dmapio.readDmapRec(self.__fd)
+           offset = pydarn.dmapio.getDmapOffset(self._fd)
+           dfile = pydarn.dmapio.readDmapRec(self._fd)
            #check for valid data
            if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
                #if we dont have valid data, clean up, get out
@@ -299,6 +303,14 @@ class DataPtr(object):
         pass
     def __rewindDatatype(self):
         pass
+
+
+
+class testing(DataPtr):
+
+  def __init__(self):
+    import datetime as dt
+    super(testing,self).__init__(dt.datetime(2012,11,1),'dmap',eTime=None)
 
 
 if __name__=="__main__":
