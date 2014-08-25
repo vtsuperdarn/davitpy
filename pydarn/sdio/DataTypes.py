@@ -33,13 +33,7 @@ from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-def DataPtr(dataType,**kwargs):
-
-    if dataType=='dmap':
-        return dmapFile(dataType, **kwargs)
-
-
-class ParentPtr(object):
+class DataPtr(object):
     """A generalized data pointer class which contains general methods for reading 
        various data file (dmap, hdf5, etc.) types into SuperDARN data types (fit, raw, iqdat, map, etc.).
     
@@ -66,75 +60,112 @@ class ParentPtr(object):
      
     Written by ASR 20140822
     """
-    def __init__(self,sTime=None,eTime=None,fileType=None, src=None,fileName=None,noCache=False,dataType=None):
+
+    #### NOTE TO DEVS ####
+    # Dictionaries are used to select which data type specific methods to use
+    # Props to Adam Knox (github @aknox-va) for the idea. 
+    #
+    # First of all, different data containers, like dmap, hdf5, txt, etc. 
+    # are what is meant by data types
+    #
+    # The point here is to support various data types using this class
+    # without the child classes (radDataPtr, sdDataPtr) having to switch
+    # to employ logic to utilize the appropriate method ie) radDataPtr 
+    # doesn't need to have conditional logic to decide with "read" 
+    # method to use.
+    #
+    # To add support for another data type, one needs to do 2 things:
+    #     1) There are 5 methods that are data type specific:
+    #        read, createIndex, offsetSeek, offsetTell, and rewind
+    #        One must create a method for each one of these (see examples
+    #        at the end of this class).
+    #     2) Each method needs to be registered in the method dictionaries 
+    #        in the __init__ of this class. The keys in each dictionary 
+    #        are the data types and the values are the method names for 
+    #        those dictionary types, ie) __read is the read methods 
+    #        dictionary, where __read = {'dmap':self.__readDmap} points
+    #        to the __readDmap method for the dmap data type.
+    #####################
+
+
+
+    def __init__(self,sTime,fileName,dataType,eTime=None):
 
         import pydarn
+        import datetime as dt
 
-        dataTypeList = ['dmap']    
+        # Data type method dictionaries to select the data type 
+        # specific methods to use credit to Adam Knox (github 
+        # @aknox-va) for the idea.          
 
+        __read        = {'dmap':self.__readDmap}
+        __createIndex = {'dmap':self.__createIndexDmap}
+        __offsetSeek  = {'dmap':self.__offsetSeekDmap}
+        __offsetTell  = {'dmap':self.__offsetTellDmap}
+        __rewind      = {'dmap':self.__rewindDmap}
+        dataTypeList = __read.keys()
+
+        #Check input variables
+        assert(isinstance(sTime,dt.datetime)), \
+            'Error, sTime must be datetime object'
+        assert(isinstance(fileName,str)), \
+            "Error, fileName not specified!"
         assert(dataType in dataTypeList), \
-            "Error, dataType not supported. Supported data types: "+str(dataTypeList)
+            "Error, dataType: " +str(dataType)+" not supported. "+ \
+            "Supported data types: "+str(dataTypeList)
+        assert(eTime == None or isinstance(eTime,dt.datetime)), \
+            'Error, eTime must be datetime object or None'
 
+        #Set up the general attributes
         self.sTime = sTime
         self.eTime = eTime
-        self.fType = fileType
         self.dType = dataType
         self.recordIndex = None
         self.scanStartIndex = None
         self.__filename = fileName 
-        #self.__fd = None
-        #self.__ptr =  None
+        self.__fd = None
+        self.__ptr =  None
+
+        #Set the data Type specific methods
+        self.read = __read[dataType]
+        self.createIndex = __createIndex[dataType]
+        self.offsetSeek = __offsetSeek[dataType]
+        self.offsetTell = __offsetTell[dataType]
+        self.rewind = __rewind[dataType]
 
 
-
-class dmapFile(ParentPtr):
-
-    """A class containing the methods for reading dmap data files into 
-       SuperDARN data types (fit, raw, iqdat, map, etc.).
-    
-    **Public Attrs**:
-      * **members** (list): list of strings naming the user defined methods of this class
-
-    **Methods**:
-      * **open** 
-      * **close** 
-      * **createIndex** : Index the offsets for all records and scan boundaries
-      * **offsetSeek** : Seek file to requested byte offset, checking to make sure it in the record index
-      * **offsetTell** : Current byte offset
-      * **rewind** : rewind file back to the beginning 
-      * **read** : read record at current file offset in to a dictionary
-     
-    Written by ASR 20140822
-    """
-
-    def __init__(self,dataType,**kwargs):
-        #self.members=['__del__','__iter__','next','open', \
-        #              'createIndex','offsetSeek','offsetTell', \
-        #              'rewind','read','close']
-
-        super(dmapFile,self).__init__(dataType=dataType,**kwargs)
-
+    #FIRST, THE GENERAL COMMON METHODS
 
     def __del__(self):
         self.close() 
 
     def __iter__(self):
         return self
-
-    def next(self):
-        data=self.readRec()
-        if data is None:
-            raise StopIteration
-        else:
-            return data
-
+     
     def open(self):
         """open the associated filename."""
         import os
-        self.__fd = os.open(self._ParentPtr__filename,os.O_RDONLY)
+        self.__fd = os.open(self.__filename,os.O_RDONLY)
         self.__ptr = os.fdopen(self.__fd)
+  
+    def close(self):
+        """
+           Close the associated file.
+        """
+        import os
+        if self.__ptr is not None:
+            self.__ptr.close()
+            self.__fd=None
 
-    def createIndex(self):
+
+    # BEGIN DATA TYPE SPECIFIC HIDDEN METHODS
+
+    ########################################
+    #                 DMAP
+    ########################################
+
+    # NOW ALL OF THE DMAP SPECIFIC METHODS
+    def __createIndexDmap(self):
         """
            Create dictionary of offsets as a function of timestamp.
   
@@ -170,7 +201,7 @@ class dmapFile(ParentPtr):
         self.scanStartIndex=scanStartDict
         return recordDict,scanStartDict
 
-    def offsetSeek(self,offset,force=False):
+    def __offsetSeekDmap(self,offset,force=False):
         """
            Jump to dmap record at supplied byte offset.
            Require offset to be in record index list unless forced. 
@@ -190,7 +221,7 @@ class dmapFile(ParentPtr):
             else:
                 return getDmapOffset(self.__fd)
 
-    def offsetTell(self):
+    def __offsetTellDmap(self):
         """
            Jump to dmap record at supplied byte offset. 
 
@@ -202,7 +233,7 @@ class dmapFile(ParentPtr):
         from pydarn.dmapio import getDmapOffset
         return getDmapOffset(self.__fd)
 
-    def rewind(self):
+    def __rewindDmap(self):
         """
            Jump to beginning of dmap file.
         """
@@ -212,7 +243,7 @@ class dmapFile(ParentPtr):
         from pydarn.dmapio import setDmapOffset 
         return setDmapOffset(self.__fd,0)
 
-    def read(self):
+    def __readDmap(self):
        """
           A function to read a single record of data from a dmap file.
 
@@ -250,15 +281,24 @@ class dmapFile(ParentPtr):
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
                return dfile
 
-    def close(self):
-        """
-           Close the associated file.
-        """
-        import os
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd=None
 
+
+    ########################################
+    #    NEW DATATYPE TEMPLATE METHODS
+    ########################################
+
+    # NOW ALL OF THE NEW DATATYPE SPECIFIC METHODS
+
+    def __readNewDatatype(self):
+        pass
+    def __createIndexNewDatatype(self):
+        pass
+    def __offsetSeekNewDatatype(self):
+        pass
+    def __offsetTellDatatype(self):
+        pass
+    def __rewindDatatype(self):
+        pass
 
 
 if __name__=="__main__":
