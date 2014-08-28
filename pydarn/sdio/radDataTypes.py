@@ -43,9 +43,10 @@ class radDataPtr():
   
   **Public Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
+    * **radcode** (str): the 3-letter radar code with optional channel extension for which you want data
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
     * **stid** (int): station id of the request
-    * **channel** (str): channel of the request
+    * **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',... if this is set to None, data from ALL channels will be read. default = None
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
@@ -127,14 +128,13 @@ class radDataPtr():
     if radcode is not None:
       assert(isinstance(radcode,str)), \
         'error, radcode must be None or a string'
-      segments=radcode.split(".")
-      try: rad=segments[0]
-      except: rad=None
-      try: chan=segments[1]
-      except: chan=None
-      assert(isinstance(rad,str) and len(rad) == 3), \
-        'error, rad must be a 3 char string'
-      self.stid=int(network().getRadarByCode(rad).id)
+      assert(isinstance(radcode,str) and len(radcode) == 3), \
+        'error, radcode must be a 3 char string'
+      self.stid=int(network().getRadarByCode(radcode).id)
+
+    # If channel is None, then make the channel a wildcard, then it will pull in both UAF channels
+    if channel is None:
+	channel='*'
 
     if(self.eTime == None):
       self.eTime = self.sTime+dt.timedelta(days=1)
@@ -221,7 +221,8 @@ class radDataPtr():
     if not cached and (src == None or src == 'local') and fileName == None:
         try:
             for ftype in arr:
-                print "\nLooking locally for %s files with rad: %s chan: %s" % (ftype,radcode,chan)
+                print "\nLooking locally for %s files with radcode: %s chan: %s" % (ftype,radcode,channel)
+		
                 #If the following aren't already, in the near future
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
@@ -240,7 +241,7 @@ class radDataPtr():
                     try:
                         local_fnamefmt = os.environ['DAVIT_LOCAL_FNAMEFMT'].split(',')
                     except:
-                        local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+	                local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
                         print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
 
