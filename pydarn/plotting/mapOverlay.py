@@ -306,9 +306,9 @@ if __name__ == "__main__":
     print "should produce warning about different time"
     overlayRadar(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
     print "overlayFov"
-    overlayFov(mo, codes="sas")
+    overlayFov(mo, codes="sas", maxGate=45)
     print "overlayFov for datetime(2012,1,1,1,2);"
     print "should produce warning about different time"
-    overlayFov(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
+    overlayFov(mo, codes="sas", maxGate=45, dateTime=datetime(2012,1,1,1,2))
     print "Showing plot"
     plt.show()
