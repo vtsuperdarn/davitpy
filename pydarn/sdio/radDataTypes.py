@@ -46,7 +46,7 @@ class radDataPtr():
     * **radcode** (str): the 3-letter radar code with optional channel extension for which you want data
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
     * **stid** (int): station id of the request
-    * **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',... if this is set to None, data from ALL channels will be read. default = None
+    * **channel** (str): the 1-letter code for what channel you want data from, eg 'a','b',... if this is set to None, data from ALL channels will be read. default = None
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
@@ -222,7 +222,6 @@ class radDataPtr():
         try:
             for ftype in arr:
                 print "\nLooking locally for %s files with radcode: %s chan: %s" % (ftype,radcode,channel)
-		
                 #If the following aren't already, in the near future
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
