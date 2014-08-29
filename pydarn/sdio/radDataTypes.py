@@ -126,10 +126,8 @@ class radDataPtr():
       'error, src must be one of None,local,sftp'
 
     if radcode is not None:
-      assert(isinstance(radcode,str)), \
-        'error, radcode must be None or a string'
       assert(isinstance(radcode,str) and len(radcode) == 3), \
-        'error, radcode must be a 3 char string'
+        'error, radcode must be None or a 3 char string'
       self.stid=int(network().getRadarByCode(radcode).id)
 
     # If channel is None, then make the channel a wildcard, then it will pull in both UAF channels
@@ -188,7 +186,6 @@ class radDataPtr():
         try:
             if True:
                 for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,radcode,fileType)):
- 
                    try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
