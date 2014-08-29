@@ -185,7 +185,7 @@ class radDataPtr():
     if fileName == None and not noCache:
         try:
             if True:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,radcode,fileType)):
+                for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,channel,fileType)):
                    try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
@@ -200,7 +200,7 @@ class radDataPtr():
                    except Exception,e:
                         print e
             if not cached:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
+                for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,channel,fileType)):
                     try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
@@ -366,8 +366,10 @@ class radDataPtr():
 
         #filter(if desired) and open the file
         if(not filtered):
+	    print "not filtered"
             self.__filename=tmpName
             self.open()
+	    print "file read"
         else:
             if not fileType+'f' in tmpName:
                 try:
