@@ -366,10 +366,8 @@ class radDataPtr():
 
         #filter(if desired) and open the file
         if(not filtered):
-	    print "not filtered"
             self.__filename=tmpName
             self.open()
-	    print "file read"
         else:
             if not fileType+'f' in tmpName:
                 try:
