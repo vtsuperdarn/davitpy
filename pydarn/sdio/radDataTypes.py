@@ -43,7 +43,7 @@ class radDataPtr():
   
   **Public Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
-    * **radcode** (str): the 3-letter radar code with optional channel extension for which you want data
+    * **radcode** (str): the 3-letter radar code
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
     * **stid** (int): station id of the request
     * **channel** (str): the 1-letter code for what channel you want data from, eg 'a','b',... if this is set to None, data from ALL channels will be read. default = None
@@ -134,7 +134,8 @@ class radDataPtr():
 
     # If channel is None, then make the channel a wildcard, then it will pull in both UAF channels
     if channel is None:
-	channel='*'
+	channel = '*'
+
 
     if(self.eTime == None):
       self.eTime = self.sTime+dt.timedelta(days=1)
@@ -187,7 +188,8 @@ class radDataPtr():
         try:
             if True:
                 for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,radcode,fileType)):
-                    try:
+ 
+                   try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
                         t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
@@ -198,7 +200,7 @@ class radDataPtr():
                             filelist.append(f)
                             print 'Found cached file: %s' % f
                             break
-                    except Exception,e:
+                   except Exception,e:
                         print e
             if not cached:
                 for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
@@ -352,9 +354,9 @@ class radDataPtr():
         if not cached:
             print 'Concatenating all the files in to one'
             #choose a temp file name with time span info for cacheing
-            tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
+            tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % (tmpDir, \
               self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
-              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
+              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,channel,fileType)
             print 'cat '+string.join(filelist)+' > '+tmpName
             os.system('cat '+string.join(filelist)+' > '+tmpName)
             for filename in filelist:
