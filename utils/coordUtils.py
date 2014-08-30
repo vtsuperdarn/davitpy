@@ -1,5 +1,5 @@
 #!usr/bin/env python
-# Copyright (C) 2013  University of Saskatchewan SuperDARN group
+# Copyright (C) 2014 University of Saskatchewan SuperDARN group
 # Full license can be found in LICENSE.txt
 # 
 # This program is free software: you can redistribute it and/or modify

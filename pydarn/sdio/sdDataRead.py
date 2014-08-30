@@ -189,4 +189,3 @@ def sdDataReadAll(myPtr):
     'error, input must be of type sdDataPtr'
   myList=[beam for beam in myPtr]
   return myList
-
