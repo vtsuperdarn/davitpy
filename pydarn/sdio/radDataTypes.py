@@ -36,7 +36,7 @@
 from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
-
+uafids = [209, 208, 7, 20, 22]
 
 class radDataPtr():
   """A class which contains a pipeline to a data source
@@ -533,6 +533,7 @@ class radDataPtr():
      from pydarn.sdio.radDataTypes import radDataPtr, beamData, \
      fitData, prmData, rawData, iqData, alpha
      import pydarn, datetime as dt
+     import os
 
      #check input
      if(self.__ptr == None):
@@ -553,10 +554,12 @@ class radDataPtr():
              print '\nreached end of data'
              #self.close()
              return None
+	 #Set the channel appropriately
+	 if dfile['stid'] in uafids: channel = self.channel
+         elif dfile['channel'] < 2: channel = 'a'
+         else: channel = alpha[dfile['channel']-1]
          #check that we're in the time window, and that we have a 
          #match for the desired params
-         if dfile['channel'] < 2: channel = 'a'
-         else: channel = alpha[dfile['channel']-1]
          if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and \
                (self.stid == None or self.stid == dfile['stid']) and
