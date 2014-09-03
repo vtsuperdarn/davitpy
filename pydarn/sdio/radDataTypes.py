@@ -36,7 +36,7 @@
 from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
-uafids = [209, 208, 7, 20, 22]
+uafids = [209, 208, 7, 20, 22, 16]
 
 class radDataPtr():
   """A class which contains a pipeline to a data source
