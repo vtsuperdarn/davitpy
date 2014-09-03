@@ -58,7 +58,9 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         * **[filtered]** (boolean): a flag indicating whether the data should be boxcar filtered.  default = False
         * **[scale]** (list): the min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
         * **[channel] (char)**: the channel for which to plot data.  default = 'a'
-        * **[coords]** (str): the coordinate system to use, valid inputs are 'geo', 'mag'.  default = 'geo'
+        * **[coords]** (str): the coordinate system to use; valid 
+            inputs are anything handled by coord_conv (see 
+            utils.get_coord_dict).  Default:  geo
         * **[colors]** (str): the color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
         * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray.  default = False
         * **[fov]**  (boolean): a flag indicating whether to overplot the radar fields of view.  default = True
@@ -95,7 +97,10 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     
     import datetime as dt, gme, pickle
     from matplotlib.backends.backend_pdf import PdfPages
+    
     import models.aacgm as aacgm, os, copy
+    from utils.coordUtils import coord_conv
+
     tt = dt.datetime.now()
     
     #check the inputs
@@ -103,7 +108,6 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     assert(isinstance(rad,list)),"error, rad must be a list, eg ['bks'] or ['bks','fhe']"
     for r in rad:
         assert(isinstance(r,str) and len(r) == 3),'error, elements of rad list must be 3 letter strings'
-    assert(coords == 'geo' or coords == 'mag'),"error, coords must be one of 'geo' or 'mag'"
     assert(param == 'velocity' or param == 'power' or param == 'width' or \
         param == 'elevation' or param == 'phi0'), \
         "error, allowable params are 'velocity','power','width','elevation','phi0'"
@@ -169,19 +173,18 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         t=allBeams[i].time
         site = pydarn.radar.site(radId=allBeams[i].stid,dt=t)
         sites.append(site)
-        if(coords == 'geo'):           #make a list of site lats and lons
-            latFull.append(site.geolat)
-            lonFull.append(site.geolon)
-            latC.append(site.geolat)     #latC and lonC are used for figuring out
-            lonC.append(site.geolon)     #where the map should be centered.
-        elif(coords == 'mag'):
-            x = aacgm.aacgmConv(site.geolat,site.geolon,0.,t.year,0)
-            latFull.append(x[0])
-            lonFull.append(x[1])
-            latC.append(x[0])
-            lonC.append(x[1])
-        myFov = pydarn.radar.radFov.fov(site=site,rsep=allBeams[i].prm.rsep,\
-                        ngates=allBeams[i].prm.nrang+1,nbeams=site.maxbeam,coords=coords)
+        # Make lists of site lats and lons.  latC and lonC are used
+        # for finding the map centre.
+        xlon, xlat = coord_conv(site.geolon, site.geolat, "geo", coords, 
+                                altitude=0., date_time=t)
+        latFull.append(xlat)
+        lonFull.append(xlon)
+        latC.append(xlat)
+        lonC.append(xlon)
+        myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,\
+                                        ngates=allBeams[i].prm.nrang+1,
+                                        nbeams=site.maxbeam, coords=coords,
+                                        date_time=t)
         fovs.append(myFov)
         for b in range(0,site.maxbeam+1):
             for k in range(0,allBeams[i].prm.nrang+1):
@@ -383,7 +386,7 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
         * **myData (:class:`pydarn.sdio.radDataTypes.scanData` or :class:`pydarn.sdio.radDataTypes.beamData` or list of :class:`pydarn.sdio.radDataTypes.beamData` objects)**: a radar beam object, a radar scanData object, or simply a list of radar beams
         * **myMap**: the map we are plotting on
         * **[param]**: the parameter we are plotting
-        * **[coords]**: the coordinates we are plotting in
+        * **[coords]**: the coordinates we are plotting in.  Default: geo
         * **[param]**: the parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity
         * **[gsct]**: a flag indicating whether we are distinguishing ground scatter.  default = 0
         * **[intensities]**: a list of intensities (used for colorbar)
@@ -408,8 +411,10 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
     if(site == None):
         site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
     if(fov == None):
-        fov = pydarn.radar.radFov.fov(site=site,rsep=myData[0].prm.rsep,\
-        ngates=myData[0].prm.nrang+1,nbeams= site.maxbeam,coords=coords) 
+        fov = pydarn.radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
+                                      ngates=myData[0].prm.nrang+1,
+                                      nbeams= site.maxbeam, coords=coords,
+                                      date_time=myData[0].time) 
     
     if(isinstance(myData,pydarn.sdio.beamData)): myData = [myData]
     
@@ -510,3 +515,27 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
             myFig.gca().add_collection(lcoll)
 
             return intensities,lcoll
+
+if __name__=="__main__":
+    from datetime import datetime
+
+    time = datetime(2014,8,7,18,30)
+    
+    print "Testing some of the plotFan stuff.  Time used is:"
+    print time
+    print "Generating a plot of Saskatoon and Hankasalmi velocity"
+    print "in geographic coords with ground scatter on."
+    plotFan(time, ["sas","han"], param="velocity", coords="geo", gsct=True, 
+            show=True)
+    print "Now a plot of power."
+    plotFan(time, ["sas","han"], param="power", coords="geo", gsct=True, 
+            show=True)
+    print "Now change to magnetic coords."
+    plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
+            show=True)
+    print "Now change to MLT coords."
+    plotFan(time, ["sas","han"], param="power", coords="mlt", gsct=True, 
+            show=True)
+    print "Now generate a png instead of showing the plot."
+    plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
+            show=False, png=True)
