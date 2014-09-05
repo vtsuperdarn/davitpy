@@ -432,6 +432,11 @@ class sdDataPtr():
            offset = pydarn.dmapio.getDmapOffset(self.__fd)
            dfile = pydarn.dmapio.readDmapRec(self.__fd)
            #check for valid data
+           if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
+               #if we dont have valid data, clean up, get out
+               print '\nreached end of data'
+               #self.close()
+               return None
            try:
                dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
                         dfile['start.hour'],dfile['start.minute'],int(dfile['start.second']))
@@ -441,11 +446,6 @@ class sdDataPtr():
                print 'problem reading time from file, returning None'
                break
 
-           if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
-               #if we dont have valid data, clean up, get out
-               print '\nreached end of data'
-               #self.close()
-               return None
            #check that we're in the time window, and that we have a 
            #match for the desired params
   
