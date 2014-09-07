@@ -204,6 +204,9 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
 
     Written by Nathaniel Frissell 2014 Sept 06
     """
+    import datetime
+    import matplotlib
+
     if ax is None:
         from matplotlib import pyplot as plt
         fig     = plt.figure(figsize=(10,6))
