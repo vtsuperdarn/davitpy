@@ -253,6 +253,8 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
 
 
 if __name__ == '__main__':
+    print "This test will download GOES15 X-Ray data from 21-24 May 2014 and produce a PNG plot."
+
     import matplotlib
     matplotlib.use('Agg')
     from matplotlib import pyplot as plt
