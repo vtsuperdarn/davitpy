@@ -178,68 +178,94 @@ def read_goes(sTime,eTime=None,sat_nr=15):
                 except:
                     pass
 
+    df_xray = df_xray[np.logical_and(df_xray.index >= sTime,df_xray.index < eTime)]
     data_dict['xray']   = df_xray
+    df_orbit = df_orbit[np.logical_and(df_orbit.index >= sTime,df_orbit.index < eTime)]
     data_dict['orbit']  = df_orbit
 
     return data_dict
 
+def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,ax=None):
+    """Plot GOES X-Ray Data.
+
+    **Args**:
+        * **goes_data**: data dictionary returned by read_goes()
+        * **[sTime]**: datetime.datetime object for start of plotting.
+        * **[eTime]**: datetime.datetime object for end of plotting.
+        * **[ymin]**: Y-Axis minimum limit
+        * **[ymax]**: Y-Axis maximum limit
+        * **[legendSize]**: Character size of the legend
+
+    **Returns**:
+        * **fig**:      matplotlib figure object that was plotted to
+
+    .. note::
+        If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
+
+    Written by Nathaniel Frissell 2014 Sept 06
+    """
+    if ax is None:
+        from matplotlib import pyplot as plt
+        fig     = plt.figure(figsize=(10,6))
+        ax      = fig.add_subplot(111)
+
+    if sTime is None: sTime = goes_data['xray'].index.min()
+    if eTime is None: eTime = goes_data['xray'].index.max()
+
+    var_tags = ['A_AVG','B_AVG']
+    for var_tag in var_tags:
+        ax.plot(goes_data['xray'].index,goes_data['xray'][var_tag],label=goes_data['metadata']['variables'][var_tag]['long_label'])
+
+    #Format the x-axis
+    ax.set_xlabel('Time [UT]')
+    ax.set_xlim(sTime,eTime)
+
+    major_ticks = [sTime]
+    while major_ticks[-1] <= eTime:
+        major_ticks.append(major_ticks[-1] + datetime.timedelta(days=1))
+
+    ax.xaxis.set_ticks(major_ticks)
+    major_tick_labels = [dt.strftime('%H%M\n%d %b %Y') for dt in major_ticks]
+    ax.xaxis.set_ticklabels(major_tick_labels)
+
+    trans = matplotlib.transforms.blended_transform_factory(ax.transAxes, ax.transData)
+    classes = ['A', 'B', 'C', 'M', 'X']
+    decades = [  8,   7,   6,   5,   4]
+
+    for cls,dec in zip(classes,decades):
+        ax.text(1.01,2.5*10**(-dec),cls,transform=trans)
+
+    #Format the y-axis
+    ax.set_ylabel(r'watts m$^{-2}$')
+    ax.set_yscale('log')
+    ax.set_ylim(1e-9,1e-2)
+
+    ax.grid()
+    ax.legend(prop={'size':legendSize})
+
+    file_keys = goes_data['metadata'].keys() 
+    file_keys.remove('variables')
+    file_keys.sort()
+    md      = goes_data['metadata'][file_keys[-1]]
+    title   = ' '.join([md['institution'],md['satellite_id'],'-',md['instrument']])
+    ax.set_title(title)
+    return fig
+
+
 if __name__ == '__main__':
+    import matplotlib
+    matplotlib.use('Agg')
+    from matplotlib import pyplot as plt
     import datetime
 
     sTime       = datetime.datetime(2014,5,21)
-    goes_data   = read_goes(sTime)
+    eTime       = datetime.datetime(2014,5,24)
+    sat_nr      = 15
 
-#    ################################################################################
-#    # Plotting code...
-#    import matplotlib
-#    matplotlib.use('Agg')
-#    from matplotlib import pyplot as plt
-#
-#    output_dir  = os.path.join('output','goes')
-#    try:
-#        os.makedirs(output_dir)
-#    except:
-#        pass
-#
-#    out_file        = '_'.join(['GOES{0:02d}'.format(sat_nr),sTime.strftime('%Y%m%d-%H%M'),eTime.strftime('%Y%m%d-%H%M')])
-#    out_file_path   = os.path.join(output_dir,out_file)
-#    fig     = plt.figure(figsize=(10,6))
-#    axis    = fig.add_subplot(111)
-#
-#    var_tags = ['A_AVG','B_AVG']
-#    for var_tag in var_tags:
-#        var     = nc.variables[var_tag]
-#        axis.plot(df.index,df[var_tag],label=var.long_label)
-#
-#    #Format the x-axis
-#    axis.set_xlabel('Time [UT]')
-#    axis.set_xlim(sTime,eTime)
-#
-#    major_ticks = [sTime]
-#    while major_ticks[-1] <= eTime:
-#        major_ticks.append(major_ticks[-1] + datetime.timedelta(days=1))
-#
-#    axis.xaxis.set_ticks(major_ticks)
-#    major_tick_labels = [dt.strftime('%H%M\n%d %b %Y') for dt in major_ticks]
-#    axis.xaxis.set_ticklabels(major_tick_labels)
-#
-#    trans = matplotlib.transforms.blended_transform_factory(axis.transAxes, axis.transData)
-#    classes = ['A', 'B', 'C', 'M', 'X']
-#    decades = [  8,   7,   6,   5,   4]
-#
-#    for cls,dec in zip(classes,decades):
-#        axis.text(1.01,2.5*10**(-dec),cls,transform=trans)
-#
-#    #Format the y-axis
-#    axis.set_ylabel(r'watts m$^{-2}$')
-#    axis.set_yscale('log')
-#    axis.set_ylim(1e-9,1e-2)
-#
-#    axis.grid()
-#    axis.legend(prop={'size':10})
-#
-#    title = ' '.join([nc.institution,nc.satellite_id,'-',nc.instrument])
-#    axis.set_title(title)
-#
-#    fig.tight_layout()
-#    fig.savefig(out_file_path,bbox_inches='tight')
+    goes_data   = read_goes(sTime,eTime,sat_nr)
+
+    fig         = goes_plot(goes_data)
+
+    out_file        = '_'.join(['GOES{0:02d}'.format(sat_nr),sTime.strftime('%Y%m%d-%H%M'),eTime.strftime('%Y%m%d-%H%M')])
+    fig.tight_layout()
+    fig.savefig(out_file,bbox_inches='tight')
