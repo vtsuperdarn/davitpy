@@ -211,6 +211,8 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
         from matplotlib import pyplot as plt
         fig     = plt.figure(figsize=(10,6))
         ax      = fig.add_subplot(111)
+    else:
+        fig     = ax.get_figure()
 
     if sTime is None: sTime = goes_data['xray'].index.min()
     if eTime is None: eTime = goes_data['xray'].index.max()
