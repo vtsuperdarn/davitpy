@@ -151,7 +151,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         if df_orbit is None:
             df_orbit = df_tmp
         else:
-            df_orbit = df.append(df_tmp)
+            df_orbit = df_orbit.append(df_tmp)
 
         #Store X-Ray Data
         tt = nc.variables['time_tag']
@@ -166,7 +166,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         if df_xray is None:
             df_xray = df_tmp
         else:
-            df_xray = df.append(df_tmp)
+            df_xray = df_xray.append(df_tmp)
 
         #Store info about units
         for var in (myVars+orbit_vars):
