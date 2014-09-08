@@ -256,14 +256,105 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     ax.set_title(title)
     return fig
 
+def __split_sci(value):
+    """Split scientific notation into (coefficient,power).
+    This is a private function that currently only works on scalars.
+
+    **Args**:
+        * **value**: numerical value
+
+    **Returns**:
+        * **(coefficient,power)**
+
+    Written by Nathaniel Frissell 2014 Sept 07
+    """
+    s   = '{0:e}'.format(value)
+    s   = s.split('e')
+    return (float(s[0]),float(s[1]))
+
+def classify_flare(value):
+    """Convert GOES X-Ray flux into a string flare classification.
+    You should use the 1-8 Angstrom band for classification (B_AVG in
+    the NOAA data files).
+
+    A 0.001 W/m**2 measurement in the 1-8 Angstrom band is classified as an X10 flare..
+
+    See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
+
+    This function currently only works on scalars.
+
+    **Args**:
+        * **value**: numerical value of the GOES 1-8 Angstrom band X-Ray Flux in W/m^2.
+
+    **Returns**:
+        * **flare_class**: (string) class of solar flare
+
+    **Example**:
+      ::
+
+        flare_class = classify_flare(0.001)
+
+    Written by Nathaniel Frissell 2014 Sept 07
+    """
+    coef, power = __split_sci(value)
+
+    if power < -7:
+        letter  = 'A'
+        coef    = value / 1e-8
+    elif power >= -7 and power < -6:
+        letter  = 'B'
+    elif power >= -6 and power < -5:
+        letter  = 'C'
+    elif power >= -5 and power < -4:
+        letter  = 'M'
+    elif power >= -4:
+        letter  = 'X'
+        coef    = value / 1.e-4
+
+    flare_class = '{0}{1:.1f}'.format(letter,coef)
+    return flare_class
+
+def flare_value(flare_class):
+    """Convert a string solar flare class into the lower bound in W/m**2 of the 
+    1-8 Angstrom X-Ray Band for the GOES Spacecraft.
+
+    An 'X10' flare = 0.001 W/m**2.
+
+    See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
+
+    This function currently only works on scalars.
+
+    **Args**:
+        * **flare_class**: (string) class of solar flare (e.g. 'X10')
+
+    **Returns**:
+        * **value**: numerical value of the GOES 1-8 Angstrom band X-Ray Flux in W/m**2.
+
+    **Example**:
+      ::
+
+        value = flare_value('X10')
+
+    Written by Nathaniel Frissell 2014 Sept 07
+    """
+    flare_dict  = {'A':-8, 'B':-7, 'C':-6, 'M':-5, 'X':-4} 
+    letter      = flare_class[0]
+    power       = flare_dict[letter.upper()]
+    coef        = float(flare_class[1:])
+    value       = coef * 10.**power
+    return value
+
 
 if __name__ == '__main__':
     print "This test will download GOES15 X-Ray data from 21-24 May 2014 and produce a PNG plot."
 
+    import datetime
+
     import matplotlib
     matplotlib.use('Agg')
     from matplotlib import pyplot as plt
-    import datetime
+
+    import numpy as np
 
     sTime       = datetime.datetime(2014,5,21)
     eTime       = datetime.datetime(2014,5,24)
@@ -276,3 +367,36 @@ if __name__ == '__main__':
     out_file        = '_'.join(['GOES{0:02d}'.format(sat_nr),sTime.strftime('%Y%m%d-%H%M'),eTime.strftime('%Y%m%d-%H%M')])
     fig.tight_layout()
     fig.savefig(out_file,bbox_inches='tight')
+
+    ################################################################################ 
+    print ''
+    print 'Flare classification test.'
+    flares = ['A5.5', 'B4.0', 'X11.1']
+    values = [5.5e-8, 4.0e-7, 11.1e-4]
+
+    test_results = []
+    for flare,value in zip(flares,values):
+        print '  Testing classify_flare() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value)
+
+        test_flare = classify_flare(value)
+        print '    classify_flare({0:.1e}) = {1}'.format(value,test_flare)
+        test_results.append(flare == test_flare)
+
+    if np.all(test_results):
+        print 'CONGRATULATIONS: Test passed for classify_flare()!'
+    else:
+        print 'WARNING: classify_flare() failed self-test.'
+
+    ################################################################################
+    print ''
+    test_results = []
+    for flare,value in zip(flares,values):
+        print '  Testing flare_value() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value)
+        test_value = flare_value(flare)
+        print '    flare_value({0}) = {1:.1e}'.format(test_flare,value)
+        test_results.append(value == test_value)
+
+    if np.all(test_results):
+        print 'CONGRATULATIONS: Test passed for flare_value()!'
+    else:
+        print 'WARNING: flare_value() failed self-test.'
