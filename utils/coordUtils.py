@@ -163,7 +163,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # Make the inputs into numpy arrays because single element lists 
     # have no len.
     lon, lat = np.array(lon), np.array(lat)
-    shape = np.shape(lon)
+    orig_shape = np.shape(lon)
+    lon, lat = lon.flatten(), lat.flatten()
 
     # Test whether we are using the same altitude for everything.
     if altitude is not None:
@@ -233,8 +234,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                 lat, lon, _ = aacgm.aacgmConvArr(list(lat.flatten()), 
                                                 list(lon.flatten()), altitude,
                                                 date_time.year,1)
-                lon = np.array(lon).reshape(shape)
-                lat = np.array(lat).reshape(shape)
+                lon = np.array(lon).flatten()
+                lat = np.array(lat).flatten()
                 start = "geo"
         
         # End of AACGM family FROM block.
@@ -277,8 +278,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                 lat, lon, _ = aacgm.aacgmConvArr(list(lat.flatten()), 
                                                 list(lon.flatten()), altitude,
                                                 date_time.year,0)
-                lon = np.array(lon).reshape(shape)
-                lat = np.array(lat).reshape(shape)
+                lon = np.array(lon).flatten()
+                lat = np.array(lat).flatten()
                 start = "mag"
 
             # It is in AACGM now.
@@ -318,7 +319,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # Now it should be in the end system.
     assert(start == end),"Error, not in correct end system...?????"
 
-    # Convert outputs to input type.
+    # Convert outputs to input type and shape.
+    lon, lat = lon.reshape(orig_shape), lat.reshape(orig_shape)
     if is_list:
         lon = list(lon.flatten())
         lat = list(lat.flatten())
