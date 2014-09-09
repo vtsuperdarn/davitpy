@@ -255,7 +255,7 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
         ax.text(1.01,2.5*10**(-dec),cls,transform=trans)
 
     #Format the y-axis
-    ax.set_ylabel(r'watts m$^{-2}$')
+    ax.set_ylabel(r'W m$^{-2}$')
     ax.set_yscale('log')
     ax.set_ylim(1e-9,1e-2)
 
