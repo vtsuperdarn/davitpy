@@ -509,6 +509,10 @@ if __name__ == '__main__':
         pass
 
     flares      = find_flares(goes_data)
+
+    with open(os.path.join(output_dir,'flares.txt'),'w') as fl:
+        fl.write(flares.to_string())
+
     for key,flare in flares.iterrows():
         filename = key.strftime('goes_%Y%m%d_%H%M.png')
         filepath = os.path.join(output_dir,filename)
@@ -523,9 +527,7 @@ if __name__ == '__main__':
         goes_plot(goes_data,ax=ax,sTime=plot_sTime,eTime=plot_eTime)
 
         fig.savefig(filepath,bbox_inches='tight')
-
-    with open(os.path.join(output_dir,'flares.txt'),'w') as fl:
-        fl.write(flares.to_string())
+        fig.clf()
 
     flares_str = """
 Thank you for testing the goes.py module.  If everything worked, you should find a 
