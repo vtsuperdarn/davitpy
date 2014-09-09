@@ -36,16 +36,17 @@
 from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
-
+uafids = [209, 208, 7, 20, 22, 16]
 
 class radDataPtr():
   """A class which contains a pipeline to a data source
   
   **Public Attrs**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
+    * **radcode** (str): the 3-letter radar code
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
     * **stid** (int): station id of the request
-    * **channel** (str): channel of the request
+    * **channel** (str): the 1-letter code for what channel you want data from, eg 'a','b',... if this is set to None, data from ALL channels will be read. default = None
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
@@ -125,16 +126,14 @@ class radDataPtr():
       'error, src must be one of None,local,sftp'
 
     if radcode is not None:
-      assert(isinstance(radcode,str)), \
-        'error, radcode must be None or a string'
-      segments=radcode.split(".")
-      try: rad=segments[0]
-      except: rad=None
-      try: chan=segments[1]
-      except: chan=None
-      assert(isinstance(rad,str) and len(rad) == 3), \
-        'error, rad must be a 3 char string'
-      self.stid=int(network().getRadarByCode(rad).id)
+      assert(isinstance(radcode,str) and len(radcode) == 3), \
+        'error, radcode must be None or a 3 char string'
+      self.stid=int(network().getRadarByCode(radcode).id)
+
+    # If channel is None, then make the channel a wildcard, then it will pull in both UAF channels
+    if channel is None:
+	channel = '*'
+
 
     if(self.eTime == None):
       self.eTime = self.sTime+dt.timedelta(days=1)
@@ -186,8 +185,8 @@ class radDataPtr():
     if fileName == None and not noCache:
         try:
             if True:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,radcode,fileType)):
-                    try:
+                for f in glob.glob("%s????????.??????.????????.??????.%s.\%s.%s" % (tmpDir,radcode,channel,fileType)):
+                   try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
                         t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
@@ -198,10 +197,10 @@ class radDataPtr():
                             filelist.append(f)
                             print 'Found cached file: %s' % f
                             break
-                    except Exception,e:
+                   except Exception,e:
                         print e
             if not cached:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
+                for f in glob.glob("%s????????.??????.????????.??????.%s.\%s.%s" % (tmpDir,radcode,channel,fileType)):
                     try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
@@ -221,7 +220,7 @@ class radDataPtr():
     if not cached and (src == None or src == 'local') and fileName == None:
         try:
             for ftype in arr:
-                print "\nLooking locally for %s files with rad: %s chan: %s" % (ftype,radcode,chan)
+                print "\nLooking locally for %s files with radcode: %s chan: %s" % (ftype,radcode,channel)
                 #If the following aren't already, in the near future
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
@@ -240,7 +239,7 @@ class radDataPtr():
                     try:
                         local_fnamefmt = os.environ['DAVIT_LOCAL_FNAMEFMT'].split(',')
                     except:
-                        local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
+	                local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
                         print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
 
@@ -352,9 +351,9 @@ class radDataPtr():
         if not cached:
             print 'Concatenating all the files in to one'
             #choose a temp file name with time span info for cacheing
-            tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
+            tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % (tmpDir, \
               self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
-              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
+              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,channel,fileType)
             print 'cat '+string.join(filelist)+' > '+tmpName
             os.system('cat '+string.join(filelist)+' > '+tmpName)
             for filename in filelist:
@@ -554,10 +553,12 @@ class radDataPtr():
              print '\nreached end of data'
              #self.close()
              return None
+	 #Set the channel appropriately
+	 if dfile['stid'] in uafids: channel = self.channel
+         elif dfile['channel'] < 2: channel = 'a'
+         else: channel = alpha[dfile['channel']-1]
          #check that we're in the time window, and that we have a 
          #match for the desired params
-         if dfile['channel'] < 2: channel = 'a'
-         else: channel = alpha[dfile['channel']-1]
          if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and \
                (self.stid == None or self.stid == dfile['stid']) and
