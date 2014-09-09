@@ -533,7 +533,6 @@ class radDataPtr():
      from pydarn.sdio.radDataTypes import radDataPtr, beamData, \
      fitData, prmData, rawData, iqData, alpha
      import pydarn, datetime as dt
-     import os
 
      #check input
      if(self.__ptr == None):
@@ -567,7 +566,6 @@ class radDataPtr():
                (self.bmnum == None or self.bmnum == dfile['bmnum']) and
                (self.cp == None or self.cp == dfile['cp'])):
              #fill the beamdata object
-#	     print "if'ed"
              myBeam.updateValsFromDict(dfile)
              myBeam.recordDict=dfile
              myBeam.fType = self.fType
