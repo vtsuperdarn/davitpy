@@ -1,4 +1,4 @@
-# Copyright (C) 2012  VT SuperDARN Lab
+# Copyright (C) 2014  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,10 @@
 *********************
 **Functions**:
 	* :func:`gme.sat.read_goes`
+	* :func:`gme.sat.goes_plot`
+	* :func:`gme.sat.classify_flare`
+	* :func:`gme.sat.flare_value`
+	* :func:`gme.sat.find_flares`
 """
 
 def read_goes(sTime,eTime=None,sat_nr=15):
@@ -221,18 +225,28 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     for var_tag in var_tags:
         ax.plot(goes_data['xray'].index,goes_data['xray'][var_tag],label=goes_data['metadata']['variables'][var_tag]['long_label'])
 
+
     #Format the x-axis
-    ax.set_xlabel('Time [UT]')
+    if eTime - sTime > datetime.timedelta(days=1):
+        ax.xaxis.set_major_formatter(
+                matplotlib.dates.DateFormatter('%H%M\n%d %b %Y')
+                )
+    else:
+        ax.xaxis.set_major_formatter(
+                matplotlib.dates.DateFormatter('%H%M')
+                )
+
+    sTime_label = sTime.strftime('%Y %b %d')
+    eTime_label = eTime.strftime('%Y %b %d')
+    if sTime_label == eTime_label:
+        time_label = sTime_label
+    else:
+        time_label = sTime_label + ' - ' + eTime_label
+
+    ax.set_xlabel('\n'.join([time_label,'Time [UT]']))
     ax.set_xlim(sTime,eTime)
 
-    major_ticks = [sTime]
-    while major_ticks[-1] <= eTime:
-        major_ticks.append(major_ticks[-1] + datetime.timedelta(days=1))
-
-    ax.xaxis.set_ticks(major_ticks)
-    major_tick_labels = [dt.strftime('%H%M\n%d %b %Y') for dt in major_ticks]
-    ax.xaxis.set_ticklabels(major_tick_labels)
-
+    #Label Flare classes
     trans = matplotlib.transforms.blended_transform_factory(ax.transAxes, ax.transData)
     classes = ['A', 'B', 'C', 'M', 'X']
     decades = [  8,   7,   6,   5,   4]
@@ -344,10 +358,101 @@ def flare_value(flare_class):
     value       = coef * 10.**power
     return value
 
+def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None):
+    """Find flares of a minimum class in a GOES data dict created by read_goes().
+    This works with 1-minute averaged GOES data.
+
+    Classifications are based on the 1-8 Angstrom X-Ray Band for the GOES Spacecraft.
+    See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
+
+
+    **Args**:
+        * **goes_data**: (dict) GOES data dict created by read_goes()
+        * **window_minutes**: (int) Window size to look for peaks in minutes.
+            I.E., if window_minutes=60, then no more than 1 flare will be found 
+            inside of a 60 minute window.
+        * **min_class**: (str) Only flares >= to this class will be reported. Use a
+            format such as 'M2.3', 'X1', etc.
+        * **sTime**: (datetime.datetime) Only report flares at or after this time.
+            If None, the earliest available time in goes_data will be used.
+        * **eTime**: (datetime.datetime) Only report flares before this time.
+            If None, the last available time in goes_data will be used.
+
+    **Returns**:
+        * **flares**: Pandas dataframe listing:
+            * time of flares
+            * GOES 1-8 Angstrom band x-ray flux
+            * Classification of flare
+
+    **Example**:
+      ::
+
+        sTime       = datetime.datetime(2014,1,1)
+        eTime       = datetime.datetime(2014,6,30)
+        sat_nr      = 15 # GOES15
+        goes_data   = read_goes(sTime,eTime,sat_nr)
+        flares = find_flares(goes_data,window_minutes=60,min_class='X1')
+
+    Written by Nathaniel Frissell 2014 Sept 09
+    """
+    import datetime
+    import pandas as pd
+    import numpy as np
+
+    df  = goes_data['xray']
+
+    if sTime is None: sTime = df.index.min()
+    if eTime is None: eTime = df.index.max()
+
+    # Figure out when big solar flares are.
+    time_delta      = datetime.timedelta(minutes=window_minutes)
+    time_delta_half = datetime.timedelta( minutes=(window_minutes/2.) )
+
+    window_center = [sTime + time_delta_half ]
+    while window_center[-1] < eTime:
+        window_center.append(window_center[-1] + time_delta)
+
+    b_avg = df['B_AVG']
+
+    keys = []
+    for win in window_center:
+        sWin = win - time_delta_half
+        eWin = win + time_delta_half
+
+        try:
+            arg_max = b_avg[sWin:eWin].argmax()
+            keys.append(arg_max)
+        except:
+            pass
+        
+    df_win      = pd.DataFrame({'B_AVG':b_avg[keys]})
+    df_win.index = pd.to_datetime(df_win.index)
+
+    flares      = df_win[df_win['B_AVG'] >= flare_value(min_class)]
+
+    # Remove flares that are really window edges instead of local maxima.
+    drop_list = []
+    for inx_0,key_0 in enumerate(flares.index):
+        if inx_0 == len(flares.index)-1: break
+
+        inx_1   = inx_0 + 1
+        key_1   = flares.index[inx_1]
+
+        arg_min = np.argmin([flares['B_AVG'][key_0],flares['B_AVG'][key_1]])
+        key_min = [key_0,key_1][arg_min]
+
+        vals_between = b_avg[key_0:key_1]
+
+        if flares['B_AVG'][key_min] <= vals_between.min():
+            drop_list.append(key_min)
+
+    flares  = flares.drop(drop_list)
+    flares['class'] = map(classify_flare,flares['B_AVG'])
+
+    return flares
 
 if __name__ == '__main__':
-    print "This test will download GOES15 X-Ray data from 21-24 May 2014 and produce a PNG plot."
-
+    import os
     import datetime
 
     import matplotlib
@@ -356,19 +461,7 @@ if __name__ == '__main__':
 
     import numpy as np
 
-    sTime       = datetime.datetime(2014,5,21)
-    eTime       = datetime.datetime(2014,5,24)
-    sat_nr      = 15
-
-    goes_data   = read_goes(sTime,eTime,sat_nr)
-
-    fig         = goes_plot(goes_data)
-
-    out_file        = '_'.join(['GOES{0:02d}'.format(sat_nr),sTime.strftime('%Y%m%d-%H%M'),eTime.strftime('%Y%m%d-%H%M')])
-    fig.tight_layout()
-    fig.savefig(out_file,bbox_inches='tight')
-
-    ################################################################################ 
+    # Flare Classification Test ####################################################
     print ''
     print 'Flare classification test.'
     flares = ['A5.5', 'B4.0', 'X11.1']
@@ -387,7 +480,6 @@ if __name__ == '__main__':
     else:
         print 'WARNING: classify_flare() failed self-test.'
 
-    ################################################################################
     print ''
     test_results = []
     for flare,value in zip(flares,values):
@@ -400,3 +492,56 @@ if __name__ == '__main__':
         print 'CONGRATULATIONS: Test passed for flare_value()!'
     else:
         print 'WARNING: flare_value() failed self-test.'
+    print ''
+
+    # Flare finding and plotting test. #############################################
+    sTime       = datetime.datetime(2014,1,1)
+    eTime       = datetime.datetime(2014,6,30)
+    sat_nr      = 15
+
+    goes_data   = read_goes(sTime,eTime,sat_nr)
+
+    tmp_dir     = os.getenv('DAVIT_TMPDIR')
+    output_dir  = os.path.join(tmp_dir,'goes')
+    try:
+        os.makedirs(output_dir)
+    except:
+        pass
+
+    flares      = find_flares(goes_data)
+    for key,flare in flares.iterrows():
+        filename = key.strftime('goes_%Y%m%d_%H%M.png')
+        filepath = os.path.join(output_dir,filename)
+
+        fig     = plt.figure()
+        ax      = fig.add_subplot(111)
+        label   = '{0} Class Flare @ {1}'.format(flare['class'],key.strftime('%H%M UT'))
+        ax.plot(key,flare['B_AVG'],'o',label=label)
+
+        plot_sTime  = key - datetime.timedelta(hours=12)
+        plot_eTime  = key + datetime.timedelta(hours=12)
+        goes_plot(goes_data,ax=ax,sTime=plot_sTime,eTime=plot_eTime)
+
+        fig.savefig(filepath,bbox_inches='tight')
+
+    with open(os.path.join(output_dir,'flares.txt'),'w') as fl:
+        fl.write(flares.to_string())
+
+    flares_str = """
+Thank you for testing the goes.py module.  If everything worked, you should find a 
+set of plots for all x-class flares from 1Jan2014 - 30Jun2014 in your DAVIT_TMPDIR/goes.
+A list of the flares is given below.  This should match the flares.txt file in the same
+directory as your plots.
+
+                     B_AVG     class
+2014-01-07 18:32:00  0.000125  X1.2
+2014-02-25 00:49:00  0.000497  X5.0
+2014-03-29 17:48:00  0.000101  X1.0
+2014-04-25 00:27:00  0.000139  X1.4
+2014-06-10 11:42:00  0.000222  X2.2
+2014-06-10 12:52:00  0.000155  X1.5
+2014-06-11 09:06:00  0.000100  X1.0
+"""
+
+    print flares_str
+    print 'Your DAVIT_TMPDIR/goes: {0}'.format(output_dir)
