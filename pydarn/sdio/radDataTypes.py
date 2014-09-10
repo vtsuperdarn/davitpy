@@ -185,7 +185,7 @@ class radDataPtr():
     if fileName == None and not noCache:
         try:
             if True:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.\%s.%s" % (tmpDir,radcode,channel,fileType)):
+                for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,channel,fileType)):
                    try:
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
@@ -553,8 +553,8 @@ class radDataPtr():
              print '\nreached end of data'
              #self.close()
              return None
-	 #Set the channel appropriately
-	 if dfile['stid'] in uafids: channel = self.channel
+         #Set the channel appropriately
+         if dfile['stid'] in uafids: channel = self.channel
          elif dfile['channel'] < 2: channel = 'a'
          else: channel = alpha[dfile['channel']-1]
          #check that we're in the time window, and that we have a 
