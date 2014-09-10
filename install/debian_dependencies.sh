@@ -15,6 +15,7 @@ apt-get install -y mpich2
 apt-get install -y gfortran
 apt-get install -y libhdf5-serial-dev
 apt-get install -y python-matplotlib
+apt-get install -y netcdf-dbg
 pip install --upgrade matplotlib
 apt-get install -y python-mpltoolkits.basemap
 pip install --upgrade ipython
