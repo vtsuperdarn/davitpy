@@ -1157,3 +1157,134 @@ if __name__=="__main__":
   
   del localptr
 
+
+  print "\nRunning sftp grab example for testing the channel option for channel c"
+  rad='kod'
+  channel='c'
+  fileType='fitex'
+  filtered=False
+  sTime=datetime.datetime(2014,6,24,0,0)
+  eTime=datetime.datetime(2014,6,24,2,0)
+  expected_filename="20140624.000000.20140624.020000.kod.c.fitex"
+  expected_path=os.path.join(tmpDir,expected_filename)
+  expected_filesize=16148989
+  expected_md5sum="ae7b4a7c8fea56af9639c39bea1453f2"
+  print "Expected File:",expected_path
+
+  print "\nRunning sftp grab example for radDataPtr."
+  print "Environment variables used:"
+  print "  DB:", os.environ['DB']
+  print "  DB_PORT:",os.environ['DB_PORT']
+  print "  DBREADUSER:", os.environ['DBREADUSER']
+  print "  DBREADPASS:", os.environ['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+  src='sftp'
+  if os.path.isfile(expected_path):
+    os.remove(expected_path)
+  VTptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
+  if os.path.isfile(expected_path):
+    statinfo = os.stat(expected_path)
+    print "Actual File Size:  ", statinfo.st_size
+    print "Expected File Size:", expected_filesize 
+    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
+    print "Actual Md5sum:  ",md5sum
+    print "Expected Md5sum:",expected_md5sum
+    if expected_md5sum!=md5sum:
+      print "Error: Cached dmap file has unexpected md5sum."
+  else:
+    print "Error: Failed to create expected cache file"
+  print "Let's read two records from the remote sftp server:"
+  try:
+    ptr=VTptr
+    beam  = ptr.readRec()
+    print beam.time
+    beam  = ptr.readRec()
+    print beam.time
+    print "Close pointer"
+    ptr.close()
+    print "reopen pointer"
+    ptr.open()
+    print "Should now be back at beginning:"
+    beam  = ptr.readRec()
+    print beam.time
+    print "What is the current offset:"
+    print ptr.offsetTell()
+    print "Try to seek to offset 4, shouldn't work:"
+    print ptr.offsetSeek(4)
+    print "What is the current offset:"
+    print ptr.offsetTell()
+
+  except:
+    print "record read failed for some reason"
+
+  ptr.close()
+  del VTptr
+
+  print "\nRunning sftp grab example for testing the channel option for all"
+  rad='kod'
+  channel='all'
+  fileType='fitex'
+  filtered=False
+  sTime=datetime.datetime(2014,6,24,0,0)
+  eTime=datetime.datetime(2014,6,24,2,0)
+  expected_filename="20140624.000000.20140624.020000.kod.all.fitex"
+  expected_path=os.path.join(tmpDir,expected_filename)
+  expected_filesize=31822045
+  expected_md5sum="23cb7f8d954cef80b4a3e219838db816"
+  print "Expected File:",expected_path
+
+  print "\nRunning sftp grab example for radDataPtr."
+  print "Environment variables used:"
+  print "  DB:", os.environ['DB']
+  print "  DB_PORT:",os.environ['DB_PORT']
+  print "  DBREADUSER:", os.environ['DBREADUSER']
+  print "  DBREADPASS:", os.environ['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+  src='sftp'
+  if os.path.isfile(expected_path):
+    os.remove(expected_path)
+  VTptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
+  if os.path.isfile(expected_path):
+    statinfo = os.stat(expected_path)
+    print "Actual File Size:  ", statinfo.st_size
+    print "Expected File Size:", expected_filesize 
+    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
+    print "Actual Md5sum:  ",md5sum
+    print "Expected Md5sum:",expected_md5sum
+    if expected_md5sum!=md5sum:
+      print "Error: Cached dmap file has unexpected md5sum."
+  else:
+    print "Error: Failed to create expected cache file"
+  print "Let's read two records from the remote sftp server:"
+  try:
+    ptr=VTptr
+    beam  = ptr.readRec()
+    print beam.time
+    beam  = ptr.readRec()
+    print beam.time
+    print "Close pointer"
+    ptr.close()
+    print "reopen pointer"
+    ptr.open()
+    print "Should now be back at beginning:"
+    beam  = ptr.readRec()
+    print beam.time
+    print "What is the current offset:"
+    print ptr.offsetTell()
+    print "Try to seek to offset 4, shouldn't work:"
+    print ptr.offsetSeek(4)
+    print "What is the current offset:"
+    print ptr.offsetTell()
+
+  except:
+    print "record read failed for some reason"
+
+  ptr.close()
+  del VTptr
+
