@@ -45,7 +45,9 @@ class radDataPtr():
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
     * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
     * **stid** (int): station id of the request
-    * **channel** (str): channel of the request
+    * **channel** (str): the 1-letter code to specify the UAF channel (not stereo), 
+                         e.g. 'a','b',... If 'all', ALL channels were obtained. 
+                         default = None meaning don't check for UAF named data files
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
     * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
@@ -108,7 +110,8 @@ class radDataPtr():
       'error, sTime must be datetime object'
     assert(self.eTime == None or isinstance(self.eTime,dt.datetime)), \
       'error, eTime must be datetime object or None'
-    assert(channel == None or (isinstance(channel,str) and len(channel) == 1)), \
+    assert(self.channel == None or (isinstance(self.channel,str) and len(self.channel) == 1) \
+           or (self.channel == 'all')), \
       'error, channel must be None or a 1-letter string'
     assert(bmnum == None or isinstance(bmnum,int)), \
       'error, bmnum must be an int or None'
@@ -124,17 +127,9 @@ class radDataPtr():
     assert(src == None or src == 'local' or src == 'sftp'), \
       'error, src must be one of None,local,sftp'
 
-    if radcode is not None:
-      assert(isinstance(radcode,str)), \
-        'error, radcode must be None or a string'
-      segments=radcode.split(".")
-      try: rad=segments[0]
-      except: rad=None
-      try: chan=segments[1]
-      except: chan=None
-      assert(isinstance(rad,str) and len(rad) == 3), \
-        'error, rad must be a 3 char string'
-      self.stid=int(network().getRadarByCode(rad).id)
+    # If channel is all, then make the channel a wildcard, then it will pull in all UAF channels
+    if (self.channel=='all'):
+      channel = '.'
 
     if(self.eTime == None):
       self.eTime = self.sTime+dt.timedelta(days=1)
@@ -185,7 +180,7 @@ class radDataPtr():
     #Next, check for a cached file
     if fileName == None and not noCache:
         try:
-            if True:
+            if (self.channel is None):
                 for f in glob.glob("%s????????.??????.????????.??????.%s.%sf" % (tmpDir,radcode,fileType)):
                     try:
                         ff = string.replace(f,tmpDir,'')
@@ -200,9 +195,9 @@ class radDataPtr():
                             break
                     except Exception,e:
                         print e
-            if not cached:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.%s" % (tmpDir,radcode,fileType)):
-                    try:
+            else:
+                for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,self.channel,fileType)):
+                    try: 
                         ff = string.replace(f,tmpDir,'')
                         #check time span of file
                         t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
@@ -221,7 +216,7 @@ class radDataPtr():
     if not cached and (src == None or src == 'local') and fileName == None:
         try:
             for ftype in arr:
-                print "\nLooking locally for %s files with rad: %s chan: %s" % (ftype,radcode,chan)
+                print "\nLooking locally for %s files with radcode: %s channel: %s" % (ftype,radcode,self.channel)
                 #If the following aren't already, in the near future
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
@@ -352,9 +347,14 @@ class radDataPtr():
         if not cached:
             print 'Concatenating all the files in to one'
             #choose a temp file name with time span info for cacheing
-            tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
-              self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
-              self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
+            if (self.channel is None):
+                tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
+                  self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
+                  self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
+            else:
+                tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % (tmpDir, \
+                  self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
+                  self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,self.channel,fileType)
             print 'cat '+string.join(filelist)+' > '+tmpName
             os.system('cat '+string.join(filelist)+' > '+tmpName)
             for filename in filelist:
@@ -556,12 +556,12 @@ class radDataPtr():
              return None
          #check that we're in the time window, and that we have a 
          #match for the desired params
-         if dfile['channel'] < 2: channel = 'a'
-         else: channel = alpha[dfile['channel']-1]
+         #if dfile['channel'] < 2: channel = 'a'  THIS CHECK IS BAD. 'channel' in a dmap file specifies STEREO operation or not.
+         #else: channel = alpha[dfile['channel']-1]
          if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and \
                (self.stid == None or self.stid == dfile['stid']) and
-               (self.channel == None or self.channel == channel) and
+               #(self.channel == None or self.channel == channel) and ASR removed because of bad check as above.
                (self.bmnum == None or self.bmnum == dfile['bmnum']) and
                (self.cp == None or self.cp == dfile['cp'])):
              #fill the beamdata object
@@ -649,13 +649,23 @@ class radBaseData():
           setattr(self,attr,dt.datetime.utcfromtimestamp(aDict[attr]))
         continue
       elif(attr == 'channel'):
-        if(aDict.has_key('channel')): 
-          if(isinstance(aDict.has_key('channel'), int)):
-            if(aDict['channel'] < 2): self.channel = 'a'
-            else: self.channel = alpha[aDict['channel']-1]
-          else: self.channel = aDict['channel']
-        else: self.channel = 'a'
+        if(aDict.has_key('channel')):
+          self.channel = aDict['channel']
         continue
+
+  # REMOVED BY ASR on 11 SEP 2014
+  # the channel attribute in fitted files (fitacf, lmfit, fitex) specifies
+  # if the data came from a STEREO radar, so we shouldn't clobber the value
+  # from the dmap file.
+  #    elif(attr == 'channel'):
+  #      if(aDict.has_key('channel')): 
+  #        if(isinstance(aDict.has_key('channel'), int)):
+  #          if(aDict['channel'] < 2): self.channel = 'a'
+  #          else: self.channel = alpha[aDict['channel']-1]
+  #        else: self.channel = aDict['channel']
+  #      else: self.channel = 'a'
+  #      continue
+
       elif(attr == 'inttus'):
         if(aDict.has_key('intt.us')): 
           self.inttus = aDict['intt.us']
