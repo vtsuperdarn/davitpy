@@ -184,36 +184,20 @@ class radDataPtr():
     #Next, check for a cached file
     if fileName == None and not noCache:
         try:
-            if True:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,channel,fileType)):
-                   try:
-                        ff = string.replace(f,tmpDir,'')
-                        #check time span of file
-                        t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
-                        t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
-                        #check if file covers our timespan
-                        if t1 <= self.sTime and t2 >= self.eTime:
-                            cached = True
-                            filelist.append(f)
-                            print 'Found cached file: %s' % f
-                            break
-                   except Exception,e:
-                        print e
-            if not cached:
-                for f in glob.glob("%s????????.??????.????????.??????.%s.\%s.%s" % (tmpDir,radcode,channel,fileType)):
-                    try:
-                        ff = string.replace(f,tmpDir,'')
-                        #check time span of file
-                        t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
-                        t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
-                        #check if file covers our timespan
-                        if t1 <= self.sTime and t2 >= self.eTime:
-                            cached = True
-                            filelist.append(f)
-                            print 'Found cached file: %s' % f
-                            break
-                    except Exception,e:
-                        print e
+            for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,channel,fileType)):
+                try:
+                    ff = string.replace(f,tmpDir,'')
+                    #check time span of file
+                    t1 = dt.datetime(int(ff[0:4]),int(ff[4:6]),int(ff[6:8]),int(ff[9:11]),int(ff[11:13]),int(ff[13:15]))
+                    t2 = dt.datetime(int(ff[16:20]),int(ff[20:22]),int(ff[22:24]),int(ff[25:27]),int(ff[27:29]),int(ff[29:31]))
+                    #check if file covers our timespan
+                    if t1 <= self.sTime and t2 >= self.eTime:
+                        cached = True
+                        filelist.append(f)
+                        print 'Found cached file: %s' % f
+                        break
+                except Exception,e:
+                    print e
         except Exception,e:
             print e
     #Next, LOOK LOCALLY FOR FILES
