@@ -248,6 +248,14 @@ class radDataPtr():
                 
                 outdir = tmpDir
 
+                #check to see if channel was specified and only use fnamefmts with channel in them
+                for f,fname in enumerate(local_fnamefmt):
+                    if ((channel is not None) and ('channel' not in fname)):
+                        local_fnamefmt.pop(f)
+                local_fnamefmt = []
+                if len(local_fnamefmt) == 0:
+                    print "Error, no file name formats containing channel exists!"
+                    break
 
                 #fetch the local files
                 filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
@@ -323,6 +331,15 @@ class radDataPtr():
                         remote_timeinc = dt.timedelta(hours=2)
                         print 'Environment variable DAVIT_REMOTE_TIMEINC not set, using default:',remote_timeinc
                 outdir = tmpDir
+
+                #check to see if channel was specified and only use fnamefmts with channel in them
+                for f,fname in enumerate(remote_fnamefmt):
+                    if ((channel is not None) and ('channel' not in fname)):
+                        remote_fnamefmt.pop(f)
+                remote_fnamefmt = []
+                if len(remote_fnamefmt) == 0:
+                    print "Error, no file name formats containing channel exists!"
+                    break
 
                 #Now fetch the files
                 filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
