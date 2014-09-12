@@ -252,7 +252,6 @@ class radDataPtr():
                 for f,fname in enumerate(local_fnamefmt):
                     if ((channel is not None) and ('channel' not in fname)):
                         local_fnamefmt.pop(f)
-                local_fnamefmt = []
                 if len(local_fnamefmt) == 0:
                     print "Error, no file name formats containing channel exists!"
                     break
@@ -336,7 +335,6 @@ class radDataPtr():
                 for f,fname in enumerate(remote_fnamefmt):
                     if ((channel is not None) and ('channel' not in fname)):
                         remote_fnamefmt.pop(f)
-                remote_fnamefmt = []
                 if len(remote_fnamefmt) == 0:
                     print "Error, no file name formats containing channel exists!"
                     break
