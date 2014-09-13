@@ -260,7 +260,7 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     ax.set_ylim(1e-9,1e-2)
 
     ax.grid()
-    ax.legend(prop={'size':legendSize})
+    ax.legend(prop={'size':legendSize},numpoints=1)
 
     file_keys = goes_data['metadata'].keys() 
     file_keys.remove('variables')
