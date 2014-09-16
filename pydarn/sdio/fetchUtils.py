@@ -524,8 +524,21 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                     #if we have a file match between a file and our regex
                     if(regex.match(rf)):
                         tf = "{:s}{:s}".format(outdir, rf)
+                        
+                        # Test to see if the temporary file already exists
+                        # and is probably not a partial file.
+                        getfile = True
+                        try:
+                           tfinfo = os.stat(tf)
+                           # Ensure there are at least 1MB of data
+                           if tinfo.st_size > 1e6:
+                              getfile = False
+                              if verbose:
+                                 print rn, 'ADVISEMENT: found file', tf
+                        except:
+                           pass
 
-                        if method is "sftp":
+                        if method is "sftp" and getfile:
                             # Use the open sftp connection to get the file
                             rflong = "{:s}{:s}".format(remoteaccess['path'], rf)
                             
@@ -537,7 +550,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                 tf = None
                                 if verbose:
                                     print rn,"ADVISEMENT: can't retrieve",rflong
-                        else:
+                        elif getfile:
                             # Use a different connection method
                             furl = "{:s}{:s}".format(url, rf)
 
