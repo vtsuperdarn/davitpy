@@ -188,7 +188,7 @@ class sdDataPtr():
                             print 'Environment variable DAVIT_SD_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
     
                     if local_dict is None:
-                        local_dict = {'hemi':hemi, "hemichar": hemichar, 
+                        local_dict = {'hemi':hemi, "hemichar": self.hemichar, 
                                       'ftype':ftype}
     
                     if local_fnamefmt is None:
@@ -263,7 +263,7 @@ class sdDataPtr():
                             print 'Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                     if remote_dict is None:
                         remote_dict = {'ftype':ftype, 'hemi':hemi,
-                                       "hemichar": hemichar}
+                                       "hemichar": self.hemichar}
                     if remote_fnamefmt is None:
                         try:
                             remote_fnamefmt = os.environ['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
