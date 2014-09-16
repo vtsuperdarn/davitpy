@@ -39,7 +39,8 @@ class sdDataPtr():
     **Public Attrs**:
       * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): start time of the request
       * **eTime** (`datetime <http://tinyurl.com/bl352yx>`_): end time of the request
-      * **hemi** (str): station id of the request
+      * **hemi** (str): hemisphere to use, north or south.  
+            Default: north
       * **fType** (str): the file type, 'grid', 'map'
       * **recordIndex** (dict): look up dictionary for file offsets for scan times
   
@@ -63,7 +64,8 @@ class sdDataPtr():
       
     Written by AJ 20130607
     """
-    def __init__(self,sTime=None,hemi=None,eTime=None, src=None,fileName=None, \
+    def __init__(self, sTime=None, hemi="north", eTime=None, src=None,
+                  fileName=None, \
                   fileType=None,noCache=False,verbose=False,local_dirfmt=None, \
                   local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
                   remote_fnamefmt=None,remote_dict=None,local_timeinc=None,\
@@ -81,6 +83,7 @@ class sdDataPtr():
         self.sTime = sTime
         self.eTime = eTime
         self.hemi = hemi
+        self.hemichar = ('s' if hemi == "south" else '')
         self.fType = fileType
         self.dType = None
         self.recordIndex = None
@@ -93,8 +96,8 @@ class sdDataPtr():
         #check inputs
         assert(isinstance(self.sTime,dt.datetime)), \
           'error, sTime must be datetime object'
-        assert(hemi is not None), \
-          "error, hemi must not be None"
+        assert(hemi == "north" or hemi == "south"), \
+          "error, hemi must be north or south"
         assert(self.eTime == None or isinstance(self.eTime,dt.datetime)), \
           'error, eTime must be datetime object or None'
         assert(fileType == 'grd' or fileType == 'grdex' or \
@@ -185,7 +188,8 @@ class sdDataPtr():
                             print 'Environment variable DAVIT_SD_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
     
                     if local_dict is None:
-                        local_dict = {'hemi':hemi, 'ftype':ftype}
+                        local_dict = {'hemi':hemi, "hemichar": hemichar, 
+                                      'ftype':ftype}
     
                     if local_fnamefmt is None:
                         try:
@@ -258,7 +262,8 @@ class sdDataPtr():
                             remote_dirfmt = 'data/{year}/{ftype}/{hemi}/'
                             print 'Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                     if remote_dict is None:
-                        remote_dict = {'ftype':ftype, 'hemi':hemi}
+                        remote_dict = {'ftype':ftype, 'hemi':hemi,
+                                       "hemichar": hemichar}
                     if remote_fnamefmt is None:
                         try:
                             remote_fnamefmt = os.environ['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
