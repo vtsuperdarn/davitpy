@@ -16,8 +16,8 @@
 
 """
 .. module:: DataTypes
-   :synopsis: the parent class needed for reading data (dmap, hdf5)
-.. moduleauthor:: Ashton, 20140822, generalized from radDataTypes.py by Jef Spaleta
+   :synopsis: the parent class needed for reading data (dmap, hdf5 (soon?))
+.. moduleauthor:: Ashton Reimer, 20140822, generalized from radDataTypes.py by Jef Spaleta
 
 *********************
 **Module**: pydarn.sdio.DataTypes
@@ -28,18 +28,7 @@
 
 """
 
-
-from utils import twoWayDict
-alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
-          'n','o','p','q','r','s','t','u','v','w','x','y','z']
-
-def DataPtr(dataType,*kwargs):
-
-    if dataType=='dmap':
-        return dmapFile(dataType)
-
-
-class ParentPtr(object):
+class DataPtr(object):
     """A generalized data pointer class which contains general methods for reading 
        various data file (dmap, hdf5, etc.) types into SuperDARN data types (fit, raw, iqdat, map, etc.).
     
@@ -63,78 +52,113 @@ class ParentPtr(object):
       * **offsetTell** : Current byte offset
       * **rewind** : rewind file back to the beginning 
       * **read** : read record at current file offset in to a dictionary
-     
+ 
     Written by ASR 20140822
     """
-    def __init__(self,sTime=None,eTime=None,fileType=None, src=None,fileName=None,noCache=False,dataType=None):
+
+    #### NOTE TO DEVS ####
+    # Dictionaries are used to select which data type specific methods to use
+    # Props to Adam Knox (github @aknox-va) for the idea. 
+    #
+    # First of all, different data containers, like dmap, hdf5, txt, etc. 
+    # are what is meant by data types
+    #
+    # The point here is to support various data types using this class
+    # without the child classes (radDataPtr, sdDataPtr) having to switch
+    # to employ logic to utilize the appropriate method ie) radDataPtr 
+    # doesn't need to have conditional logic to decide with "read" 
+    # method to use.
+    #
+    # To add support for another data type, one needs to do 2 things:
+    #     1) There are 5 methods that are data type specific:
+    #        read, createIndex, offsetSeek, offsetTell, and rewind
+    #        One must create a method for each one of these (see examples
+    #        at the end of this class).
+    #     2) Each method needs to be registered in the method dictionaries 
+    #        in the __init__ of this class. The keys in each dictionary 
+    #        are the data types and the values are the method names for 
+    #        those dictionary types, ie) __read is the read methods 
+    #        dictionary, where __read = {'dmap':self.__readDmap} points
+    #        to the __readDmap method for the dmap data type.
+    #####################
+
+    def __init__(self,sTime,dataType,eTime=None,fileName=None):
 
         import pydarn
+        import datetime as dt
 
-        dataTypeList = ['dmap']    
+        # Data type method dictionaries to select the data type 
+        # specific methods to use credit to Adam Knox (github 
+        # @aknox-va) for the idea.          
 
+        __read        = {'dmap':self.__readDmap}
+        __createIndex = {'dmap':self.__createIndexDmap}
+        __offsetSeek  = {'dmap':self.__offsetSeekDmap}
+        __offsetTell  = {'dmap':self.__offsetTellDmap}
+        __rewind      = {'dmap':self.__rewindDmap}
+        dataTypeList = __read.keys()
+
+        #Check input variables
+        assert(isinstance(sTime,dt.datetime)), \
+            'Error, sTime must be datetime object'
+        #assert(isinstance(fileName,str)), \
+        #    "Error, fileName not specified!"
         assert(dataType in dataTypeList), \
-            "Error, dataType not supported. Supported data types: "+str(dataTypeList)
+            "Error, dataType: " +str(dataType)+" not supported. "+ \
+            "Supported data types: "+str(dataTypeList)
+        assert(eTime == None or isinstance(eTime,dt.datetime)), \
+            'Error, eTime must be datetime object or None'
 
+        #Set up the general attributes
         self.sTime = sTime
         self.eTime = eTime
-        self.fType = fileType
         self.dType = dataType
         self.recordIndex = None
         self.scanStartIndex = None
-        self.__filename = fileName 
-        self.__fd = None
-        self.__ptr =  None
+        self._filename = fileName 
+        self._fd = None
+        self._ptr =  None
+
+        #Set the data Type specific methods
+        self.read = __read[dataType]
+        self.createIndex = __createIndex[dataType]
+        self.offsetSeek = __offsetSeek[dataType]
+        self.offsetTell = __offsetTell[dataType]
+        self.rewind = __rewind[dataType]
 
 
-
-class dmapFile(ParentPtr):
-
-    """A class containing the methods for reading dmap data files into 
-       SuperDARN data types (fit, raw, iqdat, map, etc.).
-    
-    **Public Attrs**:
-      * **members** (list): list of strings naming the user defined methods of this class
-
-    **Methods**:
-      * **open** 
-      * **close** 
-      * **createIndex** : Index the offsets for all records and scan boundaries
-      * **offsetSeek** : Seek file to requested byte offset, checking to make sure it in the record index
-      * **offsetTell** : Current byte offset
-      * **rewind** : rewind file back to the beginning 
-      * **read** : read record at current file offset in to a dictionary
-     
-    Written by ASR 20140822
-    """
-
-    def __init__(self,dataType,*kwargs):
-        #self.members=['__del__','__iter__','next','open', \
-        #              'createIndex','offsetSeek','offsetTell', \
-        #              'rewind','read','close']
-
-        super(dmapFile,self).__init__(dataType=dataType,*kwargs)
-
+    #FIRST, THE GENERAL COMMON METHODS
 
     def __del__(self):
         self.close() 
 
     def __iter__(self):
         return self
-
-    def next(self):
-        data=self.readRec()
-        if data is None:
-            raise StopIteration
-        else:
-            return data
-
+     
     def open(self):
         """open the associated filename."""
         import os
-        self.__fd = os.open(self.__filename,os.O_RDONLY)
-        self.__ptr = os.fdopen(self.__fd)
+        self._fd = os.open(self._filename,os.O_RDONLY)
+        self._ptr = os.fdopen(self._fd)
+ 
+    def close(self):
+        """
+           Close the associated file.
+        """
+        import os
+        if self._ptr is not None:
+            self._ptr.close()
+            self._fd=None
 
-    def createIndex(self):
+
+    # BEGIN DATA TYPE SPECIFIC HIDDEN METHODS
+
+    ########################################
+    #                 DMAP
+    ########################################
+
+    # NOW ALL OF THE DMAP SPECIFIC METHODS
+    def __createIndexDmap(self):
         """
            Create dictionary of offsets as a function of timestamp.
   
@@ -147,13 +171,13 @@ class dmapFile(ParentPtr):
         from pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
         recordDict={}
         scanStartDict={}
-        starting_offset=self.offsetTell()
+        starting_offset=self.__offsetTellDmap()
         #rewind back to start of file
-        self.rewind()
+        self.__rewindDmap()
         while(1):
             #read the next record from the dmap file
-            offset= getDmapOffset(self.__fd)
-            dfile = readDmapRec(self.__fd)
+            offset= getDmapOffset(self._fd)
+            dfile = readDmapRec(self._fd)
             if(dfile is None):
                 #if we dont have valid data, clean up, get out
                 print '\nreached end of data'
@@ -166,11 +190,11 @@ class dmapFile(ParentPtr):
                     if dfile['scan']==1: scanStartDict[rectime]=offset
         #reset back to before building the index 
         self.recordIndex=recordDict
-        self.offsetSeek(starting_offset)
+        self.__offsetSeekDmap(starting_offset)
         self.scanStartIndex=scanStartDict
         return recordDict,scanStartDict
 
-    def offsetSeek(self,offset,force=False):
+    def __offsetSeekDmap(self,offset,force=False):
         """
            Jump to dmap record at supplied byte offset.
            Require offset to be in record index list unless forced. 
@@ -181,16 +205,16 @@ class dmapFile(ParentPtr):
 
         from pydarn.dmapio import setDmapOffset,getDmapOffset 
         if force:
-            return setDmapOffset(self.__fd,offset)
+            return setDmapOffset(self._fd,offset)
         else:
             if self.recordIndex is None:        
-                self.createIndex()
+                self.__createIndexDmap()
             if offset in self.recordIndex.values():
-                return setDmapOffset(self.__fd,offset)
+                return setDmapOffset(self._fd,offset)
             else:
-                return getDmapOffset(self.__fd)
+                return getDmapOffset(self._fd)
 
-    def offsetTell(self):
+    def __offsetTellDmap(self):
         """
            Jump to dmap record at supplied byte offset. 
 
@@ -200,9 +224,9 @@ class dmapFile(ParentPtr):
         # on self.dType (for future other data file support ie. hdf5)
 
         from pydarn.dmapio import getDmapOffset
-        return getDmapOffset(self.__fd)
+        return getDmapOffset(self._fd)
 
-    def rewind(self):
+    def __rewindDmap(self):
         """
            Jump to beginning of dmap file.
         """
@@ -210,9 +234,9 @@ class dmapFile(ParentPtr):
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
         from pydarn.dmapio import setDmapOffset 
-        return setDmapOffset(self.__fd,0)
+        return setDmapOffset(self._fd,0)
 
-    def read(self):
+    def __readDmap(self):
        """
           A function to read a single record of data from a dmap file.
 
@@ -227,18 +251,18 @@ class dmapFile(ParentPtr):
        import pydarn, datetime as dt
 
        #check input
-       if(self.__ptr == None):
+       if(self._ptr == None):
            print 'error, your pointer does not point to any data'
            return None
-       if self.__ptr.closed:
+       if self._ptr.closed:
            print 'error, your file pointer is closed'
            return None
 
        #do this until we reach the requested start time
        #and have a parameter match
        while(1):
-           offset = pydarn.dmapio.getDmapOffset(self.__fd)
-           dfile = pydarn.dmapio.readDmapRec(self.__fd)
+           offset = pydarn.dmapio.getDmapOffset(self._fd)
+           dfile = pydarn.dmapio.readDmapRec(self._fd)
            #check for valid data
            if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
                #if we dont have valid data, clean up, get out
@@ -250,129 +274,108 @@ class dmapFile(ParentPtr):
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
                return dfile
 
-    def close(self):
-        """
-           Close the associated file.
-        """
-        import os
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd=None
 
+
+    ########################################
+    #    NEW DATATYPE TEMPLATE METHODS
+    ########################################
+
+    # NOW ALL OF THE NEW DATATYPE SPECIFIC METHODS
+
+    def __readNewDatatype(self):
+        pass
+    def __createIndexNewDatatype(self):
+        pass
+    def __offsetSeekNewDatatype(self):
+        pass
+    def __offsetTellDatatype(self):
+        pass
+    def __rewindDatatype(self):
+        pass
+
+
+
+
+#Class used for testing
+class testing(DataPtr):
+    def __init__(self,sTime,dataType,eTime,filename):
+        import datetime as dt
+        super(testing,self).__init__(sTime,dataType,eTime=eTime,fileName=filename)
 
 
 if __name__=="__main__":
-  import os
-  import datetime
-  import hashlib
-  try:
-      tmpDir=os.environ['DAVIT_TMPDIR']
-  except:
-      tmpDir = '/tmp/sd/'
 
-  rad='fhe'
-  channel=None
-  fileType='fitacf'
-  filtered=False
-  sTime=datetime.datetime(2012,11,1,0,0)
-  eTime=datetime.datetime(2012,11,1,4,0)
-  expected_filename="20121101.000000.20121101.040000.fhe.fitacf"
-  expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=19377805
-  expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
-  print "Expected File:",expected_path
+    import datetime
+    import pydarn
+    from pydarn.sdio.fetchUtils import fetch_remote_files
 
-  print "\nRunning sftp grab example for radDataPtr."
-  print "Environment variables used:"
-  print "  DB:", os.environ['DB']
-  print "  DB_PORT:",os.environ['DB_PORT']
-  print "  DBREADUSER:", os.environ['DBREADUSER']
-  print "  DBREADPASS:", os.environ['DBREADPASS']
-  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
-  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
-  src='sftp'
-  if os.path.isfile(expected_path):
-    os.remove(expected_path)
-  VTptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
-  if os.path.isfile(expected_path):
-    statinfo = os.stat(expected_path)
-    print "Actual File Size:  ", statinfo.st_size
-    print "Expected File Size:", expected_filesize 
-    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
-    print "Actual Md5sum:  ",md5sum
-    print "Expected Md5sum:",expected_md5sum
-    if expected_md5sum!=md5sum:
-      print "Error: Cached dmap file has unexpected md5sum."
-  else:
-    print "Error: Failed to create expected cache file"
-  print "Let's read two records from the remote sftp server:"
-  try:
-    ptr=VTptr
-    beam  = ptr.readRec()
-    print beam.time
-    beam  = ptr.readRec()
-    print beam.time
-    print "Close pointer"
-    ptr.close()
-    print "reopen pointer"
-    ptr.open()
-    print "Should now be back at beginning:"
-    beam  = ptr.readRec()
-    print beam.time
-    print "What is the current offset:"
-    print ptr.offsetTell()
-    print "Try to seek to offset 4, shouldn't work:"
-    print ptr.offsetSeek(4)
-    print "What is the current offset:"
-    print ptr.offsetTell()
+    print "##############################"
+    print " TESTING THE DataPtr class..."
+    print "##############################"
 
-  except:
-    print "record read failed for some reason"
+    sTime = datetime.datetime(2012,11,24,4)
+    eTime = datetime.datetime(2012,11,24,5)
 
-  ptr.close()
-  del VTptr
-
-  print "\nRunning local grab example for radDataPtr."
-  print "Environment variables used:"
-  print "  DAVIT_LOCAL_DIRFORMAT:", os.environ['DAVIT_LOCAL_DIRFORMAT']
-  print "  DAVIT_LOCAL_FNAMEFMT:", os.environ['DAVIT_LOCAL_FNAMEFMT']
-  print "  DAVIT_LOCAL_TIMEINC:", os.environ['DAVIT_LOCAL_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
-
-  src='local'
-  if os.path.isfile(expected_path):
-    os.remove(expected_path)
-  localptr = radDataPtr(sTime,rad,eTime=eTime,channel=channel,bmnum=None,cp=None,fileType=fileType,filtered=filtered, src=src,noCache=True)
-  if os.path.isfile(expected_path):
-    statinfo = os.stat(expected_path)
-    print "Actual File Size:  ", statinfo.st_size
-    print "Expected File Size:", expected_filesize 
-    md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
-    print "Actual Md5sum:  ",md5sum
-    print "Expected Md5sum:",expected_md5sum
-    if expected_md5sum!=md5sum:
-      print "Error: Cached dmap file has unexpected md5sum."
-  else:
-    print "Error: Failed to create expected cache file"
-  print "Let's read two records:"
-  try:
-    ptr=localptr
-    beam  = ptr.readRec()
-    print beam.time
-    beam  = ptr.readRec()
-    print beam.time
-    print "Close pointer"
-    ptr.close()
-    print "reopen pointer"
-    ptr.open()
-    print "Should now be back at beginning:"
-    beam  = ptr.readRec()
-    print beam.time
-  except:
-    print "record read failed for some reason"
-  ptr.close()
   
-  del localptr
+    print " TRYING TO WORK WITH THE DMAP DATATYPE"
+    print " FETCHING A SUPERDARN FITEX FILE......"
+    files = fetch_remote_files(sTime, eTime, \
+            'sftp','sd-data.ece.vt.edu','data/{year}/{ftype}/{radar}/', \
+            {'radar':'mcm','ftype':'fitex','channel':'a'},'/tmp/sd/', \
+            ['{date}.{hour}......{radar}.{ftype}', \
+             '{date}.{hour}......{radar}.{channel}.{ftype}'], \
+            username='sd_dbread', password='5d', \
+            verbose=False, time_inc=datetime.timedelta(hours=2))
+    print "   Fetched the file: " + files[0] + "\n"
+
+
+    print " INITIALIZING A CLASS THAT INHERITS FROM DataPtr"
+    t=pydarn.sdio.DataTypes.testing(sTime,'dmap',eTime,files[0])
+    print "   ...it worked! (Success!)"
+
+
+    print " Opening the file..."
+    t.open()
+    print "   ...it worked! (Success!)"
+
+
+    print "Reading a line of the file..."
+    dfile = t.read()
+    if isinstance(dfile,dict):
+        print "   SUCCESS!"
+    else:
+        print "   FAILED!"
+
+
+    print " Getting file offsets as a function of timestamp..."
+    index, _ = t.createIndex()
+    if isinstance(index,dict):
+        print "   SUCCESS!"
+    else:
+        print "   FAILED!"
+
+
+    print " Seeking to file offset at datetime(2012,11,24,4,4,39,141000)"
+    t.offsetSeek(index[datetime.datetime(2012,11,24,4,4,39,141000)])
+    offset = t.offsetTell()
+    dfile = t.read()
+    print " Seeked to time: " + str(datetime.datetime.utcfromtimestamp(dfile['time']))
+    print " Telling the file offset..."
+    print " Should get: " + str(index[datetime.datetime(2012,11,24,4,4,39,141000)]) + \
+          " and we got: "+str(offset)
+
+
+    print " Rewinding the file..."
+    t.rewind()
+    print "    ...rewound! (Success!)"
+
+
+    print " Closing the file..."
+    t.close()
+    print "    ...closed! (Success!)"
+    print "\n ALL DONE TESTING"
+  
+
+
+  
 
