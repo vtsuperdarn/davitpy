@@ -289,7 +289,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   
       if (coords != 'gate' and coords != 'rng') or plotTerminator == True:
         site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[fplot][0])
-        myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[fplot][0],coords=coords)
+        myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[fplot][0],coords=coords, date_time=times[fplot][0])
         myLat   = myFov.latCenter[bmnum]
         myLon   = myFov.lonCenter[bmnum]
           
@@ -436,7 +436,7 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
         oldCpid = cpid[i]
         if(coords == 'geo' or coords == 'mag'):
           site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[i])
-          myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],nbeams=site.maxbeam,rsep=rsep[i],coords=coords)
+          myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],nbeams=site.maxbeam,rsep=rsep[i],coords=coords, date_time=times[i])
           if(myFov.latFull[bmnum].max() > ymax): ymax = myFov.latFull[bmnum].max()
           if(myFov.latFull[bmnum].min() < ymin): ymin = myFov.latFull[bmnum].min()
         else:
