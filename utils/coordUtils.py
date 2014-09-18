@@ -149,13 +149,11 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 
     # Sanitise inputs.
     if isinstance(lon, int):
-        lon = float(lon)
-        lat = float(lat)
+        lon, lat = float(lon), float(lat)
     is_list = isinstance(lon, (list, tuple))
     is_float = isinstance(lon, float)
     if is_float:
-        lon = [lon]
-        lat = [lat]
+        lon, lat = [lon], [lat]
     if not (is_float or is_list):
         assert(isinstance(lon, np.ndarray)),\
                 "Must input int, float, list, or numpy array."
@@ -163,7 +161,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # Make the inputs into numpy arrays because single element lists 
     # have no len.
     lon, lat = np.array(lon), np.array(lat)
-    shape = np.shape(lon)
+    orig_shape = np.shape(lon)
+    lon, lat = lon.flatten(), lat.flatten()
 
     # Test whether we are using the same altitude for everything.
     if altitude is not None:
@@ -230,11 +229,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             # If the end result is not an AACGM system or there is an
             # altitude conversion, convert to geo.
             if (end not in aacgm_sys) or alt_conv:
-                lat, lon, _ = aacgm.aacgmConvArr(list(lat.flatten()), 
-                                                list(lon.flatten()), altitude,
-                                                date_time.year,1)
-                lon = np.array(lon).reshape(shape)
-                lat = np.array(lat).reshape(shape)
+                lat, lon, _ = aacgm.aacgmConvArr(list(lat), list(lon), 
+                                                 altitude, date_time.year, 1)
+                lon, lat = np.array(lon), np.array(lat)
                 start = "geo"
         
         # End of AACGM family FROM block.
@@ -274,11 +271,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
         if end in aacgm_sys:
             # If it isn't in AACGM already it's in geo.
             if start == "geo":
-                lat, lon, _ = aacgm.aacgmConvArr(list(lat.flatten()), 
-                                                list(lon.flatten()), altitude,
-                                                date_time.year,0)
-                lon = np.array(lon).reshape(shape)
-                lat = np.array(lat).reshape(shape)
+                lat, lon, _ = aacgm.aacgmConvArr(list(lat), list(lon), 
+                                                 altitude, date_time.year, 0)
+                lon, lat = np.array(lon), np.array(lat)
                 start = "mag"
 
             # It is in AACGM now.
@@ -318,14 +313,14 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # Now it should be in the end system.
     assert(start == end),"Error, not in correct end system...?????"
 
-    # Convert outputs to input type.
+    # Convert outputs to input type and shape.
     if is_list:
-        lon = list(lon.flatten())
-        lat = list(lat.flatten())
+        lon, lat = list(lon), list(lat)
     elif is_float:
-        lon = list(lon.flatten())[0]
-        lat = list(lat.flatten())[0]
-    # Otherwise it stays a numpy array.
+        lon, lat = list(lon)[0], list(lat)[0]
+    else:
+        # Otherwise it stays a numpy array.
+        lon, lat = lon.reshape(orig_shape), lat.reshape(orig_shape)
 
     return lon, lat
 
@@ -420,7 +415,7 @@ str(coord_conv(50.7, 34.5, 'geo', 'geo'))
     print "Result:                      " + \
 str(coord_conv(50, 34, 'geo', 'geo'))
     print
-    print "Test of numpy array -> numpy array"
+    print "Tests of numpy array -> numpy array"
     print "Expected for 32-bit system:  (array([ 50.7]), array([ 34.5]))"
     print "Expected for 64-bit system:  (array([ 50.7]), array([ 34.5]))"
     print "Result:                      " + \
@@ -497,6 +492,14 @@ str(coord_conv(229.16163697416806, 29.419420613372086,
             date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "Coord array tests"
+    print
+    print "Test of n x m arrays"
+    print "Expected for 32-bit system:  (array([[-130.65999039, -120.89269136], [-139.26450185, -149.12386912]]), array([[ 31.58292463,  42.81408443], [ 18.42380165,  36.68788184]]))"
+    print "Expected for 64-bit system:  "
+    print "Result:                      " + \
+str(coord_conv(numpy.array([[50.7, 60.1],[42.4, 32.1]]),
+               numpy.array([[34.5, 45.6],[21.1, 40.4]]), "geo", "mlt",
+               altitude=300., date_time=datetime(2013, 7, 23, 12, 6, 34)))
     print
     print "geo to geo, mag to mag, mlt to mlt"
     print "Expected for 32-bit system: " +\
