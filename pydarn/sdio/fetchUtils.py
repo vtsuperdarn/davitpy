@@ -163,7 +163,9 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     """
 
     
-    import os, glob, re
+    import os
+    import glob
+    import re
 
     rn = "fetch_local_files"
     filelist = []
@@ -526,41 +528,74 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                         tf = "{:s}{:s}".format(outdir, rf)
                         
                         # Test to see if the temporary file already exists
-                        # and is probably not a partial file.
-                        getfile = True
                         try:
-                           tfinfo = os.stat(tf)
-                           # Ensure there are at least 1MB of data
-                           if tinfo.st_size > 1e6:
-                              getfile = False
-                              if verbose:
-                                 print rn, 'ADVISEMENT: found file', tf
+                           tfsize = os.stat(tf).st_size
                         except:
-                           pass
+                           tfsize = -1.0
 
-                        if method is "sftp" and getfile:
-                            # Use the open sftp connection to get the file
+                        if method is "sftp":
+                            # Build the complete name of the remote file
                             rflong = "{:s}{:s}".format(remoteaccess['path'], rf)
                             
-                            try:
-                                sftp.get(rflong,tf)
-                                if verbose:
-                                    print rn, 'ADVISEMENT: downloading file', tf
-                            except:
-                                tf = None
-                                if verbose:
-                                    print rn,"ADVISEMENT: can't retrieve",rflong
-                        elif getfile:
-                            # Use a different connection method
-                            furl = "{:s}{:s}".format(url, rf)
+                            # If a local file of some sort of size has been
+                            # found, test to see if the size is identical to the
+                            # remote file to prevent multiple downloads
+                            if tfsize >= 0.0:
+                                try:
+                                    rfsize = sftp.stat(rflong).st_size
 
-                            try:
-                                urllib.urlretrieve(furl, tf)
-                                if verbose:
+                                    if rfsize != tfsize:
+                                        tfsize = -1.0
+                                    elif verbose:
+                                        estr = "{:s} ADVISEMENT: ".format(rn)
+                                        estr = "{:s}found tmp file".format(estr)
+                                        print "{:s} {:s}".format(estr, tf)
+
+                                except:
+                                    tfsize = -1.0
+
+                            if tfsize < 0.0:
+                               # Use the open sftp connection to get the file
+                              try:
+                                 sftp.get(rflong,tf)
+                                 if verbose:
+                                    estr = "{:s} ADVISEMENT: ".format(rn)
+                                    estr = "{:s}downloading ".format(estr)
+                                    print "{:s}file {:s}".format(estr, tf)
+                              except:
+                                 tf = None
+                                 if verbose:
+                                    estr = "{:s} ADVISEMENT: ".format(rn)
+                                    estr = "{:s}can't retrieve ".format(estr)
+                                    print "{:s}{:s}".format(estr, rflong)
+                        else:
+                           # Use a different connection method
+                           furl = "{:s}{:s}".format(url, rf)
+
+                           # If a local file of some sort of size has been
+                           # found, test to see if the size is identical to the
+                           # remote file to prevent multiple downloads
+                           if tfsize >= 0.0:
+                              f = urllib2.urlopen(furl)
+                                 if f.headers.has_key("Content-Length"):
+                                    rfsize = f.headers["Content-Length"]
+                                    if rfsize != tfsize:
+                                       tfsize = -1.0
+                                    elif verbose:
+                                       estr = "{:s} ADVISEMENT: ".format(rn)
+                                       estr = "{:s}found tmp file".format(estr)
+                                       print "{:s} {:s}".format(estr, tf)
+                                 else:
+                                    tfsize = -1.0
+
+                           if tfsize < 0.0:
+                              try:
+                                 urllib.urlretrieve(furl, tf)
+                                 if verbose:
                                     print rn, 'ADVISEMENT: downloading file', tf
-                            except:
-                                tf = None
-                                if verbose:
+                              except:
+                                 tf = None
+                                 if verbose:
                                     print rn,"ADVISEMENT: can't retrieve",furl
 
                         if type(tf) is str:
