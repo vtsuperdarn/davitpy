@@ -235,6 +235,10 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     dist = width/50.
     cTime = sTime
 
+    #Clear temporary figure from memory.
+    fig = plot.gcf()
+    fig.clf()
+
     myFig = plot.figure(figsize=(12,8))
     
     #draw the actual map we want
