@@ -566,7 +566,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                     tf = None
                                     if verbose:
                                         estr = "{:s} ADVISEMENT: ".format(rn)
-                                        estr = "{:s}can't retrieve "format(estr)
+                                        estr = "{:s}can't retrieve ".format(estr)
                                         print "{:s}{:s}".format(estr,rflong)
                         else:
                             # Use a different connection method
