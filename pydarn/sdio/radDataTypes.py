@@ -481,7 +481,7 @@ class radDataPtr():
   def readScan(self):
       """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
-      .. note::
+      .. note
         This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
 
       **Returns**:
@@ -489,6 +489,7 @@ class radDataPtr():
     
       """
       from pydarn.sdio import scanData
+      import pydarn
       #Save the radDataPtr's bmnum setting temporarily and set it to None
       orig_beam=self.bmnum
       self.bmnum=None
@@ -498,33 +499,22 @@ class radDataPtr():
           return None
 
       myScan = scanData()
-      myBeam=self.readRec()
-      if(myBeam.prm.scan == 1):  
-        firstflg=True
-        myScan.append(myBeam)
-      else:
-        if self.fBeam != None:
-          myScan.append(self.fBeam)
-          firstflg = False
-        else:
-          firstflg = True
-
       while(1):
         myBeam=self.readRec()
         if myBeam is None: 
           break
-        if(myBeam.prm.scan == 0 or firstflg):
+
+        if (   (myBeam.prm.scan == 1 and len(myScan) == 0)      # Append a beam if it is the first in a scan AND nothing has been added to the myScan object. 
+            or (myBeam.prm.scan == 0 and  len(myScan) > 0) ):   # Append a beam if it is not the first in a scan AND the myScan object has items.
           myScan.append(myBeam)
-          firstflg = False
-          continue
-        else:
-          self.fBeam = myBeam
+          offset = pydarn.dmapio.getDmapOffset(self.__fd)
+        elif myBeam.prm.scan == 1 and len(myScan) > 0:          # Break out of the loop if we are on to the next scan and rewind the pointer to the previous beam.
+          s = pydarn.dmapio.setDmapOffset(self.__fd,offset)
           break 
+
+      if len(myScan) == 0: myScan = None
       self.bmnum=orig_beam
-
       return myScan
-
-
 
   def readRec(self):
      """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
