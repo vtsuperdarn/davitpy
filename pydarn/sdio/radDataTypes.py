@@ -504,8 +504,8 @@ class radDataPtr():
             if myBeam is None: 
                 break
 
-            if ((myBeam.prm.scan == 1 and len(myScan) == 0)      # Append a beam if it is the first in a scan AND nothing has been added to the myScan object. 
-             or (myBeam.prm.scan == 0 and  len(myScan) > 0) ):   # Append a beam if it is not the first in a scan AND the myScan object has items.
+            if ((myBeam.prm.scan == 1 and len(myScan) == 0)         # Append a beam if it is the first in a scan AND nothing has been added to the myScan object. 
+             or (myBeam.prm.scan == 0 and  len(myScan) > 0) ):      # Append a beam if it is not the first in a scan AND the myScan object has items.
                 myScan.append(myBeam)
                 offset = pydarn.dmapio.getDmapOffset(self.__fd)
             elif myBeam.prm.scan == 1 and len(myScan) > 0:          # Break out of the loop if we are on to the next scan and rewind the pointer to the previous beam.
