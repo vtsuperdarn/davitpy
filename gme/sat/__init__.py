@@ -10,6 +10,9 @@ This includes the following modules:
 	* **poes**
     * **rbsp**
 """
+try: from goes import *
+except Exception, e:
+    print __file__+' -> gme.sat.goes: ', e
 
 try: from poes import *
 except Exception, e:
