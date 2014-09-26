@@ -143,6 +143,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     **Output**: file_stime (datetime): actual starting time for located files
             filelist       (list): list of uncompressed files (including path)
 
+    **Note**: Weird edge case behaviour occurs when attempting to fetch all channel data (e.g. localdict['channel'] = '.').
+
     **Example**:
       
       Fetches one locally stored fitacf file stored in a directory structure
@@ -162,13 +164,14 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     """
 
-    
+    from dateutil.relativedelta import relativedelta
     import os
     import glob
     import re
 
     rn = "fetch_local_files"
     filelist = []
+    temp_filelist = []
 
     # Test input
     assert(isinstance(stime, dt.datetime)), \
@@ -194,15 +197,13 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         fnamefmt = [fnamefmt]
       
     #--------------------------------------------------------------------------
-    # Iterate through all of the hours in the request (round the starting time
-    # down to the nearest even hour)
-    ctime = stime.replace(minute=0, second=0, microsecond=0)
-    if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-
+    # Initialize the start time for the loop
+    ctime = stime.replace(second=0, microsecond=0)
+    time_reverse = 1
 
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","date"]
+    time_keys = ["year","month","day","hour","min","date"]
     keys_in_localdir = [x for x in time_keys if localdirfmt.find('{'+x+'}') > 0 ]
 
     checkstruct={}
@@ -216,6 +217,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         localdict["month"] = "{:02d}".format(ctime.month)
         localdict["day"] = "{:02d}".format(ctime.day)
         localdict["hour"] = ctime.strftime("%H")
+        localdict["min"] = ctime.strftime("%M")
         localdict["date"] = ctime.strftime("%Y%m%d")
         
         # check for a directory change
@@ -242,6 +244,10 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
                 #if we have a file match between a file and our regex
                 if(regex.match(lf)):
+                    if lf in temp_filelist: 
+                        continue
+                    else:
+                        temp_filelist.append(lf)
 
                     # copy the file to outdir
                     outname = os.path.join(outdir,lf)
@@ -252,18 +258,39 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                     except:
                         if verbose: print rn, "WARNING: unable to perform [",command,"]"
 
-                    # attempt to unzip the compressed file
-                    uncompressed = uncompress_file(outname, None, verbose)
+        # Advance the cycle time by the "lowest" time increment 
+        # in the namefmt (either forward or reverse)
 
-                    if type(uncompressed) is str:
-                    # save name of uncompressed file for output
-                        filelist.append(uncompressed)
-                    else:
-                    # file wasn't compressed, use outname
-                        filelist.append(outname)
+        if ((time_reverse == 1) and (len(temp_filelist) > 0)):
+            time_reverse = 0
+            ctime = stime.replace(second=0, microsecond=0)
 
-        # Advance the cycle time by the specified increment
-        ctime = ctime + time_inc
+        # Calculate if we are going forward or backward in time and set
+        #ctime accordingly
+        base_time_inc = 1 - 2*time_reverse        
+
+        if ("{min}" in namefmt):
+            ctime = ctime + relativedelta(minutes=base_time_inc)
+        elif ("{hour}" in namefmt):
+            ctime = ctime + relativedelta(hours=base_time_inc)
+        elif (("{date}" in namefmt) or ("{day}" in remotedirfmt)):
+            ctime = ctime + relativedelta(days=base_time_inc)
+        elif ("{month}" in namefmt):
+            ctime = ctime + relativedelta(months=base_time_inc)
+        elif ("{year}" in namefmt):    
+            ctime = ctime + relativedelta(years=base_time_inc)
+
+    # attempt to unzip the files
+    for lf in temp_filelist:
+        outname = os.path.join(outdir,lf)
+        uncompressed = uncompress_file(outname, None, verbose)
+
+        if (type(uncompressed) is str):
+        # save name of uncompressed file for output
+            filelist.append(uncompressed)
+        else:
+        # file wasn't compressed, use outname
+            filelist.append(outname)
 
     # Return the list of uncompressed files
     return filelist
@@ -306,6 +333,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
       * **file_stime**  (datetime): actual starting time for located files
       * **filelist**        (list): list of uncompressed files (including path)
 
+    **Note**: Weird edge case behaviour occurs when attempting to fetch all channel data (e.g. remotedict['channel'] = '.').
+
     **Example**: 
              Fetches 3 remotely stored fitex files from the Virginia Tech
              database using sftp. The directory structure is specified by
@@ -330,6 +359,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
     """
 
+    from dateutil.relativedelta import relativedelta
     # getpass allows passwords to be entered without them appearing onscreen
     import getpass
     # paramiko is necessary to use sftp, pyCurl currently requires much fiddling
@@ -347,6 +377,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
     rn = "fetch_remote_files"
     filelist = []
+    temp_filelist = []
 
     #--------------------------------------------------------------------------
     # Test input
@@ -437,18 +468,12 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     #--------------------------------------------------------------------------
     # Iterate through all of the hours in the request (round the starting time
     # down to the nearest even hour). ctime is the current iteration's time.
-    ctime = stime.replace(minute=0, second=0, microsecond=0)
-    if(ctime.hour % 2 == 1):
-        ctime = ctime.replace(hour=ctime.hour-1)
 
-    #--------------------------------------------------------------------------
-    # Initialize the list of remote filenames
-    remotefiles = []
 
     #--------------------------------------------------------------------------
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","date"]
+    time_keys = ["year","month","day","hour","min","date"]
     keys_in_remotedir = [x for x in time_keys if remotedirfmt.find('{'+x+'}') > 0 ]
 
     checkstruct={}
@@ -456,21 +481,32 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
       checkstruct[key]=''
 
     #--------------------------------------------------------------------------
-    # Cycle through the specified times
+    # Initialize the list of remote filenames
+    remotefiles = []
+
+    #--------------------------------------------------------------------------
+    # Initialize the start time for the loop
+    ctime = stime.replace(second=0, microsecond=0)
+    time_reverse = 1
+
+    # Cycle through the specified times, first look "backwards" in time to cover
+    # the edge case where file start time starts after ctime
     while ctime <= etime:
+
         #----------------------------------------------------------------------
         # Set the temporal parts of the possible remote directory structure
         remotedict["year"] = "{:04d}".format(ctime.year)
         remotedict["month"] = "{:02d}".format(ctime.month)
         remotedict["day"] = "{:02d}".format(ctime.day)
         remotedict["hour"] = ctime.strftime("%H")
+        remotedict["min"] = ctime.strftime("%M")
         remotedict["date"] = ctime.strftime("%Y%m%d")
 
         #----------------------------------------------------------------------
         # Build the name of the remote files (uses wildcards)
         path = remotedirfmt.format(**remotedict)
         remoteaccess['path'] = path
-
+ 
         # check for a directory change
         dir_change = 0
         for key in keys_in_remotedir:
@@ -480,6 +516,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     
         # get the files in the directory if directory has changed
         if dir_change:
+
+            # get the files in the directory
             # Get a list of all the files in the new remote directory
             if method is "sftp":
                 try:
@@ -493,28 +531,28 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 try:
                     # Establish a connection
                     response = urllib2.urlopen(req)
-
                     # Extract the available files.  Assumes that the filename
                     # will be the first reference in the line
-                    remotefiles = [f[f.find('<a href="')+9:
-                                 f[f.find('<a href="')+9:-1].find('">')
-                                 +f.find('<a href="')+9]
+                    remotefiles.append([f[f.find('<a href="') + 9:
+                                 f[f.find('<a href="') + 9:-1].find('">')
+                                 +f.find('<a href="') + 9]
                                for f in response.readlines()
-                               if f.find('<a href="') >= 0]
-
+                               if f.find('<a href="') >= 0])
+    
                         # Close the connection
                     response.close()
                 except:
                     if verbose:
                         print rn, "WARNING: unable to connect to [", url, "]"
 
-        #----------------------------------------------------------------------
-        # Search through the remote files for the ones we want and download them
-        # Ensure that the list of remote files include those that can possibly
-        # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
-        if len(remotefiles) > 0:
+    #----------------------------------------------------------------------
+    # Search through the remote files for the ones we want and download them
+    # Ensure that the list of remote files include those that can possibly
+    # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
 
+        if len(remotefiles) > 0:
             for namefmt in fnamefmt:
+
                 #fill in the date, time, and radar information using remotedict
                 name = namefmt.format(**remotedict)
                 
@@ -525,6 +563,11 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 for rf in remotefiles:
                     #if we have a file match between a file and our regex
                     if(regex.match(rf)):
+                        if rf in temp_filelist: 
+                            continue
+                        else:
+                            temp_filelist.append(str(rf))
+
                         tf = "{:s}{:s}".format(outdir, rf)
 
                         # Test to see if the temporary file already exists
@@ -602,18 +645,42 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                         estr = "{:s}can't retrieve".format(estr)
                                         print "{:s} {:s}".format(estr, furl)
 
-                        if type(tf) is str:
-                            # Unzip the compressed file in place
-                            outfile = uncompress_file(tf, verbose=verbose)
-                            if outfile is None:
-                                # Then this is probably an uncompressed file
-                                outfile = tf
+                            
 
-                            filelist.append(outfile)
+        # Advance the cycle time by the "lowest" time increment 
+        # in the namefmt (either forward or reverse)
 
-        #----------------------------------------------------------------------
-        # Move to the next time
-        ctime = ctime + time_inc
+        if ((time_reverse == 1) and (len(temp_filelist) > 0)):
+            time_reverse = 0
+            ctime = stime.replace(second=0, microsecond=0)
+
+        # Calculate if we are going forward or backward in time and set
+        #ctime accordingly
+        base_time_inc = 1 - 2*time_reverse        
+
+        if ("{min}" in namefmt):
+            ctime = ctime + relativedelta(minutes=base_time_inc)
+        elif ("{hour}" in namefmt):
+            ctime = ctime + relativedelta(hours=base_time_inc)
+        elif (("{date}" in namefmt) or ("{day}" in remotedirfmt)):
+            ctime = ctime + relativedelta(days=base_time_inc)
+        elif ("{month}" in namefmt):
+            ctime = ctime + relativedelta(months=base_time_inc)
+        elif ("{year}" in namefmt):    
+            ctime = ctime + relativedelta(years=base_time_inc)
+
+    # attempt to unzip the files
+    for rf in temp_filelist:
+        outname = os.path.join(outdir,rf)
+        uncompressed = uncompress_file(outname, None, verbose)
+
+        if type(uncompressed) is str:
+        # save name of uncompressed file for output
+            filelist.append(uncompressed)
+        else:
+        # file wasn't compressed, use outname
+            filelist.append(outname)
+
 
     #--------------------------------------------------------------------------
     # Return the actual file start time and the list of uncompressed files
