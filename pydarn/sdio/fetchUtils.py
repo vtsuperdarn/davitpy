@@ -118,7 +118,7 @@ def uncompress_file(filename, outname=None, verbose=True):
 
 
 def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
-                      time_inc=dt.timedelta(hours=1), verbose=True):
+                      verbose=True):
 
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
@@ -137,7 +137,6 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                                      fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
                                                 '{date}.C0.{radar}.{ftype}'] 
                                      or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
-        * **time_inc** (timedelta): Time incriment between files (default=1 hour)
         * **verbose**        (bool): Print warnings or not? (default=True)
 
     **Output**: file_stime (datetime): actual starting time for located files
@@ -160,7 +159,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         filelist = fetchUtils.fetch_local_files(dt.datetime(2002,6,20), \
             dt.datetime(2002,6,21), '/sd-data/{year}/{month}/',{'ftype':'fitacf'}, \
             "/tmp/sd/",'{date}.{hour}......{radar}.{channel}.{ftype}', \
-            time_inc=timedelta(hours=2),verbose=False)
+            verbose=False)
 
     """
 
@@ -185,8 +184,6 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     assert(os.path.isdir(outdir)), (rn, "ERROR: outdir is not a directory")
     assert(isinstance(fnamefmt, (str,list))), \
         (rn, 'ERROR: fnamefmt must be str or list')
-    assert(isinstance(time_inc, dt.timedelta)), \
-        (rn, 'ERROR: cycle_inc must be a timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
 
@@ -298,7 +295,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
 def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                        remotedict, outdir, fnamefmt, username=None, password=False,
-                       port=None, time_inc=dt.timedelta(hours=1),  verbose=True):
+                       port=None, verbose=True):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -326,7 +323,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                     (default=False)
       * **port**             (str): Optional input for http file access
                                     (default=None)
-      * **time_inc**  (datetime.timedelta): Time incriment between files (default=1 hour)
       * **verbose**         (bool): Print out warnings? (default=True)
 
     **Outputs**: 
@@ -350,7 +346,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                  'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', \ 
                  {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/', \
                  '{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', \
-                 password='5d', time_inc=timedelta(hours=2),verbose=False)
+                 password='5d',verbose=False)
 
         print fitex
         ['/tmp/sd/20131130.2201.00.mcm.a.fitex',
@@ -404,8 +400,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         (rn, 'ERROR: port must be a string')
     assert(isinstance(fnamefmt, (str,list))), \
         (rn, 'ERROR: fnamefmt must be str or list')
-    assert(isinstance(time_inc, dt.timedelta)), \
-        (rn, 'ERROR: time_inc must be timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
     #--------------------------------------------------------------------------
@@ -739,7 +733,7 @@ if __name__=="__main__":
     print "*************************************************"
 
     print "Attempting to fetch a mapex file from the VT server..."
-    mapexFiles = fetch_remote_files(datetime(2012,11,24), datetime(2012,11,24,23,59),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/north/',{'ftype':'mapex'}, '/tmp/sd/','{date}.north.{ftype}', username='sd_dbread', password='5d', time_inc=timedelta(days=1), verbose=False)
+    mapexFiles = fetch_remote_files(datetime(2012,11,24), datetime(2012,11,24,23,59),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/north/',{'ftype':'mapex'}, '/tmp/sd/','{date}.north.{ftype}', username='sd_dbread', password='5d', verbose=False)
 
     print "Expected the file: ['/tmp/sd/20121124.north.mapex']"
     print "Received the file: " + str(mapexFiles)
@@ -749,7 +743,7 @@ if __name__=="__main__":
 
 
     print "Attempting to fetch map files from the usask server..."
-    mapFiles = fetch_remote_files(datetime(2001,11,24), datetime(2001,11,24,23,59),'sftp','chapman.usask.ca','mapfiles/{year}/{month}/',{'ftype':'map'}, '/tmp/sd/',['{date}.{ftype}','{date}s.{ftype}'], username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),verbose=False)
+    mapFiles = fetch_remote_files(datetime(2001,11,24), datetime(2001,11,24,23,59),'sftp','chapman.usask.ca','mapfiles/{year}/{month}/',{'ftype':'map'}, '/tmp/sd/',['{date}.{ftype}','{date}s.{ftype}'], username='davitpy', password='d4vitPY-usask',verbose=False)
 
     print "Expected the files: ['/tmp/sd/20011124.map', '/tmp/sd/20011124s.map']"
     print "Received the files: " + str(mapFiles)
@@ -759,7 +753,7 @@ if __name__=="__main__":
 
 
     print "Attempting to fetch a fitex file from the VT server..."
-    fitex = fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', time_inc=timedelta(hours=2),verbose=False)
+    fitex = fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', verbose=False)
 
     print "Expected the files: ['/tmp/sd/20131130.2201.00.mcm.a.fitex','/tmp/sd/20131201.0000.04.mcm.a.fitex','/tmp/sd/20131201.0201.00.mcm.a.fitex']"
     print "Received the files: " + str(fitex)
@@ -769,7 +763,7 @@ if __name__=="__main__":
 
 
     print "Attempting to fetch fitacf files from the usask server..."
-    fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'sftp','chapman.usask.ca','fitcon/{year}/{month}/', {'ftype':'fitacf','radar':'sas'}, '/tmp/sd/', '{date}.C0.{radar}.{ftype}', username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),verbose=False)
+    fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'sftp','chapman.usask.ca','fitcon/{year}/{month}/', {'ftype':'fitacf','radar':'sas'}, '/tmp/sd/', '{date}.C0.{radar}.{ftype}', username='davitpy', password='d4vitPY-usask', verbose=False)
 
     print "Expected the file: ['/tmp/sd/20121124.C0.sas.fitacf']"
     print "Received the file: " + str(fitacf)
