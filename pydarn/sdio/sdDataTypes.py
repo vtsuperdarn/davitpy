@@ -66,9 +66,8 @@ class sdDataPtr():
     def __init__(self,sTime=None,hemi=None,eTime=None, src=None,fileName=None, \
                   fileType=None,noCache=False,verbose=False,local_dirfmt=None, \
                   local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
-                  remote_fnamefmt=None,remote_dict=None,local_timeinc=None,\
-                  remote_timeinc=None,remote_site=None,username=None,      \
-                  password=None, port=None,tmpdir=None):
+                  remote_fnamefmt=None,remote_dict=None, remote_site=None, \
+                  username=None, password=None, port=None,tmpdir=None):
 
         from pydarn.sdio import sdDataPtr
         from utils.timeUtils import datetimeToEpoch
@@ -193,20 +192,13 @@ class sdDataPtr():
                         except:
                             local_fnamefmt = ['{date}.{hemi}.{ftype}']
                             print 'Environment variable DAVIT_SD_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
-    
-                    if local_timeinc is None:
-                        try:
-                            local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_LOCAL_TIMEINC']))
-                        except:
-                            local_timeinc = dt.timedelta(hours=24)
-                            print 'Environment variable DAVIT_SD_LOCAL_TIMEINC not set, using default:',local_timeinc
                     
                     outdir = tmpDir
     
     
                     #fetch the local files
                     filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
-                    local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
+                    local_fnamefmt, verbose=verbose)
     
                     if(len(filelist) > 0):
                         print 'found',ftype,'data in local files'
@@ -271,18 +263,13 @@ class sdDataPtr():
                         except:
                             port = '22'
                             print 'Environment variable DB_PORT not set, using default:',port
-                    if remote_timeinc is None:
-                        try:
-                            remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_REMOTE_TIMEINC']))
-                        except:
-                            remote_timeinc = dt.timedelta(hours=24)
-                            print 'Environment variable DAVIT_SD_REMOTE_TIMEINC not set, using default:',remote_timeinc
+
                     outdir = tmpDir
     
                     #Now fetch the files
                     filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                         remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
-                        password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
+                        password=password, port=port, verbose=verbose)
     
                     if len(filelist) > 0 :
                         print 'found',ftype,'data on sftp server'
@@ -803,7 +790,6 @@ if __name__=="__main__":
   print "  DBREADPASS:", os.environ['DBREADPASS']
   print "  DAVIT_SD_REMOTE_DIRFORMAT:", os.environ['DAVIT_SD_REMOTE_DIRFORMAT']
   print "  DAVIT_SD_REMOTE_FNAMEFMT:", os.environ['DAVIT_SD_REMOTE_FNAMEFMT']
-  print "  DAVIT_SD_REMOTE_TIMEINC:", os.environ['DAVIT_SD_REMOTE_TIMEINC']
   print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
@@ -851,7 +837,6 @@ if __name__=="__main__":
   print "Environment variables used:"
   print "  DAVIT_SD_LOCAL_DIRFORMAT:", os.environ['DAVIT_SD_LOCAL_DIRFORMAT']
   print "  DAVIT_SD_LOCAL_FNAMEFMT:", os.environ['DAVIT_SD_LOCAL_FNAMEFMT']
-  print "  DAVIT_SD_LOCAL_TIMEINC:", os.environ['DAVIT_SD_LOCAL_TIMEINC']
   print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
 
   src='local'
