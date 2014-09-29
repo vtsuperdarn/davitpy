@@ -295,7 +295,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
 def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                        remotedict, outdir, fnamefmt, username=None, password=False,
-                       port=None, verbose=True):
+                       port=None, verbose=True, check_cache=True):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -577,7 +577,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                             # If a local file of some sort of size has been
                             # found, test to see if the size is identical to the
                             # remote file to prevent multiple downloads
-                            if tfsize >= 0:
+                            if ((tfsize >= 0) and (check_cache)):
                                 try:
                                     rfsize = int(sftp.stat(rflong).st_size)
 
@@ -591,7 +591,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                 except:
                                     tfsize = -1
 
-                            if tfsize < 0:
+                            if ((tfsize < 0) or (not check_cache)):
                                 # Use the open sftp connection to get the file
                                 try:
                                     sftp.get(rflong,tf)
@@ -612,7 +612,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                             # If a local file of some sort of size has been
                             # found, test to see if the size is identical to the
                             # remote file to prevent multiple downloads
-                            if tfsize >= 0:
+                            if ((tfsize >= 0) and (check_cache)):
                                 f = urllib2.urlopen(furl)
                                 if f.headers.has_key("Content-Length"):
                                     rfsize = int(f.headers["Content-Length"])
@@ -625,7 +625,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                 else:
                                     tfsize = -1
 
-                            if tfsize < 0:
+                            if ((tfsize < 0) or (not check_cache)):
                                 try:
                                     urllib.urlretrieve(furl, tf)
                                     if verbose:
@@ -643,7 +643,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
         # Advance the cycle time by the "lowest" time increment 
         # in the namefmt (either forward or reverse)
-
         if ((time_reverse == 1) and (len(temp_filelist) > 0)):
             time_reverse = 0
             ctime = stime.replace(second=0, microsecond=0)
