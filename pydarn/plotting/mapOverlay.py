@@ -12,6 +12,9 @@ Overlay information on maps
 
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 # *************************************************************
 def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None, 
@@ -54,8 +57,8 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 	# Set dateTime.
 	if dateTime is not None:
 		if dateTime != mapObj.dateTime:
-			print "Warning, dateTime is " + str(dateTime) + \
-					", not mapObj.dateTime " + str(mapObj.dateTime)
+			logger.warn("Warning, dateTime is " + str(dateTime) +
+					", not mapObj.dateTime " + str(mapObj.dateTime))
 	else:
 		dateTime = mapObj.dateTime
 	
@@ -74,7 +77,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 	elif names:
 		input = {'meth': 'name', 'vals': names}
 	else:
-		print 'overlayRadar: no radars to plot'
+		logger.warn('overlayRadar: no radars to plot')
 		return
 	
 	# Check if radars is given as a list
@@ -183,8 +186,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	# Set dateTime.
 	if dateTime is not None:
 		if dateTime != mapObj.dateTime:
-			print "Warning, dateTime is " + str(dateTime) + \
-					", not mapObj.dateTime " + str(mapObj.dateTime)
+			logger.warn("Warning, dateTime is " + str(dateTime) +
+					", not mapObj.dateTime " + str(mapObj.dateTime))
 	else:
 		dateTime = mapObj.dateTime
 	
@@ -202,7 +205,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	elif names:
 		input = {'meth': 'name', 'vals': names}
 	else:
-		print 'overlayFov: no radars to plot'
+		logger.warn('overlayFov: no radars to plot')
 		return
 	
 	# Check if radars is given as a list

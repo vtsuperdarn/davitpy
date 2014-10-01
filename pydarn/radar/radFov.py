@@ -18,6 +18,10 @@ Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 # *************************************************************
 class fov(object):
     """ This class calculates and stores field-of-view coordinates. 
@@ -73,9 +77,9 @@ class fov(object):
         [nbeams, ngates, bmsep, recrise, 
         siteLat, siteLon, siteBore, siteAlt,
         siteYear]:
-            print('calcFov: must provide either a site object or ' + \
-                '[nbeams, ngates, bmsep, recrise, siteLat,' + \
-                ' siteLon, siteBore, siteAlt, siteYear].')
+            logger.error('calcFov: must provide either a site object or ' +
+                         '[nbeams, ngates, bmsep, recrise, siteLat,' +
+                         ' siteLon, siteBore, siteAlt, siteYear].')
             return
 
         # date_time checking is handled by coord_conv, and it already
@@ -101,7 +105,7 @@ class fov(object):
         if isinstance(frang, ndarray):
             isParamArray = True
             if len(frang) != nbeams: 
-                print 'getFov: frang must be of a scalar or ndarray(nbeams). Using first element: {}'.format(frang[0])
+                logger.warn('getFov: frang must be of a scalar or ndarray(nbeams). Using first element: {}'.format(frang[0]))
                 frang = frang[0] * ones(nbeams+1)
             # Array is adjusted to add on extra beam edge by copying the last element
             else: frang = np.append(frang, frang[-1])
@@ -109,7 +113,7 @@ class fov(object):
         if isinstance(rsep, ndarray):
             isParamArray = True
             if len(rsep) != nbeams: 
-                print 'getFov: rsep must be of a scalar or ndarray(nbeams). Using first element: {}'.format(rsep[0])
+                logger.warn('getFov: rsep must be of a scalar or ndarray(nbeams). Using first element: {}'.format(rsep[0]))
                 rsep = rsep[0] * ones(nbeams+1)
             # Array is adjusted to add on extra beam edge by copying the last element
             else: rsep = np.append(rsep, rsep[-1])
@@ -117,7 +121,7 @@ class fov(object):
         if isinstance(recrise, ndarray):
             isParamArray = True
             if len(recrise) != nbeams: 
-                print 'getFov: recrise must be of a scalar or ndarray(nbeams). Using first element: {}'.format(recrise[0])
+                logger.warn('getFov: recrise must be of a scalar or ndarray(nbeams). Using first element: {}'.format(recrise[0]))
                 recrise = recrise[0] * ones(nbeams+1)
             # Array is adjusted to add on extra beam edge by copying the last element
             else: recrise = np.append(recrise, recrise[-1])
@@ -127,58 +131,58 @@ class fov(object):
         if isinstance(altitude, ndarray):
             if altitude.ndim == 1:
                 if altitude.size != ngates:
-                    print 'getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0])
+                    logger.warn('getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0]))
                     altitude = altitude[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last element and replicating the whole array as many times as beams
                 else: altitude = np.resize( np.append(altitude, altitude[-1]), (nbeams+1,ngates+1) )
             elif altitude.ndim == 2:
                 if altitude.shape != (nbeams, ngates):
-                    print 'getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0])
+                    logger.warn('getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0]))
                     altitude = altitude[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
                     altitude = np.append(altitude, altitude[-1,:].reshape(1,ngates), axis=0)
                     altitude = np.append(altitude, altitude[:,-1].reshape(nbeams,1), axis=1)
             else:
-                print 'getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0])
+                logger.warn('getFov: altitude must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(altitude[0]))
                 altitude = altitude[0] * ones((nbeams+1, ngates+1))
         if isinstance(elevation, ndarray):
             if elevation.ndim == 1:
                 if elevation.size != ngates:
-                    print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
+                    logger.warn('getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0]))
                     elevation = elevation[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last element and replicating the whole array as many times as beams
                 else: elevation = np.resize( np.append(elevation, elevation[-1]), (nbeams+1,ngates+1) )
             elif elevation.ndim == 2:
                 if elevation.shape != (nbeams, ngates):
-                    print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
+                    logger.warn('getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0]))
                     elevation = elevation[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
                     elevation = np.append(elevation, elevation[-1,:].reshape(1,ngates), axis=0)
                     elevation = np.append(elevation, elevation[:,-1].reshape(nbeams,1), axis=1)
             else:
-                print 'getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0])
+                logger.warn('getFov: elevation must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(elevation[0]))
                 elevation = elevation[0] * ones((nbeams+1, ngates+1))
 
         # Do for coord_alt what we just did for altitude.
         if isinstance(coord_alt, ndarray):
             if coord_alt.ndim == 1:
                 if coord_alt.size != ngates:
-                    print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                    logger.warn('getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0]))
                     coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last element and replicating the whole array as many times as beams
                 else: coord_alt = np.resize( np.append(coord_alt, coord_alt[-1]), (nbeams+1,ngates+1) )
             elif coord_alt.ndim == 2:
                 if coord_alt.shape != (nbeams, ngates):
-                    print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                    logger.warn('getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0]))
                     coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
                 # Array is adjusted to add on extra beam/gate edge by copying the last row and column
                 else: 
                     coord_alt = np.append(coord_alt, coord_alt[-1,:].reshape(1,ngates), axis=0)
                     coord_alt = np.append(coord_alt, coord_alt[:,-1].reshape(nbeams,1), axis=1)
             else:
-                print 'getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0])
+                logger.warn('getFov: coord_alt must be of a scalar or ndarray(ngates) or ndarray(nbeans,ngates). Using first element: {}'.format(coord_alt[0]))
                 coord_alt = coord_alt[0] * ones((nbeams+1, ngates+1))
         
         # Generate beam/gate arrays

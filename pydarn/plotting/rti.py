@@ -43,6 +43,9 @@ from utils.timeUtils import *
 from pydarn.sdio import *
 from matplotlib.figure import Figure
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
               scales=[],channel='a',coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
@@ -152,20 +155,20 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       myFile.eTime=eTime
     else:
       #if the times range is not covered by the file, throw an error
-      print 'error, data not available in myFile for the whole sTime to eTime'
+      logger.warn('Data not available in myFile for the whole sTime to eTime')
       return None
 
 
   #check that we have data available now that we may have tried
   #to read it using radDataOpen
   if not myFile:
-    print 'error, no files available for the requested time/radar/filetype combination'
+    logger.warn('No files available for the requested time/radar/filetype combination')
     return None
 
   #Finally we can start reading the data file
   myBeam = radDataReadRec(myFile)
   if not myBeam:
-    print 'error, no data available for the requested time/radar/filetype combination'
+    logger.warn('No data available for the requested time/radar/filetype combination')
     return None
 
   #initialize empty lists
@@ -220,7 +223,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     #Check to ensure that data exists for the requested frequency band else
     #continue on to the next range of frequencies
     if not freq[fplot]:
-      print 'error, no data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz'
+      logger.warn('No data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz')
       rtiFig=None	#Need this line in case no data is plotted
       continue
 
@@ -378,7 +381,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     if show:
       rtiFig.show()
       
-    print 'plotting took:',datetime.datetime.now()-t1
+    logger.info('plotting took: ' + str(datetime.datetime.now()-t1))
     #end of plotting for loop
     
   if retfig:

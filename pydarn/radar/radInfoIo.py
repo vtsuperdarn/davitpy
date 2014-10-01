@@ -19,7 +19,10 @@ using the remote db database (requires an active internet connection).
 	* :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
 	* :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
 """
-		
+
+import logging
+logger = logging.getLogger(__name__)		
+
 
 # *************************************************************
 def radarRead(path=None):
@@ -50,8 +53,7 @@ def radarRead(path=None):
 		data = file_net.readlines()
 		file_net.close()
 	except:
-		print 'radarRead: cannot read {}: {}'.format(pathOpen,
-													 sys.exc_info()[0])
+		logger.error('radarRead: cannot read {}: {}'.format(pathOpen, sys.exc_info()[0]))
 		return None
 	
 	# Initialize placeholder dictionary of lists
@@ -102,7 +104,7 @@ def hdwRead(fname, path=None):
 			
 	Written by Sebastien, 2012-09
 	"""
-	import os
+	import os, sys
 	import shlex
 	from datetime import datetime
 	from utils import timeYrsecToDate
@@ -115,8 +117,7 @@ def hdwRead(fname, path=None):
 		data = file_hdw.readlines()
 		file_hdw.close()
 	except:
-		print 'hdwRead: cannot read {}: {}'.format(pathOpen, 
-												   sys.exc_info()[0])
+		logger.error('hdwRead: cannot read {}: {}'.format(pathOpen, sys.exc_info()[0]))
 		return
 	
 	# Site placeholder
@@ -259,7 +260,7 @@ class updateRadars(object):
         isUp = self.sqlUpdate()
 
         if isUp:
-            print "Radars information has been updated."
+            logger.info("Radars information has been updated.")
 
 
     def dbConnect(self):
@@ -274,14 +275,14 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
-        #print self.db_user,self.db_pswd,self.db_host, self.db_name
+        #logger.debug(self.db_user + ' ' + self.db_pswd + ' ' + self.db_host + ' ' + self.db_name)
         uri='mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd, self.db_host, self.db_name)
-        #print uri
+        #logger.debug(uri)
         try:
             conn = MongoClient(uri) 
             dba = conn[self.db_name]
         except:
-            print 'Could not connect to remote DB: ', sys.exc_info()[0]
+            logger.error('Could not connect to remote DB: ', sys.exc_info()[0])
             dba = False
 
         if dba:
@@ -291,7 +292,7 @@ class updateRadars(object):
                 self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
                 return True
             except:
-                print 'Could not get data from remote DB: ', sys.exc_info()[0]
+                logger.error('Could not get data from remote DB: ', sys.exc_info()[0])
                 return False
         else:
             return self.__readFromFiles()
@@ -315,7 +316,7 @@ class updateRadars(object):
             with lite.connect(fname) as conn: pass
             return True
         except lite.Error, e:
-            print "sqlInit() Error %s: %s" % (e.args[0],fname)
+            logger.error("sqlInit() Error %s: %s" % (e.args[0],fname))
             return False
 
 

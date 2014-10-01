@@ -7,6 +7,10 @@ import scipy as sp
 
 from signalCommon import *
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 # Cross Correlation Objects Start Here #########################################
 class xcor(object):
   def __init__(self, sig0, sig1, mode='full', comment=None, **metadata):
@@ -164,10 +168,10 @@ class xcorStruct(xcor):
       md  = self.getAllMetaData()
       warn = 'WARNING'
       if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
-      print warn + ':'
-      print '   Date time vector is not regularly sampled!'
-      print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
-      print '   Using average sampling period of ' + str(avg) + ' sec.'
+      logger.warn(warn + ':' +
+                  '\n   Date time vector is not regularly sampled!' +
+                  '\n   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.' +
+                  '\n   Using average sampling period of ' + str(avg) + ' sec.')
       samplePeriod = avg
 
     return samplePeriod

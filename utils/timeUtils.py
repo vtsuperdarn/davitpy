@@ -34,6 +34,9 @@
   * :func:`utils.timeUtils.yyyymmddToDate`
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def dateToYyyymmdd(myDate):
   """takes a python datetime object and returns a string in yyyymmdd format
@@ -53,6 +56,7 @@ def dateToYyyymmdd(myDate):
   """
 
   from datetime import datetime
+  import sys
   
   if isinstance(myDate,datetime):
     dateStr = ''
@@ -84,7 +88,7 @@ def dateToYyyymmdd(myDate):
     #return everything together
     return dateStr
   else:
-    print 'error, input must be type datetime'
+    logger.error('input must be type datetime')
     sys.exit()
   
 def yyyymmddToDate(dateStr):
@@ -112,10 +116,10 @@ def yyyymmddToDate(dateStr):
       return datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]))
     #if there was a problem with the input
     except:
-      print 'error in input '+dateStr 
+      logger.error('error in input '+dateStr)
       sys.exit()
   else:
-    print 'error, input must be a string'
+    logger.error('error, input must be a string')
     sys.exit()
     
     
@@ -139,7 +143,7 @@ def timeYrsecToDate(yrsec, year):
   from datetime import timedelta
   
   if year >= 2038: 
-    print 'timeYrsecToDate: Year {:d} out of range: forcing 2038'.format(year)
+    logger.warn('timeYrsecToDate: Year {:d} out of range: forcing 2038'.format(year))
     year = 2038
   myDate = datetime(year, 1, 1) + timedelta(seconds = yrsec)
   
@@ -264,7 +268,7 @@ def parseDate( date ) :
   elif len(date) == 1:
     tdate = [date[0]/10000, date[0]/100-date[0]/10000*100, date[0]-date[0]/100*100]
   else:
-    print 'Invalid date format: ', date
+    logger.error('Invalid date format: ' + date)
     return
 
   return tdate
@@ -303,7 +307,7 @@ def parseTime( time ) :
   elif len(time) == 1 and len(str(time[0])) >=1  and len(str(time[0])) <= 4:
     ttime = [time[0]/100, time[0]-time[0]/100*100]
   else:
-    print 'Invalid time format: ', time
+    logger.error('Invalid time format: ' + time)
     return
 
   return ttime

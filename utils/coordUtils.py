@@ -36,15 +36,20 @@
 
 Written by Matt W.
 """
+
+import logging
+logger = logging.getLogger(__name__)
+
+
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
     """coordConv has been renamed coord_conv and dateTime has been 
         renamed date_time for PEP 8 compliance.  Please use those 
         from now on.  Also altitude is now optional.
     """
     from utils.coordUtils import coord_conv
-    print "coordConv has been renamed coord_conv and dateTime has"
-    print "been renamed date_time for PEP 8 compliance.  Please use"
-    print "those from now on.  Also altitude is now optional."
+    logger.warn("coordConv has been renamed coord_conv and dateTime has" +
+                "been renamed date_time for PEP 8 compliance.  Please use" +
+                "those from now on.  Also altitude is now optional.")
     return coord_conv(lon, lat, start, end, altitude=altitude, 
                       date_time=dateTime)
 
