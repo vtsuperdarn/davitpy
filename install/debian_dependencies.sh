@@ -29,6 +29,10 @@ pip install --upgrade pymongo
 pip install --upgrade mechanize
 pip install --upgrade jinja2
 pip install --upgrade ecdsa
+pip install --upgrade pandas
+apt-get install -y libnetcdf-dev
+pip install --upgrade netcdf4
+
 
 
 dir=$(pwd)

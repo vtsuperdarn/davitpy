@@ -518,6 +518,7 @@ class MapConv(object):
             colors = 'DarkSlateGray', linewidths=1., 
             locator=LinearLocator(12) )
         plt.clabel(cntrPlt, inline=1, fontsize=10)
+        return cntrPlt
 
     def overlayHMB(self, hmbCol='Gray'):
         """Overlay Heppnard-Maynard boundary from mapex data
