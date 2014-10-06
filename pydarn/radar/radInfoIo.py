@@ -38,20 +38,31 @@ def radarRead(path=None):
 	Written by Sebastien, 2012-09
 	"""
 	import shlex
-	import os, sys
+	import os
 	from datetime import datetime
 	from utils import parseDate
 	
 	# Read file
+        if path:
+            pathOpen = os.path.join(path, 'radar.dat')
+        else:
+            pathOpen = os.getenv('SD_RADAR')
+
 	try:
-		if path: pathOpen = os.path.join(path, 'radar.dat')
-		else: pathOpen = os.environ['SD_RADAR']
 		file_net = open(pathOpen, 'r')
 		data = file_net.readlines()
 		file_net.close()
 	except:
-		print 'radarRead: cannot read {}: {}'.format(pathOpen,
-													 sys.exc_info()[0])
+		print('radarRead: cannot read {}'.format(pathOpen))
+                print('')
+                txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest radar.dat information.  You can can use a local file instead by setting the SD_RADAR environment variable to the location of a local copy of radar.dat.'
+                print(txt)
+                print('')
+                txt = 'Example, you might add a similar line to your .bashrc:'
+                print(txt)
+                txt = 'export SD_RADAR=/home/username/tables/radar.dat'
+                print(txt)
+                print('')
 		return None
 	
 	# Initialize placeholder dictionary of lists
