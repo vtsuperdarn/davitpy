@@ -42,7 +42,7 @@ import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=False ,\
-        scale=[],channel='a',coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
+        scale=[],channel=None,coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
         velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
         poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False, \
         show=True,png=False,pdf=False,dpi=500,tFreqBands=[]):
