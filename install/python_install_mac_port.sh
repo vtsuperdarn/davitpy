@@ -24,6 +24,7 @@ pip install --upgrade paramiko
 pip install --upgrade jinja2
 pip install --upgrade cython
 pip install --upgrade scikit-image
+pip install --upgrade pandas
 
 dir=$(pwd)
 cd /tmp

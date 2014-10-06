@@ -158,6 +158,10 @@ class mapObj(basemap.Basemap):
         # label parallels on map
         if self._gridLabels: 
           lablon = int(self.llcrnrlon/10)*10
+          if self.coords == "mlt":
+            lonfmt = lambda x: "%02g"%(x*24./360.)
+          else:
+            lonfmt = "%g"
           rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
           x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
           for ix,iy,ip in zip(x,y,parallels):
@@ -166,13 +170,20 @@ class mapObj(basemap.Basemap):
             _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
               rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
         # label meridians on bottom and left
-        meridians = np.arange(-180.,181.,20.)
+        if self.coords == "mlt":
+          meridians = np.arange(0.,360.,15.)
+        else:
+          meridians = np.arange(-180.,181.,20.)
         if self._gridLabels: 
-          merLabels = [False,False,False,True]
+          if self.coords == "mlt":
+            merLabels = [True, False, False, True]
+          else:
+            merLabels = [False,False,False,True]
         else: 
           merLabels = [False,False,False,False]
         # draw meridians
-        out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+        out = self.drawmeridians(meridians, labels=merLabels, fmt=lonfmt,
+                                 color='.6', zorder=10)
   
   def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
     from copy import deepcopy
@@ -605,6 +616,9 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 if __name__ == "__main__":
   import pylab as plt
   from datetime import datetime
+  
+  from models import aacgm
+
   time = datetime(2014,8,7,18,30)
   time2 = datetime(2014,8,8,0,0)
 
@@ -645,6 +659,27 @@ if __name__ == "__main__":
                          lat_0=lat_0, lon_0=lon_0,resolution='l',
                          datetime=time, dateTime=time)
   print "running plt.show to initilize plots, should have figure 2 and Fig 3 windows with a map\nClose figure window to continue with example"
+  plt.show()
+
+  print "\nComparing magnetic and MLT.  Time selected is " + \
+            str(time)
+  fig4=plt.figure(4)
+  ax=None
+  coords="mag"
+  tmpmap4 = mapObj(coords=coords, projection="stere", draw=True,
+                   boundinglat=40., lat_0=90., lon_0=0., resolution='l',
+                   datetime=time, dateTime=time)
+  fig5=plt.figure(5)
+  ax=None
+  coords="mlt"
+  tmpmap5 = mapObj(coords=coords, projection="stere", draw=True,
+                   boundinglat=40., lat_0=90., lon_0=0., resolution='l',
+                   datetime=time, dateTime=time)
+  print "MLT at zero MLON should be at " + \
+          str(aacgm.mltFromYmdhms(time.year, time.month, time.day,
+                                  time.hour, time.minute, time.second, 0.))
+  print "Figure 4 and Figure 5 should now appear.  Close their " + \
+          "windows to continue."
   plt.show()
 
   print "\nTesting some coordinate transformations."
