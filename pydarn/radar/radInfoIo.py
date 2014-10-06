@@ -63,6 +63,15 @@ def radarRead(path=None):
                 txt = 'export SD_RADAR=/home/username/tables/radar.dat'
                 print(txt)
                 print('')
+                txt = 'Also, make sure your SD_HDWPATH also points to the location of your hdw.dat files.'
+                print(txt)
+                txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
+                print(txt)
+                txt = 'Example, you might add a similar line to your .bashrc:'
+                print(txt)
+                txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
+                print(txt)
+                print('')
 		return None
 	
 	# Initialize placeholder dictionary of lists
@@ -120,14 +129,30 @@ def hdwRead(fname, path=None):
 	from utils import timeYrsecToDate
 	
 	# Read hardware file FNAME
+	# Read file
+        if path:
+            pathOpen = os.path.join(path, fname)
+        else:
+            pathOpen = os.getenv('SD_RADAR')
+            pathOpen = os.path.join(str(os.getenv('SD_HDWPATH')), fname)
+
 	try:
-		if path: pathOpen = os.path.join(path, fname)
-		else: pathOpen = os.path.join(os.environ['SD_HDWPATH'], fname)
 		file_hdw = open(pathOpen, 'r')
 		data = file_hdw.readlines()
 		file_hdw.close()
 	except:
-		print 'hdwRead: cannot read {}: {}'.format(pathOpen,sys.exc_info()[0])
+		print('hdwRead: cannot read {}'.format(pathOpen))
+                print('')
+                txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest hdw.dat information.  You can can use a local file instead by setting the SD_HDWPATH environment variable to the location of the local hdw.dat path.'
+                print(txt)
+                txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
+                print(txt)
+                print('')
+                txt = 'Example, you might add a similar line to your .bashrc:'
+                print(txt)
+                txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
+                print(txt)
+                print('')
 		return
 	
 	# Site placeholder
@@ -303,9 +328,13 @@ class updateRadars(object):
                 return True
             except:
                 print 'Could not get data from remote DB: ', sys.exc_info()[0]
+                print('Could not update .radars.sqlite file with hdw.dat info')
                 return False
         else:
-            return self.__readFromFiles()
+            result = self.__readFromFiles()
+            if not result:
+                print('Could not update .radars.sqlite file with hdw.dat info')
+            return result
 
 
     def sqlInit(self):
@@ -328,7 +357,6 @@ class updateRadars(object):
         except lite.Error, e:
             print "sqlInit() Error %s: %s" % (e.args[0],fname)
             return False
-
 
     def sqlUpdate(self):
         """Update sqlite file with provided db selections (if possible).
@@ -415,10 +443,12 @@ class updateRadars(object):
         """
         from datetime import datetime
 
-        # Build radar and hdw dictionnaries
+        # Build radar and hdw dictionaries
         radars = []
         hdw = []
         radarF = radarRead()
+        if radarF is None: return False
+
         nradar = len(radarF['id'])
         for irad in xrange( nradar ):
             radars.append( {"id": radarF['id'][irad], 
