@@ -116,8 +116,7 @@ def hdwRead(fname, path=None):
 		data = file_hdw.readlines()
 		file_hdw.close()
 	except:
-		print 'hdwRead: cannot read {}: {}'.format(pathOpen, 
-												   sys.exc_info()[0])
+		print 'hdwRead: cannot read {}: {}'.format(pathOpen,sys.exc_info()[0])
 		return
 	
 	# Site placeholder
