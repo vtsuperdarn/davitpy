@@ -45,31 +45,35 @@ We need to install some dependencies using a script that makes calls to apt-get 
 
 Note that this script also modifies your ~/.bashrc file to set environment variables identifying the DaViTPy installation location, the SuperDARN database access information, and others.  Because of this, please close your terminal and open a new session to refresh your environment variables.
 
-Now, run mastermake to make the fortran code and SuperDARN read routines happy.  Do NOT run mastermake as sudo.
+Now, run the high-level Makefile to make the fortran code and SuperDARN read routines happy.  Do NOT run make as sudo.
 
     cd davitpy
-    ./mastermake
+    make
+
+If your system is up-to-date and everything was compiled using the default compiler (true on most computers), this will run without any problems.  If it didn't work, there's still hope!  If you have an older system, you may need to specify which compilers to use.  If you have a REALLY old system, you may still be able to complile by removing some of the optional (but desireable) flags.  For example, one could run:
+
+    make F77=/usr/local/bin/gfortran44 FC=/usr/local/bin/gfortran44 F77_FLAGs="-O2 -fbacktrace -fPIC"
 
 Next, do the actual davitpy install (from in the davitpy directory):
 
     sudo python setup.py install
 
-Now, do one more mastermake just to be safe:
+Now, you can run make one more time just to be safe:
 
-    ./mastermake
+    make
 
 That should be it!  You may want to restart your terminal once more just to make sure the environment variables are refreshed.
 
-    
+
 ####MacOS
-You need to have either homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/) installed on your system.
+It is easiest to have either homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/) installed on your system.
 
 Next, follow the instructions for Ubuntu, but for the dependencies script, choose one of the following:
 
     sudo ./python_install_mac_brew.sh
     sudo ./python_install_mac_port.sh
 
-(**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries)
+(**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries or specify the extended name when calling the makefile)
     
 ####Usage
 To test davitpy and learn more about some of its functionality, please look at the included iPython notebooks.  To run these:
