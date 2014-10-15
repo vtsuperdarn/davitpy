@@ -52,7 +52,7 @@ Now, run the high-level Makefile to make the fortran code and SuperDARN read rou
 
 If your system is up-to-date and everything was compiled using the default compiler (true on most computers), this will run without any problems.  If it didn't work, there's still hope!  If you have an older system, you may need to specify which compilers to use.  If you have a REALLY old system, you may still be able to complile by removing some of the optional (but desireable) flags.  For example, one could run:
 
-    make F77=/usr/local/bin/gfortran44 FC=/usr/local/bin/gfortran44 F77_FLAGs="-O2 -fbacktrace -fPIC"
+    make F77=/usr/local/bin/gfortran44 FC=/usr/local/bin/gfortran44 F77_FLAGS="-O2 -fbacktrace -fPIC"
 
 Next, do the actual davitpy install (from in the davitpy directory):
 
