@@ -100,11 +100,13 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     ::
     
       import datetime as dt
-      myPtr = pydarn.sdio.radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+      myPtr = pydarn.sdio.radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
     
   Written by AJ 20130110
   """
   from pydarn.sdio import radDataPtr
+  from pydarn.radar import network
+
   myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,            \
                channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,      \
                filtered=filtered,src=src,fileName=fileName,              \
@@ -114,6 +116,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
                remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,  \
                local_timeinc=local_timeinc,remote_timeinc=remote_timeinc,\
                username=username,port=port,password=password,            \
+               stid=int(network().getRadarByCode(radcode).id),           \
                tmpdir=tmpdir)
   return myPtr
   
@@ -132,7 +135,7 @@ def radDataReadRec(myPtr):
     ::
     
       import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
       myBeam = radDataReadRec(myPtr)
     
   Written by AJ 20130110
@@ -161,7 +164,7 @@ def radDataReadScan(myPtr):
     ::
     
       import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
       myBeam = radDataReadScan(myPtr)
     
   Written by AJ 20130110
@@ -188,7 +191,7 @@ def radDataCreateIndex(myPtr):
     ::
     
       import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
       myIndex = radDataCreateIndex(myPtr)
     
   Written by JDS 20140606
@@ -213,7 +216,7 @@ def radDataReadAll(myPtr):
     ::
     
       import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel='a', bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
       myList = radDataReadAll(myPtr)
     
   Written by AJ 20130606

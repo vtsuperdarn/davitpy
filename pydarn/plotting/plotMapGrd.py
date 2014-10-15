@@ -645,6 +645,8 @@ class MapConv(object):
         # get the fitted mlat, mlon, velocity magnitude and azimuth from calcFitCnvVel() function
         ( mlatsPlot, mlonsPlot, velMagn, velAzm ) = self.calcFitCnvVel()
 
+        self.mapFitPltStrt = []
+        self.mapFitPltVec = []
 
         for nn in range( len(mlatsPlot) ) :
 
@@ -672,18 +674,18 @@ class MapConv(object):
             xVecEnd, yVecEnd = self.mObj(endLon, endLat, 
                 coords = self.plotCoords)
 
-            self.mapFitPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, 
+            self.mapFitPltStrt.append(self.mObj.scatter( xVecStrt, yVecStrt, 
                 c=velMagn[nn], s=10.,
                 vmin=0, vmax=self.maxVelPlot, 
                 alpha=0.7, cmap=colMap, zorder=5., 
-                edgecolor='none' )
+                edgecolor='none' ))
 
-            self.mapFitPltVec = self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], 
-                color = colMap(norm(velMagn[nn])) )
+            self.mapFitPltVec.append(self.mObj.plot( [ xVecStrt, xVecEnd ], [ yVecStrt, yVecEnd ], 
+                color = colMap(norm(velMagn[nn])) ))
 
         # Check and overlay colorbar
         if pltColBar :
-            cbar = matplotlib.pyplot.colorbar(self.mapFitPltStrt, orientation='vertical')
+            cbar = matplotlib.pyplot.colorbar(self.mapFitPltStrt[0], orientation='vertical')
             cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
         # Check and overlay radnames
         if overlayRadNames :

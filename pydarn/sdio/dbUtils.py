@@ -235,7 +235,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None, cp=N
 |   **myData**: a list of pydarn.sdio.beamData objects in chronological order
 | 
 | **EXAMPLES**:
-    >>> myData = readFromDb(sTime=atime,stid=33,channel='a',bmnum=7,cp=153,fileType='fitacf',exactFlg=True)
+    >>> myData = readFromDb(sTime=atime,stid=33,channel=None,bmnum=7,cp=153,fileType='fitacf',exactFlg=True)
 |   
 | Written by AJ 20130108
   """

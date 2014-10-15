@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=False ,\
-        scale=[],channel='a',coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
+        scale=[],channel=None,coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
         velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
         poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False, \
         show=True,png=False,pdf=False,dpi=500,tFreqBands=[]):
@@ -238,6 +238,10 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
     dist = width/50.
     cTime = sTime
+
+    #Clear temporary figure from memory.
+    fig = plot.gcf()
+    fig.clf()
 
     myFig = plot.figure(figsize=(12,8))
     
