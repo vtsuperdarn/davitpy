@@ -273,7 +273,7 @@ class sdDataPtr():
                             port = os.environ['DB_PORT']
                         except:
                             port = '22'
-                            logger.info('Environment variable DB_PORT not set, using default: ' port)
+                            logger.info('Environment variable DB_PORT not set, using default: ' + port)
                     if remote_timeinc is None:
                         try:
                             remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_REMOTE_TIMEINC']))
