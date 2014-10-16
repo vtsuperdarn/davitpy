@@ -144,7 +144,7 @@ def hdwRead(fname, path=None):
                              '   You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat\n' +
                              '   \n' +
                              '   Example, you might add a similar line to your .bashrc:\n' +
-                             '   export SD_HDWPATH=/home/username/tables/hdw.dat/
+                             '   export SD_HDWPATH=/home/username/tables/hdw.dat/'
                             )
 		return
 	
