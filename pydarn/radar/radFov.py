@@ -19,6 +19,7 @@ Based on R.J. Barnes radar.pro
 """
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

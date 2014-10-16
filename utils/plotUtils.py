@@ -19,6 +19,7 @@ Basic plotting tools
 from mpl_toolkits import basemap
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

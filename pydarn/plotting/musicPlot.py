@@ -61,6 +61,7 @@ from pydarn.radar.radUtils import getParamDict
 from pydarn.proc.music import getDataSet
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 #Global Figure Size

@@ -38,6 +38,7 @@ Written by Matt W.
 """
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

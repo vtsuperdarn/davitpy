@@ -16,6 +16,7 @@ Radar structures
 """
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

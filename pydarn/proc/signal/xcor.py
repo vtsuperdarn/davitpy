@@ -8,6 +8,7 @@ import scipy as sp
 from signalCommon import *
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

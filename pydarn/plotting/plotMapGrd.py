@@ -13,6 +13,7 @@ convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard
 """
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

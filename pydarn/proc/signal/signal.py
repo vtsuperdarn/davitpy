@@ -8,6 +8,7 @@ import scipy as sp
 from signalCommon import *
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 # Create a system for handling metadata that applies to all signals. ###########

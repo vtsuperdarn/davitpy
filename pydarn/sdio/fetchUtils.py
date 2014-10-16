@@ -45,6 +45,7 @@ Contains: uncompress_file    - uncompresses a file using various methods
 import datetime as dt
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

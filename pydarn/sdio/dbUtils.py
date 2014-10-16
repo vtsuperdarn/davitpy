@@ -22,6 +22,7 @@ from pydarn.sdio.radDataTypes import *
 import pydarn, datetime, os
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)	
 
 

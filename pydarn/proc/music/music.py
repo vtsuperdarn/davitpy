@@ -73,6 +73,7 @@ import copy
 import pydarn
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 Re = 6378   #Earth radius

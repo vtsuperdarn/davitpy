@@ -21,6 +21,7 @@ using the remote db database (requires an active internet connection).
 """
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)		
 
 

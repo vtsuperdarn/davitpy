@@ -36,6 +36,7 @@ import datetime as dt
 import utils
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

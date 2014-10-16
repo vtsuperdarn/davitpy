@@ -42,6 +42,7 @@ import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

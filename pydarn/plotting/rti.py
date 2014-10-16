@@ -44,6 +44,7 @@ from pydarn.sdio import *
 from matplotlib.figure import Figure
 
 import logging
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
