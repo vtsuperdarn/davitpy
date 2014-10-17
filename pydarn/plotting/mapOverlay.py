@@ -176,7 +176,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.cm as cm
-	from numpy import transpose, ones, concatenate, vstack, shape, nanargmin
+	from numpy import transpose, ones, concatenate, vstack, shape
+        import numpy as np
 	from matplotlib.patches import Polygon
 	from pylab import gca
 	
@@ -240,8 +241,11 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
                     # Ground scatter model is not defined for close in rangegates.
                     # np.nan will be returned for these gates.
                     # Set sGate >= to the first rangegate that has real values.
-
-                    tmp_sGate = (nanargmin(radFov.lonFull,axis=1)).max()
+                    
+                    not_finite  = np.logical_not(np.isfinite(radFov.lonFull))
+                    grid        = np.tile(np.arange(radFov.lonFull.shape[1]),(radFov.lonFull.shape[0],1)) 
+                    grid[not_finite] = 999999
+                    tmp_sGate   = (np.min(grid,axis=1)).max()
                     if tmp_sGate > sGate: sGate = tmp_sGate
 
 		# Get radar coordinates in map projection
