@@ -105,7 +105,7 @@ class RtRun(object):
 
             # Set time interval
             if not sTime: 
-                logger.info('No start time. Using now.')
+                logger.warn('No start time. Using now.')
                 sTime = dt.datetime.utcnow()
             if not eTime:
                 eTime = sTime + dt.timedelta(minutes=1)

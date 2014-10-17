@@ -309,8 +309,8 @@ class updateRadars(object):
         try:
             conn = MongoClient(uri) 
             dba = conn[self.db_name]
-        except:
-            logger.error('Could not connect to remote DB: ', sys.exc_info()[0])
+        except Exception:
+            logger.exception('Could not connect to remote DB')
             dba = False
 
         if dba:
@@ -319,14 +319,14 @@ class updateRadars(object):
 
                 self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
                 return True
-            except:
-                logger.error('Could not get data from remote DB: {}'.format(sys.exc_info()[0]) + '\n' +
-                             '   Could not update .radars.sqlite file with hdw.dat info')
+            except Exception:
+                logger.exception('Could not get data from remote DB.')
+                logger.error('Could not update .radars.sqlite file with hdw.dat info')
                 return False
         else:
             result = self.__readFromFiles()
             if not result:
-                print('Could not update .radars.sqlite file with hdw.dat info')
+                logger.error('Could not update .radars.sqlite file with hdw.dat info')
             return result
 
 

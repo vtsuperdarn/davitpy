@@ -78,7 +78,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 	elif names:
 		input = {'meth': 'name', 'vals': names}
 	else:
-		logger.warn('overlayRadar: no radars to plot')
+		logger.error('overlayRadar: no radars to plot, you must specify codes, ids or names')
 		return
 	
 	# Check if radars is given as a list
@@ -206,7 +206,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	elif names:
 		input = {'meth': 'name', 'vals': names}
 	else:
-		logger.warn('overlayFov: no radars to plot')
+		logger.error('overlayFov: no radars to plot, you must specify codes, ids or names')
 		return
 	
 	# Check if radars is given as a list

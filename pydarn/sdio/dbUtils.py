@@ -60,9 +60,8 @@ def getServerConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADP
   try:
     sConn = MongoClient('mongodb://'+username+':'+password+'@'+dbAddress)
   #check for error
-  except Exception,e:
-    logger.error(e)
-    logger.error('problem getting connection to server ' + dbAddress)
+  except Exception:
+    logger.exception('Problem getting connection to server ' + dbAddress)
     sConn = None
     
   #return connection for good, none for bad
@@ -351,12 +350,12 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
   #open the dmap file
   myFile = radDataOpen(stime,rad,eTime=etime,fileType=fileType, src='local')
   if(myFile == None):
-    logger.warn('no data available for the requested time/radar/filetype combination')
+    logger.warn('No data available for the requested time/radar/filetype combination')
     return None
   #read a record
   dmapBeam = radDataReadRec(myFile)
   if(dmapBeam == None):
-    logger.warn('no data available for the requested time/radar/filetype combination')
+    logger.warn('No data available for the requested time/radar/filetype combination')
     return None
     
   #get a write connection to the db

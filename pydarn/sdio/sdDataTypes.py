@@ -145,9 +145,8 @@ class sdDataPtr():
                     logger.info('cp '+fileName+' '+outname)
                 filelist.append(outname)
     
-            except Exception, e:
-                logger.error(e)
-                logger.error('problem reading file ' + fileName)
+            except Exception:
+                logger.exception('Problem reading file ' + fileName)
                 return None
 
         #Next, check for a cached file
@@ -185,7 +184,7 @@ class sdDataPtr():
                             local_dirfmt = os.environ['DAVIT_SD_LOCAL_DIRFORMAT']
                         except:
                             local_dirfmt = '/sd-data/{year}/{ftype}/{hemi}/'
-                            logger.info('Environment variable DAVIT_SD_LOCAL_DIRFORMAT not set, using default: ' + local_dirfmt)
+                            logger.warn('Environment variable DAVIT_SD_LOCAL_DIRFORMAT not set, using default: ' + local_dirfmt)
     
                     if local_dict is None:
                         local_dict = {'hemi':hemi, 'ftype':ftype}
@@ -195,14 +194,14 @@ class sdDataPtr():
                             local_fnamefmt = os.environ['DAVIT_SD_LOCAL_FNAMEFMT'].split(',')
                         except:
                             local_fnamefmt = ['{date}.{hemi}.{ftype}']
-                            logger.info('Environment variable DAVIT_SD_LOCAL_FNAMEFMT not set, using default: ' + local_fnamefmt)
+                            logger.warn('Environment variable DAVIT_SD_LOCAL_FNAMEFMT not set, using default: ' + local_fnamefmt)
     
                     if local_timeinc is None:
                         try:
                             local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_LOCAL_TIMEINC']))
                         except:
                             local_timeinc = dt.timedelta(hours=24)
-                            logger.info('Environment variable DAVIT_SD_LOCAL_TIMEINC not set, using default: ' + local_timeinc)
+                            logger.warn('Environment variable DAVIT_SD_LOCAL_TIMEINC not set, using default: ' + local_timeinc)
                     
                     outdir = tmpDir
     
@@ -220,10 +219,8 @@ class sdDataPtr():
                     else:
                         logger.info('could not find ' + ftype + ' data in local files')
     
-            except Exception, e:
-                logger.error(e)
-                logger.error('There was a problem reading local data, perhaps you are not at VT?')
-                logger.error('Will attempt fetching data from remote.')
+            except Exception:
+                logger.exception('There was a problem reading local data, perhaps you are not at VT? Will attempt fetching data from remote.')
                 src=None
               
         #finally, check the VT sftp server if we have not yet found files
@@ -241,25 +238,25 @@ class sdDataPtr():
                             remote_site = os.environ['DB']
                         except:
                             remote_site = 'sd-data.ece.vt.edu'
-                            logger.info('Environment variable DB not set, using default: ' + remote_site)
+                            logger.warn('Environment variable DB not set, using default: ' + remote_site)
                     if username is None:
                         try:
                             username = os.environ['DBREADUSER']
                         except:
                             username = 'sd_dbread'
-                            logger.info('Environment variable DBREADUSER not set, using default: ' + username)
+                            logger.warn('Environment variable DBREADUSER not set, using default: ' + username)
                     if password is None:
                         try:
                             password = os.environ['DBREADPASS']
                         except:
                             password = '5d'
-                            logger.info('Environment variable DBREADPASS not set, using default: ' + password)
+                            logger.warn('Environment variable DBREADPASS not set, using default: ' + password)
                     if remote_dirfmt is None:
                         try:
                             remote_dirfmt = os.environ['DAVIT_SD_REMOTE_DIRFORMAT']
                         except:
                             remote_dirfmt = 'data/{year}/{ftype}/{hemi}/'
-                            logger.info('Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default: ' + remote_dirfmt)
+                            logger.warn('Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default: ' + remote_dirfmt)
                     if remote_dict is None:
                         remote_dict = {'ftype':ftype, 'hemi':hemi}
                     if remote_fnamefmt is None:
@@ -267,19 +264,19 @@ class sdDataPtr():
                             remote_fnamefmt = os.environ['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
                         except:
                             remote_fnamefmt = ['{date}.{hemi}.{ftype}']
-                            logger.info('Environment variable DAVIT_SD_REMOTE_FNAMEFMT not set, using default: ' + remote_fnamefmt)
+                            logger.warn('Environment variable DAVIT_SD_REMOTE_FNAMEFMT not set, using default: ' + remote_fnamefmt)
                     if port is None:
                         try:
                             port = os.environ['DB_PORT']
                         except:
                             port = '22'
-                            logger.info('Environment variable DB_PORT not set, using default: ' + port)
+                            logger.warn('Environment variable DB_PORT not set, using default: ' + port)
                     if remote_timeinc is None:
                         try:
                             remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_REMOTE_TIMEINC']))
                         except:
                             remote_timeinc = dt.timedelta(hours=24)
-                            logger.info('Environment variable DAVIT_SD_REMOTE_TIMEINC not set, using default: ' + remote_timeinc)
+                            logger.warn('Environment variable DAVIT_SD_REMOTE_TIMEINC not set, using default: ' + remote_timeinc)
                     outdir = tmpDir
     
                     #Now fetch the files
@@ -296,9 +293,8 @@ class sdDataPtr():
                     else:
                         logger.info(' could not find ' + ftype + ' data on sftp server')
     
-                except Exception,e:
-                    logger.error(e)
-                    logger.error('problem reading from sftp server')
+                except Exception:
+                    logger.exception('Problem reading from sftp server')
         #check if we have found files
         if len(filelist) != 0:
             #concatenate the files into a single file
@@ -324,7 +320,7 @@ class sdDataPtr():
         if(self.__ptr != None):
             if(self.dType == None): self.dType = 'dmap'
         else:
-            logger.info('Sorry, we could not find any data for you :(')
+            logger.warn('Sorry, we could not find any data for you :(')
 
   
     def __repr__(self):
@@ -372,9 +368,8 @@ class sdDataPtr():
                     dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
                                  dfile['start.hour'],dfile['start.minute'],int(dfile['start.second']))
                     dfile['time'] = (dtime - dt.datetime(1970, 1, 1)).total_seconds()
-                except Exception,e:
-                    logger.error(e)
-                    logger.error('problem reading time from file, returning None')
+                except Exception:
+                    logger.exception('Problem reading time from file, returning None')
                     break
 
                 if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
@@ -439,9 +434,8 @@ class sdDataPtr():
                dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
                         dfile['start.hour'],dfile['start.minute'],int(dfile['start.second']))
                dfile['time'] = (dtime - dt.datetime(1970, 1, 1)).total_seconds()
-           except Exception,e:
-               logger.error(e)
-               logger.error('problem reading time from file, returning None')
+           except Exception:
+               logger.exception('Problem reading time from file, returning None')
                break
 
            if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
