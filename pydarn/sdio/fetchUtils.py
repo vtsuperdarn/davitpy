@@ -761,6 +761,16 @@ if __name__=="__main__":
     print "*************************************************"
 
 
+    print "Attempting to fetch a fitex file from the VT server..."
+    fitex = fetch_remote_files(datetime(2013,01,21,00), datetime(2013,01,21,05),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'ade','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20130121.0001.00.ade.a.fitex','/tmp/sd/20130121.0201.00.ade.a.fitex','/tmp/sd/20130121.0349.59.ade.a.fitex','/tmp/sd/20130121.0401.00.ade.a.fitex']"
+    print "Received the files: " + str(fitex)
+
+
+    print "*************************************************"
+
+
     print "Attempting to fetch fitacf files from the usask server..."
     fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'sftp','chapman.usask.ca','fitcon/{year}/{month}/', {'ftype':'fitacf','radar':'sas'}, '/tmp/sd/', '{date}.C0.{radar}.{ftype}', username='davitpy', password='d4vitPY-usask', verbose=False)
 
