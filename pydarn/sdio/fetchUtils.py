@@ -263,7 +263,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
             ctime = stime.replace(second=0, microsecond=0)
 
         # Calculate if we are going forward or backward in time and set
-        #ctime accordingly
+        # ctime accordingly
         base_time_inc = 1 - 2*time_reverse        
 
         if ("{min}" in namefmt):
@@ -277,6 +277,9 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         elif ("{year}" in namefmt):    
             ctime = ctime + relativedelta(years=base_time_inc)
 
+    # Make sure the found files are in order.  Otherwise the concatenation later
+    # will put records out of order
+    temp_filelist = sorted(temp_filelist)
     # attempt to unzip the files
     for lf in temp_filelist:
         outname = os.path.join(outdir,lf)
