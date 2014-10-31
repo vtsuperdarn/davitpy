@@ -665,6 +665,9 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         elif ("{year}" in namefmt):    
             ctime = ctime + relativedelta(years=base_time_inc)
 
+    # Make sure the found files are in order.  Otherwise the concatenation later
+    # will put records out of order
+    temp_filelist = sorted(temp_filelist)
     # attempt to unzip the files
     for rf in temp_filelist:
         outname = os.path.join(outdir,rf)
