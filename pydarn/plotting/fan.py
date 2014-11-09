@@ -51,7 +51,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     
     **Args**:
         * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the start time you want to plot
-        * **rad** (list): a list of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
+        * **rad**: sequence of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
         * **[interval]** (int): the the time period to be plotted, in seconds.  default = 60
         * **[fileType]** (str): the file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.  default = 'fitex'
         * **[param]** (str): the parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity'
@@ -105,7 +105,11 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     
     #check the inputs
     assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
-    assert(isinstance(rad,list)),"error, rad must be a list, eg ['bks'] or ['bks','fhe']"
+
+    #Turn rad input into an iterable, even if just one element.
+    rad = np.array(rad)
+    if rad.shape = (): rad.shape = (1,)
+
     for r in rad:
         assert(isinstance(r,str) and len(r) == 3),'error, elements of rad list must be 3 letter strings'
     assert(param == 'velocity' or param == 'power' or param == 'width' or \
