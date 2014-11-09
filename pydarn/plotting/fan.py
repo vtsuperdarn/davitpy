@@ -312,36 +312,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
                                                                             
     #if no data has been found pcoll will not have been set, and the following code will object                                   
-    if pcoll: 
-        cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
-        
-        l = []
-        #define the colorbar labels
-        for i in range(0,len(bounds)):
-            if(param == 'phi0'):
-                ln = 4
-                if(bounds[i] == 0): ln = 3
-                elif(bounds[i] < 0): ln = 5
-                l.append(str(bounds[i])[:ln])
-                continue
-            if((i == 0 and param == 'velocity') or i == len(bounds)-1):
-                l.append(' ')
-                continue
-            l.append(str(int(bounds[i])))
-        cbar.ax.set_yticklabels(l)
-        cbar.ax.tick_params(axis='y',direction='out')
-        #set colorbar ticklabel size
-        for ti in cbar.ax.get_yticklabels():
-            ti.set_fontsize(12)
-        if(param == 'velocity'): 
-            cbar.set_label('Velocity [m/s]',size=14)
-            cbar.extend='max'
-            
-        if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=14)
-        if(param == 'power'): cbar.set_label('Power [dB]',size=14)
-        if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=14)
-        if(param == 'elevation'): cbar.set_label('Elev [deg]',size=14)
-        if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=14)
+    if pcoll: utils.colorbar(pcoll,bounds,param,myFig)
     
     #myFig.gca().set_rasterized(True)
     #label the plot

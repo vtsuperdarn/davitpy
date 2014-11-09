@@ -362,8 +362,58 @@ def genCmap(param, scale, colors='lasse', lowGray=False):
 
   return cmap,norm,bounds
   
+def colorbar(mappable,bounds,param,fig,orientation='vertical',shrink=.65,fraction=.1,drawedges=True,label_size=14,**kwargs):
+    """Draw a colorbar for SuperDARN radar data.
 
-################################################################################
+    Arguments:
+    * mappable:  the :class:`~matplotlib.image.Image`, :class:`~matplotlib.contour.ContourSet`, etc. to
+            which the colorbar applies.
+    * bounds: sequence defining descrete sections of colorbar.  Get this from plotUtil.genCmap().
+    * param: One of 'velocity', 'power', 'width', 'elevation', 'grid', or 'phi0'.
+    * fig: figure object to be plotted to.
+    * orientation: 'vertical' or 'horizontal'.
+    * shrink: scaling factor for colorbar size.
+    * fraction: fraction or original axes to use for the colorbar.
+    * drawedges: If True, draw lines at color boundaries.
+    * label_size: point size of label font.
+    * **kwargs: keyword arguments passed on to matplotlib.Figure().colorbar().
+
+    Returns:
+    * cbar: matplotlib colorbar object
+    """
+
+    cbar = fig.colorbar(mappable,orientation=orientation,shrink=shrink,fraction=fraction,drawedges=drawedges,**kwargs)
+    
+    l = []
+    #define the colorbar labels
+    for i in range(0,len(bounds)):
+        if(param == 'phi0'):
+            ln = 4
+            if(bounds[i] == 0): ln = 3
+            elif(bounds[i] < 0): ln = 5
+            l.append(str(bounds[i])[:ln])
+            continue
+        if((i == 0 and param == 'velocity') or i == len(bounds)-1):
+            l.append(' ')
+            continue
+        l.append(str(int(bounds[i])))
+    cbar.ax.set_yticklabels(l)
+    cbar.ax.tick_params(axis='y',direction='out')
+    #set colorbar ticklabel size
+    for ti in cbar.ax.get_yticklabels():
+        ti.set_fontsize(12)
+    if(param == 'velocity'): 
+        cbar.set_label('Velocity [m/s]',size=label_size)
+        cbar.extend='max'
+        
+    if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=label_size)
+    if(param == 'power'): cbar.set_label('Power [dB]',size=label_size)
+    if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=label_size)
+    if(param == 'elevation'): cbar.set_label('Elev [deg]',size=label_size)
+    if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=label_size)
+
+    return cbar
+
 ################################################################################
 def drawCB(fig,coll,cmap,norm,map=False,pos=[0,0,1,1]):
   """manually draws a colorbar on a figure.  This can be used in lieu of the standard mpl colorbar function if you need the colorbar in a specific location.  See :func:`pydarn.plotting.rti.plotRti` for an example of its use.
