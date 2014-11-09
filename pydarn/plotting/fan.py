@@ -107,7 +107,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
 
     #Turn rad input into an iterable, even if just one element.
-    rad = np.array(rad)
+    rad = numpy.array(rad)
     if rad.shape == (): rad.shape = (1,)
 
     for r in rad:
