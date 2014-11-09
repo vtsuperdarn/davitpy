@@ -130,12 +130,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         assert(tbands[i][1] > tbands[i][0]),'error, frequency upper bound must be > lower bound'
 
     if(scale == []):
-        if(param == 'velocity'): scale=[-200,200]
-        elif(param == 'power'): scale=[0,30]
-        elif(param == 'width'): scale=[0,150]
-        elif(param == 'elevation'): scale=[0,50]
-        elif(param == 'phi0'): scale=[-numpy.pi,numpy.pi]
-
+        scale = utils.get_default_scale(param)
         
     fbase = sTime.strftime("%Y%m%d")
         

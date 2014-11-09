@@ -11,9 +11,11 @@ Basic plotting tools
 **Functions**:
   * :func:`utils.plotUtils.mapObj`: Create empty map 
   * :func:`utils.plotUtils.genCmap`: generate a custom colormap
+  * :func:`utils.plotUtils.colorbar`: draw a standard SuperDARN colorbar
   * :func:`utils.plotUtils.drawCB`: draw a colorbar
   * :func:`utils.plotUtils.curvedEarthAxes`: Plot axes in (R, Theta) coordinates with lower limit at R = Earth radius
   * :func:`utils.plotUtils.addColorbar`: Colorbar for :func:`curvedEarthAxes`
+  * :func:`utils.plotUtils.get_default_scale`: Get default values for a colorbar.
 
 """
 from mpl_toolkits import basemap
@@ -249,118 +251,119 @@ class mapObj(basemap.Basemap):
 
 
 ################################################################################
-################################################################################
-def genCmap(param, scale, colors='lasse', lowGray=False):
-  """Generates a colormap and returns the necessary components to use it
+def genCmap(param, scale=None, colors='lasse', lowGray=False):
+    """Generates a colormap and returns the necessary components to use it
 
-  **Args**:
-    * **param** (str): the parameter being plotted ('velocity' and 'phi0' are special cases, anything else gets the same color scale)
-    * **scale** (list): a list with the [min,max] values of the color scale
-    * **[colors]** (str): a string indicating which colorbar to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
-    * **[lowGray]** (boolean): a flag indicating whether to plot low velocities (|v| < 15 m/s) in gray.  default = False
-  **Returns**:
-    * **cmap** (`matplotlib.colors.ListedColormap <http://matplotlib.org/api/colors_api.html?highlight=listedcolormap#matplotlib.colors.ListedColormap>`_): the colormap generated.  This then gets passed to the mpl plotting function (e.g. scatter, plot, LineCollection, etc.)
-    * **norm** (`matplotlib.colors.BoundaryNorm <http://matplotlib.org/api/colors_api.html?highlight=matplotlib.colors.boundarynorm#matplotlib.colors.BoundaryNorm>`_): the colormap index.  This then gets passed to the mpl plotting function (e.g. scatter, plot, LineCollection, etc.)
-    * **bounds** (list): the boundaries of each of the colormap segments.  This can be used to manually label the colorbar, for example.
+    **Args**:
+        * **param** (str): the parameter being plotted ('velocity' and 'phi0' are special cases, anything else gets the same color scale)
+        * **scale** (list): a list with the [min,max] values of the color scale
+        * **[colors]** (str): a string indicating which colorbar to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
+        * **[lowGray]** (boolean): a flag indicating whether to plot low velocities (|v| < 15 m/s) in gray.  default = False
+        **Returns**:
+        * **cmap** (`matplotlib.colors.ListedColormap <http://matplotlib.org/api/colors_api.html?highlight=listedcolormap#matplotlib.colors.ListedColormap>`_): the colormap generated.  This then gets passed to the mpl plotting function (e.g. scatter, plot, LineCollection, etc.)
+        * **norm** (`matplotlib.colors.BoundaryNorm <http://matplotlib.org/api/colors_api.html?highlight=matplotlib.colors.boundarynorm#matplotlib.colors.BoundaryNorm>`_): the colormap index.  This then gets passed to the mpl plotting function (e.g. scatter, plot, LineCollection, etc.)
+        * **bounds** (list): the boundaries of each of the colormap segments.  This can be used to manually label the colorbar, for example.
 
-  **Example**:
+    **Example**:
     ::
 
       cmap,norm,bounds = genCmap('velocity', [-200,200], colors='aj', lowGray=True)
-    
-  Written by AJ 20120820
-  """
-  import matplotlib,numpy
-  import matplotlib.pyplot as plot
+
+    Written by AJ 20120820
+    """
+    import matplotlib,numpy
+    import matplotlib.pyplot as plot
+    if scale is None:
+        scale = get_default_scale(param)
+
   
-  #the MPL colormaps we will be using
-  cmj = matplotlib.cm.jet
-  cmpr = matplotlib.cm.prism
-  
-  #check for a velocity plot
-  if(param == 'velocity'):
+    #the MPL colormaps we will be using
+    cmj = matplotlib.cm.jet
+    cmpr = matplotlib.cm.prism
+
+    #check for a velocity plot
+    if(param == 'velocity'):
     
-    #check for what color scale we want to use
-    if(colors == 'aj'):
-      if(not lowGray):
-        #define our discrete colorbar
-        cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),\
-        cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
-      else:
-        cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),'.6',\
-        cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
-    else:
-      if(not lowGray):
-        #define our discrete colorbar
-        cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),\
-        cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
-      else:
-        cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),'.6',\
-        cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
+        #check for what color scale we want to use
+        if(colors == 'aj'):
+            if(not lowGray):
+                #define our discrete colorbar
+                cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),\
+                cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
+            else:
+                cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),'.6',\
+                cmpr(.175),cmpr(.158),cmj(.32),cmj(.37)])
+        else:
+            if(not lowGray):
+                #define our discrete colorbar
+                cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),\
+                cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
+            else:
+                cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),'.6',\
+                cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
         
-    #define the boundaries for color assignments
-    bounds = numpy.round(numpy.linspace(scale[0],scale[1],7))
-    if(lowGray):
-      bounds[3] = -15.
-      bounds = numpy.insert(bounds,4,15.)
-    bounds = numpy.insert(bounds,0,-50000.)
-    bounds = numpy.append(bounds,50000.)
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+        #define the boundaries for color assignments
+        bounds = numpy.round(numpy.linspace(scale[0],scale[1],7))
+        if(lowGray):
+            bounds[3] = -15.
+            bounds = numpy.insert(bounds,4,15.)
+        bounds = numpy.insert(bounds,0,-50000.)
+        bounds = numpy.append(bounds,50000.)
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
     
-  elif(param == 'phi0'):
-    #check for what color scale we want to use
-    if(colors == 'aj'):
-      #define our discrete colorbar
-      cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),\
-      cmpr(.18),cmpr(.16),cmj(.32),cmj(.37)])
-    else:
-      #define our discrete colorbar
-      cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),\
-      cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
+    elif(param == 'phi0'):
+        #check for what color scale we want to use
+        if(colors == 'aj'):
+            #define our discrete colorbar
+            cmap = matplotlib.colors.ListedColormap([cmpr(.142),cmpr(.125),cmpr(.11),cmpr(.1),\
+            cmpr(.18),cmpr(.16),cmj(.32),cmj(.37)])
+        else:
+            #define our discrete colorbar
+            cmap = matplotlib.colors.ListedColormap([cmj(.9),cmj(.8),cmj(.7),cmj(.65),\
+            cmpr(.142),cmj(.45),cmj(.3),cmj(.1)])
       
-    #define the boundaries for color assignments
-    bounds = numpy.linspace(scale[0],scale[1],9)
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+        #define the boundaries for color assignments
+        bounds = numpy.linspace(scale[0],scale[1],9)
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
     
-  elif(param == 'grid'):
-    #check what color scale we want to use
-    if(colors == 'aj'):
-      #define our discrete colorbar
-      cmap = matplotlib.colors.ListedColormap([cmpr(.175),cmpr(.17),cmj(.32),cmj(.37),\
-      cmpr(.142),cmpr(.13),cmpr(.11),cmpr(.10)])
-    else:
-      #define our discrete colorbar
-      cmap = matplotlib.colors.ListedColormap([cmj(.1),cmj(.3),cmj(.45),cmpr(.142),\
-      cmj(.65),cmj(.7),cmj(.8),cmj(.9)])
+    elif(param == 'grid'):
+        #check what color scale we want to use
+        if(colors == 'aj'):
+            #define our discrete colorbar
+            cmap = matplotlib.colors.ListedColormap([cmpr(.175),cmpr(.17),cmj(.32),cmj(.37),\
+            cmpr(.142),cmpr(.13),cmpr(.11),cmpr(.10)])
+        else:
+            #define our discrete colorbar
+            cmap = matplotlib.colors.ListedColormap([cmj(.1),cmj(.3),cmj(.45),cmpr(.142),\
+            cmj(.65),cmj(.7),cmj(.8),cmj(.9)])
       
-    #define the boundaries for color assignments
-    bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
-    bounds = numpy.append(bounds,50000.)
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+        #define the boundaries for color assignments
+        bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
+        bounds = numpy.append(bounds,50000.)
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
     
-  #if its a non-velocity plot
-  else:
-    #check what color scale we want to use
-    if(colors == 'aj'):
-      #define our discrete colorbar
-      cmap = matplotlib.colors.ListedColormap([cmpr(.175),cmpr(.158),cmj(.32),cmj(.37),\
-      cmpr(.142),cmpr(.13),cmpr(.11),cmpr(.10)])
+    #if its a non-velocity plot
     else:
-      #define our discrete colorbar
-      cmap = matplotlib.colors.ListedColormap([cmj(.1),cmj(.3),cmj(.45),cmpr(.142),\
-      cmj(.65),cmj(.7),cmj(.8),cmj(.9)])
+        #check what color scale we want to use
+        if(colors == 'aj'):
+            #define our discrete colorbar
+            cmap = matplotlib.colors.ListedColormap([cmpr(.175),cmpr(.158),cmj(.32),cmj(.37),\
+            cmpr(.142),cmpr(.13),cmpr(.11),cmpr(.10)])
+        else:
+            #define our discrete colorbar
+            cmap = matplotlib.colors.ListedColormap([cmj(.1),cmj(.3),cmj(.45),cmpr(.142),\
+            cmj(.65),cmj(.7),cmj(.8),cmj(.9)])
       
-    #define the boundaries for color assignments
-    bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
-    bounds = numpy.append(bounds,50000.)
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+        #define the boundaries for color assignments
+        bounds = numpy.round(numpy.linspace(scale[0],scale[1],8))
+        bounds = numpy.append(bounds,50000.)
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
     
+    cmap.set_bad('w',1.0)
+    cmap.set_over('w',1.0)
+    cmap.set_under('.6',1.0)
 
-  cmap.set_bad('w',1.0)
-  cmap.set_over('w',1.0)
-  cmap.set_under('.6',1.0)
-
-  return cmap,norm,bounds
+    return cmap,norm,bounds
   
 def colorbar(mappable,bounds,param,fig,orientation='vertical',shrink=.65,fraction=.1,drawedges=True,label_size=14,**kwargs):
     """Draw a colorbar for SuperDARN radar data.
@@ -662,6 +665,27 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
 
     ab.set_zorder(zorder)
     ax.add_artist(ab)
+
+def get_default_scale(param):
+    """
+    Returns the default scale for a given parameter.
+    Defaults to [-200,200].
+    
+    Arguments:
+    * param: 'velocity', 'power', 'width', 'elevation', or 'phi'
+
+    Returns:
+    * scale: 2 element list
+    """
+    scale = [-200,200]
+
+    if(param == 'velocity'): scale=[-200,200]
+    elif(param == 'power'): scale=[0,30]
+    elif(param == 'width'): scale=[0,150]
+    elif(param == 'elevation'): scale=[0,50]
+    elif(param == 'phi0'): scale=[-numpy.pi,numpy.pi]
+
+    return scale
 
 if __name__ == "__main__":
   import pylab as plt
