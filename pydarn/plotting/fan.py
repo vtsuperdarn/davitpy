@@ -108,7 +108,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
     #Turn rad input into an iterable, even if just one element.
     rad = np.array(rad)
-    if rad.shape = (): rad.shape = (1,)
+    if rad.shape == (): rad.shape = (1,)
 
     for r in rad:
         assert(isinstance(r,str) and len(r) == 3),'error, elements of rad list must be 3 letter strings'
