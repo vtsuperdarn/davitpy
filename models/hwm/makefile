@@ -1,11 +1,37 @@
-#!/bin/bash
-# Compile with f2py
+# Makefile for building hwm-2007 and compliling it with f2py
 
+# Declare default compilers
+LOCAL_F2PY = f2py
+LOCAL_FC   = gfortran
+# Use default compilers unless specified by command line input
+#echo 'Use F2PY and F77 to specify the fortran-to-python and fortran complilers'
+F2PY = $(LOCAL_F2PY)
+FC   = $(LOCAL_FC)
+
+# Declare optional and required compilation flags
+OPT_FLAGS = -O2 -fPIC
+REQ_FLAGS = -w
+
+# Declare source code
+SOURCES = apexcord.f90 \
+	  dwm07b.f90 \
+	  hwm07e.f90
+OBJ = $(SOURCES:.f90=.o)
+
+PYF = hwm07.pyf
+PYO = $(PYF:.pyf=.so)
+
+# Define operations
 all:
-#	f2py hwm07e.f90 -m hwm07 -h hwm07.pyf
-	gfortran -w -O2 -fPIC -c *.f90
-	f2py --f90flags="-w" -c hwm07.pyf *.f90
+	$(FC) $(REQ_FLAGS) $(OPT_FLAGS) -c $(SOURCES)
+	$(F2PY) --f90flags="$(REQ_FLAGS)" -c $(PYF) $(SOURCES)
 
 clean:
-	find . -type f -name "*.so" | xargs rm -f
-#	find . -type f -name "*.pyf" | xargs rm -f
+	rm -f $(PYO) $(OBJ)
+
+# Define test operations
+test:
+	$(F2PY) hwm07e.f90 -m hwm07 -h hwm07_test.pyf
+
+test_clean:
+	rm -f hwm07_test.pyf
