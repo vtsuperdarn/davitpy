@@ -12,12 +12,18 @@ This subpackage contains various plotting routines for DaViT-py
 	* :mod:`fan`
 	* :mod:`pygridPlot`
 	* :mod:`printRec`
+	* :mod:`iqPlot`
 """
 
 try:
 	from rti import *
 except Exception,e: 
 	print 'problem importing rti: ', e
+
+try:
+	from iqPlot import *
+except Exception,e: 
+	print 'problem importing iqPlot: ', e
 
 try:
 	from fan import *
