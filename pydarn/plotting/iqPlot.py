@@ -178,3 +178,44 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None):
     fig.show()
 
 
+
+
+
+
+if __name__ == "__main__":
+
+  import pydarn
+  from matplotlib import pyplot
+  from datetime import datetime
+  
+  print "First we need to fetch an iqdat file and read a beam record..."
+  myPtr = pydarn.sdio.radDataOpen(datetime(2014,7,10), 'sas', fileName='20140710.1000.03.sas.iqdat', fileType='iqdat')
+  myBeam = pydarn.sdio.radDataReadRec(myPtr)
+
+  print "Testing the plot_iq method and it's options...."
+  print "...First test default options..."
+  pydarn.plotting.iqPlot.plot_iq(myBeam)
+
+
+  print "...Second test plotting Magnitude and Phase..."
+  print "      using 'mag_phase = True'"
+  pydarn.plotting.iqPlot.plot_iq(myBeam, mag_phase = "True")
+
+  print "...Third test plotting only one sequence..."
+  print "      using 'sequences=[0]'"
+  pydarn.plotting.iqPlot.plot_iq(myBeam, sequences=[0])
+
+  print "...Fourth test plotting to an existing axis object..."
+  print "      using 'user_ax = ax'"
+  fig = pyplot.figure()
+  ax = fig.add_axes([0.1,0.1,0.8,0.8])
+  pydarn.plotting.iqPlot.plot_iq(myBeam, user_ax = ax)
+
+  print "...Fifth test plotting with a custom scaling. Data should be scaled down a lot..."
+  print "      using 'scale = 1000.'"
+  fig = pyplot.figure()
+  ax = fig.add_axes([0.1,0.1,0.8,0.8])
+  pydarn.plotting.iqPlot.plot_iq(myBeam, scale=1000.)
+
+  pyplot.show()
+    
