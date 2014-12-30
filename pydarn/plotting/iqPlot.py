@@ -27,7 +27,7 @@
   * :func:`pydarn.plotting.iqPlot.plot_iq`
 """
 
-def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True):
+def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
 
     """create an rti plot for a secified radar and time period
 
@@ -42,7 +42,10 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
         * **[scale]**: (None or float) Specifies the scaling to use on 
                        real, imaginary, or magnitude axes. Default is 
                        None which auto-scales.
-        * **[ax]**: a matplotlib axis object
+        * **[user_ax]**: a matplotlib axis object
+        * **[tx_pulse]**: (boolean) Specifies whether or not to plot Tx pulses
+        * **[int_data]**: (boolean) Specifies whether or not to plot voltage samples from the interferometer array (checks beamData.prm.xcf)
+
     **Returns**:
         Nothing.
 
@@ -82,6 +85,11 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
             sequences = [0]
 
     # check input
+
+    if ((int_data) and (myBeam.prm.xcf == 0)):
+        print "No interferometer data available."
+        return
+
     # default to plotting all sequences
     if sequences is None:
         sequences = range(0,seqnum)
@@ -135,8 +143,13 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
 
         sample_nums = range(0,myBeam.iqdat.smpnum)
 
-        iq_real = np.array([x[0] for x in myBeam.iqdat.mainData[seq]])
-        iq_imag = np.array([x[1] for x in myBeam.iqdat.mainData[seq]])
+        # Get the main or interferometer array data to plot
+        if ((int_data) and (myBeam.prm.xcf == 1)):
+            iq_real = np.array([x[0] for x in myBeam.iqdat.intData[seq]])
+            iq_imag = np.array([x[1] for x in myBeam.iqdat.intData[seq]])
+        else:
+            iq_real = np.array([x[0] for x in myBeam.iqdat.mainData[seq]])
+            iq_imag = np.array([x[1] for x in myBeam.iqdat.mainData[seq]])
 
         if (mag_phase):
             mag = np.sqrt(iq_real**2 + iq_imag**2)
