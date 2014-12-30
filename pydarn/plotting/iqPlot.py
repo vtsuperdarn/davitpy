@@ -120,7 +120,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
             ax = user_ax
 
         if (s == 0):
-            rad = pydarn.radar.network().getRadarById(5).code[0]
+            rad = pydarn.radar.network().getRadarById(myBeam.stid).code[0]
             time = myBeam.time.strftime('%H:%M:%S UT %d/%m/%Y')
             title='Pulse Sequence IQ Data  '+rad+'   Beam '+ \
                    str(myBeam.bmnum)+'   Tx Freq '+ \
@@ -227,8 +227,6 @@ if __name__ == "__main__":
 
     print "...Sixth test plotting with a custom scaling. Data should be scaled down a lot..."
     print "      using 'scale = 1000.'"
-    fig = pyplot.figure()
-    ax = fig.add_axes([0.1,0.1,0.8,0.8])
     pydarn.plotting.iqPlot.plot_iq(myBeam, scale=1000.)
 
     pyplot.show()
