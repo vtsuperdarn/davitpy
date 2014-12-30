@@ -43,8 +43,11 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
                        real, imaginary, or magnitude axes. Default is 
                        None which auto-scales.
         * **[user_ax]**: a matplotlib axis object
-        * **[tx_pulse]**: (boolean) Specifies whether or not to plot Tx pulses
-        * **[int_data]**: (boolean) Specifies whether or not to plot voltage samples from the interferometer array (checks beamData.prm.xcf)
+        * **[tx_pulse]**: (boolean) Specifies whether or not to plot Tx 
+                          pulses
+        * **[int_data]**: (boolean) Specifies whether or not to plot 
+                          voltage samples from the interferometer array 
+                          (checks beamData.prm.xcf)
 
     **Returns**:
         Nothing.
@@ -52,8 +55,8 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     **Example**:
         ::
             from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2014,7,10), \
-                                            'sas',fileType='iqdat')
+            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                            'kap',fileType='iqdat')
             pydarn.plotting.iqPlot.plot_iq(myBeam)
 
         Written by ASR 20141225
@@ -198,7 +201,8 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
                 ax.set_yticklabels([])
             else:
                 ax.plot(time,0.1*amp*np.pi - np.pi,color='blue')
-                ax.fill(time,0.1*amp*np.pi - np.pi,color='blue', alpha = 0.5)
+                ax.fill(time,0.1*amp*np.pi - np.pi,color='blue', \
+                                                    alpha = 0.5)
     
     if user_ax is None:
         fig.show()
