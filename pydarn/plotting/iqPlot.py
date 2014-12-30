@@ -200,7 +200,7 @@ if __name__ == "__main__":
     from datetime import datetime
   
     print "First we need to fetch an iqdat file and read a beam record..."
-    myPtr = pydarn.sdio.radDataOpen(datetime(2014,7,10), 'sas', fileName='20140710.1000.03.sas.iqdat', fileType='iqdat')
+    myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), 'kap', fileType='iqdat')
     myBeam = pydarn.sdio.radDataReadRec(myPtr)
 
     print "Testing the plot_iq method and it's options...."
