@@ -1,0 +1,305 @@
+
+def calc_blanked(ltab,tp,tau,tfr,gate):
+  import numpy as np
+
+  #Calculate the lags and the pulse table
+  lags = []
+  ptab = []
+  for pair in ltab:
+    lags.append(pair[1]-pair[0])
+    ptab.extend(pair)
+  lags=list(set(lags))
+  ptab=list(set(ptab))
+  lags.sort()  
+  ptab.sort()
+
+  txs_in_lag={}
+  for lag in lags:
+    txs_in_lag[lag]=[]
+
+  #number of ranges per tau
+  tp_in_tau = tau/tp
+
+  #determine which range gates correspond to blanked samples
+  tx_times=[p*tp_in_tau for p in ptab]
+  blanked_samples=[]
+  for tx in tx_times:
+    blanked_samples.extend([tx, tx+1])
+
+  for lag in lags:
+    for pair in ltab:
+      if (pair[1] - pair[0] == lag):
+        #which samples were used to generate the acf
+        S1=tp_in_tau*pair[0]+gate + 1.*tfr/(tp)
+        S2=tp_in_tau*pair[1]+gate + 1.*tfr/(tp)
+        br=[]
+        #check to see if the samples are blanked or not
+        if S1 in blanked_samples:
+          br.append(S1)
+        if S2 in blanked_samples:
+          br.append(S2)
+        txs_in_lag[lag].extend(br)
+
+  return txs_in_lag
+
+
+
+def acfPlot(myBeam, gate, blanked=True, xcf=False, panel=0, ax=None):
+
+  from matplotlib import pyplot
+  import numpy as np
+  import pydarn
+  from matplotlib import colors
+  import matplotlib as mpl
+  import matplotlib.cm as cmx
+                 
+  number_lags = myBeam.prm.mplgs
+  lags = list(set([x[1]-x[0] for x in myBeam.prm.ltab]))
+  ltab = myBeam.prm.ltab
+  smsep = myBeam.prm.smsep
+  tau = myBeam.prm.mpinc
+  tfr = myBeam.prm.lagfr
+  tp = myBeam.prm.txpl
+  nrang = myBeam.prm.nrang
+  nave = myBeam.prm.nave
+  mplgs = myBeam.prm.mplgs
+  noise = np.array(myBeam.prm.noisesearch)
+  power = np.array(myBeam.rawacf.pwr0)
+  fluct = 1/np.sqrt(nave)*(1+1/(power[gate]/noise))
+
+  #Grab the appropriate data for plotting
+  if ((xcf) and (myBeam.prm.xcf == 0)):
+    print "No interferometer data available."
+    return
+  elif ((xcf) and (myBeam.prm.xcf == 1)):
+    re = np.array([x[0]/power[gate] for x in myBeam.rawacf.xcfd[gate]]) 
+    im = np.array([x[1]/power[gate] for x in myBeam.rawacf.xcfd[gate]])
+  else:
+    re = np.array([x[0]/power[gate] for x in myBeam.rawacf.acfd[gate]])
+    im = np.array([x[1]/power[gate] for x in myBeam.rawacf.acfd[gate]])
+
+  # determine which lags are blanked by Tx pulses
+  blanked = calc_blanked(ltab,tp,tau,tfr,gate)
+  tx = np.zeros(mplgs)
+  for l,lag in enumerate(lags):
+    if len(blanked[lag]):
+      tx[l] = 1
+    else:
+      tx[l] = 0 
+
+  # Take the fourier transform of the complex ACF to 
+  # get the power spectrum
+  temp = nufft(re+1j*im,np.array(lags),lags[-1])
+  acfFFT = []
+  acfFFT.extend(temp[len(temp)/2+1:])
+  acfFFT.extend(temp[0:len(temp)/2+1])
+  freq_scale_factor = 1/(lags[-1]*myBeam.prm.mpinc*10.0**-6)/(myBeam.prm.tfreq*1000.)/2.*(3.*10**8)
+  vels = freq_scale_factor*(np.array(range(len(acfFFT)))-len(acfFFT)/2)  
+
+  # Calculate the amplitude and phase of the complex ACF/XCF
+  amplitude = np.sqrt(re**2 + im**2)
+  phase = np.arctan2(im,re)
+
+  #Calculate bounds for plotting
+  lag_numbers = []
+  for lag in lags:
+    temp = [lag-0.5, lag+0.5]
+    lag_numbers.extend(temp)
+
+  if ax is None:
+    fig=pyplot.figure()
+    ax1=fig.add_axes([0.1,0.55,0.35,0.35])
+    ax2=fig.add_axes([0.1,0.1,0.35,0.35])
+    ax3=fig.add_axes([0.5,0.1,0.35,0.35])
+    ax4=fig.add_axes([0.5,0.55,0.35,0.35])
+  else:
+    ax1=None
+    ax2=None
+    ax3=None
+    ax4=None
+
+  #Now plot the ACF/XCF panel as necessary
+  if (ax is not None) and (panel == 0):
+    ax1 = ax
+  elif (ax1 is not None):
+    title1 = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT')
+    ax1.set_title(title1)
+   
+  if (ax1 is not None):
+    if (blanked):
+      inds = np.where(tx == 1)[0]
+      print inds
+      if len(inds):
+        for ind in inds:
+          ax1.plot(lags[ind],re[ind],marker='x',color='red',mew=3,ms=8,zorder=10)  
+          ax1.plot(lags[ind],im[ind],marker='x',color='red',mew=3,ms=8,zorder=10)  
+    
+    ax1.plot(lags,re,marker='o',color='blue',lw=2)
+    ax1.plot(lags,im,marker='o',color='green',lw=2)
+    ax1.plot([lags[0],lags[-1]+1],[0,0],'k--',lw=2)
+
+    ax1.set_xlim([-0.5,lag_numbers[-1]])
+    ax1.set_xlabel('Lag Number') 
+    ax1.set_ylabel('ACF') 
+    ax1.set_ylim([-1.5,1.5])
+    ax1.set_yticks(np.linspace(-1,1,num=5))
+
+
+  #Now plot the ACF/XCF amplitude panel as necessary
+  if ((ax is not None) and (panel == 1)):
+    ax2 = ax
+
+  if (ax2 is not None):
+    if (blanked):
+      inds = np.where(tx == 1)[0]
+      if len(inds):
+        for ind in inds:
+          ax2.plot(lags[ind],amplitude[ind],marker='x',color='red',mew=3,ms=8,zorder=10)  
+
+    ax2.plot(lags,amplitude,marker='o',color='black',lw=2,zorder=1)
+    ax2.plot([lags[0],lags[-1]+1],[fluct,fluct],'b--',lw=2,zorder=1)
+  
+    ax2.set_xlim([-0.5,lag_numbers[-1]])
+    ax2.set_xlabel('Lag Number') 
+    ax2.set_ylabel('Lag Power')   
+    ax2.set_ylim([0,1.05*np.max(amplitude)])
+    ax2.set_yticks(np.linspace(0.2,1.2,num=6))
+
+  #Now plot the ACF/XCF phase panel as necessary
+  if ((ax is not None) and (panel == 2)):
+    ax3 = ax
+
+  if (ax3 is not None):
+    if (blanked):
+      inds = np.where(tx == 1)[0]
+      if len(inds):
+        for ind in inds:
+          ax3.plot(lags[ind],phase[ind],marker='x',color='black',mew=3,ms=8,zorder=10)
+    
+    ax3.plot(lags,phase,marker='o',color='red',lw=2)
+    ax3.plot([lags[0],lags[-1]+1],[0,0],'k--',lw=2)
+  
+    ax3.set_xlim([-0.50,lag_numbers[-1]])
+    ax3.set_xlabel('Lag Number')  
+    ax3.set_ylabel('Phase')
+    ax3.set_ylim([-np.pi-0.5,np.pi+0.5])
+    ax3.set_yticks(np.linspace(-3,3,num=7))
+    if ax is None:
+      ax3.yaxis.set_ticks_position('right')
+      ax3.yaxis.set_label_position('right')
+
+  #Now plot the power spectrum panel as necessary
+  if ((ax is not None) and (panel == 3)):
+    ax4 = ax
+  elif (ax4 is not None):
+    title2 = pydarn.radar.network().getRadarById(myBeam.stid).name+\
+             ' Beam: '+str(myBeam.bmnum)+' Gate: '+str(gate)
+    ax4.set_title(title2)
+
+  if (ax4 is not None):
+    ax4.plot(vels,np.abs(acfFFT),marker='o',lw=2)
+    #ax4.set_xlim([-5000,5000])
+    ax4.set_xlabel('Velocity (m/s)')  
+    ax4.set_ylabel('Spectral Power (arb)')
+    if ax is None:
+      ax4.yaxis.set_ticks_position('right')
+      ax4.yaxis.set_label_position('right')
+
+  if ax is None:
+    fig.show()
+  
+
+
+
+
+
+def acfRLI(myBeam):
+
+  #Plot a Range-Lag Intensity plot
+
+  from matplotlib import pyplot
+  import numpy as np
+
+  from matplotlib import colors
+  import matplotlib as mpl
+  import matplotlib.cm as cmx
+
+                 
+  number_lags = myBeam.prm.mplgs
+  lags = list(set([x[1]-x[0] for x in myBeam.prm.ltab]))
+
+  lag_numbers = []
+  for lag in lags:
+    temp = [lag-0.5, lag+0.5]
+    lag_numbers.extend(temp)
+
+  range_gates = np.linspace(0.5,myBeam.prm.nrang+0.5,num=myBeam.prm.nrang+1)
+
+  power=np.array(myBeam.rawacf.pwr0)
+  noise=np.array(myBeam.prm.noisesearch)
+
+  fig=pyplot.figure()
+  ax1=fig.add_axes([0.1,0.1,0.77,0.1])
+  ax2=fig.add_axes([0.1,0.2,0.77,0.7])
+  ax3=fig.add_axes([0.88,0.2,0.02,0.7])
+
+  ax1.plot(range(1,myBeam.prm.nrang+1),10*np.log10(power/noise),lw=5)
+
+  #generate a scalar colormapping to map data to cmap
+  cl=[-1,1]
+  cmap='jet'
+  cNorm = colors.Normalize(vmin=cl[0], vmax=cl[1])
+  scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
+
+  #Now plot SCR data  
+  for r in range(myBeam.prm.nrang):
+    acfRe = [x[0]/power[r] for x in myBeam.rawacf.acfd[r]]
+    acfIm = [x[1]/power[r] for x in myBeam.rawacf.acfd[r]]
+
+    i=0
+    for l in range(lags[-1]+1):
+      x1 = np.array([r+0.5,r+0.5,r+1.0,r+1.0])
+      x2 = np.array([r+1.0,r+1.0,r+1.5,r+1.5])
+      y = np.array([l-0.5,l+0.5,l+0.5,l-0.5])
+
+      if (l in lags):
+        ax2.fill(x1,y,color=scalarMap.to_rgba(acfRe[i]))
+        ax2.fill(x2,y,color=scalarMap.to_rgba(acfIm[i]))
+        i+=1
+      else:
+        ax2.fill(x1,y,color='black')
+        ax2.fill(x2,y,color='black')
+
+
+  #Add the colorbar and label it    
+  cbar = mpl.colorbar.ColorbarBase(ax3,norm=cNorm,cmap=cmap)
+  cbar.set_label('Amplitude')
+
+  #Set plot axis labels
+  ax2.set_ylim([-0.5,lag_numbers[-1]])
+  ax2.set_yticks(np.linspace(0,lags[-1],num=lags[-1]+1))
+  ax2.set_xlim([range_gates[0],range_gates[-1]])
+  ax2.set_xticklabels([],visible=False)
+  ax2.set_ylabel('Lag Number')
+
+  #Set pwr0 plot axis labels
+  ax1.set_xlim([range_gates[0],range_gates[-1]])
+  ax1.set_ylim([0,40])
+  ax1.set_yticks(np.linspace(0,30,num=4))
+  ax1.set_ylabel(r'pwr$_{0}$''\n(dB)')
+  ax1.set_xlabel('Range Gate')
+
+  fig.show()
+  
+
+#NON UNIFORMLY SAMPLED DFT!
+def nufft(a,tn,T):
+
+  import numpy as np
+  T=float(T)
+  fft=np.zeros((len(a),),np.complex)
+  for m in range(len(a)):
+    fft[m] = np.sum(a*np.exp(-1j*2*np.pi/T*m*tn))
+
+  return fft
+
