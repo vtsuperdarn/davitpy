@@ -230,6 +230,8 @@ class radDataPtr():
 
                 if local_dict is None:
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
+                if ('ftype' in local_dict.keys()):
+                    local_dict['ftype'] = ftype
 
                 if local_fnamefmt is None:
                     try:
@@ -310,6 +312,8 @@ class radDataPtr():
                         print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
+                if ('ftype' in remote_dict.keys()):
+                    remote_dict['ftype'] = ftype
                 if remote_fnamefmt is None:
                     try:
                         remote_fnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
