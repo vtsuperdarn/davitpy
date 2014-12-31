@@ -1,57 +1,69 @@
+# Copyright (C) 2012  VT SuperDARN Lab
+# Full license can be found in LICENSE.txt
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def calc_blanked(ltab,tp,tau,tfr,gate):
-  import numpy as np
+"""
+.. module:: acfPlot
+   :synopsis: A module for generating plotting ACF and XCF data
 
-  #Calculate the lags and the pulse table
-  lags = []
-  ptab = []
-  for pair in ltab:
-    lags.append(pair[1]-pair[0])
-    ptab.extend(pair)
-  lags=list(set(lags))
-  ptab=list(set(ptab))
-  lags.sort()  
-  ptab.sort()
+.. moduleauthor:: ASR, 20141230
 
-  txs_in_lag={}
-  for lag in lags:
-    txs_in_lag[lag]=[]
+*********************
+**Module**: pydarn.plotting.acfPlot
+*********************
+**Functions**:
+  * :func:`pydarn.plotting.acfPlot.plot_acf`
+  * :func:`pydarn.plotting.acfPlot.calc_blanked`
+  * :func:`pydarn.plotting.acfPlot.plot_rli`
+  * :func:`pydarn.plotting.acfPlot.nufft`
+"""
 
-  #number of ranges per tau
-  tp_in_tau = tau/tp
+def plot_acf(myBeam, gate, blanked=True, xcf=False, panel=0, ax=None):
 
-  #determine which range gates correspond to blanked samples
-  tx_times=[p*tp_in_tau for p in ptab]
-  blanked_samples=[]
-  for tx in tx_times:
-    blanked_samples.extend([tx, tx+1])
+    """Plot the ACF/XCF for a specified beamData object at a
+       specified range gate
 
-  for lag in lags:
-    for pair in ltab:
-      if (pair[1] - pair[0] == lag):
-        #which samples were used to generate the acf
-        S1=tp_in_tau*pair[0]+gate + 1.*tfr/(tp)
-        S2=tp_in_tau*pair[1]+gate + 1.*tfr/(tp)
-        br=[]
-        #check to see if the samples are blanked or not
-        if S1 in blanked_samples:
-          br.append(S1)
-        if S2 in blanked_samples:
-          br.append(S2)
-        txs_in_lag[lag].extend(br)
+    **Args**:
+        * **myBeam** : a beamData object from pydarn.sdio.radDataTypes
+        * **gate**: (int) The range gate to plot data for.
+        * **[blanked]**: (boolean) Specifies whether magnitude and 
+                           phase should be plotted instead of real and 
+                           imaginary.
+        * **[xcf]**: (boolean) Specifies wheather to plot XCF data or not
+        * **[panel]**: (int) from 0 to 3 specifies which data to plot of
+                       ACF/XCF, ACF/XCF amplitude, ACF/XCF phase, or
+                       power spectrum, respectively.
+        * **[ax]**: a matplotlib axis object
 
-  return txs_in_lag
+    **Returns**:
+        Nothing.
 
+    **Example**:
+        ::
+            from datetime import datetime
+            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                          'kap',fileType='rawacf')
+            myBeam = myPtr.readRec()
+            pydarn.plotting.acfPlot.plot_acf(myBeam,24)
 
-
-def acfPlot(myBeam, gate, blanked=True, xcf=False, panel=0, ax=None):
+        Written by ASR 20141230
+    """
 
   from matplotlib import pyplot
   import numpy as np
   import pydarn
-  from matplotlib import colors
-  import matplotlib as mpl
-  import matplotlib.cm as cmx
                  
   number_lags = myBeam.prm.mplgs
   lags = list(set([x[1]-x[0] for x in myBeam.prm.ltab]))
@@ -209,11 +221,76 @@ def acfPlot(myBeam, gate, blanked=True, xcf=False, panel=0, ax=None):
     fig.show()
   
 
+def calc_blanked(ltab,tp,tau,tfr,gate):
+
+    """Plot the ACF/XCF for a specified beamData object at a
+       specified range gate
+
+    **Args**:
+        * **ltab** : (list) 
+        * **tp**: (int) 
+        * **tau**: (int) 
+        * **tfr**: (int) 
+        * **gate**: (int) The range gate to plot data for.
+
+    **Returns**:
+        Nothing.
+
+    **Example**:
+        ::
+            from datetime import datetime
+            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                          'kap',fileType='rawacf')
+            myBeam = myPtr.readRec()
+            pydarn.plotting.acfPlot.plot_acf(myBeam,24)
+
+        Written by ASR 20141230
+    """
+
+  import numpy as np
+
+  #Calculate the lags and the pulse table
+  lags = []
+  ptab = []
+  for pair in ltab:
+    lags.append(pair[1]-pair[0])
+    ptab.extend(pair)
+  lags=list(set(lags))
+  ptab=list(set(ptab))
+  lags.sort()  
+  ptab.sort()
+
+  txs_in_lag={}
+  for lag in lags:
+    txs_in_lag[lag]=[]
+
+  #number of ranges per tau
+  tp_in_tau = tau/tp
+
+  #determine which range gates correspond to blanked samples
+  tx_times=[p*tp_in_tau for p in ptab]
+  blanked_samples=[]
+  for tx in tx_times:
+    blanked_samples.extend([tx, tx+1])
+
+  for lag in lags:
+    for pair in ltab:
+      if (pair[1] - pair[0] == lag):
+        #which samples were used to generate the acf
+        S1=tp_in_tau*pair[0]+gate + 1.*tfr/(tp)
+        S2=tp_in_tau*pair[1]+gate + 1.*tfr/(tp)
+        br=[]
+        #check to see if the samples are blanked or not
+        if S1 in blanked_samples:
+          br.append(S1)
+        if S2 in blanked_samples:
+          br.append(S2)
+        txs_in_lag[lag].extend(br)
+
+  return txs_in_lag
 
 
-
-
-def acfRLI(myBeam):
+def plot_rli(myBeam):
 
   #Plot a Range-Lag Intensity plot
 
