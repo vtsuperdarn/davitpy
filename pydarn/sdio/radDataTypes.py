@@ -998,19 +998,21 @@ class iqData(radBaseData):
     I'm not sure what all of the attributes mean.  if somebody knows what these are, please help!
 
   **Attrs**:
-    * **chnnum** (int): number of channels?
+    * **chnnum** (int): number of channels sampled
     * **smpnum** (int): number of samples per pulse sequence
-    * **skpnum** (int): number of samples to skip at the beginning of a pulse sequence?
+    * **skpnum** (int): number of voltage samples to skip when making acfs
     * **seqnum** (int): number of pulse sequences
-    * **tbadtr** (? length list): time of bad tr samples?
-    * **tval** (? length list): ?
-    * **atten** (? length list): ?
-    * **noise** (? length list): ?
-    * **offset** (? length list): ?
-    * **size** (? length list): ?
+    * **tsc** (seqnum length list): seconds component of time past epoch of each pulse sequence
+    * **tus** (seqnum length list): micro seconds component of time past epoch of each pulse sequence
+    * **tatten** (seqnum length list): attenuator setting for each pulse sequence
+    * **tnoise** (seqnum length list): noise value for each pulse sequence
+    * **toff** (seqnum length list): offset into the sample buffer for each pulse sequence
+    * **tsze** (seqnum length list): number of words stored per pulse sequence
+    * **mainData** (seqnum x smpnum x 2 length list): the main array iq complex samples
+    * **intData** (seqnum x smpnum x 2 length list): the interferometer iq complex samples
     * **badtr** (? length list): bad tr samples?
-    * **mainData** (seqnum x smpnum x 2 length list): the actual iq samples (main array)
-    * **intData** (seqnum x smpnum x 2 length list): the actual iq samples (interferometer)
+    * **tval** (? length list): ?
+    * **tbadtr** (? length list): time of bad tr samples?
   
   **Example**: 
     ::
