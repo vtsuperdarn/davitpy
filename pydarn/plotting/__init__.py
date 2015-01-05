@@ -13,6 +13,7 @@ This subpackage contains various plotting routines for DaViT-py
 	* :mod:`pygridPlot`
 	* :mod:`printRec`
 	* :mod:`acfPlot`
+	* :mod:`iqPlot`
 """
 
 try:
@@ -24,6 +25,10 @@ try:
 	from acfPlot import *
 except Exception,e: 
 	print 'problem importing acfPlot: ', e
+
+	from iqPlot import *
+except Exception,e: 
+	print 'problem importing iqPlot: ', e
 
 try:
 	from fan import *
