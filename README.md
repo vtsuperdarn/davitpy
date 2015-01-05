@@ -25,7 +25,7 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 We recommend using Ubuntu 14.04 with this DaViTPy.  Although Macintosh install scripts are provided, more active development, testing, and use occurs in the Linux environment.  We do not currently offer any Windows support, although you are more than welcome to try and make it work in any environment you choose.  Please be aware that much of the included code (especially the models) is fortran code  (i.e. MSIS, IRI, IGRF, etc...) wrapped with python wrappers. This means that these models must be compiled with a fortran compiler on your machine before running.  This is normally taken care of in the installation process listed below, but it is useful to know that this is a potential source of problems for making DaViTPy work.
 
 ####Ubuntu
-Please use Ubuntu 14.04 or newer.  Older versions may not install compatible versions of the dependencies.
+Please use Ubuntu 14.04.  Older versions may not install compatible versions of the dependencies.
 
 Open a terminal window.  Make sure git is installed:
 
@@ -39,25 +39,31 @@ This will create a new directory called 'davitpy' in your current directory (pro
 
     cd davitpy
 
-We need to install some dependencies using a script that makes calls to apt-get and pip.  You can either look through this file and install the necessary dependencies yourself (especially if you're on a different flavor of linux/unix or don't use apt-get and pip) or run the script.  To run this script:
+We need to install some dependencies using a script that makes calls to apt-get and pip.  To run this script:
 
     sudo ./install/debian_dependencies.sh
 
-Note that this script also modifies your ~/.bashrc file to set environment variables identifying the DaViTPy installation location, the SuperDARN database access information, and others.  Because of this, please source your ~/.bashrc file (or close and reopen a new terminal window) to refresh your environment variables.
+Note that this script also modifies your ~/.bashrc file to set environment variables identifying the DaViTPy installation location, the SuperDARN database access information, and others.  Because of this, please close your terminal and open a new session to refresh your environment variables.
+
+Now, run the high-level Makefile to make the fortran code and SuperDARN read routines happy.  Do NOT run make as sudo.
+
+    cd davitpy
+    make
+
+If your system is up-to-date and everything was compiled using the default compiler (true on most computers), this will run without any problems.  If it didn't work, there's still hope!  If you have an older system, you may need to specify which compilers to use.  If you have a REALLY old system, you may still be able to complile by removing some of the optional (but desireable) flags.  For example, one could run:
+
+    make F77=/usr/local/bin/gfortran44 FC=/usr/local/bin/gfortran44 F77_FLAGS="-O2 -fbacktrace -fPIC"
 
 Next, do the actual davitpy install (from in the davitpy directory):
 
     sudo python setup.py install
-    
-If you are installing davitpy locally, or have other specific requirements you can use different command line options such as:
 
-    python setup.py install --user
+Now, you can run make one more time just to be safe:
 
-If your system is up-to-date and everything was compiled using the default compiler (true on most computers), this should be it!  You may want to restart your terminal once more just to make sure the environment variables are refreshed.
+    make
 
-If it didn't work, there's still hope.  If you have an older system, you may need to specify which compilers to use in your ~/.bashrc file.  If you have a REALLY old system, you may still be able to complile by removing some of the optional (but desireable) flags in the indivdual model Makefiles.  Also, if you don't want to install davitpy but still want to use the python wrappers for the different models, you can compile several of these models using either the local makefiles or the upper level makefile.  For example, if you want to compile IRI, HWM, RayDarn, and Tsygananko using a locally specified compiler and user-specified compilation flags you could run:
+That should be it!  You may want to restart your terminal once more just to make sure the environment variables are refreshed.
 
-make F77=/usr/local/bin/gfortran44 FC=/usr/local/bin/gfortran44 F77_FLAGS="-O2 -fbacktrace -fPIC"
 
 ####MacOS
 It is easiest to have either homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/) installed on your system.
@@ -67,10 +73,8 @@ Next, follow the instructions for Ubuntu, but for the dependencies script, choos
     sudo ./python_install_mac_brew.sh
     sudo ./python_install_mac_port.sh
 
-preferably after checking the dependicies to see if you already have them installed.
-
-(**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries or specify the extended name when running setup.py)
-
+(**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries or specify the extended name when calling the makefile)
+    
 ####Usage
 To test davitpy and learn more about some of its functionality, please look at the included iPython notebooks.  To run these:
 
