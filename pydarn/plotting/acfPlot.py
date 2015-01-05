@@ -30,7 +30,7 @@
   * :func:`pydarn.plotting.acfPlot.nuft`
 """
 
-def plot_acf(myBeam, gate, show_blanked=True, xcf=False, panel=0, ax=None):
+def plot_acf(myBeam, gate, mark_blanked=True, xcf=False, panel=0, ax=None):
 
     """Plot the ACF/XCF for a specified beamData object at a
        specified range gate
@@ -38,7 +38,7 @@ def plot_acf(myBeam, gate, show_blanked=True, xcf=False, panel=0, ax=None):
     **Args**:
         * **myBeam** : a beamData object from pydarn.sdio.radDataTypes
         * **gate**: (int) The range gate to plot data for.
-        * **[show_blanked]**: (boolean) Specifies whether magnitude and 
+        * **[mark_blanked]**: (boolean) Specifies whether magnitude and 
                               phase should be plotted instead of real and 
                               imaginary.
         * **[xcf]**: (boolean) Specifies wheather to plot XCF data or not 
@@ -138,7 +138,7 @@ def plot_acf(myBeam, gate, show_blanked=True, xcf=False, panel=0, ax=None):
         ax1.set_title(title1)
    
     if (ax1 is not None):
-        if ((blanked) and (show_blanked)):
+        if ((blanked) and (mark_blanked)):
             inds = np.where(tx == 1)[0]
             if len(inds):
                 for ind in inds:
@@ -161,7 +161,7 @@ def plot_acf(myBeam, gate, show_blanked=True, xcf=False, panel=0, ax=None):
         ax2 = ax
 
     if (ax2 is not None):
-        if ((blanked) and (show_blanked)):
+        if ((blanked) and (mark_blanked)):
             inds = np.where(tx == 1)[0]
             if len(inds):
                 for ind in inds:
@@ -181,7 +181,7 @@ def plot_acf(myBeam, gate, show_blanked=True, xcf=False, panel=0, ax=None):
         ax3 = ax
 
     if (ax3 is not None):
-        if ((blanked) and (show_blanked)):
+        if ((blanked) and (mark_blanked)):
             inds = np.where(tx == 1)[0]
             if len(inds):
                 for ind in inds:
@@ -456,8 +456,8 @@ if __name__ == "__main__":
     print "...First test default options, at range gate 31, you should see ground scatter and lags marked that are blanked by Tx blanking..."
     pydarn.plotting.acfPlot.plot_acf(myBeam,31)
 
-    print "...Next, with 'show_blanked=False', blanking marking turned off "
-    pydarn.plotting.acfPlot.plot_acf(myBeam,31,show_blanked=False)
+    print "...Next, with 'mark_blanked=False', blanking marking turned off "
+    pydarn.plotting.acfPlot.plot_acf(myBeam,31,mark_blanked=False)
 
     print "...Next, with 'xcf=True', plotting xcf data"
     pydarn.plotting.acfPlot.plot_acf(myBeam,31,xcf=True)
