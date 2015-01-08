@@ -60,6 +60,10 @@ from pydarn.radar.radUtils import getParamDict
 
 from pydarn.proc.music import getDataSet
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
 #Global Figure Size
 figsize=(20,10)
 
@@ -520,7 +524,7 @@ class musicRTI(object):
 #            coords      = metadata['coords']
 #
         if coords not in ['gate','range']:
-            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+            logger.warn('Coords "%s" not supported for RTI plots.  Using "gate".' % coords)
             coords = 'gate'
 
         if coords == 'gate':
@@ -555,7 +559,7 @@ class musicRTI(object):
 
         # Plot the terminator! #########################################################
         if plotTerminator:
-#            print 'Terminator functionality is disabled until further testing is completed.'
+#            logger.error('Terminator functionality is disabled until further testing is completed.')
             term_verts = []
             term_scan  = []
 

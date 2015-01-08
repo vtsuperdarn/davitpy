@@ -44,6 +44,11 @@ Contains: uncompress_file    - uncompresses a file using various methods
 
 import datetime as dt
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+
 def uncompress_file(filename, outname=None, verbose=True):
     """
     A function to perform an appropriate type of uncompression on a specified 
@@ -422,15 +427,15 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         try:
             transport.connect(username=remoteaccess['username'],
                               password=remoteaccess['password'])
-        except:
-            print (rn, "ERROR: can't connect to", remotesite,
-                  "with username and password")
+        except Exception:
+            logger.exception(rn + " can't connect to " + remotesite +
+                             " with username and password")
             return filelist
 
         try:
             sftp = p.SFTPClient.from_transport(transport)
-        except:
-            print rn, "ERROR: cannot engage sftp client at", remotesite
+        except Exception:
+            logger.exception(rn + " can't engage sftp client at " + remotesite)
             return filelist
 
 

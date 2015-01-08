@@ -19,7 +19,11 @@ using the remote db database (requires an active internet connection).
 	* :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
 	* :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
 """
-		
+
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)		
+
 
 # *************************************************************
 def radarRead(path=None):
@@ -53,25 +57,18 @@ def radarRead(path=None):
 		data = file_net.readlines()
 		file_net.close()
 	except:
-		print('radarRead: cannot read {}'.format(pathOpen))
-                print('')
-                txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest radar.dat information.  You can can use a local file instead by setting the SD_RADAR environment variable to the location of a local copy of radar.dat.'
-                print(txt)
-                print('')
-                txt = 'Example, you might add a similar line to your .bashrc:'
-                print(txt)
-                txt = 'export SD_RADAR=/home/username/tables/radar.dat'
-                print(txt)
-                print('')
-                txt = 'Also, make sure your SD_HDWPATH also points to the location of your hdw.dat files.'
-                print(txt)
-                txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
-                print(txt)
-                txt = 'Example, you might add a similar line to your .bashrc:'
-                print(txt)
-                txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
-                print(txt)
-                print('')
+                logger.error('radarRead: cannot read {}'.format(pathOpen) + '\n' +
+                             '   \n' + 
+                             '   You may be getting this error because your computer cannot contact an appropriate internet server to get the latest radar.dat information.  You can can use a local file instead by setting the SD_RADAR environment variable to the location of a local copy of radar.dat.\n' +
+                             '   \n' + 
+                             '   Example, you might add a similar line to your .bashrc:\n' +
+                             '   export SD_RADAR=/home/username/tables/radar.dat\n'
+                             '   \n' +
+                             '   Also, make sure your SD_HDWPATH also points to the location of your hdw.dat files.\n' +
+                             '   You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat\n' +
+                             '   Example, you might add a similar line to your .bashrc:\n' +
+                             '   export SD_HDWPATH=/home/username/tables/hdw.dat/'
+                             )
 		return None
 	
 	# Initialize placeholder dictionary of lists
@@ -141,18 +138,14 @@ def hdwRead(fname, path=None):
 		data = file_hdw.readlines()
 		file_hdw.close()
 	except:
-		print('hdwRead: cannot read {}'.format(pathOpen))
-                print('')
-                txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest hdw.dat information.  You can can use a local file instead by setting the SD_HDWPATH environment variable to the location of the local hdw.dat path.'
-                print(txt)
-                txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
-                print(txt)
-                print('')
-                txt = 'Example, you might add a similar line to your .bashrc:'
-                print(txt)
-                txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
-                print(txt)
-                print('')
+                logger.error('hdwRead: cannot read {}'.format(pathOpen) + '\n' +
+                             '   \n'
+                             '   You may be getting this error because your computer cannot contact an appropriate internet server to get the latest hdw.dat information.  You can can use a local file instead by setting the SD_HDWPATH environment variable to the location of the local hdw.dat path.\n' +
+                             '   You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat\n' +
+                             '   \n' +
+                             '   Example, you might add a similar line to your .bashrc:\n' +
+                             '   export SD_HDWPATH=/home/username/tables/hdw.dat/'
+                            )
 		return
 	
 	# Site placeholder
@@ -295,7 +288,7 @@ class updateRadars(object):
         isUp = self.sqlUpdate()
 
         if isUp:
-            print "Radars information has been updated."
+            logger.info("Radars information has been updated.")
 
 
     def dbConnect(self):
@@ -310,14 +303,14 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
-        #print self.db_user,self.db_pswd,self.db_host, self.db_name
+        #logger.debug(self.db_user + ' ' + self.db_pswd + ' ' + self.db_host + ' ' + self.db_name)
         uri='mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd, self.db_host, self.db_name)
-        #print uri
+        #logger.debug(uri)
         try:
             conn = MongoClient(uri) 
             dba = conn[self.db_name]
-        except:
-            print 'Could not connect to remote DB: ', sys.exc_info()[0]
+        except Exception:
+            logger.exception('Could not connect to remote DB')
             dba = False
 
         if dba:
@@ -326,14 +319,14 @@ class updateRadars(object):
 
                 self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
                 return True
-            except:
-                print 'Could not get data from remote DB: ', sys.exc_info()[0]
-                print('Could not update .radars.sqlite file with hdw.dat info')
+            except Exception:
+                logger.exception('Could not get data from remote DB.')
+                logger.error('Could not update .radars.sqlite file with hdw.dat info')
                 return False
         else:
             result = self.__readFromFiles()
             if not result:
-                print('Could not update .radars.sqlite file with hdw.dat info')
+                logger.error('Could not update .radars.sqlite file with hdw.dat info')
             return result
 
 
@@ -355,7 +348,7 @@ class updateRadars(object):
             with lite.connect(fname) as conn: pass
             return True
         except lite.Error, e:
-            print "sqlInit() Error %s: %s" % (e.args[0],fname)
+            logger.error("sqlInit() Error %s: %s" % (e.args[0],fname))
             return False
 
     def sqlUpdate(self):

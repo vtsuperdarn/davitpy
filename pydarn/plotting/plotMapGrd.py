@@ -12,6 +12,11 @@ convection contours, fitted velocity vectors, model vectors and Heppnard-Maynard
 
 """
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
 
@@ -136,7 +141,7 @@ class MapConv(object):
             elif self.plotCoords == 'mlt' :
                 endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
             else :
-                print 'Check the coords'
+                logger.warn('Check the coords')
 
             # get the start and end vecs
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords )
@@ -475,7 +480,7 @@ class MapConv(object):
                 potArr[:,q] = 0
                 
         else :
-            print 'LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero'
+            logger.warn('LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero')
 
         # mlt conversion stuff
         if self.plotCoords == 'mlt' :
@@ -585,7 +590,7 @@ class MapConv(object):
             elif self.plotCoords == 'mlt' :
                 endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
             else :
-                print 'Check the coords.'
+                logger.warn('Check the coords.')
                 
             
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
@@ -662,7 +667,7 @@ class MapConv(object):
             elif self.plotCoords == 'mlt' :
                 endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
             else :
-                print 'Check the coords.'
+                logger.warn('Check the coords.')
                 
             
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], 

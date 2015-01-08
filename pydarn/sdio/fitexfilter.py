@@ -35,6 +35,10 @@ import numpy as np
 import datetime as dt
 import utils
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
 
 class Gate(object):
   """A class to represent a single range gate
@@ -165,7 +169,7 @@ def fitFilter(inFile,outFile,thresh=0.4,vb=False):
     tsc = doFilter(scans,thresh=thresh)
 
     for b in tsc:
-      print b
+      logger.info(b)
       pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
 
     sc = pydarn.sdio.radDataReadScan(inp)
@@ -175,7 +179,7 @@ def fitFilter(inFile,outFile,thresh=0.4,vb=False):
     scans[2] = sc
 
   tsc = doFilter(scans,thresh=thresh)
-  print tsc.time
+  logger.info(tsc.time)
   for b in tsc:
     pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
 

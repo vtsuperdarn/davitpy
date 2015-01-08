@@ -18,6 +18,10 @@ Basic plotting tools
 """
 from mpl_toolkits import basemap
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
 
 ################################################################################
 ################################################################################
@@ -98,14 +102,14 @@ class mapObj(basemap.Basemap):
     self._coordsDict, self._coords_string = get_coord_dict()
 
     if datetime is None and dateTime is None:
-      print "Warning, datetime/dateTime not specified, using current time."
+      logger.warn("datetime/dateTime not specified, using current time.")
       datetime = dt.datetime.utcnow()
       dateTime = datetime
     elif datetime is None and dateTime is not None:
-      print "Warning, setting datetime to dateTime"
+      logger.warn("Setting datetime to dateTime")
       datetime = dateTime
     elif datetime is not None and dateTime is None:
-      print "Warning, setting dateTime to datetime"
+      logger.warn("Setting dateTime to datetime")
       dateTime = datetime
     else:
       assert(datetime == dateTime),\

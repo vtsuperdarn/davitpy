@@ -9,6 +9,11 @@ import scipy.signal
 
 from signalCommon import *
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+
 def dtvToSeconds(dtv,start=None):
   """Convert a datetime.datetime iterable to a numpy array of seconds from start.
   :param start: datatime.datetime.  If None, then start = dtv[0].
@@ -205,7 +210,7 @@ class filter(object):
       if md.has_key('filter_numtaps'):
         numtaps = md['filter_numtaps']
       else:
-        print 'WARNING: You must provide numtaps.'
+        logger.warn('You must provide numtaps.')
         return
 
 
@@ -223,7 +228,7 @@ class filter(object):
       d[numtaps/2] = d[numtaps/2] + 1
 
     if cutoff_high == None and cutoff_low == None:
-      print "WARNING!! You must define cutoff frequencies!"
+      logger.warn("You must define cutoff frequencies!")
       return
     
     self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz'])

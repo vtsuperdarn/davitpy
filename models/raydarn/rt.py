@@ -16,6 +16,11 @@ This module runs the raytracing code
 
 """
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+
 #########################################################################
 # Main object
 #########################################################################
@@ -100,12 +105,12 @@ class RtRun(object):
 
             # Set time interval
             if not sTime: 
-                print 'No start time. Using now.'
+                logger.warn('No start time. Using now.')
                 sTime = dt.datetime.utcnow()
             if not eTime:
                 eTime = sTime + dt.timedelta(minutes=1)
             if eTime > sTime + dt.timedelta(days=1):
-                print 'The time interval requested if too large. Reducing to 1 day.'
+                logger.warn('The time interval requested if too large. Reducing to 1 day.')
                 eTime = sTime + dt.timedelta(days=1)
             self.time = [sTime, eTime]
             self.dTime = dTime
@@ -209,7 +214,7 @@ class RtRun(object):
         # File name and path
         fName = path.join(self.outDir, 'rays.{}.dat'.format(self.fExt))
         if hasattr(self, 'rays') and not path.exists(fName):
-            print 'The file is gone, and it seems you may already have read it into memory...?'
+            logger.warn('The file is gone, and it seems you may already have read it into memory...?')
             return
 
         # Initialize rays output
@@ -235,7 +240,7 @@ class RtRun(object):
         # File name and path
         fName = path.join(self.outDir, 'edens.{}.dat'.format(self.fExt))
         if hasattr(self, 'ionos') and not path.exists(fName):
-            print 'The file is gone, and it seems you may already have read it into memory...?'
+            logger.warn('The file is gone, and it seems you may already have read it into memory...?')
             return
 
         # Initialize rays output
@@ -264,7 +269,7 @@ class RtRun(object):
         if hasattr(self, 'scatter') \
             and (not path.exists(isName) \
             or not path.exists(gsName)):
-            print 'The files are gone, and it seems you may already have read them into memory...?'
+            logger.warn('The files are gone, and it seems you may already have read them into memory...?')
             return
 
         # Initialize rays output

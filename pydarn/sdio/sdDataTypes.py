@@ -28,6 +28,9 @@
   * :class:`pydarn.sdio.sdDataTypes.mapData`
 """
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 from utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
@@ -126,25 +129,24 @@ class sdDataPtr():
         if fileName != None:
             try:
                 if(not os.path.isfile(fileName)):
-                    print 'problem reading',fileName,':file does not exist'
+                    logger.error('problem reading ' + fileName + ': file does not exist')
                     return None
                 outname = tmpDir+str(int(datetimeToEpoch(dt.datetime.now())))
                 if(string.find(fileName,'.bz2') != -1):
                     outname = string.replace(fileName,'.bz2','')
-                    print 'bunzip2 -c '+fileName+' > '+outname+'\n'
+                    logger.info('bunzip2 -c '+fileName+' > '+outname+'')
                     os.system('bunzip2 -c '+fileName+' > '+outname)
                 elif(string.find(fileName,'.gz') != -1):
                     outname = string.replace(fileName,'.gz','')
-                    print 'gunzip -c '+fileName+' > '+outname+'\n'
+                    logger.info('gunzip -c '+fileName+' > '+outname+'')
                     os.system('gunzip -c '+fileName+' > '+outname)
                 else:
                     os.system('cp '+fileName+' '+outname)
-                    print 'cp '+fileName+' '+outname
+                    logger.info('cp '+fileName+' '+outname)
                 filelist.append(outname)
     
-            except Exception, e:
-                print e
-                print 'problem reading file',fileName
+            except Exception:
+                logger.exception('Problem reading file ' + fileName)
                 return None
 
         #Next, check for a cached file
@@ -161,18 +163,18 @@ class sdDataPtr():
                             if t1 <= self.sTime and t2 >= self.eTime:
                                 cached = True
                                 filelist.append(f)
-                                print 'Found cached file: %s' % f
+                                logger.info('Found cached file: %s' % f)
                                 break
                         except Exception,e:
-                            print e
+                            logger.error(e)
             except Exception,e:
-                print e
+                logger.error(e)
   
         #Next, LOOK LOCALLY FOR FILES
         if not cached and (src == None or src == 'local') and fileName == None:
             try:
                 for ftype in arr:
-                    print "\nLooking locally for %s files with hemi: %s" % (ftype,hemi)
+                    logger.info("Looking locally for %s files with hemi: %s" % (ftype,hemi))
                     #If the following aren't already, in the near future
                     #they will be assigned by a configuration dictionary 
                     #much like matplotlib's rcsetup.py (matplotlibrc)
@@ -182,7 +184,7 @@ class sdDataPtr():
                             local_dirfmt = os.environ['DAVIT_SD_LOCAL_DIRFORMAT']
                         except:
                             local_dirfmt = '/sd-data/{year}/{ftype}/{hemi}/'
-                            print 'Environment variable DAVIT_SD_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
+                            logger.warn('Environment variable DAVIT_SD_LOCAL_DIRFORMAT not set, using default: ' + local_dirfmt)
     
                     if local_dict is None:
                         local_dict = {'hemi':hemi, 'ftype':ftype}
@@ -192,14 +194,14 @@ class sdDataPtr():
                             local_fnamefmt = os.environ['DAVIT_SD_LOCAL_FNAMEFMT'].split(',')
                         except:
                             local_fnamefmt = ['{date}.{hemi}.{ftype}']
-                            print 'Environment variable DAVIT_SD_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
+                            logger.warn('Environment variable DAVIT_SD_LOCAL_FNAMEFMT not set, using default: ' + local_fnamefmt)
     
                     if local_timeinc is None:
                         try:
                             local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_LOCAL_TIMEINC']))
                         except:
                             local_timeinc = dt.timedelta(hours=24)
-                            print 'Environment variable DAVIT_SD_LOCAL_TIMEINC not set, using default:',local_timeinc
+                            logger.warn('Environment variable DAVIT_SD_LOCAL_TIMEINC not set, using default: ' + local_timeinc)
                     
                     outdir = tmpDir
     
@@ -209,24 +211,22 @@ class sdDataPtr():
                     local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
     
                     if(len(filelist) > 0):
-                        print 'found',ftype,'data in local files'
+                        logger.info('found ' + ftype + ' data in local files')
                         self.fType,self.dType = ftype,'dmap'
                         fileType = ftype
                         break
     
                     else:
-                        print  'could not find',ftype,'data in local files'
+                        logger.info('could not find ' + ftype + ' data in local files')
     
-            except Exception, e:
-                print e
-                print 'There was a problem reading local data, perhaps you are not at VT?'
-                print 'Will attempt fetching data from remote.'
+            except Exception:
+                logger.exception('There was a problem reading local data, perhaps you are not at VT? Will attempt fetching data from remote.')
                 src=None
               
         #finally, check the VT sftp server if we have not yet found files
         if (src == None or src == 'sftp') and self.__ptr == None and len(filelist) == 0 and fileName == None:
             for ftype in arr:
-                print '\nLooking on the remote SFTP server for',ftype,'files'
+                logger.info('Looking on the remote SFTP server for ' + ftype + ' files')
                 try:
                     
                     #If the following aren't already, in the near future
@@ -238,25 +238,25 @@ class sdDataPtr():
                             remote_site = os.environ['DB']
                         except:
                             remote_site = 'sd-data.ece.vt.edu'
-                            print 'Environment variable DB not set, using default:',remote_site
+                            logger.warn('Environment variable DB not set, using default: ' + remote_site)
                     if username is None:
                         try:
                             username = os.environ['DBREADUSER']
                         except:
                             username = 'sd_dbread'
-                            print 'Environment variable DBREADUSER not set, using default:',username
+                            logger.warn('Environment variable DBREADUSER not set, using default: ' + username)
                     if password is None:
                         try:
                             password = os.environ['DBREADPASS']
                         except:
                             password = '5d'
-                            print 'Environment variable DBREADPASS not set, using default:',password
+                            logger.warn('Environment variable DBREADPASS not set, using default: ' + password)
                     if remote_dirfmt is None:
                         try:
                             remote_dirfmt = os.environ['DAVIT_SD_REMOTE_DIRFORMAT']
                         except:
                             remote_dirfmt = 'data/{year}/{ftype}/{hemi}/'
-                            print 'Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
+                            logger.warn('Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default: ' + remote_dirfmt)
                     if remote_dict is None:
                         remote_dict = {'ftype':ftype, 'hemi':hemi}
                     if remote_fnamefmt is None:
@@ -264,19 +264,19 @@ class sdDataPtr():
                             remote_fnamefmt = os.environ['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
                         except:
                             remote_fnamefmt = ['{date}.{hemi}.{ftype}']
-                            print 'Environment variable DAVIT_SD_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt
+                            logger.warn('Environment variable DAVIT_SD_REMOTE_FNAMEFMT not set, using default: ' + remote_fnamefmt)
                     if port is None:
                         try:
                             port = os.environ['DB_PORT']
                         except:
                             port = '22'
-                            print 'Environment variable DB_PORT not set, using default:',port
+                            logger.warn('Environment variable DB_PORT not set, using default: ' + port)
                     if remote_timeinc is None:
                         try:
                             remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_SD_REMOTE_TIMEINC']))
                         except:
                             remote_timeinc = dt.timedelta(hours=24)
-                            print 'Environment variable DAVIT_SD_REMOTE_TIMEINC not set, using default:',remote_timeinc
+                            logger.warn('Environment variable DAVIT_SD_REMOTE_TIMEINC not set, using default: ' + remote_timeinc)
                     outdir = tmpDir
     
                     #Now fetch the files
@@ -285,30 +285,29 @@ class sdDataPtr():
                         password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
     
                     if len(filelist) > 0 :
-                        print 'found',ftype,'data on sftp server'
+                        logger.info('found ' + ftype + ' data on sftp server')
                         self.fType,self.dType = ftype,'dmap'
                         fileType = ftype
                         break
     
                     else:
-                        print  'could not find',ftype,'data on sftp server'
+                        logger.info(' could not find ' + ftype + ' data on sftp server')
     
-                except Exception,e:
-                    print e
-                    print 'problem reading from sftp server'
+                except Exception:
+                    logger.exception('Problem reading from sftp server')
         #check if we have found files
         if len(filelist) != 0:
             #concatenate the files into a single file
             if not cached:
-                print 'Concatenating all the files in to one'
+                logger.info('Concatenating all the files in to one')
                 #choose a temp file name with time span info for cacheing
                 tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
                   self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
                   self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),hemi,fileType)
-                print 'cat '+string.join(filelist)+' > '+tmpName
+                logger.info('cat '+string.join(filelist)+' > '+tmpName)
                 os.system('cat '+string.join(filelist)+' > '+tmpName)
                 for filename in filelist:
-                    print 'rm '+filename
+                    logger.info('rm '+filename)
                     os.system('rm '+filename)
             else:
                 tmpName = filelist[0]
@@ -321,7 +320,7 @@ class sdDataPtr():
         if(self.__ptr != None):
             if(self.dType == None): self.dType = 'dmap'
         else:
-            print '\nSorry, we could not find any data for you :('
+            logger.warn('Sorry, we could not find any data for you :(')
 
   
     def __repr__(self):
@@ -362,16 +361,15 @@ class sdDataPtr():
             dfile = readDmapRec(self.__fd)
             if(dfile is None):
                 #if we dont have valid data, clean up, get out
-                print '\nreached end of data'
+                logger.info('reached end of data')
                 break
             else:
                 try:
                     dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
                                  dfile['start.hour'],dfile['start.minute'],int(dfile['start.second']))
                     dfile['time'] = (dtime - dt.datetime(1970, 1, 1)).total_seconds()
-                except Exception,e:
-                    print e
-                    print 'problem reading time from file, returning None'
+                except Exception:
+                    logger.exception('Problem reading time from file, returning None')
                     break
 
                 if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
@@ -420,10 +418,10 @@ class sdDataPtr():
   
        #check input
        if(self.__ptr == None):
-           print 'error, your pointer does not point to any data'
+           logger.error('Your pointer does not point to any data')
            return None
        if self.__ptr.closed:
-           print 'error, your file pointer is closed'
+           logger.error('Your file pointer is closed')
            return None
   
        #do this until we reach the requested start time
@@ -436,14 +434,13 @@ class sdDataPtr():
                dtime = dt.datetime(dfile['start.year'],dfile['start.month'],dfile['start.day'], \
                         dfile['start.hour'],dfile['start.minute'],int(dfile['start.second']))
                dfile['time'] = (dtime - dt.datetime(1970, 1, 1)).total_seconds()
-           except Exception,e:
-               print e
-               print 'problem reading time from file, returning None'
+           except Exception:
+               logger.exception('Problem reading time from file, returning None')
                break
 
            if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
                #if we dont have valid data, clean up, get out
-               print '\nreached end of data'
+               logger.info('reached end of data')
                #self.close()
                return None
            #check that we're in the time window, and that we have a 
@@ -458,7 +455,7 @@ class sdDataPtr():
                elif self.fType == 'map' or self.fType == 'mapex':
                    myData = mapData(dataDict=dfile)
                else:
-                   print 'error, unrecognized file type'
+                   logger.error('unrecognized file type')
                    return None
                myData.recordDict=dfile
                myData.fType = self.fType

@@ -41,6 +41,11 @@ from matplotlib.figure import Figure
 import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+
 def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=False ,\
         scale=[],channel=None,coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
         velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
@@ -255,7 +260,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
             #this was missing fovObj! We need to plot the fov for this particular sTime.
             pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i]) 
     
-    print dt.datetime.now()-t1
+    logger.info(dt.datetime.now()-t1)
     #manually draw the legend
     if((not fill) and legend):
         #draw the box
