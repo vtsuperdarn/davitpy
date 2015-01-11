@@ -12,242 +12,284 @@ Basic plotting tools
   * :func:`utils.plotUtils.mapObj`: Create empty map 
   * :func:`utils.plotUtils.genCmap`: generate a custom colormap
   * :func:`utils.plotUtils.drawCB`: draw a colorbar
-  * :func:`utils.plotUtils.curvedEarthAxes`: Plot axes in (R, Theta) coordinates with lower limit at R = Earth radius
-  * :func:`utils.plotUtils.addColorbar`: Colorbar for :func:`curvedEarthAxes`
+  * :func:`utils.plotUtils.curvedEarthAxes`: Plot axes in (R, Theta) 
+                                             coordinates with lower limit
+                                             at R = Earth radius
+  * :func:`utils.plotUtils.addColorbar`: Colorbar for
+                                         :func:`curvedEarthAxes`
 
 """
 from mpl_toolkits import basemap
 
+##########################################################################
+##########################################################################
 
-################################################################################
-################################################################################
 class mapObj(basemap.Basemap):
-  """This class wraps arround :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
-  
-  **Members**: 
-    * **coords** (str): map coordinate system.  Anything handled by
-        utils.coordUtils is acceptable (see get_coord_dict)
-    * all members of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>) 
-  **Methods**:
-    * all methods of :class:`mpl_toolkits.basemap.Basemap` (<http://tinyurl.com/d4rzmfo>)
-  **Example**:
-    ::
+    """This class wraps arround :class:`mpl_toolkits.basemap.Basemap`
+                                       (<http://tinyurl.com/d4rzmfo>)
 
-      # Create the map
-      myMap = utils.mapObj(boundinglat=30, coords='mag')
-      # Plot the geographic and geomagnetic North Poles
-      # First convert from lat/lon to map projection coordinates...
-      x, y = myMap(0., 90., coords='geo')
-      # ...then plot
-      myMap.scatter(x, y, zorder=2, color='r')
-      # Convert to map projection...
-      x, y = myMap(0., 90., coords='mag')
-      # ...and plot
-      myMap.scatter(x, y, zorder=2, color='g')
+    **Members**: 
+      * **coords** (str): map coordinate system.  Anything handled by
+          utils.coordUtils is acceptable (see get_coord_dict)
+      * all members of :class:`mpl_toolkits.basemap.Basemap`
+                              (<http://tinyurl.com/d4rzmfo>) 
 
-  .. note:: Once the map is created, all plotting calls will be assumed to already be in the map's declared coordinate system given by **coords**.
+    **Methods**:
+      * all methods of :class:`mpl_toolkits.basemap.Basemap`
+                              (<http://tinyurl.com/d4rzmfo>)
 
-  """
-
-  def __init__(self, datetime=None, coords='geo', 
-    projection='stere', resolution='c', dateTime=None, 
-    lat_0=None, lon_0=None, boundinglat=None, width=None, height=None, draw=True, 
-    fillContinents='.8', fillOceans='None', fillLakes=None, coastLineWidth=0., 
-    coastLineColor=None, grid=True, gridLabels=True, showCoords=True, 
-    **kwargs):
-    """Create empty map 
-    
-    **Args**:    
-      * **[width, height]**: width and height in m from the (lat_0, lon_0) center
-      * **[lon_0]**: center meridian (default is -70E)    
-      * **[lat_0]**: center latitude (default is -90E)
-      * **[boundingLat]**: bounding latitude (default it +/-20)    
-      * **[draw]**: set to "False" to skip initial drawing of map
-      * **[grid]**: show/hide parallels and meridians grid    
-      * **[fill_continents]**: continent color. Default is 'grey'    
-      * **[fill_water]**: water color. Default is 'None'    
-      * **[coords]**: default is 'geo'
-      * **[showCoords]**: display coordinate system name in upper right corner
-      * **[dateTime]** (datetime.datetime): necessary for MLT plots if you want the continents to be plotted
-      * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
-    **Returns**:
-      * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
     **Example**:
       ::
 
-        myMap = mapObj(lat_0=50, lon_0=-95, width=111e3*60, height=111e3*60)
-        
-    written by Sebastien, 2013-02
+        # Create the map
+        myMap = utils.mapObj(boundinglat=30, coords='mag')
+        # Plot the geographic and geomagnetic North Poles
+        # First convert from lat/lon to map projection coordinates...
+        x, y = myMap(0., 90., coords='geo')
+        # ...then plot
+        myMap.scatter(x, y, zorder=2, color='r')
+        # Convert to map projection...
+        x, y = myMap(0., 90., coords='mag')
+        # ...and plot
+        myMap.scatter(x, y, zorder=2, color='g')
+
+    .. note:: Once the map is created, all plotting calls will be assumed
+              to already be in the map's declared coordinate system given
+              by **coords**.
+
     """
-    import math
-    from copy import deepcopy
-    import datetime as dt
 
-    from utils import coord_conv, get_coord_dict
+    def __init__(self, datetime=None, coords='geo', projection='stere',
+                 resolution='c', dateTime=None, lat_0=None, lon_0=None,
+                 boundinglat=None, width=None, height=None, draw=True,
+                 fillContinents='.8', fillOceans='None', fillLakes=None,
+                 coastLineWidth=0., coastLineColor=None, grid=True,
+                 gridLabels=True, showCoords=True, **kwargs):
+        """Create empty map 
 
-    self.lat_0=lat_0
-    self.lon_0=lon_0
-    self._coastLineWidth=coastLineWidth
-    self._coastLineColor=coastLineColor
-    self._fillContinents=fillContinents
-    self._fillOceans=fillOceans
-    self._fillLakes=fillLakes
-    self._showCoords=showCoords
-    self._grid=grid
-    self._gridLabels=gridLabels
-    self._coordsDict, self._coords_string = get_coord_dict()
+        **Args**:    
+          * **[width, height]**: width and height in m from the
+                                 (lat_0, lon_0) center
+          * **[lon_0]**: center meridian (default is -70E)
+          * **[lat_0]**: center latitude (default is -90E)
+          * **[boundingLat]**: bounding latitude (default it +/-20)
+          * **[draw]**: set to "False" to skip initial drawing of map
+          * **[grid]**: show/hide parallels and meridians grid
+          * **[fill_continents]**: continent color. Default is 'grey'
+          * **[fill_water]**: water color. Default is 'None'
+          * **[coords]**: default is 'geo'
+          * **[showCoords]**: display coordinate system name in upper
+                              right corner
+          * **[dateTime]** (datetime.datetime): necessary for MLT plots if
+                                                you want the continents to
+                                                be plotted
+          * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
+        **Returns**:
+          * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>)
+        **Example**:
+          ::
 
-    if datetime is None and dateTime is None:
-      print "Warning, datetime/dateTime not specified, using current time."
-      datetime = dt.datetime.utcnow()
-      dateTime = datetime
-    elif datetime is None and dateTime is not None:
-      print "Warning, setting datetime to dateTime"
-      datetime = dateTime
-    elif datetime is not None and dateTime is None:
-      print "Warning, setting dateTime to datetime"
-      dateTime = datetime
-    else:
-      assert(datetime == dateTime),\
-              "Cannot set datetime and dateTime to different times!"
-    self.datetime = datetime
-    self.dateTime = dateTime
+            myMap = mapObj(lat_0=50, lon_0=-95, width=111e3*60,
+                           height=111e3*60)
+        
+        written by Sebastien, 2013-02
+        """
 
-    # Still a good idea to check whether coords are possible, because
-    # there may be no call to coord_conv within this init.
-    assert(coords in self._coordsDict),\
-            "coords set to " + coords + ",\n" + self.coords_string
+        import math
+        from copy import deepcopy
+        import datetime as dt
+        from utils import coord_conv, get_coord_dict
 
-    # Add an extra member to the Basemap class.
-    self.coords = coords
+        self.lat_0=lat_0
+        self.lon_0=lon_0
+        self._coastLineWidth=coastLineWidth
+        self._coastLineColor=coastLineColor
+        self._fillContinents=fillContinents
+        self._fillOceans=fillOceans
+        self._fillLakes=fillLakes
+        self._showCoords=showCoords
+        self._grid=grid
+        self._gridLabels=gridLabels
+        self._coordsDict, self._coords_string = get_coord_dict()
 
-    # Set map projection limits and center point depending on hemisphere selection
-    if self.lat_0 is None: 
-      self.lat_0 = 90.
-      if boundinglat: self.lat_0 = math.copysign(self.lat_0, boundinglat)
-    if self.lon_0 is None: 
-      self.lon_0, _ = coord_conv(-100., 0., "geo", self.coords,
-                                 altitude=0., date_time=self.datetime)
-    if boundinglat:
-      width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
-
-    # Initialize map with original Basemap
-    super(mapObj, self).__init__(projection=projection, resolution=resolution, 
-        lat_0=self.lat_0, lon_0=self.lon_0, width=width, height=height, **kwargs)
-
-    if draw:
-      self.draw()
-
-  def draw(self):
-      import numpy as np
-      from pylab import text
-      # Add continents
-      _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
-      _ = self.drawmapboundary(fill_color=self._fillOceans)
-      _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
-
-      # Add coordinate spec
-      if self._showCoords:
-        _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
-          rotation=-90., va='top', fontsize=8)
-
-      # Set formatter for longitude labels
-      if self.coords == "mlt":
-        lonfmt = lambda x: "%02g"%(x*24./360.)
-      else:
-        lonfmt = "%g"
-
-      # draw parallels and meridians.
-      if self._grid:
-        parallels = np.arange(-80.,81.,20.)
-        out = self.drawparallels(parallels, color='.6', zorder=10)
-        # label parallels on map
-        if self._gridLabels: 
-          lablon = int(self.llcrnrlon/10)*10
-          rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
-          x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
-          for ix,iy,ip in zip(x,y,parallels):
-            if not self.xmin <= ix <= self.xmax: continue
-            if not self.ymin <= iy <= self.ymax: continue
-            _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-              rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
-        # label meridians on bottom and left
-        if self.coords == "mlt":
-          meridians = np.arange(0.,360.,15.)
+        # The usage of dateTime should be deprecated, but until then we
+        # need this.
+        if datetime is None and dateTime is None:
+            print "Warning, datetime/dateTime not specified, using " +
+                  "current time."
+            datetime = dt.datetime.utcnow()
+            dateTime = datetime
+        elif datetime is None and dateTime is not None:
+            print "Warning, setting datetime to dateTime"
+            datetime = dateTime
+        elif datetime is not None and dateTime is None:
+            print "Warning, setting dateTime to datetime"
+            dateTime = datetime
         else:
-          meridians = np.arange(-180.,181.,20.)
-        if self._gridLabels: 
-          if self.coords == "mlt":
-            merLabels = [True, False, False, True]
-          else:
-            merLabels = [False,False,False,True]
-        else: 
-          merLabels = [False,False,False,False]
-        # draw meridians
-        out = self.drawmeridians(meridians, labels=merLabels, fmt=lonfmt,
-                                 color='.6', zorder=10)
-  
-  def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
-    from copy import deepcopy
-    import numpy as np
-    import inspect
+            assert(datetime == dateTime),\
+              "Cannot set datetime and dateTime to different times!"
 
-    from utils import coord_conv
+        self.datetime = datetime
+        self.dateTime = dateTime
 
-    # First we need to check and see if drawcoastlines() or a similar 
-    # method is calling because if we are in a coordinate system 
-    # differing from 'geo' then the coastlines will get plotted 
-    # in the wrong location...
-    try:
-      callerFile, _, callerName = \
-              inspect.getouterframes(inspect.currentframe())[1][1:4]
-    except:
-      return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+        # Still a good idea to check whether coords are possible, because
+        # there may be no call to coord_conv within this init.
+        assert(coords in self._coordsDict),\
+                "coords set to " + coords + ",\n" + self.coords_string
 
-    # If call was from drawcoastlines, etc. then we do something different
-    if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-      x, y = coord_conv(x, y, "geo", self.coords, altitude=0.,
-                        date_time=self.datetime)
-      return basemap.Basemap.__call__(self, x, y, inverse=False)
+        # Add an extra member to the Basemap class.
+        self.coords = coords
 
-    # If the call was not from drawcoastlines, etc. do the conversion.
+        # Set map projection limits and center point depending on 
+        # hemisphere selection
+        if self.lat_0 is None: 
+          self.lat_0 = 90.
+          if boundinglat: self.lat_0 = math.copysign(self.lat_0, 
+                                                     boundinglat)
+        if self.lon_0 is None: 
+          self.lon_0, _ = coord_conv(-100., 0., "geo", self.coords,
+                                     altitude=0., date_time=self.datetime)
+        if boundinglat:
+          width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
-    # If we aren't changing between lat/lon coordinate systems:
-    elif coords is None:
-      return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+        # Initialize map with original Basemap
+        super(mapObj, self).__init__(projection=projection, 
+            resolution=resolution, lat_0=self.lat_0, lon_0=self.lon_0,
+            width=width, height=height, **kwargs)
 
-    # If inverse is true do the calculation of x,y map coords first, 
-    # then lat/lon coord system change.
-    elif inverse:
-      x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
-      return coord_conv(x, y, self.coords, coords, altitude=altitude,
-                       date_time=self.datetime)
+        if draw:
+          self.draw()
 
-    # If inverse is false do the lat/lon coord system change first, 
-    # then calculation of x,y map coords.
-    else:
-      x, y = coord_conv(x, y, coords, self.coords, altitude=altitude,
-                       date_time=self.datetime)
-      return basemap.Basemap.__call__(self, x, y, inverse=False)
+    def draw(self):
+        """
+        Method used to draw the map.
 
-  def _readboundarydata(self, name, as_polygons=False):
-    from copy import deepcopy
-    import _geoslib
-    import numpy as np
+        **Args**:
+            Nothing
 
-    from utils import coord_conv
+        **Returns**:
+            Nothing
 
-    lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
-                            list(self._boundarypolyll.boundary[:, 1]),
-                            self.coords, "geo", altitude=0.,
-                            date_time=self.datetime)
-    b = np.asarray([lons,lats]).T
-    oldgeom = deepcopy(self._boundarypolyll)
-    newgeom = _geoslib.Polygon(b).fix()
-    self._boundarypolyll = newgeom
-    out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
-    self._boundarypolyll = oldgeom
-    return out
+        """
+        import numpy as np
+        from pylab import text
+
+        # Add continents
+        _ = self.drawcoastlines(linewidth=self._coastLineWidth,
+                                color=self._coastLineColor)
+        _ = self.drawmapboundary(fill_color=self._fillOceans)
+        _ = self.fillcontinents(color=self._fillContinents,
+                                lake_color=self._fillLakes)
+
+        # Add coordinate spec
+        if self._showCoords:
+            _ = text(self.urcrnrx, self.urcrnry, 
+                     self._coordsDict[self.coords]+' coordinates',
+                     rotation=-90., va='top', fontsize=8)
+
+        # Set formatter for longitude labels
+        if self.coords == "mlt":
+            lonfmt = lambda x: "%02g"%(x*24./360.)
+        else:
+            lonfmt = "%g"
+
+        # Draw parallels and meridians.
+        if self._grid:
+            parallels = np.arange(-80.,81.,20.)
+            out = self.drawparallels(parallels, color='.6', zorder=10)
+            # Label parallels on map
+            if self._gridLabels: 
+                lablon = int(self.llcrnrlon/10)*10
+                if (self.lat_0 >= 0):
+                    rotate_label = lablon - self.lon_0
+                else:
+                    rotate_label = self.lon_0 - lablon + 180.
+                x,y = basemap.Basemap.__call__(self,
+                    lablon*np.ones(parallels.shape), parallels)
+                for ix,iy,ip in zip(x,y,parallels):
+                    if not self.xmin <= ix <= self.xmax: continue
+                    if not self.ymin <= iy <= self.ymax: continue
+                    _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+                             rotation=rotate_label, va='center', 
+                             ha='center', zorder=10, color='.4')
+            # Label meridians on bottom and left
+            if self.coords == "mlt":
+                meridians = np.arange(0.,360.,15.)
+            else:
+              meridians = np.arange(-180.,181.,20.)
+            if self._gridLabels: 
+                if self.coords == "mlt":
+                    merLabels = [True, False, False, True]
+                else:
+                    merLabels = [False,False,False,True]
+            else: 
+                merLabels = [False,False,False,False]
+            # Draw meridians
+            out = self.drawmeridians(meridians, labels=merLabels,
+                                     fmt=lonfmt, color='.6', zorder=10)
+
+    def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
+        from copy import deepcopy
+        import numpy as np
+        import inspect
+        from utils import coord_conv
+
+        # First we need to check and see if drawcoastlines() or a similar 
+        # method is calling because if we are in a coordinate system 
+        # differing from 'geo' then the coastlines will get plotted 
+        # in the wrong location...
+        try:
+            callerFile, _, callerName =
+                inspect.getouterframes(inspect.currentframe())[1][1:4]
+        except:
+            return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+        # If call was from drawcoastlines, etc. then we do something 
+        # different
+        if (('mpl_toolkits' in callerFile) and 
+            (callerName is '_readboundarydata')):
+            x, y = coord_conv(x, y, "geo", self.coords, altitude=0.,
+                              date_time=self.datetime)
+            return basemap.Basemap.__call__(self, x, y, inverse=False)
+
+        # If the call was not from drawcoastlines, etc. do the conversion.
+        # If we aren't changing between lat/lon coordinate systems:
+        elif coords is None:
+            return basemap.Basemap.__call__(self, x, y, inverse=inverse)
+
+        # If inverse is true do the calculation of x,y map coords first, 
+        # then lat/lon coord system change.
+        elif inverse:
+            x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
+            return coord_conv(x, y, self.coords, coords, 
+                              altitude=altitude, date_time=self.datetime)
+
+        # If inverse is false do the lat/lon coord system change first, 
+        # then calculation of x,y map coords.
+        else:
+            x, y = coord_conv(x, y, coords, self.coords, 
+                              altitude=altitude, date_time=self.datetime)
+            return basemap.Basemap.__call__(self, x, y, inverse=False)
+
+    def _readboundarydata(self, name, as_polygons=False):
+        from copy import deepcopy
+        import _geoslib
+        import numpy as np
+        from utils import coord_conv
+
+        lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
+                                list(self._boundarypolyll.boundary[:, 1]),
+                                self.coords, "geo", altitude=0.,
+                                date_time=self.datetime)
+        b = np.asarray([lons,lats]).T
+        oldgeom = deepcopy(self._boundarypolyll)
+        newgeom = _geoslib.Polygon(b).fix()
+        self._boundarypolyll = newgeom
+        out = basemap.Basemap._readboundarydata(self, name,
+                                                as_polygons=as_polygons)
+        self._boundarypolyll = oldgeom
+
+        return out
 
 
 ################################################################################
