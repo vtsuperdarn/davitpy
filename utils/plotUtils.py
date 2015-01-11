@@ -151,6 +151,12 @@ class mapObj(basemap.Basemap):
         _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
           rotation=-90., va='top', fontsize=8)
 
+      # Set formatter for longitude labels
+      if self.coords == "mlt":
+        lonfmt = lambda x: "%02g"%(x*24./360.)
+      else:
+        lonfmt = "%g"
+
       # draw parallels and meridians.
       if self._grid:
         parallels = np.arange(-80.,81.,20.)
@@ -158,10 +164,6 @@ class mapObj(basemap.Basemap):
         # label parallels on map
         if self._gridLabels: 
           lablon = int(self.llcrnrlon/10)*10
-          if self.coords == "mlt":
-            lonfmt = lambda x: "%02g"%(x*24./360.)
-          else:
-            lonfmt = "%g"
           rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
           x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
           for ix,iy,ip in zip(x,y,parallels):
