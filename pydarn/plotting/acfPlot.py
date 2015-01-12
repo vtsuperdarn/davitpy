@@ -66,6 +66,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     """
 
     from matplotlib import pyplot
+    from matplotlib.ticker import MaxNLocator
     import numpy as np
     import pydarn
 
@@ -111,7 +112,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     # Take the fourier transform of the complex ACF to
     # get the power spectrum
-    temp = nuft(re + 1j * im, np.array(lags), lags[-1])
+    temp = np.abs(nuft(re + 1j * im, np.array(lags), lags[-1])) ** 2
     acfFFT = []
     acfFFT.extend(temp[len(temp) / 2 + 1:])
     acfFFT.extend(temp[0:len(temp) / 2 + 1])
@@ -136,6 +137,15 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         ax2 = fig.add_axes([0.1, 0.1, 0.35, 0.35])
         ax3 = fig.add_axes([0.5, 0.1, 0.35, 0.35])
         ax4 = fig.add_axes([0.5, 0.55, 0.35, 0.35])
+
+        rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
+        if xcf:
+            title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
+                ' ' + 'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+        else:
+            title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
+                ' ' + 'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+        fig.suptitle(title, y=0.94)
     else:
         ax1 = None
         ax2 = None
@@ -145,9 +155,6 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     # Now plot the ACF/XCF panel as necessary
     if (ax is not None) and (panel == 0):
         ax1 = ax
-    elif (ax1 is not None):
-        title1 = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT')
-        ax1.set_title(title1)
 
     if (ax1 is not None):
         if ((blanked) and (mark_blanked)):
@@ -220,7 +227,10 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         ax3.set_xlabel('Lag Number')
         ax3.set_ylabel('Phase')
         ax3.set_ylim([-np.pi - 0.5, np.pi + 0.5])
-        ax3.set_yticks(np.linspace(-3, 3, num=7))
+        ax3.set_yticks(np.linspace(-np.pi, np.pi, num=7))
+        ylabels = [r"-$\pi$", r"-2$\pi$/3", r"-$\pi$/3", "0",
+                   r"$\pi$/3", r"2$\pi$/3", r"$\pi$"]
+        ax3.set_yticklabels(ylabels)
         if ax is None:
             ax3.yaxis.set_ticks_position('right')
             ax3.yaxis.set_label_position('right')
@@ -228,18 +238,16 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     # Now plot the power spectrum panel as necessary
     if ((ax is not None) and (panel == 3)):
         ax4 = ax
-    elif (ax4 is not None):
-        title2 = pydarn.radar.network().getRadarById(myBeam.stid).name \
-            + ' Beam: ' + str(myBeam.bmnum) + ' Gate: ' + str(gate)
-        ax4.set_title(title2)
 
     if (ax4 is not None):
-        ax4.plot(vels, np.abs(acfFFT), marker='o', lw=2)
-        ax4.set_xlabel('Velocity (m/s)')
-        ax4.set_ylabel('Spectral Power (arb)')
+        ax4.plot(vels, acfFFT, marker='o', lw=2)
+        ax4.set_xlabel(r'Velocity (m/s)')
+        ax4.set_ylabel('Power Spectrum')
         if ax is None:
             ax4.yaxis.set_ticks_position('right')
             ax4.yaxis.set_label_position('right')
+            ax4.get_yaxis().get_offset_text().set_x(1)
+            ax4.yaxis.set_major_locator(MaxNLocator(prune='upper'))
 
     if ax is None:
         fig.show()
@@ -427,9 +435,9 @@ def plot_rli(myBeam, normalized=True, xcf=False):
     cbar = mpl.colorbar.ColorbarBase(ax3, norm=cNorm, cmap=cmap)
 
     if normalized:
-        cbar.set_label('Normalized Amplitude')
+        cbar.set_label('Normalized Lag Power')
     else:
-        cbar.set_label('Amplitude')
+        cbar.set_label('Lag Power')
 
     # Set plot axis labels
     ax2.set_ylim([-0.5, lag_numbers[-1]])
@@ -442,7 +450,7 @@ def plot_rli(myBeam, normalized=True, xcf=False):
     ax1.set_xlim([range_gates[0], range_gates[-1]])
     ax1.set_ylim([0, 40])
     ax1.set_yticks(np.linspace(0, 30, num=4))
-    ax1.set_ylabel(r'pwr$_{0}$''\n(dB)')
+    ax1.set_ylabel('pwr_0\n(dB)')
     ax1.set_xlabel('Range Gate')
 
     rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
@@ -451,9 +459,8 @@ def plot_rli(myBeam, normalized=True, xcf=False):
             'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
     else:
         title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + ' ' + \
-            'ACF ' +rad_name + ' Beam: ' + str(myBeam.bmnum)
-
-    ax2.set_title(title)
+            'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+    fig.suptitle(title, y=0.94)
 
     fig.show()
 
