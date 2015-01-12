@@ -329,6 +329,7 @@ def plot_rli(myBeam, xcf=False):
     from matplotlib import colors
     import matplotlib as mpl
     import matplotlib.cm as cmx
+    import pydarn
 
     # Get parameters
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
@@ -414,6 +415,16 @@ def plot_rli(myBeam, xcf=False):
     ax1.set_yticks(np.linspace(0, 30, num=4))
     ax1.set_ylabel(r'pwr$_{0}$''\n(dB)')
     ax1.set_xlabel('Range Gate')
+
+    rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
+    if xcf:
+        title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + ' ' + \
+            'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+    else:
+        title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + ' ' + \
+            'ACF ' +rad_name + ' Beam: ' + str(myBeam.bmnum)
+
+    ax2.set_title(title)
 
     fig.show()
 
