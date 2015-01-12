@@ -31,7 +31,8 @@
 """
 
 
-def plot_acf(myBeam, gate, mark_blanked=True, xcf=False, panel=0, ax=None):
+def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
+             xcf=False, panel=0, ax=None):
     """
     Plot the ACF/XCF for a specified beamData object at a
     specified range gate
@@ -39,13 +40,15 @@ def plot_acf(myBeam, gate, mark_blanked=True, xcf=False, panel=0, ax=None):
     **Args**:
         * **myBeam** : a beamData object from pydarn.sdio.radDataTypes
         * **gate**: (int) The range gate to plot data for.
+        * **[normalized]**: (boolean) Specifies whether to normalize the
+                            ACF/XCF data by the lag-zero power.
         * **[mark_blanked]**: (boolean) Specifies whether magnitude and 
                               phase should be plotted instead of real and 
                               imaginary.
         * **[xcf]**: (boolean) Specifies wheather to plot XCF data or not 
         * **[panel]**: (int) from 0 to 3 specifies which data to plot of
                        ACF/XCF, ACF/XCF amplitude, ACF/XCF phase, or
-                       power spectrum, respectively.
+                       power spectrum, respectively. Default is panel=0.
         * **[ax]**: a matplotlib axis object
 
     **Returns**:
@@ -75,22 +78,27 @@ def plot_acf(myBeam, gate, mark_blanked=True, xcf=False, panel=0, ax=None):
     mplgs = myBeam.prm.mplgs
     noise = np.array(myBeam.prm.noisesearch)
     power = np.array(myBeam.rawacf.pwr0)
-    fluct = 1 / np.sqrt(nave) * (1 + 1 / (power[gate] / noise))
+
+    if normalized:
+        fluct = 1 / np.sqrt(nave) * (1 + 1 / (power[gate] / noise))
+    else:
+        fluct = power[gate] / np.sqrt(nave) * \
+            (1 + 1 / (power[gate] / noise))
 
     # Grab the appropriate data for plotting
     if ((xcf) and (myBeam.prm.xcf == 0)):
         print "No interferometer data available."
         return
     elif ((xcf) and (myBeam.prm.xcf == 1)):
-        re = np.array([x[0] / power[gate] for x in
-                       myBeam.rawacf.xcfd[gate]])
-        im = np.array([x[1] / power[gate] for x in
-                       myBeam.rawacf.xcfd[gate]])
+        re = np.array([x[0] for x in myBeam.rawacf.xcfd[gate]])
+        im = np.array([x[1] for x in myBeam.rawacf.xcfd[gate]])
     else:
-        re = np.array([x[0] / power[gate] for x in
-                       myBeam.rawacf.acfd[gate]])
-        im = np.array([x[1] / power[gate] for x in
-                       myBeam.rawacf.acfd[gate]])
+        re = np.array([x[0] for x in myBeam.rawacf.acfd[gate]])
+        im = np.array([x[1] for x in myBeam.rawacf.acfd[gate]])
+
+    if normalized:
+        re /= power[gate]
+        im /= power[gate]
 
     # Determine which lags are blanked by Tx pulses
     blanked = calc_blanked(ltab, tp, tau, tfr, gate)
@@ -157,9 +165,14 @@ def plot_acf(myBeam, gate, mark_blanked=True, xcf=False, panel=0, ax=None):
 
         ax1.set_xlim([-0.5, lag_numbers[-1]])
         ax1.set_xlabel('Lag Number')
-        ax1.set_ylabel('ACF')
-        ax1.set_ylim([-1.5, 1.5])
-        ax1.set_yticks(np.linspace(-1, 1, num=5))
+        if normalized:
+            ax1.set_ylim([-1.5, 1.5])
+            ax1.set_yticks(np.linspace(-1, 1, num=5))
+            ax1.set_ylabel('Normalized ACF')
+        else:
+            ax1.set_ylim([-1.5 * power[gate], 1.5 * power[gate]])
+            ax1.set_yticks(np.linspace(-1, 1, num=5) * power[gate])
+            ax1.set_ylabel('ACF')
 
     # Now plot the ACF/XCF amplitude panel as necessary
     if ((ax is not None) and (panel == 1)):
@@ -180,9 +193,13 @@ def plot_acf(myBeam, gate, mark_blanked=True, xcf=False, panel=0, ax=None):
 
         ax2.set_xlim([-0.5, lag_numbers[-1]])
         ax2.set_xlabel('Lag Number')
-        ax2.set_ylabel('Lag Power')
         ax2.set_ylim([0, 1.05 * np.max(amplitude)])
-        ax2.set_yticks(np.linspace(0.2, 1.2, num=6))
+        if normalized:
+            ax2.set_ylabel('Normalized Lag Power')
+            ax2.set_yticks(np.linspace(0.2, 1.2, num=6))
+        else:
+            ax2.set_ylabel('Lag Power')
+            ax2.set_yticks(np.linspace(0.2, 1.2, num=6) * power[gate])
 
     # Now plot the ACF/XCF phase panel as necessary
     if ((ax is not None) and (panel == 2)):
@@ -300,13 +317,15 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
     return txs_in_lag
 
 
-def plot_rli(myBeam, xcf=False):
+def plot_rli(myBeam, normalized=True, xcf=False):
     """
     This function plots a range-lag-intensity plot of ACF/XCF data
     for an input beamData object.
 
     **Args**:
         * **myBeam** : A beamData object from pydarn.sdio.radDataTypes.
+        * **[normalized]**: (boolean) Specifies whether to normalize the
+                            ACF/XCF data by the lag-zero power.
         * **[xcf]**: (boolean) Specifies wheather to plot XCF data or
                                not.
 
@@ -355,7 +374,12 @@ def plot_rli(myBeam, xcf=False):
         lag_numbers.extend(temp)
 
     # Generate a scalar colormapping to map data to cmap
-    cl = [-1, 1]
+    if normalized:
+        cl = [-1, 1]
+    else:
+        max_amp = np.max(power)
+        cl = [-max_amp, max_amp]
+
     cmap = 'jet'
     cNorm = colors.Normalize(vmin=cl[0], vmax=cl[1])
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
@@ -368,15 +392,16 @@ def plot_rli(myBeam, xcf=False):
             print "No interferometer data available."
             return
         elif ((xcf) and (myBeam.prm.xcf == 1)):
-            re = np.array([x[0] / power[r] for x in
-                           myBeam.rawacf.xcfd[r]])
-            im = np.array([x[1] / power[r] for x in
-                           myBeam.rawacf.xcfd[r]])
+            re = np.array([x[0] for x in myBeam.rawacf.xcfd[r]])
+            im = np.array([x[1] for x in myBeam.rawacf.xcfd[r]])
         else:
-            re = np.array([x[0] / power[r] for x in
+            re = np.array([x[0] for x in
                            myBeam.rawacf.acfd[r]])
-            im = np.array([x[1] / power[r] for x in
-                           myBeam.rawacf.acfd[r]])
+            im = np.array([x[1] for x in myBeam.rawacf.acfd[r]])
+
+        if normalized:
+            re /= power[r]
+            im /= power[r]
 
         # Index needed for plotting but not incrementing on missing lags
         i = 0
@@ -400,7 +425,11 @@ def plot_rli(myBeam, xcf=False):
 
     # Add the colorbar and label it
     cbar = mpl.colorbar.ColorbarBase(ax3, norm=cNorm, cmap=cmap)
-    cbar.set_label('Amplitude')
+
+    if normalized:
+        cbar.set_label('Normalized Amplitude')
+    else:
+        cbar.set_label('Amplitude')
 
     # Set plot axis labels
     ax2.set_ylim([-0.5, lag_numbers[-1]])
@@ -468,6 +497,9 @@ if __name__ == "__main__":
     print "...First test default options..."
     pydarn.plotting.acfPlot.plot_rli(myBeam)
 
+    print "...Next test with 'normalized=False'..."
+    pydarn.plotting.acfPlot.plot_rli(myBeam, normalized=False)
+
     print "...Next test with 'xcf=True'..."
     pydarn.plotting.acfPlot.plot_rli(myBeam, xcf=True)
 
@@ -477,6 +509,9 @@ if __name__ == "__main__":
     print "Testing the plot_acf method and it's options...."
     print "...First test default options, at range gate 31, you should see ground scatter and lags marked that are blanked by Tx blanking..."
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31)
+
+    print "...Next, with 'normalized=False', normalization by lag-zero power turned off "
+    pydarn.plotting.acfPlot.plot_acf(myBeam, 31, normalized=False)
 
     print "...Next, with 'mark_blanked=False', blanking marking turned off "
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31, mark_blanked=False)
