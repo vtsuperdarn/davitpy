@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -42,10 +42,10 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         * **gate**: (int) The range gate to plot data for.
         * **[normalized]**: (boolean) Specifies whether to normalize the
                             ACF/XCF data by the lag-zero power.
-        * **[mark_blanked]**: (boolean) Specifies whether magnitude and 
-                              phase should be plotted instead of real and 
+        * **[mark_blanked]**: (boolean) Specifies whether magnitude and
+                              phase should be plotted instead of real and
                               imaginary.
-        * **[xcf]**: (boolean) Specifies wheather to plot XCF data or not 
+        * **[xcf]**: (boolean) Specifies whether to plot XCF data or not
         * **[panel]**: (int) from 0 to 3 specifies which data to plot of
                        ACF/XCF, ACF/XCF amplitude, ACF/XCF phase, or
                        power spectrum, respectively. Default is panel=0.
