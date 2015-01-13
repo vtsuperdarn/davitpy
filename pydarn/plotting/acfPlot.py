@@ -32,7 +32,8 @@
 
 
 def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
-             xcf=False, panel=0, ax=None):
+             xcf=False, panel=0, ax=None, show=True, png=False,
+             pdf=False):
     """
     Plot the ACF/XCF for a specified beamData object at a
     specified range gate
@@ -50,6 +51,10 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
                        ACF/XCF, ACF/XCF amplitude, ACF/XCF phase, or
                        power spectrum, respectively. Default is panel=0.
         * **[ax]**: a matplotlib axis object
+        * **[show]**: (boolean) Specifies whether plot to a figure
+                                window. If set to false and png or pdf
+                                are set to false, then the figure is
+                                plotted to a png file.
 
     **Returns**:
         Nothing.
@@ -66,6 +71,8 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     """
 
     from matplotlib import pyplot
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure as mpl_fig
     from matplotlib.ticker import MaxNLocator
     import numpy as np
     import pydarn
@@ -132,7 +139,13 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         lag_numbers.extend(temp)
 
     if ax is None:
-        fig = pyplot.figure()
+        # Make the figure and axes
+        if show:
+            fig = pyplot.figure()
+        else:
+            if (png == False) and (pdf == False):
+                png = True
+            fig = mpl_fig()
         ax1 = fig.add_axes([0.1, 0.55, 0.35, 0.35])
         ax2 = fig.add_axes([0.1, 0.1, 0.35, 0.35])
         ax3 = fig.add_axes([0.5, 0.1, 0.35, 0.35])
@@ -249,8 +262,34 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
             ax4.get_yaxis().get_offset_text().set_x(1)
             ax4.yaxis.set_major_locator(MaxNLocator(prune='upper'))
 
-    if ax is None:
+
+    #handle the outputs
+    rad = pydarn.radar.network().getRadarById(myBeam.stid).code[0]
+    if png and (ax is None):
+        if not show:
+            canvas = FigureCanvasAgg(fig)
+        if xcf:
+            fig.savefig('XCF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad +'_gate' + str(gate) + '.png')
+        else:
+            fig.savefig('ACF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad +'_gate' + str(gate) + '.png')
+    if pdf and (ax is None):
+        if not show:
+            canvas = FigureCanvasAgg(fig)
+        if xcf:
+            fig.savefig('XCF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad +'_gate' + str(gate) + '.pdf')
+        else:
+            fig.savefig('ACF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad +'_gate' + str(gate) + '.pdf')
+    if show and (ax is None):
         fig.show()
+
 
 
 def calc_blanked(ltab, tp, tau, tfr, gate):
@@ -325,7 +364,7 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
     return txs_in_lag
 
 
-def plot_rli(myBeam, normalized=True, xcf=False):
+def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False):
     """
     This function plots a range-lag-intensity plot of ACF/XCF data
     for an input beamData object.
@@ -334,8 +373,12 @@ def plot_rli(myBeam, normalized=True, xcf=False):
         * **myBeam** : A beamData object from pydarn.sdio.radDataTypes.
         * **[normalized]**: (boolean) Specifies whether to normalize the
                             ACF/XCF data by the lag-zero power.
-        * **[xcf]**: (boolean) Specifies wheather to plot XCF data or
+        * **[xcf]**: (boolean) Specifies whether to plot XCF data or
                                not.
+        * **[show]**: (boolean) Specifies whether plot to a figure
+                                window. If set to false and png or pdf
+                                are set to false, then the figure is
+                                plotted to a png file.
 
     **Returns**:
         Nothing.
@@ -352,6 +395,8 @@ def plot_rli(myBeam, normalized=True, xcf=False):
     """
 
     from matplotlib import pyplot
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure as mpl_fig
     import numpy as np
     from matplotlib import colors
     import matplotlib as mpl
@@ -366,7 +411,14 @@ def plot_rli(myBeam, normalized=True, xcf=False):
     noise = np.array(myBeam.prm.noisesearch)
 
     # Make the figure and axes
-    fig = pyplot.figure()
+    if show:
+        fig = pyplot.figure()
+    else:
+        if (png == False) and (pdf == False):
+            png = True
+        fig = mpl_fig()
+
+#    fig = pyplot.figure()
     ax1 = fig.add_axes([0.1, 0.1, 0.77, 0.1])
     ax2 = fig.add_axes([0.1, 0.2, 0.77, 0.7])
     ax3 = fig.add_axes([0.88, 0.2, 0.02, 0.7])
@@ -454,6 +506,7 @@ def plot_rli(myBeam, normalized=True, xcf=False):
     ax1.set_xlabel('Range Gate')
 
     rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
+    rad = pydarn.radar.network().getRadarById(myBeam.stid).code[0]
     if xcf:
         title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + ' ' + \
             'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
@@ -462,7 +515,31 @@ def plot_rli(myBeam, normalized=True, xcf=False):
             'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
     fig.suptitle(title, y=0.94)
 
-    fig.show()
+    #handle the outputs
+    if png:
+        if not show:
+            canvas = FigureCanvasAgg(fig)
+        if xcf:
+            fig.savefig('XCF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad + '.png')
+        else:
+            fig.savefig('ACF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad + '.png')
+    if pdf:
+        if not show:
+            canvas = FigureCanvasAgg(fig)
+        if xcf:
+            fig.savefig('XCF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad + '.pdf')
+        else:
+            fig.savefig('ACF_' +
+                        myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
+                        '_' + rad + '.pdf')
+    if show:
+        fig.show()
 
 
 def nuft(a, tn, T):
