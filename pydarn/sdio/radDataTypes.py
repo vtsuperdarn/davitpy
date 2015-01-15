@@ -482,52 +482,42 @@ class radDataPtr():
       return setDmapOffset(self.__fd,0)
 
   def readScan(self):
-      """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
-      .. note::
+        """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+
+        .. note
         This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
 
-      **Returns**:
+        **Returns**:
         * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData`): an object filled with the data we are after.  *will return None when finished reading*
-    
-      """
-      from pydarn.sdio import scanData
-      #Save the radDataPtr's bmnum setting temporarily and set it to None
-      orig_beam=self.bmnum
-      self.bmnum=None
 
-      if self.__ptr.closed:
-          print 'error, your file pointer is closed'
-          return None
+        """
+        from pydarn.sdio import scanData
+        import pydarn
+        #Save the radDataPtr's bmnum setting temporarily and set it to None
+        orig_beam=self.bmnum
+        self.bmnum=None
 
-      myScan = scanData()
-      myBeam=self.readRec()
-      if(myBeam.prm.scan == 1):  
-        firstflg=True
-        myScan.append(myBeam)
-      else:
-        if self.fBeam != None:
-          myScan.append(self.fBeam)
-          firstflg = False
-        else:
-          firstflg = True
+        if self.__ptr.closed:
+            print 'error, your file pointer is closed'
+            return None
 
-      while(1):
-        myBeam=self.readRec()
-        if myBeam is None: 
-          break
-        if(myBeam.prm.scan == 0 or firstflg):
-          myScan.append(myBeam)
-          firstflg = False
-          continue
-        else:
-          self.fBeam = myBeam
-          break 
-      self.bmnum=orig_beam
+        myScan = scanData()
+        while(1):
+            myBeam=self.readRec()
+            if myBeam is None: 
+                break
 
-      return myScan
+            if ((myBeam.prm.scan == 1 and len(myScan) == 0)         # Append a beam if it is the first in a scan AND nothing has been added to the myScan object. 
+             or (myBeam.prm.scan == 0 and  len(myScan) > 0) ):      # Append a beam if it is not the first in a scan AND the myScan object has items.
+                myScan.append(myBeam)
+                offset = pydarn.dmapio.getDmapOffset(self.__fd)
+            elif myBeam.prm.scan == 1 and len(myScan) > 0:          # Break out of the loop if we are on to the next scan and rewind the pointer to the previous beam.
+                s = pydarn.dmapio.setDmapOffset(self.__fd,offset)
+                break 
 
-
+        if len(myScan) == 0: myScan = None
+        self.bmnum=orig_beam
+        return myScan
 
   def readRec(self):
      """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
@@ -996,19 +986,21 @@ class iqData(radBaseData):
     I'm not sure what all of the attributes mean.  if somebody knows what these are, please help!
 
   **Attrs**:
-    * **chnnum** (int): number of channels?
+    * **chnnum** (int): number of channels sampled
     * **smpnum** (int): number of samples per pulse sequence
-    * **skpnum** (int): number of samples to skip at the beginning of a pulse sequence?
+    * **skpnum** (int): number of voltage samples to skip when making acfs
     * **seqnum** (int): number of pulse sequences
-    * **tbadtr** (? length list): time of bad tr samples?
-    * **tval** (? length list): ?
-    * **atten** (? length list): ?
-    * **noise** (? length list): ?
-    * **offset** (? length list): ?
-    * **size** (? length list): ?
+    * **tsc** (seqnum length list): seconds component of time past epoch of each pulse sequence
+    * **tus** (seqnum length list): micro seconds component of time past epoch of each pulse sequence
+    * **tatten** (seqnum length list): attenuator setting for each pulse sequence
+    * **tnoise** (seqnum length list): noise value for each pulse sequence
+    * **toff** (seqnum length list): offset into the sample buffer for each pulse sequence
+    * **tsze** (seqnum length list): number of words stored per pulse sequence
+    * **mainData** (seqnum x smpnum x 2 length list): the main array iq complex samples
+    * **intData** (seqnum x smpnum x 2 length list): the interferometer iq complex samples
     * **badtr** (? length list): bad tr samples?
-    * **mainData** (seqnum x smpnum x 2 length list): the actual iq samples (main array)
-    * **intData** (seqnum x smpnum x 2 length list): the actual iq samples (interferometer)
+    * **tval** (? length list): ?
+    * **tbadtr** (? length list): time of bad tr samples?
   
   **Example**: 
     ::

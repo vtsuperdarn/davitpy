@@ -53,5 +53,8 @@ try:
 except OSError:
     mtime = 0
 finally:
+    # DavitPy stores hdw.dat information in a local SQLite file.
+    # If that SQLite file does not exist or is more than 1 week old, go
+    # update it from an upstream source.
     if ctime > mtime + 86400*7:
         _ = updateRadars()

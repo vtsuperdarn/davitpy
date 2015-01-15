@@ -448,7 +448,7 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
 
     if drop_list != []:
         flares  = flares.drop(drop_list)
-        flares['class'] = map(classify_flare,flares['B_AVG'])
+    flares['class'] = map(classify_flare,flares['B_AVG'])
 
     return flares
 

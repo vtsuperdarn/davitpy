@@ -7,6 +7,8 @@ This subpackage contains various I/O routines for DaViT-py
 DEV: functions/modules/classes with a * have not been developed yet
 
 This includes the following module(s):
+	DataTypes
+		defines the general data pointer
 	radDataTypes
 		defines the fundamental radar data types
 	radDataRead
@@ -21,6 +23,11 @@ This includes the following module(s):
 
 *******************************
 """
+try:
+	import DataTypes
+	from DataTypes import *
+except: print 'problem importing DataTypes'
+
 try:
 	import radDataTypes
 	from radDataTypes import *
