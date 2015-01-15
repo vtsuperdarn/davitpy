@@ -263,7 +263,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
             ctime = stime.replace(second=0, microsecond=0)
 
         # Calculate if we are going forward or backward in time and set
-        #ctime accordingly
+        # ctime accordingly
         base_time_inc = 1 - 2*time_reverse        
 
         if ("{min}" in namefmt):
@@ -277,6 +277,9 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         elif ("{year}" in namefmt):    
             ctime = ctime + relativedelta(years=base_time_inc)
 
+    # Make sure the found files are in order.  Otherwise the concatenation later
+    # will put records out of order
+    temp_filelist = sorted(temp_filelist)
     # attempt to unzip the files
     for lf in temp_filelist:
         outname = os.path.join(outdir,lf)
@@ -662,6 +665,9 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         elif ("{year}" in namefmt):    
             ctime = ctime + relativedelta(years=base_time_inc)
 
+    # Make sure the found files are in order.  Otherwise the concatenation later
+    # will put records out of order
+    temp_filelist = sorted(temp_filelist)
     # attempt to unzip the files
     for rf in temp_filelist:
         outname = os.path.join(outdir,rf)
@@ -755,6 +761,16 @@ if __name__=="__main__":
     fitex = fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', verbose=False)
 
     print "Expected the files: ['/tmp/sd/20131130.2201.00.mcm.a.fitex','/tmp/sd/20131201.0000.04.mcm.a.fitex','/tmp/sd/20131201.0201.00.mcm.a.fitex']"
+    print "Received the files: " + str(fitex)
+
+
+    print "*************************************************"
+
+
+    print "Attempting to fetch a fitex file from the VT server..."
+    fitex = fetch_remote_files(datetime(2013,01,21,00), datetime(2013,01,21,05),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'ade','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20130121.0001.00.ade.a.fitex','/tmp/sd/20130121.0201.00.ade.a.fitex','/tmp/sd/20130121.0349.59.ade.a.fitex','/tmp/sd/20130121.0401.00.ade.a.fitex']"
     print "Received the files: " + str(fitex)
 
 
