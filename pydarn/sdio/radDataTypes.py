@@ -77,9 +77,9 @@ class radDataPtr():
   """
   def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None, \
                 fileType=None,filtered=False, src=None,fileName=None,noCache=False,verbose=False, \
-                local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,          \
-                remote_fnamefmt=None, remote_dict=None, local_timeinc=None, remote_timeinc=None,      \
-                remote_site=None, username=None, port=None, password=None,tmpdir=None):
+                local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,      \
+                remote_fnamefmt=None, remote_dict=None,remote_site=None, username=None, port=None,\
+                password=None,tmpdir=None):
 
     import datetime as dt
     import os,glob,string
@@ -240,13 +240,6 @@ class radDataPtr():
                         local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
                         print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
-
-                if local_timeinc is None:
-                    try:
-                        local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_LOCAL_TIMEINC']))
-                    except:
-                        local_timeinc = dt.timedelta(hours=2)
-                        print 'Environment variable DAVIT_LOCAL_TIMEINC not set, using default:',local_timeinc
                 
                 outdir = tmpDir
 
@@ -260,7 +253,7 @@ class radDataPtr():
 
                 #fetch the local files
                 filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
-                local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
+                                             local_fnamefmt, verbose=verbose)
 
                 if(len(filelist) > 0):
                     print 'found',ftype,'data in local files'
@@ -327,12 +320,7 @@ class radDataPtr():
                     except:
                         port = '22'
                         print 'Environment variable DB_PORT not set, using default:',port
-                if remote_timeinc is None:
-                    try:
-                        remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_REMOTE_TIMEINC']))
-                    except:
-                        remote_timeinc = dt.timedelta(hours=2)
-                        print 'Environment variable DAVIT_REMOTE_TIMEINC not set, using default:',remote_timeinc
+
                 outdir = tmpDir
 
                 #check to see if channel was specified and only use fnamefmts with channel in them
@@ -346,7 +334,7 @@ class radDataPtr():
                 #Now fetch the files
                 filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
-                    password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
+                    password=password, port=port, verbose=verbose)
 
                 if len(filelist) > 0 :
                     print 'found',ftype,'data on sftp server'
@@ -1002,19 +990,21 @@ class iqData(radBaseData):
     I'm not sure what all of the attributes mean.  if somebody knows what these are, please help!
 
   **Attrs**:
-    * **chnnum** (int): number of channels?
+    * **chnnum** (int): number of channels sampled
     * **smpnum** (int): number of samples per pulse sequence
-    * **skpnum** (int): number of samples to skip at the beginning of a pulse sequence?
+    * **skpnum** (int): number of voltage samples to skip when making acfs
     * **seqnum** (int): number of pulse sequences
-    * **tbadtr** (? length list): time of bad tr samples?
-    * **tval** (? length list): ?
-    * **atten** (? length list): ?
-    * **noise** (? length list): ?
-    * **offset** (? length list): ?
-    * **size** (? length list): ?
+    * **tsc** (seqnum length list): seconds component of time past epoch of each pulse sequence
+    * **tus** (seqnum length list): micro seconds component of time past epoch of each pulse sequence
+    * **tatten** (seqnum length list): attenuator setting for each pulse sequence
+    * **tnoise** (seqnum length list): noise value for each pulse sequence
+    * **toff** (seqnum length list): offset into the sample buffer for each pulse sequence
+    * **tsze** (seqnum length list): number of words stored per pulse sequence
+    * **mainData** (seqnum x smpnum x 2 length list): the main array iq complex samples
+    * **intData** (seqnum x smpnum x 2 length list): the interferometer iq complex samples
     * **badtr** (? length list): bad tr samples?
-    * **mainData** (seqnum x smpnum x 2 length list): the actual iq samples (main array)
-    * **intData** (seqnum x smpnum x 2 length list): the actual iq samples (interferometer)
+    * **tval** (? length list): ?
+    * **tbadtr** (? length list): time of bad tr samples?
   
   **Example**: 
     ::
@@ -1080,7 +1070,6 @@ if __name__=="__main__":
   print "  DBREADPASS:", os.environ['DBREADPASS']
   print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
   print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
   print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
@@ -1128,7 +1117,6 @@ if __name__=="__main__":
   print "Environment variables used:"
   print "  DAVIT_LOCAL_DIRFORMAT:", os.environ['DAVIT_LOCAL_DIRFORMAT']
   print "  DAVIT_LOCAL_FNAMEFMT:", os.environ['DAVIT_LOCAL_FNAMEFMT']
-  print "  DAVIT_LOCAL_TIMEINC:", os.environ['DAVIT_LOCAL_TIMEINC']
   print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
 
   src='local'
@@ -1188,7 +1176,6 @@ if __name__=="__main__":
   print "  DBREADPASS:", os.environ['DBREADPASS']
   print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
   print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
   print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
@@ -1253,7 +1240,6 @@ if __name__=="__main__":
   print "  DBREADPASS:", os.environ['DBREADPASS']
   print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
   print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
   print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):

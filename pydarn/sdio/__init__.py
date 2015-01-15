@@ -24,6 +24,11 @@ This includes the following module(s):
 *******************************
 """
 try:
+	import fetchUtils
+	from fetchUtils import *
+except: print 'problem importing fetchUtils'
+
+try:
 	import DataTypes
 	from DataTypes import *
 except: print 'problem importing DataTypes'

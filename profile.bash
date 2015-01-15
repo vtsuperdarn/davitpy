@@ -64,10 +64,6 @@ export DAVIT_REMOTE_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}..
 export DAVIT_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{radar}/'
 export DAVIT_LOCAL_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
 
-#in hours
-export DAVIT_REMOTE_TIMEINC='2'
-export DAVIT_LOCAL_TIMEINC='2'
-
 
 # SD FILES 
 export DAVIT_SD_REMOTE_DIRFORMAT='data/{year}/{ftype}/{hemi}/'
@@ -75,7 +71,3 @@ export DAVIT_SD_REMOTE_FNAMEFMT='{date}.{hemi}.{ftype}'
 
 export DAVIT_SD_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{hemi}/'
 export DAVIT_SD_LOCAL_FNAMEFMT='{date}.{hemi}.{ftype}'
-
-#in hours
-export DAVIT_SD_REMOTE_TIMEINC='24'
-export DAVIT_SD_LOCAL_TIMEINC='24'
