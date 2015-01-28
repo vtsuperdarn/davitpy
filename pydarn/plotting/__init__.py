@@ -26,6 +26,7 @@ try:
 except Exception,e: 
 	print 'problem importing acfPlot: ', e
 
+try:
 	from iqPlot import *
 except Exception,e: 
 	print 'problem importing iqPlot: ', e
