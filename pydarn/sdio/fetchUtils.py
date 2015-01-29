@@ -227,7 +227,10 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         # get the files in the directory if directory has changed
         if dir_change:
           local_dir = localdirfmt.format(**localdict)
-          files = os.listdir(local_dir)
+          try:
+              files = os.listdir(local_dir)
+          except:
+              files = []
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
