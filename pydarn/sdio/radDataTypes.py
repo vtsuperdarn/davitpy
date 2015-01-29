@@ -252,16 +252,18 @@ class radDataPtr():
                     break
 
                 #fetch the local files
-                filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
+                temp = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                                              local_fnamefmt, verbose=verbose)
 
                 # check to see if the files actually have data between stime and etime
-                valid = self.__validate_fetched(filelist,self.sTime,self.eTime)
-                for i in range(len(filelist)):
-                    if not valid[i]:
-                        print 'removing invalid file: '+filelist[i]
-                        os.system('rm '+filelist[i])
-                        filelist.pop(i)
+                valid = self.__validate_fetched(temp,self.sTime,self.eTime)
+                filelist = [x[0] for x in zip(temp,valid) if x[1]]
+                invalid_files = [x[0] for x in zip(temp,valid) if x[1]]
+
+                if len(invalid_files) > 0:
+                    for f in invalid_files:
+                        print 'removing invalid file: ' + f
+                        os.system('rm ' + f)
 
                 # If we have valid files then continue
                 if(len(filelist) > 0):
@@ -341,17 +343,19 @@ class radDataPtr():
                     break
 
                 #Now fetch the files
-                filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
+                temp = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, verbose=verbose)
 
                 # check to see if the files actually have data between stime and etime
-                valid = self.__validate_fetched(filelist,self.sTime,self.eTime)
-                for i in range(len(filelist)):
-                    if not valid[i]:
-                        print 'removing invalid file: '+filelist[i]
-                        os.system('rm '+filelist[i])
-                        filelist.pop(i)
+                valid = self.__validate_fetched(temp,self.sTime,self.eTime)
+                filelist = [x[0] for x in zip(temp,valid) if x[1]]
+                invalid_files = [x[0] for x in zip(temp,valid) if x[1]]
+
+                if len(invalid_files) > 0:
+                    for f in invalid_files:
+                        print 'removing invalid file: ' + f
+                        os.system('rm ' + f)
 
                 # If we have valid files then continue
                 if len(filelist) > 0 :
