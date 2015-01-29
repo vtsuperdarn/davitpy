@@ -204,7 +204,7 @@ class sdDataPtr():
                     # check to see if the files actually have data between stime and etime
                     valid = self.__validate_fetched(filelist,self.sTime,self.eTime)
                     filelist = [x[0] for x in zip(temp,valid) if x[1]]
-                    invalid_files = [x[0] for x in zip(temp,valid) if x[1]]
+                    invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
 
                     if len(invalid_files) > 0:
                         for f in invalid_files:
@@ -288,7 +288,7 @@ class sdDataPtr():
                     # check to see if the files actually have data between stime and etime
                     valid = self.__validate_fetched(temp,self.sTime,self.eTime)
                     filelist = [x[0] for x in zip(temp,valid) if x[1]]
-                    invalid_files = [x[0] for x in zip(temp,valid) if x[1]]
+                    invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
 
                     if len(invalid_files) > 0:
                         for f in invalid_files:
