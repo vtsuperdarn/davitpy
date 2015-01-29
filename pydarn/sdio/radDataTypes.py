@@ -1133,8 +1133,8 @@ if __name__=="__main__":
   fileType='fitacf'
   filtered=False
   sTime=datetime.datetime(2012,11,1,0,0)
-  eTime=datetime.datetime(2012,11,1,4,0)
-  expected_filename="20121101.000000.20121101.040000.fhe.fitacf"
+  eTime=datetime.datetime(2012,11,1,4,2)
+  expected_filename="20121101.000000.20121101.040200.fhe.fitacf"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=19377805
   expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
@@ -1239,8 +1239,8 @@ if __name__=="__main__":
   fileType='fitex'
   filtered=False
   sTime=datetime.datetime(2014,6,24,0,0)
-  eTime=datetime.datetime(2014,6,24,2,0)
-  expected_filename="20140624.000000.20140624.020000.kod.c.fitex"
+  eTime=datetime.datetime(2014,6,24,2,2)
+  expected_filename="20140624.000000.20140624.020200.kod.c.fitex"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=16148989
   expected_md5sum="ae7b4a7c8fea56af9639c39bea1453f2"
@@ -1303,8 +1303,8 @@ if __name__=="__main__":
   fileType='fitex'
   filtered=False
   sTime=datetime.datetime(2014,6,24,0,0)
-  eTime=datetime.datetime(2014,6,24,2,0)
-  expected_filename="20140624.000000.20140624.020000.kod.all.fitex"
+  eTime=datetime.datetime(2014,6,24,2,2)
+  expected_filename="20140624.000000.20140624.020200.kod.all.fitex"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=31822045
   expected_md5sum="23cb7f8d954cef80b4a3e219838db816"
