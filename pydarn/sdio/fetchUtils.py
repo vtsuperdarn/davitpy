@@ -43,6 +43,7 @@ Contains: uncompress_file    - uncompresses a file using various methods
 """
 
 import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 def uncompress_file(filename, outname=None, verbose=True):
     """
@@ -118,7 +119,7 @@ def uncompress_file(filename, outname=None, verbose=True):
 
 
 def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
-                      verbose=True):
+                      verbose=True,back_time=relativedelta(years=1)):
 
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
@@ -137,7 +138,9 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                                      fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
                                                 '{date}.C0.{radar}.{ftype}'] 
                                      or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
-        * **verbose**        (bool): Print warnings or not? (default=True)
+        * **[verbose]**        (bool): Print warnings or not? (default=True)
+        * **[back_time]** (dateutil.relativedelta.relativedelta): Time difference from stime
+                            that fetchUtils should search backwards until before giving up.
 
     **Output**: file_stime (datetime): actual starting time for located files
             filelist       (list): list of uncompressed files (including path)
@@ -163,7 +166,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     """
 
-    from dateutil.relativedelta import relativedelta
+    #from dateutil.relativedelta import relativedelta
     import os
     import glob
     import re
@@ -197,6 +200,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     # Initialize the start time for the loop
     ctime = stime.replace(second=0, microsecond=0)
     time_reverse = 1
+    mintime = ctime - back_time
 
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
@@ -261,7 +265,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         # Advance the cycle time by the "lowest" time increment 
         # in the namefmt (either forward or reverse)
 
-        if ((time_reverse == 1) and (len(temp_filelist) > 0)):
+        if ((time_reverse == 1) and (len(temp_filelist) > 0)) or \
+                (ctime < mintime):
             time_reverse = 0
             ctime = stime.replace(second=0, microsecond=0)
 
@@ -301,7 +306,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
 def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                        remotedict, outdir, fnamefmt, username=None, password=False,
-                       port=None, verbose=True, check_cache=True):
+                       port=None, verbose=True, check_cache=True,
+                       back_time=relativedelta(years=1)):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -330,6 +336,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
       * **port**             (str): Optional input for http file access
                                     (default=None)
       * **verbose**         (bool): Print out warnings? (default=True)
+      * **[back_time]** (dateutil.relativedelta.relativedelta): Time difference from stime
+                            that fetchUtils should search backwards until before giving up.
 
     **Outputs**: 
       * **file_stime**  (datetime): actual starting time for located files
@@ -488,6 +496,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     # Initialize the start time for the loop
     ctime = stime.replace(second=0, microsecond=0)
     time_reverse = 1
+    mintime = ctime - back_time
 
     # Cycle through the specified times, first look "backwards" in time to cover
     # the edge case where file start time starts after ctime
@@ -649,7 +658,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
         # Advance the cycle time by the "lowest" time increment 
         # in the namefmt (either forward or reverse)
-        if ((time_reverse == 1) and (len(temp_filelist) > 0)):
+        if ((time_reverse == 1) and (len(temp_filelist) > 0)) or \
+                (ctime < mintime):
             time_reverse = 0
             ctime = stime.replace(second=0, microsecond=0)
 
