@@ -255,6 +255,15 @@ class radDataPtr():
                 filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                                              local_fnamefmt, verbose=verbose)
 
+                # check to see if the files actually have data between stime and etime
+                valid = self.__validate_fetched(filelist,self.sTime,self.eTime)
+                for i in range(len(filelist)):
+                    if not valid[i]:
+                        print 'removing invalid file: '+filelist[i]
+                        os.system('rm '+filelist[i])
+                        filelist.pop(i)
+
+                # If we have valid files then continue
                 if(len(filelist) > 0):
                     print 'found',ftype,'data in local files'
                     self.fType,self.dType = ftype,'dmap'
@@ -336,6 +345,15 @@ class radDataPtr():
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, verbose=verbose)
 
+                # check to see if the files actually have data between stime and etime
+                valid = self.__validate_fetched(filelist,self.sTime,self.eTime)
+                for i in range(len(filelist)):
+                    if not valid[i]:
+                        print 'removing invalid file: '+filelist[i]
+                        os.system('rm '+filelist[i])
+                        filelist.pop(i)
+
+                # If we have valid files then continue
                 if len(filelist) > 0 :
                     print 'found',ftype,'data on sftp server'
                     self.fType,self.dType = ftype,'dmap'
@@ -585,6 +603,66 @@ class radDataPtr():
     if self.__ptr is not None:
       self.__ptr.close()
       self.__fd=None
+
+
+  def __validate_fetched(self,filelist,stime,etime):
+      """ This function checks if the files in filelist contain data
+      for the start and end times (stime,etime) requested by a user.
+
+      **Args**:
+          * **filelist** (list):
+          * **stime** (datetime.datetime):
+          * **etime** (datetime.datetime):
+
+      **Returns**:
+          * List of booleans. True if a file contains data in the time
+          range (stime,etime)
+      """
+
+      # This method will need some modification for it to work with
+      # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
+      # specific code will need to be modified (readDmapRec).
+
+      import os
+      import datetime as dt
+      import numpy as np
+      from pydarn.dmapio import readDmapRec
+
+      valid = []
+
+      for f in filelist:
+          print 'Checking file: ' + f
+          stimes = []
+          etimes = []
+
+          # Open the file and create a file pointer
+          self.__filename = f
+          self.open()
+
+          # Iterate through the file and grab the start time for beam
+          # integration and calculate the end time from intt.sc and intt.us
+          while(1):
+              #read the next record from the dmap file
+              dfile = readDmapRec(self.__fd)
+              if(dfile is None):
+                  break
+              else:
+                  temp = dt.datetime.utcfromtimestamp(dfile['time'])
+                  stimes.append(temp)
+                  sec = dfile['intt.sc'] + dfile['intt.us'] / (10. ** 6)
+                  etimes.append(temp + dt.timedelta(seconds=sec))
+          # Close the file and clean up
+          self.close()
+          self.__ptr = None
+
+          inds = np.where((np.array(stimes) >= stime) & (np.array(stimes) <= etime))
+          inde = np.where((np.array(etimes) >= stime) & (np.array(etimes) <= etime))
+          if (np.size(inds) > 0) or (np.size(inde) > 0):
+              valid.append(True)
+          else:
+              valid.append(False)
+
+      return valid
 
 class radBaseData():
   """a base class for the radar data types.  This allows for single definition of common routines

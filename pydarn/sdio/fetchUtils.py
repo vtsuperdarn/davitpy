@@ -546,9 +546,9 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     # Search through the remote files for the ones we want and download them
     # Ensure that the list of remote files include those that can possibly
     # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
+        for namefmt in fnamefmt:
+            if len(remotefiles) > 0:
 
-        if len(remotefiles) > 0:
-            for namefmt in fnamefmt:
 
                 #fill in the date, time, and radar information using remotedict
                 name = namefmt.format(**remotedict)
