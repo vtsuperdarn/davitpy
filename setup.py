@@ -9,33 +9,33 @@ from numpy.distutils.core import setup, Extension
 
 
 # Fortran extensions
-hwm = Extension('hwm07',sources=['models/hwm/apexcord.f90','models/hwm/dwm07b.f90','models/hwm/hwm07e.f90','models/hwm/hwm07.pyf'])
-igrf = Extension("igrf",sources=["models/igrf/igrf11.f90",'models/igrf/igrf11.pyf'])
-iri = Extension('iri',sources=['models/iri/irisub.for', 'models/iri/irifun.for', 'models/iri/iriflip.for', \
-                    'models/iri/iritec.for', 'models/iri/igrf.for', 'models/iri/cira.for', 'models/iri/iridreg.for', \
-                    'models/iri/iri.pyf'])
-msis = Extension("msisFort",sources=["models/msis/nrlmsise00_sub.for",'models/msis/nrlmsis.pyf'])
-tsyg = Extension('tsygFort',sources=['models/tsyganenko/T02.f', 'models/tsyganenko/T96.f', \
-                    'models/tsyganenko/geopack08.for','models/tsyganenko/geopack08.pyf'])
+hwm = Extension('hwm07',sources=['davitpy/models/hwm/apexcord.f90','davitpy/models/hwm/dwm07b.f90','davitpy/models/hwm/hwm07e.f90','davitpy/models/hwm/hwm07.pyf'])
+igrf = Extension("igrf",sources=["davitpy/models/igrf/igrf11.f90",'davitpy/models/igrf/igrf11.pyf'])
+iri = Extension('iri',sources=['davitpy/models/iri/irisub.for', 'davitpy/models/iri/irifun.for', 'davitpy/models/iri/iriflip.for', \
+                    'davitpy/models/iri/iritec.for', 'davitpy/models/iri/igrf.for', 'davitpy/models/iri/cira.for', 'davitpy/models/iri/iridreg.for', \
+                    'davitpy/models/iri/iri.pyf'])
+msis = Extension("msisFort",sources=["davitpy/models/msis/nrlmsise00_sub.for",'davitpy/models/msis/nrlmsis.pyf'])
+tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f', 'davitpy/models/tsyganenko/T96.f', \
+                    'davitpy/models/tsyganenko/geopack08.for','davitpy/models/tsyganenko/geopack08.pyf'])
 
 
 #C extensions
-dmap = Extension("dmapio", sources=glob.glob('pydarn/rst/src/*.c'),)
-aacgm = Extension("aacgm", sources=glob.glob('models/aacgm/*.c'),)
+dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/rst/src/*.c'),)
+aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
 
 ################################################################################
 # get a list of all source files
 pwd = os.getcwd()
 sources = []
-source_dirs = ['pydarn','gme','utils','models']
+source_dirs = ['davitpy','davitpy/pydarn','davitpy/gme','davitpy/utils','davitpy/models']
 for s in source_dirs:
     for root, dirs, files in os.walk(pwd+'/'+s):
         if '__init__.py' in files:
             sources.append('.'.join(
                 root.replace(pwd,'').strip('/').split('/')
                 ))
-print 'spurces',sources
+print 'sources',sources
 ################################################################################
 
 def read(fname):
