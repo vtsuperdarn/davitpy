@@ -138,7 +138,9 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     Written by AJ 20130327
   """
 
-  import pydarn, utils, models
+  from davitpy import pydarn
+  from davitpy import utils
+  from davitpy import models
   
   myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,fileType=fileType)
   if(myPtr == None): return None

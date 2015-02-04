@@ -64,7 +64,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
 
     from matplotlib import pyplot
     import numpy as np
-    import pydarn
+    from davitpy import pydarn
     import matplotlib as mpl
 
     # obtain relevant parameters
@@ -212,7 +212,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
 
 if __name__ == "__main__":
 
-    import pydarn
+    from davitpy import pydarn
     from matplotlib import pyplot
     from datetime import datetime
   

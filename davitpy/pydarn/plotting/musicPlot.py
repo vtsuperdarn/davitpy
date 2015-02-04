@@ -55,10 +55,10 @@ import matplotlib
 
 from mpl_toolkits.basemap import Basemap
 
-import utils
-from pydarn.radar.radUtils import getParamDict
+from davitpy import utils
+from davitpy.pydarn.radar.radUtils import getParamDict
 
-from pydarn.proc.music import getDataSet
+from davitpy.pydarn.proc.music import getDataSet
 
 #Global Figure Size
 figsize=(20,10)

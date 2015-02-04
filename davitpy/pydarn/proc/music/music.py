@@ -70,8 +70,6 @@ import datetime
 import time
 import copy
 
-import pydarn
-
 Re = 6378   #Earth radius
 
 def getDataSet(dataObj,dataSet='active'):
@@ -465,6 +463,7 @@ class musicArray(object):
     Written by Nathaniel A. Frissell, Fall 2013
     """
     def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
+        from davitpy import pydarn
         # Create a list that can be used to store top-level messages.
         self.messages   = []
 
@@ -931,7 +930,7 @@ def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    import utils
+    from davitpy import utils
 
     #Get the chosen dataset.
     currentData = getDataSet(dataObj,dataSet)
@@ -981,7 +980,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
     Written by Nathaniel A. Frissell, Fall 2013
     """
     from scipy.interpolate import interp1d
-    import utils 
+    from davitpy import utils 
     currentData = getDataSet(dataObj,dataSet)
 
     sTime = currentData.time[0]
@@ -1641,7 +1640,7 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    import utils
+    from davitpy import utils
     currentData = getDataSet(dataObj,dataSet)
 
     #Typical TID Parameters:

@@ -40,7 +40,7 @@ def radarRead(path=None):
 	import shlex
 	import os
 	from datetime import datetime
-	from utils import parseDate
+	from davitpy.utils import parseDate
 	
 	# Read file
         if path:
@@ -126,7 +126,7 @@ def hdwRead(fname, path=None):
         import sys
 	import shlex
 	from datetime import datetime
-	from utils import timeYrsecToDate
+	from davitpy.utils import timeYrsecToDate
 	
 	# Read hardware file FNAME
 	# Read file

@@ -31,8 +31,8 @@
 	* :func:`gme.ind.ae.mapAeMongo`
 """
 
-import gme
-class aeRec(gme.base.gmeBase.gmeData):
+from davitpy.gme.base.gmeBase import gmeData
+class aeRec(gmeData):
 	"""a class to represent a record of ae data.  Extends :class:`gme.base.gmeBase.gmeData` . Note that Ae data is available from 1990-present day (or whatever the latest WDC has uploaded is).  **We have 1 hour and 1 minute values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
 		
 	**Members**: 
@@ -141,7 +141,7 @@ def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
 	written by AJ, 20130131
 	"""
 	import datetime as dt
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
@@ -315,7 +315,7 @@ def mapAeMongo(sYear,eYear=None,res=60):
 		
 	written by AJ, 20130123
 	"""
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	import os, datetime as dt
 	
 	#check inputs

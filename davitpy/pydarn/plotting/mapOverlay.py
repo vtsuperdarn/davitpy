@@ -46,10 +46,10 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 			
 	written by Sebastien, 2012-08
 	"""
-	from pydarn.radar import network
+	from davitpy.pydarn.radar import network
 	from datetime import datetime as dt
 	from datetime import timedelta
-	from utils.plotUtils import textHighlighted
+	from davitpy.utils.plotUtils import textHighlighted
 	
 	# Set dateTime.
 	if dateTime is not None:
@@ -171,8 +171,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 			
 	written by Sebastien, 2012-09
 	"""
-	from pydarn.radar import network
-	from pydarn.radar.radFov import fov
+	from davitpy.pydarn.radar import network
+	from davitpy.pydarn.radar.radFov import fov
 	from datetime import datetime as dt
 	from datetime import timedelta
 	import matplotlib.cm as cm
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from datetime import datetime
 
-    import utils
+    from davitpy import utils
 
     print "Creating figure and axes"
     fig = plt.figure()

@@ -31,8 +31,8 @@
 	* :func:`gme.ind.symasy.mapSymAsyMongo`
 """
 
-import gme
-class symAsyRec(gme.base.gmeBase.gmeData):
+from davitpy.gme.base.gmeBase import gmeData
+class symAsyRec(gmeData):
 	"""a class to represent a record of sym/asy data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
 		
 	**Members**: 
@@ -140,7 +140,7 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 	written by AJ, 20130131
 	"""
 	import datetime as dt
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
@@ -281,7 +281,7 @@ def mapSymAsyMongo(sYear,eYear=None):
 	written by AJ, 20130123
 	"""
 	
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	import os, datetime as dt
 	
 	#check inputs

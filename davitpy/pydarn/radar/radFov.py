@@ -65,8 +65,8 @@ class fov(object):
         # Get fov
         from numpy import ndarray, array, arange, zeros, nan
         
-        import models.aacgm as aacgm
-        from utils.coordUtils import coord_conv
+        import davitpy.models.aacgm as aacgm
+        from davitpy.utils.coordUtils import coord_conv
         
         # Test that we have enough input arguments to work with
         if not site and None in \
@@ -314,7 +314,7 @@ evaluated to accomodate altitude and range.
 
     """
     from math import radians, degrees, sin, cos, asin, atan, sqrt, pi
-    from utils import Re, geoPack
+    from davitpy.utils import Re, geoPack
     
     # Make sure we have enough input stuff
     # if (not model) and (not elevation or not altitude): model = 'IS'
@@ -462,7 +462,7 @@ Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for m
 
   """
   from math import radians, degrees, sin, cos, asin, atan, sqrt, pi
-  from utils import Re, geoPack
+  from davitpy.utils import Re, geoPack
 
   # Make sure you have altitude, because these 2 projection models rely on it
   if not elevation and not altitude:
@@ -480,7 +480,7 @@ Calculate the ground scatter mapped slant range. See Bristow et al. [1994] for m
   return gsSlantRange
 
 if __name__=="__main__":
-    from pydarn.radar import radStruct
+    from davitpy.pydarn.radar import radStruct
     from datetime import datetime
     
     print

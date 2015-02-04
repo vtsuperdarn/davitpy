@@ -10,19 +10,21 @@ Module for everything SuperDARN
     * :mod:`davipty.pydarn`: superdarn data I/O and plotting utilities
 """
 
-try: import pydarn 
+rc_params = {'test':'It worked!'}
+
+try: from davitpy import pydarn
 except Exception, e: 
   print 'problem importing pydarn: ', e
 
-try: import gme 
+try: from davitpy import gme 
 except Exception, e: 
   print 'problem importing gme: ', e
 
-try: import utils 
+try: from davitpy import utils 
 except Exception, e: 
   print 'problem importing utils: ', e
 
-try: import models 
+try: from davitpy import models 
 except Exception, e: 
   print 'problem importing models: ', e
 

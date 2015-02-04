@@ -95,7 +95,7 @@ def sdDataOpen(sTime,hemi='north',eTime=None, src=None,fileName=None, \
   Written by AJ 20130607
   """
 
-  from pydarn.sdio import sdDataPtr
+  from davitpy.pydarn.sdio import sdDataPtr
 
   myPtr = sdDataPtr(sTime=sTime,hemi=hemi,eTime=eTime, src=src, \
             fileType=fileType,fileName=fileName,noCache=noCache, \
@@ -130,7 +130,7 @@ def sdDataReadRec(myPtr):
   Written by AJ 20130610
   """
 
-  from pydarn.sdio.sdDataTypes import sdDataPtr
+  from davitpy.pydarn.sdio.sdDataTypes import sdDataPtr
   assert(isinstance(myPtr,sdDataPtr)),\
     'error, input must be of type sdDataPtr'
 
@@ -156,7 +156,7 @@ def sdDataCreateIndex(myPtr):
     
   Written by JDS 20140606
   """
-  from pydarn.sdio.sdDataTypes import sdDataPtr
+  from davitpy.pydarn.sdio.sdDataTypes import sdDataPtr
   assert(isinstance(myPtr,sdDataPtr)),\
     'error, input must be of type sdDataPtr'
   return myPtr.createIndex()
@@ -182,7 +182,7 @@ def sdDataReadAll(myPtr):
     
   Written by AJ 20130606
   """
-  from pydarn.sdio.sdDataTypes import sdDataPtr
+  from davitpy.pydarn.sdio.sdDataTypes import sdDataPtr
   
   #check input
   assert(isinstance(myPtr,sdDataPtr)),\

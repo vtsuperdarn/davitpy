@@ -29,8 +29,8 @@
 	* :func:`readOmniFtp`
 	* :func:`mapOmniMongo`
 """
-import gme
-class omniRec(gme.base.gmeBase.gmeData):
+from davitpy.gme.base.gmeBase import gmeData
+class omniRec(gmeData):
 	"""a class to represent a record of omni data.  Extends :class:`gmeBase.gmeData`.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
 	
 	.. warning::
@@ -205,7 +205,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 	"""
 	
 	import datetime as dt
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(isinstance(sTime,dt.datetime)), \
@@ -353,7 +353,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	written by AJ, 20130123
 	"""
 	
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	import os, datetime as dt
 	
 	#check inputs

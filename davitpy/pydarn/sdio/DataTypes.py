@@ -84,7 +84,7 @@ class DataPtr(object):
 
     def __init__(self,sTime,dataType,eTime=None,fileName=None):
 
-        import pydarn
+        import davitpy.pydarn
         import datetime as dt
 
         # Data type method dictionaries to select the data type 
@@ -168,7 +168,7 @@ class DataPtr(object):
         # on self.dType (for future other data file support ie. hdf5)
 
         import datetime as dt
-        from pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
+        from davitpy.pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
         recordDict={}
         scanStartDict={}
         starting_offset=self.__offsetTellDmap()
@@ -203,7 +203,7 @@ class DataPtr(object):
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
 
-        from pydarn.dmapio import setDmapOffset,getDmapOffset 
+        from davitpy.pydarn.dmapio import setDmapOffset,getDmapOffset 
         if force:
             return setDmapOffset(self._fd,offset)
         else:
@@ -223,7 +223,7 @@ class DataPtr(object):
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
 
-        from pydarn.dmapio import getDmapOffset
+        from davitpy.pydarn.dmapio import getDmapOffset
         return getDmapOffset(self._fd)
 
     def __rewindDmap(self):
@@ -233,7 +233,7 @@ class DataPtr(object):
 
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
-        from pydarn.dmapio import setDmapOffset 
+        from davitpy.pydarn.dmapio import setDmapOffset 
         return setDmapOffset(self._fd,0)
 
     def __readDmap(self):
@@ -248,7 +248,8 @@ class DataPtr(object):
        # This method will have to do different things depending 
        # on self.dType (for future other data file support ie. hdf5)
 
-       import pydarn, datetime as dt
+       from davitpy import pydarn
+       import datetime as dt
 
        #check input
        if(self._ptr == None):
@@ -306,8 +307,8 @@ class testing(DataPtr):
 if __name__=="__main__":
 
     import datetime
-    import pydarn
-    from pydarn.sdio.fetchUtils import fetch_remote_files
+    from davitpy import pydarn
+    from davitpy.pydarn.sdio.fetchUtils import fetch_remote_files
 
     print "##############################"
     print " TESTING THE DataPtr class..."

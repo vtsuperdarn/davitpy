@@ -255,7 +255,7 @@ class network(object):
         written by Sebastien, 2012-08
         """
         from datetime import datetime as dt
-        from utils import geoPack as geo
+        from davitpy.utils import geoPack as geo
         from numpy import sin, cos, arccos, dot, cross, sign
         from math import radians, degrees
         

@@ -31,8 +31,8 @@
 	* :func:`gme.ind.dst.mapDstMongo`
 """
 
-import gme
-class dstRec(gme.base.gmeBase.gmeData):
+from davitpy.gme.base.gmeBase import gmeData
+class dstRec(gmeData):
 	"""a class to represent a record of dst data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that Dst data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html>`_
 		
 	**Members**: 
@@ -126,7 +126,7 @@ def readDst(sTime=None,eTime=None,dst=None):
 	written by AJ, 20130131
 	"""
 	import datetime as dt
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
@@ -258,7 +258,7 @@ def mapDstMongo(sYear,eYear=None):
 		
 	written by AJ, 20130123
 	"""
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	import os, datetime as dt
 	
 	#check inputs

@@ -27,16 +27,17 @@
     * :func:`pydarn.plotting.fan.plotFan`
     * :func:`pydarn.plotting.fan.overlayFan`
 """
-    
-import pydarn,numpy,math,matplotlib,calendar,utils,pylab
+
+from davitpy import utils
+import numpy,math,matplotlib,calendar,pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 import matplotlib.patches as patches
 from matplotlib.collections import PolyCollection,LineCollection
 from mpl_toolkits.basemap import Basemap, pyproj
-from utils.timeUtils import *
-from pydarn.sdio.radDataRead import *
+from davitpy.utils.timeUtils import *
+from davitpy.pydarn.sdio.radDataRead import *
 from matplotlib.figure import Figure
 import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -60,7 +61,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         * **[channel] (char)**: the channel for which to plot data.  default = 'a'
         * **[coords]** (str): the coordinate system to use; valid 
             inputs are anything handled by coord_conv (see 
-            utils.get_coord_dict).  Default:  geo
+            davitpy.utils.get_coord_dict).  Default:  geo
         * **[colors]** (str): the color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
         * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray.  default = False
         * **[fov]**  (boolean): a flag indicating whether to overplot the radar fields of view.  default = True
@@ -93,13 +94,14 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     Written by AJ 20121004
     Modified by Matt W. 20130717
     """
-
-    
-    import datetime as dt, gme, pickle
+    from davitpy import pydarn
+    from davitpy import gme
+    import datetime as dt, pickle
     from matplotlib.backends.backend_pdf import PdfPages
     
-    import models.aacgm as aacgm, os, copy
-    from utils.coordUtils import coord_conv
+    import davitpy.models.aacgm as aacgm
+    import os, copy
+    from davitpy.utils.coordUtils import coord_conv
 
     tt = dt.datetime.now()
     
@@ -411,7 +413,7 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
 
     Written by AJ 20121004
     """
-    
+    from davitpy import pydarn
     if(site == None):
         site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
     if(fov == None):

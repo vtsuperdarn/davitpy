@@ -16,8 +16,8 @@
   * :func:`overlayPoesTed`
 """
 
-import gme
-class poesRec(gme.base.gmeBase.gmeData):
+from davitpy.gme.base.gmeBase import gmeData
+class poesRec(gmeData):
   """a class to represent a record of poes data.  Extends :class:`gmeBase.gmeData`.  Insight on the class members can be obtained from `the NOAA NGDC site <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>`_.  Note that Poes data is available from 1998-present day (or whatever the latest NOAA has uploaded is).  **The data are the 16-second averages**
   
   **Members**: 
@@ -201,7 +201,7 @@ def readPoes(sTime,eTime=None,satnum=None,folat=None,folon=None,ted=None,echar=N
   """
   
   import datetime as dt
-  import pydarn.sdio.dbUtils as db
+  import davitpy.pydarn.sdio.dbUtils as db
   
   #check all the inputs for validity
   assert(isinstance(sTime,dt.datetime)), \
@@ -361,7 +361,7 @@ def mapPoesMongo(sYear,eYear=None):
     
   written by AJ, 20130131
   """
-  import pydarn.sdio.dbUtils as db
+  import davitpy.pydarn.sdio.dbUtils as db
   import os, datetime as dt
   
   #check inputs

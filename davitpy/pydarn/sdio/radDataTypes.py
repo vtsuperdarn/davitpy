@@ -33,7 +33,7 @@
 """
 
 
-from utils import twoWayDict
+from davitpy.utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
@@ -83,9 +83,9 @@ class radDataPtr():
 
     import datetime as dt
     import os,glob,string
-    from pydarn.radar import network
-    import utils
-    from pydarn.sdio.fetchUtils import fetch_local_files, fetch_remote_files
+    from davitpy.pydarn.radar import network
+    from davitpy import utils
+    from davitpy.pydarn.sdio.fetchUtils import fetch_local_files, fetch_remote_files
     
     self.sTime = sTime
     self.eTime = eTime
@@ -441,7 +441,7 @@ class radDataPtr():
 
   def createIndex(self):
       import datetime as dt
-      from pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
+      from davitpy.pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
       recordDict={}
       scanStartDict={}
       starting_offset=self.offsetTell()
@@ -471,7 +471,7 @@ class radDataPtr():
       """jump to dmap record at supplied byte offset.
          Require offset to be in record index list unless forced. 
       """
-      from pydarn.dmapio import setDmapOffset,getDmapOffset 
+      from davitpy.pydarn.dmapio import setDmapOffset,getDmapOffset 
       if force:
         return setDmapOffset(self.__fd,offset)
       else:
@@ -485,12 +485,12 @@ class radDataPtr():
   def offsetTell(self):
       """jump to dmap record at supplied byte offset. 
       """
-      from pydarn.dmapio import getDmapOffset
+      from davitpy.pydarn.dmapio import getDmapOffset
       return getDmapOffset(self.__fd)
 
   def rewind(self):
       """jump to beginning of dmap file."""
-      from pydarn.dmapio import setDmapOffset 
+      from davitpy.pydarn.dmapio import setDmapOffset 
       return setDmapOffset(self.__fd,0)
 
   def readScan(self):
@@ -503,8 +503,8 @@ class radDataPtr():
         * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData`): an object filled with the data we are after.  *will return None when finished reading*
 
         """
-        from pydarn.sdio import scanData
-        import pydarn
+        from davitpy.pydarn.sdio import scanData
+        from davitpy import pydarn
         #Save the radDataPtr's bmnum setting temporarily and set it to None
         orig_beam=self.bmnum
         self.bmnum=None
@@ -536,9 +536,10 @@ class radDataPtr():
      **Returns**:
      * **myBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
      """
-     from pydarn.sdio.radDataTypes import radDataPtr, beamData, \
+     from davitpy.pydarn.sdio.radDataTypes import radDataPtr, beamData, \
      fitData, prmData, rawData, iqData, alpha
-     import pydarn, datetime as dt
+     from davitpy import pydarn
+     import datetime as dt
 
      #check input
      if(self.__ptr == None):

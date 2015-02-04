@@ -104,8 +104,8 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     
   Written by AJ 20130110
   """
-  from pydarn.sdio import radDataPtr
-  from pydarn.radar import network
+  from davitpy.pydarn.sdio import radDataPtr
+  from davitpy.pydarn.radar import network
 
   myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,            \
                channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,      \
@@ -140,7 +140,7 @@ def radDataReadRec(myPtr):
     
   Written by AJ 20130110
   """
-  from pydarn.sdio import radDataPtr
+  from davitpy.pydarn.sdio import radDataPtr
   assert(isinstance(myPtr,radDataPtr)),\
     'error, input must be of type radDataPtr'
 
@@ -169,7 +169,7 @@ def radDataReadScan(myPtr):
     
   Written by AJ 20130110
   """
-  from pydarn.sdio import radDataPtr
+  from davitpy.pydarn.sdio import radDataPtr
   
   #check input
   assert(isinstance(myPtr,radDataPtr)),\
@@ -196,7 +196,7 @@ def radDataCreateIndex(myPtr):
     
   Written by JDS 20140606
   """
-  from pydarn.sdio.radDataTypes import radDataPtr
+  from davitpy.pydarn.sdio.radDataTypes import radDataPtr
   assert(isinstance(myPtr,radDataPtr)),\
     'error, input must be of type radDataPtr'
   return myPtr.createIndex() 
@@ -221,7 +221,7 @@ def radDataReadAll(myPtr):
     
   Written by AJ 20130606
   """
-  from pydarn.sdio import radDataPtr
+  from davitpy.pydarn.sdio import radDataPtr
   
   #check input
   assert(isinstance(myPtr,radDataPtr)),\

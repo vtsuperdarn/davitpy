@@ -33,14 +33,14 @@
 """
 
 
-import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
+import numpy,math,matplotlib,calendar,datetime,pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.ticker import MultipleLocator
 from matplotlib.collections import PolyCollection
-from utils.timeUtils import *
-from pydarn.sdio import *
+from davitpy.utils.timeUtils import *
+from davitpy.pydarn.sdio import *
 from matplotlib.figure import Figure
 
 
@@ -95,7 +95,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   Modified by Nathaniel F. 20131031 (added plotTerminator)
   """
   import os
-    
+  from davitpy import pydarn
+  from davitpy import utils
     
   t1 = datetime.datetime.now()
   #check the inputs
@@ -414,7 +415,9 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
       
   Written by AJ 20121002
   """
-  
+
+  from davitpy import pydarn
+
   nrecs = len(times)
   #add an axes to the figure
   ax = myFig.add_axes(pos)
@@ -520,6 +523,8 @@ def rtiTitle(fig,d,rad,fileType,beam,xmin=.1,xmax=.86):
       
   Written by AJ 20121002
   """
+  from davitpy import pydarn
+
   r=pydarn.radar.network().getRadarByCode(rad)
   
   fig.text(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
@@ -548,7 +553,7 @@ def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
       
   Written by AJ 20121002
   """
-  
+  from davitpy import pydarn
   oldCpid = -9999999
   
   #add an axes to the figure

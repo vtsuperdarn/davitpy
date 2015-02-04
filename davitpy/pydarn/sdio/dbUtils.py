@@ -17,9 +17,9 @@
 
 
 from pymongo import MongoClient
-from pydarn.sdio import *
-from pydarn.sdio.radDataTypes import *
-import pydarn, datetime, os
+from davitpy.pydarn.sdio import *
+from davitpy.pydarn.sdio.radDataTypes import *
+import datetime, os
 
 
 def getServerConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'],\
@@ -325,7 +325,7 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
     
   Written by AJ 20130108
   """
-  import utils
+  from davitpy import utils
   import math
   
   #parse the dateStr into a datetime object

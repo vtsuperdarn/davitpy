@@ -31,8 +31,9 @@
 	* :func:`gme.ind.kp.mapKpMongo`
 """
 
-import gme
-class kpDay(gme.base.gmeBase.gmeData):
+from davitpy.gme.base.gmeBase import gmeData
+
+class kpDay(gmeData):
 	"""a class to represent a day of kp data. Extends :class:`gme.base.gmeBase.gmeData`  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
 	
 	**Members**: 
@@ -158,7 +159,7 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 	written by AJ, 20130123
 	"""
 	import datetime as dt
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
@@ -319,7 +320,7 @@ def mapKpMongo(sYear,eYear=None):
 		
 	written by AJ, 20130123
 	"""
-	import pydarn.sdio.dbUtils as db
+	import davitpy.pydarn.sdio.dbUtils as db
 	import os, datetime as dt
 	
 	if(eYear == None): eYear=sYear

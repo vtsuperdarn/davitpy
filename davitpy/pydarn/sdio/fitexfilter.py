@@ -30,10 +30,9 @@ Filter fitexfiles natively in python
   * :class:`pydarn.sdio.fitexfilter.Gate`
 """
 
-import pydarn
 import numpy as np
 import datetime as dt
-import utils
+from davitpy import utils
 
 
 class Gate(object):
@@ -72,6 +71,7 @@ def combBeams(scan):
     
   written by AJ, 20130402
   """
+  from davitpy import pydarn
   outScan = []
   #sort the scan by beam number
   sorted(scan, key=lambda beam: beam.bmnum)
@@ -148,6 +148,7 @@ def fitFilter(inFile,outFile,thresh=0.4,vb=False):
     
   written by AJ, 20130402
   """
+  from davitpy import pydarn
   inp = pydarn.sdio.radDataOpen(dt.datetime(2010,5,1),'bks',fileName=inFile)
 
   outp = open(outFile,'w')
@@ -201,6 +202,7 @@ def doFilter(scans,thresh=.4):
     
   written by AJ, 20130402
   """
+  from davitpy import pydarn
   myScans = []
   for s in scans:
     if s == None:
