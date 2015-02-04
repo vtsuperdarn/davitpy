@@ -55,7 +55,7 @@ setup(name='davitpy',
         'models.iri': ['*.dat','*.asc'],
         'models.hwm': ['*.mod','*.dat']
       },
-      py_modules = [],
+      py_modules = ['davitpy'],#,'pydarn','models','gme','utils'],
       install_requires=[],
       classifiers = [
             "Development Status :: 4 - Beta",
