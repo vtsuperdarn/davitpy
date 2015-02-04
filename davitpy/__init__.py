@@ -14,4 +14,16 @@ try: import pydarn
 except Exception, e: 
   print 'problem importing pydarn: ', e
 
+try: import gme 
+except Exception, e: 
+  print 'problem importing gme: ', e
+
+try: import utils 
+except Exception, e: 
+  print 'problem importing utils: ', e
+
+try: import models 
+except Exception, e: 
+  print 'problem importing models: ', e
+
 

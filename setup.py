@@ -1,12 +1,13 @@
 import os
 import glob
 
+# Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
-from setuptools import setup, Extension
 from setuptools.command import install as _install
-from numpy.distutils.core import setup, Extension
-
+# Need to use the enhanced version of distutils packaged with
+# numpy so that we can compile fortran extensions
+from numpy.distutils.core import Extension, setup
 
 # Fortran extensions
 hwm = Extension('hwm07',sources=['davitpy/models/hwm/apexcord.f90','davitpy/models/hwm/dwm07b.f90','davitpy/models/hwm/hwm07e.f90','davitpy/models/hwm/hwm07.pyf'])
@@ -19,28 +20,26 @@ tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f', 'davitpy
                     'davitpy/models/tsyganenko/geopack08.for','davitpy/models/tsyganenko/geopack08.pyf'])
 
 
-#C extensions
+# C extensions
 dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/rst/src/*.c'),)
 aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
-
-################################################################################
-# get a list of all source files
+# Get a list of all Python source files
 pwd = os.getcwd()
 sources = []
-source_dirs = ['davitpy','davitpy/pydarn','davitpy/gme','davitpy/utils','davitpy/models']
+source_dirs = ['davitpy']
 for s in source_dirs:
     for root, dirs, files in os.walk(pwd+'/'+s):
         if '__init__.py' in files:
             sources.append('.'.join(
                 root.replace(pwd,'').strip('/').split('/')
                 ))
-print 'sources',sources
 ################################################################################
-
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+################################################################################
 
+# Now execute the setup
 setup(name='davitpy',
       version = "0.2",
       description = "Space Science Toolkit",
@@ -56,6 +55,7 @@ setup(name='davitpy',
         'models.iri': ['*.dat','*.asc'],
         'models.hwm': ['*.mod','*.dat']
       },
+      py_modules = [],
       install_requires=[],
       classifiers = [
             "Development Status :: 4 - Beta",
@@ -67,3 +67,5 @@ setup(name='davitpy',
             ],
       )
 
+if os.environ['DISTUTILS_DEBUG'] == "1":
+    print 'Sources',sources
