@@ -198,11 +198,11 @@ class sdDataPtr():
     
     
                     #fetch the local files
-                    filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
+                    temp = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                     local_fnamefmt, verbose=verbose)
 
                     # check to see if the files actually have data between stime and etime
-                    valid = self.__validate_fetched(filelist,self.sTime,self.eTime)
+                    valid = self.__validate_fetched(temp,self.sTime,self.eTime)
                     filelist = [x[0] for x in zip(temp,valid) if x[1]]
                     invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
 
@@ -861,11 +861,11 @@ if __name__=="__main__":
   channel=None
   fileType='mapex'
   sTime=datetime.datetime(2012,7,10)
-  eTime=datetime.datetime(2012,7,11)
-  expected_filename="20120710.000000.20120711.000000.north.mapex"
+  eTime=datetime.datetime(2012,7,11,2)
+  expected_filename="20120710.000000.20120711.020000.north.mapex"
   expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=32975870
-  expected_md5sum="b68417bafc59d608982937b2101da10e"
+  expected_filesize=32975826
+  expected_md5sum="1b0e78cb339e875cc17f82e240ef360f"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for sdDataPtr."
