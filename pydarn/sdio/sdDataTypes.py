@@ -279,7 +279,7 @@ class sdDataPtr():
                             print 'Environment variable DB_PORT not set, using default:',port
 
                     outdir = tmpDir
-                    print remote_fnamefmt
+
                     #Now fetch the files
                     temp = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                         remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
