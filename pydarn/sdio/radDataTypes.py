@@ -1311,7 +1311,7 @@ if __name__=="__main__":
   expected_filename="20140624.000000.20140624.020200.kod.all.fitex"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=31822045
-  expected_md5sum="23cb7f8d954cef80b4a3e219838db816"
+  expected_md5sum="493bd0c937b6135cc608d0518d929077"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for radDataPtr."
