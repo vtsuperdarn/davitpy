@@ -864,8 +864,8 @@ if __name__=="__main__":
   eTime=datetime.datetime(2012,7,11,2)
   expected_filename="20120710.000000.20120711.020000.north.mapex"
   expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=32975870
-  expected_md5sum="b68417bafc59d608982937b2101da10e"
+  expected_filesize=32975826
+  expected_md5sum="1b0e78cb339e875cc17f82e240ef360f"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for sdDataPtr."
