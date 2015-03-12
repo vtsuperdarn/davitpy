@@ -435,6 +435,9 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0,Re=6371.):
     
     ret_lon = ret_lon % 360. 
 
+    tf = ret_lon > 180.
+    ret_lon[tf] = ret_lon - 360.
+
     return (ret_lat,ret_lon)
 
 # *************************************************************
