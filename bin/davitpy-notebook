@@ -20,4 +20,4 @@ export IPYTHONDIR=${DAVITPY}/bin
 ############################
 
 #start ipython
-ipython notebook --profile=davitpy
+ipython notebook # --profile=davitpy
