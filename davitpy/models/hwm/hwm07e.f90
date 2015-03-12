@@ -578,7 +578,7 @@ subroutine loadmodel(datafile)
     character(512)              :: filen
 
     call get_environment_variable('DAVITPY', defaultdatapath)
-    defaultdatapath = trim(defaultdatapath) // '/models/hwm/'
+    defaultdatapath=trim(defaultdatapath) //'/davitpy/models/hwm/'
 
     if (allocated(vnode)) then
         deallocate(order,nb,vnode,mparm)
