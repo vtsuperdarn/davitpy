@@ -7294,7 +7294,7 @@ c
         if(iflag.eq.0) then
 
           call getenv('DAVITPY', defaultdatapath)
-          defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+          defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
           defaultfile = trim(defaultdatapath) // 'ig_rz.dat'
 
           open(unit=12,file=trim(defaultfile),
@@ -7447,7 +7447,7 @@ c--------------------------------------------------------------------
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
         call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
         defaultfile = trim(defaultdatapath) // 'apf107.dat'
 
         Open(13,FILe=trim(defaultfile),
@@ -7563,7 +7563,7 @@ c--------------------------------------------------------------------
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
         call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
         defaultfile = trim(defaultdatapath) // 'apf107.dat'
 
         Open(13,FILe=trim(defaultfile),
@@ -7701,7 +7701,7 @@ c--------------------------------------------------------------------
         if(iyyyy.lt.IYBEG) goto 21   ! APF107.DAT starts at Jan 1, 1958
 
         call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
         defaultfile = trim(defaultdatapath) // 'apf107.dat'
 
         Open(13,FILe=trim(defaultfile),
