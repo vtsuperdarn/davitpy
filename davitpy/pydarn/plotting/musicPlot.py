@@ -155,7 +155,7 @@ class musicFan(object):
         title                   = None,
         **kwArgs):
 
-        if axis == None:
+        if axis is None:
             from matplotlib import pyplot as plt
             fig   = plt.figure(figsize=figsize)
 
@@ -179,7 +179,7 @@ class musicFan(object):
             cbarLabel = metadata['param']
 
         #Set colorbar scale if not explicitly defined.
-        if(scale == None):
+        if(scale is None):
             if autoScale:
                 sd          = stats.nanstd(np.abs(currentData.data),axis=None)
                 mean        = stats.nanmean(np.abs(currentData.data),axis=None)
@@ -195,13 +195,13 @@ class musicFan(object):
                     scale = [-200,200]
 
         #See if an axis is provided... if not, set one up!
-        if axis==None:
+        if axis is None:
             axis  = fig.add_subplot(111)
         else:
             fig   = axis.get_figure()
 
         #Figure out which scan we are going to plot...
-        if time == None:
+        if time is None:
             timeInx = 0
         else:
             timeInx = (np.where(currentData.time >= time))[0]
@@ -300,7 +300,7 @@ class musicFan(object):
         axis.add_collection(pcoll,autolim=False)
 
         #Mark Cell
-        if markCell != None:
+        if markCell is not None:
             beamInx = int(np.where(currentData.fov.beams == markCell[0])[0])
             gateInx = int(np.where(currentData.fov.gates == markCell[1])[0])
 
@@ -315,7 +315,7 @@ class musicFan(object):
             axis.add_patch(poly)
 
         #Mark Beam
-        if markBeam != None:
+        if markBeam is not None:
             beamInx = int(np.where(currentData.fov.beams == markBeam)[0])
             startedMarking = False
             for gateInx in range(ngates):
@@ -442,7 +442,7 @@ class musicRTI(object):
         from scipy import stats
         from rti import plotFreq,plotNoise
 
-        if axis == None:
+        if axis is None:
             from matplotlib import pyplot as plt
             fig   = plt.figure(figsize=figsize)
 
@@ -484,7 +484,7 @@ class musicRTI(object):
             cbarLabel = metadata['param']
 
         #Set colorbar scale if not explicitly defined.
-        if(scale == None):
+        if(scale is None):
             if autoScale:
                 sd          = stats.nanstd(np.abs(currentData.data),axis=None)
                 mean        = stats.nanmean(np.abs(currentData.data),axis=None)
@@ -500,7 +500,7 @@ class musicRTI(object):
                     scale = [-200,200]
 
         #See if an axis is provided... if not, set one up!
-        if axis==None:
+        if axis is None:
             axis    = fig.add_subplot(111)
         else:
             fig   = axis.get_figure()
@@ -516,7 +516,7 @@ class musicRTI(object):
 
 #        The coords keyword needs to be tested better.  For now, just allow 'gate' only.
 #        Even in 'gate' mode, the geographic latitudes are plotted along with gate.
-#        if coords == None and metadata.has_key('coords'):
+#        if coords is None and metadata.has_key('coords'):
 #            coords      = metadata['coords']
 #
         if coords not in ['gate','range']:
@@ -580,18 +580,18 @@ class musicRTI(object):
             for line in axvlines:
                 axis.axvline(line,color=axvline_color,ls='--')
 
-        if xlim == None:
+        if xlim is None:
             xlim = (np.min(time),np.max(time))
         axis.set_xlim(xlim)
 
         axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
         axis.set_xlabel('Time [UT]')
 
-        if ylim == None:
+        if ylim is None:
             ylim = (np.min(rnge),np.max(rnge))
         axis.set_ylim(ylim)
 
-        if yticks != None:
+        if yticks is not None:
             axis.set_yticks(yticks)
 
         # Y-axis labeling ##############################################################
@@ -675,11 +675,11 @@ class musicRTI(object):
 
         axis.set_ylim(ylim)
         #Shade xBoundary Limits
-        if xBoundaryLimits == None:
+        if xBoundaryLimits is None:
             if currentData.metadata.has_key('timeLimits'):
                 xBoundaryLimits = currentData.metadata['timeLimits']
 
-        if xBoundaryLimits != None:
+        if xBoundaryLimits is not None:
             gray = '0.75'
 #            axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
 #            axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray,zorder=150,alpha=0.5)
@@ -689,14 +689,14 @@ class musicRTI(object):
             axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
 
         #Shade yBoundary Limits
-        if yBoundaryLimits == None:
+        if yBoundaryLimits is None:
             if currentData.metadata.has_key('gateLimits') and coords == 'gate':
                 yBoundaryLimits = currentData.metadata['gateLimits']
 
             if currentData.metadata.has_key('rangeLimits') and coords == 'range':
                 yBoundaryLimits = currentData.metadata['rangeLimits']
 
-        if yBoundaryLimits != None:
+        if yBoundaryLimits is not None:
             gray = '0.75'
 #            axis.axhspan(ylim[0],yBoundaryLimits[0],color=gray,zorder=150,alpha=0.5)
 #            axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=150,alpha=0.5)
@@ -804,7 +804,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     Written by Nathaniel A. Frissell, Fall 2013
     """
 
-    if fig == None:
+    if fig is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
 
@@ -907,7 +907,7 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
             x4,y4 = bm+0, rg+1
             verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    if scale == None:
+    if scale is None:
         scale   = (np.min(scan),np.max(scan))
 
     cmap    = matplotlib.cm.jet
@@ -921,12 +921,12 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
     axis.set_xlim(min(currentData.fov.beams), max(currentData.fov.beams)+1)
     axis.set_ylim(min(currentData.fov.gates), max(currentData.fov.gates)+1)
 
-    if title != None: axis.set_title(title)
-    if xlabel != None: axis.set_xlabel(xlabel)
-    if ylabel != None: axis.set_ylabel(ylabel)
+    if title is not None: axis.set_title(title)
+    if xlabel is not None: axis.set_xlabel(xlabel)
+    if ylabel is not None: axis.set_ylabel(ylabel)
 
     cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
-    if cbarLabel != None: cbar.set_label(cbarLabel)
+    if cbarLabel is not None: cbar.set_label(cbarLabel)
 
 def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plotBeam=None,plotGate=None,fig=None,xlim=None,ylim=None,xlabel=None,ylabel=None,title=None,xBoundaryLimits=None):
     """Plots 1D line time series of selected cells in a pydarn.proc.music.musicArray object.
@@ -960,10 +960,10 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
     beams       = currentData.fov.beams
     gates       = currentData.fov.gates
 
-    if dataObj2 != None and dataSet2 == None: dataSet2 == 'active'
+    if dataObj2 is not None and dataSet2 is None: dataSet2 == 'active'
 
-    if dataSet2 != None:
-        if dataObj2 != None:
+    if dataSet2 is not None:
+        if dataObj2 is not None:
             currentData2  = getDataSet(dataObj2,dataSet2)
         else:
             currentData2  = getDataSet(dataObj,dataSet2)
@@ -976,23 +976,23 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
         yData2_title = None
 
     #Define x-axis range
-    if xlim == None:
+    if xlim is None:
         tmpLim = []
         tmpLim.append(min(xData1))
         tmpLim.append(max(xData1))
-        if xData2 != None:
+        if xData2 is not None:
             tmpLim.append(min(xData2))
             tmpLim.append(max(xData2))
         xlim = (min(tmpLim),max(tmpLim))
 
     #Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
-    if xBoundaryLimits == None:
+    if xBoundaryLimits is None:
         tmpLim = []
         if currentData.metadata.has_key('timeLimits'):
             tmpLim.append(currentData.metadata['timeLimits'][0])
             tmpLim.append(currentData.metadata['timeLimits'][1])
 
-        if dataSet2 != None:
+        if dataSet2 is not None:
           if currentData2.metadata.has_key('timeLimits'):
             tmpLim.append(currentData2.metadata['timeLimits'][0])
             tmpLim.append(currentData2.metadata['timeLimits'][1])
@@ -1001,16 +1001,16 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
             xBoundaryLimits = (min(tmpLim), max(tmpLim))
 
     #Get X-Axis title.
-    if xlabel == None:
+    if xlabel is None:
         xlabel = 'UT'
 
     #Get Y-Axis title.
     paramDict = getParamDict(currentData.metadata['param'])
-    if ylabel == None and paramDict.has_key('label'):
+    if ylabel is None and paramDict.has_key('label'):
         ylabel = paramDict['label']
 
     yData1_title = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing
-    if title == None:
+    if title is None:
         title = []
         title.append('Selected Cells: '+yData1_title)
         title.append(currentData.metadata['code'][0].upper() + ': ' +
@@ -1057,10 +1057,10 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         yData2        = None
         yData2_title  = None
 
-        if xlim == None:
+        if xlim is None:
             xlim = (0,np.max(xData1))
 
-        if ylim == None:
+        if ylim is None:
             ylim = (0,np.max(yData1))
     elif plotType == 'phase':
         xData1        = currentData.freqVec
@@ -1072,7 +1072,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         yData2        = None
         yData2_title  = None
 
-        if xlim == None:
+        if xlim is None:
             xlim = (0,np.max(xData1))
     else:
         xData1        = currentData.freqVec
@@ -1084,7 +1084,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         yData2      = np.imag(currentData.spectrum)
         yData2_title  = 'Imaginary Part'
 
-        if xlim == None:
+        if xlim is None:
             xlim = (np.min(xData1),np.max(xData1))
       
     beams       = currentData.fov.beams
@@ -1094,10 +1094,10 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
     timeLim = (np.min(currentData.time),np.max(currentData.time))
 
     #Get X-Axis title.
-    if xlabel == None:
+    if xlabel is None:
         xlabel = 'Frequency [Hz]'
 
-    if title == None:
+    if title is None:
         title = []
         title.append('Selected Cells: '+currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
         title.append(currentData.metadata['code'][0].upper() + ': ' +
@@ -1140,21 +1140,21 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    if fig == None:
+    if fig is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
 
     from matplotlib import dates as md
 
     #Calculate three default beams and gates to plot.
-    if plotBeam == None:
+    if plotBeam is None:
         beamMin = min(beams)
         beamMed = int(np.median(beams))
         beamMax = max(beams)
 
         plotBeam     = np.array([beamMin,beamMed,beamMax])
 
-    if plotGate == None:
+    if plotGate is None:
         gateMin = min(gates)
         gateMed = int(np.median(gates))
         gateMax = max(gates)
@@ -1182,23 +1182,23 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
     nRows = len(plotGate)
 
     #Define x-axis range
-    if xlim == None:
+    if xlim is None:
         tmpLim = []
         tmpLim.append(min(xData1))
         tmpLim.append(max(xData1))
-        if xData2 != None:
+        if xData2 is not None:
             tmpLim.append(min(xData2))
             tmpLim.append(max(xData2))
         xlim = (min(tmpLim),max(tmpLim))
 
     #Autorange y-axis... make all plots have the same range.
     data = []
-    if ylim == None:
+    if ylim is None:
         for rg,rgInx in zip(plotGate,plotGateInx):
             for bm,bmInx in zip(plotBeam,plotBeamInx):
                 for item in yData1[:,bmInx,rgInx]:
                     data.append(item)
-                if yData2 != None:
+                if yData2 is not None:
                     for item in yData2[:,bmInx,rgInx]:
                         data.append(item)
 
@@ -1220,7 +1220,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
             axis = fig.add_subplot(nCols,nRows,ii)
             l1, = axis.plot(xData1,yData1[:,bmInx,rgInx],label=yData1_title)
 
-            if yData2 != None:
+            if yData2 is not None:
                 l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
 
             #Set axis limits.
@@ -1236,7 +1236,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
                     label.set_rotation(30)
 
             #Gray out area outside of the boundary.
-            if xBoundaryLimits != None:
+            if xBoundaryLimits is not None:
                 gray = '0.75'
                 axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray)
                 axis.axvspan(xBoundaryLimits[1],xlim[1],color=gray)
@@ -1258,10 +1258,10 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
             ii = ii+1
 
-    if yData1_title != None and yData2_title != None:
+    if yData1_title is not None and yData2_title is not None:
         fig.legend((l1,l2),(yData1_title,yData2_title),loc=(0.55,0.92))
 
-    if title != None:
+    if title is not None:
         fig.text(0.12,0.92,title,size=24)
 
     return fig
@@ -1315,7 +1315,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
 
     nrFreqs,nrBeams,nrGates = np.shape(currentData.spectrum)
 
-    if xlim == None:
+    if xlim is None:
         posFreqInx  = np.where(currentData.freqVec >= 0)[0]
     else:
         posFreqInx  = np.where(np.logical_and(currentData.freqVec >= xlim[0],currentData.freqVec <= xlim[1]))[0]
@@ -1342,13 +1342,13 @@ def plotFullSpectrum(dataObj,dataSet='active',
     for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
 
     #Do plotting here!
-    if fig == None and axis == None:
+    if fig is None and axis is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
     elif axis is not None:
         fig = axis.get_figure()
 
-    if axis == None:
+    if axis is None:
         axis = fig.add_subplot(111)
 
     verts   = []
@@ -1492,11 +1492,11 @@ def plotFullSpectrum(dataObj,dataSet='active',
 
         if md.has_key('fir_filter'):
             filt = md['fir_filter']
-            if filt[0] == None:
+            if filt[0] is None:
                 low = 'None'
             else:
                 low = '%.2f' % (1000. * filt[0])
-            if filt[1] == None:
+            if filt[1] is None:
                 high = 'None'
             else:
                 high = '%.2f' % (1000. * filt[1])
@@ -1516,7 +1516,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    if fig == None:
+    if fig is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
 
@@ -1558,7 +1558,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
             verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
     colors  = 'lasse'
-    if scale == None:
+    if scale is None:
         scale   = (np.min(scan),np.max(scan))
     cmap = matplotlib.cm.jet
     bounds  = np.linspace(scale[0],scale[1],256)
@@ -1619,11 +1619,11 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     if md.has_key('fir_filter'):
         filt = md['fir_filter']
-        if filt[0] == None:
+        if filt[0] is None:
             low = 'None'
         else:
             low = '%.2f' % (1000. * filt[0])
-        if filt[1] == None:
+        if filt[1] is None:
             high = 'None'
         else:
             high = '%.2f' % (1000. * filt[1])
@@ -1688,11 +1688,11 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
 
         if md.has_key('fir_filter'):
             filt = md['fir_filter']
-            if filt[0] == None:
+            if filt[0] is None:
                 low = 'None'
             else:
                 low = '%.2f' % (1000. * filt[0])
-            if filt[1] == None:
+            if filt[1] is None:
                 high = 'None'
             else:
                 high = '%.2f' % (1000. * filt[1])
@@ -1720,7 +1720,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    if fig == None:
+    if fig is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
     currentData = getDataSet(dataObj,dataSet)
@@ -1750,11 +1750,11 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
     if md.has_key('fir_filter'):
         filt = md['fir_filter']
-        if filt[0] == None:
+        if filt[0] is None:
             low = 'None'
         else:
             low = '%.2f' % (1000. * filt[0])
-        if filt[1] == None:
+        if filt[1] is None:
             high = 'None'
         else:
             high = '%.2f' % (1000. * filt[1])
@@ -1851,7 +1851,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
             pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
             tmpList = range(currentData.sigDetect.nrSigs)[::-1] #Force list to plot backwards so number 1 is on top!
             for signal in currentData.sigDetect.info:
-                if maxSignals != None:
+                if maxSignals is not None:
                     if signal['order'] > maxSignals: continue 
                 xpos = currentData.kxVec[signal['maxpos'][0]]
                 ypos = currentData.kyVec[signal['maxpos'][1]]
@@ -1883,7 +1883,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    if axis == None: return
+    if axis is None: return
     fig = axis.get_figure()
     from scipy import stats
     import matplotlib.patheffects as PathEffects
@@ -1998,7 +1998,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     if hasattr(currentData,'sigDetect'):
         pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
         for signal in currentData.sigDetect.info:
-            if maxSignals != None:
+            if maxSignals is not None:
                 if signal['order'] > maxSignals: continue 
             xpos = currentData.kxVec[signal['maxpos'][0]]
             ypos = currentData.kyVec[signal['maxpos'][1]]
