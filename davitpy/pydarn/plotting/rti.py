@@ -102,7 +102,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   #check the inputs
   assert(isinstance(sTime,datetime.datetime)),'error, sTime must be a datetime object'
   assert(isinstance(rad,str) and len(rad) == 3),'error, rad must be a string 3 chars long'
-  assert(isinstance(eTime,datetime.datetime) or eTime == None),'error, eTime must be a datetime object or None'
+  assert(isinstance(eTime,datetime.datetime) or eTime is None),'error, eTime must be a datetime object or None'
   assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or coords == 'mag'),\
   "error, coords must be one of 'gate','rng','geo','mag"
   assert(isinstance(bmnum,int)),'error, beam must be integer'
@@ -139,7 +139,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       tbands.append(band)
 
 
-  if eTime == None: eTime = sTime+datetime.timedelta(days=1)
+  if eTime is None: eTime = sTime+datetime.timedelta(days=1)
   assert(sTime<eTime),"eTime must be greater than sTime!" 
    
   #open the file if a pointer was not given to us
@@ -192,7 +192,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     gsflg.append([])
   
   #read the parameters of interest
-  while(myBeam != None):
+  while(myBeam is not None):
     if(myBeam.time > eTime): break
     if(myBeam.bmnum == bmnum and (sTime <= myBeam.time)):
       for i in range(len(tbands)):
@@ -226,7 +226,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       continue
 
     #get/create a figure
-    if figure == None:
+    if figure is None:
         if show:
           rtiFig = plot.figure(figsize=(11,8.5))
         else:
@@ -281,7 +281,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
             
         if(pArr[i] == []): continue
         
-        if slist[fplot][i] != None:
+        if slist[fplot][i] is not None:
           for j in range(len(slist[fplot][i])):
             if(not gsct or gsflg[fplot][i][j] == 0):
               data[tcnt][slist[fplot][i][j]] = pArr[i][j]
@@ -645,8 +645,8 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06],xlim=None,xticks=None)
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
-  if xlim != None: ax.set_xlim(xlim)
-  if xticks != None: ax.set_xticks(xticks)
+  if xlim is not None: ax.set_xlim(xlim)
+  if xticks is not None: ax.set_xticks(xticks)
   
   #plot the sky noise data
   ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-', \
@@ -732,8 +732,8 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
   ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
   tz=None, xdate=True, ydate=False,markersize=2)
 
-  if xlim != None: ax.set_xlim(xlim)
-  if xticks != None: ax.set_xticks(xticks)
+  if xlim is not None: ax.set_xlim(xlim)
+  if xticks is not None: ax.set_xticks(xticks)
 
   ax.set_xticklabels([' '])
   #use only 2 major yticks

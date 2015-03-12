@@ -214,7 +214,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 	# iterates through radars to be plotted
 	for ir in xrange(nradars):
 		# Get field of view coordinates
-		if(fovObj == None):
+		if(fovObj is None):
 			rad = NetworkObj.getRadarBy(input['vals'][ir], input['meth'])
 			if not rad: continue
 			site = rad.getSiteByDate(dateTime)

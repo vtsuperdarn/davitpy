@@ -144,7 +144,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     myBands = []
     for i in range(len(rad)):
         f = radDataOpen(sTime,rad[i],sTime+dt.timedelta(seconds=interval),fileType=fileType,filtered=filtered,channel=channel)
-        if(f != None): 
+        if(f is not None): 
             myFiles.append(f)
             myBands.append(tbands[i])
 
@@ -161,11 +161,11 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     for i in range(len(myFiles)):
         #read until we reach start time
         allBeams[i] = radDataReadRec(myFiles[i])
-        while (allBeams[i].time < sTime and allBeams[i] != None):
+        while (allBeams[i].time < sTime and allBeams[i] is not None):
             allBeams[i] = radDataReadRec(myFiles[i])
 
         #check that the file has data in the target interval
-        if(allBeams[i] == None): 
+        if(allBeams[i] is None): 
             myFiles[i].close()
             myFiles[i] = None
             continue
@@ -295,10 +295,10 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     for i in range(len(myFiles)):
         scans = []
         #check that we have good data at this time
-        if(myFiles[i] == None or allBeams[i] == None): continue
+        if(myFiles[i] is None or allBeams[i] is None): continue
         ft = allBeams[i].fType
         #until we reach the end of the time window
-        while(allBeams[i] != None and allBeams[i].time < bndTime):
+        while(allBeams[i] is not None and allBeams[i].time < bndTime):
             #filter on frequency
             if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]: 
                 scans.append(allBeams[i])
@@ -356,7 +356,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     
     if(overlayPoes):
         pcols = gme.sat.poes.overlayPoesTed(myMap, myFig.gca(), cTime, param=poesparam, scMin=poesMin, scMax=poesMax)
-        if(pcols != None):
+        if(pcols is not None):
             cols.append(pcols)
             pTicks = numpy.linspace(poesMin,poesMax,8)
             cbar = myFig.colorbar(pcols,ticks=pTicks,orientation='vertical',shrink=0.65,fraction=.1)
@@ -414,9 +414,9 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
     Written by AJ 20121004
     """
     from davitpy import pydarn
-    if(site == None):
+    if(site is None):
         site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
-    if(fov == None):
+    if(fov is None):
         fov = pydarn.radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
                                       ngates=myData[0].prm.nrang+1,
                                       nbeams= site.maxbeam, coords=coords,
