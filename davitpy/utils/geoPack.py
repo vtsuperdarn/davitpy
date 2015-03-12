@@ -433,8 +433,9 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0,Re=6371.):
     ret_lat = numpy.degrees(lat2)
     ret_lon = numpy.degrees(lon2)
     
-    if ret_lon < -180.: ret_lon = ret_lon + 360.
-    return [ret_lat,ret_lon]
+    ret_lon = ret_lon % 360. 
+
+    return (ret_lat,ret_lon)
 
 # *************************************************************
 def greatCircleAzm(lat1,lon1,lat2,lon2):
