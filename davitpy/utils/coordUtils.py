@@ -41,7 +41,7 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
         renamed date_time for PEP 8 compliance.  Please use those 
         from now on.  Also altitude is now optional.
     """
-    from utils.coordUtils import coord_conv
+    from davitpy.utils.coordUtils import coord_conv
     print "coordConv has been renamed coord_conv and dateTime has"
     print "been renamed date_time for PEP 8 compliance.  Please use"
     print "those from now on.  Also altitude is now optional."
@@ -86,7 +86,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     """
     import numpy as np
     
-    from models import aacgm
+    from davitpy.models import aacgm
     from utils.coordUtils import get_coord_dict
 
     ####################################################################
