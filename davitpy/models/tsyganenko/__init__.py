@@ -90,7 +90,7 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
             self.byimf = byimf
             self.bzimf = bzimf
             # If no datetime is provided, defaults to today
-            if datetime==None: datetime = pydt.utcnow()
+            if datetime is None: datetime = pydt.utcnow()
             self.datetime = datetime
 
             iTest = self.__test_valid__()
@@ -153,7 +153,7 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
         if rho: _rho = self.rho
         if coords: _coords = self.coords
         if vswgse: _vswgse = self.vswgse
-        if not datetime==None: _datetime = self.datetime
+        if not datetime is None: _datetime = self.datetime
 
         # Pass position if new
         if lat: self.lat = lat
@@ -162,13 +162,13 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
         lon = self.lon
         if rho: self.rho = rho
         rho = self.rho
-        if not datetime==None: self.datetime = datetime
+        if not datetime is None: self.datetime = datetime
         datetime = self.datetime
 
         # Set necessary parameters if new
         if coords: self.coords = coords
         coords = self.coords
-        if not datetime==None: self.datetime = datetime
+        if not datetime is None: self.datetime = datetime
         datetime = self.datetime
         if vswgse: self.vswgse = vswgse
         vswgse = self.vswgse
@@ -189,7 +189,7 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
             if rho: self.rho = _rho
             if coords: self.coords = _coords 
             if vswgse: self.vswgse = _vswgse
-            if not datetime==None: self.datetime = _datetime
+            if not datetime is None: self.datetime = _datetime
 
         # Declare the same Re as used in Tsyganenko models [km]
         Re = 6371.2
