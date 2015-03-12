@@ -70,7 +70,7 @@ class RtRun(object):
         nprocs=4):
         import datetime as dt
         from os import path
-        from pydarn import radar
+        from davitpy.pydarn import radar
 
         # Load pickled instance...
         if loadFrom:
@@ -426,7 +426,7 @@ class Edens(object):
                 
         written by Sebastien, 2013-04
         """
-        from utils import plotUtils
+        from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
@@ -653,7 +653,7 @@ class Scatter(object):
                 
         written by Sebastien, 2013-04
         """
-        from utils import plotUtils
+        from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
@@ -878,7 +878,7 @@ class Rays(object):
                 
         written by Sebastien, 2013-04
         """
-        from utils import plotUtils
+        from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
