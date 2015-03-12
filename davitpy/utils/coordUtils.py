@@ -87,7 +87,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     import numpy as np
     
     from davitpy.models import aacgm
-    from utils.coordUtils import get_coord_dict
+    from davitpy.utils.coordUtils import get_coord_dict
 
     ####################################################################
     #                                                                  #
