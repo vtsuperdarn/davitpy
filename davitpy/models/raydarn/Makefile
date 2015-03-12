@@ -10,7 +10,7 @@ OPT_FLAGS = -O2 -fbacktrace -fno-automatic
 REQ_FLAGS = -w -g
 
 # Declare non-local directories that contain source files
-IRIDIR = $(DAVITPY)/models/iri
+IRIDIR = $(DAVITPY)/davitpy/models/iri
 
 # Declare source, object, and executable files
 RTSRC = constants.f90 \
