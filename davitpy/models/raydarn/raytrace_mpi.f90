@@ -572,15 +572,15 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
     if (grpran.gt.180e3.and.rtmp*1e-3.gt.(Rav+90.)) then
       CALL CALC_ASPECT(edensTHT, dip, rayazim, theta, thetatmp, r, rtmp, aspectind, aspect)
       if (aspectind.gt.0) then
-        ! Calculate mean range
+        ! Calculate mean range  Changed + h/2 to -h/2 below
         d = r/rtmp*h*sin(edensTHT(aspectind) - theta)/sin(thetatmp-theta)
-        asp_grpran = grpran + h/2.
-        ! Calculate mean slant range
+        asp_grpran = grpran - h/2.
+        ! Calculate mean slant range  Changed +h/2 to -h/2 below
 !        asp_ran = ransave(nrstep-1) + h/2.*sqrt(nr2)
-        ! Calculate mean ground range
-        asp_theta = (thetatmp-theta)/2. + theta
-        ! Calculate mean altitude
-        asp_alt = sqrt( h**2./4. + r**2. + h/2.*r*sin(ranelev) )
+        ! Calculate mean ground range  Changed theta + to theta - below   
+        asp_theta = theta -(thetatmp-theta)/2.
+        ! Calculate mean altitude   Changed + h/2 to - h/2 below
+        asp_alt = sqrt( h**2./4. + r**2. - h/2.*r*sin(ranelev) )
         ! Calculate weighing (to account for backsground electron density and deviation from perfect aspect conditions)
         asp_w = ( edensARR(nint(((rtmp-r)/2.+r)*1e-3 - 60. - Rav), aspectind) )**2. / asp_grpran**3.
 
