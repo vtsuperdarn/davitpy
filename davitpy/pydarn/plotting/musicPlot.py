@@ -429,6 +429,7 @@ class musicRTI(object):
         plot_title              = True,
         plot_range_limits_label = True,
         cmap_handling           = 'superdarn',
+        cmap                    = None,
         plot_cbar               = True,
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
@@ -542,7 +543,8 @@ class musicRTI(object):
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
         if (cmap_handling == 'matplotlib') or autoScale:
-            cmap = matplotlib.cm.jet
+            if cmap is None:
+                cmap = matplotlib.cm.jet
             bounds  = np.linspace(scale[0],scale[1],256)
             norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
         elif cmap_handling == 'superdarn':
