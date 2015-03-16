@@ -377,6 +377,8 @@ class musicRTI(object):
         * [**ylim**] (None or 2-element iterable of floats): Limits for y-axis.
         * [**axis**] (None or matplotlib.figure.axis): Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
         * [**scale**] (None or 2-Element iterable): Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
+        * [**plotZeros**] (bool): If True, plot data cells that are identically zero.
+        * [**max_sounding_time**] (None or datetime.timedelta): Do not allow data to be plotted for longer than this duration.
         * [**xBoundaryLimits**] (None or 2-element iterable of datetime.datetime): Mark a region of times on the RTI plot.  A green dashed vertical line will be plotted
             at each of the boundary times.  The region of time outside of the boundary will be shaded gray.
             If set to None, this will automatically be set to the timeLimits set in the metadata, if they exist.
@@ -386,6 +388,7 @@ class musicRTI(object):
         * [**yticks**] (list): Where to put the ticks on the y-axis.
         * [**ytick_lat_format**] (str):  %-style string format code for latitude y-tick labels
         * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
+        ax.set_xlim(xlim)
         * [**plotTerminator**] (bool): If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
             terminator resolution will match the resolution of the RTI plot data.
         * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
@@ -416,6 +419,7 @@ class musicRTI(object):
         axis                    = None,
         scale                   = None,
         plotZeros               = False, 
+        max_sounding_time       = datetime.timedelta(minutes=2),
         xBoundaryLimits         = None,
         yBoundaryLimits         = None,
         yticks                  = None,
@@ -534,6 +538,8 @@ class musicRTI(object):
             for rg in range(nrGates-1):
                 if np.isnan(data[tm,rg]): continue
                 if data[tm,rg] == 0 and not plotZeros: continue
+                if max_sounding_time is not None:
+                    if (currentData.time[tm+1] - currentData.time[tm+0]) > max_sounding_time: continue
                 scan.append(data[tm,rg])
 
                 x1,y1 = xvec[tm+0],rnge[rg+0]
