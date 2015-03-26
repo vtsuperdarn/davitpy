@@ -434,6 +434,8 @@ class musicRTI(object):
         plot_range_limits_label = True,
         cmap_handling           = 'superdarn',
         cmap                    = None,
+        bounds                  = None,
+        norm                    = None,
         plot_cbar               = True,
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
@@ -551,8 +553,10 @@ class musicRTI(object):
         if (cmap_handling == 'matplotlib') or autoScale:
             if cmap is None:
                 cmap = matplotlib.cm.jet
-            bounds  = np.linspace(scale[0],scale[1],256)
-            norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
+            if bounds is None:
+                bounds  = np.linspace(scale[0],scale[1],256)
+            if norm is None:
+                norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
         elif cmap_handling == 'superdarn':
             colors  = 'lasse'
             cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors)
@@ -795,6 +799,16 @@ class musicRTI(object):
 
             txt     = 'Beam '+str(beam)
             fig.text(xmax,title_y,txt,weight=550,ha='right')
+
+        cbar_info           = {}
+        cbar_info['cmap']   = cmap
+        cbar_info['bounds'] = bounds 
+        cbar_info['norm']   = norm 
+        cbar_info['label']  = cbarLabel
+        cbar_info['ticks']  = cbar_ticks
+        cbar_info['mappable']  = pcoll
+        self.cbar_info      = cbar_info
+
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     """Plots the N-S and E-W distance from the center cell of a field-of-view in a pydarn.proc.music.musicArray object.
