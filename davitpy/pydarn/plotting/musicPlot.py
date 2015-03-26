@@ -419,7 +419,7 @@ class musicRTI(object):
         axis                    = None,
         scale                   = None,
         plotZeros               = False, 
-        max_sounding_time       = datetime.timedelta(minutes=2),
+        max_sounding_time       = datetime.timedelta(minutes=4),
         xBoundaryLimits         = None,
         yBoundaryLimits         = None,
         yticks                  = None,
