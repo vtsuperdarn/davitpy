@@ -418,7 +418,9 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   ihop = 0        ! hop counter
   nrstep = 2      ! number of steps per ray counter
   naspstep = 1    ! number of ionospheric scatter occurence counter
-  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.theta.lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
+
+  !.002 added to theta so theta does not extend beyond edensTHT array RAG 20150410
+  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.(theta+0.002).lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
     ! Current position
     latiin = latiout
     longiin = longiout
