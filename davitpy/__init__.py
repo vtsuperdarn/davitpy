@@ -13,17 +13,73 @@ Module for everything SuperDARN
 # Most of the rc stuff in this file was taken/adapted from matplotlib code:
 # https://github.com/matplotlib
 
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import six
 import os
+import sys
+import io
+import locale
+import re
+
 from davitpy.rcsetup import defaultParams
 
- __version__ = str('0.3')
+__version__ = str('0.3')
 
 
 _error_details_fmt = 'line #%d\n\t"%s"\n\tin file "%s"'
 
 # TO DO
 # Add some try: except: statements for python packages that davitpy requires
+
+
+def _is_writable_dir(p):
+    """
+    p is a string pointing to a putative writable dir -- return True p
+    is such a string, else False
+    """
+    try:
+        p + ''  # test is string like
+    except TypeError:
+        return False
+
+    # Test whether the operating system thinks it's a writable directory.
+    # Note that this check is necessary on Google App Engine, because the
+    # subsequent check will succeed even though p may not be writable.
+    if not os.access(p, os.W_OK) or not os.path.isdir(p):
+        return False
+
+    # Also test that it is actually possible to write to a file here.
+    try:
+        t = tempfile.TemporaryFile(dir=p)
+        try:
+            t.write(b'1')
+        finally:
+            t.close()
+    except:
+        return False
+
+    return True
+
+URL_REGEX = re.compile(r'http://|https://|ftp://|file://|file:\\')
+
+def is_url(filename):
+    """Return True if string is an http, ftp, or file URL path."""
+    return URL_REGEX.match(filename) is not None
+
+def _url_lines(f):
+    # Compatibility for urlopen in python 3, which yields bytes.
+    for line in f:
+        yield line.decode('utf8')
+
+def _open_file_or_url(fname):
+    if is_url(fname):
+        f = urlopen(fname)
+        yield _url_lines(f)
+        f.close()
+    else:
+        with io.open(fname, encoding=locale.getdefaultlocale()[1]) as f:
+            yield f
 
 def _get_home():
     """Find user's home directory if possible.
@@ -48,6 +104,9 @@ def _get_home():
             return path
     return None
 
+def get_home():
+    return _get_home()
+
 
 def _create_tmp_config_dir():
     """
@@ -68,6 +127,19 @@ def _create_tmp_config_dir():
     os.environ['DAVITCONFIGDIR'] = tempdir
 
     return tempdir
+
+def _get_xdg_config_dir():
+    """
+    Returns the XDG configuration directory, according to the `XDG
+    base directory spec
+    <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>`_.
+    """
+    path = os.environ.get('XDG_CONFIG_HOME')
+    if path is None:
+        path = get_home()
+        if path is not None:
+            path = os.path.join(path, '.config')
+    return path
 
 def _get_xdg_cache_dir():
     """
@@ -125,7 +197,7 @@ def _get_configdir():
     2a. On Linux, if `$HOME/.matplotlib` exists, choose that, but warn that
         that is the old location.  Barring that, follow the XDG specification
         and look first in `$XDG_CONFIG_HOME`, if defined, or `$HOME/.config`.
-    2b. On other platforms, choose `$HOME/.matplotlib`.
+    2b. On other platforms, choose `$HOME/.davitpy`.
     3. If the chosen directory exists and is writable, use that as the
        configuration directory.
     4. If possible, create a temporary directory, and use it as the
@@ -133,6 +205,56 @@ def _get_configdir():
     5. A writable directory could not be found or created; return None.
     """
     return _get_config_or_cache_dir(_get_xdg_config_dir())
+
+def _get_data_path():
+    'get the path to davitpy data'
+
+    if 'MATPLOTLIBDATA' in os.environ:
+        path = os.environ['MATPLOTLIBDATA']
+        if not os.path.isdir(path):
+            raise RuntimeError('Path in environment MATPLOTLIBDATA not a '
+                               'directory')
+        return path
+
+    path = os.sep.join([os.path.dirname(__file__), 'mpl-data'])
+    if os.path.isdir(path):
+        return path
+
+    # setuptools' namespace_packages may highjack this init file
+    # so need to try something known to be in matplotlib, not basemap
+    import matplotlib.afm
+    path = os.sep.join([os.path.dirname(matplotlib.afm.__file__), 'mpl-data'])
+    if os.path.isdir(path):
+        return path
+
+    # py2exe zips pure python, so still need special check
+    if getattr(sys, 'frozen', None):
+        exe_path = os.path.dirname(sys.executable)
+        path = os.path.join(exe_path, 'mpl-data')
+        if os.path.isdir(path):
+            return path
+
+        # Try again assuming we need to step up one more directory
+        path = os.path.join(os.path.split(exe_path)[0], 'mpl-data')
+        if os.path.isdir(path):
+            return path
+
+        # Try again assuming sys.path[0] is a dir not a exe
+        path = os.path.join(sys.path[0], 'mpl-data')
+        if os.path.isdir(path):
+            return path
+
+    raise RuntimeError('Could not find the davitpy data files')
+
+def get_data_path():
+    return _get_data_path()
+
+def _get_data_path_cached():
+    if defaultParams['datapath'][0] is None:
+        defaultParams['datapath'][0] = _get_data_path()
+    return defaultParams['datapath'][0]
+
+
 
 def davitpy_fname():
     """
@@ -204,8 +326,7 @@ class RcParams(dict):
     """
 
     validate = dict((key, converter) for key, (default, converter) in
-                    six.iteritems(defaultParams)
-                    if key not in _all_deprecated)
+                    six.iteritems(defaultParams))
     msg_depr = "%s is deprecated and replaced with %s; please use the latter."
     msg_depr_ignore = "%s is deprecated and ignored. Use %s"
 
@@ -369,9 +490,10 @@ def _rc_params_in_file(fname, fail_on_error=False):
                           '%s instead.' % (key, _deprecated_ignore_map[key]))
 
         else:
-            print(""" Bad key "%s" on line %d in %s. You probably need to get 
-                      an updated davitpyrc file from
-                      https://github.com/vtsuperdarn/davitpy""" % (key, cnt, fname), file=sys.stderr)
+            print("""
+                  Bad key "%s" on line %d in %s. You probably need to get an 
+                  updated davitpyrc file from https://github.com/vtsuperdarn/davitpy
+                  """ % (key, cnt, fname), file=sys.stderr)
 
     return config
 
@@ -405,7 +527,7 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
     #if config['datapath'] is None:
     #    config['datapath'] = get_data_path()
 
-    print 'loaded rc file %s' % fname
+    print('loaded rc file %s' % fname)
 
     return config
 
@@ -413,21 +535,23 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
 rcParams = rc_params()
 
 
+#TO DO
+#Change these try: excepts to trigger on proper exception, ie) except importError
 
 try: from davitpy import pydarn
 except Exception, e: 
-  print 'problem importing pydarn: ', e
+  print('problem importing pydarn: ', e)
 
 try: from davitpy import gme 
 except Exception, e: 
-  print 'problem importing gme: ', e
+  print('problem importing gme: ', e)
 
 try: from davitpy import utils 
 except Exception, e: 
-  print 'problem importing utils: ', e
+  print('problem importing utils: ', e)
 
 try: from davitpy import models 
 except Exception, e: 
-  print 'problem importing models: ', e
+  print('problem importing models: ', e)
 
 
