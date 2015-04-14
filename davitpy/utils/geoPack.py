@@ -404,7 +404,7 @@ def calcDistPnt(origLat, origLon, origAlt, \
 
 
 # *************************************************************
-def greatCircleMove(origLat, origLon, dist, az, alt=0):
+def greatCircleMove(origLat, origLon, dist, az, alt=0,Re=6371.):
     """Calculates the coordinates of an end point along a great circle path 
     given the original coordinates, distance, azimuth, and altitude.
 
@@ -419,22 +419,26 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0):
     """
     import numpy
     
-    Re = 6378.1e3 + (alt * 1e3)
+    Re_tot = (Re + alt) * 1e3
     dist = dist * 1e3
     lat1 = numpy.radians(origLat) 
     lon1 = numpy.radians(origLon)
     az = numpy.radians(az)
     
-    lat2 = numpy.arcsin(numpy.sin(lat1)*numpy.cos(dist/Re) +\
-    numpy.cos(lat1)*numpy.sin(dist/Re)*numpy.cos(az))
-    lon2 = lon1 + numpy.arctan2(numpy.sin(az)*numpy.sin(dist/Re)*numpy.cos(lat1),\
-    numpy.cos(dist/Re)-numpy.sin(lat1)*numpy.sin(lat2))
+    lat2 = numpy.arcsin(numpy.sin(lat1)*numpy.cos(dist/Re_tot) +\
+    numpy.cos(lat1)*numpy.sin(dist/Re_tot)*numpy.cos(az))
+    lon2 = lon1 + numpy.arctan2(numpy.sin(az)*numpy.sin(dist/Re_tot)*numpy.cos(lat1),\
+    numpy.cos(dist/Re_tot)-numpy.sin(lat1)*numpy.sin(lat2))
 
     ret_lat = numpy.degrees(lat2)
     ret_lon = numpy.degrees(lon2)
     
-    if ret_lon < -180.: ret_lon = ret_lon + 360.
-    return [ret_lat,ret_lon]
+    ret_lon = ret_lon % 360. 
+
+    tf = ret_lon > 180.
+    ret_lon[tf] = ret_lon - 360.
+
+    return (ret_lat,ret_lon)
 
 # *************************************************************
 def greatCircleAzm(lat1,lon1,lat2,lon2):

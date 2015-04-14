@@ -362,7 +362,7 @@ c     &   /BLOTN/XSM1,TEXOS,TLBDH,SIGMA /BLOTE/AHH,ATE1,STTE,DTE
         save
 
         call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultdatapath=trim(defaultdatapath) // '/davitpy/models/iri/'
 
         nummax=1000
         DO 7397 KI=1,20

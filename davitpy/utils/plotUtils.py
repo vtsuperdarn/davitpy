@@ -83,7 +83,7 @@ class mapObj(basemap.Basemap):
     from copy import deepcopy
     import datetime as dt
 
-    from utils import coord_conv, get_coord_dict
+    from davitpy.utils import coord_conv, get_coord_dict
 
     self.lat_0=lat_0
     self.lon_0=lon_0
@@ -182,15 +182,14 @@ class mapObj(basemap.Basemap):
         else: 
           merLabels = [False,False,False,False]
         # draw meridians
-        out = self.drawmeridians(meridians, labels=merLabels, fmt=lonfmt,
-                                 color='.6', zorder=10)
+        out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
   
   def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
     from copy import deepcopy
     import numpy as np
     import inspect
 
-    from utils import coord_conv
+    from davitpy.utils import coord_conv
 
     # First we need to check and see if drawcoastlines() or a similar 
     # method is calling because if we are in a coordinate system 
@@ -233,7 +232,7 @@ class mapObj(basemap.Basemap):
     import _geoslib
     import numpy as np
 
-    from utils import coord_conv
+    from davitpy.utils import coord_conv
 
     lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
                             list(self._boundarypolyll.boundary[:, 1]),
@@ -617,7 +616,7 @@ if __name__ == "__main__":
   import pylab as plt
   from datetime import datetime
   
-  from models import aacgm
+  from davitpy.models import aacgm
 
   time = datetime(2014,8,7,18,30)
   time2 = datetime(2014,8,8,0,0)

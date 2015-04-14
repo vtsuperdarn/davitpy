@@ -698,7 +698,7 @@
         COMMON/iounit/konsol        
 
         call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath = trim(defaultdatapath) // '/models/iri/'
+        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
 
         do 1 j=1,196  
 1          GH(j)=0.0

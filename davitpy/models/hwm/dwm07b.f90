@@ -198,7 +198,7 @@ subroutine loaddwm(datafile)
     character(512)           :: filen
 
     call get_environment_variable('DAVITPY', defaultdatapath)
-    defaultdatapath = trim(defaultdatapath) // '/models/hwm/'
+    defaultdatapath=trim(defaultdatapath) //'/davitpy/models/hwm/'
 
     filen = trim(defaultdatapath) // trim(datafile)
 

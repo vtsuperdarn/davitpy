@@ -10,7 +10,7 @@ OPT_FLAGS = -O2 -fbacktrace -fno-automatic
 REQ_FLAGS = -w -g
 
 # Declare non-local directories that contain source files
-IRIDIR = $(DAVITPY)/models/iri
+IRIDIR = $(DAVITPY)/davitpy/models/iri
 
 # Declare source, object, and executable files
 RTSRC = constants.f90 \
@@ -48,3 +48,6 @@ $(EXEC):
 clean:
 	find . -name "*~" -o -name "*.o" -o -name "*.mod" | xargs rm -f $(EXEC)
 	rm -f $(EXEC) $(IRIOBJS)
+
+install:
+	cp rtFort /usr/local/lib/python2.7/dist-packages/davitpy-0.2-py2.7-linux-x86_64.egg/davitpy/models/raydarn/rtFort

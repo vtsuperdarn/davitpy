@@ -70,7 +70,7 @@ class RtRun(object):
         nprocs=4):
         import datetime as dt
         from os import path
-        from pydarn import radar
+        from davitpy.pydarn import radar
 
         # Load pickled instance...
         if loadFrom:
@@ -426,7 +426,7 @@ class Edens(object):
                 
         written by Sebastien, 2013-04
         """
-        from utils import plotUtils
+        from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
@@ -456,7 +456,7 @@ class Edens(object):
 
         # Plot title with date ut time and local time
         if title:
-            stitle = _getTitle(time, beam, self.header, None)
+            stitle = _getTitle(time, beam, self.header, self.name)
             ax.set_title( stitle )
 
         # Add a colorbar
@@ -498,6 +498,10 @@ class Scatter(object):
         if self.readISFrom:
             self.isc = {}
             self.readIS(site=site, debug=debug)
+
+        self.name = ''
+        if radar:
+            self.name = radar.code[0].upper()
 
 
     def readGS(self, site=None, debug=False):
@@ -653,7 +657,7 @@ class Scatter(object):
                 
         written by Sebastien, 2013-04
         """
-        from utils import plotUtils
+        from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np
@@ -708,7 +712,7 @@ class Scatter(object):
 
             # Plot title with date ut time and local time
             if title:
-                stitle = _getTitle(time, beam, self.header, None)
+                stitle = _getTitle(time, beam, self.header, self.name)
                 ax.set_title( stitle )
 
             # If weighted, plot ionospheric scatter with colormap
@@ -878,7 +882,7 @@ class Rays(object):
                 
         written by Sebastien, 2013-04
         """
-        from utils import plotUtils
+        from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         import numpy as np

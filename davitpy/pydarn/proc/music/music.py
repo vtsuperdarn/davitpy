@@ -440,8 +440,12 @@ class musicArray(object):
                         'GS': Ground Scatter Mapping Model.  See Bristow et al. [1994]
                         'IS': Standard SuperDARN scatter mapping model.
         * [**fovCoords**] (str): Map coordinate system. WARNING: 'geo' is curently only tested coordinate system.
+        * [**full_array**] (bool):  If True, make the data array the full beam, gate dimensions listed in the hdw.dat file.
+                                    If False, truncate the array to the maximum dimensions that there is actually data.
+                                    False will save space without throwing out any data, but sometimes it is easier to work
+                                    with the full-size array.
 
-    **Methods**:
+   **Methods**:
         * :func:`musicArray.get_data_sets`
 
     **Example**:
@@ -462,7 +466,8 @@ class musicArray(object):
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
-    def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,fovElevation=None,fovModel='GS',fovCoords='geo'):
+    def __init__(self,myPtr,sTime=None,eTime=None,param='p_l',gscat=1,
+            fovElevation=None,fovModel='GS',fovCoords='geo',full_array=False):
         from davitpy import pydarn
         # Create a list that can be used to store top-level messages.
         self.messages   = []
@@ -599,8 +604,13 @@ class musicArray(object):
 
         #Figure out what size arrays we need and initialize the arrays...
         nrTimes = np.max(dataListArray[:,scanInx]) + 1
-        nrBeams = np.max(dataListArray[:,beamInx]) + 1
-        nrGates = np.max(dataListArray[:,gateInx]) + 1
+
+        if full_array:
+            nrBeams = fov.beams.max() + 1
+            nrGates = fov.gates.max() + 1
+        else:
+            nrBeams = np.max(dataListArray[:,beamInx]) + 1
+            nrGates = np.max(dataListArray[:,gateInx]) + 1
 
         #Make sure the FOV is the same size as the data array.
         if len(fov.beams) != nrBeams:

@@ -68,7 +68,7 @@ Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
       * (7) Average of eight 3 hour AP indicies from 36 to 57 hrs prior to current time
 
   """
-  from models import iri
+  from davitpy.models import iri
   from datetime import datetime
   from numpy import mean, floor
   

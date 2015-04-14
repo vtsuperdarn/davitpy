@@ -418,7 +418,9 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   ihop = 0        ! hop counter
   nrstep = 2      ! number of steps per ray counter
   naspstep = 1    ! number of ionospheric scatter occurence counter
-  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.theta.lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
+
+  !.002 added to theta so theta does not extend beyond edensTHT array RAG 20150410
+  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.(theta+0.002).lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
     ! Current position
     latiin = latiout
     longiin = longiout
@@ -572,15 +574,18 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
     if (grpran.gt.180e3.and.rtmp*1e-3.gt.(Rav+90.)) then
       CALL CALC_ASPECT(edensTHT, dip, rayazim, theta, thetatmp, r, rtmp, aspectind, aspect)
       if (aspectind.gt.0) then
-        ! Calculate mean range
+        ! Calculate mean range  Changed + h/2 to -h/2 below
+        ! Subtraction is needed here because grpran has already been incremented.
         d = r/rtmp*h*sin(edensTHT(aspectind) - theta)/sin(thetatmp-theta)
-        asp_grpran = grpran + h/2.
-        ! Calculate mean slant range
-!        asp_ran = ransave(nrstep-1) + h/2.*sqrt(nr2)
+        asp_grpran = grpran - h/2.
+
         ! Calculate mean ground range
-        asp_theta = (thetatmp-theta)/2. + theta
+        ! Addition needed here because theta has NOT already been incremented.
+        asp_theta = theta + (thetatmp-theta)/2.
+
         ! Calculate mean altitude
         asp_alt = sqrt( h**2./4. + r**2. + h/2.*r*sin(ranelev) )
+
         ! Calculate weighing (to account for backsground electron density and deviation from perfect aspect conditions)
         asp_w = ( edensARR(nint(((rtmp-r)/2.+r)*1e-3 - 60. - Rav), aspectind) )**2. / asp_grpran**3.
 

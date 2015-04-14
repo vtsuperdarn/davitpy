@@ -143,10 +143,10 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   from davitpy import models
   
   myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,fileType=fileType)
-  if(myPtr == None): return None
+  if(myPtr is None): return None
   
   myData = pydarn.sdio.radDataReadRec(myPtr)
-  if(myData == None): return None
+  if(myData is None): return None
   
   
   radar = pydarn.radar.network().getRadarByCode(rad)
@@ -165,7 +165,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     format('time','beam','npnts','nrang','cpid','channel','tfreq','lagfr','smsep','intt','scan','us','rsep'))
       
       
-  while(myData != None and myData.time <= eTime):
+  while(myData is not None and myData.time <= eTime):
     t = myData.time
     if(summ == 0):
       f.write(t.strftime("%Y-%m-%d  "))
@@ -224,5 +224,5 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
       myData.prm.scan,t.strftime("%f"),myData.prm.rsep))
       
     myData = pydarn.sdio.radDataReadRec(myPtr)
-    if(myData == None): break
+    if(myData is None): break
     

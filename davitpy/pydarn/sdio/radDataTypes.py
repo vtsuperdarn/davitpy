@@ -509,6 +509,10 @@ class radDataPtr():
         orig_beam=self.bmnum
         self.bmnum=None
 
+        if self.__ptr is None:
+            print 'Error, self.__ptr is None.  There is probably no data available for your selected time.'
+            return None
+
         if self.__ptr.closed:
             print 'error, your file pointer is closed'
             return None

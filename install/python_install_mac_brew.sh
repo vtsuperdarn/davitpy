@@ -27,6 +27,7 @@ pip install --upgrade PIL
 pip install --upgrade pymongo
 pip install --upgrade paramiko
 pip install --upgrade jinja2
+pip install --upgrade jsonschema
 pip install --upgrade cython
 pip install --upgrade scikit-image
 pip install --upgrade pandas
