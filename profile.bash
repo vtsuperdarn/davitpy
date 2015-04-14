@@ -10,6 +10,7 @@ export DAVITPY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export PATH=${DAVITPY}/bin:${PATH}
 
+# NEED TO MOVE TO rcsetup.py and setup.py
 export AACGM_DAVITPY_DAT_PREFIX=${DAVITPY}/tables/aacgm/aacgm_coeffs
 
 

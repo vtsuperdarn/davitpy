@@ -4,6 +4,11 @@ import glob
 # Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
+# NEED TO HAVE aacgm_coeffs installed with software
+#davitpy_dir = os.path.dirname(os.path.abspath(__file__))
+#os.environ['DAVITPY'] = davitpy_dir
+#os.environ['AACGM_DAVITPY_DAT_PREFIX'] = os.path.join(davitpy_dir,"tables/aacgm/aacgm_coeffs")
+
 from setuptools.command import install as _install
 # Need to use the enhanced version of distutils packaged with
 # numpy so that we can compile fortran extensions
