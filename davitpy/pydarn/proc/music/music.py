@@ -340,26 +340,28 @@ class musicDataObj(object):
         Written by Nathaniel A. Frissell, Fall 2013
         """
         
-        if timeVec == None: timeVec = self.time
+        if timeVec  == None: timeVec = self.time
 
-        diffs = np.unique(np.diff(timeVec))
-        self.diffs = diffs
+        diffs       = np.diff(timeVec)
+        diffs_unq   = np.unique(diffs)
+        self.diffs  = diffs_unq
 
-        if len(diffs) == 1:
+        if len(diffs_unq) == 1:
             samplePeriod = diffs[0].total_seconds()
         else:
-            maxDt = np.max(diffs) - np.min(diffs)
-            maxDt = maxDt.total_seconds()
-            avg = np.sum(diffs)/len(diffs)
-            avg = avg.total_seconds()
-            md  = self.metadata
-            warn = 'WARNING'
+            diffs_sec   = np.array([x.total_seconds() for x in diffs])
+            maxDt       = np.max(diffs_sec)
+            avg         = np.mean(diffs_sec)
+
+            md          = self.metadata
+            warn        = 'WARNING'
             if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
             print warn + ':'
             print '   Date time vector is not regularly sampled!'
             print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
             print '   Using average sampling period of ' + str(avg) + ' sec.'
             samplePeriod = avg
+            import ipdb; ipdb.set_trace()
 
         return samplePeriod
 
