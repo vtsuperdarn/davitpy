@@ -39,6 +39,11 @@ for s in source_dirs:
             sources.append('.'.join(
                 root.replace(pwd,'').strip('/').split('/')
                 ))
+#Get a list of all the AACGM tables
+data_files = []
+for f in os.listdir('tables/aacgm'):
+    data_files.append(('tables/aacgm',[os.path.join('tables/aacgm/',f)]))
+
 ################################################################################
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -60,6 +65,7 @@ setup(name='davitpy',
         'models.iri': ['*.dat','*.asc'],
         'models.hwm': ['*.mod','*.dat']
       },
+      data_files=data_files,
       py_modules = ['davitpy'],#,'pydarn','models','gme','utils'],
       install_requires=[],
       classifiers = [

@@ -21,11 +21,12 @@ import sys
 import io
 import locale
 import re
+import warnings
+from itertools import chain
 
 from davitpy.rcsetup import defaultParams
 
 __version__ = str('0.3')
-
 
 _error_details_fmt = 'line #%d\n\t"%s"\n\tin file "%s"'
 
@@ -154,10 +155,26 @@ def _get_xdg_cache_dir():
             path = os.path.join(path, '.cache')
     return path
 
+def mkdirs(newdir, mode=0o777):
+    """
+    make directory *newdir* recursively, and set *mode*.  Equivalent to ::
+        > mkdir -p NEWDIR
+        > chmod MODE NEWDIR
+    """
+    try:
+        if not os.path.exists(newdir):
+            parts = os.path.split(newdir)
+            for i in range(1, len(parts) + 1):
+                thispart = os.path.join(*parts[:i])
+                if not os.path.exists(thispart):
+                    os.makedirs(thispart, mode)
+
+    except OSError as err:
+        # Reraise the error unless it's about an already existing directory
+        if err.errno != errno.EEXIST or not os.path.isdir(newdir):
+            raise
 
 def _get_config_or_cache_dir(xdg_base):
-    from matplotlib.cbook import mkdirs
-
     configdir = os.environ.get('DAVITCONFIGDIR')
     if configdir is not None:
         configdir = os.path.abspath(configdir)
@@ -193,7 +210,7 @@ def _get_configdir():
     """
     Return the string representing the configuration directory.
     The directory is chosen as follows:
-    1. If the MPLCONFIGDIR environment variable is supplied, choose that.
+    1. If the DAVITPYCONFIGDIR environment variable is supplied, choose that.
     2a. On Linux, if `$HOME/.matplotlib` exists, choose that, but warn that
         that is the old location.  Barring that, follow the XDG specification
         and look first in `$XDG_CONFIG_HOME`, if defined, or `$HOME/.config`.
@@ -206,41 +223,50 @@ def _get_configdir():
     """
     return _get_config_or_cache_dir(_get_xdg_config_dir())
 
-def _get_data_path():
-    'get the path to davitpy data'
-
-    if 'MATPLOTLIBDATA' in os.environ:
-        path = os.environ['MATPLOTLIBDATA']
-        if not os.path.isdir(path):
-            raise RuntimeError('Path in environment MATPLOTLIBDATA not a '
-                               'directory')
+def _decode_filesystem_path(path):
+    if isinstance(path, bytes):
+        return path.decode(sys.getfilesystemencoding())
+    else:
         return path
 
-    path = os.sep.join([os.path.dirname(__file__), 'mpl-data'])
+def _get_data_path():
+
+    if 'DAVITPYDATA' in os.environ:
+        path = os.environ['DAVITPYDATA']
+        if not os.path.isdir(path):
+            raise RuntimeError('Path in environment DAVITPYDATA not a '
+                               'directory')
+        return path
+    _file = _decode_filesystem_path(__file__)
+    path = os.sep.join([os.path.dirname(_file)])
     if os.path.isdir(path):
         return path
 
     # setuptools' namespace_packages may highjack this init file
     # so need to try something known to be in matplotlib, not basemap
-    import matplotlib.afm
-    path = os.sep.join([os.path.dirname(matplotlib.afm.__file__), 'mpl-data'])
+
+    import davitpy.rcsetup
+    _file = _decode_filesystem_path(davitpy.rcsetup.__file__)
+    path = os.sep.join([os.path.dirname(_file)])
+
+    print(path)
     if os.path.isdir(path):
         return path
 
     # py2exe zips pure python, so still need special check
     if getattr(sys, 'frozen', None):
         exe_path = os.path.dirname(sys.executable)
-        path = os.path.join(exe_path, 'mpl-data')
+        path = os.path.join(exe_path)
         if os.path.isdir(path):
             return path
 
         # Try again assuming we need to step up one more directory
-        path = os.path.join(os.path.split(exe_path)[0], 'mpl-data')
+        path = os.path.join(os.path.split(exe_path)[0])
         if os.path.isdir(path):
             return path
 
         # Try again assuming sys.path[0] is a dir not a exe
-        path = os.path.join(sys.path[0], 'mpl-data')
+        path = os.path.join(sys.path[0])
         if os.path.isdir(path):
             return path
 
@@ -270,7 +296,7 @@ def davitpy_fname():
           - or `$HOME/.config/davitpy/davitpyrc` (if
             $XDG_CONFIG_HOME is not defined)
     - On other platforms,
-         - `$HOME/.matplotlib/davitpyrc` if `$HOME` is defined.
+         - `$HOME/.davitpy/davitpyrc` if `$HOME` is defined.
     - Lastly, it looks in `$DAVITPYDATA/davitpyrc` for a
       system-defined copy.
     """
@@ -417,6 +443,20 @@ See rcParams.keys() for a list of valid parameters.' % (key,))
                         for key, value in self.items()
                         if pattern_re.search(key))
 
+
+# This is the map to be used for deprecating parameters in the future
+_deprecated_map = {
+    #'name':   ('value', lambda x: x),
+    }
+
+_deprecated_ignore_map = {
+    }
+
+_obsolete_set = set(['tk.pythoninspect', ])
+_all_deprecated = set(chain(_deprecated_ignore_map,
+                            _deprecated_map, _obsolete_set))
+
+
 def rc_params(fail_on_error=False):
     """Return a :class:`davitpy.RcParams` instance from the
     default davitpy rc file.
@@ -440,6 +480,7 @@ def _rc_params_in_file(fname, fail_on_error=False):
     """
     cnt = 0
     rc_temp = {}
+    print(fname)
     with _open_file_or_url(fname) as fd:
         for line in fd:
             cnt += 1
