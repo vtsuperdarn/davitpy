@@ -1,0 +1,59 @@
+####
+# ADDRESS SFTP DATABASE, USERNAME, PASSWORD, AND PORT
+####
+DB		: sd-data.ece.vt.edu
+DBREADUSER	: sd_dbread
+DBREADPASS	: 5d
+DB_PORT		: 22
+
+####
+# RADAR HARDWARE.DAT SERVER ADDRESS and PORT
+####
+SDDB	: sd-work9.ece.vt.edu:27017
+
+####
+# TEMPORARY DIRECTORY
+####
+DAVITPY_TMPDIR		: /tmp/sd/
+
+####
+# RADAR DATA FILE FETCHING
+# The evironment variables are python dictionary capable formatted strings appended 
+# encode radar name, channel, and/or date information.  Currently supported 
+# dictionary keys which can be used are: 
+#
+#    "date"    : datetime.datetime.strftime("%Y%m%d")
+#    "year"    : 0 padded 4 digit year 
+#    "month"   : 0 padded 2 digit month 
+#    "day"     : 0 padded 2 digit day 
+#    "hour"    : 0 padded 2 digit day 
+#    "ftype"   : filetype string
+#    "radar"   : 3-chr radarcode 
+#    "channel" : single character string, ex) 'a'
+#
+# So for time = datetime(2012,2,1,0), rad='sas', and fileType='fitacf'
+# DAVIT_REMOTE_DIRFORMAT='data/{year}/{ftype}/{radar}/' would become:
+# 'data/2012/fitacf/sas/'
+#
+# ONLY the *FNAMEFMT environment variables will be converted to lists 
+# if the environment variable contain a comma (','). For example:
+#
+# DAVIT_REMOTE_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
+# becomes remote_fnamefmt = ['{date}.{hour}......{radar}.{ftype}','{date}.{hour}......{radar}.{channel}.{ftype}'] in python.
+####
+DAVIT_REMOTE_DIRFORMAT	: data/{year}/{ftype}/{radar}/
+DAVIT_REMOTE_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
+DAVIT_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{radar}/',validate_string],
+DAVIT_LOCAL_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
+DAVIT_REMOTE_TIMEINC	: 2
+DAVIT_LOCAL_TIMEINC	: 2
+
+####
+# MAP DATA FILE FETCHING
+####
+DAVIT_SD_REMOTE_DIRFORMAT	: data/{year}/{ftype}/{hemi}/
+DAVIT_SD_REMOTE_FNAMEFMT	: {date}.{hemi}.{ftype}
+DAVIT_SD_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{hemi}/
+DAVIT_SD_LOCAL_FNAMEFMT		: {date}.{hemi}.{ftype}
+DAVIT_SD_REMOTE_TIMEINC		: 24
+DAVIT_SD_LOCAL_TIMEINC		: 24

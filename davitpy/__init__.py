@@ -22,6 +22,7 @@ import io
 import locale
 import re
 import warnings
+import contextlib
 from itertools import chain
 
 from davitpy.rcsetup import defaultParams
@@ -73,6 +74,7 @@ def _url_lines(f):
     for line in f:
         yield line.decode('utf8')
 
+@contextlib.contextmanager
 def _open_file_or_url(fname):
     if is_url(fname):
         f = urlopen(fname)
@@ -480,9 +482,9 @@ def _rc_params_in_file(fname, fail_on_error=False):
     """
     cnt = 0
     rc_temp = {}
-    print(fname)
     with _open_file_or_url(fname) as fd:
         for line in fd:
+            print
             cnt += 1
             strippedline = line.split('#', 1)[0].strip()
             if not strippedline:
