@@ -192,10 +192,12 @@ defaultParams = {
     'DBREADUSER':		['sd_dbread',validate_string],
     'DBREADPASS':		['5d',validate_string],
     'DB_PORT':			['22',validate_string],
-    #
+    # database 
     'SDDB':			['sd-work9.ece.vt.edu:27017',validate_string],
+    'DBWRITEUSER':		['',validate_string],
+    'DBWRITEPASS':		['',validate_string],
     # temporary directory
-    'DAVITPY_TMPDIR':		['/tmp/sd/',validate_string],
+    'DAVIT_TMPDIR':		['/tmp/sd/',validate_string],
     # radar data file fetching
     'DAVIT_REMOTE_DIRFORMAT':	['data/{year}/{ftype}/{radar}/',validate_string],
     'DAVIT_REMOTE_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}',validate_string],

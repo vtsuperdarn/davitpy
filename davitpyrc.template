@@ -9,12 +9,14 @@ DB_PORT		: 22
 ####
 # RADAR HARDWARE.DAT SERVER ADDRESS and PORT
 ####
-SDDB	: sd-work9.ece.vt.edu:27017
+SDDB		: sd-work9.ece.vt.edu:27017
+DBWRITEUSER	: 
+DBWRITEPASS	: 
 
 ####
 # TEMPORARY DIRECTORY
 ####
-DAVITPY_TMPDIR		: /tmp/sd/
+DAVIT_TMPDIR		: /tmp/sd/
 
 ####
 # RADAR DATA FILE FETCHING
@@ -43,7 +45,7 @@ DAVITPY_TMPDIR		: /tmp/sd/
 ####
 DAVIT_REMOTE_DIRFORMAT	: data/{year}/{ftype}/{radar}/
 DAVIT_REMOTE_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
-DAVIT_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{radar}/',validate_string],
+DAVIT_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{radar}/
 DAVIT_LOCAL_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
 DAVIT_REMOTE_TIMEINC	: 2
 DAVIT_LOCAL_TIMEINC	: 2

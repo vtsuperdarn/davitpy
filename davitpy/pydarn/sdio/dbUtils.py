@@ -15,15 +15,15 @@
   * :func:`mapDbFit`
 """
 
-
+import davitpy
 from pymongo import MongoClient
 from davitpy.pydarn.sdio import *
 from davitpy.pydarn.sdio.radDataTypes import *
 import datetime, os
 
 
-def getServerConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'],\
-                  dbAddress=os.environ['SDDB']):
+def getServerConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams['DBREADPASS'],\
+                  dbAddress=davitpy.rcParams['SDDB']):
   """
   **PACKAGE**: pydarn.sdio.dbUtils
   **FUNCTION**: getServerConn([username],[password])
@@ -36,11 +36,11 @@ def getServerConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADP
 
   **INPUTS**:
     **[username]**: the username to connect with.  
-     default is the read-only user defined in .bashrc
+     default is the read-only user defined in davitpyrc
     **[password]**: the password corresponding to the user username.
-     default is defined in .bashrc
+     default is defined in davitpyrc
     **[dbAddress]**: the address of the database to be accessed,
-     eg sd-work9.ece.vt.edu:27017.  Default is defined in .bashrc
+     eg sd-work9.ece.vt.edu:27017.  Default is defined in davitpyrc
 
   **OUTPUTS**:
     **sConn**: a connection to the mongodb server
@@ -64,8 +64,8 @@ def getServerConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADP
   #return connection for good, none for bad
   return sConn
   
-def getDbConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'],\
-              dbAddress=os.environ['SDDB'],dbName='radData'):
+def getDbConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams['DBREADPASS'],\
+              dbAddress=davitpy.rcParams['SDDB'],dbName='radData'):
   """
   **PACKAGE**: pydarn.sdio.dbUtils
   **FUNCTION**: getDbConn([username],[password],[dbAddress],[dbName])
@@ -78,11 +78,11 @@ def getDbConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'
  
   **INPUTS**:
     **[username]**: the username to connect with.  
-      default is the read-only user defined in .bashrc
+      default is the read-only user defined in davitpyrc
     **[password]**: the password corresponding to the user username.
-      default is defined in .bashrc
+      default is defined in davitpyrc
     **[dbAddress]**: the address of the database to be accessed,
-      eg sd-work9.ece.vt.edu:27017.  Default is defined in .bashrc
+      eg sd-work9.ece.vt.edu:27017.  Default is defined in davitpyrc
     **[dbName]**: the name of the database to connect to.
       default is 'radData', where fit data is stored
  
@@ -112,8 +112,8 @@ def getDbConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'
   else: return None
     
   
-def getDataConn(username=os.environ['DBREADUSER'],password=os.environ['DBREADPASS'],\
-                dbAddress=os.environ['SDDB'],dbName='radData',collName='beams'):
+def getDataConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams['DBREADPASS'],\
+                dbAddress=davitpy.rcParams['SDDB'],dbName='radData',collName='beams'):
   """
   **PACKAGE**: pydarn.sdio.dbUtils
   **FUNCTION**: getDataConn([username],[password],[dbAddress],[dbName],[collName])
@@ -357,7 +357,7 @@ def mapDbFit(dateStr, rad, time=[0,2400], fileType='fitex', vb=0):
     
   #get a write connection to the db
   try:
-    beams = getDataConn(os.environ['DBWRITEUSER'],os.environ['DBWRITEPASS'])
+    beams = getDataConn(davitpy.rcParams['DBWRITEUSER'],davitpy.rcParams['DBWRITEPASS'])
   except:
     print 'error connecting to database for writing'
     return None

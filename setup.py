@@ -24,7 +24,6 @@ msis = Extension("msisFort",sources=["davitpy/models/msis/nrlmsise00_sub.for",'d
 tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f', 'davitpy/models/tsyganenko/T96.f', \
                     'davitpy/models/tsyganenko/geopack08.for','davitpy/models/tsyganenko/geopack08.pyf'])
 
-
 # C extensions
 dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/rst/src/*.c'),)
 aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
