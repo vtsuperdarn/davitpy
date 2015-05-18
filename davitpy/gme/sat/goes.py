@@ -421,6 +421,8 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
 
         try:
             arg_max = b_avg[sWin:eWin].argmax()
+            if arg_max is np.nan:
+                continue
             keys.append(arg_max)
         except:
             pass
