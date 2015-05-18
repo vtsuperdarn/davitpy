@@ -12,6 +12,7 @@ This subpackage contains various radar information/routines for DaViT-py
     * :mod:`pydarn.radar.radUtils`: misc. radar parameters (cpid...)
 """
 
+
 try:
     from radFov import *
 except Exception as e:
@@ -37,8 +38,9 @@ except Exception as e:
 # Update local HDF5
 ####################################
 import os.path, time
+import davitpy
 try:
-    dirn = os.environ['DAVIT_TMPDIR']
+    dirn = davitpy.rcParams['DAVIT_TMPDIR']
     d = os.path.dirname(dirn)
     if not os.path.exists(d):
         os.makedirs(d)

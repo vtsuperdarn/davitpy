@@ -236,13 +236,14 @@ class updateRadars(object):
         from datetime import datetime
         from numpy import dtype
         import sqlite3 as lite
+        import davitpy
 
         # Date format
         dtfmt = '%Y-%m-%d %H:%M:%S'
         dttest = datetime.utcnow().strftime(dtfmt)
         # File path
         try: 
-          self.sql_path=os.environ['DAVIT_TMPDIR']
+          self.sql_path=davitpy.rcParams['DAVIT_TMPDIR']
         except:
           try:  self.sql_path=os.environ['HOME']
           except: self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
@@ -250,15 +251,15 @@ class updateRadars(object):
         # MongoDB server
         self.db_name = 'radarInfo'
         try:
-          self.db_user = os.environ['DBREADUSER']
+          self.db_user = davitpy.rcParams['DBREADUSER']
         except KeyError:
           self.db_user = "" 
         try:
-          self.db_pswd = os.environ['DBREADPASS']
+          self.db_pswd = davitpy.rcParams['DBREADPASS']
         except KeyError:
           self.db_pswd = "" 
         try:
-          self.db_host = os.environ['SDDB']
+          self.db_host = davitpy.rcParams['SDDB']
         except KeyError:
           self.db_host = "" 
 
