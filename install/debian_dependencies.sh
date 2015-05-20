@@ -31,6 +31,7 @@ pip install --upgrade jinja2
 pip install --upgrade jsonschema
 pip install --upgrade ecdsa
 pip install --upgrade pandas
+pip install --upgrade scikit-image
 apt-get install -y libnetcdf-dev
 pip install --upgrade netcdf4
 
