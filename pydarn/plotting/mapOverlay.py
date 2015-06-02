@@ -316,72 +316,6 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                     bcol_rgb = ib/float(x.shape[0])
                     bcol = (bcol_rgb/2., bcol_rgb, 1)
                 else:
-<<<<<<< HEAD
-                    sGate   = 0
-
-                if model == 'GS':
-                    # Ground scatter model is not defined for close in rangegates.
-                    # np.nan will be returned for these gates.
-                    # Set sGate >= to the first rangegate that has real values.
-                    
-                    not_finite  = np.logical_not(np.isfinite(radFov.lonFull))
-                    grid        = np.tile(np.arange(radFov.lonFull.shape[1]),(radFov.lonFull.shape[0],1)) 
-                    grid[not_finite] = 999999
-                    tmp_sGate   = (np.min(grid,axis=1)).max()
-                    if tmp_sGate > sGate: sGate = tmp_sGate
-
-		# Get radar coordinates in map projection
-		if hasattr(mapObj, 'coords'): 
-			x, y = mapObj(radFov.lonFull, radFov.latFull, coords=radFov.coords)
-		else:
-			x, y = mapObj(radFov.lonFull, radFov.latFull)
-		# Plot field of view
-		# Create contour
-
-
-		contourX = concatenate( (x[0,sGate:eGate], 
-								 x[:,eGate],
-								 x[-1,eGate:sGate:-1],
-								 x[-1::-1,sGate]) )
-		contourY = concatenate( (y[0,sGate:eGate], 
-								 y[:,eGate],
-								 y[-1,eGate:sGate:-1],
-								 y[-1::-1,sGate]) )
-		# Plot contour
-		mapObj.plot(contourX, contourY, 
-			color=lineColor, zorder=zorder, linewidth=lineWidth)
-		# Field of view fill
-		if fovColor:
-			contour = transpose( vstack((contourX,contourY)) )
-			patch = Polygon( contour, color=fovColor, alpha=fovAlpha, zorder=zorder)
-			gca().add_patch(patch)
-		# Beams fill
-		if beams:
-			try:
-				[b for b in beams]
-			except:
-				beams = [beams]
-			for ib in beams:
-				if not (0 <= ib <= x.shape[0]): continue
-				if not beamsColors:
-					bColRGB = ib/float(x.shape[0])
-					bCol = (bColRGB/2.,bColRGB,1)
-				else:
-					bCol = beamsColors[beams.index(ib)]
-				contourX = concatenate( (x[ib,0:eGate+1], 
-										 x[ib:ib+2,eGate],
-										 x[ib+1,eGate::-1],
-										 x[ib+1:ib-1:-1,0]) )
-				contourY = concatenate( (y[ib,0:eGate+1], 
-										 y[ib:ib+2,eGate],
-										 y[ib+1,eGate::-1],
-										 y[ib+1:ib-1:-1,0]) )
-				contour = transpose( vstack((contourX,contourY)) )
-				patch = Polygon( contour, color=bCol, alpha=.4, zorder=zorder)
-				gca().add_patch(patch)
-	
-	return
-=======
                     bcol = beamsColors[beams.index(ib)]
                 contour_x = concatenate((x[ib,0:egate+1], x[ib:ib+2,egate],
                                          x[ib+1,egate::-1], x[ib+1:ib-1:-1,0]))
@@ -393,8 +327,6 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                 gca().add_patch(patch)
 
     return
->>>>>>> 8c12f8a... Back FoV
-
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
