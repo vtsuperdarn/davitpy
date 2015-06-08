@@ -27,7 +27,8 @@
   * :func:`pydarn.plotting.iqPlot.plot_iq`
 """
 
-def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
+def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None,
+            tx_pulse=True, int_data=False):
 
     """create an rti plot for a secified radar and time period
 
@@ -201,8 +202,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
                 ax.set_yticklabels([])
             else:
                 ax.plot(time,0.1*amp*np.pi - np.pi,color='blue')
-                ax.fill(time,0.1*amp*np.pi - np.pi,color='blue', \
-                                                    alpha = 0.5)
+                ax.fill(time,0.1*amp*np.pi - np.pi,color='blue', alpha = 0.5)
     
     if user_ax is None:
         fig.show()
@@ -217,7 +217,8 @@ if __name__ == "__main__":
     from datetime import datetime
   
     print "First we need to fetch an iqdat file and read a beam record..."
-    myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), 'kap', fileType='iqdat')
+    myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), 'kap',
+                                    fileType='iqdat')
     myBeam = pydarn.sdio.radDataReadRec(myPtr)
 
     print "Testing the plot_iq method and it's options...."

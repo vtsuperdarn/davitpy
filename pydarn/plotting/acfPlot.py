@@ -90,8 +90,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     if normalized:
         fluct = 1 / np.sqrt(nave) * (1 + 1 / (power[gate] / noise))
     else:
-        fluct = power[gate] / np.sqrt(nave) * \
-            (1 + 1 / (power[gate] / noise))
+        fluct = power[gate] / np.sqrt(nave) * (1 + 1 / (power[gate] / noise))
 
     # Grab the appropriate data for plotting
     if ((xcf) and (myBeam.prm.xcf == 0)):
@@ -364,7 +363,8 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
     return txs_in_lag
 
 
-def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False):
+def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False,
+             pdf=False):
     """
     This function plots a range-lag-intensity plot of ACF/XCF data
     for an input beamData object.
@@ -574,7 +574,9 @@ if __name__ == "__main__":
     from matplotlib import pyplot
 
     print "First we need to fetch an rawacf file and read a beam record..."
-    myPtr = pydarn.sdio.radDataOpen(datetime(2012, 5, 21), 'sas', eTime=datetime(2012, 5, 21, 2), fileType='rawacf')
+    myPtr = pydarn.sdio.radDataOpen(datetime(2012, 5, 21), 'sas',
+                                    eTime=datetime(2012, 5, 21, 2),
+                                    fileType='rawacf')
     myBeam = myPtr.readRec()
 
     print "Testing the plot_rli method and it's options...."
