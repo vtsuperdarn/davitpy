@@ -7,15 +7,13 @@
 # *********************************
 # Set path to DAVITPY
 export DAVITPY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 export PATH=${DAVITPY}/bin:${PATH}
 
-# NEED TO MOVE TO rcsetup.py and setup.py
 export AACGM_DAVITPY_DAT_PREFIX=${DAVITPY}/tables/aacgm/aacgm_coeffs
 
-# NEEDED FOR GME DATABASE STUFF
-#export DBWRITEUSER=''
-#export DBWRITEPASS=''
-#export SDDB='sd-work9.ece.vt.edu:27017'
+
+
 
 #
 # IN LIEU OF CONFIGURATION FILE LIKE MATPLOTLIBRC
@@ -47,37 +45,44 @@ export AACGM_DAVITPY_DAT_PREFIX=${DAVITPY}/tables/aacgm/aacgm_coeffs
 
 # Set SFTP DATABASE
 #export DB='sd-data.ece.vt.edu'
+export DB='chapman.usask.ca'
 
 # Set Database users
 #export DBREADUSER='sd_dbread'
 #export DBREADPASS='5d'
-
+export DBREADUSER='davitpy'
+export DBREADPASS='d4vitPY-usask'
 # Set Database users
 #export SDDB='sd-work9.ece.vt.edu:27017'
+export SDDB='chapman.usask.ca'
 
-#export DB_PORT='22'
+export DB_PORT='22'
 
 # Set default temporary directory
-#export DAVIT_TMPDIR='/tmp/sd/'
+export DAVIT_TMPDIR='/tmp/sd/'
 # RAD FILES 
 #export DAVIT_REMOTE_DIRFORMAT='data/{year}/{ftype}/{radar}/'
+export DAVIT_REMOTE_DIRFORMAT='fitcon/{year}/{month}/'
 #export DAVIT_REMOTE_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
-
-#export DAVIT_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{radar}/'
-#export DAVIT_LOCAL_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
+export DAVIT_REMOTE_FNAMEFMT='{date}.C0.{radar}.{ftype},{date}.C0.{radar}.{channel}.{ftype}'
+export DAVIT_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{radar}/'
+export DAVIT_LOCAL_FNAMEFMT='{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}'
 
 #in hours
 #export DAVIT_REMOTE_TIMEINC='2'
 #export DAVIT_LOCAL_TIMEINC='2'
-
+export DAVIT_REMOTE_TIMEINC='24'
+export DAVIT_LOCAL_TIMEINC='24'
 
 # SD FILES 
 #export DAVIT_SD_REMOTE_DIRFORMAT='data/{year}/{ftype}/{hemi}/'
+export DAVIT_SD_REMOTE_DIRFORMAT='mapfiles/{year}/{month}/'
 #export DAVIT_SD_REMOTE_FNAMEFMT='{date}.{hemi}.{ftype}'
+export DAVIT_SD_REMOTE_FNAMEFMT='{date}.{ftype},{date}s.{ftype}'
 
-#export DAVIT_SD_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{hemi}/'
-#export DAVIT_SD_LOCAL_FNAMEFMT='{date}.{hemi}.{ftype}'
+export DAVIT_SD_LOCAL_DIRFORMAT='/sd-data/{year}/{ftype}/{hemi}/'
+export DAVIT_SD_LOCAL_FNAMEFMT='{date}.{hemi}.{ftype}'
 
 #in hours
-#export DAVIT_SD_REMOTE_TIMEINC='24'
-#export DAVIT_SD_LOCAL_TIMEINC='24'
+export DAVIT_SD_REMOTE_TIMEINC='24'
+export DAVIT_SD_LOCAL_TIMEINC='24'

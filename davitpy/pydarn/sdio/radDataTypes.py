@@ -32,7 +32,7 @@
   * :class:`pydarn.sdio.radDataTypes.iqData`
 """
 
-
+import davitpy
 from davitpy.utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
@@ -143,7 +143,7 @@ class radDataPtr():
     #a temporary directory to store a temporary file
     if tmpdir is None:
       try:
-        tmpDir=os.environ['DAVIT_TMPDIR']
+        tmpDir=davitpy.rcParams['DAVIT_TMPDIR']
       except:
         tmpDir = '/tmp/sd/'
     d = os.path.dirname(tmpDir)
@@ -223,28 +223,28 @@ class radDataPtr():
 
                 if local_dirfmt is None:
                     try:
-                        local_dirfmt = os.environ['DAVIT_LOCAL_DIRFORMAT']
+                        local_dirfmt = davitpy.rcParams['DAVIT_LOCAL_DIRFORMAT']
                     except:
                         local_dirfmt = '/sd-data/{year}/{ftype}/{radar}/'
-                        print 'Environment variable DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
+                        print 'Config entry DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
 
                 if local_dict is None:
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
 
                 if local_fnamefmt is None:
                     try:
-                        local_fnamefmt = os.environ['DAVIT_LOCAL_FNAMEFMT'].split(',')
+                        local_fnamefmt = davitpy.rcParams['DAVIT_LOCAL_FNAMEFMT'].split(',')
                     except:
                         local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        print 'Environment variable DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
+                        print 'Config entry DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
 
                 if local_timeinc is None:
                     try:
-                        local_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_LOCAL_TIMEINC']))
+                        local_timeinc = dt.timedelta(hours=int(davitpy.rcParams['DAVIT_LOCAL_TIMEINC']))
                     except:
                         local_timeinc = dt.timedelta(hours=2)
-                        print 'Environment variable DAVIT_LOCAL_TIMEINC not set, using default:',local_timeinc
+                        print 'Config entry DAVIT_LOCAL_TIMEINC not set, using default:',local_timeinc
                 
                 outdir = tmpDir
 
@@ -286,49 +286,49 @@ class radDataPtr():
 
                 if remote_site is None:
                     try:
-                        remote_site = os.environ['DB']
+                        remote_site = davitpy.rcParams['DB']
                     except:
                         remote_site = 'sd-data.ece.vt.edu'
-                        print 'Environment variable DB not set, using default:',remote_site
+                        print 'Config entry DB not set, using default:',remote_site
                 if username is None:
                     try:
-                        username = os.environ['DBREADUSER']
+                        username = davitpy.rcParams['DBREADUSER']
                     except:
                         username = 'sd_dbread'
-                        print 'Environment variable DBREADUSER not set, using default:',username
+                        print 'Config entry DBREADUSER not set, using default:',username
                 if password is None:
                     try:
-                        password = os.environ['DBREADPASS']
+                        password = davitpy.rcParams['DBREADPASS']
                     except:
                         password = '5d'
-                        print 'Environment variable DBREADPASS not set, using default:',password
+                        print 'Config entry DBREADPASS not set, using default:',password
                 if remote_dirfmt is None:
                     try:
-                        remote_dirfmt = os.environ['DAVIT_REMOTE_DIRFORMAT']
+                        remote_dirfmt = davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
                     except:
                         remote_dirfmt = 'data/{year}/{ftype}/{radar}/'
-                        print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
+                        print 'Config entry DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 if remote_fnamefmt is None:
                     try:
-                        remote_fnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
+                        remote_fnamefmt = davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT'].split(',')
                     except:
                         remote_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                                           '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        print 'Environment variable DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt
+                        print 'Config entry DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt
                 if port is None:
                     try:
-                        port = os.environ['DB_PORT']
+                        port = davitpy.rcParams['DB_PORT']
                     except:
                         port = '22'
-                        print 'Environment variable DB_PORT not set, using default:',port
+                        print 'Config entry DB_PORT not set, using default:',port
                 if remote_timeinc is None:
                     try:
-                        remote_timeinc = dt.timedelta(hours=int(os.environ['DAVIT_REMOTE_TIMEINC']))
+                        remote_timeinc = dt.timedelta(hours=int(davitpy.rcParams['DAVIT_REMOTE_TIMEINC']))
                     except:
                         remote_timeinc = dt.timedelta(hours=2)
-                        print 'Environment variable DAVIT_REMOTE_TIMEINC not set, using default:',remote_timeinc
+                        print 'Config entry DAVIT_REMOTE_TIMEINC not set, using default:',remote_timeinc
                 outdir = tmpDir
 
                 #check to see if channel was specified and only use fnamefmts with channel in them
@@ -1058,8 +1058,10 @@ if __name__=="__main__":
   import os
   import datetime
   import hashlib
+  import davitpy
+
   try:
-      tmpDir=os.environ['DAVIT_TMPDIR']
+      tmpDir=davitpy.rcParams['DAVIT_TMPDIR']
   except:
       tmpDir = '/tmp/sd/'
 
@@ -1077,14 +1079,14 @@ if __name__=="__main__":
 
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
-  print "  DB:", os.environ['DB']
-  print "  DB_PORT:",os.environ['DB_PORT']
-  print "  DBREADUSER:", os.environ['DBREADUSER']
-  print "  DBREADPASS:", os.environ['DBREADPASS']
-  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
-  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+  print "  DB:", davitpy.rcParams['DB']
+  print "  DB_PORT:",davitpy.rcParams['DB_PORT']
+  print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
+  print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT:", davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT:", davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC:", davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
     os.remove(expected_path)
@@ -1129,10 +1131,10 @@ if __name__=="__main__":
 
   print "\nRunning local grab example for radDataPtr."
   print "Environment variables used:"
-  print "  DAVIT_LOCAL_DIRFORMAT:", os.environ['DAVIT_LOCAL_DIRFORMAT']
-  print "  DAVIT_LOCAL_FNAMEFMT:", os.environ['DAVIT_LOCAL_FNAMEFMT']
-  print "  DAVIT_LOCAL_TIMEINC:", os.environ['DAVIT_LOCAL_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+  print "  DAVIT_LOCAL_DIRFORMAT:", davitpy.rcParams['DAVIT_LOCAL_DIRFORMAT']
+  print "  DAVIT_LOCAL_FNAMEFMT:", davitpy.rcParams['DAVIT_LOCAL_FNAMEFMT']
+  print "  DAVIT_LOCAL_TIMEINC:", davitpy.rcParams['DAVIT_LOCAL_TIMEINC']
+  print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
   src='local'
   if os.path.isfile(expected_path):
@@ -1185,14 +1187,14 @@ if __name__=="__main__":
 
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
-  print "  DB:", os.environ['DB']
-  print "  DB_PORT:",os.environ['DB_PORT']
-  print "  DBREADUSER:", os.environ['DBREADUSER']
-  print "  DBREADPASS:", os.environ['DBREADPASS']
-  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
-  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+  print "  DB:", davitpy.rcParams['DB']
+  print "  DB_PORT:",davitpy.rcParams['DB_PORT']
+  print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
+  print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT:", davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT:", davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC:", davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
     os.remove(expected_path)
@@ -1250,14 +1252,14 @@ if __name__=="__main__":
 
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
-  print "  DB:", os.environ['DB']
-  print "  DB_PORT:",os.environ['DB_PORT']
-  print "  DBREADUSER:", os.environ['DBREADUSER']
-  print "  DBREADPASS:", os.environ['DBREADPASS']
-  print "  DAVIT_REMOTE_DIRFORMAT:", os.environ['DAVIT_REMOTE_DIRFORMAT']
-  print "  DAVIT_REMOTE_FNAMEFMT:", os.environ['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", os.environ['DAVIT_REMOTE_TIMEINC']
-  print "  DAVIT_TMPDIR:", os.environ['DAVIT_TMPDIR']
+  print "  DB:", davitpy.rcParams['DB']
+  print "  DB_PORT:",davitpy.rcParams['DB_PORT']
+  print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
+  print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT:", davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT:", davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC:", davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
     os.remove(expected_path)

@@ -53,11 +53,12 @@ class network(object):
         """
         import sqlite3 as lite
         import os
+        import davitpy
 
         self.radars = []
         # Get DB name
         try: 
-          rad_path=os.environ['DAVIT_TMPDIR']
+          rad_path=davitpy.rcParams['DAVIT_TMPDIR']
         except:
           try:  rad_path=os.environ['HOME']
           except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
@@ -374,6 +375,7 @@ class radar(object):
         import sqlite3 as lite
         import pickle
         import os
+        import davitpy
 
         self.id = 0
         self.status = 0
@@ -390,7 +392,7 @@ class radar(object):
         # If a radar is requested...
         if code or radId:
             try: 
-              rad_path=os.environ['DAVIT_TMPDIR']
+              rad_path=davitpy.rcParams['DAVIT_TMPDIR']
             except:
               try:  rad_path=os.environ['HOME']
               except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
@@ -586,6 +588,7 @@ class site(object):
         import sqlite3 as lite
         import pickle
         import os
+        import davitpy
 
         self.tval = 0.0
         self.geolat = 0.0
@@ -604,7 +607,7 @@ class site(object):
         self.maxbeam = 0
         if radId or code: 
             try: 
-              rad_path=os.environ['DAVIT_TMPDIR']
+              rad_path=davitpy.rcParams['DAVIT_TMPDIR']
             except:
               try:  rad_path=os.environ['HOME']
               except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
