@@ -1860,7 +1860,7 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
 
     areas         = ndimage.sum(mask,labels,xrange(1,labels.max()+1))
     maxima        = ndimage.maximum(data,labels,xrange(1, labels.max()+1))
-    sortedMaxima  = np.sort(maxima)[::-1]
+    order         = np.argsort(maxima)[::-1] + 1
     maxpos        = ndimage.maximum_position(data,labels,xrange(1, labels.max()+1))
 
     sigDetect = SigDetect()
@@ -1871,7 +1871,7 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     for x in xrange(labels.max()):
         info = {}
         info['labelInx']    = x+1
-        info['order']       = int(np.where(maxima[x] == sortedMaxima)[0]) + 1
+        info['order']       = order[x]
         info['area']        = areas[x]
         info['max']         = maxima[x]
         info['maxpos']      = maxpos[x]
