@@ -286,14 +286,14 @@ def overlayFov(mapObj, codes=None, ids=None, names=None,
 					bCol = (bColRGB/2.,bColRGB,1)
 				else:
 					bCol = beamsColors[beams.index(ib)]
-				contourX = concatenate( (x[ib,0:eGate+1], 
+				contourX = concatenate( (x[ib,sGate:eGate+1], 
 										 x[ib:ib+2,eGate],
-										 x[ib+1,eGate::-1],
-										 x[ib+1:ib-1:-1,0]) )
-				contourY = concatenate( (y[ib,0:eGate+1], 
+										 x[ib+1,eGate:sGate:-1],
+										 x[ib+1:ib-1:-1,sGate]) )
+				contourY = concatenate( (y[ib,sGate:eGate+1], 
 										 y[ib:ib+2,eGate],
-										 y[ib+1,eGate::-1],
-										 y[ib+1:ib-1:-1,0]) )
+										 y[ib+1,eGate:sGate:-1],
+										 y[ib+1:ib-1:-1,sGate]) )
 				contour = transpose( vstack((contourX,contourY)) )
 				patch = Polygon( contour, color=bCol, alpha=.4, zorder=zorder)
 				gca().add_patch(patch)
