@@ -123,8 +123,9 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     acfFFT = []
     acfFFT.extend(temp[len(temp) / 2 + 1:])
     acfFFT.extend(temp[0:len(temp) / 2 + 1])
-    freq_scale_factor = 1 / (lags[-1] * myBeam.prm.mpinc * 10.0 ** -6) \
-        / (myBeam.prm.tfreq * 1000.) / 2. * (3. * 10 ** 8)
+    freq_scale_factor = ((3. * 10 ** 8) / 
+                         (myBeam.prm.tfreq * 1000. * 2. * lags[-1] *
+                          myBeam.prm.mpinc * 10.0 ** -6))
     vels = freq_scale_factor * (np.array(range(len(acfFFT))) -
                                 len(acfFFT) / 2)
 
