@@ -185,7 +185,8 @@ class sdDataPtr():
     
                     if local_dict is None:
                         local_dict = {'hemi':hemi, 'ftype':ftype}
-    
+                    if ('ftype' in local_dict.keys()):
+                        local_dict['ftype'] = ftype
                     if local_fnamefmt is None:
                         try:
                             local_fnamefmt = os.environ['DAVIT_SD_LOCAL_FNAMEFMT'].split(',')
@@ -197,9 +198,20 @@ class sdDataPtr():
     
     
                     #fetch the local files
-                    filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
+                    temp = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                     local_fnamefmt, verbose=verbose)
-    
+
+                    # check to see if the files actually have data between stime and etime
+                    valid = self.__validate_fetched(temp,self.sTime,self.eTime)
+                    filelist = [x[0] for x in zip(temp,valid) if x[1]]
+                    invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
+
+                    if len(invalid_files) > 0:
+                        for f in invalid_files:
+                            print 'removing invalid file: ' + f
+                            os.system('rm ' + f)
+
+                    # If we have valid files then continue
                     if(len(filelist) > 0):
                         print 'found',ftype,'data in local files'
                         self.fType,self.dType = ftype,'dmap'
@@ -251,6 +263,8 @@ class sdDataPtr():
                             print 'Environment variable DAVIT_SD_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                     if remote_dict is None:
                         remote_dict = {'ftype':ftype, 'hemi':hemi}
+                    if ('ftype' in remote_dict.keys()):
+                        remote_dict['ftype'] = ftype
                     if remote_fnamefmt is None:
                         try:
                             remote_fnamefmt = os.environ['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
@@ -265,12 +279,23 @@ class sdDataPtr():
                             print 'Environment variable DB_PORT not set, using default:',port
 
                     outdir = tmpDir
-    
+
                     #Now fetch the files
-                    filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
+                    temp = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                         remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                         password=password, port=port, verbose=verbose)
-    
+
+                    # check to see if the files actually have data between stime and etime
+                    valid = self.__validate_fetched(temp,self.sTime,self.eTime)
+                    filelist = [x[0] for x in zip(temp,valid) if x[1]]
+                    invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
+
+                    if len(invalid_files) > 0:
+                        for f in invalid_files:
+                            print 'removing invalid file: ' + f
+                            os.system('rm ' + f)
+
+                    # If we have valid files then continue
                     if len(filelist) > 0 :
                         print 'found',ftype,'data on sftp server'
                         self.fType,self.dType = ftype,'dmap'
@@ -302,8 +327,8 @@ class sdDataPtr():
                 self.fType = fileType
                 self.dType = 'dmap'
 
-        self.__filename=tmpName
-        self.open()
+            self.__filename=tmpName
+            self.open()
 
         if(self.__ptr != None):
             if(self.dType == None): self.dType = 'dmap'
@@ -461,8 +486,69 @@ class sdDataPtr():
         if self.__ptr is not None:
             self.__ptr.close()
             self.__fd=None
-  
- 
+
+    def __validate_fetched(self,filelist,stime,etime):
+        """ This function checks if the files in filelist contain data
+        for the start and end times (stime,etime) requested by a user.
+
+        **Args**:
+            * **filelist** (list):
+            * **stime** (datetime.datetime):
+            * **etime** (datetime.datetime):
+
+        **Returns**:
+            * List of booleans. True if a file contains data in the time
+            range (stime,etime)
+        """
+
+        # This method will need some modification for it to work with
+        # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
+        # specific code will need to be modified (readDmapRec).
+
+        import datetime as dt
+        import numpy as np
+        from pydarn.dmapio import readDmapRec
+
+        valid = []
+
+        for f in filelist:
+            print 'Checking file: ' + f
+            stimes = []
+            etimes = []
+
+            # Open the file and create a file pointer
+            self.__filename = f
+            self.open()
+
+            # Iterate through the file and grab the start time for beam
+            # integration and calculate the end time from intt.sc and intt.us
+            while(1):
+                #read the next record from the dmap file
+                dfile = readDmapRec(self.__fd)
+                if(dfile is None):
+                    break
+                else:
+                    temp = dt.datetime(int(dfile['start.year']),int(dfile['start.month']),
+                                       int(dfile['start.day']),int(dfile['start.hour']),
+                                       int(dfile['start.minute']),int(dfile['start.second']))
+                    stimes.append(temp)
+                    temp = dt.datetime(int(dfile['end.year']),int(dfile['end.month']),
+                                       int(dfile['end.day']),int(dfile['end.hour']),
+                                       int(dfile['end.minute']),int(dfile['end.second']))
+                    etimes.append(temp)
+            # Close the file and clean up
+            self.close()
+            self.__ptr = None
+
+            inds = np.where((np.array(stimes) >= stime) & (np.array(stimes) <= etime))
+            inde = np.where((np.array(etimes) >= stime) & (np.array(etimes) <= etime))
+            if (np.size(inds) > 0) or (np.size(inde) > 0):
+                valid.append(True)
+            else:
+                valid.append(False)
+
+        return valid
+
 class sdBaseData():
   """a base class for the porocessed SD data types.  This allows for single definition of common routines
   
@@ -775,11 +861,11 @@ if __name__=="__main__":
   channel=None
   fileType='mapex'
   sTime=datetime.datetime(2012,7,10)
-  eTime=datetime.datetime(2012,7,11)
-  expected_filename="20120710.000000.20120711.000000.north.mapex"
+  eTime=datetime.datetime(2012,7,11,2)
+  expected_filename="20120710.000000.20120711.020000.north.mapex"
   expected_path=os.path.join(tmpDir,expected_filename)
-  expected_filesize=32975870
-  expected_md5sum="b68417bafc59d608982937b2101da10e"
+  expected_filesize=32975826
+  expected_md5sum="1b0e78cb339e875cc17f82e240ef360f"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for sdDataPtr."

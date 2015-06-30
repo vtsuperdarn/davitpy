@@ -230,6 +230,8 @@ class radDataPtr():
 
                 if local_dict is None:
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
+                if ('ftype' in local_dict.keys()):
+                    local_dict['ftype'] = ftype
 
                 if local_fnamefmt is None:
                     try:
@@ -250,9 +252,20 @@ class radDataPtr():
                     break
 
                 #fetch the local files
-                filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
+                temp = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                                              local_fnamefmt, verbose=verbose)
 
+                # check to see if the files actually have data between stime and etime
+                valid = self.__validate_fetched(temp,self.sTime,self.eTime)
+                filelist = [x[0] for x in zip(temp,valid) if x[1]]
+                invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
+
+                if len(invalid_files) > 0:
+                    for f in invalid_files:
+                        print 'removing invalid file: ' + f
+                        os.system('rm ' + f)
+
+                # If we have valid files then continue
                 if(len(filelist) > 0):
                     print 'found',ftype,'data in local files'
                     self.fType,self.dType = ftype,'dmap'
@@ -303,6 +316,8 @@ class radDataPtr():
                         print 'Environment variable DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
+                if ('ftype' in remote_dict.keys()):
+                    remote_dict['ftype'] = ftype
                 if remote_fnamefmt is None:
                     try:
                         remote_fnamefmt = os.environ['DAVIT_REMOTE_FNAMEFMT'].split(',')
@@ -328,10 +343,21 @@ class radDataPtr():
                     break
 
                 #Now fetch the files
-                filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
+                temp = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, verbose=verbose)
 
+                # check to see if the files actually have data between stime and etime
+                valid = self.__validate_fetched(temp,self.sTime,self.eTime)
+                filelist = [x[0] for x in zip(temp,valid) if x[1]]
+                invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
+
+                if len(invalid_files) > 0:
+                    for f in invalid_files:
+                        print 'removing invalid file: ' + f
+                        os.system('rm ' + f)
+
+                # If we have valid files then continue
                 if len(filelist) > 0 :
                     print 'found',ftype,'data on sftp server'
                     self.fType,self.dType = ftype,'dmap'
@@ -581,6 +607,66 @@ class radDataPtr():
     if self.__ptr is not None:
       self.__ptr.close()
       self.__fd=None
+
+
+  def __validate_fetched(self,filelist,stime,etime):
+      """ This function checks if the files in filelist contain data
+      for the start and end times (stime,etime) requested by a user.
+
+      **Args**:
+          * **filelist** (list):
+          * **stime** (datetime.datetime):
+          * **etime** (datetime.datetime):
+
+      **Returns**:
+          * List of booleans. True if a file contains data in the time
+          range (stime,etime)
+      """
+
+      # This method will need some modification for it to work with
+      # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
+      # specific code will need to be modified (readDmapRec).
+
+      import os
+      import datetime as dt
+      import numpy as np
+      from pydarn.dmapio import readDmapRec
+
+      valid = []
+
+      for f in filelist:
+          print 'Checking file: ' + f
+          stimes = []
+          etimes = []
+
+          # Open the file and create a file pointer
+          self.__filename = f
+          self.open()
+
+          # Iterate through the file and grab the start time for beam
+          # integration and calculate the end time from intt.sc and intt.us
+          while(1):
+              #read the next record from the dmap file
+              dfile = readDmapRec(self.__fd)
+              if(dfile is None):
+                  break
+              else:
+                  temp = dt.datetime.utcfromtimestamp(dfile['time'])
+                  stimes.append(temp)
+                  sec = dfile['intt.sc'] + dfile['intt.us'] / (10. ** 6)
+                  etimes.append(temp + dt.timedelta(seconds=sec))
+          # Close the file and clean up
+          self.close()
+          self.__ptr = None
+
+          inds = np.where((np.array(stimes) >= stime) & (np.array(stimes) <= etime))
+          inde = np.where((np.array(etimes) >= stime) & (np.array(etimes) <= etime))
+          if (np.size(inds) > 0) or (np.size(inde) > 0):
+              valid.append(True)
+          else:
+              valid.append(False)
+
+      return valid
 
 class radBaseData():
   """a base class for the radar data types.  This allows for single definition of common routines
@@ -1051,8 +1137,8 @@ if __name__=="__main__":
   fileType='fitacf'
   filtered=False
   sTime=datetime.datetime(2012,11,1,0,0)
-  eTime=datetime.datetime(2012,11,1,4,0)
-  expected_filename="20121101.000000.20121101.040000.fhe.fitacf"
+  eTime=datetime.datetime(2012,11,1,4,2)
+  expected_filename="20121101.000000.20121101.040200.fhe.fitacf"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=19377805
   expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
@@ -1157,8 +1243,8 @@ if __name__=="__main__":
   fileType='fitex'
   filtered=False
   sTime=datetime.datetime(2014,6,24,0,0)
-  eTime=datetime.datetime(2014,6,24,2,0)
-  expected_filename="20140624.000000.20140624.020000.kod.c.fitex"
+  eTime=datetime.datetime(2014,6,24,2,2)
+  expected_filename="20140624.000000.20140624.020200.kod.c.fitex"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=16148989
   expected_md5sum="ae7b4a7c8fea56af9639c39bea1453f2"
@@ -1221,11 +1307,11 @@ if __name__=="__main__":
   fileType='fitex'
   filtered=False
   sTime=datetime.datetime(2014,6,24,0,0)
-  eTime=datetime.datetime(2014,6,24,2,0)
-  expected_filename="20140624.000000.20140624.020000.kod.all.fitex"
+  eTime=datetime.datetime(2014,6,24,2,2)
+  expected_filename="20140624.000000.20140624.020200.kod.all.fitex"
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=31822045
-  expected_md5sum="23cb7f8d954cef80b4a3e219838db816"
+  expected_md5sum="493bd0c937b6135cc608d0518d929077"
   print "Expected File:",expected_path
 
   print "\nRunning sftp grab example for radDataPtr."
