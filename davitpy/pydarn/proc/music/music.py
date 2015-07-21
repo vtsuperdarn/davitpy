@@ -340,26 +340,28 @@ class musicDataObj(object):
         Written by Nathaniel A. Frissell, Fall 2013
         """
         
-        if timeVec == None: timeVec = self.time
+        if timeVec  == None: timeVec = self.time
 
-        diffs = np.unique(np.diff(timeVec))
-        self.diffs = diffs
+        diffs       = np.diff(timeVec)
+        diffs_unq   = np.unique(diffs)
+        self.diffs  = diffs_unq
 
-        if len(diffs) == 1:
+        if len(diffs_unq) == 1:
             samplePeriod = diffs[0].total_seconds()
         else:
-            maxDt = np.max(diffs) - np.min(diffs)
-            maxDt = maxDt.total_seconds()
-            avg = np.sum(diffs)/len(diffs)
-            avg = avg.total_seconds()
-            md  = self.metadata
-            warn = 'WARNING'
+            diffs_sec   = np.array([x.total_seconds() for x in diffs])
+            maxDt       = np.max(diffs_sec)
+            avg         = np.mean(diffs_sec)
+
+            md          = self.metadata
+            warn        = 'WARNING'
             if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
             print warn + ':'
             print '   Date time vector is not regularly sampled!'
             print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
             print '   Using average sampling period of ' + str(avg) + ' sec.'
             samplePeriod = avg
+            import ipdb; ipdb.set_trace()
 
         return samplePeriod
 
@@ -1858,7 +1860,7 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
 
     areas         = ndimage.sum(mask,labels,xrange(1,labels.max()+1))
     maxima        = ndimage.maximum(data,labels,xrange(1, labels.max()+1))
-    sortedMaxima  = np.sort(maxima)[::-1]
+    order         = np.argsort(maxima)[::-1] + 1
     maxpos        = ndimage.maximum_position(data,labels,xrange(1, labels.max()+1))
 
     sigDetect = SigDetect()
@@ -1869,7 +1871,7 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     for x in xrange(labels.max()):
         info = {}
         info['labelInx']    = x+1
-        info['order']       = int(np.where(maxima[x] == sortedMaxima)[0]) + 1
+        info['order']       = order[x]
         info['area']        = areas[x]
         info['max']         = maxima[x]
         info['maxpos']      = maxpos[x]

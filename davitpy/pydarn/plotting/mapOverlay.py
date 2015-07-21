@@ -279,6 +279,17 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         else:
             sgate = 0
 
+        if model == 'GS':
+        # Ground scatter model is not defined for close in rangegates.
+        # np.nan will be returned for these gates.
+        # Set sGate >= to the first rangegate that has real values.
+                    
+        not_finite  = np.logical_not(np.isfinite(radFov.lonFull))
+        grid        = np.tile(np.arange(radFov.lonFull.shape[1]),(radFov.lonFull.shape[0],1)) 
+        grid[not_finite] = 999999
+        tmp_sGate   = (np.min(grid,axis=1)).max()
+        if tmp_sGate > sgate: sgate = tmp_sGate
+
         # Get radar coordinates in map projection
         if hasattr(mapObj, 'coords'): 
             x, y = mapObj(rad_fov.lonFull, rad_fov.latFull,
