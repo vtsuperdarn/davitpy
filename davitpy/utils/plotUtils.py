@@ -170,53 +170,53 @@ class mapObj(basemap.Basemap):
         if draw:
           self.draw()
 
-      def draw(self):
-          import numpy as np
-          from pylab import text
-          # Add continents
-          _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
-          _ = self.drawmapboundary(fill_color=self._fillOceans)
-          _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
+    def draw(self):
+        import numpy as np
+        from pylab import text
+        # Add continents
+        _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
+        _ = self.drawmapboundary(fill_color=self._fillOceans)
+        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
     
-          # Add coordinate spec
-          if self._showCoords:
-            _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
-              rotation=-90., va='top', fontsize=8)
+        # Add coordinate spec
+        if self._showCoords:
+          _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
+            rotation=-90., va='top', fontsize=8)
     
-          # draw parallels and meridians.
-          if self._grid:
-            parallels = np.arange(-80.,81.,20.)
-            out = self.drawparallels(parallels, color='.6', zorder=10)
-            # label parallels on map
-            if self._gridLabels: 
-              lablon = int(self.llcrnrlon/10)*10
-              if self.coords == "mlt":
-                lonfmt = lambda x: "%02g"%(x*24./360.)
-              else:
-                lonfmt = "%g"
-              rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
-              x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
-              for ix,iy,ip in zip(x,y,parallels):
-                if not self.xmin <= ix <= self.xmax: continue
-                if not self.ymin <= iy <= self.ymax: continue
-                _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-                  rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
-            # label meridians on bottom and left
+        # draw parallels and meridians.
+        if self._grid:
+          parallels = np.arange(-80.,81.,20.)
+          out = self.drawparallels(parallels, color='.6', zorder=10)
+          # label parallels on map
+          if self._gridLabels: 
+            lablon = int(self.llcrnrlon/10)*10
             if self.coords == "mlt":
-              meridians = np.arange(0.,360.,15.)
+              lonfmt = lambda x: "%02g"%(x*24./360.)
             else:
-              meridians = np.arange(-180.,181.,20.)
-            if self._gridLabels: 
-              if self.coords == "mlt":
-                merLabels = [True, False, False, True]
-              else:
-                merLabels = [False,False,False,True]
-            else: 
-              merLabels = [False,False,False,False]
-            # draw meridians
-            out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+              lonfmt = "%g"
+            rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
+            x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+            for ix,iy,ip in zip(x,y,parallels):
+              if not self.xmin <= ix <= self.xmax: continue
+              if not self.ymin <= iy <= self.ymax: continue
+              _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+                rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
+          # label meridians on bottom and left
+          if self.coords == "mlt":
+            meridians = np.arange(0.,360.,15.)
+          else:
+            meridians = np.arange(-180.,181.,20.)
+          if self._gridLabels: 
+            if self.coords == "mlt":
+              merLabels = [True, False, False, True]
+            else:
+              merLabels = [False,False,False,True]
+          else: 
+            merLabels = [False,False,False,False]
+          # draw meridians
+          out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
       
-      def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
+    def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
         from copy import deepcopy
         import numpy as np
         import inspect
@@ -259,7 +259,7 @@ class mapObj(basemap.Basemap):
                            date_time=self.datetime)
           return basemap.Basemap.__call__(self, x, y, inverse=False)
     
-      def _readboundarydata(self, name, as_polygons=False):
+    def _readboundarydata(self, name, as_polygons=False):
         from copy import deepcopy
         import _geoslib
         import numpy as np
