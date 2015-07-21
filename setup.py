@@ -1,46 +1,54 @@
 import os
 import glob
 
+# Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
-from setuptools import setup, Extension
-from setuptools.command import install as _install
-from numpy.distutils.core import setup, Extension
+# NEED TO HAVE aacgm_coeffs installed with software
+#davitpy_dir = os.path.dirname(os.path.abspath(__file__))
+#os.environ['DAVITPY'] = davitpy_dir
+#os.environ['AACGM_DAVITPY_DAT_PREFIX'] = os.path.join(davitpy_dir,"tables/aacgm/aacgm_coeffs")
 
+from setuptools.command import install as _install
+# Need to use the enhanced version of distutils packaged with
+# numpy so that we can compile fortran extensions
+from numpy.distutils.core import Extension, setup
 
 # Fortran extensions
-hwm = Extension('hwm07',sources=['models/hwm/apexcord.f90','models/hwm/dwm07b.f90','models/hwm/hwm07e.f90','models/hwm/hwm07.pyf'])
-igrf = Extension("igrf",sources=["models/igrf/igrf11.f90",'models/igrf/igrf11.pyf'])
-iri = Extension('iri',sources=['models/iri/irisub.for', 'models/iri/irifun.for', 'models/iri/iriflip.for', \
-                    'models/iri/iritec.for', 'models/iri/igrf.for', 'models/iri/cira.for', 'models/iri/iridreg.for', \
-                    'models/iri/iri.pyf'])
-msis = Extension("msisFort",sources=["models/msis/nrlmsise00_sub.for",'models/msis/nrlmsis.pyf'])
-tsyg = Extension('tsygFort',sources=['models/tsyganenko/T02.f', 'models/tsyganenko/T96.f', \
-                    'models/tsyganenko/geopack08.for','models/tsyganenko/geopack08.pyf'])
+hwm = Extension('hwm07',sources=['davitpy/models/hwm/apexcord.f90','davitpy/models/hwm/dwm07b.f90','davitpy/models/hwm/hwm07e.f90','davitpy/models/hwm/hwm07.pyf'])
+igrf = Extension("igrf",sources=["davitpy/models/igrf/igrf11.f90",'davitpy/models/igrf/igrf11.pyf'])
+iri = Extension('iri',sources=['davitpy/models/iri/irisub.for', 'davitpy/models/iri/irifun.for', 'davitpy/models/iri/iriflip.for', \
+                    'davitpy/models/iri/iritec.for', 'davitpy/models/iri/igrf.for', 'davitpy/models/iri/cira.for', 'davitpy/models/iri/iridreg.for', \
+                    'davitpy/models/iri/iri.pyf'])
+msis = Extension("msisFort",sources=["davitpy/models/msis/nrlmsise00_sub.for",'davitpy/models/msis/nrlmsis.pyf'])
+tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f', 'davitpy/models/tsyganenko/T96.f', \
+                    'davitpy/models/tsyganenko/geopack08.for','davitpy/models/tsyganenko/geopack08.pyf'])
 
+# C extensions
+dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/rst/src/*.c'),)
+aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
-#C extensions
-dmap = Extension("dmapio", sources=glob.glob('pydarn/rst/src/*.c'),)
-aacgm = Extension("aacgm", sources=glob.glob('models/aacgm/*.c'),)
-
-
-################################################################################
-# get a list of all source files
+# Get a list of all Python source files
 pwd = os.getcwd()
 sources = []
-source_dirs = ['pydarn','gme','utils','models']
+source_dirs = ['davitpy']
 for s in source_dirs:
     for root, dirs, files in os.walk(pwd+'/'+s):
         if '__init__.py' in files:
             sources.append('.'.join(
                 root.replace(pwd,'').strip('/').split('/')
                 ))
-print 'spurces',sources
-################################################################################
+#Get a list of all the AACGM tables
+data_files = []
+for f in os.listdir('tables/aacgm'):
+    data_files.append(('tables/aacgm',[os.path.join('tables/aacgm/',f)]))
 
+################################################################################
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+################################################################################
 
+# Now execute the setup
 setup(name='davitpy',
       version = "0.2",
       description = "Space Science Toolkit",
@@ -56,6 +64,8 @@ setup(name='davitpy',
         'models.iri': ['*.dat','*.asc'],
         'models.hwm': ['*.mod','*.dat']
       },
+      data_files=data_files,
+      py_modules = ['davitpy'],#,'pydarn','models','gme','utils'],
       install_requires=[],
       classifiers = [
             "Development Status :: 4 - Beta",
@@ -67,3 +77,5 @@ setup(name='davitpy',
             ],
       )
 
+if os.environ['DISTUTILS_DEBUG'] == "1":
+    print 'Sources',sources

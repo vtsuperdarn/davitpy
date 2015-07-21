@@ -28,6 +28,7 @@ pip install --upgrade paramiko
 pip install --upgrade pymongo
 pip install --upgrade mechanize
 pip install --upgrade jinja2
+pip install --upgrade jsonschema
 pip install --upgrade ecdsa
 pip install --upgrade pandas
 apt-get install -y libnetcdf-dev
