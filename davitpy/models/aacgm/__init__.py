@@ -27,7 +27,6 @@ def aacgmConv(in_lat,in_lon,height,year,flg,coeff_prefix=None):
 
   if coeff_prefix is None:
     coeff_prefix = rcParams['AACGM_DAVITPY_DAT_PREFIX']
-  print coeff_prefix
 
   return direct_aacgmConv(in_lat,in_lon,height,year,flg,coeff_prefix)
 
