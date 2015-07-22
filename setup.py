@@ -42,6 +42,7 @@ for s in source_dirs:
 data_files = []
 for f in os.listdir('tables/aacgm'):
     data_files.append(('tables/aacgm',[os.path.join('tables/aacgm/',f)]))
+data_files.append(('davitpy',['davitpy/davitpyrc']))
 
 ################################################################################
 def read(fname):
