@@ -1,3 +1,7 @@
+# This run control sets global parameters for DaViTPy.  If you need to modify
+# it, please re-run the 'setup.py install' script in order to copy the
+# modified file to the appropriate system location.
+#
 ####
 # ADDRESS SFTP DATABASE, USERNAME, PASSWORD, AND PORT
 ####
