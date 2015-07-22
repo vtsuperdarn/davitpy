@@ -102,7 +102,7 @@ def hdwRead(fname, path=None):
 			
 	Written by Sebastien, 2012-09
 	"""
-	import os
+	import os, sys
 	import shlex
 	from datetime import datetime
 	from utils import timeYrsecToDate
@@ -388,11 +388,11 @@ class updateRadars(object):
 
 
     def __readFromFiles(self):
-        """Read hdw.dat and radar.dat into a slect-like dictionnary from local files
+        """Read hdw.dat and radar.dat into a slect-like dictionary from local files
         """
         from datetime import datetime
 
-        # Build radar and hdw dictionnaries
+        # Build radar and hdw dictionaries
         radars = []
         hdw = []
         radarF = radarRead()
