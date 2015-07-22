@@ -18,6 +18,7 @@ import six
 import os
 import warnings
 
+#from davitpy import get_data_path
 
 class ValidateInStrings(object):
     def __init__(self, key, valid, ignorecase=False):
@@ -178,9 +179,20 @@ validate_verbose = ValidateInStrings(
     'verbose',
     ['silent', 'helpful', 'debug', 'debug-annoying'])
 
+
+#determine install location of aacgm coefficients
+#aacgm_coeffs_dir = os.path.join(get_data_path(),'tables/aacgm/aacgm_coeffs')
+path = os.path.split(os.path.dirname(__file__))[0]
+aacgm_coeffs_dir = os.path.join(path,'tables/aacgm/')
+
+if not os.path.exists(aacgm_coeffs_dir):
+  print "WARNING, location of aacgm coefficients could not be determined!"
+  print aacgm_coeffs_dir
+
+
 # a map from key -> value, converter
 defaultParams = {
-    #'AACGM_DAVITPY_DAT_PREFIX':	['tables/aacgm/aacgm_coeffs',validate_path_exists],
+    'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir+'aacgm_coeffs',validate_string],
     #'datapath':          [None, validate_path_exists],
 
     # the verbosity setting for logging

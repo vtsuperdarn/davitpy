@@ -36,7 +36,7 @@
 
 int AACGMLoadCoefFP(FILE  *fp);
 int AACGMLoadCoef(char *fname);
-int AACGMInit(int year);
+int AACGMInit(int year,char *prefix);
 int AACGMConvert(double in_lat,double in_lon,double height,
               double *out_lat,double *out_lon,double *r,
               int flag);
