@@ -102,7 +102,7 @@ def hdwRead(fname, path=None):
 			
 	Written by Sebastien, 2012-09
 	"""
-	import os
+	import os,sys
 	import shlex
 	from datetime import datetime
 	from utils import timeYrsecToDate
