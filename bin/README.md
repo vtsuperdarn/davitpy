@@ -7,7 +7,7 @@ Ipython is currently changing a bunch. We need to write this after some reading.
 
 ### 'davitpy' Executable
 
-The following has only been tested in linux (but should work in OS X, because bash). 
+The following has only been tested in linux (but should work in OS X, because bash). Also, it is important to note that the executable requires that you have followed the steps detailed above in the Ipython Profiles section of this README.
 
 To install the davitpy executable, you will need to copy the davitpy file from the bin directory in the davitpy repository to some place on your computer. For the purposes of these instructions, we'll install it to a bin directory in your home folder. On my machine the path is '/home/ashtonsethreimer/bin/'. Be sure to make check that the davitpy file is executable. I would do that with the following command:
 
