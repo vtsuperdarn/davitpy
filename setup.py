@@ -41,9 +41,10 @@ for s in source_dirs:
 #Get a list of all the AACGM tables
 data_files = []
 for f in os.listdir('tables/aacgm'):
-    data_files.append(('tables/aacgm',[os.path.join('tables/aacgm/',f)]))
-data_files.append(('davitpy',['davitpy/davitpyrc']))
+    data_files.append(('tables/aacgm',[os.path.join('tables/aacgm',f)]))
 
+#Make sure we include the davitpyrc file
+data_files.append(('davitpy',['davitpy/davitpyrc']))
 ################################################################################
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -80,3 +81,20 @@ setup(name='davitpy',
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
     print 'Sources',sources
+
+print ""
+print "****************************************************************"
+print ""
+print "****************************************************************"
+print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+print "****************************************************************"
+print "If you wish to install a 'davitpy' executable to automagically  "
+print "startup an ipython session with the davitpy library imported,   "
+print "please see the README file in the 'bin' directory on the DaViTpy"
+print "github repository."
+print "****************************************************************"
+print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+print "****************************************************************"
+print ""
+print "****************************************************************"
+print ""

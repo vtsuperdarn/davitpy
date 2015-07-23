@@ -62,7 +62,6 @@ pip install --upgrade matplotlib
 
 dir=$(pwd)
 
-
 cd /tmp
 git clone https://github.com/matplotlib/basemap.git
 cd basemap/geos-3.3.3
@@ -72,8 +71,7 @@ make
 make check
 make install
 ldconfig
-cd ..
+cd $dir/..
+
 python setup.py install
 
-
-echo "source $dir/../profile.bash" >> ~/.bashrc

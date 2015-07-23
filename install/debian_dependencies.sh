@@ -35,7 +35,3 @@ pip install --upgrade scikit-image
 apt-get install -y libnetcdf-dev
 pip install --upgrade netcdf4
 
-
-
-dir=$(pwd)
-echo "source $dir/../profile.bash" >> ~/.bashrc

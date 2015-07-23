@@ -32,12 +32,3 @@ cd /tmp
 git clone https://github.com/matplotlib/basemap.git
 cd basemap
 python2.7 setup.py install
-
-
-cd $dir
-install_dir=$(greadlink -f ../..)
-echo "source $install_dir/profile.mac" >> ~/.bash_profile
-source ~/.bash_profile
-
-cd ../..
-./mastermake
