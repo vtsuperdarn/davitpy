@@ -324,11 +324,11 @@ class fov(object):
                         slant_range_center[ib,ig] = \
                             gsMapSlantRange(srang_center[ig], altitude=None,
                                             elevation=None)
-                    slant_range_full[ib,ig] = gsMapSlantRange(srang_edge[ig],
+                        slant_range_full[ib,ig] = gsMapSlantRange(srang_edge[ig],
                                                               altitude=None,
                                                               elevation=None)
-                    srang_center[ig] = slant_range_center[ib,ig]
-                    srang_edge[ig] = slant_range_full[ib,ig]
+                        srang_center[ig] = slant_range_center[ib,ig]
+                        srang_edge[ig] = slant_range_full[ib,ig]
 
                 if (srang_center[ig] != -1) and (srang_edge[ig] != -1):
                     # Then calculate projections
