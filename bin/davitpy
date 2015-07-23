@@ -11,9 +11,6 @@
 ############################
 # set environment variables
 ############################
-# set the davitpy installation location
-DAVITPY=/path/to/davitpy/installation
-
 # set python path (where python looks for imports)
 export PYTHONPATH=${DAVITPY}:${PYTHONPATH}
 
