@@ -212,6 +212,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     from datetime import timedelta
     import matplotlib.cm as cm
     from numpy import transpose, ones, concatenate, vstack, shape
+    import numpy as np
     from matplotlib.patches import Polygon
     from pylab import gca
 
