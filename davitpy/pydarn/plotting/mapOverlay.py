@@ -154,9 +154,9 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 
 # *************************************************************
 def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
-               plot_all=False, maxGate=None, rangeLimits=None, model='IS',
-               fov_dir='front', fovColor=None, fovAlpha=0.2, beams=None,
-               beamsColors=None, hemi=None, fovObj=None, zorder=2,
+               plot_all=False, maxGate=None, rangeLimits=None, beamLimits=None,
+               model='IS', fov_dir='front', fovColor=None, fovAlpha=0.2,
+               beams=None, beamsColors=None, hemi=None, fovObj=None, zorder=2,
                lineColor='k', lineWidth=1):
     """ Overlay FoV position(s) on map
 
@@ -172,6 +172,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         * **[maxGate]**: Maximum number of gates to be plotted. Defaults to
                          hdw.dat information.
         * **[rangeLimits]**: (2-element list) Plot only between the range gates
+                             specified.
+        * **[beamLimits]**: (2-element list) Plot only between the beams
                              specified.
         * **model**:
             * **'IS'**: for ionopsheric scatter projection model (default)
@@ -253,7 +255,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # iterates through radars to be plotted
     for ir in xrange(nradars):
         # Get field of view coordinates
-        if(fovObj == None):
+        if(fovObj is None):
             rad = network_obj.getRadarBy(rad_input['vals'][ir],
                                          rad_input['meth'])
             if not rad:
@@ -263,6 +265,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                 continue
             # Set number of gates to be plotted
             egate = site.maxgate-1 if not maxGate else maxGate
+            ebeam = site.maxbeam
 
             if not hasattr(mapObj, 'coords'): 
                 rad_fov = fov(site=site, ngates=egate+1, model=model,
@@ -273,12 +276,19 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         else:
             rad_fov = fovObj
             egate = len(fovObj.gates)
+            ebeam = len(fovObj.beams)
 
         if rangeLimits is not None:
             sgate = rangeLimits[0]
             egate = rangeLimits[1]
         else:
             sgate = 0
+
+        if beamLimits is not None:
+            sbeam = beamLimits[0]
+            ebeam = beamLimits[1]
+        else:
+            sbeam = 0
 
         if model == 'GS':
         # Ground scatter model is not defined for close in rangegates.
@@ -299,10 +309,10 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             x, y = mapObj(rad_fov.lonFull, rad_fov.latFull)
         # Plot field of view
         # Create contour
-        contour_x = concatenate((x[0,sgate:egate], x[:,egate],
-                                 x[-1,egate:sgate:-1], x[-1::-1,sgate]))
-        contour_y = concatenate((y[0,sgate:egate], y[:,egate],
-                                 y[-1,egate:sgate:-1], y[-1::-1,sgate]))
+        contour_x = concatenate((x[sbeam,sgate:egate],    x[sbeam:ebeam,egate],
+                                 x[ebeam,egate:sgate:-1], x[ebeam:sbeam:-1,sgate]))
+        contour_y = concatenate((y[sbeam,sgate:egate],    y[sbeam:ebeam,egate],
+                                 y[ebeam,egate:sgate:-1], y[ebeam:sbeam:-1,sgate]))
         # Set the color if a different color has been specified for each radar
         if isinstance(lineColor, list) and len(lineColor) > ir:
             lcolor=lineColor[ir]
