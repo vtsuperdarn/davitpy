@@ -285,8 +285,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         # np.nan will be returned for these gates.
         # Set sGate >= to the first rangegate that has real values.
                     
-            not_finite  = np.logical_not(np.isfinite(radFov.lonFull))
-            grid        = np.tile(np.arange(radFov.lonFull.shape[1]),(radFov.lonFull.shape[0],1)) 
+            not_finite  = np.logical_not(np.isfinite(rad_fov.lonFull))
+            grid        = np.tile(np.arange(rad_fov.lonFull.shape[1]),(rad_fov.lonFull.shape[0],1)) 
             grid[not_finite] = 999999
             tmp_sGate   = (np.min(grid,axis=1)).max()
             if tmp_sGate > sgate: sgate = tmp_sGate
