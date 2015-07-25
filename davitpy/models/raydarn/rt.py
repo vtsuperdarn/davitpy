@@ -1,5 +1,8 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
+import numpy as np
+import pandas as pd
+
 """
 *********************
 **Module**: models.raydarn.rt
@@ -67,6 +70,7 @@ class RtRun(object):
         debug=False, 
         fext=None, 
         loadFrom=None, 
+        edens_file=None,
         nprocs=4):
         import datetime as dt
         from os import path
@@ -85,7 +89,7 @@ class RtRun(object):
 
             # Set azimuth
             self.site = self.radar.getSiteByDate(sTime)
-            if beam and not azim: 
+            if (beam is not None) and not azim: 
                 az = self.site.beamToAzim(beam)
                 azim = (az, az, 1)
             else:
@@ -126,6 +130,10 @@ class RtRun(object):
             self.outDir = path.join( outDir, '' )
             self.fExt = '0' if not fext else fext
 
+            # Set user-supplied electron density profile
+            if edens_file is not None:
+                self.edens_file = edens_file
+
             # Write input file
             inputFile = self._genInput()
             
@@ -163,6 +171,9 @@ class RtRun(object):
             f.write( "{:8.2f}  hmf2 (km, if 0 then ignored)\n".format( self.hmf2 ) )
             f.write( "{:8.2f}  nmf2 (log10, if 0 then ignored)\n".format( self.nmf2 ) )
 
+            if hasattr(self,'edens_file'):  # Path to user-defined electron profile
+                f.write( self.edens_file )
+
         return fname
         
 
@@ -178,6 +189,7 @@ class RtRun(object):
             self.outDir, 
             self.fExt]
         
+        print ' '.join(command)
         process = subp.Popen(command, shell=False, stdout=subp.PIPE, stderr=subp.STDOUT)
         output = process.communicate()[0]
         exitCode = process.returncode
@@ -190,7 +202,7 @@ class RtRun(object):
         if (exitCode != 0):
             raise Exception('Fortran execution error.')
         else:
-            subp.call(['rm',inputFileName])
+#            subp.call(['rm',inputFileName])
             return True
 
 
@@ -217,7 +229,7 @@ class RtRun(object):
             site=self.site, radar=self.radar,
             saveToAscii=saveToAscii, debug=debug)
         # Remove Input file
-        subp.call(['rm',fName])
+#        subp.call(['rm',fName])
 
 
     def readEdens(self, debug=False):
@@ -243,7 +255,7 @@ class RtRun(object):
             site=self.site, radar=self.radar,
             debug=debug)
         # Remove Input file
-        subp.call(['rm',fName])
+#        subp.call(['rm',fName])
 
 
     def readScatter(self, debug=False):
@@ -313,7 +325,7 @@ class RtRun(object):
         files = ['rays', 'edens', 'gscat', 'iscat']
         for f in files:
             fName = path.join(self.outDir, '{}.{}.dat'.format(f, self.fExt))
-            subp.call(['rm', fName])
+#            subp.call(['rm', fName])
 
 
 #########################################################################
@@ -426,6 +438,7 @@ class Edens(object):
                 
         written by Sebastien, 2013-04
         """
+        import datetime as dt
         from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
@@ -444,6 +457,14 @@ class Edens(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
+
+        # Allow a 60 second difference between the requested time and the time
+        # available.
+        keys    = np.array(self.edens.keys())
+        diffs   = np.abs(keys-time)
+        if diffs.min() < dt.timedelta(minutes=1):
+            time = keys[diffs.argmin()]
+
         assert (time in self.edens.keys()), 'Unkown time %s' % time
         if beam:
             assert (beam in self.edens[time].keys()), 'Unkown beam %s' % beam
@@ -456,7 +477,7 @@ class Edens(object):
 
         # Plot title with date ut time and local time
         if title:
-            stitle = _getTitle(time, beam, self.header, self.name)
+            stitle = _getTitle(time, beam, self.header, None)
             ax.set_title( stitle )
 
         # Add a colorbar
@@ -499,10 +520,6 @@ class Scatter(object):
             self.isc = {}
             self.readIS(site=site, debug=debug)
 
-        self.name = ''
-        if radar:
-            self.name = radar.code[0].upper()
-
 
     def readGS(self, site=None, debug=False):
         """Read gscat.dat fortran output
@@ -522,6 +539,9 @@ class Scatter(object):
             if debug:
                 print self.readGSFrom+' header: '
             self.header = _readHeader(f, debug=debug)
+
+            scatter_list = []
+
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(3*4)
@@ -556,6 +576,20 @@ class Scatter(object):
                 self.gsc[rtime][raz][rel]['lat'] = np.append( self.gsc[rtime][raz][rel]['lat'], lat )
                 self.gsc[rtime][raz][rel]['lon'] = np.append( self.gsc[rtime][raz][rel]['lon'], lon )
 
+                # Same thing, but let's prepare for a Pandas DataFrame...
+                tmp = {}
+                tmp['type']     = 'gs'
+                tmp['rtime']    = rtime
+                tmp['raz']      = raz
+                tmp['rel']      = rel
+                tmp['r']        = rr
+                tmp['th']       = tht
+                tmp['gran']     = gran
+                tmp['lat']      = lat
+                tmp['lon']      = lon
+                scatter_list.append(tmp)
+
+        self.gsc_df = pd.DataFrame(scatter_list)
 
     def readIS(self, site=None, debug=False):
         """Read iscat.dat fortran output
@@ -712,7 +746,7 @@ class Scatter(object):
 
             # Plot title with date ut time and local time
             if title:
-                stitle = _getTitle(time, beam, self.header, self.name)
+                stitle = _getTitle(time, beam, self.header, None)
                 ax.set_title( stitle )
 
             # If weighted, plot ionospheric scatter with colormap
@@ -724,7 +758,26 @@ class Scatter(object):
 
         ax.beam = beam
         return ax, aax, cbax
+
+    def gate_scatter(self,beam,fov):
+        #Add a 0 at the beginning to get the range gate numbering right.
+#        beam_inx    = np.where(beam == fov.beams)[0][0]
+#        ranges      = [0]+fov.slantRFull[beam_inx,:].tolist() 
+
+        # Some useful parameters
+        ngates          = fov.gates.size
+        range_gate      = 180 + 45*np.arange(ngates+1,dtype=np.int)
+        Re              = 6370.
+        P               = np.array(range_gate,dtype=np.float)
+        minpower        = 4. 
+
+        weights         = 1/(self.gsc_df.gran**3)
+        lag_power, bins = np.histogram(self.gsc_df.gran/1000.,bins=range_gate,weights=weights)
         
+        self.pwr        = lag_power
+        self.gates      = fov.gates
+
+        return lag_power 
 
 #########################################################################
 # Rays
@@ -873,7 +926,7 @@ class Rays(object):
 
                 # Show ray paths with colored refractive index along path
                 import datetime as dt
-                from models import raydarn
+                from davitpy.models import raydarn
                 sTime = dt.datetime(2012, 11, 18, 5)
                 rto = raydarn.RtRun(sTime, rCode='bks', beam=12, title=True)
                 rto.readRays() # read rays into memory
@@ -882,6 +935,7 @@ class Rays(object):
                 
         written by Sebastien, 2013-04
         """
+        import datetime as dt
         from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
@@ -901,6 +955,13 @@ class Rays(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
+        # Allow a 60 second difference between the requested time and the time
+        # available.
+        keys    = np.array(self.paths.keys())
+        diffs   = np.abs(keys-time)
+        if diffs.min() < dt.timedelta(minutes=1):
+            time = keys[diffs.argmin()]
+
         assert (time in self.paths.keys()), 'Unkown time %s' % time
         if beam:
             assert (beam in self.paths[time].keys()), 'Unkown beam %s' % beam
