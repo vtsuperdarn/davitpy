@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 def fillGmeDb(time='recent'):
-	import gme, os
+	from davitpy import gme
+        import os
 	import pydarn.sdio.dbUtils as dbu
 	from multiprocessing import Process
 	import datetime as dt
