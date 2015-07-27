@@ -23,7 +23,7 @@ def aacgmConv(in_lat,in_lon,height,year,flg,coeff_prefix=None):
 
   from davitpy import rcParams
   from davitpy import models
-  from models.aacgm import direct_aacgmConv
+  from aacgm import direct_aacgmConv
 
   if coeff_prefix is None:
     coeff_prefix = rcParams['AACGM_DAVITPY_DAT_PREFIX']
@@ -34,7 +34,7 @@ def aacgmConvArr(in_lat_list,in_lon_list,height_list,year,flg,coeff_prefix=None)
 
   from davitpy import rcParams
   from davitpy import models
-  from models.aacgm import direct_aacgmConvArr
+  from aacgm import direct_aacgmConvArr
 
   if coeff_prefix is None:
     coeff_prefix = rcParams['AACGM_DAVITPY_DAT_PREFIX']
