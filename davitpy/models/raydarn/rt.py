@@ -771,8 +771,11 @@ class Scatter(object):
         P               = np.array(range_gate,dtype=np.float)
         minpower        = 4. 
 
-        weights         = 1/(self.gsc_df.gran**3)
-        lag_power, bins = np.histogram(self.gsc_df.gran/1000.,bins=range_gate,weights=weights)
+        if self.gsc_df.size > 0:
+            weights         = 1/(self.gsc_df.gran**3)
+            lag_power, bins = np.histogram(self.gsc_df.gran/1000.,bins=range_gate,weights=weights)
+        else:
+            lag_power   = np.zeros_like(fov.gates,dtype=np.float)
         
         self.pwr        = lag_power
         self.gates      = fov.gates
