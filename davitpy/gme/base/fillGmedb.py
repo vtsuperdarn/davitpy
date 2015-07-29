@@ -15,8 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 def fillGmeDb(time='recent'):
-	import gme, os
-	import pydarn.sdio.dbUtils as dbu
+	from davitpy import gme
+        from davitpy import rcParams
+        import os
+	import davitpy.pydarn.sdio.dbUtils as dbu
 	from multiprocessing import Process
 	import datetime as dt
 	now = dt.datetime.now()
@@ -24,36 +26,36 @@ def fillGmeDb(time='recent'):
 	if(time == 'recent'):
 		sYear = dt.datetime.now().year-5
 		#fill the omni database
-		p0 = Process(target=gme.mapOmniMongo, args=(sYear,now.year,1))
+		p0 = Process(target=gme.ind.omni.mapOmniMongo, args=(sYear,now.year,1))
 		#fill the omni database
-		p1 = Process(target=gme.mapOmniMongo, args=(sYear,now.year))
+		p1 = Process(target=gme.ind.omni.mapOmniMongo, args=(sYear,now.year))
 		#fill the poes database
-		p2 = Process(target=gme.mapPoesMongo, args=(sYear,now.year))
+		p2 = Process(target=gme.sat.poes.mapPoesMongo, args=(sYear,now.year))
 		#fill the kp database
-		p3 = Process(target=gme.mapKpMongo, args=(sYear,now.year))
+		p3 = Process(target=gme.ind.kp.mapKpMongo, args=(sYear,now.year))
 		#fill the kp database
-		p4 = Process(target=gme.mapDstMongo, args=(sYear,now.year))
+		p4 = Process(target=gme.ind.dst.mapDstMongo, args=(sYear,now.year))
 		#fill the kp database
-		p5 = Process(target=gme.mapAeMongo, args=(sYear,now.year))
+		p5 = Process(target=gme.ind.ae.mapAeMongo, args=(sYear,now.year))
 		#fill the kp database
-		p6 = Process(target=gme.mapSymAsyMongo, args=(sYear,now.year))
+		p6 = Process(target=gme.ind.symasy.mapSymAsyMongo, args=(sYear,now.year))
 	else:
-		db = dbu.getDbConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],dbName='gme')
+		db = dbu.getDbConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],dbName='gme')
 		db.command('repairDatabase')
 		#fill the omni database
-		p0 = Process(target=gme.mapOmniMongo, args=(1995,now.year,1))
+		p0 = Process(target=gme.ind.omni.mapOmniMongo, args=(1995,now.year,1))
 		#fill the omni database
-		p1 = Process(target=gme.mapOmniMongo, args=(1995,now.year))
+		p1 = Process(target=gme.ind.omni.mapOmniMongo, args=(1995,now.year))
 		#fill the poes database
-		p2 = Process(target=gme.mapPoesMongo, args=(1998,now.year))
+		p2 = Process(target=gme.sat.poes.mapPoesMongo, args=(1998,now.year))
 		#fill the kp database
-		p3 = Process(target=gme.mapKpMongo, args=(1980,now.year))
+		p3 = Process(target=gme.ind.kp.mapKpMongo, args=(1980,now.year))
 		#fill the kp database
-		p4 = Process(target=gme.mapDstMongo, args=(1980,now.year))
+		p4 = Process(target=gme.ind.dst.mapDstMongo, args=(1980,now.year))
 		#fill the kp database
-		p5 = Process(target=gme.mapAeMongo, args=(1980,now.year))
+		p5 = Process(target=gme.ind.ae.mapAeMongo, args=(1980,now.year))
 		#fill the kp database
-		p6 = Process(target=gme.mapSymAsyMongo, args=(1980,now.year))
+		p6 = Process(target=gme.ind.symasy.mapSymAsyMongo, args=(1980,now.year))
 		
 	try: p0.start()
 	except Exception,e:
