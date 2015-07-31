@@ -1071,7 +1071,7 @@ def _readHeader(fObj, debug=False):
     # Read header
     header = OrderedDict( zip( params, unpack('3i9f3i5f', fObj.read(3*4 + 9*4 + 3*4 + 5*4)) ) )
     header['fext'] = unpack('10s', fObj.read(10))[0].strip()
-    header['outdir'] = unpack('100s', fObj.read(100))[0].strip()
+    header['outdir'] = unpack('250s', fObj.read(250))[0].strip()
     # Only print header if in debug mode
     if debug:
         for k, v in header.items(): print '{:10s} :: {}'.format(k,v)
