@@ -34,7 +34,7 @@ program     rayDARN
     real*4::    elev, azim, hour, hrbase, elev_0, azim_0, hour_0
     integer::   iaz, iel, ihr, nelev, nazim, nhour, nextday
     integer::   dhour, dazim, delev
-    character:: filename*100
+    character:: filename*250
     character(len=80):: arg
 ! IRI
     real*4::    edensARR(500,500), edens
@@ -283,7 +283,7 @@ SUBROUTINE MPI_RAYTYPES_INIT(type_vec, type_param)
 
     ! Parameters type
     types = (/MPI_REAL, MPI_INTEGER, MPI_REAL, MPI_CHAR/)
-    lblocks = (/9, 3, 5, 110/)
+    lblocks = (/9, 3, 5, 260/)
 
     CALL MPI_GET_ADDRESS(tparams%txlat, addr(1), code)
     CALL MPI_GET_ADDRESS(tparams%nhop, addr(2), code)
@@ -323,7 +323,7 @@ SUBROUTINE READ_INP(params)
     use constants
     implicit none
     type(prm),intent(out)::             params
-    character(len=80)::                 filename
+    character(len=250)::                 filename
     character*250:: edens_file
 
     CALL getarg(1, filename)

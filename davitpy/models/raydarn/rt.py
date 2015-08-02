@@ -771,8 +771,11 @@ class Scatter(object):
         P               = np.array(range_gate,dtype=np.float)
         minpower        = 4. 
 
-        weights         = 1/(self.gsc_df.gran**3)
-        lag_power, bins = np.histogram(self.gsc_df.gran/1000.,bins=range_gate,weights=weights)
+        if self.gsc_df.size > 0:
+            weights         = 1/(self.gsc_df.gran**3)
+            lag_power, bins = np.histogram(self.gsc_df.gran/1000.,bins=range_gate,weights=weights)
+        else:
+            lag_power   = np.zeros_like(fov.gates,dtype=np.float)
         
         self.pwr        = lag_power
         self.gates      = fov.gates
@@ -1068,7 +1071,7 @@ def _readHeader(fObj, debug=False):
     # Read header
     header = OrderedDict( zip( params, unpack('3i9f3i5f', fObj.read(3*4 + 9*4 + 3*4 + 5*4)) ) )
     header['fext'] = unpack('10s', fObj.read(10))[0].strip()
-    header['outdir'] = unpack('100s', fObj.read(100))[0].strip()
+    header['outdir'] = unpack('250s', fObj.read(250))[0].strip()
     # Only print header if in debug mode
     if debug:
         for k, v in header.items(): print '{:10s} :: {}'.format(k,v)

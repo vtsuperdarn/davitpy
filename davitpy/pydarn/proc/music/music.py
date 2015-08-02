@@ -525,7 +525,8 @@ class musicArray(object):
 
         while beamTime < eTime:
             #Load one scan into memory.
-            myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
+#            myScan = pydarn.sdio.radDataRead.radDataReadScan(myPtr)
+            myScan  = myPtr.readScan()
             if myScan == None: break
 
             goodScan = False # This flag turns to True as soon as good data is found for the scan.
