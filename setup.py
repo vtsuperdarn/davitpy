@@ -16,6 +16,11 @@ from numpy.distutils.core import Extension, setup
 
 # Fortran extensions
 hwm = Extension('hwm07',sources=['davitpy/models/hwm/apexcord.f90','davitpy/models/hwm/dwm07b.f90','davitpy/models/hwm/hwm07e.f90','davitpy/models/hwm/hwm07.pyf'])
+checkhwm = Extension('checkhwm07',sources=['davitpy/models/hwm/apexcord.f90',
+                                           'davitpy/models/hwm/dwm07b.f90',
+                                           'davitpy/models/hwm/hwm07e.f90',
+                                           'davitpy/models/hwm/checkhwm07.pyf',
+                                           'davitpy/models/hwm/checkhwm07.f90'])
 igrf = Extension("igrf",sources=["davitpy/models/igrf/igrf11.f90",'davitpy/models/igrf/igrf11.pyf'])
 iri = Extension('iri',sources=['davitpy/models/iri/irisub.for', 'davitpy/models/iri/irifun.for', 'davitpy/models/iri/iriflip.for', \
                     'davitpy/models/iri/iritec.for', 'davitpy/models/iri/igrf.for', 'davitpy/models/iri/cira.for', 'davitpy/models/iri/iridreg.for', \
@@ -61,7 +66,7 @@ setup(name='davitpy',
       packages = sources,
       long_description = read('README.md'),
       zip_safe = False,
-      ext_modules = [dmap,aacgm,tsyg,hwm,msis,igrf,iri],
+      ext_modules = [dmap,aacgm,tsyg,hwm,checkhwm,msis,igrf,iri],
       package_data={
         'models.iri': ['*.dat','*.asc'],
         'models.hwm': ['*.mod','*.dat']

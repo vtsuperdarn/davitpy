@@ -15,3 +15,8 @@ try:
     from hwm07 import *
 except Exception as e:
     print __file__+' -> models.hwm.hwm07: ', e
+
+try:
+    from checkhwm07 import *
+except Exception as e:
+    print __file__+' -> models.hwm.checkhwm07: ', e

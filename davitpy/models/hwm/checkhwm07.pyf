@@ -1,0 +1,12 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module checkhwm07 ! in 
+    interface  ! in :checkhwm07
+        subroutine checkhwm07 ! in :checkhwm07:checkhwm07.f90
+        end subroutine checkhwm07
+    end interface 
+end python module checkhwm07
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
