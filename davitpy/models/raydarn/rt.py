@@ -75,6 +75,7 @@ class RtRun(object):
         import datetime as dt
         from os import path
         from davitpy.pydarn import radar
+        from davitpy import rcParams
 
         # Load pickled instance...
         if loadFrom:
@@ -126,9 +127,13 @@ class RtRun(object):
 
             # Set output directory and file extension
             if not outDir:
-                outDir = path.abspath( path.curdir )
+                 outDir = rcParams['DAVIT_TMPDIR']
+#                outDir = path.abspath( path.curdir )
             self.outDir = path.join( outDir, '' )
             self.fExt = '0' if not fext else fext
+
+            # Set DaViTpy Install path
+            self.davitpy_path = rcParams['DAVITPY_PATH']
 
             # Set user-supplied electron density profile
             if edens_file is not None:
@@ -171,6 +176,8 @@ class RtRun(object):
             f.write( "{:8.2f}  hmf2 (km, if 0 then ignored)\n".format( self.hmf2 ) )
             f.write( "{:8.2f}  nmf2 (log10, if 0 then ignored)\n".format( self.nmf2 ) )
 
+            f.write( self.davitpy_path ) # DaViTpy install path
+
             if hasattr(self,'edens_file'):  # Path to user-defined electron profile
                 f.write( self.edens_file )
 
@@ -189,7 +196,7 @@ class RtRun(object):
             self.outDir, 
             self.fExt]
         
-        print ' '.join(command)
+        #print ' '.join(command)
         process = subp.Popen(command, shell=False, stdout=subp.PIPE, stderr=subp.STDOUT)
         output = process.communicate()[0]
         exitCode = process.returncode
@@ -962,8 +969,8 @@ class Rays(object):
         # available.
         keys    = np.array(self.paths.keys())
         diffs   = np.abs(keys-time)
-        if diffs.min() < dt.timedelta(minutes=1):
-            time = keys[diffs.argmin()]
+        #if diffs.min() < dt.timedelta(minutes=1):
+        #    time = keys[diffs.argmin()]
 
         assert (time in self.paths.keys()), 'Unkown time %s' % time
         if beam:

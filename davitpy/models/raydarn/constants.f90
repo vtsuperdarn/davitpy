@@ -31,6 +31,7 @@ MODULE constants
 		real*4::	hmf2
 		real*4::	nmf2
 		character*10::	filext
+		character*250::	indir
 		character*250::	outdir
                 character*250::edens_file
 	end type prm

@@ -42,7 +42,7 @@ EXEC = rtFort
 	$(FC) $(REQ_FLAGS) $(OPT_FLAGS) -c $< -o $@
 
 all: $(EXEC)
-	rm -f $(IRIOBJS) $(RTOBJS)
+	rm -f $(IRIOBJS) $(RTOBJS) raytrace_mpi.o
 
 rtFort: $(IRIOBJS) $(RTOBJS) raytrace_mpi.o
 
