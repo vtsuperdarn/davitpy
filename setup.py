@@ -63,8 +63,8 @@ setup(name='davitpy',
       zip_safe = False,
       ext_modules = [dmap,aacgm,tsyg,hwm,msis,igrf,iri],
       package_data={
-        'models.iri': ['*.dat','*.asc'],
-        'models.hwm': ['*.mod','*.dat']
+        'davitpy.models.iri': ['*.dat','*.asc'],
+        'davitpy.models.hwm': ['*.mod','*.dat']
       },
       data_files=data_files,
       py_modules = ['davitpy'],#,'pydarn','models','gme','utils'],

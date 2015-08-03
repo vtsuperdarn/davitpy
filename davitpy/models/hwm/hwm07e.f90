@@ -45,13 +45,14 @@
 !================================================================================
 
 
-subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
 
     implicit none
     integer(4),intent(in)   :: iyd
     real(4),intent(in)      :: sec,alt,glat,glon,stl,f107a,f107
     real(4),intent(in)      :: ap(2)
     real(4),intent(out)     :: w(2)
+    character(128),intent(in)   :: defaultdatapath
 !f2py intent(in) iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 !f2py intent(out) w
 
@@ -60,7 +61,7 @@ subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
     print*, 'Input: '
     print*, iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 
-    call hwmqt(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,qw)
+    call hwmqt(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,qw,defaultdatapath)
     
     if (ap(2) .ge. 0.0) then
       call dwm07b_hwm_interface(iyd,sec,alt,glat,glon,ap,dw)
@@ -148,7 +149,7 @@ end module NEWmodel
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W)
+subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W,defaultdatapath)
     
     use NEWmodel
     implicit none
@@ -178,6 +179,7 @@ subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W)
     REAL(4),intent(in)      :: SEC,ALT,GLAT,GLON,STL,F107A,F107
     REAL(4),intent(in)      :: AP(2)
     REAL(4),intent(out)     :: W(2)
+    character(128),intent(in)   :: defaultdatapath
 
     real(8)                 :: last(5)
     real(8)                 :: input(5)
@@ -190,7 +192,7 @@ subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W)
     input(5) = dble(alt)
 
     if (modelinit) then
-        call loadmodel(defaultdata)
+        call loadmodel(defaultdata,defaultdatapath)
         call HWMupdate(input,last,gfs,gfl,gfm,gvbar,gwbar,gbz,gbm,gzwght,glev,u,v)
     endif
     
@@ -565,19 +567,19 @@ end subroutine HWMupdate
 !
 ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine loadmodel(datafile)
+subroutine loadmodel(datafile,defaultdatapath)
 
     use NEWmodel
     implicit none
 
     character(128),intent(in)   :: datafile
-    
+    character(128),intent(inout)   :: defaultdatapath
     integer                     :: i,j
     integer                     :: ncomp
-    character(128)              :: defaultdatapath
+    !character(128)              :: defaultdatapath
     character(512)              :: filen
 
-    call get_environment_variable('DAVITPY', defaultdatapath)
+    !call get_environment_variable('DAVITPY', defaultdatapath)
     defaultdatapath=trim(defaultdatapath) //'/davitpy/models/hwm/'
 
     if (allocated(vnode)) then

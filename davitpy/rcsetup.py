@@ -193,7 +193,7 @@ if not os.path.exists(aacgm_coeffs_dir):
 # a map from key -> value, converter
 defaultParams = {
     'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir+'aacgm_coeffs',validate_string],
-    #'datapath':          [None, validate_path_exists],
+    'DAVITPY_PATH':             [path, validate_path_exists],
 
     # the verbosity setting for logging
     #'verbose.level': ['silent', validate_verbose],
