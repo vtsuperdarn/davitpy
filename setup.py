@@ -30,7 +30,7 @@ def read(fname):
 # 'exec_command' is supposed to work on win32 
 # according to its documentation.
 #############################################################################
-command = 'make -C "/home/ashtonsethreimer/davitpy/davitpy/models/raydarn/"'
+command = 'make -C "davitpy/models/raydarn/"'
 exec_command.exec_command(command)
 
 #############################################################################
