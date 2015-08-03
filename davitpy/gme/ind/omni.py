@@ -354,7 +354,8 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	"""
 	
 	import davitpy.pydarn.sdio.dbUtils as db
-	import os, datetime as dt
+        from davitpy import rcParams
+	import datetime as dt
 	
 	#check inputs
 	assert(res == 1 or res == 5),'error, res must be either 1 or 5'
@@ -364,8 +365,8 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	assert(eYear >= sYear), 'error, end year greater than start year'
 	
 	#get data connection
-	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gme',collName='omni')
+	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
+								dbAddress=rcParams['SDDB'],dbName='gme',collName='omni')
 	
 	#set up all of the indices
 	mongoData.ensure_index('time')

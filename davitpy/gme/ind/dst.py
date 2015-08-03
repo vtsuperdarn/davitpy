@@ -259,7 +259,8 @@ def mapDstMongo(sYear,eYear=None):
 	written by AJ, 20130123
 	"""
 	import davitpy.pydarn.sdio.dbUtils as db
-	import os, datetime as dt
+        from davitpy import rcParams
+	import datetime as dt
 	
 	#check inputs
 	assert(isinstance(sYear,int)),'error, sYear must be int'
@@ -268,8 +269,8 @@ def mapDstMongo(sYear,eYear=None):
 	assert(eYear >= sYear), 'error, end year greater than start year'
 	
 	#get data connection
-	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gme',collName='dst')
+	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
+								dbAddress=rcParams['SDDB'],dbName='gme',collName='dst')
 	
 	#set up all of the indices
 	mongoData.ensure_index('time')

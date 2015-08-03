@@ -30,13 +30,14 @@
 	* :func:`gme.sat.flare_value`
 	* :func:`gme.sat.find_flares`
 """
+from davitpy import rcParams
 
 def read_goes(sTime,eTime=None,sat_nr=15):
     """Download GOES X-Ray Flux data from the NOAA FTP Site and return a dictionary containing the metadata and a dataframe.
 
         * Data is downloaded from ftp://satdat.ngdc.noaa.gov/sem/goes/data/new_avg/2014/08/goes15/netcdf/
         * Currently, 1-m averaged x-ray spectrum in two bands (0.5-4.0 A and 1.0-8.0 A).
-        * NOAA NetCDF files are cached in $DAVIT_TMPDIR
+        * NOAA NetCDF files are cached in rcParams['DAVIT_TMPDIR']
     
     **Args**: 
         * [**sTime**] (datetime.datetime): Starting datetime for data.
@@ -87,7 +88,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
     # Download Files from NOAA FTP #################################################
     host        = 'satdat.ngdc.noaa.gov'
 
-    data_dir    = os.getenv('DAVIT_TMPDIR')
+    data_dir    = rcParams['DAVIT_TMPDIR']
     if data_dir.endswith('/'): data_dir = data_dir[:-1]
     
     try:
@@ -504,7 +505,7 @@ if __name__ == '__main__':
 
     goes_data   = read_goes(sTime,eTime,sat_nr)
 
-    tmp_dir     = os.getenv('DAVIT_TMPDIR')
+    tmp_dir     = rcParams['DAVIT_TMPDIR']
     output_dir  = os.path.join(tmp_dir,'goes')
     try:
         os.makedirs(output_dir)

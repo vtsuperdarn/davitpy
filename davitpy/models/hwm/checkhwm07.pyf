@@ -3,7 +3,8 @@
 
 python module checkhwm07 ! in 
     interface  ! in :checkhwm07
-        subroutine checkhwm07 ! in :checkhwm07:checkhwm07.f90
+        subroutine checkhwm07(defaultdatapath) ! in :checkhwm07:checkhwm07.f90
+            character*250 intent(in) :: defaultdatapath
         end subroutine checkhwm07
     end interface 
 end python module checkhwm07

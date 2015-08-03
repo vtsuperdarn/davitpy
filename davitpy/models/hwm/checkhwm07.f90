@@ -18,7 +18,7 @@
 !*******************************************************************
 
 !program checkhwm07
-subroutine checkhwm07
+subroutine checkhwm07(defaultdatapath)
 
   implicit none
   INTEGER      :: IYD
@@ -30,6 +30,7 @@ subroutine checkhwm07
   real(4)      :: pershift
   integer      :: ialt,istl,ilat,ilon,iaptemp
   integer      :: imlat,imlt,ikp
+  character(250),intent(in)   :: defaultdatapath
 
 ! HEIGHT PROFILE
   day = 150
@@ -49,9 +50,9 @@ subroutine checkhwm07
   print '(a6,3(a12,a10))', 'ALT', 'MER','ZON', 'MER','ZON', 'MER','ZON'
   do ialt = 0, 400, 25
     alt = float(ialt)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.0,3(f12.3,f10.3))', alt, qw, dw, w
   end do
   print *
@@ -75,9 +76,9 @@ subroutine checkhwm07
   print '(a6,3(a12,a10))', 'GLAT', 'MER','ZON', 'MER','ZON', 'MER','ZON'
   do ilat = -90, 90, 10
     glat = float(ilat)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.1,3(f12.3,f10.3))', glat, qw, dw, w
   end do
   print *
@@ -100,9 +101,9 @@ subroutine checkhwm07
   do istl = 0,16
     stl = 1.5 * float(istl)
     sec = (stl - glon/15.0) * 3600.0
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f5.1,3(f12.3,f10.3))', stl, qw, dw, w
   end do
   print *
@@ -125,9 +126,9 @@ subroutine checkhwm07
   print '(a6,3(a12,a10))', 'GLON', 'MER','ZON', 'MER','ZON', 'MER','ZON'
   do ilon = -180, 180, 20
     glon = float(ilon)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.0,3(f12.3,f10.3))', glon, qw, dw, w
   end do
   print *
@@ -150,9 +151,9 @@ subroutine checkhwm07
   print '(a6,3(a12,a10))', 'DAY', 'MER','ZON', 'MER','ZON', 'MER','ZON'
   do day = 0, 360, 20
     iyd = 95000 + day
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(i6,3(f12.3,f10.3))', day, qw, dw, w
   end do
   print *
@@ -177,9 +178,9 @@ subroutine checkhwm07
   print '(a6,3(a12,a10))', 'ap', 'MER','ZON', 'MER','ZON', 'MER','ZON'
   do iaptemp = 0, 260, 20
     ap(2) = float(iaptemp)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
-    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.1,3(f12.3,f10.3))', ap(2), qw, dw, w
   end do
   print *

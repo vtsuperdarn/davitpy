@@ -321,13 +321,14 @@ def mapKpMongo(sYear,eYear=None):
 	written by AJ, 20130123
 	"""
 	import davitpy.pydarn.sdio.dbUtils as db
-	import os, datetime as dt
+        from davitpy import rcParams
+	import datetime as dt
 	
 	if(eYear == None): eYear=sYear
 	assert(eYear >= sYear), 'error, end year greater than start year'
 	
-	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gme',collName='kp')
+	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
+								dbAddress=rcParams['SDDB'],dbName='gme',collName='kp')
 	
 	#set up all of the indices
 	mongoData.ensure_index('time')

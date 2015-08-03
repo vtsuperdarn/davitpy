@@ -48,11 +48,12 @@ class rbspFp(object):
 		L_shell_min=None, L_shell_max=None,  
 		apogees_only=False):
 		from datetime import datetime, timedelta
+                from davitpy import rcParams
 
 		# MongoDB server
-		self._db_user = 'sd_dbread'
-		self._db_pswd = '5d'
-		self._db_host = 'sd-work9.ece.vt.edu'
+		self._db_user = rcParams['DBREADUSER']
+		self._db_pswd = rcParams['DBREADPASS']
+		self._db_host = rcParams['SDDB']
 		self._db_name = 'rbsp'
 
 		# Input

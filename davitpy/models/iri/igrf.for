@@ -47,7 +47,7 @@
 !
 ! 
         subroutine igrf_sub(xlat,xlong,year,height,
-     &          xl,icode,dipl,babs,dip,dec)
+     &          xl,icode,dipl,babs,dip,dec,datapath)
 !-----------------------------------------------------------------------        
 ! INPUT:
 !    xlat      geodatic latitude in degrees
@@ -69,6 +69,7 @@
 !f2py    real intent(out) :: dipl,babs,dip,dec
 
       REAL              LATI,LONGI
+      character(250),intent(in) :: datapath
       COMMON/IGRF1/     UMR,ERA,AQUAD,BQUAD
 !
       CALL INITIZE
@@ -77,7 +78,7 @@
 !
 !----------------CALCULATE PROFILES-----------------------------------
 !
-        CALL FELDCOF(YEAR,DIMO)
+        CALL FELDCOF(YEAR,DIMO,datapath)
         CALL FELDG(LATI,LONGI,HEIGHT,BNORTH,BEAST,BDOWN,BABS)
         CALL SHELLG(LATI,LONGI,HEIGHT,DIMO,XL,ICODE,BAB1)
 ! 		print*,LATI,LONGI,HEIGHT,DIMO,XL,ICODE,BAB1,BNORTH,BEAST,BDOWN,BABS,UMR
@@ -89,7 +90,8 @@
       END
 !
 !
-      subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,ymodip,dec)
+      subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,
+     &                    ymodip,dec,datapath)
 !-----------------------------------------------------------------------        
 !INPUT:
 !   xlat      geodatic latitude in degrees
@@ -105,6 +107,7 @@
 !-----------------------------------------------------------------------        
 
       COMMON/IGRF1/     UMR,ERA,AQUAD,BQUAD
+      character(250),intent(in) :: datapath
 !  
 !f2py    real intent(in) :: xlat,xlong,height
 !f2py    integer intent(in) :: year
@@ -117,7 +120,7 @@
         xlati = xlat
         xlongi = xlong
         h = height
-        CALL FELDCOF(YEAR,DIMO)
+        CALL FELDCOF(YEAR,DIMO,datapath)
         CALL FELDG(XLATI,XLONGI,H,BNORTH,BEAST,BDOWN,BABS)
         DIP=ASIN(BDOWN/BABS)
         dipdiv=DIP/SQRT(DIP*DIP+cos(XLATI*UMR))
@@ -574,7 +577,7 @@
       END                                                               
 !
 !
-        SUBROUTINE FELDCOF(YEAR,DIMO)
+        SUBROUTINE FELDCOF(YEAR,DIMO,datapath)
 !-----------------------------------------------------------------------        
 !  DETERMINES COEFFICIENTS AND DIPOL MOMENT FROM IGRF MODELS
 !
@@ -587,6 +590,7 @@
 ! 07/22/2009 NMAX=13 for DGRF00 and IGRF05; H/G-arrays(195)
 ! 02/26/2010 updated to IGRF-2010 version (###)  
 !-----------------------------------------------------------------------        
+        character(250),intent(in) :: datapath
         CHARACTER*13    FILMOD, FIL1, FIL2           
 ! ### FILMOD, DTEMOD array-size is number of IGRF maps
         DIMENSION       GH1(196),GH2(196),GHA(196),FILMOD(15)
@@ -624,9 +628,9 @@
         DTE2 = DTEMOD(L+1) 
         FIL2 = FILMOD(L+1) 
 !-- GET IGRF COEFFICIENTS FOR THE BOUNDARY YEARS
-        CALL GETSHC (IU, FIL1, NMAX1, ERAD, GH1, IER)  
+        CALL GETSHC (IU, FIL1, NMAX1, ERAD, GH1, IER,datapath)  
             IF (IER .NE. 0) STOP                           
-        CALL GETSHC (IU, FIL2, NMAX2, ERAD, GH2, IER)  
+        CALL GETSHC (IU, FIL2, NMAX2, ERAD, GH2, IER,datapath)  
             IF (IER .NE. 0) STOP
 !-- DETERMINE IGRF COEFFICIENTS FOR YEAR
         IF (L .LE. NUMYE-1) THEN                        
@@ -672,7 +676,7 @@
         END
 !
 !
-        SUBROUTINE GETSHC (IU, FSPEC, NMAX, ERAD, GH, IER)                                                                                           
+        SUBROUTINE GETSHC (IU, FSPEC, NMAX, ERAD, GH, IER,datapath)                                                                                           
 ! ===============================================================               
 !       Reads spherical harmonic coefficients from the specified     
 !       file into an array.                                          
@@ -691,13 +695,15 @@
 !                                 = FORTRAN run-time error number    
 ! ===============================================================               
                                                                                 
-        CHARACTER  FSPEC*(*), FOUT*100, davitpydir*20
+        CHARACTER  FSPEC*(*), FOUT*250, davitpydir*20
         DIMENSION       GH(196) 
-        character(128) :: defaultdatapath
+        character(250),intent(in) :: datapath
+        character(250) :: defaultdatapath
         character(512) :: defaultfile
         COMMON/iounit/konsol        
 
-        call getenv('DAVITPY', defaultdatapath)
+        !call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath=datapath
         defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
 
         do 1 j=1,196  
@@ -889,8 +895,8 @@
         END
 !
 !
-      SUBROUTINE GEODIP(IYR,SLA,SLO,DLA,DLO,J)
-
+      SUBROUTINE GEODIP(IYR,SLA,SLO,DLA,DLO,J,datapath)
+         character(250),intent(in) :: datapath
 !  Calculates dipole geomagnetic coordinates from geocentric coordinates
 !  or vice versa.
 
@@ -943,7 +949,7 @@
 
         common/findRLAT/xlong,year
 
-      	call igrf_dip(xlat,xlong,year,300.,dip,dipl,ymodip,dec)
+      	call igrf_dip(xlat,xlong,year,300.,dip,dipl,ymodip,dec,datapath)
       	fmodip=ymodip
 
       	return

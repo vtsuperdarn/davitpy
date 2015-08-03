@@ -34,7 +34,7 @@ program     rayDARN
     real*4::    elev, azim, hour, hrbase, elev_0, azim_0, hour_0
     integer::   iaz, iel, ihr, nelev, nazim, nhour, nextday
     integer::   dhour, dazim, delev
-    character:: filename*100
+    character:: filename*250
     character(len=80):: arg
 ! IRI
     real*4::    edensARR(500,500), edens
@@ -283,7 +283,7 @@ SUBROUTINE MPI_RAYTYPES_INIT(type_vec, type_param)
 
     ! Parameters type
     types = (/MPI_REAL, MPI_INTEGER, MPI_REAL, MPI_CHAR/)
-    lblocks = (/9, 3, 5, 110/)
+    lblocks = (/9, 3, 5, 260/)
 
     CALL MPI_GET_ADDRESS(tparams%txlat, addr(1), code)
     CALL MPI_GET_ADDRESS(tparams%nhop, addr(2), code)
@@ -323,7 +323,7 @@ SUBROUTINE READ_INP(params)
     use constants
     implicit none
     type(prm),intent(out)::             params
-    character(len=80)::                 filename
+    character(len=250)::                 filename
     character*250:: edens_file
 
     CALL getarg(1, filename)
@@ -355,6 +355,7 @@ SUBROUTINE READ_INP(params)
     read(10, 100) params%hourstp
     read(10, 100) params%hmf2
     read(10, 100) params%nmf2
+    read(10, 102) params%indir
     read(10, 102,end=200) params%edens_file
 
  100  format(F8.2)
@@ -976,7 +977,9 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     integer nrows
     parameter (nrows=500)
     character(100):: msg
+    character(250):: datapath
 
+    datapath = params%indir
 ! Initialize position
     vbeg = 60.
     vend = 560.
@@ -1021,7 +1024,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 
 ! Calling IRI subroutine
     call IRI_SUB(jf,0,edensPOS(1,1),edensPOS(1,2),params%year,params%mmdd,hour, &
-               vbeg,vend,vstp,outf,oar)
+               vbeg,vend,vstp,outf,oar,datapath)
 
     do j=1,500
         edensARR(j,1) = outf(1,j)
@@ -1043,7 +1046,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
                     + sin(edensPOS(1,1)*PI/180.)*sin(edensPOS(n,1)*PI/180.))
         ! Calculates electron density and magnetic dip and dec at current position and time
         call IRI_SUB(jf,0,edensPOS(n,1),edensPOS(n,2),params%year,params%mmdd,hour, &
-                   vbeg,vend,vstp,outf,oar)
+                   vbeg,vend,vstp,outf,oar,datapath)
         ! Altitude loop (pass output of IRI_SUB to the proper matrix)
         do j=1,500
             edensARR(j,n) = outf(1,j) 

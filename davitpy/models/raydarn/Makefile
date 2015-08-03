@@ -15,6 +15,8 @@ IRIDIR = ../iri
 
 # Installation Dir
 INSTALL_DIR = /usr/local/lib/python2.7/dist-packages/davitpy/models/raydarn
+#INSTALL_DIR = /usr/lib64/python2.7/site-packages/davitpy-0.2-py2.7-linux-x86_64.egg/models/raydarn
+#INSTALL_DIR =/usr/local/lib/python2.7/dist-packages/davitpy-0.2-py2.7-linux-x86_64.egg/models/raydarn/
 
 # Declare source, object, and executable files
 RTSRC = constants.f90 \
@@ -40,7 +42,7 @@ EXEC = rtFort
 	$(FC) $(REQ_FLAGS) $(OPT_FLAGS) -c $< -o $@
 
 all: $(EXEC)
-	rm -f $(IRIOBJS) $(RTOBJS)
+	rm -f $(IRIOBJS) $(RTOBJS) raytrace_mpi.o
 
 rtFort: $(IRIOBJS) $(RTOBJS) raytrace_mpi.o
 

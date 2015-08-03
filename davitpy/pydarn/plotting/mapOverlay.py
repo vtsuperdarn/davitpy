@@ -16,7 +16,7 @@ Overlay information on maps
 def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None, 
                  annotate=True, plot_all=False, hemi=None, zorder=2,
                  markerColor='k', markerSize=10, fontSize=10, font_color='k',
-                 xOffset=None):
+                 xOffset=None,yOffset=-5):
     """
     Overlay radar position(s) and name(s) on map 
     
@@ -36,6 +36,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
         * **[markerSize]**: [point] Default: 10
         * **[fontSize]**: [point] Default: 10
         * **[xOffset]**: x-Offset of the annotation in points.  Default: None 
+        * **[yOffset]**: y-Offset of the annotation in points.  Default: -5
     **Returns**:
         * None
     **Example**:
@@ -144,8 +145,9 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
             else: 
                 xOff = 0.0
                 ha = .5
+
             # Plot radar name
-            textHighlighted((x, y), rad.code[0].upper(), xytext=(xOff, -5), 
+            textHighlighted((x, y), rad.code[0].upper(), xytext=(xOff, yOffset), 
                             text_alignment=(ha,1), variant='small-caps',
                             fontsize=fontSize, zorder=zorder,
                             color=rad_input['fcolor'][ir])

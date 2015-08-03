@@ -550,7 +550,7 @@ def curvedEarthAxes(rect=111, fig=None, minground=0., maxground=2000, minalt=0,
     ax1 = floating_axes.FloatingSubplot(fig, rect, grid_helper=grid_helper)
 
     # adjust axis
-    ax1.axis["left"].label.set_text(r"ALt. [km]")
+    ax1.axis["left"].label.set_text(r"Alt. [km]")
     ax1.axis["bottom"].label.set_text(r"Ground range [km]")
     ax1.invert_xaxis()
 
