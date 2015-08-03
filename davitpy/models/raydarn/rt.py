@@ -969,8 +969,8 @@ class Rays(object):
         # available.
         keys    = np.array(self.paths.keys())
         diffs   = np.abs(keys-time)
-        #if diffs.min() < dt.timedelta(minutes=1):
-        #    time = keys[diffs.argmin()]
+        if diffs.min() < dt.timedelta(minutes=1):
+            time = keys[diffs.argmin()]
 
         assert (time in self.paths.keys()), 'Unkown time %s' % time
         if beam:
