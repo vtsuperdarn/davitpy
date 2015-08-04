@@ -635,7 +635,7 @@ class radDataPtr():
       import os
       import datetime as dt
       import numpy as np
-      from pydarn.dmapio import readDmapRec
+      from davitpy.pydarn.dmapio import readDmapRec
 
       valid = []
 
