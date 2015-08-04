@@ -62,7 +62,7 @@ tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f',
 #############################################################################
 # C extensions
 #############################################################################
-dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/rst/src/*.c'),)
+dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/dmapio/rst/src/*.c'),)
 aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
 #############################################################################
