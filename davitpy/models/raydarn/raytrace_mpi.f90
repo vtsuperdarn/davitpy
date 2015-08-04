@@ -283,7 +283,7 @@ SUBROUTINE MPI_RAYTYPES_INIT(type_vec, type_param)
 
     ! Parameters type
     types = (/MPI_REAL, MPI_INTEGER, MPI_REAL, MPI_CHAR/)
-    lblocks = (/9, 3, 5, 260/)
+    lblocks = (/9, 3, 5, 510/)
 
     CALL MPI_GET_ADDRESS(tparams%txlat, addr(1), code)
     CALL MPI_GET_ADDRESS(tparams%nhop, addr(2), code)
