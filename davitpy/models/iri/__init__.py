@@ -11,7 +11,7 @@
 *******************************
 """
 
-def iri_sub(jf,jmag,alati,along,iyyyy,mmdd,dhour,heibeg,heiend,heistp,oarr,data_file_path):
+def iri_sub(jf,jmag,alati,along,iyyyy,mmdd,dhour,heibeg,heiend,heistp,oarr,data_file_path=None):
 
     try:
         from iri import iri_sub
