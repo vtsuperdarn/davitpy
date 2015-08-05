@@ -394,8 +394,7 @@ Calculate julian date for a given datetime object. Based on http://www.tondering
     # One can compare the output of this algorithm with http://aa.usno.navy.mil/data/docs/JulianDate.php
     # but make sure you remember that this algorithm assumes the Gregorian 
     # calendar for all year whereas the algorithm used in the provided link does not.
-    # For dates before 15 October 1582 the link uses the Julian calendar. Also note that
-    # in the link, they forget to add 0.5 to Julian dates before 4 October 1582...
+    # For dates before 15 October 1582 the link uses the Julian calendar.
     #
     # In the future, this algorithm could support the Julian calendar for input dates
     # using the table found here: http://www.exelisvis.com/docs/Date_Time_Data.html
@@ -414,7 +413,7 @@ Calculate julian date for a given datetime object. Based on http://www.tondering
           + np.floor(yy / 4.) - np.floor(yy / 100.) 
           + np.floor(yy / 400.) - 32045.)
     # Now add the fractional day to obtain the Julian date
-    jd += date.hour / 24.0 + date.minute / 1440.0 + date.second / 86400.0
+    jd += date.hour / 24.0 + date.minute / 1440.0 + date.second / 86400.0 - 0.5
 
     return jd
 
