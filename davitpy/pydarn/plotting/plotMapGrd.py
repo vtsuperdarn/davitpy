@@ -52,9 +52,7 @@ class MapConv(object):
         axisHandle, hemi = 'north', 
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
-        from davitpy.pydarn.sdio import *
-        from davitpy.pydarn.radar import *
-        from davitpy.utils import *
+        from davitpy.pydarn.sdio import sdDataOpen
         import matplotlib.cm as cm
         import numpy
         import matplotlib
@@ -84,10 +82,10 @@ class MapConv(object):
         # This is the way I'm setting stuff up to avoid confusion of reading and plotting seperately.
         # Just give the date/hemi and the code reads the corresponding rec
         endTime = startTime + datetime.timedelta(minutes=2)
-        grdPtr = sdDataOpen(startTime, hemi, eTime=endTime)
-        self.grdData = sdDataReadRec(grdPtr)
+        grdPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='grdex')
+        self.grdData = grdPtr.readRec()
         mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
-        self.mapData = sdDataReadRec(mapPtr)
+        self.mapData = grdPtr.readRec()
 
     def overlayGridVel(self, pltColBar=True, 
         overlayRadNames=True, annotateTime=True, 
@@ -102,7 +100,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
-        from davitpy.pydarn.plotting import *
+        from davitpy.pydarn.plotting import overlayRadar
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -556,7 +554,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
-        from davitpy.pydarn.plotting import *
+        #from davitpy.pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 
@@ -625,7 +623,7 @@ class MapConv(object):
         import matplotlib
         import datetime
         import numpy
-        from davitpy.pydarn.plotting import *
+        from davitpy.pydarn.plotting import overlayRadar
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
 

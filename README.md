@@ -69,6 +69,9 @@ To test davitpy and learn more about some of its functionality, please look at t
 
 This command will launch a web broswer with an interface that will allow you to run python code directly in a browsing window.  The browser should show a list of the demonstration notebooks.  If you do not see the demonstration notebooks, please make sure you are in the davitpy/doc/notebook/ directory before running the davitpy-notebook command.  To run code within a cell, place your cursor in the cell and press shift-enter.
 
+####Ipython Profile and 'davitpy' Executable
+Please refer to the README.md in the bin directory of this repository for instructions on how to setup a custom ipython configuration to automagically import the davitpy library when starting an ipython session. The README also contains instructions on how to install a 'davitpy' executable file (bash script) if you wish to do so.
+
 ### Issues and Bug reporting
 
 To use raytracing, you must build the raytracing routines separately from the standard davitpy installation procedure.  Please see the Makefile in davitpy/davitpy/raydarn.

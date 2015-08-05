@@ -75,7 +75,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     from matplotlib.figure import Figure as mpl_fig
     from matplotlib.ticker import MaxNLocator
     import numpy as np
-    import pydarn
+    from davitpy import pydarn
 
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
     ltab = myBeam.prm.ltab
@@ -402,7 +402,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
     from matplotlib import colors
     import matplotlib as mpl
     import matplotlib.cm as cmx
-    import pydarn
+    from davitpy import pydarn
 
     # Get parameters
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
@@ -570,7 +570,7 @@ def nuft(a, tn, T):
 
 
 if __name__ == "__main__":
-    import pydarn
+    from davitpy import pydarn
     from datetime import datetime
     from matplotlib import pyplot
 
