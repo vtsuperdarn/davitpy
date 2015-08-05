@@ -85,7 +85,7 @@ class MapConv(object):
         grdPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='grdex')
         self.grdData = grdPtr.readRec()
         mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
-        self.mapData = grdPtr.readRec()
+        self.mapData = mapPtr.readRec()
 
     def overlayGridVel(self, pltColBar=True, 
         overlayRadNames=True, annotateTime=True, 
