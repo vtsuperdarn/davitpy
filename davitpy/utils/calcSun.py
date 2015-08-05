@@ -388,16 +388,49 @@ Note that for plotting only, basemap has a built-in terminator
 
 def getJD( date ):
     """
-Calculate julian date for given day, month and year
+Calculate julian date for a given datetime object. Based on http://www.tondering.dk/claus/cal/julperiod.php. Note that this algorithm assumes input is from the Gregorian or Proleptic Gregorian Calendar.
     """
-    from dateutil.relativedelta import relativedelta
-    
-    if date.month < 2: 
-        date.replace(year=date.year-1)
-        date += relativedelta(month=12)
+    # Note to devs: 
+    # One can compare the output of this algorithm with http://aa.usno.navy.mil/data/docs/JulianDate.php
+    # but make sure you remember that this algorithm assumes the Gregorian 
+    # calendar for all year whereas the algorithm used in the provided link does not.
+    # For dates before 15 October 1582 the link uses the Julian calendar. Also note that
+    # in the link, they forget to add 0.5 to Julian dates before 4 October 1582...
+    #
+    # In the future, this algorithm could support the Julian calendar for input dates
+    # using the table found here: http://www.exelisvis.com/docs/Date_Time_Data.html
 
-    A = numpy.floor(date.year/100.)
-    B = 2. - A + numpy.floor(A/4.)
-    jd = numpy.floor(365.25*(date.year + 4716.)) + numpy.floor(30.6001*(date.month+1)) + date.day + B - 1524.5
-    jd = jd + date.hour/24.0 + date.minute/1440.0 + date.second/86400.0
+    import numpy as np
+    Y = date.year
+    M = date.month
+    D = date.day
+
+    # This algorithm is from http://www.tondering.dk/claus/cal/julperiod.php
+    # First calculate the Julian Day Number
+    a = np.floor((14.-M)/12.)
+    yy = Y + 4800. - a
+    mm = M + 12. * a - 3.
+    jd = (D + np.floor((153. * mm + 2.) / 5.) + 365. * yy 
+          + np.floor(yy / 4.) - np.floor(yy / 100.) 
+          + np.floor(yy / 400.) - 32045.)
+    # Now add the fractional day to obtain the Julian date
+    jd += date.hour / 24.0 + date.minute / 1440.0 + date.second / 86400.0
+
     return jd
+
+
+    # The previous algorithm was not very accurate, so I replaced it. It seems
+    # it was taken from http://quasar.as.utexas.edu/BillInfo/JulianDatesG.html
+    # and comparing what it spits out for 1 January, 2000 it should give:
+    # 2451545.0 but instead it gives 2451880.0, off by 335 days!
+    #from dateutil.relativedelta import relativedelta
+    
+    #if date.month < 2: 
+    #    date.replace(year=date.year-1)
+    #    date += relativedelta(month=12)
+
+    #A = numpy.floor(date.year/100.)
+    #B = 2. - A + numpy.floor(A/4.)
+    #jd = numpy.floor(365.25*(date.year + 4716.)) + numpy.floor(30.6001*(date.month+1)) + date.day + B - 1524.5
+    #jd = jd + date.hour/24.0 + date.minute/1440.0 + date.second/86400.0
+    #return jd
