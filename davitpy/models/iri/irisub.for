@@ -360,12 +360,13 @@ c     &   /BLOTN/XSM1,TEXOS,TLBDH,SIGMA /BLOTE/AHH,ATE1,STTE,DTE
 
         character(250) :: defaultdatapath
         character(512) :: defaultfile
+        COMMON /DATPTH/defaultdatapath
 
         save
 
         !call getenv('DAVITPY', defaultdatapath)
         defaultdatapath = datapath
-        defaultdatapath=trim(defaultdatapath) // '/davitpy/models/iri/'
+        defaultdatapath =trim(defaultdatapath) // '/davitpy/models/iri/'
 
         nummax=1000
         DO 7397 KI=1,20
@@ -761,9 +762,9 @@ C
            LATI=ALATI
            LONGI=ALONG
         ENDIF
-        CALL GEODIP(IYEAR,LATI,LONGI,MLAT,MLONG,JMAG,datapath)
+        CALL GEODIP(IYEAR,LATI,LONGI,MLAT,MLONG,JMAG)
         call igrf_dip(lati,longi,ryear,300.0,dip,magbr,modip,
-     &                dec,datapath)
+     &                dec)
         if(.not.jf(18)) then
         CALL FIELDG(LATI,LONGI,300.0,XMA,YMA,ZMA,BET,DIP,DEC,MODIP)
         	MAGBR=ATAN(0.5*TAN(DIP*UMR))/UMR
@@ -836,7 +837,7 @@ C
         if(sam_date.and..not.rzino.and..not.rzin.
      &                   and..not.igin.and..not.igino) goto 2910
      
-        call tcon(iyear,month,iday,daynr,rzar,arig,ttt,nmonth,datapath)
+        call tcon(iyear,month,iday,daynr,rzar,arig,ttt,nmonth)
         if(nmonth.lt.0) goto 3330		! jump to end of program
 
         if(RZIN) then
@@ -869,7 +870,7 @@ c        COVSAT=63.75+rlimit*(0.728+rlimit*0.00089)
         f10781=cov
         f107365=cov
         call APF_ONLY(iyear,month,iday,F107_daily,F107PD,F107_81,
-     &        F107_365,IAP_daily,datapath)
+     &        F107_365,IAP_daily)
         if(F107_daily.gt.-11.1) then
             f107d=f107_daily
             f107y=f107PD
@@ -1137,7 +1138,7 @@ c
       estormcor=-1.
       if((jf(26).and.jf(8)).or.jf(33).or.jf(35)) then
          if(.not.sam_date.or..not.sam_ut)   
-     &              call apf(iyear,month,iday,hourut,indap,datapath)
+     &              call apf(iyear,month,iday,hourut,indap)
          if(indap(1).gt.-1) then
             if(jf(26)) then
                icoord=1
@@ -1541,7 +1542,7 @@ C
       HEQUI=120.0
       IF(NOTEM) GOTO 240
       SEC=hourut*3600.
-      CALL APFMSIS(IYEAR,MONTH,IDAY,HOUR,IAPO,datapath)
+      CALL APFMSIS(IYEAR,MONTH,IDAY,HOUR,IAPO)
 c           CALL TRETRV(SWMI)
            SWMI(9)=-1.0
            CALL TSELEC(SWMI)
@@ -1635,7 +1636,7 @@ c              isa=0    ! solar activity correction off
 c              ise=0    ! season correction off
               do 3491 ijk=3,7
                  call igrf_sub(lati,longi,ryear,ahh(ijk),
-     &                xl,icode,dipl,babs,dip,dec,datapath)
+     &                xl,icode,dipl,babs,dip,dec)
                  if(xl.gt.10.) xl=10.
                  call elteik(1,1,invdip,xl,dimo,babs,dipl,
      &              xmlt,ahh(ijk),daynr,pf107,teh2,sdte)
@@ -1827,7 +1828,7 @@ c
         if (height.gt.300.) then
 c Triskova-Truhlik-Smilauer-2003 model
        		call igrf_sub(lati,longi,ryear,height,
-     &  	    xl,icode,dipl,babs,dip,dec,datapath)
+     &  	    xl,icode,dipl,babs,dip,dec)
         	if(xl.gt.10.) xl=10.
         	dimo=0.311653
 			call CALION(1,xinvdip,xl,dimo,babs,dipl,xmlt,
@@ -2033,7 +2034,7 @@ C
 
 
         subroutine iri_web(jmag,jf,alati,along,iyyyy,mmdd,iut,dhour,
-     &          height,h_tec_max,ivar,vbeg,vend,vstp,a,b,datapath)
+     &          height,h_tec_max,ivar,vbeg,vend,vstp,a,b)
 c-----------------------------------------------------------------------        
 c changes:
 c       11/16/99 jf(30) instead of jf(17)
@@ -2057,7 +2058,6 @@ c          numstp  number of steps; maximal 1000
 c-----------------------------------------------------------------------        
         dimension   outf(20,1000),oar(100),oarr(100),a(20,1000)
         dimension   xvar(8),b(100,1000)
-        character(250),intent(in) :: datapath
         logical     jf(50)
 
 Cf2py intent(in) :: jmag,jf,alati,along,iyyyy,mmdd,iut,dhour
@@ -2077,7 +2077,7 @@ Cf2py intent(out) a
 1249            oarr(i)=oar(i) 
             xhour=dhour+iut*25.
             call IRI_SUB(JF,JMAG,ALATI,ALONG,IYYYY,MMDD,XHOUR,
-     &                  VBEG,VEND,VSTP,a,OARR,datapath)
+     &                  VBEG,VEND,VSTP,a,OARR)
             if(h_tec_max.gt.50.) then 
                 call iri_tec (50.,h_tec_max,2,tec,tect,tecb)
                 oarr(37)=tec
@@ -2113,7 +2113,7 @@ Cf2py intent(out) a
                 do 1349 iii=1,100
 1349                    oarr(iii)=b(iii,i) 
                 call IRI_SUB(JF,JMAG,ALATI,ALONG,IYYYY,MMDD,DHOUR,
-     &                  height,height,1.,OUTF,OARR,datapath)
+     &                  height,height,1.,OUTF,OARR)
                 if(h_tec_max.gt.50.) then
                         call iri_tec (50.,h_tec_max,2,tec,tect,tecb)
                         oarr(37)=tec
