@@ -495,6 +495,7 @@ c
       else
           oarr(46)=-1.
       ENDIF
+
 c
 c Topside density ....................................................
 c
@@ -821,6 +822,7 @@ C NEW-GUL------------------------------
             sday=sday+180.						
             if (sday.gt.360.) sday=sday-360.	
 C NEW-GUL------------------------------
+
 
 C
 C 12-month running mean sunspot number (rssn) and Ionospheric Global 
@@ -1276,6 +1278,7 @@ c
           X22=90
           FX11=fmodip(x11)
           FX22=fmodip(x22)
+
           CALL REGFA1(X11,X22,FX11,FX22,0.001,MODIP,FMODIP,SCHALT,XRLAT)
           IF(SCHALT) THEN
              XRLAT=LATI
