@@ -176,7 +176,7 @@ class RtRun(object):
             f.write( "{:8.2f}  hmf2 (km, if 0 then ignored)\n".format( self.hmf2 ) )
             f.write( "{:8.2f}  nmf2 (log10, if 0 then ignored)\n".format( self.nmf2 ) )
 
-            f.write( self.davitpy_path ) # DaViTpy install path
+            f.write( self.davitpy_path+"\n" ) # DaViTpy install path
 
             if hasattr(self,'edens_file'):  # Path to user-defined electron profile
                 f.write( self.edens_file )
