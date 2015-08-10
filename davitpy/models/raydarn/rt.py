@@ -412,7 +412,7 @@ class Edens(object):
 
     def plot(self, time, beam=None, maxground=2000, maxalt=500,
         nel_cmap='jet', nel_lim=[10, 12], title=False, 
-        fig=None, rect=111, ax=None, aax=None):
+        fig=None, rect=111, ax=None, aax=None,plot_colorbar=True):
         """Plot electron density profile
         
         **Args**: 
@@ -488,8 +488,10 @@ class Edens(object):
             ax.set_title( stitle )
 
         # Add a colorbar
-        cbax = plotUtils.addColorbar(im, ax)
-        _ = cbax.set_ylabel(r"N$_{el}$ [$\log_{10}(m^{-3})$]")
+        cbax    = None
+        if plot_colorbar:
+            cbax = plotUtils.addColorbar(im, ax)
+            _ = cbax.set_ylabel(r"N$_{el}$ [$\log_{10}(m^{-3})$]")
 
         ax.beam = beam
         return ax, aax, cbax
