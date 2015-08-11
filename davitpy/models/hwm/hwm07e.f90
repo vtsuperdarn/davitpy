@@ -52,19 +52,25 @@ subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     real(4),intent(in)      :: sec,alt,glat,glon,stl,f107a,f107
     real(4),intent(in)      :: ap(2)
     real(4),intent(out)     :: w(2)
-    character(250),intent(in)   :: defaultdatapath
+    character(250),intent(in)  :: defaultdatapath
+    character(250)             :: datapath
+
 !f2py intent(in) iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 !f2py intent(out) w
 
     real(4)                 :: qw(2),dw(2)
+
+    COMMON /DATPTH/datapath
+
+    datapath = defaultdatapath
     !print*, '#### Running HWM07 ####'
     !print*, 'Input: '
     !print*, iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 
-    call hwmqt(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,qw,defaultdatapath)
+    call hwmqt(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,qw)
     
     if (ap(2) .ge. 0.0) then
-      call dwm07b_hwm_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+      call dwm07b_hwm_interface(iyd,sec,alt,glat,glon,ap,dw)
       w = qw + dw
     else
       w = qw
@@ -149,7 +155,7 @@ end module NEWmodel
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W,defaultdatapath)
+subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W)
     
     use NEWmodel
     implicit none
@@ -179,7 +185,6 @@ subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W,defaultdatapath)
     REAL(4),intent(in)      :: SEC,ALT,GLAT,GLON,STL,F107A,F107
     REAL(4),intent(in)      :: AP(2)
     REAL(4),intent(out)     :: W(2)
-    character(250),intent(in)   :: defaultdatapath
 
     real(8)                 :: last(5)
     real(8)                 :: input(5)
@@ -192,7 +197,7 @@ subroutine HWMQT(IYD,SEC,ALT,GLAT,GLON,STL,F107A,F107,AP,W,defaultdatapath)
     input(5) = dble(alt)
 
     if (modelinit) then
-        call loadmodel(defaultdata,defaultdatapath)
+        call loadmodel(defaultdata)
         call HWMupdate(input,last,gfs,gfl,gfm,gvbar,gwbar,gbz,gbm,gzwght,glev,u,v)
     endif
     
@@ -567,17 +572,19 @@ end subroutine HWMupdate
 !
 ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine loadmodel(datafile,datapath)
+subroutine loadmodel(datafile)
 
     use NEWmodel
     implicit none
 
     character(64),intent(in)   :: datafile
-    character(250),intent(in)  :: datapath
+    character(250)             :: datapath
     integer                     :: i,j
     integer                     :: ncomp
     character(250)              :: defaultdatapath
     character(250)              :: filen
+
+    COMMON /DATPTH/datapath
 
     !call get_environment_variable('DAVITPY', defaultdatapath)
     defaultdatapath=datapath

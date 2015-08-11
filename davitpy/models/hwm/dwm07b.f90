@@ -65,7 +65,7 @@ end module dwm_module
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine dwm07b_hwm_interface(IYD,SEC,ALT,GLAT,GLON,AP,DW,datapath)
+subroutine dwm07b_hwm_interface(IYD,SEC,ALT,GLAT,GLON,AP,DW)
 
     implicit none
 
@@ -81,13 +81,13 @@ subroutine dwm07b_hwm_interface(IYD,SEC,ALT,GLAT,GLON,AP,DW,datapath)
     real(4), external       :: ap_to_kp, dwm_altwgt
 
     real(8), parameter      :: pi=3.141592653590, dtor=pi/180D0, sin_eps=0.39781868
-    character(250)          :: datapath
+
     !CONVERT AP TO KP
     kp = ap_to_kp(ap(2))
 
     !CONVERT GEO LAT/LON TO QD LAT/LON
 
-    call gd2qd(glat,glon,mlat,mlon,f1e,f1n,f2e,f2n,datapath)
+    call gd2qd(glat,glon,mlat,mlon,f1e,f1n,f2e,f2n)
 
     !COMPUTE QD MAGNETIC LOCAL TIME (LOW-PRECISION)
     day = real(mod(iyd,1000))
@@ -95,11 +95,11 @@ subroutine dwm07b_hwm_interface(IYD,SEC,ALT,GLAT,GLON,AP,DW,datapath)
     asun_glat = -asin(sin((day-80.0)*dtor) * sin_eps) / dtor
     asun_glon = -ut * 15.0
     call gd2qd(asun_glat, asun_glon, asun_mlat, asun_mlon, &
-               dummy,dummy,dummy,dummy,datapath)
+               dummy,dummy,dummy,dummy)
     mlt = (mlon - asun_mlon) / 15.0
 
     !RETRIEVE DWM WINDS
-    call dwm07b(mlt, mlat, kp, mmpwind, mzpwind, datapath)
+    call dwm07b(mlt, mlat, kp, mmpwind, mzpwind)
 
     !CONVERT TO GEOGRAPHIC COORDINATES
     dw(1) = f2n*mmpwind + f1n*mzpwind
@@ -125,7 +125,7 @@ end subroutine dwm07b_hwm_interface
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine dwm07b(mlt, mlat, kp, mmpwind, mzpwind,datapath)
+subroutine dwm07b(mlt, mlat, kp, mmpwind, mzpwind)
 
     use dwm_module
     implicit none
@@ -146,11 +146,10 @@ subroutine dwm07b(mlt, mlat, kp, mmpwind, mzpwind,datapath)
 
     external                  :: loaddwm, vsh_basis
     real(4), external         :: dwm_latwgt2
-    character(250),intent(in) :: datapath
 
     
     !LOAD MODEL PARAMETERS IF NECESSARY
-    if (modelinit) call loaddwm(defaultdata,datapath)
+    if (modelinit) call loaddwm(defaultdata)
 
     !COMPUTE VSH TERMS
     mltdeg = 15.0*mlt
@@ -185,7 +184,7 @@ end subroutine dwm07b
 ! This subroutine loads the disturbance wind model parameters
 ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine loaddwm(datafile,datapath)
+subroutine loaddwm(datafile)
 
     use dwm_module, maxmd=>mmax, maxld=>lmax, modelinitd=>modelinit
 
@@ -194,9 +193,11 @@ subroutine loaddwm(datafile,datapath)
     character(128),intent(in)   :: datafile
 
     external vsh_basis_init
-    character(250),intent(in) :: datapath
+    character(250)           :: datapath
     character(250)           :: defaultdatapath
     character(512)           :: filen
+
+    COMMON /DATPTH/datapath
 
     !call get_environment_variable('DAVITPY', defaultdatapath)
     defaultdatapath=datapath
@@ -813,7 +814,7 @@ end function dwm_altwgt
 
 !*********************************************************************
 
-subroutine gd2qd(glat,glon,qdlat,qdlon,f1e,f1n,f2e,f2n,datapath)
+subroutine gd2qd(glat,glon,qdlat,qdlon,f1e,f1n,f2e,f2n)
 
     implicit none
 
@@ -824,9 +825,8 @@ subroutine gd2qd(glat,glon,qdlat,qdlon,f1e,f1n,f2e,f2n,datapath)
     integer(4)               :: ist
     real(4), parameter       :: alt = 250.0
     real(4)                  :: hr
-    character(250)           :: datapath
     
-    call apex(glat,glon,alt,hr,qdlon,qdlat,f1,f2,ist,datapath)
+    call apex(glat,glon,alt,hr,qdlon,qdlat,f1,f2,ist)
                     
     if (ist .gt. 0) stop
 

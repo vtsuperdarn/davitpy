@@ -3,6 +3,7 @@ c
       SUBROUTINE T96_01 (IOPT,PARMOD,PS,X,Y,Z,BX,BY,BZ)
 C
 c     RELEASE DATE OF THIS VERSION:   JUNE 22, 1996.
+C     LAST UPDATE: MAY 01, 2006:  IN THE S/R DIPOLE, SPS AND CPS WERE ADDED IN THE SAVE STATEMENT
 
 C----------------------------------------------------------------------
 C
@@ -28,7 +29,7 @@ C
 c OUTPUT:  GSM COMPONENTS OF THE EXTERNAL MAGNETIC FIELD (BX,BY,BZ, nanotesla)
 C            COMPUTED AS A SUM OF CONTRIBUTIONS FROM PRINCIPAL FIELD SOURCES
 C
-c  (C) Copr. 1995, 1996, Nikolai A. Tsyganenko, Raytheon STX, Code 695, NASA GSFC
+c  (C) Copr. 1995, 1996, Nikolai A. Tsyganenko, Hughes STX, Code 695, NASA GSFC
 c      Greenbelt, MD 20771, USA
 c
 C                            REFERENCES:
@@ -57,7 +58,7 @@ C
 C
       DATA  AM0,S0,X00,DSIG/70.,1.08,5.48,0.005/
       DATA  DELIMFX,DELIMFY /20.,10./
-
+C
        PDYN=PARMOD(1)
        DST=PARMOD(2)
        BYIMF=PARMOD(3)
@@ -68,7 +69,7 @@ C
 C
        DEPR=0.8*DST-13.*SQRT(PDYN)  !  DEPR is an estimate of total near-Earth
 c                                         depression, based on DST and Pdyn
-c                                             (usually, DEPR < 0 )
+c                                             (usually, DEPR &lt 0 )
 C
 C  CALCULATE THE IMF-RELATED QUANTITIES:
 C
@@ -180,7 +181,6 @@ C                      POSSIBILITY IS NOW THE CASE (3):
                 BY=OIMFY-QY
                 BZ=OIMFZ-QZ
          ENDIF
-!         print*, 'T96_01',X,Y,Z,BX,BY,BZ
 C
        RETURN
        END
@@ -495,9 +495,10 @@ c    the arguments of exponents, sines, and cosines in the 9 "Cartesian"
 c       harmonics (3+3)
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
-	 IMPLICIT  REAL * 8  (A - H, O - Z)
+        IMPLICIT  REAL * 8  (A - H, O - Z)
 C
         DIMENSION A(15),RP(3),RR(3),P(3),R(3)
+        SAVE
 C
       DATA A/-8.411078731,5932254.951,-9073284.93,-11.68794634,
      * 6027598.824,-9218378.368,-6.508798398,-11824.42793,18015.66212,
@@ -690,11 +691,10 @@ C
         IMPLICIT REAL*8 (A-H,O-Z)
         DIMENSION F(2),BETA(2)
         COMMON /WARP/ CPSS,SPSS,DPSRR, XNEXT(3),XS,ZSWARPED,DXSX,DXSY,
-     *   DXSZ,DZSX,DZSYWARPED,DZSZ,OTHER(4),ZS                                              !  ZS HERE IS WITHOUT Y-Z WARP
+     *   DXSZ,DZSX,DZSYWARPED,DZSZ,OTHER(4),ZS  !  ZS HERE IS WITHOUT Y-Z WARP
 C
 
-      DATA D0,DELTADX,XD,XLDX /2.,0.,0.,4./  
-C                                            ACHTUNG !!  THE RC IS NOW
+      DATA D0,DELTADX,XD,XLDX /2.,0.,0.,4./  !  ACHTUNG !!  THE RC IS NOW
 C                                            COMPLETELY SYMMETRIC (DELTADX=0)
 
 C
@@ -1384,8 +1384,8 @@ C
          DIMENSION XI(4),D(3,26)
 C
            X = XI(1)
-	   Y = XI(2)
-	   Z = XI(3)
+           Y = XI(2)
+           Z = XI(3)
            PS= XI(4)
            SPS=DSIN(PS)
 C
@@ -1597,8 +1597,8 @@ c
          DIMENSION XI(4),D(3,79),CF(5),SF(5)
 C
            X = XI(1)
-	   Y = XI(2)
-	   Z = XI(3)
+           Y = XI(2)
+           Z = XI(3)
            PS= XI(4)
            SPS=DSIN(PS)
            CPS=DCOS(PS)
@@ -2099,8 +2099,8 @@ C
 C
 C   RETURNS FIELD COMPONENTS FROM A LINEAR DISTRIBUTION OF DIPOLAR SOURCES
 C     ON THE Z-AXIS.  THE PARAMETER MODE DEFINES HOW THE DIPOLE STRENGTH
-C     VARIES ALONG THE Z-AXIS:  MODE=0 IS FOR A STEP-FUNCTION (Mx=const > 0
-c         FOR Z > 0, AND Mx=-const < 0 FOR Z < 0)
+C     VARIES ALONG THE Z-AXIS:  MODE=0 IS FOR A STEP-FUNCTION (Mx=const &gt 0
+c         FOR Z &gt 0, AND Mx=-const &lt 0 FOR Z &lt 0)
 C      WHILE MODE=1 IS FOR A LINEAR VARIATION OF THE DIPOLE MOMENT DENSITY
 C       SEE NB#3, PAGE 53 FOR DETAILS.
 C
@@ -2170,7 +2170,7 @@ C   RETURNS FIELD COMPONENTS FROM A SYSTEM OF 4 CURRENT LOOPS, POSITIONED
 C     SYMMETRICALLY WITH RESPECT TO NOON-MIDNIGHT MERIDIAN AND EQUATORIAL
 C      PLANES.
 C  INPUT: X,Y,Z OF A POINT OF SPACE
-C        XC,YC,ZC (YC > 0 AND ZC > 0) - POSITION OF THE CENTER OF THE
+C        XC,YC,ZC (YC &gt 0 AND ZC &gt 0) - POSITION OF THE CENTER OF THE
 C                                         1ST-QUADRANT LOOP
 C        R - LOOP RADIUS (THE SAME FOR ALL FOUR)
 C        THETA, PHI  -  SPECIFY THE ORIENTATION OF THE NORMAL OF THE 1ST LOOP
@@ -2549,19 +2549,10 @@ C------------OUTPUT PARAMETERS:
 C   BX,BY,BZ - FIELD COMPONENTS IN GSM SYSTEM, IN NANOTESLA.
 C
 C
-C                   AUTHOR: NIKOLAI A. TSYGANENKO
-C                           INSTITUTE OF PHYSICS
-C                           ST.-PETERSBURG STATE UNIVERSITY
-C                           STARY PETERGOF 198904
-C                           ST.-PETERSBURG
-C                           RUSSIA
-C
-      IMPLICIT NONE
-C
-      REAL PS,X,Y,Z,BX,BY,BZ,PSI,SPS,CPS,P,U,V,T,Q
-      INTEGER M
+C     WRITEN BY: N. A. TSYGANENKO
 
       DATA M,PSI/0,5./
+      SAVE M,PSI,SPS,CPS
       IF(M.EQ.1.AND.ABS(PS-PSI).LT.1.E-5) GOTO 1
       SPS=SIN(PS)
       CPS=COS(PS)

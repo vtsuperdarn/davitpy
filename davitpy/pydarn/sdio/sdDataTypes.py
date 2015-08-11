@@ -76,6 +76,7 @@ class sdDataPtr():
         from davitpy.pydarn.radar import network
         from davitpy import utils
         from davitpy.pydarn.sdio.fetchUtils import fetch_local_files, fetch_remote_files
+        import davitpy
     
         self.sTime = sTime
         self.eTime = eTime
@@ -507,7 +508,7 @@ class sdDataPtr():
 
         import datetime as dt
         import numpy as np
-        from pydarn.dmapio import readDmapRec
+        from davitpy.pydarn.dmapio import readDmapRec
 
         valid = []
 

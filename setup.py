@@ -30,7 +30,7 @@ def read(fname):
 # 'exec_command' is supposed to work on win32 
 # according to its documentation.
 #############################################################################
-command = 'make -C "/home/ashtonsethreimer/davitpy/davitpy/models/raydarn/"'
+command = 'make -C "davitpy/models/raydarn/"'
 exec_command.exec_command(command)
 
 #############################################################################
@@ -67,7 +67,7 @@ tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f',
 #############################################################################
 # C extensions
 #############################################################################
-dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/rst/src/*.c'),)
+dmap = Extension("dmapio", sources=glob.glob('davitpy/pydarn/dmapio/rst/src/*.c'),)
 aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
 #############################################################################

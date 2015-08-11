@@ -225,4 +225,5 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
       
     myData = pydarn.sdio.radDataReadRec(myPtr)
     if(myData is None): break
-    
+  #close the file
+  f.close()

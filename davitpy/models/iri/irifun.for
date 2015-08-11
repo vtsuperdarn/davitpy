@@ -7230,7 +7230,7 @@ C
             END
 c
 c
-           subroutine tcon(yr,mm,day,idn,rz,ig,rsn,nmonth,datapath)
+           subroutine tcon(yr,mm,day,idn,rz,ig,rsn,nmonth)
 c----------------------------------------------------------------
 c input:        yr,mm,day       year(yyyy),month(mm),day(dd)
 c               idn             day of year(ddd)
@@ -7254,10 +7254,10 @@ c----------------------------------------------------------------
            integer      imst,iymend
            real         ionoindx(722),indrz(722)
            real         ig(3),rz(3)
-           character(250),intent(in) :: datapath
            character(250) :: defaultdatapath
            character(512) :: defaultfile
 
+           COMMON /DATPTH/defaultdatapath
            common /iounit/konsol
 
            save         ionoindx,indrz,iflag,iyst,iymst,
@@ -7295,10 +7295,10 @@ c
         if(iflag.eq.0) then
 
           !call getenv('DAVITPY', defaultdatapath)
-          defaultdatapath=datapath
-          defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
           defaultfile = trim(defaultdatapath) // 'ig_rz.dat'
 
+          print *,'Defaultdatapath: ',defaultdatapath
+          print *,'Defaultfile: ',defaultfile
           open(unit=12,file=trim(defaultfile),
      &          status='old')
 c-web- special for web version
@@ -7401,7 +7401,7 @@ c               if((yr/4*4.eq.yr).and.(yr/100*100.ne.yr)) idd2=381
 C
 C
 
-        SUBROUTINE APF(IYYYY,IMN,ID,HOUR,IAP,datapath)
+        SUBROUTINE APF(IYYYY,IMN,ID,HOUR,IAP)
 c--------------------------------------------------------------------
 c Finds 3-hourly Ap indices for IRI-STORM model
 c
@@ -7432,11 +7432,11 @@ c If date is outside the range of the Ap indices file than iap(1)=-5
 c--------------------------------------------------------------------
 
         DIMENSION iiap(8),iap(13),lm(12)
-        character(250),intent(in) :: datapath
         character(250) :: defaultdatapath
         character(512) :: defaultfile
 
 
+        COMMON/DATPTH/defaultdatapath
         common /iounit/konsol
 
         DATA LM/31,28,31,30,31,30,31,31,30,31,30,31/
@@ -7450,8 +7450,6 @@ c--------------------------------------------------------------------
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
         !call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath=datapath
-        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
         defaultfile = trim(defaultdatapath) // 'apf107.dat'
 
         Open(13,FILe=trim(defaultfile),
@@ -7525,7 +7523,7 @@ c      OPEN(13,FILE='/usr/local/etc/httpd/cgi-bin/models/IRI/apf107.dat',
       END
 C
 C
-        SUBROUTINE APFMSIS(IYYYY,IMN,ID,HOUR,IAPO,datapath)
+        SUBROUTINE APFMSIS(IYYYY,IMN,ID,HOUR,IAPO)
 c--------------------------------------------------------------------
 c Finds 3-hourly Ap indices for NRLMSIS00 model for 
 C given year IYYYY (yyyy), month (IMN), day (ID), and UT (HOUR, decimal 
@@ -7548,10 +7546,9 @@ c--------------------------------------------------------------------
 
 		REAL IAPO
         DIMENSION iiap(8),iap(21),lm(12),iapo(7)
-        character(250),intent(in) :: datapath
         character(250) :: defaultdatapath
         character(512) :: defaultfile
-
+        COMMON /DATPTH/defaultdatapath
         common /iounit/konsol
 
         DATA LM/31,28,31,30,31,30,31,31,30,31,30,31/
@@ -7568,8 +7565,6 @@ c--------------------------------------------------------------------
         if(iyyyy.lt.IYBEG) goto 21   ! file starts at Jan 1, 1958
 
         !call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath=datapath
-        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
         defaultfile = trim(defaultdatapath) // 'apf107.dat'
 
         Open(13,FILe=trim(defaultfile),
@@ -7673,7 +7668,7 @@ c        iapo(7)=int(sum2/8.+.5)
 C
 C
         SUBROUTINE APF_ONLY(IYYYY,IMN,ID,F107D,F107PD,F107_81,F107_365,
-     *        IAPDA,datapath)
+     *        IAPDA)
 c--------------------------------------------------------------------
 c Finds daily F10.7, daily Ap, and 81-day and 365-day F10.7 index: 
 c
@@ -7696,10 +7691,9 @@ c If date is outside the range of indices file than F107D=F107_81=-11.1
 c--------------------------------------------------------------------
 
         DIMENSION iiap(8),lm(12)
-        character(250),intent(in) :: datapath
         character(250) :: defaultdatapath
         character(512) :: defaultfile
-
+        COMMON /DATPTH/defaultdatapath
         common /iounit/konsol
 
         DATA LM/31,28,31,30,31,30,31,31,30,31,30,31/
@@ -7708,8 +7702,6 @@ c--------------------------------------------------------------------
         if(iyyyy.lt.IYBEG) goto 21   ! APF107.DAT starts at Jan 1, 1958
 
         !call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath=datapath
-        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
         defaultfile = trim(defaultdatapath) // 'apf107.dat'
 
         Open(13,FILe=trim(defaultfile),
