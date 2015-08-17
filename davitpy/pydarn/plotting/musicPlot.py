@@ -1885,7 +1885,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
 def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,x_labelpad=None,y_labelpad=None,
             cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None,cbar_pad=0.05):
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None,cbar_pad=0.05,cmap=None):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
     been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
 
@@ -1905,6 +1905,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**cmap**] (None or matplotlib colormap object): If Nonei and cmap_handling=='matplotlib', use jet.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1943,7 +1944,8 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             x4,y4 = xx0, yy1
             verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    cmap = matplotlib.cm.jet
+    if cmap is None:
+        cmap = matplotlib.cm.jet
     bounds  = np.linspace(scale[0],scale[1],256)
     norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
 
