@@ -66,15 +66,17 @@ end module apexcord
 ! Initalize the apex coordinate module variables
 ! ===============================================================
 
-subroutine apxrda(datapath)
+subroutine apxrda()
 
     use apexcord
     implicit none
     
     integer(4) :: i
-    character(250),intent(in)           :: datapath
+    character(250)           :: datapath
     character(250)           :: defaultdatapath
     character(512)           :: filen
+
+    COMMON /DATPTH/datapath
 
     !call get_environment_variable('DAVITPY', defaultdatapath)
     defaultdatapath=datapath
@@ -106,7 +108,7 @@ end subroutine apxrda
 ! Convert from (glat,glon) to apex coordinates
 ! =======================================================================
 
-subroutine apex(glat,glon,alt,hr,alon,xlatqd,f1,f2,ist,datapath)
+subroutine apex(glat,glon,alt,hr,alon,xlatqd,f1,f2,ist)
      
     use apexcord
     implicit none
@@ -142,12 +144,11 @@ subroutine apex(glat,glon,alt,hr,alon,xlatqd,f1,f2,ist,datapath)
     real(4)        :: grclm(3),clmgrp(3),rgrlp(3)
         
     real(4)        :: f
-    character(250) :: datapath
     
 ! Initalize the module if needed
     
     if (loaddata) then
-        call apxrda(datapath)
+        call apxrda()
         loaddata = .false.
     endif
                    

@@ -14,7 +14,7 @@ python module hwm07 ! in
             real(kind=4) intent(in) :: f107
             real(kind=4) dimension(2),intent(in) :: ap
             real(kind=4) dimension(2),intent(out) :: w
-            character*128 intent(in) :: defaultdatapath
+            character*250 intent(in) :: defaultdatapath
         end subroutine hwm07
     end interface 
 end python module hwm07
