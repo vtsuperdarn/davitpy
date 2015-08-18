@@ -367,7 +367,8 @@ class musicFan(object):
         if plotTerminator:
             m.nightshade(currentData.time[timeInx])
 
-        self.map_obj = m
+        self.map_obj    = m
+        self.pcoll      = pcoll
 
 class musicRTI(object):
     """Class to create an RTI plot using a pydarn.proc.music.musicArray object as the data source.
