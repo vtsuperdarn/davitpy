@@ -253,8 +253,14 @@ class musicFan(object):
         lat_0       = lat_0 + lat_shift
         lon_0       = lon_0 + lon_shift
 
+        bmd         = basemap_dict.copy()
+        width       = bmd.pop('width',  width)
+        height      = bmd.pop('height', height)
+        lat_0       = bmd.pop('lat_0',  lat_0)
+        lon_0       = bmd.pop('lon_0',  lon_0)
+
         #draw the actual map we want
-        m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**basemap_dict)
+        m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**bmd)
         if parallels_ticks is None:
             parallels_ticks = np.arange(-80.,81.,10.)
 
@@ -1300,6 +1306,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
         scale                   = None,
         plot_title              = True,
         maxXTicks               = 10.,
+        plot_cbar               = True,
         cbar_label              = 'ABS(Spectral Density)',
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
@@ -1337,6 +1344,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
 
     from scipy import stats
 
+    return_dict = {}
     currentData = getDataSet(dataObj,dataSet)
 
     nrFreqs,nrBeams,nrGates = np.shape(currentData.spectrum)
@@ -1405,19 +1413,21 @@ def plotFullSpectrum(dataObj,dataSet='active',
     pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
+    spect_pcoll = pcoll
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
-    cbar.set_label(cbar_label)
-    if cbar_ticks is None:
-        labels = cbar.ax.get_yticklabels()
-        labels[-1].set_visible(False)
-    else:
-        cbar.set_ticks(cbar_ticks)
+    if plot_cbar:
+        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
+        cbar.set_label(cbar_label)
+        if cbar_ticks is None:
+            labels = cbar.ax.get_yticklabels()
+            labels[-1].set_visible(False)
+        else:
+            cbar.set_ticks(cbar_ticks)
 
-    if currentData.metadata.has_key('gscat') and cbar_gstext_enable:
-        if currentData.metadata['gscat'] == 1:
-            cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+        if currentData.metadata.has_key('gscat') and cbar_gstext_enable:
+            if currentData.metadata['gscat'] == 1:
+                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
     #Plot average values.
     verts   = []
@@ -1530,6 +1540,10 @@ def plotFullSpectrum(dataObj,dataSet='active',
             text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
 
         fig.text(xpos,0.95,text,fontsize=14,va='top')
+
+    return_dict['cbar_pcoll']   = spect_pcoll
+    return_dict['cbar_label']   = cbar_label
+    return return_dict
 
 def plotDlm(dataObj,dataSet='active',fig=None):
     """Plot the cross spectral matrix of a pydarn.proc.music.musicArray object.  The cross-spectral matrix must have already
@@ -1912,6 +1926,8 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     Written by Nathaniel A. Frissell, Fall 2013
     """
     if axis is None: return
+    return_dict = {}
+
     fig = axis.get_figure()
     from scipy import stats
     import matplotlib.patheffects as PathEffects
@@ -1961,9 +1977,10 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     axis.axhline(color='0.82',lw=2,zorder=150)
 
     #Colorbar
+    cbar_label  = 'Normalized Wavenumber Power'
     if plot_colorbar:
         cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
-        cbar.set_label('Normalized Wavenumber Power')
+        cbar.set_label(cbar_label)
         if not cbar_ticks:
             cbar_ticks = np.arange(10)/10.
         cbar.set_ticks(cbar_ticks)
@@ -2034,3 +2051,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             ypos = currentData.kyVec[signal['maxpos'][1]]
             txt  = '%i' % signal['order']
             axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=sig_fontsize,path_effects=pe)
+
+    return_dict['cbar_pcoll']   = pcoll
+    return_dict['cbar_label']   = cbar_label
+    return return_dict
