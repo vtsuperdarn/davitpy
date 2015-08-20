@@ -10,6 +10,8 @@
 
 #ver=2.7
 
+alias pip="pip2"    #davitpy only supports python 2 for now, suse defaults to using pip3
+
 #apt-get install -y python$ver
 zypper -n install python
 #apt-get install -y python-dev
@@ -62,6 +64,7 @@ pip install --upgrade matplotlib
 
 dir=$(pwd)
 
+#Now install basemap!
 cd /tmp
 git clone https://github.com/matplotlib/basemap.git
 cd basemap/geos-3.3.3
@@ -71,7 +74,20 @@ make
 make check
 make install
 ldconfig
-cd $dir/..
-
+cd ..
 python setup.py install
+
+
+#Now let's install mpich for raydarn!
+#Now get mpich to compile
+cd /tmp
+wget http://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4.tar.gz
+tar -zxf mpich-3.1.4.tar.gz
+cd mpich-3.1.4
+./configure
+make
+make install
+ldconfig
+
+cd $dir
 
