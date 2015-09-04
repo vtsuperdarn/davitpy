@@ -27,6 +27,7 @@ pip install --upgrade PIL
 pip install --upgrade pymongo
 pip install --upgrade paramiko
 pip install --upgrade jinja2
+pip install --upgrade jsonschema
 pip install --upgrade cython
 pip install --upgrade scikit-image
 pip install --upgrade pandas
@@ -36,11 +37,3 @@ cd /tmp
 git clone https://github.com/matplotlib/basemap.git
 python2.7 setup.py install
 
-
-cd $dir
-install_dir=$(greadlink -f ../..)
-echo "source $install_dir/profile.mac" >> ~/.bash_profile
-
-
-cd ../..
-./mastermake
