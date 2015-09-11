@@ -35,6 +35,9 @@ Based on R.J. Barnes radar.pro
 
 # *************************************************************
 def geodToGeoc(lat,lon,inverse=False):
+    #NOTE TO DEVS, ADD OTHER MODELS LIKE WGS84
+    #Also, Re doesn't seem meaningful. You can't "convert the inverse" of the Re...
+ 
     """Converts position from geodetic to geocentric and vice-versa.
     Based on the IAU 1964 oblate spheroid model of the Earth.
 
