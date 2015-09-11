@@ -125,6 +125,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       elif(params[i] == 'power'): tscales.append([0,30])
       elif(params[i] == 'width'): tscales.append([0,150])
       elif(params[i] == 'elevation'): tscales.append([0,50])
+      elif(params[i] == 'vel_err'): tscales.append([-200,200])
       elif(params[i] == 'phi0'): tscales.append([-numpy.pi,numpy.pi])
     else: tscales.append(scales[i])
   scales = tscales
@@ -172,6 +173,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   #initialize empty lists
   vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
         [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
+  vel_err = []
   for i in range(len(tbands)):
     times.append([])
     cpid.append([])
@@ -190,6 +192,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     elev.append([])
     phi0.append([])
     gsflg.append([])
+    vel_err.append([])
   
   #read the parameters of interest
   while(myBeam is not None):
@@ -213,6 +216,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
           if('width' in params): wid[i].append(myBeam.fit.w_l)
           if('elevation' in params): elev[i].append(myBeam.fit.elv)
           if('phi0' in params): phi0[i].append(myBeam.fit.phi0)
+          if('vel_err' in params): vel_err[i].append(myBeam.fit.v_e)
           gsflg[i].append(myBeam.fit.gflg)
       
     myBeam = radDataReadRec(myFile)
@@ -252,6 +256,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       elif(params[p] == 'width'): pArr = wid[fplot]
       elif(params[p] == 'elevation'): pArr = elev[fplot]
       elif(params[p] == 'phi0'): pArr = phi0[fplot]
+      elif(params[p] == 'vel_err'): pArr = vel_err[fplot]
       pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
       
       #draw the axis
@@ -349,7 +354,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
           elif(bounds[i] < 0): ln = 5
           l.append(str(bounds[i])[:ln])
           continue
-        if((i == 0 and params[p] == 'velocity') or i == len(bounds)-1):
+        if((i == 0 and (params[p] == 'velocity' or params[p] == 'vel_err')) or i == len(bounds)-1):
           l.append(' ')
           continue
         l.append(str(int(bounds[i])))
@@ -366,6 +371,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
       if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
       if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
+      if(params[p] == 'vel_err'): cb.set_label('Velocity Error [m/s]',size=10)
   
     #handle the outputs
     if png == True:
