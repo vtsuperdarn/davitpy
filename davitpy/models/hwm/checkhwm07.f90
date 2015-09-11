@@ -31,6 +31,10 @@ subroutine checkhwm07(defaultdatapath)
   integer      :: ialt,istl,ilat,ilon,iaptemp
   integer      :: imlat,imlt,ikp
   character(250),intent(in)   :: defaultdatapath
+  character(250)             :: datapath
+
+  COMMON /DATPTH/datapath
+  datapath = defaultdatapath
 
 ! HEIGHT PROFILE
   day = 150
@@ -51,7 +55,7 @@ subroutine checkhwm07(defaultdatapath)
   do ialt = 0, 400, 25
     alt = float(ialt)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.0,3(f12.3,f10.3))', alt, qw, dw, w
   end do
@@ -77,7 +81,7 @@ subroutine checkhwm07(defaultdatapath)
   do ilat = -90, 90, 10
     glat = float(ilat)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.1,3(f12.3,f10.3))', glat, qw, dw, w
   end do
@@ -102,7 +106,7 @@ subroutine checkhwm07(defaultdatapath)
     stl = 1.5 * float(istl)
     sec = (stl - glon/15.0) * 3600.0
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f5.1,3(f12.3,f10.3))', stl, qw, dw, w
   end do
@@ -127,7 +131,7 @@ subroutine checkhwm07(defaultdatapath)
   do ilon = -180, 180, 20
     glon = float(ilon)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.0,3(f12.3,f10.3))', glon, qw, dw, w
   end do
@@ -152,7 +156,7 @@ subroutine checkhwm07(defaultdatapath)
   do day = 0, 360, 20
     iyd = 95000 + day
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(i6,3(f12.3,f10.3))', day, qw, dw, w
   end do
@@ -179,7 +183,7 @@ subroutine checkhwm07(defaultdatapath)
   do iaptemp = 0, 260, 20
     ap(2) = float(iaptemp)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw,defaultdatapath)
-    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw,defaultdatapath)
+    call DWM07b_HWM_interface(iyd,sec,alt,glat,glon,ap,dw)
     call HWM07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
     print '(f6.1,3(f12.3,f10.3))', ap(2), qw, dw, w
   end do
