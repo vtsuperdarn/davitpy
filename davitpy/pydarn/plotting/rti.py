@@ -109,8 +109,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   assert(0 < len(params) < 6),'error, must input between 1 and 5 params in LIST form'
   for i in range(0,len(params)):
     assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width' or \
-    params[i] == 'elevation' or params[i] == 'phi0'), \
-    "error, allowable params are 'velocity','power','width','elevation','phi0'"
+    params[i] == 'elevation' or params[i] == 'phi0' or params[i] == 'vel_err'), \
+    "error, allowable params are 'velocity','power','width','elevation','phi0','vel_err'"
   assert(scales == [] or len(scales)==len(params)), \
   'error, if present, scales must have same number of elements as params'
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
