@@ -794,3 +794,17 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
   transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
   ax2.add_line(l)
 
+
+#Modify these so they accept an axis object and simply plot to that
+#def plot_cpid
+#def plot_freq
+#def plot_noise
+
+#Replace draw axes with a function that can simply formats an existing axis object
+
+def plot_data():
+  #This function will plot the data into a given axis object
+  return
+
+#Use plotRti as a function that wraps these others in a way that produces the current rti plots
+
