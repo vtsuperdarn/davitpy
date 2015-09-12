@@ -342,7 +342,14 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
       
       pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
-  
+
+      #Set xaxis formatting depending on amount of data plotted
+      if ((eTime - sTime) <= datetime.timedelta(days=1)):
+          #ax.xaxis.set_major_locator(matplotlib.dates.HourLocator())
+          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M UT'))
+      elif ((eTime - sTime) > datetime.timedelta(days=1)):
+          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M UT'))
+
       cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map_plot=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
       
       l = []
