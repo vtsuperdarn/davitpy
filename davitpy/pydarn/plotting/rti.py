@@ -165,66 +165,19 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     return None
 
   #Finally we can start reading the data file
-  myBeam = radDataReadRec(myFile)
+  myBeam = myFile.readRec()
   if not myBeam:
     print 'error, no data available for the requested time/radar/filetype combination'
     return None
 
-  #initialize empty lists
-  vel,pow,wid,elev,phi0,times,freq,cpid,nave,nsky,nsch,slist,mode,rsep,nrang,frang,gsflg = \
-        [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
-  vel_err = []
-  for i in range(len(tbands)):
-    times.append([])
-    cpid.append([])
-    nave.append([])
-    nsky.append([])
-    rsep.append([])
-    nrang.append([])
-    frang.append([])
-    nsch.append([])
-    freq.append([])
-    slist.append([])
-    mode.append([])
-    vel.append([])
-    pow.append([])
-    wid.append([])
-    elev.append([])
-    phi0.append([])
-    gsflg.append([])
-    vel_err.append([])
-  
-  #read the parameters of interest
-  while(myBeam is not None):
-    if(myBeam.time > eTime): break
-    if(myBeam.bmnum == bmnum and (sTime <= myBeam.time)):
-      for i in range(len(tbands)):
-        if myBeam.prm.tfreq >= tbands[i][0] and myBeam.prm.tfreq <= tbands[i][1]:
-          times[i].append(myBeam.time)
-          cpid[i].append(myBeam.cp)
-          nave[i].append(myBeam.prm.nave)
-          nsky[i].append(myBeam.prm.noisesky)
-          rsep[i].append(myBeam.prm.rsep)
-          nrang[i].append(myBeam.prm.nrang)
-          frang[i].append(myBeam.prm.frang)
-          nsch[i].append(myBeam.prm.noisesearch)
-          freq[i].append(myBeam.prm.tfreq/1e3)
-          slist[i].append(myBeam.fit.slist)
-          mode[i].append(myBeam.prm.ifmode)
-          if('velocity' in params): vel[i].append(myBeam.fit.v)
-          if('power' in params): pow[i].append(myBeam.fit.p_l)
-          if('width' in params): wid[i].append(myBeam.fit.w_l)
-          if('elevation' in params): elev[i].append(myBeam.fit.elv)
-          if('phi0' in params): phi0[i].append(myBeam.fit.phi0)
-          if('vel_err' in params): vel_err[i].append(myBeam.fit.v_e)
-          gsflg[i].append(myBeam.fit.gflg)
-      
-    myBeam = radDataReadRec(myFile)
+  #Now read the data that we need to make the plots
+  data_dict = _read_data(myFile,myBeam,bmnum,params,tbands)
+
 
   for fplot in range(len(tbands)):
     #Check to ensure that data exists for the requested frequency band else
     #continue on to the next range of frequencies
-    if not freq[fplot]:
+    if not data_dict['freq'][fplot]:
       print 'error, no data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz'
       rtiFig=None	#Need this line in case no data is plotted
       continue
@@ -241,44 +194,48 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     #give the plot a title
     rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
     #plot the noise bar
-    plotNoise(rtiFig,times[fplot],nsky[fplot],nsch[fplot])
+    plotNoise(rtiFig,data_dict['times'][fplot],data_dict['nsky'][fplot],data_dict['nsch'][fplot])
     #plot the frequency bar
-    plotFreq(rtiFig,times[fplot],freq[fplot],nave[fplot])
+    plotFreq(rtiFig,data_dict['times'][fplot],data_dict['freq'][fplot],data_dict['nave'][fplot])
     #plot the cpid bar
-    plotCpid(rtiFig,times[fplot],cpid[fplot],mode[fplot])
+    plotCpid(rtiFig,data_dict['times'][fplot],data_dict['cpid'][fplot],data_dict['mode'][fplot])
     
     #plot each of the parameter panels
     figtop = .77
     figheight = .72/len(params)
     for p in range(len(params)):
-      if(params[p] == 'velocity'): pArr = vel[fplot]
-      elif(params[p] == 'power'): pArr = pow[fplot]
-      elif(params[p] == 'width'): pArr = wid[fplot]
-      elif(params[p] == 'elevation'): pArr = elev[fplot]
-      elif(params[p] == 'phi0'): pArr = phi0[fplot]
-      elif(params[p] == 'vel_err'): pArr = vel_err[fplot]
+      if(params[p] == 'velocity'): pArr = data_dict['vel'][fplot]
+      elif(params[p] == 'power'): pArr = data_dict['pow'][fplot]
+      elif(params[p] == 'width'): pArr = data_dict['wid'][fplot]
+      elif(params[p] == 'elevation'): pArr = data_dict['elev'][fplot]
+      elif(params[p] == 'phi0'): pArr = data_dict['phi0'][fplot]
+      elif(params[p] == 'vel_err'): pArr = data_dict['vel_err'][fplot]
       pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
       
       #draw the axis
-      ax = drawAxes(rtiFig,times[fplot],rad,cpid[fplot],bmnum,nrang[fplot],frang[fplot],rsep[fplot],p==len(params)-1,yrng=yrng,coords=coords,\
-                    pos=pos,xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,axvlines=axvlines)
+      ax = drawAxes(rtiFig,data_dict['times'][fplot],rad,data_dict['cpid'][fplot],bmnum,
+                    data_dict['nrang'][fplot],data_dict['frang'][fplot],data_dict['rsep'][fplot],
+                    p==len(params)-1,yrng=yrng,coords=coords,pos=pos,
+                    xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,
+                    axvlines=axvlines)
   
       
       if(pArr == []): continue
       
-      rmax = max(nrang[fplot])
-      data=numpy.zeros((len(times[fplot])*2,rmax))+100000
-      if gsct: gsdata=numpy.zeros((len(times[fplot])*2,rmax))+100000
-      x=numpy.zeros(len(times[fplot])*2)
+      rmax = max(data_dict['nrang'][fplot])
+      data=numpy.zeros((len(data_dict['times'][fplot])*2,rmax))+100000
+      if gsct: gsdata=numpy.zeros((len(data_dict['times'][fplot])*2,rmax))+100000
+
+      x=numpy.zeros(len(data_dict['times'][fplot])*2)
       tcnt = 0
 
       dt_list   = []
-      for i in range(len(times[fplot])):
-        x[tcnt]=matplotlib.dates.date2num(times[fplot][i])
-        dt_list.append(times[fplot][i])
+      for i in range(len(data_dict['times'][fplot])):
+        x[tcnt]=matplotlib.dates.date2num(data_dict['times'][fplot][i])
+        dt_list.append(data_dict['times'][fplot][i])
 
-        if(i < len(times[fplot])-1):
-          if(matplotlib.dates.date2num(times[fplot][i+1])-x[tcnt] > 4./1440.):
+        if(i < len(data_dict['times'][fplot])-1):
+          if(matplotlib.dates.date2num(data_dict['times'][fplot][i+1])-x[tcnt] > 4./1440.):
             tcnt += 1
             x[tcnt] = x[tcnt-1]+1./1440.
             dt_list.append(matplotlib.dates.num2date(x[tcnt]))
@@ -286,21 +243,23 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
             
         if(pArr[i] == []): continue
         
-        if slist[fplot][i] is not None:
-          for j in range(len(slist[fplot][i])):
-            if(not gsct or gsflg[fplot][i][j] == 0):
-              data[tcnt][slist[fplot][i][j]] = pArr[i][j]
-            elif gsct and gsflg[fplot][i][j] == 1:
-              data[tcnt][slist[fplot][i][j]] = -100000.
+        if data_dict['slist'][fplot][i] is not None:
+          for j in range(len(data_dict['slist'][fplot][i])):
+            if(not gsct or data_dict['gsflg'][fplot][i][j] == 0):
+              data[tcnt][data_dict['slist'][fplot][i][j]] = pArr[i][j]
+            elif gsct and data_dict['gsflg'][fplot][i][j] == 1:
+              data[tcnt][data_dict['slist'][fplot][i][j]] = -100000.
   
       if (coords != 'gate' and coords != 'rng') or plotTerminator == True:
-        site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[fplot][0])
-        myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,rsep=rsep[fplot][0],coords=coords, date_time=times[fplot][0])
+        site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(data_dict['times'][fplot][0])
+        myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,
+                                          rsep=data_dict['rsep'][fplot][0],coords=coords, 
+                                          date_time=data_dict['times'][fplot][0])
         myLat   = myFov.latCenter[bmnum]
         myLon   = myFov.lonCenter[bmnum]
           
       if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
-      elif(coords == 'rng'): y = numpy.linspace(frang[fplot][0],rmax*rsep[fplot][0],rmax+1)
+      elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],rmax*data_dict['rsep'][fplot][0],rmax+1)
       else: y = myFov.latFull[bmnum]
         
       X, Y = numpy.meshgrid(x[:tcnt], y)
@@ -346,9 +305,11 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       #Set xaxis formatting depending on amount of data plotted
       if ((eTime - sTime) <= datetime.timedelta(days=1)):
           #ax.xaxis.set_major_locator(matplotlib.dates.HourLocator())
-          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M UT'))
+          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
       elif ((eTime - sTime) > datetime.timedelta(days=1)):
-          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M UT'))
+          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M'))
+
+      ax.set_xlabel('UT')
 
       cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map_plot=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
       
@@ -793,6 +754,48 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
   l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
   transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
   ax2.add_line(l)
+
+
+
+def _read_data(myPtr,myBeam,bmnum,params,tbands):
+  data = dict()
+  #initialize empty lists
+  data_keys = ['vel','pow','wid','elev','phi0','times','freq','cpid',
+               'nave','nsky','nsch','slist','mode','rsep','nrang',
+               'frang','gsflg','vel_err']
+  for d in data_keys:
+    data[d]=[]
+    for i in range(len(tbands)):
+      data[d].append([])
+  
+  #read the parameters of interest
+  while(myBeam is not None):
+    if(myBeam.time > myPtr.eTime): break
+    if(myBeam.bmnum == bmnum and (myPtr.sTime <= myBeam.time)):
+      for i in range(len(tbands)):
+        if myBeam.prm.tfreq >= tbands[i][0] and myBeam.prm.tfreq <= tbands[i][1]:
+          data['times'][i].append(myBeam.time)
+          data['cpid'][i].append(myBeam.cp)
+          data['nave'][i].append(myBeam.prm.nave)
+          data['nsky'][i].append(myBeam.prm.noisesky)
+          data['rsep'][i].append(myBeam.prm.rsep)
+          data['nrang'][i].append(myBeam.prm.nrang)
+          data['frang'][i].append(myBeam.prm.frang)
+          data['nsch'][i].append(myBeam.prm.noisesearch)
+          data['freq'][i].append(myBeam.prm.tfreq/1e3)
+          data['slist'][i].append(myBeam.fit.slist)
+          data['mode'][i].append(myBeam.prm.ifmode)
+          if('velocity' in params): data['vel'][i].append(myBeam.fit.v)
+          if('power' in params): data['pow'][i].append(myBeam.fit.p_l)
+          if('width' in params): data['wid'][i].append(myBeam.fit.w_l)
+          if('elevation' in params): data['elev'][i].append(myBeam.fit.elv)
+          if('phi0' in params): data['phi0'][i].append(myBeam.fit.phi0)
+          if('vel_err' in params): data['vel_err'][i].append(myBeam.fit.v_e)
+          data['gsflg'][i].append(myBeam.fit.gflg)
+      
+    myBeam = myPtr.readRec()
+  return data
+
 
 
 #Modify these so they accept an axis object and simply plot to that
