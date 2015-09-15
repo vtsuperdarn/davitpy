@@ -803,6 +803,8 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
 #def plot_freq
 #def plot_noise
 
+#Look in to how to make a figure saving class as defined in issue # https://github.com/vtsuperdarn/davitpy/issues/128
+
 #Replace draw axes with a function that can simply formats an existing axis object
 
 def plot_data():
