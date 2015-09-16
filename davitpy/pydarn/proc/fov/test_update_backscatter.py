@@ -49,16 +49,13 @@ import matplotlib.gridspec as gridspec
 import matplotlib.collections as mcol
 import matplotlib.colors as mcolors
 # Import DaViTpy packages
-import davitpy.pydarn.plotting as plotting
-import davitpy.pydarn.radar as pyrad
-import davitpy.pydarn.sdio as sdio
-import davitpy.utils.geoPack as geo
 import update_backscatter as ub
 
 #--------------------------------------------------------------------------
 # Define the colors (can be overwritten)
 clinear = "Spectral_r"
 ccenter = "RdYlBu"
+
 morder =  {"region":{"D":0, "E":1, "F":2},
            "reg":{"0.5D":0, "1.0D":1, "0.5E":2, "1.0E":3, "1.5E":4, "2.0E":5,
                   "2.5E":6, "3.0E":7, "0.5F":8, "1.0F":9, "1.5F":10, "2.0F":11,
@@ -337,6 +334,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
     '''
+    import davitpy.pydarn.radar as pyrad
     rn = "plot_yeoman_plate1"
 
     # Load and process the desired data
@@ -782,6 +780,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v",marker_key="reg",
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
     '''
+    import davitpy.pydarn.radar as pyrad
     rn = "plot_storm_figure"
 
     # Load and process the desired data
@@ -839,10 +838,12 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v",marker_key="reg",
                 a.plot([mt, mt], [-1, 76], "k--")
 
         # Initialize the map figure
-        fmap = plt.figure(figsize=(6 * mlen,5))
-        axmap = [fmap.add_subplot(1, mlen, ia+1) for ia in range(mlen)]
+        fmap = plt.figure(figsize=(12, 3 * mlen))
+        nrows = int(np.ceil(0.5*mlen))
+        axmap = [fmap.add_subplot(2, nrows, ia+1) for ia in range(mlen)]
         hard = None
         fovs = {1:None, -1:None}
+        mm = None
         for ia,mt in enumerate(sorted(mtimes)):
             scan = list()
             for k in beams[rad].keys():
@@ -854,9 +855,9 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v",marker_key="reg",
                         scan.append(beams[rad][k][j])
                     j += 1
 
-            llab = True if ia==0 else False
+            llab = True if ia % 2 == 0 else False
             mm, fovs, hard, con = plot_map(axmap[ia], scan, hard=hard,
-                                           fovs=fovs,
+                                           map_handle=mm, fovs=fovs,
                                            plot_beams={1:[bmnum],-1:[bmnum]},
                                            color_beams={1:["0.6"],-1:["0.6"]},
                                            maxgates=45, dat_attr=intensity_all,
@@ -870,8 +871,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v",marker_key="reg",
         unit = pyrad.radUtils.getParamDict(intensity_all)['unit']
         cbmap = add_colorbar(fmap, con, imin[intensity_all],
                              imax[intensity_all], zinc[intensity_all],
-                             label, unit, loc=[0.91,.13,.01,.71])
-        plt.subplots_adjust(wspace=.05, left=.075, bottom=.025, top=.95)
+                             label, unit, loc=[0.91,.1,.01,.8])
+        plt.subplots_adjust(wspace=.05)
     else:
         fmap = None
         axmap = None
@@ -959,6 +960,7 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
     ax : (dict)
         Dictionary of axis handles
     '''
+    import davitpy.pydarn.radar as pyrad
     rn = "plot_single_column"
 
     # Initialize the subplots
@@ -1174,7 +1176,10 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
     '''
+    import davitpy.pydarn.sdio as sdio
+
     rn = "load_test_beams"
+
     # Define local routines
     def range_gate_limits(rg_limits, rg):
         for lim in rg_limits:
@@ -1354,6 +1359,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
     cb : (set)
         Output from colorbar
     '''
+    import davitpy.pydarn.radar as pyrad
     rn = "plot_scan_and_beam"
 
     mkey = fhop_attr if mm.has_key(fhop_attr) else fhop_attr[1:]
@@ -1763,6 +1769,10 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
     '''
+    import davitpy.pydarn.plotting as plotting
+    import davitpy.pydarn.radar as pyrad
+    import davitpy.pydarn.sdio as sdio
+
     rn = "plot_meteor_figure"
     calc_hwm = True if len(hwm_out) == 0 else False
     if len(hwm_out) == 0:
@@ -1926,14 +1936,14 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     m.drawparallels(np.arange(lllat, urlat+1.0, 2.0), labels=[1,0,0,0])
 
     # Add the field-of-view boundaries
-    plotting.overlayFov(m, codes=rad, dateTime=stime, beams=[fbmnum],
-                        beamsColors=[fcolor], fovObj=fovs[1])
-    plotting.overlayFov(m, codes=rad, dateTime=stime, beams=[rbmnum],
-                        beamsColors=[rcolor], fovObj=fovs[-1])
+    plotting.mapOverlay.overlayFov(m, codes=rad, dateTime=stime, beams=[fbmnum],
+                                   beamsColors=[fcolor], fovObj=fovs[1])
+    plotting.mapOverlay.overlayFov(m, codes=rad, dateTime=stime, beams=[rbmnum],
+                                   beamsColors=[rcolor], fovObj=fovs[-1])
 
     # Add the radar location and name
-    plotting.overlayRadar(m, codes=rad, dateTime=stime, annotate=True,
-                          fontSize=16)
+    plotting.mapOverlay.overlayRadar(m, codes=rad, dateTime=stime,
+                                     annotate=True, fontSize=16)
 
     # Add the velocity difference histograms
     diff_range = (-200.0, 200.0)
@@ -2051,6 +2061,8 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
     hard : ( or NoneType)
         Hardware data (default=None)
     '''
+    import davitpy.pydarn.plotting as plotting
+    import davitpy.pydarn.radar as pyrad
     rn = "plot_map"
     fov_dir = {1:"front", -1:"back"}
 
@@ -2127,12 +2139,13 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
     lllat = np.floor(fovs[-1].latFull.min()) - 1.0
     lllon = np.ceil(min(fovs[1].lonFull.min(), fovs[-1].lonFull.min()))
     lllon = lllon - 15.0 if lllat < -65.0 else lllon - 1.0
+    if map_handle is None:
+        map_handle = basemap.Basemap(projection="stere", lon_0=hard.geolon,
+                                     lat_0=hard.geolat, llcrnrlon=lllon,
+                                     llcrnrlat=lllat, urcrnrlon=urlon,
+                                     urcrnrlat=urlat, resolution="l")
 
-    map_handle = basemap.Basemap(ax=ax, projection="stere", lon_0=hard.geolon,
-                                 lat_0=hard.geolat, llcrnrlon=lllon,
-                                 llcrnrlat=lllat, urcrnrlon=urlon,
-                                 urcrnrlat=urlat, resolution="l")
-
+    map_handle.ax = ax
     map_handle.drawcoastlines(linewidth=0.5, color="0.6")
     map_handle.fillcontinents(color="0.6", alpha=.1)
     map_handle.drawmeridians(np.arange(-180.0, 180.0, 15.0),
@@ -2140,46 +2153,49 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
     map_handle.drawparallels(np.arange(lllat, urlat+1.0, 10.0),
                              labels=[lat_label,0,0,0])
 
+    # Add the field-of-view boundaries
+    for ff in fovs.keys():
+        plotting.mapOverlay.overlayFov(map_handle, ids=scan[0].stid,
+                                       dateTime=scan[0].time,
+                                       beams=plot_beams[ff],
+                                       beamsColors=color_beams[ff],
+                                       fovObj=fovs[ff])
+
     # Add the radar location and name
     norm = mcolors.Normalize(vmin=dmin, vmax=dmax)
-    plotting.overlayRadar(map_handle, ids=scan[0].stid, dateTime=scan[0].time,
-                          annotate=True, fontSize=16)
+    plotting.mapOverlay.overlayRadar(map_handle, ids=scan[0].stid,
+                                     dateTime=scan[0].time, annotate=True,
+                                     fontSize=16)
 
-    for ff in fovs.keys():
-        # Add the field-of-view boundaries
-        plotting.overlayFov(map_handle, ids=[scan[0].stid],
-                            dateTime=scan[0].time, beams=[plot_beams[ff]],
-                            beamsColors=[color_beams[ff]], fovObj=fovs[ff])
+    # Add the data to each field-of-view
+    bi, si = np.where(fan_fov != 0)
+    verts = list()
+    vals = np.ones(shape=bi.shape, dtype=float) * np.nan
 
-        # Add the data to each field-of-view
-        bi, si = np.where(fan_fov==ff)
-        verts = list()
-        vals = np.ones(shape=bi.shape, dtype=float) * np.nan
+    for ii,bb in enumerate(bi):
+        # Get the field-of-view
+        ff = fovs[fan_fov[bb,si[ii]]]
 
-        for ii,bb in enumerate(bi):
-            # Get the polygon vertices
-            x1, y1 = map_handle(fovs[ff].lonFull[bb, si[ii]],
-                                fovs[ff].latFull[bb, si[ii]])
-            x2, y2 = map_handle(fovs[ff].lonFull[bb, si[ii]+1],
-                                fovs[ff].latFull[bb, si[ii]+1])
-            x3, y3 = map_handle(fovs[ff].lonFull[bb+1, si[ii]+1],
-                                fovs[ff].latFull[bb+1, si[ii]+1])
-            x4, y4 = map_handle(fovs[ff].lonFull[bb+1, si[ii]],
-                                fovs[ff].latFull[bb+1, si[ii]])
-            verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
-            # Assign the data
-            vals[ii] = (fan_data[bb,si[ii]] if(fan_data[bb,si[ii]] < dmax and
-                                              fan_data[bb,si[ii]] > dmin)
-                        else (dmin if fan_data[bb,si[ii]] <= dmin else dmax))
+        # Get the polygon vertices
+        x1, y1 = map_handle(ff.lonFull[bb, si[ii]], ff.latFull[bb, si[ii]])
+        x2, y2 = map_handle(ff.lonFull[bb, si[ii]+1], ff.latFull[bb, si[ii]+1])
+        x3, y3 = map_handle(ff.lonFull[bb+1, si[ii]+1],
+                            ff.latFull[bb+1, si[ii]+1])
+        x4, y4 = map_handle(ff.lonFull[bb+1, si[ii]], ff.latFull[bb+1, si[ii]])
+        verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+        # Assign the data
+        vals[ii] = (fan_data[bb,si[ii]] if(fan_data[bb,si[ii]] < dmax and
+                                           fan_data[bb,si[ii]] > dmin)
+                    else (dmin if fan_data[bb,si[ii]] <= dmin else dmax))
 
-        # Overlay the data over this field-of-view
-        if len(verts) > 0:
-            inx = np.arange(len(verts))
-            pcoll = mcol.PolyCollection(np.array(verts)[inx], edgecolors='face',
-                                        linewidths=0, closed=False, zorder=4,
-                                        cmap=cm.get_cmap(dcolor), norm=norm)
-            pcoll.set_array(vals[inx])
-            ax.add_collection(pcoll, autolim=False)
+    # Overlay the data over the fields-of-view
+    if len(verts) > 0:
+        inx = np.arange(len(verts))
+        pcoll = mcol.PolyCollection(np.array(verts)[inx], edgecolors='face',
+                                    linewidths=0, closed=False, zorder=4,
+                                    cmap=cm.get_cmap(dcolor), norm=norm)
+        pcoll.set_array(vals[inx])
+        ax.add_collection(pcoll, autolim=True)
 
     if hasattr(scan[0], "scan_time"):
         ax.set_title("{:}".format(scan[0].scan_time), fontsize="medium")

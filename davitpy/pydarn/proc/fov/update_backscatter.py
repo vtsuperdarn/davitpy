@@ -43,10 +43,8 @@ from scipy import optimize as optimize
 from scipy import signal as scisig
 import datetime as dt
 import logging
-# Import DaViTpy packages
-import davitpy.pydarn.radar as pyrad
-import davitpy.pydarn.sdio as sdio
-import davitpy.utils.geoPack as geo
+# Import DaViTpy packages is done within routines to prevent this causing
+# an error when initially loading davitpy
 
 #---------------------------------------------------------------------------
 def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
@@ -375,6 +373,8 @@ def get_beam(radar_beams, nbeams):
     nbeams : (int)
         Number of beams retrieved from radar_beams, including this beam
     '''
+    import davitpy.pydarn.sdio as sdio
+
     if((isinstance(radar_beams, list) or isinstance(radar_beams, np.ndarray))
         and nbeams < len(radar_beams)):
         beam = radar_beams[nbeams]
@@ -445,6 +445,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         Sign change determined by the relative location of the interferometer
         to the radar or None to calculate (default=None)
     '''
+    import davitpy.pydarn.sdio as sdio
+    import davitpy.pydarn.radar as pyrad
     rn = "calc_elv"
 
     #-------------------------------------------------------------------------
@@ -644,6 +646,7 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         containing the new elevation angles for each range gate or NaN if an
         elevation angle could not be calculated
     '''
+    import davitpy.pydarn.sdio as sdio
     rn = "calc_virtual_height"
 
     #---------------------------------
@@ -788,6 +791,7 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
         ionospheric reflection/refraction point given the specified propagation
         path for for each range gate. Returns None upon input error.
     '''
+    import davitpy.pydarn.sdio as sdio
     rn = "calc_distance"
 
     #---------------------------------
@@ -898,6 +902,7 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
 
     If there is an input error, exits with an exception
     '''
+    import davitpy.pydarn.sdio as sdio
     rn = "select_beam_groundscatter"
 
     #---------------------
@@ -1044,6 +1049,7 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
 
     If there is an input error, exits with an exception
     '''
+    import davitpy.pydarn.sdio as sdio
     rn = "calc_frac_points"
 
     #----------------
@@ -1195,6 +1201,9 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         beam.prm.tdiff : added : tdiff used in elevation (microsec)
         beam.prm.tdiff_e : possibly added : tdiff error (microsec)
     '''
+    import davitpy.pydarn.sdio as sdio
+    import davitpy.pydarn.radar as pyrad
+
     rn = "update_bs_w_scan"
     max_std = 3.0 # This is the maximum standard deviation in degrees.
     max_score = 3.0 # This is the maximum z-score.  z = (x - mean(X)) / std(X)
@@ -1960,6 +1969,10 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
     hard : (class `pydarn.radar.radStruct.site`)
         Radar hardware data for this scan
     '''
+    import davitpy.pydarn.sdio as sdio
+    import davitpy.pydarn.radar as pyrad
+    import davitpy.utils.geoPack as geo
+
     rn = "update_beam_fit"
     asep = None
     ecor = None
@@ -2309,6 +2322,8 @@ def update_backscatter(rad_bms, min_pnts=3,
 
     If the input is incorrect, exits with an exception
     '''
+    import davitpy.pydarn.sdio as sdio
+    import davitpy.pydarn.radar as pyrad
     rn = "update_backscatter"
 
     #----------------------------------
@@ -2527,6 +2542,8 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
         Dictionary containing lists of beams with updated FoV flags seperated
         by beam number.  The beam numbers are the dictionary keys
     '''
+    import davitpy.pydarn.sdio as sdio
+    import davitpy.pydarn.radar as pyrad
     rn = "beam_ut_struct_test"
     fov_frac = 2.0 / 3.0
     near_rg = -1
