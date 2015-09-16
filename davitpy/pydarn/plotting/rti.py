@@ -192,7 +192,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
         rtiFig = figure
   
     #give the plot a title
-    rtiTitle(rtiFig,sTime,rad,fileType,bmnum)
+    rtiTitle(rtiFig,sTime,rad,fileType,bmnum,eTime=eTime)
     #plot the noise bar
     plotNoise(rtiFig,data_dict['times'][fplot],data_dict['nsky'][fplot],data_dict['nsch'][fplot])
     #plot the frequency bar
@@ -476,14 +476,15 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 
   return ax
     
-def rtiTitle(fig,d,rad,fileType,beam,xmin=.1,xmax=.86):
+def rtiTitle(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
   """draws title for an rti plot
 
   **Args**:
-    * **d**: the date being plotted as a datetime object
+    * **sTime**: the start time for the data being plotted as a datetime object
     * **rad**: the 3 letter radar code
     * **fileType**: the file type being plotted
     * **beam**: the beam number being plotted
+    * **[eTime]**: the end time for the data being plotted as a datetime object
     * **[xmin]**: minimum x value o the plot in page coords
     * **[xmax]**: maximum x value o the plot in page coords
   * **Returns**:
@@ -503,8 +504,13 @@ def rtiTitle(fig,d,rad,fileType,beam,xmin=.1,xmax=.86):
   
   fig.text(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
   
-  fig.text((xmin+xmax)/2.,.95,str(d.day)+'/'+calendar.month_name[d.month][:3]+'/'+str(d.year), \
-  weight=550,size='large',ha='center')
+  if (eTime is not None) and ((eTime - sTime) > datetime.timedelta(days=1)):
+    title_text = str(sTime.day)+'/'+calendar.month_name[sTime.month][:3]+'/'+str(sTime.year) + ' - ' + \
+                 str(eTime.day)+'/'+calendar.month_name[eTime.month][:3]+'/'+str(eTime.year)
+  else:
+    title_text = str(sTime.day)+'/'+calendar.month_name[sTime.month][:3]+'/'+str(sTime.year)
+
+  fig.text((xmin+xmax)/2.,.95,title_text, weight=550,size='large',ha='center')
   
   fig.text(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
   
@@ -758,6 +764,27 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
 
 
 def _read_data(myPtr,myBeam,bmnum,params,tbands):
+  """Reads data from the file pointed to by myPtr
+
+  **Args**:
+    * **myFig**: the MPL figure we are plotting on
+    * **times**: a list of the times of the beam soundings
+    * **freq**: a lsit of the tfreq of the beam soundings
+    * **search**: a list of the nave param
+    * **[pos]**: position of the panel
+    * **[xlim]**: 2-element limits of the x-axis.  None for default.
+    * **[xticks]**: List of xtick poisitions.  None for default.
+  **Returns**:
+    *Nothing.
+    
+  **Example**:
+    ::
+
+      plotFreq(rtiFig,times,tfreq,nave)
+      
+  Written by AJ 20121002
+  Modified by NAF 20131101
+  """
   data = dict()
   #initialize empty lists
   data_keys = ['vel','pow','wid','elev','phi0','times','freq','cpid',
@@ -802,8 +829,6 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
 #def plot_cpid
 #def plot_freq
 #def plot_noise
-
-#Look in to how to make a figure saving class as defined in issue # https://github.com/vtsuperdarn/davitpy/issues/128
 
 #Replace draw axes with a function that can simply formats an existing axis object
 
