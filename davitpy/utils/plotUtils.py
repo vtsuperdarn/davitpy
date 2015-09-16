@@ -624,7 +624,7 @@ def addColorbar(mappable, ax):
 
 ################################################################################
 ################################################################################
-def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
+def textHighlighted(xy, text, ax=None, color='k', fontsize=None, xytext=(0,0),
                     zorder=None, text_alignment=(0,0), xycoords='data', 
                     textcoords='offset points', **kwargs):
     """ Plot highlighted annotation (with a white lining)
@@ -645,7 +645,8 @@ def textHighlighted(xy, text, color='k', fontsize=None, xytext=(0,0),
     import matplotlib as mp
     from pylab import gca
 
-    ax = gca()
+    if ax is None:
+        ax = gca()
 
     text_path = mp.text.TextPath((0, 0), text, size=fontsize, **kwargs)
 

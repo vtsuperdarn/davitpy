@@ -44,7 +44,8 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 
         import pydarn
         import utils
-        m1 = utils.plotUtils.mapObj(boundinglat=30., gridLabels=True, coords='mag')
+        m1 = utils.plotUtils.mapObj(boundinglat=30., gridLabels=True, \
+                                    coords='mag')
         pydarn.plot.overlayRadar(m1, fontSize=8, plot_all=True, markerSize=5)
 			
     written by Sebastien, 2012-08
@@ -147,10 +148,10 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
                 ha = .5
 
             # Plot radar name
-            textHighlighted((x, y), rad.code[0].upper(), xytext=(xOff, yOffset), 
-                            text_alignment=(ha,1), variant='small-caps',
-                            fontsize=fontSize, zorder=zorder,
-                            color=rad_input['fcolor'][ir])
+            textHighlighted((x, y), rad.code[0].upper(), ax=mapObj.ax,
+                            xytext=(xOff, yOffset), text_alignment=(ha,1),
+                            variant='small-caps', fontsize=fontSize,
+                            zorder=zorder, color=rad_input['fcolor'][ir])
 
     return
 
@@ -252,7 +253,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     nradars = len(rad_input['vals'])
 
     # Initialize the line color for the field of view
-    lcolor=lineColor
+    lcolor = lineColor
 
     # iterates through radars to be plotted
     for ir in xrange(nradars):
@@ -293,14 +294,15 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             sbeam = 0
 
         if model == 'GS':
-        # Ground scatter model is not defined for close in rangegates.
-        # np.nan will be returned for these gates.
-        # Set sGate >= to the first rangegate that has real values.
+            # Ground scatter model is not defined for close in rangegates.
+            # np.nan will be returned for these gates.
+            # Set sGate >= to the first rangegate that has real values.
                     
             not_finite  = np.logical_not(np.isfinite(rad_fov.lonFull))
-            grid        = np.tile(np.arange(rad_fov.lonFull.shape[1]),(rad_fov.lonFull.shape[0],1)) 
+            grid = np.tile(np.arange(rad_fov.lonFull.shape[1]),
+                           (rad_fov.lonFull.shape[0],1)) 
             grid[not_finite] = 999999
-            tmp_sGate   = (np.min(grid,axis=1)).max()
+            tmp_sGate = (np.min(grid,axis=1)).max()
             if tmp_sGate > sgate: sgate = tmp_sGate
 
         # Get radar coordinates in map projection
@@ -311,10 +313,12 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             x, y = mapObj(rad_fov.lonFull, rad_fov.latFull)
         # Plot field of view
         # Create contour
-        contour_x = concatenate((x[sbeam,sgate:egate],    x[sbeam:ebeam,egate],
-                                 x[ebeam,egate:sgate:-1], x[ebeam:sbeam:-1,sgate]))
-        contour_y = concatenate((y[sbeam,sgate:egate],    y[sbeam:ebeam,egate],
-                                 y[ebeam,egate:sgate:-1], y[ebeam:sbeam:-1,sgate]))
+        contour_x = concatenate((x[sbeam,sgate:egate], x[sbeam:ebeam,egate],
+                                 x[ebeam,egate:sgate:-1],
+                                 x[ebeam:sbeam:-1,sgate]))
+        contour_y = concatenate((y[sbeam,sgate:egate], y[sbeam:ebeam,egate],
+                                 y[ebeam,egate:sgate:-1],
+                                 y[ebeam:sbeam:-1,sgate]))
         # Set the color if a different color has been specified for each radar
         if isinstance(lineColor, list) and len(lineColor) > ir:
             lcolor=lineColor[ir]
@@ -322,12 +326,13 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         # Plot contour
         mapObj.plot(contour_x, contour_y, color=lcolor, zorder=zorder,
                     linewidth=lineWidth)
+
         # Field of view fill
         if fovColor:
             contour = transpose(vstack((contour_x,contour_y)))
             patch = Polygon(contour, color=fovColor, alpha=fovAlpha,
                             zorder=zorder)
-            gca().add_patch(patch)
+            mapObj.ax.add_patch(patch)
         # Beams fill
         if beams:
             try:
@@ -342,13 +347,15 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                 else:
                     bcol = beamsColors[beams.index(ib)]
                 contour_x = concatenate((x[ib,sgate:egate+1], x[ib:ib+2,egate],
-                                         x[ib+1,egate:sgate:-1], x[ib+1:ib-1:-1,sgate]))
+                                         x[ib+1,egate:sgate:-1],
+                                         x[ib+1:ib-1:-1,sgate]))
                 contour_y = concatenate((y[ib,sgate:egate+1], y[ib:ib+2,egate],
-                                         y[ib+1,egate:sgate:-1], y[ib+1:ib-1:-1,sgate]))
+                                         y[ib+1,egate:sgate:-1],
+                                         y[ib+1:ib-1:-1,sgate]))
                 contour = transpose(vstack((contour_x, contour_y)))
                 patch = Polygon(contour, color=bcol, alpha=.4,
                                 zorder=zorder)
-                gca().add_patch(patch)
+                mapObj.ax.add_patch(patch)
 
     return
 
