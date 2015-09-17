@@ -179,27 +179,38 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     #continue on to the next range of frequencies
     if not data_dict['freq'][fplot]:
       print 'error, no data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz'
-      rtiFig=None	#Need this line in case no data is plotted
+      rti_fig=None	#Need this line in case no data is plotted
       continue
 
-    #get/create a figure
-    if figure is None:
-        if show:
-          rtiFig = plot.figure(figsize=(11,8.5))
-        else:
-          rtiFig = Figure(figsize=(14,14))
-    else:
-        rtiFig = figure
+    #create a figure
+    rti_fig = plot.figure(figsize=(11,8.5))
+
+    noise_pos = [.1,.88,.76,.06]
+    freq_pos = [.1,.82,.76,.06]
+    cpid_pos = [.1,.77,.76,.05]
+
+    skynoise_ax = rti_fig.add_axes(noise_pos,label='sky')
+    searchnoise_ax = rti_fig.add_axes(noise_pos,label='search',frameon=False)
+    #searchnoise_ax.yaxis.tick_right()
+    freq_ax = rti_fig.add_axes(freq_pos,label='freq')
+    nave_ax = rti_fig.add_axes(freq_pos,label='nave',frameon=False)
+    #nave_ax.yaxis.tick_right()
+    cpid_ax = rti_fig.add_axes(cpid_pos)
   
     #give the plot a title
-    rtiTitle(rtiFig,sTime,rad,fileType,bmnum,eTime=eTime)
-    #plot the noise bar
-    plotNoise(rtiFig,data_dict['times'][fplot],data_dict['nsky'][fplot],data_dict['nsch'][fplot])
+    rti_title(rti_fig,sTime,rad,fileType,bmnum,eTime=eTime)
+
+    #plot the sky noise
+    plot_skynoise(skynoise_ax,data_dict['times'][fplot],data_dict['nsky'][fplot])
+    #plot the search noise
+    plot_searchnoise(searchnoise_ax,data_dict['times'][fplot],data_dict['nsch'][fplot])
     #plot the frequency bar
-    plotFreq(rtiFig,data_dict['times'][fplot],data_dict['freq'][fplot],data_dict['nave'][fplot])
+    plot_freq(freq_ax,data_dict['times'][fplot],data_dict['freq'][fplot])
+    #plot the nave data
+    plot_nave(nave_ax,data_dict['times'][fplot],data_dict['nave'][fplot])
     #plot the cpid bar
-    plotCpid(rtiFig,data_dict['times'][fplot],data_dict['cpid'][fplot],data_dict['mode'][fplot])
-    
+    plot_cpid(cpid_ax,data_dict['times'][fplot],data_dict['cpid'][fplot],data_dict['mode'][fplot])
+
     #plot each of the parameter panels
     figtop = .77
     figheight = .72/len(params)
@@ -213,7 +224,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
       
       #draw the axis
-      ax = drawAxes(rtiFig,data_dict['times'][fplot],rad,data_dict['cpid'][fplot],bmnum,
+      ax = drawAxes(rti_fig,data_dict['times'][fplot],rad,data_dict['cpid'][fplot],bmnum,
                     data_dict['nrang'][fplot],data_dict['frang'][fplot],data_dict['rsep'][fplot],
                     p==len(params)-1,yrng=yrng,coords=coords,pos=pos,
                     xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,
@@ -311,7 +322,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
 
       ax.set_xlabel('UT')
 
-      cb = utils.drawCB(rtiFig,pcoll,cmap,norm,map_plot=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
+      cb = utils.drawCB(rti_fig,pcoll,cmap,norm,map_plot=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
       
       l = []
       #define the colorbar labels
@@ -341,23 +352,13 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
       if(params[p] == 'vel_err'): cb.set_label('Velocity Error [m/s]',size=10)
   
-    #handle the outputs
-    if png == True:
-      if not show:
-        canvas = FigureCanvasAgg(rtiFig)
-      rtiFig.savefig(sTime.strftime("%Y%m%d")+'_'+str(tbands[fplot][0])+'_'+str(tbands[fplot][1])+'.'+rad+'.png',dpi=dpi)
-    if pdf:
-      if not show:
-        canvas = FigureCanvasAgg(rtiFig)
-      rtiFig.savefig(sTime.strftime("%Y%m%d")+'_'+str(tbands[fplot][0])+'_'+str(tbands[fplot][1])+'.'+rad+'.pdf')
     if show:
-      rtiFig.show()
+      rti_fig.show()
       
     print 'plotting took:',datetime.datetime.now()-t1
     #end of plotting for loop
     
-  if retfig:
-    return rtiFig
+    return rti_fig
   
 def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
   """draws empty axes for an rti plot
@@ -476,7 +477,7 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
 
   return ax
     
-def rtiTitle(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
+def rti_title(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
   """draws title for an rti plot
 
   **Args**:
@@ -494,9 +495,10 @@ def rtiTitle(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
     ::
 
       import datetime as dt
-      rtiTitle(dt.datetime(2011,1,1),'bks','fitex',7)
+      rti_title(dt.datetime(2011,1,1),'bks','fitex',7)
       
   Written by AJ 20121002
+  Modified by ASR 20150916
   """
   from davitpy import pydarn
 
@@ -514,30 +516,29 @@ def rtiTitle(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
   
   fig.text(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
   
-def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
+def plot_cpid(ax,times,cpid,mode):
   """plots cpid panel at position pos
 
   **Args**:
-    * **myFig**: the MPL figure we are plotting on
+    * **ax**: a MPL axis object to plot to
     * **times**: a list of the times of the beam soundings
     * **cpid**: a lsit of the cpids of th beam soundings
     * **mode**: a list of the ifmode param
-    * **[pos]**: position of the panel
   **Returns**:
     * Nothing.
     
   **Example**:
     ::
 
-      plotCpid(rtiFig,times,cpid,mode)
+      plot_cpid(rti_fig,times,cpid,mode)
       
   Written by AJ 20121002
+  Modified by ASR 20150916
   """
   from davitpy import pydarn
   oldCpid = -9999999
   
-  #add an axes to the figure
-  ax = myFig.add_axes(pos)
+  #format the y-axis
   ax.yaxis.tick_left()
   ax.yaxis.set_tick_params(direction='out')
   ax.set_ylim(bottom=0,top=1)
@@ -550,7 +551,6 @@ def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
   
   for i in range(0,len(times)):
     if(cpid[i] != oldCpid):
-      
       ax.plot_date([matplotlib.dates.date2num(times[i]),matplotlib.dates.date2num(times[i])],\
       [0,1], fmt='k-', tz=None, xdate=True, ydate=False)
       
@@ -573,27 +573,31 @@ def plotCpid(myFig,times,cpid,mode,pos=[.1,.77,.76,.05]):
   ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
   ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
-      
-  # ax.xaxis.xticks(size=9)
   for tick in ax.xaxis.get_major_ticks():
     tick.label.set_fontsize(0) 
 
+  #CPID label
+  fig = ax.get_figure()
+  bb = ax.get_position()
+  x0 = bb.x0
+  y0 = bb.y0
+  height = bb.height
+  width = bb.width
+  pos = [x0,y0,width,height]
+  fig.text(pos[0]-.07,pos[1]+pos[3]/2.,'CPID',ha='center',va='center', \
+           size=8.5,rotation='vertical')
+
   ax.set_yticks([])
-  myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'CPID',ha='center',va='center', \
-  size=8.5,rotation='vertical')
   
   
-  
-    
-def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06],xlim=None,xticks=None):
+def plot_skynoise(ax,times,sky,xlim=None,xticks=None):
   """plots a noise panel at position pos
 
   **Args**:
-    * **myFig**: the MPL figure we are plotting on
+    * **ax**: a MPL axis object to plot to
     * **times**: a list of the times of the beam soundings
     * **sky**: a lsit of the noise.sky of the beam soundings
     * **search**: a list of the noise.search param
-    * **[pos]**: position of the panel
     * **[xlim]**: 2-element limits of the x-axis.  None for default.
     * **[xticks]**: List of xtick poisitions.  None for default.
   **Returns**:
@@ -602,82 +606,114 @@ def plotNoise(myFig,times,sky,search,pos=[.1,.88,.76,.06],xlim=None,xticks=None)
   **Example**:
     ::
 
-      plotNoise(rtiFig,times,nsky,nsch)
+      plot_noise(rti_fig,times,nsky,nsch)
       
   Written by AJ 20121002
   Modified by NAF 20131101
+  Modified by ASR 20150916
   """
   
-  #read the data
-  #add an axes to the figure
-  ax = myFig.add_axes(pos)
+  #format the y-axis
   ax.yaxis.tick_left()
   ax.yaxis.set_tick_params(direction='out')
   ax.set_ylim(bottom=0,top=6)
   ax.yaxis.set_minor_locator(MultipleLocator())
   ax.yaxis.set_tick_params(direction='out',which='minor')
-  
-  xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
-  xrng = (xmax-xmin)
-  inter = int(round(xrng/6.*86400.))
-  inter2 = int(round(xrng/24.*86400.))
-  #format the x axis
-  ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
-  ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
-  if xlim is not None: ax.set_xlim(xlim)
-  if xticks is not None: ax.set_xticks(xticks)
-  
   #plot the sky noise data
   ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-', \
-  tz=None, xdate=True, ydate=False)
-  #remove the x tick labels
+               tz=None, xdate=True, ydate=False)
+  
+  if xlim is not None: ax.set_xlim(xlim)
+  if xticks is not None: ax.set_xticks(xticks)
+
+  fig = ax.get_figure()
+  bb = ax.get_position()
+  x0 = bb.x0
+  y0 = bb.y0
+  height = bb.height
+  width = bb.width
+  pos = [x0,y0,width,height]
+  fig.text(pos[0]-.01,pos[1]+.004,'10^0',ha='right',va='bottom',size=8)
+  fig.text(pos[0]-.01,pos[1]+pos[3],'10^6',ha='right',va='top',size=8)
+  fig.text(pos[0]-.07,pos[1]+pos[3]/2.,'N.Sky',ha='center',va='center',size=8.5,rotation='vertical')
+  l=lines.Line2D([pos[0]-.06,pos[0]-.06], [pos[1]+.01,pos[1]+pos[3]-.01], \
+                 transform=fig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
+  ax.add_line(l)
+
+
   ax.set_xticklabels([' '])
   #use only 2 major yticks
   ax.set_yticks([0,6])
   ax.set_yticklabels([' ',' '])
-
-  #left y axis annotation
-  myFig.text(pos[0]-.01,pos[1]+.004,'10^0',ha='right',va='bottom',size=8)
-  myFig.text(pos[0]-.01,pos[1]+pos[3],'10^6',ha='right',va='top',size=8)
-  myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'N.Sky',ha='center',va='center',size=8.5,rotation='vertical')
-  l=lines.Line2D([pos[0]-.06,pos[0]-.06], [pos[1]+.01,pos[1]+pos[3]-.01], \
-      transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
-  ax.add_line(l)
-  
-  
-  #add an axes to the figure
-  ax2 = myFig.add_axes(pos,frameon=False)
-  ax2.yaxis.tick_right()
-  ax2.yaxis.set_tick_params(direction='out')
-  ax2.set_ylim(bottom=0,top=6)
-  ax2.yaxis.set_minor_locator(MultipleLocator())
-  ax2.yaxis.set_tick_params(direction='out',which='minor')
-  
-  #plot the search noise data
-  ax2.plot_date(matplotlib.dates.date2num(times), numpy.log10(search), fmt='k:', \
-  tz=None, xdate=True, ydate=False,lw=1.5)
-
-  ax2.set_xticklabels([' '])
-  #use only 2 major yticks
-  ax2.set_yticks([0,6])
-  ax2.set_yticklabels([' ',' '])
-
-
-  
-  #right y axis annotation
-  myFig.text(pos[0]+pos[2]+.01,pos[1]+.004,'10^0',ha='left',va='bottom',size=8)
-  myFig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'10^6',ha='left',va='top',size=8)
-  myFig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'N.Sch',ha='center',va='center',size=8.5,rotation='vertical')
-  l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
-  transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
-  ax2.add_line(l)
-  
-def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
-  """plots a frequency panel at position pos
+   
+def plot_searchnoise(ax,times,search,xlim=None,xticks=None,ytickside='right'):
+  """plots a noise panel at position pos
 
   **Args**:
-    * **myFig**: the MPL figure we are plotting on
+    * **ax**: a MPL axis object to plot to
+    * **times**: a list of the times of the beam soundings
+    * **sky**: a lsit of the noise.sky of the beam soundings
+    * **search**: a list of the noise.search param
+    * **[xlim]**: 2-element limits of the x-axis.  None for default.
+    * **[xticks]**: List of xtick poisitions.  None for default.
+  **Returns**:
+    * Nothing
+    
+  **Example**:
+    ::
+
+      plot_noise(rti_fig,times,nsky,nsch)
+      
+  Written by AJ 20121002
+  Modified by NAF 20131101
+  Modified by ASR 20150916
+  """
+  
+  #format the y-axis
+  ax.yaxis.tick_left()
+  ax.yaxis.set_tick_params(direction='out')
+  ax.set_ylim(bottom=0,top=6)
+  ax.yaxis.set_minor_locator(MultipleLocator())
+  ax.yaxis.set_tick_params(direction='out',which='minor')
+
+  #plot the search noise data
+  ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(search), fmt='k:', \
+               tz=None, xdate=True, ydate=False,lw=1.5)
+
+  if xlim is not None: ax.set_xlim(xlim)
+  if xticks is not None: ax.set_xticks(xticks)
+
+  fig = ax.get_figure()
+  bb = ax.get_position()
+  x0 = bb.x0
+  y0 = bb.y0
+  height = bb.height
+  width = bb.width
+  pos = [x0,y0,width,height]
+
+  fig.text(pos[0]+pos[2]+.01,pos[1]+.004,'10^0',ha='left',va='bottom',size=8)
+  fig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'10^6',ha='left',va='top',size=8)
+  fig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'N.Sch',ha='center',va='center',size=8.5,rotation='vertical')
+
+  l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
+                 transform=fig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
+  ax.add_line(l)
+
+
+  ax.set_xticklabels([' '])
+  #use only 2 major yticks
+  ax.set_yticks([0,6])
+  ax.set_yticklabels([' ',' '])
+  if ytickside=='right':
+    ax.yaxis.tick_right()
+
+  
+def plot_freq(ax,times,freq,xlim=None,xticks=None):
+  """plots the tx frequency data to an axis object
+
+  **Args**:
+    * **ax**: a MPL axis object to plot to
     * **times**: a list of the times of the beam soundings
     * **freq**: a lsit of the tfreq of the beam soundings
     * **search**: a list of the nave param
@@ -690,86 +726,57 @@ def plotFreq(myFig,times,freq,nave,pos=[.1,.82,.76,.06],xlim=None,xticks=None):
   **Example**:
     ::
 
-      plotFreq(rtiFig,times,tfreq,nave)
+      plot_freq(rti_fig,times,tfreq)
       
   Written by AJ 20121002
   Modified by NAF 20131101
+  Modified by ASR 20150916
   """
     
   #FIRST, DO THE TFREQ PLOTTING
-  ax = myFig.add_axes(pos)
   ax.yaxis.tick_left()
   ax.yaxis.set_tick_params(direction='out')
   #ax.set_ylim(bottom=10,top=16)
   ax.set_ylim(bottom=8,top=20)
   ax.yaxis.set_minor_locator(MultipleLocator())
   ax.yaxis.set_tick_params(direction='out',which='minor')
-  
-  #for f in freq:
-    #if(f > 16): f = 16
-    #if(f < 10): f = 10
-    
+
+  #plot the tx frequency  
   ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
   tz=None, xdate=True, ydate=False,markersize=2)
 
   if xlim is not None: ax.set_xlim(xlim)
   if xticks is not None: ax.set_xticks(xticks)
 
+  #label the y axis
+  fig = ax.get_figure()
+  bb = ax.get_position()
+  x0 = bb.x0
+  y0 = bb.y0
+  height = bb.height
+  width = bb.width
+  pos = [x0,y0,width,height]
+  fig.text(pos[0]-.01,pos[1]+.005,'10',ha='right',va='bottom',size=8)
+  fig.text(pos[0]-.01,pos[1]+pos[3]-.015,'16',ha='right',va='top',size=8)
+  fig.text(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
+  fig.text(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
+  l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
+                 transform=fig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
+  ax.add_line(l)
+
   ax.set_xticklabels([' '])
   #use only 2 major yticks
   ax.set_yticks([10,16])
   ax.set_yticklabels([' ',' '])
-  
-  xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
-  xrng = (xmax-xmin)
-  inter = int(round(xrng/6.*86400.))
-  inter2 = int(round(xrng/24.*86400.))
-  #format the x axis
-  ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
-  ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
-  
-  myFig.text(pos[0]-.01,pos[1]+.005,'10',ha='right',va='bottom',size=8)
-  myFig.text(pos[0]-.01,pos[1]+pos[3]-.015,'16',ha='right',va='top',size=8)
-  myFig.text(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
-  myFig.text(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
-  l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
-  transform=myFig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
-  ax.add_line(l)
-  
-  
-  #NEXT, DO THE NAVE PLOTTING
-  ax2 = myFig.add_axes(pos,frameon=False)
-  ax2.yaxis.tick_right()
-  ax2.yaxis.set_tick_params(direction='out')
-  ax2.set_ylim(bottom=0,top=80)
-  ax2.yaxis.set_minor_locator(MultipleLocator(20))
-  ax2.yaxis.set_tick_params(direction='out',which='minor')
-  
-  ax2.plot_date(matplotlib.dates.date2num(times), nave, fmt='k:', \
-  tz=None, xdate=True, ydate=False,markersize=2)
-
-  ax2.set_xticklabels([' '])
-  #use only 2 major yticks
-  ax2.set_yticks([0,80])
-  ax2.set_yticklabels([' ',' '])
-
-  
-  myFig.text(pos[0]+pos[2]+.01,pos[1]+.004,'0',ha='left',va='bottom',size=8)
-  myFig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'80',ha='left',va='top',size=8)
-  myFig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'Nave',ha='center',va='center',size=8.5,rotation='vertical')
-  l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
-  transform=myFig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
-  ax2.add_line(l)
 
 
-
-def _read_data(myPtr,myBeam,bmnum,params,tbands):
-  """Reads data from the file pointed to by myPtr
+def plot_nave(ax,times,nave,xlim=None,xticks=None,ytickside='right'):
+  """plots the nave data to an axis object
 
   **Args**:
-    * **myFig**: the MPL figure we are plotting on
+    * **ax**: a MPL axis object to plot to
     * **times**: a list of the times of the beam soundings
-    * **freq**: a lsit of the tfreq of the beam soundings
+    * **nave**: a lsit of the nave of the beam soundings
     * **search**: a list of the nave param
     * **[pos]**: position of the panel
     * **[xlim]**: 2-element limits of the x-axis.  None for default.
@@ -780,10 +787,64 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
   **Example**:
     ::
 
-      plotFreq(rtiFig,times,tfreq,nave)
+      plot_nave(ax,times,nave)
       
   Written by AJ 20121002
   Modified by NAF 20131101
+  Modified by ASR 20150916
+  """
+    
+  #FIRST, DO THE TFREQ PLOTTING
+  ax.yaxis.tick_left()
+  ax.yaxis.set_tick_params(direction='out')
+  #ax.set_ylim(bottom=10,top=16)
+  ax.set_ylim(bottom=0,top=80)
+  ax.yaxis.set_minor_locator(MultipleLocator(base=5))
+  ax.yaxis.set_tick_params(direction='out',which='minor')
+
+  #plot the tx frequency  
+  ax.plot_date(matplotlib.dates.date2num(times), nave, fmt='k-', \
+               tz=None, xdate=True, ydate=False,markersize=2)
+
+  if xlim is not None: ax.set_xlim(xlim)
+  if xticks is not None: ax.set_xticks(xticks)
+
+  #label the y axis
+  fig = ax.get_figure()
+  bb = ax.get_position()
+  x0 = bb.x0
+  y0 = bb.y0
+  height = bb.height
+  width = bb.width
+  pos = [x0,y0,width,height]
+  fig.text(pos[0]+pos[2]+.01,pos[1]-.004,'0',ha='left',va='bottom',size=8)
+  fig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'80',ha='left',va='top',size=8)
+  fig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'Nave',ha='center',va='center',size=8.5,rotation='vertical')
+
+  l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
+                 transform=fig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
+  ax.add_line(l)
+
+  ax.set_xticklabels([' '])
+  #use only 2 major yticks
+  ax.set_yticks([0,80])
+  ax.set_yticklabels([' ',' '])
+  if ytickside=='right':
+    ax.yaxis.tick_right()
+
+def _read_data(myPtr,myBeam,bmnum,params,tbands):
+  """Reads data from the file pointed to by myPtr
+
+  **Args**:
+    * **myPtr**: a davitpy file pointer object
+    * **myBeam**: a davitpy beam object
+    * **bmnum**: beam number of data to read in
+    * **params**: a list of the parameters to read
+    * **tbands**: a list of the frequency bands to separate data into
+  **Returns**:
+    * A dictionary of the data. Data is stored in lists and separated in to tbands.
+      
+  Written by ASR 20150914
   """
   data = dict()
   #initialize empty lists
@@ -823,12 +884,6 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
     myBeam = myPtr.readRec()
   return data
 
-
-
-#Modify these so they accept an axis object and simply plot to that
-#def plot_cpid
-#def plot_freq
-#def plot_noise
 
 #Replace draw axes with a function that can simply formats an existing axis object
 
