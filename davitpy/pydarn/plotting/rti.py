@@ -25,11 +25,11 @@
 *********************
 **Functions**:
   * :func:`pydarn.plotting.rti.plotRti`
-  * :func:`pydarn.plotting.rti.plotFreq`
-  * :func:`pydarn.plotting.rti.plotNoise`
-  * :func:`pydarn.plotting.rti.plotCpid`
-  * :func:`pydarn.plotting.rti.rtiTitle`
-  * :func:`pydarn.plotting.rti.drawAxes`
+  * :func:`pydarn.plotting.rti.plot_freq`
+  * :func:`pydarn.plotting.rti.plot_noise`
+  * :func:`pydarn.plotting.rti.plot_cpid`
+  * :func:`pydarn.plotting.rti.rti_title`
+  * :func:`pydarn.plotting.rti.draw_axes`
 """
 
 
@@ -125,7 +125,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       elif(params[i] == 'power'): tscales.append([0,30])
       elif(params[i] == 'width'): tscales.append([0,150])
       elif(params[i] == 'elevation'): tscales.append([0,50])
-      elif(params[i] == 'vel_err'): tscales.append([-200,200])
+      elif(params[i] == 'vel_err'): tscales.append([0,200])
       elif(params[i] == 'phi0'): tscales.append([-numpy.pi,numpy.pi])
     else: tscales.append(scales[i])
   scales = tscales
@@ -185,16 +185,15 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     #create a figure
     rti_fig = plot.figure(figsize=(11,8.5))
 
+    #create the axes for noise, tx freq, and cpid
     noise_pos = [.1,.88,.76,.06]
     freq_pos = [.1,.82,.76,.06]
     cpid_pos = [.1,.77,.76,.05]
 
     skynoise_ax = rti_fig.add_axes(noise_pos,label='sky')
     searchnoise_ax = rti_fig.add_axes(noise_pos,label='search',frameon=False)
-    #searchnoise_ax.yaxis.tick_right()
     freq_ax = rti_fig.add_axes(freq_pos,label='freq')
     nave_ax = rti_fig.add_axes(freq_pos,label='nave',frameon=False)
-    #nave_ax.yaxis.tick_right()
     cpid_ax = rti_fig.add_axes(cpid_pos)
   
     #give the plot a title
@@ -211,119 +210,46 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     #plot the cpid bar
     plot_cpid(cpid_ax,data_dict['times'][fplot],data_dict['cpid'][fplot],data_dict['mode'][fplot])
 
+
     #plot each of the parameter panels
     figtop = .77
     figheight = .72/len(params)
+
     for p in range(len(params)):
+      #use draw_axes to create and set formatting of the axes to plot to
+      pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
+      ax = draw_axes(rti_fig,data_dict['times'][fplot],rad,data_dict['cpid'][fplot],bmnum,
+                     data_dict['nrang'][fplot],data_dict['frang'][fplot],data_dict['rsep'][fplot],
+                     p==len(params)-1,yrng=yrng,coords=coords,pos=pos,
+                     xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,
+                     axvlines=axvlines)
+      
       if(params[p] == 'velocity'): pArr = data_dict['vel'][fplot]
       elif(params[p] == 'power'): pArr = data_dict['pow'][fplot]
       elif(params[p] == 'width'): pArr = data_dict['wid'][fplot]
       elif(params[p] == 'elevation'): pArr = data_dict['elev'][fplot]
       elif(params[p] == 'phi0'): pArr = data_dict['phi0'][fplot]
       elif(params[p] == 'vel_err'): pArr = data_dict['vel_err'][fplot]
-      pos = [.1,figtop-figheight*(p+1)+.02,.76,figheight-.02]
-      
-      #draw the axis
-      ax = drawAxes(rti_fig,data_dict['times'][fplot],rad,data_dict['cpid'][fplot],bmnum,
-                    data_dict['nrang'][fplot],data_dict['frang'][fplot],data_dict['rsep'][fplot],
-                    p==len(params)-1,yrng=yrng,coords=coords,pos=pos,
-                    xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,
-                    axvlines=axvlines)
-  
-      
+
       if(pArr == []): continue
-      
-      rmax = max(data_dict['nrang'][fplot])
-      data=numpy.zeros((len(data_dict['times'][fplot])*2,rmax))+100000
-      if gsct: gsdata=numpy.zeros((len(data_dict['times'][fplot])*2,rmax))+100000
 
-      x=numpy.zeros(len(data_dict['times'][fplot])*2)
-      tcnt = 0
+      #Generate the color map
+      cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)      
 
-      dt_list   = []
-      for i in range(len(data_dict['times'][fplot])):
-        x[tcnt]=matplotlib.dates.date2num(data_dict['times'][fplot][i])
-        dt_list.append(data_dict['times'][fplot][i])
-
-        if(i < len(data_dict['times'][fplot])-1):
-          if(matplotlib.dates.date2num(data_dict['times'][fplot][i+1])-x[tcnt] > 4./1440.):
-            tcnt += 1
-            x[tcnt] = x[tcnt-1]+1./1440.
-            dt_list.append(matplotlib.dates.num2date(x[tcnt]))
-        tcnt += 1
-            
-        if(pArr[i] == []): continue
-        
-        if data_dict['slist'][fplot][i] is not None:
-          for j in range(len(data_dict['slist'][fplot][i])):
-            if(not gsct or data_dict['gsflg'][fplot][i][j] == 0):
-              data[tcnt][data_dict['slist'][fplot][i][j]] = pArr[i][j]
-            elif gsct and data_dict['gsflg'][fplot][i][j] == 1:
-              data[tcnt][data_dict['slist'][fplot][i][j]] = -100000.
-  
-      if (coords != 'gate' and coords != 'rng') or plotTerminator == True:
-        site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(data_dict['times'][fplot][0])
-        myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,
-                                          rsep=data_dict['rsep'][fplot][0],coords=coords, 
-                                          date_time=data_dict['times'][fplot][0])
-        myLat   = myFov.latCenter[bmnum]
-        myLon   = myFov.lonCenter[bmnum]
-          
-      if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
-      elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],rmax*data_dict['rsep'][fplot][0],rmax+1)
-      else: y = myFov.latFull[bmnum]
-        
-      X, Y = numpy.meshgrid(x[:tcnt], y)
-
-      # Calculate terminator. ########################################################
-      if plotTerminator:
-            def daynight_terminator(date, lons):
-                """
-                date is datetime object (assumed UTC).
-                """
-                import mpl_toolkits.basemap.solar as solar
-                dg2rad = np.pi/180.
-                # compute greenwich hour angle and solar declination
-                # from datetime object (assumed UTC).
-                tau, dec = solar.epem(date)
-                # compute day/night terminator from hour angle, declination.
-                longitude = lons + tau
-                lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
-                return lats,tau,dec
-
-            daylight = np.ones([len(dt_list),len(myLat)],np.bool)
-            for tm_inx in range(len(dt_list)):
-                tm                  = dt_list[tm_inx]
-                term_lats,tau,dec   = daynight_terminator(tm,myLon)
-
-                if dec > 0: # NH Summer
-                    day_inx = np.where(myLat < term_lats)[0]
-                else:
-                    day_inx = np.where(myLat > term_lats)[0]
-
-                if day_inx.size != 0:
-                    daylight[tm_inx,day_inx] = False
-     
-            from numpy import ma
-            daylight = ma.array(daylight,mask=daylight)
-            ax.pcolormesh(X, Y, daylight.T, lw=0,alpha=0.10,cmap=matplotlib.cm.binary_r,zorder=99)
-      ################################################################################
-      
-      cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)
-      
-      pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
+      #Plot the data to the axis object
+      pcoll = plot_rti(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=plotTerminator)
 
       #Set xaxis formatting depending on amount of data plotted
       if ((eTime - sTime) <= datetime.timedelta(days=1)):
-          #ax.xaxis.set_major_locator(matplotlib.dates.HourLocator())
-          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
       elif ((eTime - sTime) > datetime.timedelta(days=1)):
-          ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M'))
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M'))
+      ax.set_xlabel('UT')    
 
-      ax.set_xlabel('UT')
-
+      #Draw the colorbar
       cb = utils.drawCB(rti_fig,pcoll,cmap,norm,map_plot=0,pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
-      
+
+      #Label the colorbar
       l = []
       #define the colorbar labels
       for i in range(0,len(bounds)):
@@ -351,7 +277,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
       if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
       if(params[p] == 'vel_err'): cb.set_label('Velocity Error [m/s]',size=10)
-  
+
     if show:
       rti_fig.show()
       
@@ -360,7 +286,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
     return rti_fig
   
-def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
+def draw_axes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
   """draws empty axes for an rti plot
 
   **Args**:
@@ -386,7 +312,7 @@ def drawAxes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='
   **Example:
     ::
 
-      ax = drawAxes(aFig,times,rad,cpid,beam,nrang,frang,rsep,0)
+      ax = draw_axes(aFig,times,rad,cpid,beam,nrang,frang,rsep,0)
       
   Written by AJ 20121002
   """
@@ -873,6 +799,7 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
           data['freq'][i].append(myBeam.prm.tfreq/1e3)
           data['slist'][i].append(myBeam.fit.slist)
           data['mode'][i].append(myBeam.prm.ifmode)
+          #to save time and RAM, only keep the data specified in params
           if('velocity' in params): data['vel'][i].append(myBeam.fit.v)
           if('power' in params): data['pow'][i].append(myBeam.fit.p_l)
           if('width' in params): data['wid'][i].append(myBeam.fit.w_l)
@@ -887,9 +814,90 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
 
 #Replace draw axes with a function that can simply formats an existing axis object
 
-def plot_data():
-  #This function will plot the data into a given axis object
-  return
+def plot_rti(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=True):
+
+
+  from davitpy import pydarn  
+  #initialize arrays
+  rmax = max(data_dict['nrang'][fplot])
+  tmax = (len(data_dict['times'][fplot]))*2
+  data=numpy.zeros((tmax,rmax))+100000
+  x=numpy.zeros(tmax)
+  tcnt = 0
+
+  dt_list   = []
+  for i in range(len(data_dict['times'][fplot])):
+    x[tcnt]=matplotlib.dates.date2num(data_dict['times'][fplot][i])
+    dt_list.append(data_dict['times'][fplot][i])
+
+    if(i < len(data_dict['times'][fplot])-1):
+      if(matplotlib.dates.date2num(data_dict['times'][fplot][i+1])-x[tcnt] > 4./1440.):
+        tcnt += 1
+        x[tcnt] = x[tcnt-1]+1./1440. #1440 minutes in a day, hardcoded 1 minute step per data point but only if time between data points is > 4 minutes
+        dt_list.append(matplotlib.dates.num2date(x[tcnt]))
+    tcnt += 1
+            
+    if(pArr[i] == []): continue
+        
+    if data_dict['slist'][fplot][i] is not None:
+      for j in range(len(data_dict['slist'][fplot][i])):
+        if(not gsct or data_dict['gsflg'][fplot][i][j] == 0):
+          data[tcnt][data_dict['slist'][fplot][i][j]] = pArr[i][j]
+        elif gsct and data_dict['gsflg'][fplot][i][j] == 1:
+          data[tcnt][data_dict['slist'][fplot][i][j]] = -100000.
+  
+  if (coords != 'gate' and coords != 'rng') or plot_terminator == True:
+    site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(data_dict['times'][fplot][0])
+    myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,
+                                      rsep=data_dict['rsep'][fplot][0],coords=coords, 
+                                      date_time=data_dict['times'][fplot][0])
+    myLat   = myFov.latCenter[bmnum]
+    myLon   = myFov.lonCenter[bmnum]
+          
+  if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
+  elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],rmax*data_dict['rsep'][fplot][0],rmax+1)
+  else: y = myFov.latFull[bmnum]
+        
+  X, Y = numpy.meshgrid(x[:tcnt], y)
+
+  # Calculate terminator. ########################################################
+  if plot_terminator:
+    def daynight_terminator(date, lons):
+        """
+        date is datetime object (assumed UTC).
+        """
+        import mpl_toolkits.basemap.solar as solar
+        dg2rad = np.pi/180.
+        # compute greenwich hour angle and solar declination
+        # from datetime object (assumed UTC).
+        tau, dec = solar.epem(date)
+        # compute day/night terminator from hour angle, declination.
+        longitude = lons + tau
+        lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
+        return lats,tau,dec
+
+    daylight = np.ones([len(dt_list),len(myLat)],np.bool)
+    for tm_inx in range(len(dt_list)):
+        tm                  = dt_list[tm_inx]
+        term_lats,tau,dec   = daynight_terminator(tm,myLon)
+
+        if dec > 0: # NH Summer
+            day_inx = np.where(myLat < term_lats)[0]
+        else:
+            day_inx = np.where(myLat > term_lats)[0]
+
+        if day_inx.size != 0:
+            daylight[tm_inx,day_inx] = False
+     
+        from numpy import ma
+        daylight = ma.array(daylight,mask=daylight)
+        ax.pcolormesh(X, Y, daylight.T, lw=0,alpha=0.10,cmap=matplotlib.cm.binary_r,zorder=99)
+  ################################################################################
+          
+  pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
+ 
+
+  return pcoll
 
 #Use plotRti as a function that wraps these others in a way that produces the current rti plots
 
