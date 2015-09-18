@@ -839,7 +839,7 @@ def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_termi
   #initialize arrays
   rmax = max(data_dict['nrang'][fplot])
   tmax = (len(data_dict['times'][fplot]))*2
-  data=numpy.zeros((tmax,rmax))+100000
+  data=numpy.zeros((tmax,rmax))*numpy.nan
   x=numpy.zeros(tmax)
   tcnt = 0
 
@@ -875,7 +875,7 @@ def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_termi
   if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
   elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],rmax*data_dict['rsep'][fplot][0],rmax+1)
   else: y = myFov.latFull[bmnum]
-        
+
   X, Y = numpy.meshgrid(x[:tcnt], y)
 
   # Calculate terminator
@@ -896,8 +896,14 @@ def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_termi
         from numpy import ma
         daylight = ma.array(daylight,mask=daylight)
         ax.pcolormesh(X, Y, daylight.T, lw=0,alpha=0.10,cmap=matplotlib.cm.binary_r,zorder=99)
-          
-  pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
+
+  #mask the nan's in the data array so they aren't plotted
+  Zm = numpy.ma.masked_where(numpy.isnan(data[:tcnt][:].T),data[:tcnt][:].T)
+  #set colormap so that masked data (bad) is transparent
+  cmap.set_bad('w',alpha=0.0)
+
+  #now let's plot all data
+  pcoll = ax.pcolormesh(X, Y,Zm, lw=0.01,edgecolors='None',lod=True,cmap=cmap,norm=norm)
  
   return pcoll
 
