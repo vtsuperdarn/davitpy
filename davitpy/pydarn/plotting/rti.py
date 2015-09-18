@@ -125,6 +125,9 @@ def plot_rti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','p
     assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width' or \
     params[i] == 'elevation' or params[i] == 'phi0' or params[i] == 'velocity_error'), \
     "error, allowable params are 'velocity','power','width','elevation','phi0','velocity_error'"
+  for i in range(0,len(scales)):
+    assert(isinstance(scales[i],list)), \
+    'error, each item in scales must be a list of upper and lower bounds on paramaters.'
   assert(scales == [] or len(scales)==len(params)), \
   'error, if present, scales must have same number of elements as params'
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
@@ -834,7 +837,25 @@ def read_data(myPtr,myBeam,bmnum,params,tbands):
 
 def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=True):
 
+  """plots the data given by pArr to an axis object
 
+  **Args**:
+    * **ax**: a MPL axis object to plot to
+    * **data_dict**: the data dictionary returned by pydarn.plotting.read_data
+    * **pArr**: the list of data to be plotted (e.g. data_dict['vel'] for velocity)
+    * **fplot**: the index of the frequency band of data to plot
+    * **gsct**: a boolean stating whether to flag ground scatter data or not
+    * **rad**: the 3 letter radar code
+    * **bmnum**: The beam number of the data to plot
+    * **coords**: plotting coordinates ('gate','range','geo','mag')
+    * **cmap**: a matplotlib.colors.ListedColormap (such as that returned by utils.plotUtils.genCmap)
+    * **norm**: a matplotlib.colors.BoundaryNorm (such as that returned by utils.plotUtils.genCmap)
+    * **[plot_terminator]**: A boolean stating whether or not to plot the terminator
+  **Returns**:
+    *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
+      
+  Written by ASR 20150916
+  """
   from davitpy import pydarn  
   #initialize arrays
   rmax = max(data_dict['nrang'][fplot])
