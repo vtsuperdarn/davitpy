@@ -57,7 +57,7 @@ class mapObj(basemap.Basemap):
     already be in the map's declared coordinate system given by **coords**.
     """
 
-    def __init__(self, datetime=None, coords='geo', projection='stere',
+    def __init__(self, ax=None, datetime=None, coords='geo', projection='stere',
                  resolution='c', dateTime=None, lat_0=None, lon_0=None,
                  boundinglat=None, width=None, height=None, draw=True, 
                  fillContinents='.8', fillOceans='None', fillLakes=None,
@@ -67,6 +67,8 @@ class mapObj(basemap.Basemap):
         Create empty map
 
         **Args**:
+            * **[ax]** (matplotlib.axes._subplots.AxesSubplot or NoneType):
+                Subplot axis to associate with this map (default=None)
             * **[datetime]** (datetime.datetime or NoneType): new format for
                              providing the time that is added to the mapObj
                              class as the attribute "datetime".  This is needed
@@ -164,8 +166,13 @@ class mapObj(basemap.Basemap):
           width = height = 2*111e3*( abs(self.lat_0 - boundinglat) )
 
         # Initialize map with original Basemap
-        super(mapObj, self).__init__(projection=projection, resolution=resolution, 
-            lat_0=self.lat_0, lon_0=self.lon_0, width=width, height=height, **kwargs)
+        super(mapObj, self).__init__(projection=projection,
+                                     resolution=resolution, lat_0=self.lat_0,
+                                     lon_0=self.lon_0, width=width,
+                                     height=height, **kwargs)
+
+        if ax is not None:
+            mapObj.ax = ax
 
         if draw:
           self.draw()
@@ -274,7 +281,8 @@ class mapObj(basemap.Basemap):
         oldgeom = deepcopy(self._boundarypolyll)
         newgeom = _geoslib.Polygon(b).fix()
         self._boundarypolyll = newgeom
-        out = basemap.Basemap._readboundarydata(self, name, as_polygons=as_polygons)
+        out = basemap.Basemap._readboundarydata(self, name,
+                                                as_polygons=as_polygons)
         self._boundarypolyll = oldgeom
         return out
 
