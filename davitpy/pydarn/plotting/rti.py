@@ -411,9 +411,6 @@ def draw_axes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords=
   elif(coords == 'geo' or coords == 'mag'): 
     if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
     else: ax.yaxis.set_label_text('Geo Lat [deg]',size=10)
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%0.2f'))
-    ax.yaxis.set_major_locator(MultipleLocator((ymax-ymin)/5.))
-    ax.yaxis.set_minor_locator(MultipleLocator((ymax-ymin)/25.))
   elif(coords == 'rng'): 
     ax.yaxis.set_label_text('Slant Range [km]',size=10)
     ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
