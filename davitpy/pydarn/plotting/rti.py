@@ -43,12 +43,29 @@ from davitpy.utils.timeUtils import *
 from davitpy.pydarn.sdio import *
 from matplotlib.figure import Figure
 
+def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'],
+            scales=[],channel=None,coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False,
+            show=True,filtered=False,fileName=None, tFreqBands=[],myFile=None,xtick_size=9,
+            ytick_size=9,xticks=None,axvlines=None,plotTerminator=False):
+    """
+    Wrapper for plot_rti. This function is being deprecated.
+    """
+    print "Warning: This function is being deprecated. Use plot_rti instead."
+    print "Calling plot_rti."
 
-def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'], \
-              scales=[],channel=None,coords='gate',colors='lasse',yrng=-1,gsct=False,lowGray=False, \
-              pdf=False,png=False,dpi=500,show=True,retfig=False,filtered=False,fileName=None, \
-              custType='fitex', tFreqBands=[], myFile=None,figure=None,xtick_size=9,ytick_size=9,xticks=None,axvlines=None,plotTerminator=False):
-  """create an rti plot for a secified radar and time period
+    return plot_rti(sTime,rad,eTime=eTime,bmnum=bmnum,fileType=fileType,params=params,scales=scales,
+                    channel=channel,coords=coords,colors=colors,yrng=yrng,gsct=gsct,low_gray=lowGray,
+                    show=show,filtered=filtered,fileName=fileName,tfreqbands=tFreqBands,myFile=myFile,
+                    xtick_size=xtick_size,ytick_size=ytick_size,xticks=xticks,axvlines=axvlines,
+                    plot_terminator=plotTerminator)
+
+def plot_rti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','power','width'],
+             scales=[],channel=None,coords='gate',colors='lasse',yrng=-1,gsct=False,low_gray=False,
+             show=True,filtered=False,fileName=None,tfreqbands=[],myFile=None,xtick_size=9,
+             ytick_size=9,xticks=None,axvlines=None,plot_terminator=False):
+
+  """
+  create an rti plot for a secified radar and time period
 
   **Args**:
     * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object indicating the start time which you would like to plot
@@ -63,25 +80,21 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     * **[colors]** (str): a string indicating what color bar to use, valid inputs are ['lasse','aj'].  default: 'lasse'
     * **[yrng]** (list or -1): a list indicating the min and max values for the y axis in the chosen coordinate system, or a -1 indicating to plot everything.  default: -1.
     * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray. default: False (ground scatter plotted normally)
-    * **[lowGray]** (boolean): a flag indicating whether to plot low velocity scatter as gray. default: False (low velocity scatter plotted normally)
-    * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow.
-    * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
-    * **[dpi]** (int): dots per inch if saving as png.  default = 300
+    * **[low_gray]** (boolean): a flag indicating whether to plot low velocity scatter as gray. default: False (low velocity scatter plotted normally)
     * **[show]** (boolean): a flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
     * **[retfig]** (boolean):  a flag indicating that you want the figure to be returned from the function.  Only the last figure in the list of frequency bands will be returned.  default = False
     * **[filtered]** (boolean): a flag indicating whether to boxcar filter the data.  default = False (no filter)
     * **[fileName]** (string): If you want to plot for a specific file, indicate the name of the file as fileName.  Include the type of the file in custType.
-    * **[custType]** (string): the type (fitacf, lmfit, fitex) of file indicated by fileName
-    * **[tFreqBands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
+    * **[tfreqbands]** (list): a list of the min/max values for the transmitter frequencies in kHz.  If omitted, the default band will be used.  If more than one band is specified, retfig will cause only the last one to be returned.  default: [[8000,20000]]
     * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we want to plot. If specified, data will be plotted from the file pointed to by myFile. default: None
     * **[figure]** (matplotlib.figure) figure object to plot on.  If None, a figure object will be created for you.
     * **[xtick_size]**: (int) fontsize of xtick labels
     * **[ytick_size]**: (int) fontsize of ytick labels
     * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
     * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
-    * **[plotTerminator]**: (boolean) Overlay the day/night terminator.
+    * **[plot_terminator]**: (boolean) Overlay the day/night terminator.
   **Returns**:
-    * Possibly figure, depending on the **retfig** keyword
+    * A list of figures of length len(tfreqbands)
 
   **Example**:
     ::
@@ -92,7 +105,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     
   Written by AJ 20121002
   Modified by Matt W. 20130715
-  Modified by Nathaniel F. 20131031 (added plotTerminator)
+  Modified by Nathaniel F. 20131031 (added plot_terminator)
+  Modified by ASR 20150917 (refactored)
   """
   import os
   from davitpy import pydarn
@@ -109,8 +123,8 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
   assert(0 < len(params) < 6),'error, must input between 1 and 5 params in LIST form'
   for i in range(0,len(params)):
     assert(params[i] == 'velocity' or params[i] == 'power' or params[i] == 'width' or \
-    params[i] == 'elevation' or params[i] == 'phi0' or params[i] == 'vel_err'), \
-    "error, allowable params are 'velocity','power','width','elevation','phi0','vel_err'"
+    params[i] == 'elevation' or params[i] == 'phi0' or params[i] == 'velocity_error'), \
+    "error, allowable params are 'velocity','power','width','elevation','phi0','velocity_error'"
   assert(scales == [] or len(scales)==len(params)), \
   'error, if present, scales must have same number of elements as params'
   assert(yrng == -1 or (isinstance(yrng,list) and yrng[0] <= yrng[1])), \
@@ -125,16 +139,16 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       elif(params[i] == 'power'): tscales.append([0,30])
       elif(params[i] == 'width'): tscales.append([0,150])
       elif(params[i] == 'elevation'): tscales.append([0,50])
-      elif(params[i] == 'vel_err'): tscales.append([0,200])
+      elif(params[i] == 'velocity_error'): tscales.append([0,200])
       elif(params[i] == 'phi0'): tscales.append([-numpy.pi,numpy.pi])
     else: tscales.append(scales[i])
   scales = tscales
 
   #assign default frequency band
   tbands = []
-  if tFreqBands == []: tbands.append([8000,20000])
+  if tfreqbands == []: tbands.append([8000,20000])
   else: 
-    for band in tFreqBands: 
+    for band in tfreqbands: 
       #make sure that starting frequncy is less than the ending frequency for each band
       assert(band[0] < band[1]),"Starting frequency must be less than ending frequency!"
       tbands.append(band)
@@ -171,19 +185,20 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
     return None
 
   #Now read the data that we need to make the plots
-  data_dict = _read_data(myFile,myBeam,bmnum,params,tbands)
+  data_dict = read_data(myFile,myBeam,bmnum,params,tbands)
 
-
+  rti_figs = list()
   for fplot in range(len(tbands)):
     #Check to ensure that data exists for the requested frequency band else
     #continue on to the next range of frequencies
     if not data_dict['freq'][fplot]:
       print 'error, no data in frequency range '+str(tbands[fplot][0])+' kHz to '+str(tbands[fplot][1])+' kHz'
-      rti_fig=None	#Need this line in case no data is plotted
+      rti_figs.append(None)
       continue
 
     #create a figure
     rti_fig = plot.figure(figsize=(11,8.5))
+    rti_figs.append(rti_fig)
 
     #create the axes for noise, tx freq, and cpid
     noise_pos = [.1,.88,.76,.06]
@@ -213,7 +228,10 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
 
     #plot each of the parameter panels
     figtop = .77
-    figheight = .72/len(params)
+    if ((eTime - sTime) <= datetime.timedelta(days=1)) and (eTime.day == sTime.day):
+      figheight = .72/len(params)
+    elif ((eTime - sTime) > datetime.timedelta(days=1)) or (eTime.day != sTime.day):
+      figheight = .70/len(params)
 
     for p in range(len(params)):
       #use draw_axes to create and set formatting of the axes to plot to
@@ -229,20 +247,20 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       elif(params[p] == 'width'): pArr = data_dict['wid'][fplot]
       elif(params[p] == 'elevation'): pArr = data_dict['elev'][fplot]
       elif(params[p] == 'phi0'): pArr = data_dict['phi0'][fplot]
-      elif(params[p] == 'vel_err'): pArr = data_dict['vel_err'][fplot]
+      elif(params[p] == 'velocity_error'): pArr = data_dict['velocity_error'][fplot]
 
       if(pArr == []): continue
 
       #Generate the color map
-      cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=lowGray)      
+      cmap,norm,bounds = utils.plotUtils.genCmap(params[p],scales[p],colors=colors,lowGray=low_gray)      
 
       #Plot the data to the axis object
-      pcoll = plot_rti(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=plotTerminator)
+      pcoll = rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=plot_terminator)
 
       #Set xaxis formatting depending on amount of data plotted
-      if ((eTime - sTime) <= datetime.timedelta(days=1)):
+      if ((eTime - sTime) <= datetime.timedelta(days=1)) and (eTime.day == sTime.day):
         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
-      elif ((eTime - sTime) > datetime.timedelta(days=1)):
+      elif ((eTime - sTime) > datetime.timedelta(days=1)) or (eTime.day != sTime.day):
         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M'))
       ax.set_xlabel('UT')    
 
@@ -259,7 +277,7 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
           elif(bounds[i] < 0): ln = 5
           l.append(str(bounds[i])[:ln])
           continue
-        if((i == 0 and (params[p] == 'velocity' or params[p] == 'vel_err')) or i == len(bounds)-1):
+        if((i == 0 and (params[p] == 'velocity' or params[p] == 'velocity_error')) or i == len(bounds)-1):
           l.append(' ')
           continue
         l.append(str(int(bounds[i])))
@@ -272,19 +290,19 @@ def plotRti(sTime,rad,eTime=None,bmnum=7,fileType='fitex',params=['velocity','po
       #set colorbar label
       if(params[p] == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
       if(params[p] == 'grid'): cb.set_label('Velocity [m/s]',size=10)
-      if(params[p] == 'power'): cb.set_label('Power [dB]',size=10)
+      if(params[p] == 'power'): cb.set_label('SNR [dB]',size=10)
       if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
       if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
       if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
-      if(params[p] == 'vel_err'): cb.set_label('Velocity Error [m/s]',size=10)
+      if(params[p] == 'velocity_error'): cb.set_label('Velocity Error [m/s]',size=10)
 
     if show:
       rti_fig.show()
       
     print 'plotting took:',datetime.datetime.now()-t1
     #end of plotting for loop
-    
-    return rti_fig
+     
+  return rti_figs
   
 def draw_axes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
   """draws empty axes for an rti plot
@@ -432,7 +450,7 @@ def rti_title(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
   
   fig.text(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
   
-  if (eTime is not None) and ((eTime - sTime) > datetime.timedelta(days=1)):
+  if (eTime is not None) and (((eTime - sTime) > datetime.timedelta(days=1)) or (eTime.day != sTime.day)):
     title_text = str(sTime.day)+'/'+calendar.month_name[sTime.month][:3]+'/'+str(sTime.year) + ' - ' + \
                  str(eTime.day)+'/'+calendar.month_name[eTime.month][:3]+'/'+str(eTime.year)
   else:
@@ -758,7 +776,7 @@ def plot_nave(ax,times,nave,xlim=None,xticks=None,ytickside='right'):
   if ytickside=='right':
     ax.yaxis.tick_right()
 
-def _read_data(myPtr,myBeam,bmnum,params,tbands):
+def read_data(myPtr,myBeam,bmnum,params,tbands):
   """Reads data from the file pointed to by myPtr
 
   **Args**:
@@ -776,7 +794,7 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
   #initialize empty lists
   data_keys = ['vel','pow','wid','elev','phi0','times','freq','cpid',
                'nave','nsky','nsch','slist','mode','rsep','nrang',
-               'frang','gsflg','vel_err']
+               'frang','gsflg','velocity_error']
   for d in data_keys:
     data[d]=[]
     for i in range(len(tbands)):
@@ -805,7 +823,7 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
           if('width' in params): data['wid'][i].append(myBeam.fit.w_l)
           if('elevation' in params): data['elev'][i].append(myBeam.fit.elv)
           if('phi0' in params): data['phi0'][i].append(myBeam.fit.phi0)
-          if('vel_err' in params): data['vel_err'][i].append(myBeam.fit.v_e)
+          if('velocity_error' in params): data['velocity_error'][i].append(myBeam.fit.v_e)
           data['gsflg'][i].append(myBeam.fit.gflg)
       
     myBeam = myPtr.readRec()
@@ -814,7 +832,7 @@ def _read_data(myPtr,myBeam,bmnum,params,tbands):
 
 #Replace draw axes with a function that can simply formats an existing axis object
 
-def plot_rti(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=True):
+def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=True):
 
 
   from davitpy import pydarn  
@@ -860,22 +878,8 @@ def plot_rti(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_termin
         
   X, Y = numpy.meshgrid(x[:tcnt], y)
 
-  # Calculate terminator. ########################################################
+  # Calculate terminator
   if plot_terminator:
-    def daynight_terminator(date, lons):
-        """
-        date is datetime object (assumed UTC).
-        """
-        import mpl_toolkits.basemap.solar as solar
-        dg2rad = np.pi/180.
-        # compute greenwich hour angle and solar declination
-        # from datetime object (assumed UTC).
-        tau, dec = solar.epem(date)
-        # compute day/night terminator from hour angle, declination.
-        longitude = lons + tau
-        lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
-        return lats,tau,dec
-
     daylight = np.ones([len(dt_list),len(myLat)],np.bool)
     for tm_inx in range(len(dt_list)):
         tm                  = dt_list[tm_inx]
@@ -892,12 +896,22 @@ def plot_rti(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_termin
         from numpy import ma
         daylight = ma.array(daylight,mask=daylight)
         ax.pcolormesh(X, Y, daylight.T, lw=0,alpha=0.10,cmap=matplotlib.cm.binary_r,zorder=99)
-  ################################################################################
           
   pcoll = ax.pcolormesh(X, Y, data[:tcnt][:].T, lw=0.01,edgecolors='None',alpha=1,lod=True,cmap=cmap,norm=norm)
  
-
   return pcoll
 
-#Use plotRti as a function that wraps these others in a way that produces the current rti plots
+def daynight_terminator(date, lons):
+    """
+    date is datetime object (assumed UTC).
+    """
+    import mpl_toolkits.basemap.solar as solar
+    dg2rad = np.pi/180.
+    # compute greenwich hour angle and solar declination
+    # from datetime object (assumed UTC).
+    tau, dec = solar.epem(date)
+    # compute day/night terminator from hour angle, declination.
+    longitude = lons + tau
+    lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
+    return lats,tau,dec
 
