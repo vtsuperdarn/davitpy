@@ -1174,9 +1174,11 @@ contains
         use hwm
         implicit none
 
-        character(128), parameter   :: datafile='gd2qd.dat'
-        integer(4)                  :: iterm, n
-        integer(4)                  :: j
+        character(250) :: datafile
+        integer(4)     :: iterm, n
+        integer(4)     :: j
+
+        datafile = trim(pathdefault)//'gd2qd.dat'
 
         call findandopen(datafile,23)
         read(23) nmax, mmax, nterm, epoch, alt
@@ -1298,9 +1300,9 @@ subroutine gd2qd(glatin,glon,qlat,qlon,f1e,f1n,f2e,f2n)
 
 end subroutine gd2qd
 
-!==================================================================================
+!==============================================================================
 !                  (Function) Calculate Magnetic Local Time
-!==================================================================================
+!==============================================================================
 
 function mltcalc(qlat,qlon,day,ut)
 

@@ -1673,7 +1673,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       beams=dict(), hwm_out=""):
+                       beams=dict()):
     '''Plot comparing HWM14 neutral winds with the line-of-site velocity
     for two beams at Saskatoon
 
@@ -1754,8 +1754,6 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots.  Will create this data
         if it is not provided (default=dict())
-    hwm_out : (str)
-        File containing the HWM model output for the provided data (default="")
 
     Returns
     ---------
@@ -1772,16 +1770,15 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     import davitpy.pydarn.plotting as plotting
     import davitpy.pydarn.radar as pyrad
     import davitpy.pydarn.sdio as sdio
+    import davitpy.models.hwm as hwm
 
     rn = "plot_meteor_figure"
-    calc_hwm = True if len(hwm_out) == 0 else False
-    if len(hwm_out) == 0:
-        hwm_out = "{:s}/HWM/{:s}_output.hwm".format(os.getenv("MODELS"), rn)
 
+    #-------------------------------------------------------------------------
     # Define local routines
     def ismeteor(p, verr, werr):
         '''
-        Gareth's threshold test for meteor scatter (Chisham et al 2013)
+        Gareth's threshold test for meteor scatter (Chisham and Freeman 2013)
         '''
         # Initialize output
         good = False
@@ -1806,6 +1803,99 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
 
         return good
 
+    def dec2001ap(bm_time):
+        ''' Look up Ap using time.  Only available for December 2001.
+        Data from: ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/
+
+        Parameters
+        -----------
+        bm_time : (datetime)
+            Time to find Ap
+
+        Returns
+        ---------
+        bm_ap : (float)
+        '''
+        ap_times = [dt.datetime(2001,12,1) + dt.timedelta(hours=i)
+                    for i in range(744)]
+        ap_vals = [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0, 3.0, 3.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0,
+                   4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0,
+                   0.0, 0.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0,
+                   2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 6.0, 6.0, 6.0, 6.0,
+                   6.0, 6.0, 6.0, 6.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
+                   15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0,
+                   6.0, 6.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0,
+                   12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 5.0, 5.0,
+                   5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 15.0, 15.0, 15.0, 15.0, 15.0,
+                   15.0, 15.0, 15.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0,
+                   7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 9.0, 9.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+                   3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 18.0, 18.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 18.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+                   5.0, 5.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 2.0, 2.0,
+                   2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0,
+                   2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                   2.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 3.0, 3.0,
+                   3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0,
+                   4.0, 4.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 7.0, 7.0,
+                   7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 7.0, 7.0,
+                   7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0,
+                   6.0, 6.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 0.0, 0.0,
+                   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 15.0, 15.0, 15.0, 15.0, 15.0,
+                   15.0, 15.0, 15.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0,
+                   12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 18.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0,
+                   12.0, 12.0, 22.0, 22.0, 22.0, 22.0, 22.0, 22.0, 22.0, 22.0,
+                   15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 22.0, 22.0,
+                   22.0, 22.0, 22.0, 22.0, 22.0, 22.0, 7.0, 7.0, 7.0, 7.0, 7.0,
+                   7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 15.0,
+                   15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 9.0, 9.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0,
+                   4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0,
+                   0.0, 0.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0,
+                   2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 7.0, 7.0, 7.0, 7.0,
+                   7.0, 7.0, 7.0, 7.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0,
+                   15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0,
+                   15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 9.0, 9.0, 9.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 7.0,
+                   7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+                   5.0, 5.0, 5.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 39.0, 39.0, 39.0,
+                   39.0, 39.0, 39.0, 39.0, 39.0, 12.0, 12.0, 12.0, 12.0, 12.0,
+                   12.0, 12.0, 12.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0,
+                   6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 9.0, 9.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 9.0, 9.0, 9.0, 9.0,
+                   9.0, 9.0, 9.0, 9.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0,
+                   4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                   6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0,
+                   6.0, 6.0, 6.0, 6.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0,
+                   27.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 18.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 39.0, 39.0, 39.0, 39.0,
+                   39.0, 39.0, 39.0, 39.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0,
+                   18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 7.0, 7.0,
+                   7.0, 7.0, 7.0, 7.0, 7.0, 7.0]
+
+        # Indices apply to the entire hour.  To avoid rounding by minutes,
+        # recast requested time without minutes, seconds, or microseconds
+        htime = dt.datetime(bm_time.year, bm_time.month, bm_time.day,
+                            bm_time.hour)
+        tdelta = np.array([abs((t-htime).total_seconds()) for t in ap_times])
+        bm_ap = ap_vals[tdelta.argmin()]
+
+        return bm_ap
+
+    # End local routines
+    #-------------------------------------------------------------------------
     # Load and process the desired data
     if not beams.has_key(fbmnum) or not beams.has_key(rbmnum):
         # Load the SuperDARN data, padding data based on the largest
@@ -1839,9 +1929,8 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
 
     # Select the meteor data
     bmnum = {1:fbmnum, -1:rbmnum}
-    yspeed = {fbmnum:list(), rbmnum:list()}
-    nspeed = list()
-    hwm_lines = list()
+    yspeed = {fbmnum:list(), rbmnum:list(), "reject":list()} # FoV speeds
+    hspeed = {fbmnum:list(), rbmnum:list(), "reject":list()} # HWM speeds
 
     for ff in bmnum.keys():
         for bm in beams[bmnum[ff]]:
@@ -1854,65 +1943,32 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                     # Test to see if this is meteor backscatter using the
                     # rules outlined by Chisham and Freeman
                     if ismeteor(bm.fit.p_l[i], bm.fit.v_e[i], bm.fit.w_l_e[i]):
+                        skey = None
                         if ifov == ff:
-                            yspeed[bmnum[ff]].append(ff*bm.fit.v[i]*radar_ns)
+                            skey = bmnum[ff]
+                            yspeed[skey].append(ff*bm.fit.v[i]*radar_ns)
                             glat = fovs[ff].latCenter[bmnum[ff],bm.fit.slist[i]]
                             glon = fovs[ff].lonCenter[bmnum[ff],bm.fit.slist[i]]
+                            alt = bm.fit.vheight[i]
                         elif ff == 1:
-                            nspeed.append(bm.fit.v[i]*radar_ns)
+                            skey = "reject"
+                            yspeed[skey].append(bm.fit.v[i]*radar_ns)
                             glat = fovs[1].latCenter[bmnum[1],bm.fit.slist[i]]
                             glon = fovs[1].lonCenter[bmnum[1],bm.fit.slist[i]]
+                            alt = bm.fit.fvheight[i]
 
-                        hline = "{:d} {:d} {:s} ".format(bmnum[ff], ifov, \
-                                                    bm.time.strftime("%Y %j"))
-                        hline = "{:s}{:.0f} {:.1f} {:.2f} {:.2f}".format(hline,\
-                            bm.time.second+bm.time.minute*60.0+bm.time.hour
-                            * 3600.0, bm.fit.vheight[i], glat, glon)
-                        hwm_lines.append(hline)
+                        if skey is not None:
+                            ap = dec2001ap(bm.time)
+                            ihwm = hwm.hwm_input.format_hwm_input(bm.time, alt,
+                                                                  glat, glon,
+                                                                  ap)
+                            winds = hwm.hwm14(*ihwm)
+                            hspeed[skey].append(winds[0])
 
-        # Recast the data as numpy arrays
-        yspeed[bmnum[ff]] = np.array(yspeed[bmnum[ff]])
-    # Recast this after both have been looped, in case the rear beam went first
-    nspeed = np.array(nspeed)
-
-    # Write the hwm input
-    if(calc_hwm or not os.path.isfile(hwm_out) or
-       os.path.getsize(hwm_out) < 100):
-        hwm_dir = "{:s}/HWM".format(os.getenv("MODELS"))
-        os.chdir(hwm_dir)
-        hwm_in = "{:s}/HWM/{:s}_input.hwm".format(os.getenv("MODELS"), rn)
-        writeASCII_file(hwm_in, hwm_lines)
-
-        # Run HWM14 for each meteor point
-        hwm_wrap = "{:s}/HWM/SpecificLocHWM.pl".format(os.getenv("MODELS"))
-        command = "{:s} 14 {:s} {:s} 2 3 4 5 6 7 -1".format(hwm_wrap, hwm_in,
-                                                            hwm_out)
-        print "PERFORMING", command
-        os.system(command)
-
-    if not os.path.isfile(hwm_out) or os.path.getsize(hwm_out) < 100:
-        return(None, None, None, beams)
-
-    hwm_data = np.genfromtxt(hwm_out, skip_header=1)
-    htime = {fbmnum:list(), rbmnum:list()}
-    hspeed = {fbmnum:list(), rbmnum:list()}
-    jspeed = list()
-
-    for hline in hwm_data:
-        if hline[1] != 1.0 and hline[0] == fbmnum:
-            jspeed.append(hline[-2])
-
-        if hline[1] != 0.0:
-            hspeed[hline[0]].append(hline[-2]) # Total meridional (N/S) winds
-
-    for bn in hspeed.keys():
-        hspeed[bn] = np.array(hspeed[bn])
-        if hspeed[bn].shape != yspeed[bn].shape:
-            sys.exit(1)
-
-    jspeed = np.array(jspeed)
-    if jspeed.shape != nspeed.shape:
-        sys.exit(1)
+    # Recast the data as numpy arrays
+    for skey in yspeed.keys():
+        yspeed[skey] = np.array(yspeed[skey])
+        hspeed[skey] = np.array(hspeed[skey])
 
     # Initialize the figure
     f = plt.figure(figsize=(12,8))
@@ -1951,11 +2007,10 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     fax = f.add_subplot(3,2,2)
     rax = f.add_subplot(3,2,4)
     nax = f.add_subplot(3,2,6)
-    vdiff = {bn:yspeed[bn]-hspeed[bn] for bn in yspeed.keys()}
-    ndiff = nspeed-jspeed
+    vdiff = {skey:yspeed[skey]-hspeed[skey] for skey in yspeed.keys()}
     fnum = fax.hist(vdiff[bmnum[1]], diff_inc, range=diff_range, color=fcolor)
     rnum = rax.hist(vdiff[bmnum[-1]], diff_inc, range=diff_range, color=rcolor)
-    nnum = nax.hist(ndiff, diff_inc, range=diff_range, color="0.6")
+    nnum = nax.hist(vdiff["reject"], diff_inc, range=diff_range, color="0.6")
     fax.set_ylabel("Front\nNumber Points")
     rax.set_ylabel("Rear\nNumber Points")
     nax.set_ylabel("Removed from Front\nNumber Points")
@@ -1978,20 +2033,20 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     unit = "(m s$^{-1}$)"
     fax.text(-190, 0.65*mnum,
              "$\mu$={:.1f} {:s}\n$\sigma$={:.1f} {:s}".format( \
-                np.mean(vdiff[bmnum[1]]), unit, np.std(vdiff[bmnum[1]]), unit))
+            np.mean(vdiff[bmnum[1]]), unit, np.std(vdiff[bmnum[1]]), unit))
     rax.text(-190, 0.65*mnum,
              "$\mu$={:.1f} {:s}\n$\sigma$={:.1f} {:s}".format( \
             np.mean(vdiff[bmnum[-1]]), unit, np.std(vdiff[bmnum[-1]]), unit))
     nax.text(-190, 0.65*mnum,
              "$\mu$={:.1f} {:s}\n$\sigma$={:.1f} {:s}".format( \
-            np.mean(ndiff), unit, np.std(ndiff), unit))
+            np.mean(vdiff["reject"]), unit, np.std(vdiff["reject"]), unit))
     plt.subplots_adjust(wspace=.3, hspace=.1, right=.93)
 
     # Save figure
     if figname is not None:
         f.savefig(figname)
 
-    return(f, [ax, fax, rax, nax], beams, hwm_out)
+    return(f, [ax, fax, rax, nax], beams)
 
 #-------------------------------------------------------------------------
 def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},

@@ -26,7 +26,7 @@ datetime_to_slt
 # Import python packages
 import datetime as dt
 
-def format_hwm_input(time, alt, lat, lon, ap=-1):
+def format_hwm_input(time, alt, lat, lon, ap=-1, path=None):
     ''' Take input using keywords and return a set with correctly formatted
     input for HWM14
 
@@ -42,7 +42,8 @@ def format_hwm_input(time, alt, lat, lon, ap=-1):
         Geographic longitude in degrees East
     ap : (float)
         Ap index or -1 to produce undisturbed winds (default=-1.0)
-
+    path : (str or NoneType)
+        Path to HWM data files
 
     Returns
     -----------
@@ -56,13 +57,21 @@ def format_hwm_input(time, alt, lat, lon, ap=-1):
     # The first element of this array is not used
     ap = [0.0, ap]
 
+    # Define the path if it was not provided
+    if path is None:
+        from davitpy import rcParams
+        try:
+            path = "{:s}/davitpy/models/hwm/".format(rcParams['DAVITPY_PATH'])
+        except Exception as e:
+            return None
+
     # These inputs are not used
     stl = datetime_to_slt(time, lon)
     f107a = 100.0
     f107 = 100.0
 
     # This is the input
-    hwm_set = (iyd, sec, alt, lat, lon, stl, f107a, f107, ap)
+    hwm_set = (iyd, sec, alt, lat, lon, stl, f107a, f107, ap, path)
 
     return hwm_set
 
