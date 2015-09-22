@@ -114,7 +114,8 @@ def readPrintRec(filename):
 
   #close the file
   fp.close()
-
+  #close the pointer created here as well
+  myPtr.close()
 
 def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   """A function to print the contents of a fit-type file
