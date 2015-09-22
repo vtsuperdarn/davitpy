@@ -170,6 +170,8 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   while(myData is not None and myData.time <= eTime):
     t = myData.time
     if(summ == 0):
+      # If not interested in the summary, lets print all of the range gate values.  We'll
+      # start with the header for each beam sounding.
       f.write(t.strftime("%Y-%m-%d  "))
       f.write(t.strftime("%H:%M:%S  "))
       f.write(radar.name+' ')
@@ -185,10 +187,12 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
       f.write('  channel = '+str(myData.channel))
       f.write('  cpid = '+str(myData.cp)+'\n')
       
+      # Write the table column header
       f.write('{0:>4s} {13:>5s} {1:>5s} / {2:<5s} {3:>8s} {4:>3s} {5:>8s} {6:>8s} {7:>8s} {8:>8s} {9:>8s} {10:>8s} {11:>8s} {12:>8s}\n'.format \
       ('gate','pwr_0','pwr_l','vel','gsf','vel_err','width_l','geo_lat','geo_lon','geo_azm',
         'mag_lat','mag_lon','mag_azm','range'))
       
+      # Cycle through each range gate identified as having scatter in the slist
       for i in range(len(myData.fit.slist)):
 
         d = utils.geoPack.calcDistPnt(myFov.latFull[myData.bmnum][myData.fit.slist[i]],
