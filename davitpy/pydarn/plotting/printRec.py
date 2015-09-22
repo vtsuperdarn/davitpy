@@ -180,7 +180,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
       f.write('  scan = '+str(+myData.prm.scan)+'\n')
       f.write('npnts = '+str(len(myData.fit.slist)))
       f.write('  nrang = '+str(myData.prm.nrang))
-      f.write('  channel = '+myData.channel)
+      f.write('  channel = '+str(myData.channel))
       f.write('  cpid = '+str(myData.cp)+'\n')
       
       f.write('{0:>4s} {13:>5s} {1:>5s} / {2:<5s} {3:>8s} {4:>3s} {5:>8s} {6:>8s} {7:>8s} {8:>8s} {9:>8s} {10:>8s} {11:>8s} {12:>8s}\n'.format \
