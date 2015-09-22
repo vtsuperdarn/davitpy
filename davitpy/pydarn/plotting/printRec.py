@@ -217,9 +217,9 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
                   myData.prm.frang+myData.fit.slist[i]*myData.prm.rsep))
           
       f.write('\n')
-      
+    # Else write the beam summary for each sounding      
     else:
-      f.write('{0:9s} {11:6s} {1:>4d} {2:>5d} {3:>5d} {12:>4d} {4:>7d} {5:>7s} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
+      f.write('{0:9s} {11:6s} {1:>4d} {2:>5d} {3:>5d} {12:>4d} {4:>7d} {5:>7d} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
       format(t.strftime("%H:%M:%S."),myData.bmnum,len(myData.fit.slist),\
       myData.prm.nrang,myData.cp,myData.channel,myData.prm.tfreq,\
       myData.prm.lagfr,myData.prm.smsep,myData.prm.inttsc+myData.prm.inttus/1e6,\
