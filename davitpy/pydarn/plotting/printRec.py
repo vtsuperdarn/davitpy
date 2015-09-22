@@ -143,7 +143,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   from davitpy import utils
   from davitpy import models
   
-  file_format = ['{date}.hour......{radar}.{ftype}','{date}.{hour}......{radar}...{ftype}']
+  file_format = ['{date}.{hour}......{radar}.{ftype}','{date}.{hour}......{radar}...{ftype}']
   myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,fileType=fileType,local_fnamefmt=file_format,remote_fnamefmt=file_format)
   if(myPtr is None): return None
   
