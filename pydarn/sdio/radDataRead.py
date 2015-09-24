@@ -355,6 +355,10 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
       except Exception,e:
         print e
         print 'problem reading from sftp server'
+    #We should be done with the sftp connection        
+    sftp.close()
+    transport.close()
+
 
   #check if we have found files
   if len(filelist) != 0:
@@ -396,10 +400,6 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
         print e
         return None
   
-  #We should be done with the sftp connection        
-  sftp.close()
-  transport.close()
-
   if(myPtr.ptr != None): 
     if(myPtr.dType == None): myPtr.dType = 'dmap'
     return myPtr
