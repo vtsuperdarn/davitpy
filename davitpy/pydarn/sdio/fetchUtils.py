@@ -701,8 +701,9 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
     #--------------------------------------------------------------------------
     # Close the opened sftp connection
-    sftp.close()
-    transport.close()
+    if method is "sftp":
+	    sftp.close()
+	    transport.close()
 
     return filelist
 
