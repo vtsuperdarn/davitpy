@@ -699,6 +699,11 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     # after deleting the dictionary structure containing the password
     del remoteaccess
 
+    #--------------------------------------------------------------------------
+    # Close the opened sftp connection
+    sftp.close()
+    transport.close()
+
     return filelist
 
 
