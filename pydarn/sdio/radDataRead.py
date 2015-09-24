@@ -399,7 +399,6 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None, \
         print 'problem opening file'
         print e
         return None
-  
   if(myPtr.ptr != None): 
     if(myPtr.dType == None): myPtr.dType = 'dmap'
     return myPtr
