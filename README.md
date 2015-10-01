@@ -29,6 +29,12 @@ This will create a new directory called 'davitpy' in your current directory (pro
 
     cd davitpy
 
+To work on this branch (develop), you'll want to change the branch of your local repository with:
+
+    git checkout develop
+
+This will change your repository from the default of the master branch to the develop branch.  
+
 We need to install some dependencies using a script that makes calls to apt-get and pip.  You can either look through this file and install the necessary dependencies yourself (especially if you're on a different flavor of linux/unix or don't use apt-get and pip) or run the script.  To run this script:
 
     sudo ./install/debian_dependencies.sh
