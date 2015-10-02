@@ -114,7 +114,8 @@ def readPrintRec(filename):
 
   #close the file
   fp.close()
-
+  #close the pointer created here as well
+  myPtr.close()
 
 def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   """A function to print the contents of a fit-type file
@@ -142,7 +143,8 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   from davitpy import utils
   from davitpy import models
   
-  myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,fileType=fileType)
+  file_format = ['{date}.{hour}......{radar}.{ftype}','{date}.{hour}......{radar}...{ftype}']
+  myPtr = pydarn.sdio.radDataOpen(sTime,rad,eTime=eTime,fileType=fileType,local_fnamefmt=file_format,remote_fnamefmt=file_format)
   if(myPtr is None): return None
   
   myData = pydarn.sdio.radDataReadRec(myPtr)
@@ -168,6 +170,8 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
   while(myData is not None and myData.time <= eTime):
     t = myData.time
     if(summ == 0):
+      # If not interested in the summary, lets print all of the range gate values.  We'll
+      # start with the header for each beam sounding.
       f.write(t.strftime("%Y-%m-%d  "))
       f.write(t.strftime("%H:%M:%S  "))
       f.write(radar.name+' ')
@@ -180,13 +184,15 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
       f.write('  scan = '+str(+myData.prm.scan)+'\n')
       f.write('npnts = '+str(len(myData.fit.slist)))
       f.write('  nrang = '+str(myData.prm.nrang))
-      f.write('  channel = '+myData.channel)
+      f.write('  channel = '+str(myData.channel))
       f.write('  cpid = '+str(myData.cp)+'\n')
       
+      # Write the table column header
       f.write('{0:>4s} {13:>5s} {1:>5s} / {2:<5s} {3:>8s} {4:>3s} {5:>8s} {6:>8s} {7:>8s} {8:>8s} {9:>8s} {10:>8s} {11:>8s} {12:>8s}\n'.format \
       ('gate','pwr_0','pwr_l','vel','gsf','vel_err','width_l','geo_lat','geo_lon','geo_azm',
         'mag_lat','mag_lon','mag_azm','range'))
       
+      # Cycle through each range gate identified as having scatter in the slist
       for i in range(len(myData.fit.slist)):
 
         d = utils.geoPack.calcDistPnt(myFov.latFull[myData.bmnum][myData.fit.slist[i]],
@@ -215,9 +221,9 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
                   myData.prm.frang+myData.fit.slist[i]*myData.prm.rsep))
           
       f.write('\n')
-      
+    # Else write the beam summary for each sounding      
     else:
-      f.write('{0:9s} {11:6s} {1:>4d} {2:>5d} {3:>5d} {12:>4d} {4:>7d} {5:>7s} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
+      f.write('{0:9s} {11:6s} {1:>4d} {2:>5d} {3:>5d} {12:>4d} {4:>7d} {5:>7d} {6:>5d} {7:>5d} {8:>5d} {9:>5.2f} {10:>4d}\n'.\
       format(t.strftime("%H:%M:%S."),myData.bmnum,len(myData.fit.slist),\
       myData.prm.nrang,myData.cp,myData.channel,myData.prm.tfreq,\
       myData.prm.lagfr,myData.prm.smsep,myData.prm.inttsc+myData.prm.inttus/1e6,\
