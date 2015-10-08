@@ -34,7 +34,7 @@ program     rayDARN
     real*4::    elev, azim, hour, hrbase, elev_0, azim_0, hour_0
     integer::   iaz, iel, ihr, nelev, nazim, nhour, nextday
     integer::   dhour, dazim, delev
-    character:: filename*250
+    character:: filename*100
     character(len=80):: arg
 ! IRI
     real*4::    edensARR(500,500), edens
@@ -45,9 +45,6 @@ program     rayDARN
     integer::       hfrays, hfranges, hfedens, hfionos      ! File handles
     integer::       type_vec, type_param                ! New data types
     integer::       slice, ipar                 ! Misc.
-
-    integer i,j,nrows
-    parameter (nrows=500)
 
 
     ! Initialize MPI environment
@@ -65,7 +62,6 @@ program     rayDARN
     CALL MPI_TYPE_SIZE(type_vec, mpi_size_vec, code)
 
     ! Read parameters
-    params%edens_file = "NONE"
     if (rank.eq.0) then 
         CALL READ_INP(params)
         print*, params
@@ -167,24 +163,7 @@ program     rayDARN
             if (azim.gt.params%azimend) exit
 !            print*, rank, 'azim',hour,azim
             ! Generate electron density background
-
-            if (trim(params%edens_file).eq."NONE") then
-                CALL IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
-!                open(unit=9,file='/home/w2naf/code/raytrace/edens_fort.txt')
-!                do i=1,nrows
-!                    write(9,*) edensARR(i,:)
-!                end do
-!                close(9)
-            else
-                CALL LOAD_BEAM_PROFILE(params, edensARR, edensPOS, edensTHT, dip)
-!                open(unit=9,file='/home/w2naf/code/raytrace/edens_fort_py.txt')
-!                do i=1,nrows
-!                    write(9,*) edensARR(i,:)
-!                end do
-!                close(9)
-            end if
-
-
+            CALL IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
             CALL MPI_FILE_WRITE_SHARED(hfedens, (/hour, azim, &
 !                                            edensPOS(::2,:), &
                                             edensTHT(::2), &
@@ -283,7 +262,7 @@ SUBROUTINE MPI_RAYTYPES_INIT(type_vec, type_param)
 
     ! Parameters type
     types = (/MPI_REAL, MPI_INTEGER, MPI_REAL, MPI_CHAR/)
-    lblocks = (/9, 3, 5, 510/)
+    lblocks = (/9, 3, 5, 110/)
 
     CALL MPI_GET_ADDRESS(tparams%txlat, addr(1), code)
     CALL MPI_GET_ADDRESS(tparams%nhop, addr(2), code)
@@ -323,8 +302,7 @@ SUBROUTINE READ_INP(params)
     use constants
     implicit none
     type(prm),intent(out)::             params
-    character(len=250)::                 filename
-    character*250:: edens_file
+    character(len=80)::                 filename
 
     CALL getarg(1, filename)
     CALL getarg(2, params%outdir)
@@ -355,14 +333,10 @@ SUBROUTINE READ_INP(params)
     read(10, 100) params%hourstp
     read(10, 100) params%hmf2
     read(10, 100) params%nmf2
-    read(10, 102) params%indir
-    read(10, 102,end=200) params%edens_file
+100     format(F8.2)
+101     format(I8)
 
- 100  format(F8.2)
- 101  format(I8)
- 102  format(A250)
-
- 200  close(10)
+    close(10)
 
 END SUBROUTINE READ_INP
 
@@ -444,7 +418,9 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   ihop = 0        ! hop counter
   nrstep = 2      ! number of steps per ray counter
   naspstep = 1    ! number of ionospheric scatter occurence counter
-  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.theta.lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
+
+  !.002 added to theta so theta does not extend beyond edensTHT array RAG 20150410
+  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.(theta+0.002).lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
     ! Current position
     latiin = latiout
     longiin = longiout
@@ -598,15 +574,18 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
     if (grpran.gt.180e3.and.rtmp*1e-3.gt.(Rav+90.)) then
       CALL CALC_ASPECT(edensTHT, dip, rayazim, theta, thetatmp, r, rtmp, aspectind, aspect)
       if (aspectind.gt.0) then
-        ! Calculate mean range
+        ! Calculate mean range  Changed + h/2 to -h/2 below
+        ! Subtraction is needed here because grpran has already been incremented.
         d = r/rtmp*h*sin(edensTHT(aspectind) - theta)/sin(thetatmp-theta)
-        asp_grpran = grpran + h/2.
-        ! Calculate mean slant range
-!        asp_ran = ransave(nrstep-1) + h/2.*sqrt(nr2)
+        asp_grpran = grpran - h/2.
+
         ! Calculate mean ground range
-        asp_theta = (thetatmp-theta)/2. + theta
+        ! Addition needed here because theta has NOT already been incremented.
+        asp_theta = theta + (thetatmp-theta)/2.
+
         ! Calculate mean altitude
         asp_alt = sqrt( h**2./4. + r**2. + h/2.*r*sin(ranelev) )
+
         ! Calculate weighing (to account for backsground electron density and deviation from perfect aspect conditions)
         asp_w = ( edensARR(nint(((rtmp-r)/2.+r)*1e-3 - 60. - Rav), aspectind) )**2. / asp_grpran**3.
 
@@ -923,37 +902,6 @@ END SUBROUTINE CALC_ASPECT
 !   - from 60 to 560 km in 1km steps
 !   - over 2500km surface distance in 5km steps
 ! *************************************************************************
-SUBROUTINE LOAD_BEAM_PROFILE(params,edensARR, edensPOS, edensTHT, dip)
-    use constants
-    use MPI
-    implicit none
-    type(prm),intent(in)::                      params
-
-    integer i,j,stat
-    integer nrows
-    parameter (nrows=500)
-    character(100):: msg
-
-    real*4,dimension(500,500),intent(out)::     edensARR
-    real*4,dimension(500,2),intent(out)::       edensPOS, dip
-    real*4,dimension(500),intent(out)::         edensTHT
-
-    open(unit=73,file=trim(params%edens_file),form='unformatted',recl=4*nrows,access='direct')
-    do i=1,500
-    read(unit=73,iostat=stat,iomsg=msg,rec=i) (edensARR(i,j), j=1,nrows)
-    end do
-
-    read(unit=73,rec=501) (edensPOS(j,1), j=1,nrows)
-    read(unit=73,rec=502) (edensPOS(j,2), j=1,nrows)
-
-    read(unit=73,rec=503) (dip(j,1), j=1,nrows)
-    read(unit=73,rec=504) (dip(j,2), j=1,nrows)
-
-    read(unit=73,rec=505) (edensTHT(j), j=1,nrows)
-    close(73)
-
-END SUBROUTINE LOAD_BEAM_PROFILE
-
 SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 
     use constants
@@ -965,7 +913,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     real*4,dimension(500,2),intent(out)::       edensPOS, dip
     real*4,dimension(500),intent(out)::         edensTHT
 
-    real*4::                    old_hour, vbeg, vend, vstp
+    real*4::                    old_hour, vbeg, vend, vstp, hstp
     real*4::                    lonDeg, latDeg, thtmp
     integer::                   n, j
     logical::                   jf(50)
@@ -973,13 +921,8 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     real*4,dimension(20,1000):: outf
     real*4,dimension(500)::     dayNe
 
-    integer i,stat
-    integer nrows
-    parameter (nrows=500)
-    character(100):: msg
-    character(250):: datapath
 
-    datapath = params%indir
+
 ! Initialize position
     vbeg = 60.
     vend = 560.
@@ -1024,7 +967,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
 
 ! Calling IRI subroutine
     call IRI_SUB(jf,0,edensPOS(1,1),edensPOS(1,2),params%year,params%mmdd,hour, &
-               vbeg,vend,vstp,outf,oar,datapath)
+               vbeg,vend,vstp,outf,oar)
 
     do j=1,500
         edensARR(j,1) = outf(1,j)
@@ -1033,27 +976,25 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     dip(1,2) = oar(27)
 
 ! Lat/lon loop
+    hstp = 8.0 !change to 5.0 for reduced grid
     do n=2,500
         ! Calculates new position after one step
-!        call CALC_POS(edensPOS(n-1,1), edensPOS(n-1,2), 0., azim, 5., 0., &
-!                edensPOS(n,1), edensPOS(n,2))
-
-        call CALC_POS(edensPOS(1,1), edensPOS(1,2), 0., azim, (5.*(n-1)), 0., &
+        call CALC_POS(edensPOS(n-1,1), edensPOS(n-1,2), 0., azim, hstp, 0., &
                 edensPOS(n,1), edensPOS(n,2))
-
         edensTHT(n) = acos( cos(edensPOS(1,1)*PI/180.)*cos(edensPOS(n,1)*PI/180.)* &
                             cos((edensPOS(n,2) - edensPOS(1,2))*PI/180.) &
                     + sin(edensPOS(1,1)*PI/180.)*sin(edensPOS(n,1)*PI/180.))
         ! Calculates electron density and magnetic dip and dec at current position and time
         call IRI_SUB(jf,0,edensPOS(n,1),edensPOS(n,2),params%year,params%mmdd,hour, &
-                   vbeg,vend,vstp,outf,oar,datapath)
+                   vbeg,vend,vstp,outf,oar)
         ! Altitude loop (pass output of IRI_SUB to the proper matrix)
         do j=1,500
-            edensARR(j,n) = outf(1,j) 
+            edensARR(j,n) = outf(1,j)
         enddo
         dip(n,1) = oar(25)
         dip(n,2) = oar(27)
     ENDDO
+
 END SUBROUTINE IRI_ARR
 
 
@@ -1073,7 +1014,7 @@ SUBROUTINE IRI_INTERP(tht, alti, edensTHT, edensARR, edens)
     real*4::    neazu, neazd
     real*4::    dtht, tdiff
 
-    if(alti.lt.60.or.alti.gt.560.or.isnan(alti).or.isnan(tht))then
+    if(alti.lt.60.or.alti.gt.560)then
         edens = 0.
       return
     endif
@@ -1090,10 +1031,9 @@ SUBROUTINE IRI_INTERP(tht, alti, edensTHT, edensARR, edens)
         endif
     enddo
     if (tht.gt.edensTHT(500)) then
-        thtind = 499
+        thtind = 500
     endif
 
-!    print*, tht,alti,thtind, vind
 
     ! Bilinear interpolation
     neazu = (edensTHT(thtind+1) - tht)/(edensTHT(thtind+1) - edensTHT(thtind))*edensARR(vind+1,thtind) + &
