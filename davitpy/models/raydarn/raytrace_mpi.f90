@@ -913,7 +913,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     real*4,dimension(500,2),intent(out)::       edensPOS, dip
     real*4,dimension(500),intent(out)::         edensTHT
 
-    real*4::                    old_hour, vbeg, vend, vstp
+    real*4::                    old_hour, vbeg, vend, vstp, hstp
     real*4::                    lonDeg, latDeg, thtmp
     integer::                   n, j
     logical::                   jf(50)
@@ -976,9 +976,10 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     dip(1,2) = oar(27)
 
 ! Lat/lon loop
+    hstp = 8.0 !change to 5.0 for reduced grid
     do n=2,500
         ! Calculates new position after one step
-        call CALC_POS(edensPOS(n-1,1), edensPOS(n-1,2), 0., azim, 5., 0., &
+        call CALC_POS(edensPOS(n-1,1), edensPOS(n-1,2), 0., azim, hstp, 0., &
                 edensPOS(n,1), edensPOS(n,2))
         edensTHT(n) = acos( cos(edensPOS(1,1)*PI/180.)*cos(edensPOS(n,1)*PI/180.)* &
                             cos((edensPOS(n,2) - edensPOS(1,2))*PI/180.) &
