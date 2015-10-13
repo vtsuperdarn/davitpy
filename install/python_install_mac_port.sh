@@ -17,6 +17,7 @@ pip install --upgrade scipy
 pip install --upgrade h5py
 pip install --upgrade pyzmq tornado pygments
 pip install --upgrade ipython
+pip install --upgrade jupyter
 python -c 'from IPython.external import mathjax; mathjax.install_mathjax()'
 pip install --upgrade PIL
 pip install --upgrade pymongo

@@ -59,6 +59,7 @@ pip install --upgrade netcdf4
 pip install --upgrade pyparsing
 #apt-get install -y ipython-notebook
 pip install --upgrade ipython
+pip install --upgrade jupyter
 pip install --upgrade matplotlib
 #pip install --upgrade basemap
 
