@@ -488,7 +488,7 @@ class Edens(object):
 
         # Plot title with date ut time and local time
         if title:
-            stitle = _getTitle(time, beam, self.header, None)
+            stitle = _getTitle(time, beam, self.header, self.name)
             ax.set_title( stitle )
 
         # Add a colorbar
@@ -532,6 +532,10 @@ class Scatter(object):
         if self.readISFrom:
             self.isc = {}
             self.readIS(site=site, debug=debug)
+
+        self.name = ''
+        if radar:
+            self.name = radar.code[0].upper()
 
 
     def readGS(self, site=None, debug=False):
@@ -759,7 +763,7 @@ class Scatter(object):
 
             # Plot title with date ut time and local time
             if title:
-                stitle = _getTitle(time, beam, self.header, None)
+                stitle = _getTitle(time, beam, self.header, self.name)
                 ax.set_title( stitle )
 
             # If weighted, plot ionospheric scatter with colormap
