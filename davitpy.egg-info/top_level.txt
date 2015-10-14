@@ -1,0 +1,8 @@
+aacgm
+davitpy
+dmapio
+hwm07
+igrf
+iri
+msisFort
+tsygFort

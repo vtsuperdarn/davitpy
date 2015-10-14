@@ -118,8 +118,8 @@ class radDataPtr():
     assert(cp == None or isinstance(cp,int)), \
       'error, cp must be an int or None'
     assert(fileType == 'rawacf' or fileType == 'fitacf' or \
-      fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
-      'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
+      fileType == 'fitex' or fileType=='fit' or fileType == 'lmfit' or fileType == 'iqdat'), \
+      'error, fileType must be one of: rawacf,fitacf,fitex,fit,lmfit,iqdat'
     assert(fileName == None or isinstance(fileName,str)), \
       'error, fileName must be None or a string'
     assert(isinstance(filtered,bool)), \
@@ -135,9 +135,10 @@ class radDataPtr():
       self.eTime = self.sTime+dt.timedelta(days=1)
 
     filelist = []
-    if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
-    elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
-    elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
+    if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit','fit']
+    elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit','fit']
+    elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf','fit']
+    elif(fileType=='fit'):arr=['fit','fitacf','fitex','lmfit']
     else: arr = [fileType]
 
     #a temporary directory to store a temporary file
@@ -151,7 +152,6 @@ class radDataPtr():
       os.makedirs(d)
 
     cached = False
-
     #FIRST, check if a specific filename was given
     if fileName != None:
         try:
@@ -170,6 +170,15 @@ class radDataPtr():
             else:
                 os.system('cp '+fileName+' '+outname)
                 print 'cp '+fileName+' '+outname
+            
+            if fileType=='fit':
+            
+                outname_new="_".join((outname,'fitacf'))
+                print "Converting fit to fitacf"
+                os.system('fittofitacf '+outname+' > '+outname_new)
+                outname=outname_new
+            
+            
             filelist.append(outname)
             self.dType = 'dmap'
 
@@ -231,9 +240,13 @@ class radDataPtr():
                 if local_dict is None:
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
 
+                if ftype=='fit':
+                    local_fnamefmt=['{date}{hour}.*{ftype}']
+
                 if local_fnamefmt is None:
-                    try:
+                    try:        
                         local_fnamefmt = davitpy.rcParams['DAVIT_LOCAL_FNAMEFMT'].split(',')
+                    
                     except:
                         local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
@@ -259,7 +272,18 @@ class radDataPtr():
                 #fetch the local files
                 filelist = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                 local_fnamefmt, time_inc=local_timeinc, verbose=verbose)
+                
+                # A new for loop for converting fit files to fitacf files
+                
+                if ftype=='fit':
+                    filelist_new=[]
+                    for f in filelist:
+                        new_name=string.replace(f,'fit','fitacf')
+                        os.system('fittofitacf '+f+' >'+new_name)
+                        filelist_new.append(new_name)
 
+                    filelist=filelist_new[:]
+                    
                 if(len(filelist) > 0):
                     print 'found',ftype,'data in local files'
                     self.fType,self.dType = ftype,'dmap'
@@ -310,6 +334,8 @@ class radDataPtr():
                         print 'Config entry DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
+                if ftype=='fit':
+                        local_fnamefmt=['{date}{hour}.*{ftype}'] 
                 if remote_fnamefmt is None:
                     try:
                         remote_fnamefmt = davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT'].split(',')
@@ -343,6 +369,16 @@ class radDataPtr():
                 filelist = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, time_inc=remote_timeinc, verbose=verbose)
+                
+                if ftype=='fit':
+                    filelist_new=[]
+                    for f in filelist:
+                        new_name=string.replace(f,'fit','fitacf')
+                        os.system('fittofitacf '+f+' >'+new_name)
+                        filelist_new.append(new_name)
+
+                    filelist=filelist_new[:]
+                
 
                 if len(filelist) > 0 :
                     print 'found',ftype,'data on sftp server'
@@ -365,6 +401,7 @@ class radDataPtr():
             if (self.channel is None):
                 tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
                   self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
+                  
                   self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,fileType)
             else:
                 tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % (tmpDir, \
@@ -405,6 +442,10 @@ class radDataPtr():
         if(self.dType == None): self.dType = 'dmap'
     else:
         print '\nSorry, we could not find any data for you :('
+
+    if fileType=='fit':
+        fileType='fitacf'  #adding a change in fileType
+        self.fType='fitacf'
 
 
 
