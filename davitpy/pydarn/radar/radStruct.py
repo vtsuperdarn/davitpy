@@ -10,15 +10,17 @@
 Radar structures
 
 **Classes**:
-    * :class:`pydarn.radar.radStruct.network`: radar.dat and hdw.dat information from all the radars
+    * :class:`pydarn.radar.radStruct.network`: radar.dat and hdw.dat information
+                                               from all the radars
     * :class:`pydarn.radar.radStruct.radar`: radar.dat and hdw.dat information
     * :class:`pydarn.radar.radStruct.site`: hdw.dat information
 """
 
 # *************************************************************
 class network(object):
-    """This class stores information from all radars according to their hdw.dat and radar.dat
-    This information is read from the radar.sqlite files provided with the pydarn module.
+    """ This class stores information from all radars according to their
+    hdw.dat and radar.dat files.  This information is read from the radar.sqlite
+    files provided with the pydarn module.
     
     **Members**: 
         * **nradar** (int): number of radars in class
@@ -34,13 +36,15 @@ class network(object):
 
             obj = pydarn.radar.network()
 
-    .. note:: To add your own radar information to this class you can use the :func:`radInfoIO.radarRead` and the :func:`radInfoIO.hdwRead`. Then, manually append the output of these functions to this object.
+    .. note:: To add your own radar information to this class you can use the
+    :func:`radInfoIO.radarRead` and the :func:`radInfoIO.hdwRead`. Then,
+    manually append the output of these functions to this object.
 
     written by Sebastien, 2012-08
     """
 
     def __init__(self):
-        """Default class constructor
+        """ Default class constructor
         
         **Belongs to**: :class:`network`
         
@@ -61,7 +65,7 @@ class network(object):
           rad_path=davitpy.rcParams['DAVIT_TMPDIR']
         except:
           try:  rad_path=os.environ['HOME']
-          except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+          except: rad_path = os.path.dirname(os.path.abspath(__file__))
         dbname = os.path.join(rad_path, '.radars.sqlite')
 
         if not os.path.isfile(dbname):
@@ -78,7 +82,7 @@ class network(object):
         for row in rows:
             self.radars.append(radar())
             self.radars[-1].fillFromSqlite(dbname, row[0])
-            
+
     def __len__(self):
         """Object length (number of radars)
         
@@ -115,23 +119,21 @@ class network(object):
         """
         outstring = "Network information object: \
                 \n\tTotal radars: {:d}".format(self.nradar)
-        for iRad in range( self.nradar ):
-            if self.radars[iRad].status == 1:
+        for irad in range( self.nradar ):
+            if self.radars[irad].status == 1:
                 status = 'active'
-            elif self.radars[iRad].status == -1:
+            elif self.radars[irad].status == -1:
                 status = 'offline'
-            elif self.radars[iRad].status == 0:
+            elif self.radars[irad].status == 0:
                 status = 'planned'
             else:
-                status = '{}'.format(self.radars[iRad].status)
-            hemi = 'South' if self.radars[iRad].sites[0].geolat < 0 else 'North'
-            outstring += '\n\t\t({}) - [{}][{}] {} ({})'.format(hemi, 
-                                                                self.radars[iRad].id, 
-                                                                self.radars[iRad].code[0], 
-                                                                self.radars[iRad].name, 
-                                                                status)
+                status = '{}'.format(self.radars[irad].status)
+            hemi = 'South' if self.radars[irad].sites[0].geolat < 0 else 'North'
+            outstring += '\n\t\t({}) - [{}][{}] {} ({})'.format(hemi, \
+                            self.radars[irad].id, self.radars[irad].code[0],
+                            self.radars[irad].name, status)
         return outstring
-        
+
     def getRadarById(self, id):
         """Get a specific radar from its ID
         
@@ -151,7 +153,7 @@ class network(object):
         """
         radar = self.getRadarBy(id, by='id')
         return radar
-        
+
     def getRadarByName(self, name):
         """Get a specific radar from its name
         
@@ -171,7 +173,7 @@ class network(object):
         """
         radar = self.getRadarBy(name, by='name')
         return radar
-        
+
     def getRadarByCode(self, code):
         """Get a specific radar from its 3-letter code
         
@@ -191,7 +193,7 @@ class network(object):
         """
         radar = self.getRadarBy(code, by='code')
         return radar
-        
+
     def getRadarBy(self, radN, by):
         """Get a specific radar from its name/code/id
         This method is the underlying function behing getRadarByCode, 
@@ -208,22 +210,22 @@ class network(object):
         written by Sebastien, 2012-08
         """
         found = False
-        for iRad in xrange( self.nradar ):
+        for irad in xrange(self.nradar):
             if by.lower() == 'code':
-                for ic in xrange(self.radars[iRad].cnum):
-                    if self.radars[iRad].code[ic].lower() == radN.lower():
+                for ic in xrange(self.radars[irad].cnum):
+                    if self.radars[irad].code[ic].lower() == radN.lower():
                         found = True
-                        return self.radars[iRad]
+                        return self.radars[irad]
                         break
             elif by.lower() == 'name':
-                if self.radars[iRad].name.lower() == radN.lower():
+                if self.radars[irad].name.lower() == radN.lower():
                     found = True
-                    return self.radars[iRad]
+                    return self.radars[irad]
                     break
             elif by.lower() == 'id':
-                if self.radars[iRad].id == radN:
+                if self.radars[irad].id == radN:
                     found = True
-                    return self.radars[iRad]
+                    return self.radars[irad]
                     break
             else:
                 print 'getRadarBy: invalid method by {}'.format(by)
@@ -231,7 +233,7 @@ class network(object):
         if not found:
             print 'getRadarBy: could not find radar {}: {}'.format(by, radN)
             return found
-        
+
     def getRadarsByPosition(self, lat, lon, alt, distMax=4000., datetime=None):
         """Get a list of radars able to see a given point on Earth
         
@@ -246,104 +248,110 @@ class network(object):
         **Returns**:
             * A dictionnary with keys:
                 * 'radars': a list of radar objects (:class:`radar`)
-                * 'dist': a list of distance from radar to given point (1 per radar)
+                * 'dist': a list of distance from radar to given point
+                          (1 perradar)
                 * 'beam': a list of beams (1 per radar) seeing the given point
         **Example**:
             ::
 
                 radars = obj.getRadarsByPosition(67., 134., 300.)
-                    
+
         written by Sebastien, 2012-08
         """
         from datetime import datetime as dt
         from davitpy.utils import geoPack as geo
-        from numpy import sin, cos, arccos, dot, cross, sign
-        from math import radians, degrees
-        
+        import numpy as np
+
         if not datetime: datetime = dt.utcnow()
 
         found = False
-        out = {'radars': [], 
-                'dist': [], 
-                'beam': []}
-        for iRad in xrange( self.nradar ):
-            site = self.radars[iRad].getSiteByDate(datetime)
+        out = {'radars': [], 'dist': [], 'beam': []}
+
+        for irad in xrange(self.nradar):
+            site = self.radars[irad].getSiteByDate(datetime)
             # Skip if radar inactive at date
-            if (not site) and (self.radars[iRad].status != 1): continue
-            if not (self.radars[iRad].stTime <= datetime <= self.radars[iRad].edTime): continue
+            if (not site) and (self.radars[irad].status != 1): continue
+            if not (self.radars[irad].stTime <= datetime <=
+                    self.radars[irad].edTime): continue
             # Skip if radar in other hemisphere
             if site.geolat*lat < 0.: continue
-            distPnt = geo.calcDistPnt(site.geolat, site.geolon, site.alt, 
-                            distLat=lat, distLon=lon, distAlt=300.)
+            dist_pnt = geo.calcDistPnt(site.geolat, site.geolon, site.alt, 
+                                       distLat=lat, distLon=lon, distAlt=300.)
             # Skip if radar too far
-            if distPnt['dist'] > distMax: continue
+            if dist_pnt['dist'] > distMax: continue
             # minAz = (site.boresite % 360.)-abs(site.bmsep)*site.maxbeam/2
             # maxAz = (site.boresite % 360.)+abs(site.bmsep)*site.maxbeam/2
-            extFov = abs(site.bmsep)*site.maxbeam/2
-            ptBo = [cos(radians(site.boresite)), sin(radians(site.boresite))]
-            ptAz = [cos(radians(distPnt['az'])), sin(radians(distPnt['az']))]
-            deltAz = degrees( arccos( dot(ptBo, ptAz) ) )
+            ext_fov = abs(site.bmsep)*site.maxbeam/2
+            pt_bo = [np.cos(np.radians(site.boresite)),
+                     np.sin(np.radians(site.boresite))]
+            pt_az = [np.cos(np.radians(dist_pnt['az'])),
+                     np.sin(np.radians(dist_pnt['az']))]
+            delt_az = np.degrees(np.arccos(np.dot(pt_bo, pt_az)))
             # Skip if out of azimuth range
-            if not abs(deltAz) <= extFov: continue
-            if sign(cross(ptBo, ptAz)) >= 0:
-                beam = int( site.maxbeam/2 + round( deltAz/site.bmsep ) - 1 )
+            if not abs(delt_az) <= ext_fov: continue
+            if np.sign(np.cross(pt_bo, pt_az)) >= 0:
+                beam = int(site.maxbeam/2 + round(delt_az/site.bmsep) - 1)
             else:
-                beam = int( site.maxbeam/2 - round( deltAz/site.bmsep ) )
+                beam = int(site.maxbeam/2 - round(delt_az/site.bmsep))
             # Update output
             found = True
-            out['radars'].append(self.radars[iRad])
-            out['dist'].append(distPnt['dist'])
+            out['radars'].append(self.radars[irad])
+            out['dist'].append(dist_pnt['dist'])
             out['beam'].append(beam)
 
         if found: return out
         else: return found
-        
+
     def getAllCodes(self, datetime=None, hemi=None):
         """Get a list of all active radar codes
-        
+
         **Belongs to**: :class:`network`
-        
+
         **Args**: 
             * **[datetime]**: python datetime object (defaults to today)
             * **[hemi]**: 'north' or 'south' defaults to both
         **Returns**:
             * **codes** (list): A list of 3-letter codes
-                    
+
         written by Sebastien, 2012-08
         """
         from datetime import datetime as dt
-        
-        if not datetime: datetime = dt.utcnow()
-        
-        codes = []
-        for iRad in xrange( self.nradar ):
-            tcod = self.radars[iRad].getSiteByDate(datetime)
-            if (tcod) and (self.radars[iRad].status == 1) \
-            and (self.radars[iRad].stTime <= datetime <= self.radars[iRad].edTime):
-                if (hemi == None) or \
-                (hemi.lower() == 'south' and tcod.geolat < 0) or \
-                (hemi.lower() == 'north' and tcod.geolat >= 0): 
-                    codes.append(self.radars[iRad].code[0])
-        
-        return codes
 
+        if not datetime: datetime = dt.utcnow()
+
+        codes = []
+        for irad in xrange(self.nradar):
+            tcod = self.radars[irad].getSiteByDate(datetime)
+            if((tcod) and (self.radars[irad].status == 1) and
+               (self.radars[irad].stTime <= datetime <=
+                self.radars[irad].edTime)):
+                if((hemi == None) or
+                   (hemi.lower() == 'south' and tcod.geolat < 0) or
+                   (hemi.lower() == 'north' and tcod.geolat >= 0)):
+                    codes.append(self.radars[irad].code[0])
+
+        return codes
 
 
 # *************************************************************
 class radar(object):
-    """Reads radar.dat file and hdw.dat for a given radar and fills a radar structure
+    """ Reads radar.dat file and hdw.dat for a given radar and fills a radar
+    structure
     
     **Members**: 
         * **id** (int): radar ID
         * **status** (int): radar status (active, inactive or planned)
-        * **cnum** (int): number of code names (usually 2, a 3-letter and 1-letter)
-        * **code** (list): list of radar codes (usually 2, a 3-letter and 1-letter)
+        * **cnum** (int): number of code names (usually 2, a 3-letter and 
+                          1-letter)
+        * **code** (list): list of radar codes (usually 2, a 3-letter and
+                           1-letter)
         * **name** (str): radar name
         * **operator** (str): PI institution
         * **hdwfname** (str): hdw.dat file name
         * **stTime** (datetime.datetime): date of first lights
         * **edTime** (datetime.datetime): last day of operations
-        * **snum** (int): number of site objects (i.e. number of updates to the hdw.dat)
+        * **snum** (int): number of site objects (i.e. number of updates to the
+                          hdw.dat)
         * **sites** (list): list of :class:`site` objects
     **Methods**:
         * :func:`radar.fillFromSqlite`
@@ -355,13 +363,14 @@ class radar(object):
 
     written by Sebastien, 2012-08
     """
-    #__slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator', 'hdwfname', 'stTime', 'edTime', 'snum', 'site')
+    # __slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator',
+    #              'hdwfname', 'stTime', 'edTime', 'snum', 'site')
     def __init__(self, code=None, radId=None):
         """Default class constructor
         If no argument is passed, the object is initialized to 0
-        
+
         **Belongs to**: :class:`radar`
-        
+
         **Args**: 
             * [**code**] (str): 3-letter radar code
             * [**radId**] (int): radar ID
@@ -369,7 +378,7 @@ class radar(object):
             * **radar** (:class:`radar`)
 
         .. note:: you should provide either **code** OR **radId**, not both
-                    
+
         written by Sebastien, 2012-08
         """
         import sqlite3 as lite
@@ -394,8 +403,8 @@ class radar(object):
             try: 
               rad_path=davitpy.rcParams['DAVIT_TMPDIR']
             except:
-              try:  rad_path=os.environ['HOME']
-              except: rad_path = os.path.dirname( os.path.abspath( __file__ ) )
+              try:  rad_path = os.environ['HOME']
+              except: rad_path = os.path.dirname(os.path.abspath(__file__))
             dbname = os.path.join(rad_path, '.radars.sqlite')
 
             if not os.path.isfile(dbname):
@@ -416,15 +425,15 @@ class radar(object):
 
     def fillFromSqlite(self, dbname, radId):
         """fill radar structure from sqlite DB
-        
+
         **Belongs to**: :class:`radar`
-        
+
         **Args**: 
             * **dbname** (str): sqlite database path/name
             * **radID** (int): radar ID
         **Returns**:
             * **None**
-                    
+
         written by Sebastien, 2013-02
         """
         from datetime import datetime
@@ -439,7 +448,7 @@ class radar(object):
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
             cur.execute('SELECT * FROM rad WHERE id=?', (radId,))
-            
+
             row = cur.fetchone()
             if not row:
                 print 'Radar not found in DB: {}'.format(radId)
@@ -459,17 +468,17 @@ class radar(object):
                 self.sites[ist].fillFromSqlite(dbname, radId, ind=ist)
                 self.sites.append(site())
             del self.sites[-1]
-            
+
     def __len__(self):
         """ Object length (number of site updates)
         """
         return self.snum
-    
+
     def __str__(self):
         """Object string representation
-        
+
         **Belongs to**: :class:`radar`
-        
+
         **Args**: 
             * **None**
         **Returns**:
@@ -478,7 +487,7 @@ class radar(object):
             ::
 
                 print(obj)
-                    
+
         written by Sebastien, 2012-08
         """
         outstring = 'id: {0} \
@@ -491,19 +500,16 @@ class radar(object):
                     \nstTime: {7} \
                     \nedTime: {8} \
                     \nsnum: {9} \
-                    \nsites: {10} elements'.format(self.id, \
-                                        self.status, \
-                                        self.cnum, \
-                                        [c for c in self.code], \
-                                        self.name, \
-                                        self.operator, \
-                                        self.hdwfname, \
-                                        self.stTime.date(), \
-                                        self.edTime.date(), \
-                                        self.snum, \
-                                        len(self.sites))
+                    \nsites: {10} elements'.format(self.id, self.status,
+                                                   self.cnum,
+                                                   [c for c in self.code],
+                                                   self.name, self.operator,
+                                                   self.hdwfname,
+                                                   self.stTime.date(),
+                                                   self.edTime.date(),
+                                                   self.snum, len(self.sites))
         return outstring
-        
+
     def getSiteByDate(self, datetime):
         """Get a specific radar site at a given date
         
@@ -522,18 +528,18 @@ class radar(object):
         written by Sebastien, 2012-08
         """
         found = False
-        for iSit in range( self.snum ):
-            if self.sites[iSit].tval == -1:
+        for isit in range(self.snum):
+            if self.sites[isit].tval == -1:
                 found = True
-                return self.sites[iSit]
+                return self.sites[isit]
                 break
-            elif self.sites[iSit].tval >= datetime:
+            elif self.sites[isit].tval >= datetime:
                 found = True
-                return self.sites[iSit]
+                return self.sites[isit]
         if not found:
-            print 'getSiteByDate: could not get SITE for date {}'.format(datetime)
+            estr = 'getSiteByDate: could not get SITE for date '
+            print '{:s}{}'.format(estr, datetime)
             return found
-        
 
 
 # *************************************************************
@@ -541,7 +547,8 @@ class site(object):
     """Reads hdw.dat for a given radar and fills a SITE structure
     
     **Members**: 
-        * **tval** (datetime.datetime): last date and time operating with these parameters
+        * **tval** (datetime.datetime): last date and time operating with these
+                                        parameters
         * **geolat** (float): main array latitude [deg]
         * **geolon** (float): main array longitude [deg]
         * **alt** (float): main array altitude [km]
@@ -549,7 +556,8 @@ class site(object):
         * **bmsep** (float): beam separation [deg]
         * **vdir** (int): velocity sign
         * **atten** (float): Analog Rx attenuator step [dB]
-        * **tdiff** (float): Propagation time from interferometer array antenna to phasing matrix [us]
+        * **tdiff** (float): Propagation time from interferometer array antenna
+                             to phasing matrix [us]
         * **phidiff** (float): phase sign for interferometric calculations
         * **interfer** (list): Interferometer offset [x, y, z]
         * **recrise** (float): Analog Rx rise time [us]
@@ -571,13 +579,14 @@ class site(object):
 
     def __init__(self, radId=None, code=None, dt=None):
         """Default class constructor
-        
+
         **Belongs to**: :class:`site`
-        
+
         **Args**: 
             * [**radId**] (int): radar ID
             * [**code**] (str): 3-letter radar code
-            * [**dt**] (datetime.datetime): date and time of radar configurationation
+            * [**dt**] (datetime.datetime): date and time of radar
+                                            configurationation
         **Returns**:
             * **site** (:class:`site`)
 
@@ -655,11 +664,14 @@ class site(object):
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
             cur = conn.cursor()
+            command = 'SELECT * FROM hdw WHERE id=? '
             if dt:
-                cur.execute('SELECT * FROM hdw WHERE id=? and tval>=? ORDER BY tval ASC', (radId, dt))
+                command = '{:s}and tval>=? ORDER BY tval ASC'.format(command)
+                cur.execute(command, (radId, dt))
                 row = cur.fetchone()
             else:
-                cur.execute('SELECT * FROM hdw WHERE id=? ORDER BY tval ASC', (radId,))
+                command = '{:s}ORDER BY tval ASC'.format(command)
+                cur.execute(command, (radId,))
                 row = cur.fetchall()[ind]
 
             self.id = row[0]
@@ -678,16 +690,16 @@ class site(object):
             self.maxgate = row[13]
             self.maxbeam = row[14]
             self.interfer = pickle.loads(row[15].encode('ascii'))
-            
+
     def __len__(self):
         """
-Object length
+        Object length
         """
         return 1
     
     def __str__(self):
         """
-Object string representation
+        Object string representation
         """
         outstring = 'tval: {0} \
                     \ngeolat: {1:5.2f} \
@@ -703,36 +715,35 @@ Object string representation
                     \nrecrise: {13:5.3f} \
                     \nmaxatten: {14} \
                     \nmaxgate: {15} \
-                    \nmaxbeam: {16}'.format(self.tval, \
-                                            self.geolat, \
-                                            self.geolon, \
-                                            self.alt, \
-                                            self.boresite, \
-                                            self.bmsep, \
-                                            self.vdir, \
-                                            self.atten, \
-                                            self.tdiff, \
-                                            self.phidiff, \
-                                            self.interfer[0], self.interfer[1], self.interfer[2], \
-                                            self.recrise, \
-                                            self.maxatten, \
-                                            self.maxgate, \
-                                            self.maxbeam)
+                    \nmaxbeam: {16}'.format(self.tval, self.geolat, self.geolon,
+                                            self.alt, self.boresite, self.bmsep,
+                                            self.vdir, self.atten, self.tdiff,
+                                            self.phidiff, self.interfer[0],
+                                            self.interfer[1], self.interfer[2],
+                                            self.recrise, self.maxatten,
+                                            self.maxgate, self.maxbeam)
         return outstring
 
-    def beamToAzim(self, beam):
-        '''Get azimuth of given beam
+    def beamToAzim(self, beam, fov_dir='front'):
+        ''' Get azimuth of given beam
 
         **Args**: 
             * **beam** (int): beam number
         **Returns**:
             * **azim** (float): beam azimuth
         '''
-        return self.boresite - ((self.maxbeam-1)/2. - beam)*self.bmsep
+        phi = ((self.maxbeam - 1)/2. - beam) * self.bmsep
+
+        if fov_dir is 'back':
+            phi = 180.0 - phi
+
+        return self.boresite - phi
 
 
     def azimToBeam(self, azim):
-        '''Get azimuth of given beam
+        ''' Get azimuth of given beam.  Return a negative beam number (offset by
+        one instead of zero) if the azimuth corresponds to the back lobe.
+        Return np.nan if the azimuth is not covered by any beam.
 
         **Args**: 
             * **azim** (float): beam azimuth [deg. East]
@@ -741,8 +752,24 @@ Object string representation
         '''
         import numpy as np
 
-        saz = np.sin( np.radians(azim - self.boresite) )
-        caz = np.cos( np.radians(azim - self.boresite) )
-        delta = np.degrees( np.arctan2(saz, caz) )
-        beam = np.round( delta/self.bmsep + (self.maxbeam-1)/2. )
-        return np.int_(beam)
+        # Assume the azimuth comes from the front lobe
+        phi = np.radians(azim - self.boresite)
+        delta = np.degrees(np.arctan2(np.sin(phi), np.cos(phi)))
+        beam = np.round(delta / self.bmsep + (self.maxbeam - 1) / 2.)
+
+        if beam < 0.0 or beam > self.maxbeam:
+            # This azimuth lies outside the front lobe
+            phi = np.radians(self.boresite - azim - 180.0)
+            delta = np.degrees(np.arctan2(np.sin(phi), np.cos(phi)))
+            beam = np.round(delta / self.bmsep + (self.maxbeam - 1) / 2.)
+
+            # Seperate back lobe azimuths from azimuths outside of either
+            # field-of-view
+            if beam >= 0 and beam < self.maxbeam:
+                beam = -np.int_(beam + 1)
+            else:
+                beam = np.nan
+        else:
+            beam = np.int_(beam)
+
+        return beam

@@ -45,20 +45,27 @@
 !================================================================================
 
 
-subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+subroutine hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w,defaultdatapath)
 
     implicit none
     integer(4),intent(in)   :: iyd
     real(4),intent(in)      :: sec,alt,glat,glon,stl,f107a,f107
     real(4),intent(in)      :: ap(2)
     real(4),intent(out)     :: w(2)
+    character(250),intent(in)  :: defaultdatapath
+    character(250)             :: datapath
+
 !f2py intent(in) iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 !f2py intent(out) w
 
     real(4)                 :: qw(2),dw(2)
-    print*, '#### Running HWM07 ####'
-    print*, 'Input: '
-    print*, iyd,sec,alt,glat,glon,stl,f107a,f107,ap
+
+    COMMON /DATPTH/datapath
+
+    datapath = defaultdatapath
+    !print*, '#### Running HWM07 ####'
+    !print*, 'Input: '
+    !print*, iyd,sec,alt,glat,glon,stl,f107a,f107,ap
 
     call hwmqt(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,qw)
     
@@ -128,7 +135,7 @@ module NEWmodel
     
     logical                 :: modelinit = .true.
     logical                 :: reset = .true.
-    character(128)          :: defaultdata = 'hwm071308e.dat'
+    character(64)           :: defaultdata = 'hwm071308e.dat'
     
 end module NEWmodel
 
@@ -570,14 +577,17 @@ subroutine loadmodel(datafile)
     use NEWmodel
     implicit none
 
-    character(128),intent(in)   :: datafile
-    
+    character(64),intent(in)   :: datafile
+    character(250)             :: datapath
     integer                     :: i,j
     integer                     :: ncomp
-    character(128)              :: defaultdatapath
-    character(512)              :: filen
+    character(250)              :: defaultdatapath
+    character(250)              :: filen
 
-    call get_environment_variable('DAVITPY', defaultdatapath)
+    COMMON /DATPTH/datapath
+
+    !call get_environment_variable('DAVITPY', defaultdatapath)
+    defaultdatapath=datapath
     defaultdatapath=trim(defaultdatapath) //'/davitpy/models/hwm/'
 
     if (allocated(vnode)) then
@@ -586,7 +596,6 @@ subroutine loadmodel(datafile)
     endif
 
     filen = trim(defaultdatapath) // trim(datafile)
-    print*, trim(filen)
 
     open(unit=23,file=trim(filen),form='unformatted')
     read(23) nbf,maxs,maxm,maxl,maxn,ncomp

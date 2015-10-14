@@ -19,20 +19,21 @@
 static PyObject *
 aacgm_wrap(PyObject *self, PyObject *args)
 {
-    
     double inlat, inlon, height, outLat, outLon, r; 
     int flg,year;
-    
-    if(!PyArg_ParseTuple(args, "dddii", &inlat,&inlon,&height,&year,&flg))
+    char *in_coeff_prefix[256];
+
+    if(!PyArg_ParseTuple(args, "dddiis", &inlat,&inlon,&height,&year,&flg,&in_coeff_prefix))
+    {
         return NULL;
+    }
     else
     {
         inlon = fmod(inlon, 360.);
-        /*fprintf(stderr,"%d\n",year);*/
-        AACGMInit(year);
-        
+
+        AACGMInit(year,*in_coeff_prefix);
         AACGMConvert(inlat, inlon, height, &outLat, &outLon, &r, flg);
-        /*fprintf(stderr,"in\n");*/
+        
         return Py_BuildValue("ddd", outLat, outLon, r);
     }
     
@@ -47,10 +48,13 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
     PyObject *heightList;
     double inlat, inlon, height, outLat, outLon, r; 
     int year, flg;
+    char *in_coeff_prefix[256];
     Py_ssize_t nElem, i;
     
-    if(!PyArg_ParseTuple(args, "OOOii", &latList,&lonList,&heightList,&year,&flg))
+    if(!PyArg_ParseTuple(args, "OOOiis", &latList,&lonList,&heightList,&year,&flg,&in_coeff_prefix))
+    {
         return NULL;
+    }
     else
     {
         /* get the number of lines passed to us */
@@ -61,7 +65,7 @@ aacgm_arr_wrap(PyObject *self, PyObject *args)
         PyObject *latOut = PyList_New(0);
         PyObject *lonOut = PyList_New(0);
         PyObject *heightOut = PyList_New(0);
-        AACGMInit(year);
+        AACGMInit(year,*in_coeff_prefix);
         for (i=0; i<nElem; i++) {
             inlat = PyFloat_AsDouble( PyList_GetItem(latList, i) );
             inlon = PyFloat_AsDouble( PyList_GetItem(lonList, i) );
@@ -213,8 +217,8 @@ rposazm_wrap(PyObject *self, PyObject *args)
 */
 static PyMethodDef aacgmMethods[] = 
 {
-    {"aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, r = aacgmConv(inLat, inLon, height, year, flg)\nheight in km; flg=0: geo to aacgm; flg=1: aacgm to geo"},
-    {"aacgmConvArr",  aacgm_arr_wrap, METH_VARARGS, "convert to aacgm coords when inputs are lists\nformat: lat, lon, r = aacgmConvArr(inLatList, inLonList, heightList, year, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
+    {"direct_aacgmConv",  aacgm_wrap, METH_VARARGS, "convert to aacgm coords\nformat: lat, lon, r = aacgmConv(inLat, inLon, height, year, flg)\nheight in km; flg=0: geo to aacgm; flg=1: aacgm to geo"},
+    {"direct_aacgmConvArr",  aacgm_arr_wrap, METH_VARARGS, "convert to aacgm coords when inputs are lists\nformat: lat, lon, r = aacgmConvArr(inLatList, inLonList, heightList, year, flg)\nflg=0: geo to aacgm, flg=1: aacgm to geo"},
     {"mltFromEpoch",  MLTConvertEpoch_wrap, METH_VARARGS, "calculate mlt from epoch time and mag lon\nformat:mlt=mltFromEpoch(epoch,mLon)"},
     {"mltFromYmdhms",  MLTConvertYMDHMS_wrap, METH_VARARGS, "calculate mlt from y,mn,d,h,m,s and mag lon\nformat:mlt=mltFromYmdhms(yr,mo,dy,hr,mt,sc,mLon)"},
     {"mltFromYrsec", MLTConvertYrsec_wrap , METH_VARARGS, "calculate mlt from yr seconds and mag lon\nformat:mlt=mltFromEpoch(year,yrsec,mLon)"},

@@ -127,7 +127,7 @@ class gmeData:
 			myStr += key+' = '+str(var)+'\n'
 		return myStr
 	
-	def __init__():
+	def __init__(self):
 		self.time = None
 		self.dataSet = None
 		self.info = None

@@ -43,6 +43,7 @@ Contains: uncompress_file    - uncompresses a file using various methods
 """
 
 import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 def uncompress_file(filename, outname=None, verbose=True):
     """
@@ -118,7 +119,7 @@ def uncompress_file(filename, outname=None, verbose=True):
 
 
 def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
-                      time_inc=dt.timedelta(hours=1), verbose=True):
+                      verbose=True,back_time=relativedelta(years=1)):
 
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
@@ -137,11 +138,14 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                                      fnamefmt = ['{date}.{hour}......{radar}.{channel}.{ftype}', \
                                                 '{date}.C0.{radar}.{ftype}'] 
                                      or fnamefmt = '{date}.{hour}......{radar}.{ftype}'
-        * **time_inc** (timedelta): Time incriment between files (default=1 hour)
-        * **verbose**        (bool): Print warnings or not? (default=True)
+        * **[verbose]**        (bool): Print warnings or not? (default=True)
+        * **[back_time]** (dateutil.relativedelta.relativedelta): Time difference from stime
+                            that fetchUtils should search backwards until before giving up.
 
     **Output**: file_stime (datetime): actual starting time for located files
             filelist       (list): list of uncompressed files (including path)
+
+    **Note**: Weird edge case behaviour occurs when attempting to fetch all channel data (e.g. localdict['channel'] = '.').
 
     **Example**:
       
@@ -158,17 +162,18 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         filelist = fetchUtils.fetch_local_files(dt.datetime(2002,6,20), \
             dt.datetime(2002,6,21), '/sd-data/{year}/{month}/',{'ftype':'fitacf'}, \
             "/tmp/sd/",'{date}.{hour}......{radar}.{channel}.{ftype}', \
-            time_inc=timedelta(hours=2),verbose=False)
+            verbose=False)
 
     """
 
-    
+    #from dateutil.relativedelta import relativedelta
     import os
     import glob
     import re
 
     rn = "fetch_local_files"
     filelist = []
+    temp_filelist = []
 
     # Test input
     assert(isinstance(stime, dt.datetime)), \
@@ -182,8 +187,6 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     assert(os.path.isdir(outdir)), (rn, "ERROR: outdir is not a directory")
     assert(isinstance(fnamefmt, (str,list))), \
         (rn, 'ERROR: fnamefmt must be str or list')
-    assert(isinstance(time_inc, dt.timedelta)), \
-        (rn, 'ERROR: cycle_inc must be a timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
 
@@ -194,15 +197,14 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         fnamefmt = [fnamefmt]
       
     #--------------------------------------------------------------------------
-    # Iterate through all of the hours in the request (round the starting time
-    # down to the nearest even hour)
-    ctime = stime.replace(minute=0, second=0, microsecond=0)
-    if(ctime.hour % 2 == 1): ctime = ctime.replace(hour=ctime.hour-1)
-
+    # Initialize the start time for the loop
+    ctime = stime.replace(second=0, microsecond=0)
+    time_reverse = 1
+    mintime = ctime - back_time
 
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","date"]
+    time_keys = ["year","month","day","hour","min","date"]
     keys_in_localdir = [x for x in time_keys if localdirfmt.find('{'+x+'}') > 0 ]
 
     checkstruct={}
@@ -216,6 +218,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         localdict["month"] = "{:02d}".format(ctime.month)
         localdict["day"] = "{:02d}".format(ctime.day)
         localdict["hour"] = ctime.strftime("%H")
+        localdict["min"] = ctime.strftime("%M")
         localdict["date"] = ctime.strftime("%Y%m%d")
         
         # check for a directory change
@@ -228,7 +231,10 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         # get the files in the directory if directory has changed
         if dir_change:
           local_dir = localdirfmt.format(**localdict)
-          files = os.listdir(local_dir)
+          try:
+              files = os.listdir(local_dir)
+          except:
+              files = []
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
@@ -242,6 +248,10 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                 #if we have a file match between a file and our regex
                 
                 if(regex.match(lf)):
+                    if lf in temp_filelist: 
+                        continue
+                    else:
+                        temp_filelist.append(lf)
 
                     # copy the file to outdir
                     outname = os.path.join(outdir,lf)
@@ -252,6 +262,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                     except:
                         if verbose: print rn, "WARNING: unable to perform [",command,"]"
 
+<<<<<<< HEAD
                     # attempt to unzip the compressed file
                     uncompressed = uncompress_file(outname, None, verbose)
                     if type(uncompressed) is str:
@@ -263,6 +274,45 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
         # Advance the cycle time by the specified increment
         ctime = ctime + time_inc
+=======
+        # Advance the cycle time by the "lowest" time increment 
+        # in the namefmt (either forward or reverse)
+
+        if ((time_reverse == 1) and (len(temp_filelist) > 0)) or \
+                (ctime < mintime):
+            time_reverse = 0
+            ctime = stime.replace(second=0, microsecond=0)
+
+        # Calculate if we are going forward or backward in time and set
+        # ctime accordingly
+        base_time_inc = 1 - 2*time_reverse        
+
+        if ("{min}" in namefmt):
+            ctime = ctime + relativedelta(minutes=base_time_inc)
+        elif ("{hour}" in namefmt):
+            ctime = ctime + relativedelta(hours=base_time_inc)
+        elif (("{date}" in namefmt) or ("{day}" in remotedirfmt)):
+            ctime = ctime + relativedelta(days=base_time_inc)
+        elif ("{month}" in namefmt):
+            ctime = ctime + relativedelta(months=base_time_inc)
+        elif ("{year}" in namefmt):    
+            ctime = ctime + relativedelta(years=base_time_inc)
+
+    # Make sure the found files are in order.  Otherwise the concatenation later
+    # will put records out of order
+    temp_filelist = sorted(temp_filelist)
+    # attempt to unzip the files
+    for lf in temp_filelist:
+        outname = os.path.join(outdir,lf)
+        uncompressed = uncompress_file(outname, None, verbose)
+
+        if (type(uncompressed) is str):
+        # save name of uncompressed file for output
+            filelist.append(uncompressed)
+        else:
+        # file wasn't compressed, use outname
+            filelist.append(outname)
+>>>>>>> upstream2/release-1.0
 
     # Return the list of uncompressed files
     
@@ -271,7 +321,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
 def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                        remotedict, outdir, fnamefmt, username=None, password=False,
-                       port=None, time_inc=dt.timedelta(hours=1),  verbose=True):
+                       port=None, verbose=True, check_cache=True,
+                       back_time=relativedelta(years=1)):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -299,12 +350,15 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                     (default=False)
       * **port**             (str): Optional input for http file access
                                     (default=None)
-      * **time_inc**  (datetime.timedelta): Time incriment between files (default=1 hour)
       * **verbose**         (bool): Print out warnings? (default=True)
+      * **[back_time]** (dateutil.relativedelta.relativedelta): Time difference from stime
+                            that fetchUtils should search backwards until before giving up.
 
     **Outputs**: 
       * **file_stime**  (datetime): actual starting time for located files
       * **filelist**        (list): list of uncompressed files (including path)
+
+    **Note**: Weird edge case behaviour occurs when attempting to fetch all channel data (e.g. remotedict['channel'] = '.').
 
     **Example**: 
              Fetches 3 remotely stored fitex files from the Virginia Tech
@@ -321,7 +375,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                  'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', \ 
                  {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/', \
                  '{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', \
-                 password='5d', time_inc=timedelta(hours=2),verbose=False)
+                 password='5d',verbose=False)
 
         print fitex
         ['/tmp/sd/20131130.2201.00.mcm.a.fitex',
@@ -330,6 +384,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
     """
 
+    from dateutil.relativedelta import relativedelta
     # getpass allows passwords to be entered without them appearing onscreen
     import getpass
     # paramiko is necessary to use sftp, pyCurl currently requires much fiddling
@@ -347,6 +402,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
 
     rn = "fetch_remote_files"
     filelist = []
+    temp_filelist = []
 
     #--------------------------------------------------------------------------
     # Test input
@@ -373,8 +429,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         (rn, 'ERROR: port must be a string')
     assert(isinstance(fnamefmt, (str,list))), \
         (rn, 'ERROR: fnamefmt must be str or list')
-    assert(isinstance(time_inc, dt.timedelta)), \
-        (rn, 'ERROR: time_inc must be timedelta object')
     assert(isinstance(verbose, bool)), (rn, 'ERROR: verbose must be Boolean')
 
     #--------------------------------------------------------------------------
@@ -437,18 +491,12 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     #--------------------------------------------------------------------------
     # Iterate through all of the hours in the request (round the starting time
     # down to the nearest even hour). ctime is the current iteration's time.
-    ctime = stime.replace(minute=0, second=0, microsecond=0)
-    if(ctime.hour % 2 == 1):
-        ctime = ctime.replace(hour=ctime.hour-1)
 
-    #--------------------------------------------------------------------------
-    # Initialize the list of remote filenames
-    remotefiles = []
 
     #--------------------------------------------------------------------------
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","date"]
+    time_keys = ["year","month","day","hour","min","date"]
     keys_in_remotedir = [x for x in time_keys if remotedirfmt.find('{'+x+'}') > 0 ]
 
     checkstruct={}
@@ -456,21 +504,33 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
       checkstruct[key]=''
 
     #--------------------------------------------------------------------------
-    # Cycle through the specified times
+    # Initialize the list of remote filenames
+    remotefiles = []
+
+    #--------------------------------------------------------------------------
+    # Initialize the start time for the loop
+    ctime = stime.replace(second=0, microsecond=0)
+    time_reverse = 1
+    mintime = ctime - back_time
+
+    # Cycle through the specified times, first look "backwards" in time to cover
+    # the edge case where file start time starts after ctime
     while ctime <= etime:
+
         #----------------------------------------------------------------------
         # Set the temporal parts of the possible remote directory structure
         remotedict["year"] = "{:04d}".format(ctime.year)
         remotedict["month"] = "{:02d}".format(ctime.month)
         remotedict["day"] = "{:02d}".format(ctime.day)
         remotedict["hour"] = ctime.strftime("%H")
+        remotedict["min"] = ctime.strftime("%M")
         remotedict["date"] = ctime.strftime("%Y%m%d")
 
         #----------------------------------------------------------------------
         # Build the name of the remote files (uses wildcards)
         path = remotedirfmt.format(**remotedict)
         remoteaccess['path'] = path
-
+ 
         # check for a directory change
         dir_change = 0
         for key in keys_in_remotedir:
@@ -480,6 +540,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     
         # get the files in the directory if directory has changed
         if dir_change:
+
+            # get the files in the directory
             # Get a list of all the files in the new remote directory
             if method is "sftp":
                 try:
@@ -493,28 +555,28 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 try:
                     # Establish a connection
                     response = urllib2.urlopen(req)
-
                     # Extract the available files.  Assumes that the filename
                     # will be the first reference in the line
-                    remotefiles = [f[f.find('<a href="')+9:
-                                 f[f.find('<a href="')+9:-1].find('">')
-                                 +f.find('<a href="')+9]
+                    remotefiles.append([f[f.find('<a href="') + 9:
+                                 f[f.find('<a href="') + 9:-1].find('">')
+                                 +f.find('<a href="') + 9]
                                for f in response.readlines()
-                               if f.find('<a href="') >= 0]
-
+                               if f.find('<a href="') >= 0])
+    
                         # Close the connection
                     response.close()
                 except:
                     if verbose:
                         print rn, "WARNING: unable to connect to [", url, "]"
 
-        #----------------------------------------------------------------------
-        # Search through the remote files for the ones we want and download them
-        # Ensure that the list of remote files include those that can possibly
-        # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
-        if len(remotefiles) > 0:
+    #----------------------------------------------------------------------
+    # Search through the remote files for the ones we want and download them
+    # Ensure that the list of remote files include those that can possibly
+    # be a radar file: YYYYMMDD.HHMM.XX.RRR.ext (len is 22 for 1 char ext)  
+        for namefmt in fnamefmt:
+            if len(remotefiles) > 0:
 
-            for namefmt in fnamefmt:
+
                 #fill in the date, time, and radar information using remotedict
                 name = namefmt.format(**remotedict)
                 
@@ -525,6 +587,11 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 for rf in remotefiles:
                     #if we have a file match between a file and our regex
                     if(regex.match(rf)):
+                        if rf in temp_filelist: 
+                            continue
+                        else:
+                            temp_filelist.append(str(rf))
+
                         tf = "{:s}{:s}".format(outdir, rf)
 
                         # Test to see if the temporary file already exists
@@ -540,7 +607,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                             # If a local file of some sort of size has been
                             # found, test to see if the size is identical to the
                             # remote file to prevent multiple downloads
-                            if tfsize >= 0:
+                            if ((tfsize >= 0) and (check_cache)):
                                 try:
                                     rfsize = int(sftp.stat(rflong).st_size)
 
@@ -554,7 +621,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                 except:
                                     tfsize = -1
 
-                            if tfsize < 0:
+                            if ((tfsize < 0) or (not check_cache)):
                                 # Use the open sftp connection to get the file
                                 try:
                                     sftp.get(rflong,tf)
@@ -575,7 +642,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                             # If a local file of some sort of size has been
                             # found, test to see if the size is identical to the
                             # remote file to prevent multiple downloads
-                            if tfsize >= 0:
+                            if ((tfsize >= 0) and (check_cache)):
                                 f = urllib2.urlopen(furl)
                                 if f.headers.has_key("Content-Length"):
                                     rfsize = int(f.headers["Content-Length"])
@@ -588,7 +655,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                 else:
                                     tfsize = -1
 
-                            if tfsize < 0:
+                            if ((tfsize < 0) or (not check_cache)):
                                 try:
                                     urllib.urlretrieve(furl, tf)
                                     if verbose:
@@ -602,18 +669,45 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                         estr = "{:s}can't retrieve".format(estr)
                                         print "{:s} {:s}".format(estr, furl)
 
-                        if type(tf) is str:
-                            # Unzip the compressed file in place
-                            outfile = uncompress_file(tf, verbose=verbose)
-                            if outfile is None:
-                                # Then this is probably an uncompressed file
-                                outfile = tf
+                            
 
-                            filelist.append(outfile)
+        # Advance the cycle time by the "lowest" time increment 
+        # in the namefmt (either forward or reverse)
+        if ((time_reverse == 1) and (len(temp_filelist) > 0)) or \
+                (ctime < mintime):
+            time_reverse = 0
+            ctime = stime.replace(second=0, microsecond=0)
 
-        #----------------------------------------------------------------------
-        # Move to the next time
-        ctime = ctime + time_inc
+        # Calculate if we are going forward or backward in time and set
+        #ctime accordingly
+        base_time_inc = 1 - 2*time_reverse        
+
+        if ("{min}" in namefmt):
+            ctime = ctime + relativedelta(minutes=base_time_inc)
+        elif ("{hour}" in namefmt):
+            ctime = ctime + relativedelta(hours=base_time_inc)
+        elif (("{date}" in namefmt) or ("{day}" in remotedirfmt)):
+            ctime = ctime + relativedelta(days=base_time_inc)
+        elif ("{month}" in namefmt):
+            ctime = ctime + relativedelta(months=base_time_inc)
+        elif ("{year}" in namefmt):    
+            ctime = ctime + relativedelta(years=base_time_inc)
+
+    # Make sure the found files are in order.  Otherwise the concatenation later
+    # will put records out of order
+    temp_filelist = sorted(temp_filelist)
+    # attempt to unzip the files
+    for rf in temp_filelist:
+        outname = os.path.join(outdir,rf)
+        uncompressed = uncompress_file(outname, None, verbose)
+
+        if type(uncompressed) is str:
+        # save name of uncompressed file for output
+            filelist.append(uncompressed)
+        else:
+        # file wasn't compressed, use outname
+            filelist.append(outname)
+
 
     #--------------------------------------------------------------------------
     # Return the actual file start time and the list of uncompressed files
@@ -672,7 +766,7 @@ if __name__=="__main__":
     print "*************************************************"
 
     print "Attempting to fetch a mapex file from the VT server..."
-    mapexFiles = fetch_remote_files(datetime(2012,11,24), datetime(2012,11,24,23,59),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/north/',{'ftype':'mapex'}, '/tmp/sd/','{date}.north.{ftype}', username='sd_dbread', password='5d', time_inc=timedelta(days=1), verbose=False)
+    mapexFiles = fetch_remote_files(datetime(2012,11,24), datetime(2012,11,24,23,59),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/north/',{'ftype':'mapex'}, '/tmp/sd/','{date}.north.{ftype}', username='sd_dbread', password='5d', verbose=False)
 
     print "Expected the file: ['/tmp/sd/20121124.north.mapex']"
     print "Received the file: " + str(mapexFiles)
@@ -682,7 +776,7 @@ if __name__=="__main__":
 
 
     print "Attempting to fetch map files from the usask server..."
-    mapFiles = fetch_remote_files(datetime(2001,11,24), datetime(2001,11,24,23,59),'sftp','chapman.usask.ca','mapfiles/{year}/{month}/',{'ftype':'map'}, '/tmp/sd/',['{date}.{ftype}','{date}s.{ftype}'], username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),verbose=False)
+    mapFiles = fetch_remote_files(datetime(2001,11,24), datetime(2001,11,24,23,59),'sftp','chapman.usask.ca','mapfiles/{year}/{month}/',{'ftype':'map'}, '/tmp/sd/',['{date}.{ftype}','{date}s.{ftype}'], username='davitpy', password='d4vitPY-usask',verbose=False)
 
     print "Expected the files: ['/tmp/sd/20011124.map', '/tmp/sd/20011124s.map']"
     print "Received the files: " + str(mapFiles)
@@ -692,7 +786,7 @@ if __name__=="__main__":
 
 
     print "Attempting to fetch a fitex file from the VT server..."
-    fitex = fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', time_inc=timedelta(hours=2),verbose=False)
+    fitex = fetch_remote_files(datetime(2013,11,30,22), datetime(2013,12,1,2),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'mcm','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', verbose=False)
 
     print "Expected the files: ['/tmp/sd/20131130.2201.00.mcm.a.fitex','/tmp/sd/20131201.0000.04.mcm.a.fitex','/tmp/sd/20131201.0201.00.mcm.a.fitex']"
     print "Received the files: " + str(fitex)
@@ -701,8 +795,18 @@ if __name__=="__main__":
     print "*************************************************"
 
 
+    print "Attempting to fetch a fitex file from the VT server..."
+    fitex = fetch_remote_files(datetime(2013,01,21,00), datetime(2013,01,21,05),'sftp','sd-data2.ece.vt.edu','data/{year}/{ftype}/{radar}/', {'ftype':'fitex','radar':'ade','channel':'a'}, '/tmp/sd/','{date}.{hour}......{radar}.{channel}.{ftype}', username='sd_dbread', password='5d', verbose=False)
+
+    print "Expected the files: ['/tmp/sd/20130121.0001.00.ade.a.fitex','/tmp/sd/20130121.0201.00.ade.a.fitex','/tmp/sd/20130121.0349.59.ade.a.fitex','/tmp/sd/20130121.0401.00.ade.a.fitex']"
+    print "Received the files: " + str(fitex)
+
+
+    print "*************************************************"
+
+
     print "Attempting to fetch fitacf files from the usask server..."
-    fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'sftp','chapman.usask.ca','fitcon/{year}/{month}/', {'ftype':'fitacf','radar':'sas'}, '/tmp/sd/', '{date}.C0.{radar}.{ftype}', username='davitpy', password='d4vitPY-usask', time_inc=timedelta(days=1),verbose=False)
+    fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),'sftp','chapman.usask.ca','fitcon/{year}/{month}/', {'ftype':'fitacf','radar':'sas'}, '/tmp/sd/', '{date}.C0.{radar}.{ftype}', username='davitpy', password='d4vitPY-usask', verbose=False)
 
     print "Expected the file: ['/tmp/sd/20121124.C0.sas.fitacf']"
     print "Received the file: " + str(fitacf)

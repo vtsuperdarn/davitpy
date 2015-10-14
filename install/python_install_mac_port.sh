@@ -17,6 +17,7 @@ pip install --upgrade scipy
 pip install --upgrade h5py
 pip install --upgrade pyzmq tornado pygments
 pip install --upgrade ipython
+pip install --upgrade jupyter
 python -c 'from IPython.external import mathjax; mathjax.install_mathjax()'
 pip install --upgrade PIL
 pip install --upgrade pymongo
@@ -32,12 +33,3 @@ cd /tmp
 git clone https://github.com/matplotlib/basemap.git
 cd basemap
 python2.7 setup.py install
-
-
-cd $dir
-install_dir=$(greadlink -f ../..)
-echo "source $install_dir/profile.mac" >> ~/.bash_profile
-source ~/.bash_profile
-
-cd ../..
-./mastermake

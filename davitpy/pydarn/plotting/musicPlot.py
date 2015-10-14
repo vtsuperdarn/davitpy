@@ -112,6 +112,7 @@ class musicFan(object):
         * [**lon_shift**] (float): Add this number to the computed lon_0 sent to basemap.
         * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
                 'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+        * [**cmap**] (None or matplotlib colormap object): If Nonei and cmap_handling=='matplotlib', use jet.
         * [**plot_cbar**] (bool): If True, plot the color bar.
         * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
         * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
@@ -142,6 +143,7 @@ class musicFan(object):
         lat_shift               = 0.,
         lon_shift               = 0.,
         cmap_handling           = 'superdarn',
+        cmap                    = None,
         plot_cbar               = True,
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
@@ -251,8 +253,14 @@ class musicFan(object):
         lat_0       = lat_0 + lat_shift
         lon_0       = lon_0 + lon_shift
 
+        bmd         = basemap_dict.copy()
+        width       = bmd.pop('width',  width)
+        height      = bmd.pop('height', height)
+        lat_0       = bmd.pop('lat_0',  lat_0)
+        lon_0       = bmd.pop('lon_0',  lon_0)
+
         #draw the actual map we want
-        m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**basemap_dict)
+        m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**bmd)
         if parallels_ticks is None:
             parallels_ticks = np.arange(-80.,81.,10.)
 
@@ -287,7 +295,8 @@ class musicFan(object):
                 verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
         if (cmap_handling == 'matplotlib') or autoScale:
-            cmap = matplotlib.cm.jet
+            if cmap is None:
+                cmap    = matplotlib.cm.jet
             bounds  = np.linspace(scale[0],scale[1],256)
             norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
         elif cmap_handling == 'superdarn':
@@ -364,7 +373,8 @@ class musicFan(object):
         if plotTerminator:
             m.nightshade(currentData.time[timeInx])
 
-        self.map_obj = m
+        self.map_obj    = m
+        self.pcoll      = pcoll
 
 class musicRTI(object):
     """Class to create an RTI plot using a pydarn.proc.music.musicArray object as the data source.
@@ -1296,6 +1306,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
         scale                   = None,
         plot_title              = True,
         maxXTicks               = 10.,
+        plot_cbar               = True,
         cbar_label              = 'ABS(Spectral Density)',
         cbar_ticks              = None,
         cbar_shrink             = 1.0,
@@ -1333,6 +1344,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
 
     from scipy import stats
 
+    return_dict = {}
     currentData = getDataSet(dataObj,dataSet)
 
     nrFreqs,nrBeams,nrGates = np.shape(currentData.spectrum)
@@ -1401,19 +1413,21 @@ def plotFullSpectrum(dataObj,dataSet='active',
     pcoll   = PolyCollection(np.array(verts),edgecolors='face',linewidths=0,closed=False,cmap=cmap,norm=norm,zorder=99)
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
+    spect_pcoll = pcoll
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
-    cbar.set_label(cbar_label)
-    if cbar_ticks is None:
-        labels = cbar.ax.get_yticklabels()
-        labels[-1].set_visible(False)
-    else:
-        cbar.set_ticks(cbar_ticks)
+    if plot_cbar:
+        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
+        cbar.set_label(cbar_label)
+        if cbar_ticks is None:
+            labels = cbar.ax.get_yticklabels()
+            labels[-1].set_visible(False)
+        else:
+            cbar.set_ticks(cbar_ticks)
 
-    if currentData.metadata.has_key('gscat') and cbar_gstext_enable:
-        if currentData.metadata['gscat'] == 1:
-            cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+        if currentData.metadata.has_key('gscat') and cbar_gstext_enable:
+            if currentData.metadata['gscat'] == 1:
+                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
     #Plot average values.
     verts   = []
@@ -1526,6 +1540,10 @@ def plotFullSpectrum(dataObj,dataSet='active',
             text = text + '\n' + 'Digital Filter: [' + low + ', ' + high + '] mHz'
 
         fig.text(xpos,0.95,text,fontsize=14,va='top')
+
+    return_dict['cbar_pcoll']   = spect_pcoll
+    return_dict['cbar_label']   = cbar_label
+    return return_dict
 
 def plotDlm(dataObj,dataSet='active',fig=None):
     """Plot the cross spectral matrix of a pydarn.proc.music.musicArray object.  The cross-spectral matrix must have already
@@ -1882,7 +1900,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
 def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsize=24,x_labelpad=None,y_labelpad=None,
             cbar_ticks=None, cbar_shrink=1.0, cbar_fraction=0.15,
-            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None,cbar_pad=0.05):
+            cbar_gstext_offset=-0.075, cbar_gstext_fontsize=None,cbar_pad=0.05,cmap=None,plot_colorbar=True):
     """Plot the horizontal wave number array for a pydarn.proc.music.musicArray object.  The kArr must have aready
     been calculated for the chosen data set using pydarn.proc.music.calculateKarr().
 
@@ -1902,10 +1920,14 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
         * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
         * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
         * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+        * [**cmap**] (None or matplotlib colormap object): If None and cmap_handling=='matplotlib', use jet.
+        * [**plot_colorbar**] (bool): Enable or disable colorbar plotting.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
     if axis is None: return
+    return_dict = {}
+
     fig = axis.get_figure()
     from scipy import stats
     import matplotlib.patheffects as PathEffects
@@ -1940,7 +1962,8 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             x4,y4 = xx0, yy1
             verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
 
-    cmap = matplotlib.cm.jet
+    if cmap is None:
+        cmap = matplotlib.cm.jet
     bounds  = np.linspace(scale[0],scale[1],256)
     norm    = matplotlib.colors.BoundaryNorm(bounds,cmap.N)
 
@@ -1954,15 +1977,17 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     axis.axhline(color='0.82',lw=2,zorder=150)
 
     #Colorbar
-    cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
-    cbar.set_label('Normalized Wavenumber Power')
-    if not cbar_ticks:
-        cbar_ticks = np.arange(10)/10.
-    cbar.set_ticks(cbar_ticks)
+    cbar_label  = 'Normalized Wavenumber Power'
+    if plot_colorbar:
+        cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
+        cbar.set_label(cbar_label)
+        if not cbar_ticks:
+            cbar_ticks = np.arange(10)/10.
+        cbar.set_ticks(cbar_ticks)
 
-    if currentData.metadata.has_key('gscat'):
-        if currentData.metadata['gscat'] == 1:
-            cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
+        if currentData.metadata.has_key('gscat'):
+            if currentData.metadata['gscat'] == 1:
+                cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
 #    cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
 #    cbar.set_label('ABS(Spectral Density)')
@@ -2026,3 +2051,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             ypos = currentData.kyVec[signal['maxpos'][1]]
             txt  = '%i' % signal['order']
             axis.text(xpos,ypos,txt,color='k',zorder=200-signal['order'],size=sig_fontsize,path_effects=pe)
+
+    return_dict['cbar_pcoll']   = pcoll
+    return_dict['cbar_label']   = cbar_label
+    return return_dict

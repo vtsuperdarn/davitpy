@@ -1,5 +1,8 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
+import numpy as np
+import pandas as pd
+
 """
 *********************
 **Module**: models.raydarn.rt
@@ -67,10 +70,12 @@ class RtRun(object):
         debug=False, 
         fext=None, 
         loadFrom=None, 
+        edens_file=None,
         nprocs=4):
         import datetime as dt
         from os import path
         from davitpy.pydarn import radar
+        from davitpy import rcParams
 
         # Load pickled instance...
         if loadFrom:
@@ -85,7 +90,7 @@ class RtRun(object):
 
             # Set azimuth
             self.site = self.radar.getSiteByDate(sTime)
-            if beam and not azim: 
+            if (beam is not None) and not azim: 
                 az = self.site.beamToAzim(beam)
                 azim = (az, az, 1)
             else:
@@ -122,9 +127,17 @@ class RtRun(object):
 
             # Set output directory and file extension
             if not outDir:
-                outDir = path.abspath( path.curdir )
+                 outDir = rcParams['DAVIT_TMPDIR']
+#                outDir = path.abspath( path.curdir )
             self.outDir = path.join( outDir, '' )
             self.fExt = '0' if not fext else fext
+
+            # Set DaViTpy Install path
+            self.davitpy_path = rcParams['DAVITPY_PATH']
+
+            # Set user-supplied electron density profile
+            if edens_file is not None:
+                self.edens_file = edens_file
 
             # Write input file
             inputFile = self._genInput()
@@ -163,6 +176,11 @@ class RtRun(object):
             f.write( "{:8.2f}  hmf2 (km, if 0 then ignored)\n".format( self.hmf2 ) )
             f.write( "{:8.2f}  nmf2 (log10, if 0 then ignored)\n".format( self.nmf2 ) )
 
+            f.write( self.davitpy_path+"\n" ) # DaViTpy install path
+
+            if hasattr(self,'edens_file'):  # Path to user-defined electron profile
+                f.write( self.edens_file )
+
         return fname
         
 
@@ -178,6 +196,7 @@ class RtRun(object):
             self.outDir, 
             self.fExt]
         
+        #print ' '.join(command)
         process = subp.Popen(command, shell=False, stdout=subp.PIPE, stderr=subp.STDOUT)
         output = process.communicate()[0]
         exitCode = process.returncode
@@ -190,7 +209,7 @@ class RtRun(object):
         if (exitCode != 0):
             raise Exception('Fortran execution error.')
         else:
-            subp.call(['rm',inputFileName])
+#            subp.call(['rm',inputFileName])
             return True
 
 
@@ -217,7 +236,7 @@ class RtRun(object):
             site=self.site, radar=self.radar,
             saveToAscii=saveToAscii, debug=debug)
         # Remove Input file
-        subp.call(['rm',fName])
+#        subp.call(['rm',fName])
 
 
     def readEdens(self, debug=False):
@@ -243,7 +262,7 @@ class RtRun(object):
             site=self.site, radar=self.radar,
             debug=debug)
         # Remove Input file
-        subp.call(['rm',fName])
+#        subp.call(['rm',fName])
 
 
     def readScatter(self, debug=False):
@@ -313,7 +332,7 @@ class RtRun(object):
         files = ['rays', 'edens', 'gscat', 'iscat']
         for f in files:
             fName = path.join(self.outDir, '{}.{}.dat'.format(f, self.fExt))
-            subp.call(['rm', fName])
+#            subp.call(['rm', fName])
 
 
 #########################################################################
@@ -393,7 +412,8 @@ class Edens(object):
 
     def plot(self, time, beam=None, maxground=2000, maxalt=500,
         nel_cmap='jet', nel_lim=[10, 12], title=False, 
-        fig=None, rect=111, ax=None, aax=None):
+        fig=None, rect=111, ax=None, aax=None,plot_colorbar=True,
+        nel_rasterize=False):
         """Plot electron density profile
         
         **Args**: 
@@ -408,6 +428,9 @@ class Edens(object):
             * [**ax**]: Existing main axes
             * [**aax**]: Existing auxialary axes
             * [**title**]: Show default title
+            * [**plot_colorbar**]: Plot a colorbar
+            * [**nel_rasterize**]: Rasterize the electron density plot
+                (make your pdf files more managable)
         **Returns**:
             * **ax**: matplotlib.axes object containing formatting
             * **aax**: matplotlib.axes object containing data
@@ -426,6 +449,7 @@ class Edens(object):
                 
         written by Sebastien, 2013-04
         """
+        import datetime as dt
         from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
@@ -444,6 +468,14 @@ class Edens(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
+
+        # Allow a 60 second difference between the requested time and the time
+        # available.
+        keys    = np.array(self.edens.keys())
+        diffs   = np.abs(keys-time)
+        if diffs.min() < dt.timedelta(minutes=1):
+            time = keys[diffs.argmin()]
+
         assert (time in self.edens.keys()), 'Unkown time %s' % time
         if beam:
             assert (beam in self.edens[time].keys()), 'Unkown beam %s' % beam
@@ -452,16 +484,18 @@ class Edens(object):
 
         X, Y = np.meshgrid(self.edens[time][beam]['th'], ax.Re + np.linspace(60,560,250))
         im = aax.pcolormesh(X, Y, np.log10( self.edens[time][beam]['nel'] ), 
-            vmin=nel_lim[0], vmax=nel_lim[1], cmap=nel_cmap)
+            vmin=nel_lim[0], vmax=nel_lim[1], cmap=nel_cmap,rasterized=nel_rasterize)
 
         # Plot title with date ut time and local time
         if title:
-            stitle = _getTitle(time, beam, self.header, self.name)
+            stitle = _getTitle(time, beam, self.header, None)
             ax.set_title( stitle )
 
         # Add a colorbar
-        cbax = plotUtils.addColorbar(im, ax)
-        _ = cbax.set_ylabel(r"N$_{el}$ [$\log_{10}(m^{-3})$]")
+        cbax    = None
+        if plot_colorbar:
+            cbax = plotUtils.addColorbar(im, ax)
+            _ = cbax.set_ylabel(r"N$_{el}$ [$\log_{10}(m^{-3})$]")
 
         ax.beam = beam
         return ax, aax, cbax
@@ -499,10 +533,6 @@ class Scatter(object):
             self.isc = {}
             self.readIS(site=site, debug=debug)
 
-        self.name = ''
-        if radar:
-            self.name = radar.code[0].upper()
-
 
     def readGS(self, site=None, debug=False):
         """Read gscat.dat fortran output
@@ -522,6 +552,9 @@ class Scatter(object):
             if debug:
                 print self.readGSFrom+' header: '
             self.header = _readHeader(f, debug=debug)
+
+            scatter_list = []
+
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(3*4)
@@ -556,6 +589,20 @@ class Scatter(object):
                 self.gsc[rtime][raz][rel]['lat'] = np.append( self.gsc[rtime][raz][rel]['lat'], lat )
                 self.gsc[rtime][raz][rel]['lon'] = np.append( self.gsc[rtime][raz][rel]['lon'], lon )
 
+                # Same thing, but let's prepare for a Pandas DataFrame...
+                tmp = {}
+                tmp['type']     = 'gs'
+                tmp['rtime']    = rtime
+                tmp['raz']      = raz
+                tmp['rel']      = rel
+                tmp['r']        = rr
+                tmp['th']       = tht
+                tmp['gran']     = gran
+                tmp['lat']      = lat
+                tmp['lon']      = lon
+                scatter_list.append(tmp)
+
+        self.gsc_df = pd.DataFrame(scatter_list)
 
     def readIS(self, site=None, debug=False):
         """Read iscat.dat fortran output
@@ -712,7 +759,7 @@ class Scatter(object):
 
             # Plot title with date ut time and local time
             if title:
-                stitle = _getTitle(time, beam, self.header, self.name)
+                stitle = _getTitle(time, beam, self.header, None)
                 ax.set_title( stitle )
 
             # If weighted, plot ionospheric scatter with colormap
@@ -724,7 +771,29 @@ class Scatter(object):
 
         ax.beam = beam
         return ax, aax, cbax
+
+    def gate_scatter(self,beam,fov):
+        #Add a 0 at the beginning to get the range gate numbering right.
+#        beam_inx    = np.where(beam == fov.beams)[0][0]
+#        ranges      = [0]+fov.slantRFull[beam_inx,:].tolist() 
+
+        # Some useful parameters
+        ngates          = fov.gates.size
+        range_gate      = 180 + 45*np.arange(ngates+1,dtype=np.int)
+        Re              = 6370.
+        P               = np.array(range_gate,dtype=np.float)
+        minpower        = 4. 
+
+        if self.gsc_df.size > 0:
+            weights         = 1/(self.gsc_df.gran**3)
+            lag_power, bins = np.histogram(self.gsc_df.gran/1000.,bins=range_gate,weights=weights)
+        else:
+            lag_power   = np.zeros_like(fov.gates,dtype=np.float)
         
+        self.pwr        = lag_power
+        self.gates      = fov.gates
+
+        return lag_power 
 
 #########################################################################
 # Rays
@@ -873,7 +942,7 @@ class Rays(object):
 
                 # Show ray paths with colored refractive index along path
                 import datetime as dt
-                from models import raydarn
+                from davitpy.models import raydarn
                 sTime = dt.datetime(2012, 11, 18, 5)
                 rto = raydarn.RtRun(sTime, rCode='bks', beam=12, title=True)
                 rto.readRays() # read rays into memory
@@ -882,6 +951,7 @@ class Rays(object):
                 
         written by Sebastien, 2013-04
         """
+        import datetime as dt
         from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
@@ -901,6 +971,13 @@ class Rays(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
+        # Allow a 60 second difference between the requested time and the time
+        # available.
+        keys    = np.array(self.paths.keys())
+        diffs   = np.abs(keys-time)
+        if diffs.min() < dt.timedelta(minutes=1):
+            time = keys[diffs.argmin()]
+
         assert (time in self.paths.keys()), 'Unkown time %s' % time
         if beam:
             assert (beam in self.paths[time].keys()), 'Unkown beam %s' % beam
@@ -1007,11 +1084,13 @@ def _readHeader(fObj, debug=False):
     # Read header
     header = OrderedDict( zip( params, unpack('3i9f3i5f', fObj.read(3*4 + 9*4 + 3*4 + 5*4)) ) )
     header['fext'] = unpack('10s', fObj.read(10))[0].strip()
-    header['outdir'] = unpack('100s', fObj.read(100))[0].strip()
+    header['outdir'] = unpack('250s', fObj.read(250))[0].strip()
+    header['indir'] = unpack('250s', fObj.read(250))[0].strip()
     # Only print header if in debug mode
     if debug:
         for k, v in header.items(): print '{:10s} :: {}'.format(k,v)
     header.pop('fext'); header.pop('outdir')
+    header.pop('indir')
 
     return header
 

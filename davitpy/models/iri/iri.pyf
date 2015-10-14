@@ -3,7 +3,7 @@
 
 python module iri ! in 
     interface  ! in :iri
-        subroutine iri_sub(jf,jmag,alati,along,iyyyy,mmdd,dhour,heibeg,heiend,heistp,outf,oarr) ! in :iri:irisub.for
+        subroutine iri_sub(jf,jmag,alati,along,iyyyy,mmdd,dhour,heibeg,heiend,heistp,outf,oarr,datapath) ! in :iri:irisub.for
             logical dimension(50),intent(in) :: jf
             integer intent(in) :: jmag
             real intent(in) :: alati
@@ -16,6 +16,7 @@ python module iri ! in
             real intent(in) :: heistp
             real dimension(20,1000),intent(out) :: outf
             real dimension(100),intent(in,out) :: oarr
+            character*250,intent(in) :: datapath
             real :: d1
             real :: xkk
             real :: fp30

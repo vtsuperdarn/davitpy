@@ -430,13 +430,23 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0,Re=6371.):
     lon2 = lon1 + numpy.arctan2(numpy.sin(az)*numpy.sin(dist/Re_tot)*numpy.cos(lat1),\
     numpy.cos(dist/Re_tot)-numpy.sin(lat1)*numpy.sin(lat2))
 
+    # Convert everything to numpy arrays to make selective processing easier.
     ret_lat = numpy.degrees(lat2)
     ret_lon = numpy.degrees(lon2)
     
+    ret_lat = numpy.array(ret_lat)
+    if ret_lat.shape == ():
+        ret_lat.shape = (1,)
+
+    ret_lon = numpy.array(ret_lon)
+    if ret_lon.shape == ():
+        ret_lon.shape = (1,)
+
+    # Put all longitudes on -180 to 180 domain.
     ret_lon = ret_lon % 360. 
 
     tf = ret_lon > 180.
-    ret_lon[tf] = ret_lon - 360.
+    ret_lon[tf] = ret_lon[tf] - 360.
 
     return (ret_lat,ret_lon)
 

@@ -16,7 +16,7 @@ C       (ii)  DATA C_SY statement in SUBROUTINE FULL_RC, and
 c       (iii) DATA A statement in SUBROUTINE T04_s.
 C  This correction was needed due to a bug found in the symmetric ring current module.
 c   Its impact can be significant (up to ~20 nT) only in the innermost magnetosphere (R<=2)
-      and only for strongly disturbed conditions; otherwise, the change in the model field
+c      and only for strongly disturbed conditions; otherwise, the change in the model field
 c      does not exceed a few percent.
 c
 c--------------------------------------------------------------------
@@ -58,7 +58,7 @@ c       2. Parameterization and fitting to observations.  JGR v. 107(A8), 1176/1
 c
 c  (2)  N. A. Tsyganenko, H. J. Singer, J. C. Kasper, Storm-time distortion of the
 c           inner magnetosphere: How severe can it get ?  JGR v. 108(A5), 1209, doi:10.1029/2002JA009808, 2003.
-
+c
 c   (3)  N. A. Tsyganenko and M. I. Sitnov, Modeling the dynamics of the inner magnetosphere during
 c         strong geomagnetic storms, J. Geophys. Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005.
 c----------------------------------------------------------------------
@@ -2229,7 +2229,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       DOUBLE PRECISION FUNCTION BR_PRC_Q (R,SINT,COST)
 C
-Calculates the radial component of the "quadrupole" part of the model partial ring current.
+C Calculates the radial component of the "quadrupole" part of the model partial ring current.
 C
       IMPLICIT  REAL * 8  (A - H, O - Z)
 
@@ -2299,7 +2299,7 @@ C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 C
         DOUBLE PRECISION FUNCTION BT_PRC_Q (R,SINT,COST)
 C
-Calculates the Theta component of the "quadrupole" part of the model partial ring current.
+C Calculates the Theta component of the "quadrupole" part of the model partial ring current.
 C
         IMPLICIT  REAL * 8  (A - H, O - Z)
 
@@ -2539,6 +2539,3 @@ C
       RETURN
       END
 C
-C(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-
-

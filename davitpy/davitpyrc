@@ -1,3 +1,7 @@
+# This run control sets global parameters for DaViTPy.  If you need to modify
+# it, please re-run the 'setup.py install' script in order to copy the
+# modified file to the appropriate system location.
+#
 ####
 # ADDRESS SFTP DATABASE, USERNAME, PASSWORD, AND PORT
 ####
@@ -47,8 +51,6 @@ DAVIT_REMOTE_DIRFORMAT	: data/{year}/{ftype}/{radar}/
 DAVIT_REMOTE_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
 DAVIT_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{radar}/
 DAVIT_LOCAL_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
-DAVIT_REMOTE_TIMEINC	: 2
-DAVIT_LOCAL_TIMEINC	: 2
 
 ####
 # MAP DATA FILE FETCHING
@@ -57,5 +59,14 @@ DAVIT_SD_REMOTE_DIRFORMAT	: data/{year}/{ftype}/{hemi}/
 DAVIT_SD_REMOTE_FNAMEFMT	: {date}.{hemi}.{ftype}
 DAVIT_SD_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{hemi}/
 DAVIT_SD_LOCAL_FNAMEFMT		: {date}.{hemi}.{ftype}
-DAVIT_SD_REMOTE_TIMEINC		: 24
-DAVIT_SD_LOCAL_TIMEINC		: 24
+
+
+####
+# SET THE PATH TO THE AACGM COEFFICIENT FILES
+####
+# By default, this is set to where the coefficients
+# are installed with DaViTpy, ie)
+# 'davitpy install directory'/tables/aacgm/aacgm_coeffs/
+####
+# AACGM_DAVITPY_DAT_PREFIX	: /path/to/coefficients/
+

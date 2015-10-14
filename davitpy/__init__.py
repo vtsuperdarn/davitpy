@@ -31,6 +31,11 @@ __version__ = str('0.3')
 
 _error_details_fmt = 'line #%d\n\t"%s"\n\tin file "%s"'
 
+
+default_rc_not_found_message = 'Could not find the defaul davitpyrc file that should have been installed when DaViTpy was installed!'
+
+message_dict = {'type':'','path':''}
+
 # TO DO
 # Add some try: except: statements for python packages that davitpy requires
 
@@ -40,6 +45,8 @@ def _is_writable_dir(p):
     p is a string pointing to a putative writable dir -- return True p
     is such a string, else False
     """
+    import tempfile
+
     try:
         p + ''  # test is string like
     except TypeError:
@@ -213,7 +220,7 @@ def _get_configdir():
     Return the string representing the configuration directory.
     The directory is chosen as follows:
     1. If the DAVITPYCONFIGDIR environment variable is supplied, choose that.
-    2a. On Linux, if `$HOME/.matplotlib` exists, choose that, but warn that
+    2a. On Linux, if `$HOME/.davitpy` exists, choose that, but warn that
         that is the old location.  Barring that, follow the XDG specification
         and look first in `$XDG_CONFIG_HOME`, if defined, or `$HOME/.config`.
     2b. On other platforms, choose `$HOME/.davitpy`.
@@ -233,12 +240,6 @@ def _decode_filesystem_path(path):
 
 def _get_data_path():
 
-    if 'DAVITPYDATA' in os.environ:
-        path = os.environ['DAVITPYDATA']
-        if not os.path.isdir(path):
-            raise RuntimeError('Path in environment DAVITPYDATA not a '
-                               'directory')
-        return path
     _file = _decode_filesystem_path(__file__)
     path = os.sep.join([os.path.dirname(_file)])
     if os.path.isdir(path):
@@ -292,14 +293,11 @@ def davitpy_fname():
     - environment variable `DAVITPYRC`
     - `$DAVITCONFIGDIR/davitpy`
     - On Linux,
-          - `$HOME/.davitpy/davitpyrc`, if it exists
-          - or `$XDG_CONFIG_HOME/davitpy/davitpyrc` (if
+          - `$XDG_CONFIG_HOME/davitpy/davitpyrc` (if
             $XDG_CONFIG_HOME is defined)
           - or `$HOME/.config/davitpy/davitpyrc` (if
             $XDG_CONFIG_HOME is not defined)
-    - On other platforms,
-         - `$HOME/.davitpy/davitpyrc` if `$HOME` is defined.
-    - Lastly, it looks in `$DAVITPYDATA/davitpyrc` for a
+    - Lastly, it looks in the DaViTpy install directory for a
       system-defined copy.
     """
     if six.PY2:
@@ -308,6 +306,8 @@ def davitpy_fname():
         cwd = os.getcwd()
     fname = os.path.join(cwd, 'davitpyrc')
     if os.path.exists(fname):
+        message_dict['type'] = 'current working directory'
+        message_dict['path'] = cwd
         return fname
 
     if 'DAVITPYRC' in os.environ:
@@ -315,33 +315,22 @@ def davitpy_fname():
         if os.path.exists(path):
             fname = os.path.join(path, 'davitpyrc')
             if os.path.exists(fname):
+                message_dict['type'] = 'DAVITPYRC environment variable'
+                message_dict['path'] = path
                 return fname
 
     configdir = _get_configdir()
     if configdir is not None:
         fname = os.path.join(configdir, 'davitpyrc')
         if os.path.exists(fname):
-            home = get_home()
-            if (sys.platform.startswith('linux') and
-                home is not None and
-                os.path.exists(os.path.join(
-                    home, '.davitpy', 'davitpyrc'))):
-                warnings.warn(
-                    "Found davitpy configuration in ~/.davitpy/. "
-                    "To conform with the XDG base directory standard, "
-                    "this configuration location has been deprecated "
-                    "on Linux, and the new location is now %s/davitpy/. "
-                    "Please move your configuration there to ensure that "
-                    "davitpy will continue to find it in the future." %
-                    _get_xdg_config_dir())
-                return os.path.join(
-                    home, '.davitpy', 'davitpyrc')
+            message_dict['type'] = 'XDG .config directory'
+            message_dict['path'] = configdir
             return fname
 
     path = get_data_path()  # guaranteed to exist or raise
     fname = os.path.join(path, 'davitpyrc')
-    if not os.path.exists(fname):
-        warnings.warn('Could not find davitpyrc; using defaults')
+    message_dict['type'] = 'DaViTpy installation directory'
+    message_dict['path'] = path
 
     return fname
 
@@ -464,13 +453,17 @@ def rc_params(fail_on_error=False):
     default davitpy rc file.
     """
     fname = davitpy_fname()
-    if not os.path.exists(fname):
-        # this should never happen, default in mpl-data should always be found
-        message = 'could not find rc file; returning defaults'
+
+    if os.path.exists(fname):
+        print('Loaded davitpyrc file from {type}. Path: {path}'.format(**message_dict))
+
+    else:
+        # this should never happen, default in davitpy install directory should always be found
         ret = RcParams([(key, default) for key, (default, _) in
                         six.iteritems(defaultParams)
                         if key not in _all_deprecated])
-        warnings.warn(message)
+        print(default_rc_not_found_message)
+        print('davitpyrc file was NOT found, using hardcoded defaults.')
         return ret
 
     return rc_params_from_file(fname, fail_on_error)
@@ -569,8 +562,6 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
 
     #if config['datapath'] is None:
     #    config['datapath'] = get_data_path()
-
-    print('loaded rc file %s' % fname)
 
     return config
 

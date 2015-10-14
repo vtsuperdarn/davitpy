@@ -316,7 +316,8 @@ def mapAeMongo(sYear,eYear=None,res=60):
 	written by AJ, 20130123
 	"""
 	import davitpy.pydarn.sdio.dbUtils as db
-	import os, datetime as dt
+        from davitpy import rcParams
+	import datetime as dt
 	
 	#check inputs
 	assert(isinstance(sYear,int)),'error, sYear must be int'
@@ -325,8 +326,8 @@ def mapAeMongo(sYear,eYear=None,res=60):
 	assert(eYear >= sYear), 'error, end year less than than start year'
 	
 	#get data connection
-	mongoData = db.getDataConn(username=os.environ['DBWRITEUSER'],password=os.environ['DBWRITEPASS'],\
-								dbAddress=os.environ['SDDB'],dbName='gme',collName='ae')
+	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
+								dbAddress=rcParams['SDDB'],dbName='gme',collName='ae')
 	
 	#set up all of the indices
 	mongoData.ensure_index('time')

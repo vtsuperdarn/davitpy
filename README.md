@@ -2,27 +2,17 @@
 
 Welcome to the Data and Visualization Toolkit-Python.  This code base is designed to allow you to access and visualize SuperDARN (Super Dual Auroral Radar Network) data, as well as other relevant space phyics/space weather data sets and models.  This code is an international collaboration of many institutions and contributors.
 
-This version of the code is based on the "setup" branch, and is designed to make installation easier by more properly conforming to standard python setup/installation practices.  This code is still very much in the development phase, and should not be considered stable.
+DaViTPy pulls in datasets and models from a variety of data suppliers and model authors.  All users are requested properly cite the ORIGINAL supplier of the data or models used when presenting or publishing work.  Furthermore, it is often important to contact the original data provider for assistance in data interpration and to arrange for proper attribution.
 
-DaViTPy pulls in datasets and models from a variety of data suppliers and model authors.  All users are requested properly cite the ORIGINAL supplier of the data or models used when presenting or publishing work.  Furthermore, it is often important to contact the original data provider for assistance in data interpration and to arrange for proper attriution
-
-* Project page
-http://vtsuperdarn.github.com/davitpy/
-
-* Project wiki
-https://github.com/vtsuperdarn/davitpy/wiki
-
-* Project documentation
-http://davit.ece.vt.edu/davitpy/
-
-* Project Milestones
-https://github.com/vtsuperdarn/davitpy/issues/milestones
-
-If you get a Bus Error when using radDataRead() and/or radDataReadRec() functions, you probably have to recompile the dmapio library on your local computer.  This can be done by going to davitpy/pydarn/dmapio and typing 'make clean' followed by 'make'.
+*  Virginia Tech SuperDARN Page
+http://vt.superdarn.org
 
 ### Install instructions
 
-We recommend using Ubuntu 14.04 with this DaViTPy.  Although Macintosh install scripts are provided, more active development, testing, and use occurs in the Linux environment.  We do not currently offer any Windows support, although you are more than welcome to try and make it work in any environment you choose.  Please be aware that much of the included code (especially the models) is fortran code  (i.e. MSIS, IRI, IGRF, etc...) wrapped with python wrappers. This means that these models must be compiled with a fortran compiler on your machine before running.  This is normally taken care of in the installation process listed below, but it is useful to know that this is a potential source of problems for making DaViTPy work.
+We recommend using Ubuntu 14.04 with this version of DaViTPy.  Although Macintosh install scripts are provided, more active development, testing, and use occurs in the Linux environment.  We do not currently offer any Windows support, although you are more than welcome to try and make it work in any environment you choose.  Please be aware that much of the included code (especially the models) is fortran code  (i.e. MSIS, IRI, IGRF, etc...) wrapped with python wrappers. This means that these models must be compiled with a fortran compiler on your machine before running.  This is normally taken care of in the installation process listed below, but it is useful to know that this is a potential source of problems for making DaViTPy work.
+
+#### davitpyrc
+Settings pertaining to sevrer addresses and passwords, data file directory structure, and other global parameters are stored in a run control file called davitpyrc.  For most users, the default values in this file should be satisfactory.  However, you may make changes to this file if necessary.  It is stored in davitpy/davitpy/davitpyrc.  After making a change, re-run the setup.py install script (described below) to copy the run control file to the appropriate system location.
 
 ####Ubuntu
 Please use Ubuntu 14.04 or newer.  Older versions may not install compatible versions of the dependencies.
@@ -38,6 +28,12 @@ Now download DaViTPy:
 This will create a new directory called 'davitpy' in your current directory (probably your home directory).  If you do not want DaViTPy installed in ~/davitpy, you may move the file to a different directory now.  Next, change to your davitpy directory:
 
     cd davitpy
+
+To work on this branch (develop), you'll want to change the branch of your local repository with:
+
+    git checkout develop
+
+This will change your repository from the default of the master branch to the develop branch.  
 
 We need to install some dependencies using a script that makes calls to apt-get and pip.  You can either look through this file and install the necessary dependencies yourself (especially if you're on a different flavor of linux/unix or don't use apt-get and pip) or run the script.  To run this script:
 
@@ -75,19 +71,16 @@ preferably after checking the dependicies to see if you already have them instal
 To test davitpy and learn more about some of its functionality, please look at the included iPython notebooks.  To run these:
 
     cd davitpy/docs/notebook
-    davitpy-notebook
+    ipython notebook
 
 This command will launch a web broswer with an interface that will allow you to run python code directly in a browsing window.  The browser should show a list of the demonstration notebooks.  If you do not see the demonstration notebooks, please make sure you are in the davitpy/doc/notebook/ directory before running the davitpy-notebook command.  To run code within a cell, place your cursor in the cell and press shift-enter.
 
-A number of scripts are provided to bring up a python environment with davitpy functionality pre-loaded:
+####Ipython Profile and 'davitpy' Executable
+Please refer to the README.md in the bin directory of this repository for instructions on how to setup a custom ipython configuration to automagically import the davitpy library when starting an ipython session. The README also contains instructions on how to install a 'davitpy' executable file (bash script) if you wish to do so.
 
-    davitpy
-    davitpy-notebook
-    davitpy-qtconsole
-    
 ### Issues and Bug reporting
 
-This version of davitpy does not support ray tracing.  For this functionality, please see https://github.com/vtsuperdarn/davitpy/releases/tag/0.2-master_with_ray_tracing.
+To use raytracing, you must build the raytracing routines separately from the standard davitpy installation procedure.  Please see the Makefile in davitpy/davitpy/raydarn.
 
 Please report any problems/comments using the Issues tab of the davitpy GitHub page, or use this link: https://github.com/vtsuperdarn/davitpy/issues
 

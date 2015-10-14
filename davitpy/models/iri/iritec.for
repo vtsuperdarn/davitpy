@@ -34,7 +34,7 @@ c-----------------------------------------------------------------------
 C
 C
         subroutine IRIT13(ALATI,ALONG,jmag,jf,iy,md,hour,hbeg,hend,
-     &                          tec,tecb,tect)
+     &                          tec,tecb,tect,datapath)
 c-----------------------------------------------------------------------        
 c Program for numerical integration of IRI-94 profiles from h=100km
 C to h=alth. 
@@ -50,6 +50,7 @@ C  OUTPUT: TEC          Total Electron Content in m-2
 C          tecb,tect    percentage of bottomside and topside content
 c-----------------------------------------------------------------------        
 
+        character(250),intent(in) :: datapath
         dimension       outf(20,1000),oarr(100)
         logical         jf(50)
 
@@ -69,7 +70,7 @@ c
         aend=hend
         astp=hend-hbeg
         call IRI_SUB(JF,JMAG,ALATI,ALONG,IY,MD,HOUR,
-     &          abeg,aend,astp,OUTF,OARR)
+     &          abeg,aend,astp,OUTF,OARR,datapath)
 
 c
 c  calculate total electron content (TEC) in m-2 using the

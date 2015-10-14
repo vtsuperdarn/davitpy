@@ -72,10 +72,14 @@ subroutine apxrda()
     implicit none
     
     integer(4) :: i
-    character(128)           :: defaultdatapath
+    character(250)           :: datapath
+    character(250)           :: defaultdatapath
     character(512)           :: filen
 
-    call get_environment_variable('DAVITPY', defaultdatapath)
+    COMMON /DATPTH/datapath
+
+    !call get_environment_variable('DAVITPY', defaultdatapath)
+    defaultdatapath=datapath
     defaultdatapath=trim(defaultdatapath) //'/davitpy/models/hwm/'
 
     filen = trim(defaultdatapath) // 'apexgrid.dat'

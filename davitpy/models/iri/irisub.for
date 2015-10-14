@@ -142,7 +142,7 @@ C*****************************************************************
 C
 C
        SUBROUTINE IRI_SUB(JF,JMAG,ALATI,ALONG,IYYYY,MMDD,DHOUR,
-     &    HEIBEG,HEIEND,HEISTP,OUTF,OARR)
+     &    HEIBEG,HEIEND,HEISTP,OUTF,OARR,datapath)
 C-----------------------------------------------------------------
 C
 C INPUT:  JF(1:50)      true/false switches for several options
@@ -319,6 +319,8 @@ C*****************************************************************
 c-web-for webversion
       CHARACTER FILNAM*53
 
+      character(250),intent(in) :: datapath
+
       DIMENSION  ARIG(3),RZAR(3),F(3),E(4),XDELS(4),DNDS(4),
      &  FF0(988),XM0(441),F2(13,76,2),FM3(9,49,2),ddens(5,11),
      &  elg(7),FF0N(988),XM0N(441),F2N(13,76,2),FM3N(9,49,2),
@@ -356,13 +358,15 @@ c     &   /BLOTN/XSM1,TEXOS,TLBDH,SIGMA /BLOTE/AHH,ATE1,STTE,DTE
 
       EXTERNAL          XE1,XE2,XE3_1,XE4_1,XE5,XE6,FMODIP
 
-        character(128) :: defaultdatapath
+        character(250) :: defaultdatapath
         character(512) :: defaultfile
+        COMMON /DATPTH/defaultdatapath
 
         save
 
-        call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath=trim(defaultdatapath) // '/davitpy/models/iri/'
+        !call getenv('DAVITPY', defaultdatapath)
+        defaultdatapath = datapath
+        defaultdatapath =trim(defaultdatapath) // '/davitpy/models/iri/'
 
         nummax=1000
         DO 7397 KI=1,20
@@ -491,6 +495,7 @@ c
       else
           oarr(46)=-1.
       ENDIF
+
 c
 c Topside density ....................................................
 c
@@ -759,7 +764,8 @@ C
            LONGI=ALONG
         ENDIF
         CALL GEODIP(IYEAR,LATI,LONGI,MLAT,MLONG,JMAG)
-        call igrf_dip(lati,longi,ryear,300.0,dip,magbr,modip,dec)
+        call igrf_dip(lati,longi,ryear,300.0,dip,magbr,modip,
+     &                dec)
         if(.not.jf(18)) then
         CALL FIELDG(LATI,LONGI,300.0,XMA,YMA,ZMA,BET,DIP,DEC,MODIP)
         	MAGBR=ATAN(0.5*TAN(DIP*UMR))/UMR
@@ -816,6 +822,7 @@ C NEW-GUL------------------------------
             sday=sday+180.						
             if (sday.gt.360.) sday=sday-360.	
 C NEW-GUL------------------------------
+
 
 C
 C 12-month running mean sunspot number (rssn) and Ionospheric Global 
@@ -1271,6 +1278,7 @@ c
           X22=90
           FX11=fmodip(x11)
           FX22=fmodip(x22)
+
           CALL REGFA1(X11,X22,FX11,FX22,0.001,MODIP,FMODIP,SCHALT,XRLAT)
           IF(SCHALT) THEN
              XRLAT=LATI

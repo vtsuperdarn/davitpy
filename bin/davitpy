@@ -7,17 +7,8 @@
 #	- matplotlib
 #	- h5py
 #
-
 ############################
 # set environment variables
 ############################
-# set python path (where python looks for imports)
-export PYTHONPATH=${DAVITPY}:${PYTHONPATH}
-
-# set default config directory for ipython
-export IPYTHONDIR=${DAVITPY}/bin
-
-############################
-
 #start ipython
 ipython --profile=davitpy

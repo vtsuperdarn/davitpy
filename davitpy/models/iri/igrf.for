@@ -89,7 +89,8 @@
       END
 !
 !
-      subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,ymodip,dec)
+      subroutine igrf_dip(xlat,xlong,year,height,dip,dipl,
+     &                    ymodip,dec)
 !-----------------------------------------------------------------------        
 !INPUT:
 !   xlat      geodatic latitude in degrees
@@ -691,14 +692,14 @@
 !                                 = FORTRAN run-time error number    
 ! ===============================================================               
                                                                                 
-        CHARACTER  FSPEC*(*), FOUT*100, davitpydir*20
+        CHARACTER  FSPEC*(*), FOUT*250, davitpydir*20
         DIMENSION       GH(196) 
-        character(128) :: defaultdatapath
+        character(250) :: defaultdatapath
+        COMMON/DATPTH/defaultdatapath
         character(512) :: defaultfile
         COMMON/iounit/konsol        
 
-        call getenv('DAVITPY', defaultdatapath)
-        defaultdatapath=trim(defaultdatapath) //'/davitpy/models/iri/'
+        !call getenv('DAVITPY', defaultdatapath)
 
         do 1 j=1,196  
 1          GH(j)=0.0
@@ -890,7 +891,6 @@
 !
 !
       SUBROUTINE GEODIP(IYR,SLA,SLO,DLA,DLO,J)
-
 !  Calculates dipole geomagnetic coordinates from geocentric coordinates
 !  or vice versa.
 

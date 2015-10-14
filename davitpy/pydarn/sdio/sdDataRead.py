@@ -33,9 +33,8 @@
 def sdDataOpen(sTime,hemi='north',eTime=None, src=None,fileName=None, \
           fileType='grdex',noCache=False,verbose=False,local_dirfmt=None,\
           local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
-          remote_fnamefmt=None,remote_dict=None,local_timeinc=None,\
-          remote_timeinc=None,remote_site=None,username=None,      \
-          password=None, port=None,tmpdir=None):
+          remote_fnamefmt=None,remote_dict=None, remote_site=None, \
+          username=None, password=None, port=None,tmpdir=None):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -54,10 +53,8 @@ def sdDataOpen(sTime,hemi='north',eTime=None, src=None,fileName=None, \
     * **[password]** (str/bool): Password for remote_site. If password is set to True, the user is prompted for the remote_site password.
     * **[remote_dirfmt]** (str): The remote_site directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}'
     * **[remote_fnamefmt]** (str/list): The remote_site file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
-    * **[remote_timeinc]** (str): The time increment between remote_site files. Must be given in hours.
     * **[local_dirfmt]** (str): The local directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}' 
     * **[local_fnamefmt]** (str/list): The local file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
-    * **[local_timeinc]** (str): The time increment between locally stored files. Must be given in hours.
     * **[tmpdir]** (str): The directory in which to store temporary files.
 
   **Returns**:
@@ -70,10 +67,8 @@ def sdDataOpen(sTime,hemi='north',eTime=None, src=None,fileName=None, \
     * DBREADPASS                : Used to specify the DB user password (overridden by password).
     * DAVIT_SD_REMOTE_DIRFORMAT : Used to specify the remote data directory structure (overridden by remote_dirfmt).
     * DAVIT_SD_REMOTE_FNAMEFMT  : Used to specify the remote filename format (overridden by remote_fnamefmt).
-    * DAVIT_SD_REMOTE_TIMEINC   : Used to specify the remote time increment between files (overridden by remote_timeinc).
     * DAVIT_SD_LOCAL_DIRFORMAT  : Used to specify the local data directory structure (overridden by local_dirfmt).
     * DAVIT_SD_LOCAL_FNAMEFMT   : Used to specify the local filename format (overridden by local_fnamefmt).
-    * DAVIT_SD_LOCAL_TIMEINC    : Used to specify the local time increment between files (overridden by local_timeinc).
     * DAVIT_TMPDIR              : Directory used for davitpy temporary file cache (overridden by tmpdir).
 
     The evironment variables are python dictionary capable formatted strings appended encode radar name, channel, and/or date information. Currently supported dictionary keys which can be used are: 
@@ -102,8 +97,7 @@ def sdDataOpen(sTime,hemi='north',eTime=None, src=None,fileName=None, \
             verbose=verbose,local_dirfmt=local_dirfmt, \
             local_fnamefmt=local_fnamefmt,local_dict=local_dict, \
             remote_dirfmt=remote_dirfmt,remote_fnamefmt=remote_fnamefmt, \
-            remote_dict=remote_dict,local_timeinc=local_timeinc, \
-            remote_timeinc=remote_timeinc,remote_site=remote_site, \
+            remote_dict=remote_dict,remote_site=remote_site, \
             username=username,password=password,port=port,tmpdir=tmpdir)
 
   return myPtr

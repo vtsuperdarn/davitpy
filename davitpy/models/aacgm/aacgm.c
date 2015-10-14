@@ -77,17 +77,23 @@ int AACGMLoadCoef(char *fname) {
     return 0;
 }
 
-int AACGMInit(int year) {
-    char fname[256];
+int AACGMInit(int year, char *prefix) {
+    static char fname[256];
+    int tmp;
     char yrstr[32];  
     if (year==0) year=DEFAULT_YEAR;
     year=(year/5)*5;
-    sprintf(yrstr,"%4.4d",year); 
-    strcpy(fname,getenv("AACGM_DAVITPY_DAT_PREFIX"));
-    if (strlen(fname)==0) return -1;
+    sprintf(yrstr,"%4.4d",year);
+
+    if (prefix == NULL) return -1;
+    if (strlen(prefix)==0) return -1;
+
+    strcat(fname,prefix);
     strcat(fname,yrstr);
     strcat(fname,".asc");
-    return AACGMLoadCoef(fname);
+    tmp = AACGMLoadCoef(fname);
+    strcpy(fname,"");
+    return tmp;
 }
 
 int AACGMConvert(double in_lat,double in_lon,double height,

@@ -31,7 +31,9 @@ MODULE constants
 		real*4::	hmf2
 		real*4::	nmf2
 		character*10::	filext
-		character*100::	outdir
+		character*250::	indir
+		character*250::	outdir
+                character*250::edens_file
 	end type prm
 
 	! Cash-Karp Parameters for embeded Runge-Kutta method (ref: Numerical recipes in C, Press et al., 2nd ed., pp.717)
