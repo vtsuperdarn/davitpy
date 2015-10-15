@@ -262,7 +262,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                     except:
                         if verbose: print rn, "WARNING: unable to perform [",command,"]"
 
-<<<<<<< HEAD
+
                     # attempt to unzip the compressed file
                     uncompressed = uncompress_file(outname, None, verbose)
                     if type(uncompressed) is str:
@@ -274,7 +274,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
         # Advance the cycle time by the specified increment
         ctime = ctime + time_inc
-=======
+
         # Advance the cycle time by the "lowest" time increment 
         # in the namefmt (either forward or reverse)
 
@@ -312,7 +312,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         else:
         # file wasn't compressed, use outname
             filelist.append(outname)
->>>>>>> upstream2/release-1.0
+
 
     # Return the list of uncompressed files
     
