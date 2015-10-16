@@ -238,9 +238,7 @@ class radDataPtr():
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
                 if ('ftype' in local_dict.keys()):
                     local_dict['ftype'] = ftype
-                #import ipdb
-                #ipdb.set_trace()
-                if ftype=='fit':
+                if local_fnamefmt is None or ftype=='fit':
                     local_fnamefmt=['{date}{hour}.*{ftype}'] #File name format for fit files
 
                 if local_fnamefmt is None or ftype!='fit':
@@ -337,7 +335,7 @@ class radDataPtr():
                 if ('ftype' in remote_dict.keys()):
                     remote_dict['ftype'] = ftype
                 
-                if ftype=='fit':   # Name for a remote fit file
+                if remote_fnamefmt is None or ftype=='fit':   # Name for a remote fit file
                     remote_fnamefmt=['{date}{hour}.*{ftype}'] 
                 if remote_fnamefmt is None or ftype!='fit':
                     try:
