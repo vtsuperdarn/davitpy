@@ -50,7 +50,7 @@ class radDataPtr():
                          default = None meaning don't check for UAF named data files
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
-    * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+    * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit','fit'
     * **fBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): the first beam of the next scan, useful for when reading into scan objects
     * **recordIndex** (dict): look up dictionary for file offsets for all records 
     * **scanStartIndex** (dict): look up dictionary for file offsets for scan start records
@@ -238,11 +238,12 @@ class radDataPtr():
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
                 if ('ftype' in local_dict.keys()):
                     local_dict['ftype'] = ftype
-                
+                #import ipdb
+                #ipdb.set_trace()
                 if ftype=='fit':
                     local_fnamefmt=['{date}{hour}.*{ftype}'] #File name format for fit files
 
-                if local_fnamefmt is None:
+                if local_fnamefmt is None or ftype!='fit':
                     try:
                         local_fnamefmt = davitpy.rcParams['DAVIT_LOCAL_FNAMEFMT'].split(',')
                     except:
@@ -277,9 +278,6 @@ class radDataPtr():
                 valid = self.__validate_fetched(temp,self.sTime,self.eTime)
                 filelist = [x[0] for x in zip(temp,valid) if x[1]]
                 invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
-
-                import ipdb
-                ipdb.set_trace()
                 if len(invalid_files) > 0:
                     for f in invalid_files:
                         print 'removing invalid file: ' + f
@@ -338,9 +336,10 @@ class radDataPtr():
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 if ('ftype' in remote_dict.keys()):
                     remote_dict['ftype'] = ftype
+                
                 if ftype=='fit':   # Name for a remote fit file
                     remote_fnamefmt=['{date}{hour}.*{ftype}'] 
-                if remote_fnamefmt is None:
+                if remote_fnamefmt is None or ftype!='fit':
                     try:
                         remote_fnamefmt = davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT'].split(',')
                     except:
