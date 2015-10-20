@@ -115,13 +115,13 @@ def test_propagation(hop, vheight, dist,
     '''
     good = True
 
-    if vheight <= region_hmax["D"]:
+    if region_hmax.has_key("D") and vheight <= region_hmax["D"]:
         if hop > 0.5 or dist > 500.0:
             # D-region backscatter is restricted to 0.5 hop ionospheric
             # backscatter near the radar (flat earth-approximation holds,
             # great circle distance is rounded down, to simplify things)
             good = False
-    elif vheight <= region_hmax["E"]:
+    elif region_hmax.has_key("E") and vheight <= region_hmax["E"]:
         if hop < 1.5 and dist > 900.0:
             # 0.5E and 1.0E backscatter is restrictued to slant path distances
             # of 1000 km or less.  1.5E backscatter is typically seen at far
@@ -250,7 +250,14 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
             vmin = (tmax - tmin) / vnum + tmin - vh_box
 
             vh_mins = [vmin + n * vh_box for n in np.arange(vnum)]
-            vh_maxs = [n + vh_box for n in vh_mins]
+            vh_maxs = [n + vh_box if n + vh_box < rmax else rmax
+                       for n in vh_mins]
+
+            for n,vmin in enumerate(vh_mins):
+                if vmin < rmin:
+                    vh_mins[n] = rmin
+                else:
+                    break
         else:
             new_min = list()
             new_max = list()
@@ -267,11 +274,16 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
                     # should be expanded
                     imin = vh_mins.index(min(vh_mins))
                     vh_mins[imin] = np.floor(tmin)
+                    if vh_mins[imin] < rmin:
+                        vh_mins[imin] = rmin
                 else:
                     vspan = (vmax - tmin) / vnum
 
                     for n in np.arange(vnum):
-                        new_min.append(tmin + n * vspan)
+                        nmin = tmin + n * vspan
+                        if nmin < rmin:
+                            nmin = rmin
+                        new_min.append(nmin)
                         new_max.append(tmin + (n + 1.0) * vspan)
                         new_peak.append(tmin + (n + 0.5) * vspan)
                         priority.append(len(vh_mins) + len(new_min))
@@ -338,12 +350,17 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
                     # should be expanded
                     imax = new_max.index(max(new_max))
                     new_max[imax] = np.ceil(tmax)
+                    if new_max[imax] > rmax:
+                        new_max[imax] = rmax
                 else:
                     vspan = (tmax - vmin) / vnum
 
                     for n in np.arange(vnum):
+                        nmax = vmin + (n + 1.0) * vspan
+                        if nmax > rmax:
+                            nmax = rmax
                         new_min.append(vmin + n * vspan)
-                        new_max.append(vmin + (n + 1.0) * vspan)
+                        new_max.append(rmax)
                         new_peak.append(vmin + (n + 0.5) * vspan)
                         priority.append(len(vh_mins) + len(new_min))
 
@@ -1373,7 +1390,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 
     min_inc = 0.5 * min(rg_box)
     min_rg = int(min_inc)
-    max_rg = int(np.ceil(hard.maxgate - min_inc))
+    max_rg = hard.maxgate if hard.maxgate < max(rg_max) else max(rg_max)
+    max_rg = int(np.ceil(max_rg - min_inc))
     fovbelong = [[{"out":0, "in":0, "mix":0} for r in beams[bi].fit.slist]
                  for bi in range(bnum)]
     fovpast = [[0 for r in beams[bi].fit.slist] for bi in range(bnum)]
@@ -1407,7 +1425,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         rmin = r - int(width)
         rmin = rmin if rmin >= 0 else 0
         rmax = int(r + int(width) + (rg_box[ilim] % 2.0))
-        rmax = rmax if rmax <= hard.maxgate else hard.maxgate
+        rmax = (rmax if rmax <= hard.maxgate else
+                (hard.maxgate if hard.maxgate < max(rg_max) else max(rg_max)))
 
         # For each beam, load the data for this range gate window
         for bi in range(bnum):
@@ -1630,7 +1649,9 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                     irg_half = int(np.floor(rg_half))
                     min_si = si - irg_half if si >= irg_half else 0
                     max_si = (si + irg_half if si + irg_half < hard.maxgate
-                              else hard.maxgate - 1)
+                              else (hard.maxgate - 1
+                                    if hard.maxgate < max(rg_max)
+                                    else max(rg_max) - 1))
 
                     # Load the front and back elevations for this range gate
                     # and within the extended range gate window
@@ -1851,9 +1872,9 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                 estr = "{:s} ADVISEMENT: field-of-view is not ".format(rn)
                 estr = "{:s}consistent with the observed ".format(estr)
                 estr = "{:s}structure at hop [{:.1f}".format(estr, ihop)
-                estr = "{:s}{:s}] beam [{:d}".format(estr, reg, beams[bi].bmnum)
-                estr = "{:s}] range gate [{:d}]".format(estr,
-                                                        beams[bi].fit.slist[si])
+                estr = "{:s}{:s}] beam [".format(estr, ireg)
+                estr = "{:s}{:d}] range gate [".format(estr, beams[bi].bmnum)
+                estr = "{:s}{:d}]".format(estr, beams[bi].fit.slist[si])
                 logging.info(estr)
 
     #--------------------------------------------------------------------------
@@ -2138,11 +2159,11 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
 
             # Test the virtual height
             for i,vh in enumerate(vheights[ff]):
-                if not np.isnan(vh) and vh < region_hmin['D']:
+                if not np.isnan(vh) and vh < min(region_hmin.values()):
                     # This height is too low.  Replace it with a value corrected
                     # with a 2 pi alias or remove it from consideration for
                     # this FoV
-                    if vheights_aliased[ff][i] < region_hmin['D']:
+                    if vheights_aliased[ff][i] < min(region_hmin.values()):
                         elvs[ff][i] = elvs_aliased[ff][i]
                         vheights[ff][i] = vheights_aliased[ff][i]
                     else:
@@ -2154,7 +2175,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                     hop = hops[ff][i]
                     dd = dlist[i] * 0.5 / hop
                     ghop = True
-                    while vh > region_hmax['F'] and hop <= max_hop:
+                    while vh > max(region_hmax.values()) and hop <= max_hop:
                         # This height is too high.  Increase the hop
                         # number to acheive a realistic value
                         hop += 1.0
@@ -2179,7 +2200,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                         vh = vheights_aliased[ff][i]
                         hop = 1.0 if beam.fit.gflg[i] == 1 else 0.5
                         dd = dlist[i] * 0.5 / hop
-                        while vh > region_hmax['F'] and hop <= max_hop:
+                        while vh > max(region_hmax.values()) and hop <= max_hop:
                             # This height is too high.  Increase the hop
                             # number to acheive a realistic value
                             hop += 1.0
@@ -2189,7 +2210,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                                                      logfile=logfile,
                                                      log_level=log_level)[0]
                         
-                        if vh >= region_hmin['D']:
+                        if vh >= min(region_hmin.values()):
                             ghop = test_propagation(hop, vh, dd,
                                                     region_hmax=region_hmax,
                                                     region_hmin=region_hmin)

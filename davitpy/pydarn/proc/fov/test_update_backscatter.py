@@ -67,13 +67,14 @@ mc = {"region":{"D":"g", "E":"m", "F":"b"},
              "2.5E":(1.0,0.7,0.2), "3.0E":(0.5, 0, 0.1),
              "0.5F":(0.0, 0.0, 0.75), "1.0F":(0.0, 0.5, 0.5), "1.5F":"b",
              "2.0F":"c", "2.5F":(0.25, 0.75, 1.0), "3.0F":(0.0, 1.0, 1.0)},
-      "hop":{0.5:"b", 1.0:"r", 1.5:"c", 2.0:"m", 2.5:(0.25, 0.75, 1.0),
-             3.0:(0.5, 0, 0.25)},}
+      "hop":{0.5:"b", 1.0:"r", 1.5:"c", 2.0:"m",
+             2.5:(0.25, 0.75, 1.0), 3.0:(0.5, 0, 0.25)},}
 mm = {"region":{"D":"d", "E":"o", "F":"^", "all":"s"},
       "reg":{"0.5D":"d", "1.0D":"Y", "0.5E":"^", "1.0E":"o", "1.5E":">",
              "2.0E":"8", "2.5E":"*", "3.0E":"H", "0.5F":"v", "1.0F":"p",
              "1.5F":"<", "2.0F":"h", "2.5F":"D", "3.0F":"s", "all":"s"},
-      "hop":{0.5:"d", 1.0:"o", 1.5:"s", 2.0:"^", 2.5:"v", 3.0:"p", "all":"s"},}
+      "hop":{0.5:"d", 1.0:"o", 1.5:"s", 2.0:"^", 2.5:"v", 3.0:"p",
+             "all":"s"},}
 
 #--------------------------------------------------------------------------
 def add_colorbar(figure_handle, contour_handle, zmin, zmax, zinc=6, name=None,
@@ -177,7 +178,10 @@ def get_sorted_legend_labels(ax, marker_key="reg"):
     '''
     handles, labels = ax.get_legend_handles_labels()
 
-    lind = {morder[marker_key][ll]:il for il,ll in enumerate(labels)}
+    try:
+        lind = {morder[marker_key][ll]:il for il,ll in enumerate(labels)}
+    except:
+        lind = {morder[marker_key][float(ll)]:il for il,ll in enumerate(labels)}
     order = [lind[k] for k in sorted(lind.keys())]
 
     return [handles[i] for i in order], [labels[i] for i in order]
@@ -656,7 +660,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
     return(f, ax, cb, beams)
 
 #-------------------------------------------------------------------------
-def plot_storm_figures(intensity_all="v", intensity_sep="v",marker_key="reg",
+def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                        color={"v":ccenter}, stime=dt.datetime(1997,10,10,15),
                        etime=dt.datetime(1997,10,10,20),
                        mtimes=[dt.datetime(1997,10,10,16),
@@ -667,8 +671,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v",marker_key="reg",
                        rad="pyk", bmnum=0, cp=None, figname_time=None,
                        figname_maps=None, password=True, logfile=None,
                        log_level=logging.WARN, min_pnts=3,
-                       region_hmax={"D":115.0,"E":200.0,"F":900.0},
-                       region_hmin={"D":75.0,"E":115.0,"F":200.0},
+                       region_hmax={"D":115.0,"E":150.0,"F":900.0},
+                       region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
@@ -1593,6 +1597,8 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
 
     if label_type.find("frac") >= 0:
         flabels = get_fractional_hop_labels(labels)
+    else:
+        flabels = labels
 
     ftax.legend(handles, flabels, fontsize="medium", scatterpoints=1,
                 ncol=len(flabels), title="Hop", labelspacing=.1,
