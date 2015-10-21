@@ -171,9 +171,9 @@ class radDataPtr():
             else:
                 os.system('cp '+fileName+' '+outname)
                 print 'cp '+fileName+' '+outname
-            if fileType=='fit':    #If a fit file name is given, it is converted to fitacf
+            if fileType=='fit':    #If a fit file name is given, it is converted to fitacf, as our dmap routines can't read fit files
                 outname_new="_".join((outname,'fitacf'))
-                print "Converting fit to fitacf"
+                print "Can't read fit files. Converting to fitacf.."
                 os.system('fittofitacf '+outname+' > '+outname_new)
                 outname=outname_new
             filelist.append(outname)
@@ -264,6 +264,7 @@ class radDataPtr():
                                              local_fnamefmt, verbose=verbose)
 
                 if ftype=='fit':   #If fit files found, converting them to fitacf files
+                    print "Can't read fit files. Converting to fitacf.."
                     temp_new=[]
                     for f in temp:
                         new_name=string.replace(f,'fit','fitacf')
@@ -367,6 +368,7 @@ class radDataPtr():
                     password=password, port=port, verbose=verbose)
 
                 if ftype=='fit':   #If fit files found, converting them to fitacf files
+                    print "Can't read fit files. Converting to fitacf.."
                     temp_new=[]
                     for f in temp:
                         new_name=string.replace(f,'fit','fitacf')
