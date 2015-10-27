@@ -7,46 +7,49 @@
 *********************
 **Module**: pydarn.radar.radInfoIo
 *********************
-Input/Output for radar information (location, boresight, interferometer position...) is 
-read from a local dblite database (radar.db). The functions in this module provide tools 
-to populate/update said database (from hdw.dat and radar.dat files), or simply read hdw.dat 
-and radar.dat files. It also provide a function to manually update the local radar.db database 
-using the remote db database (requires an active internet connection).
+Input/Output for radar information (location, boresight, interferometer
+position...) is read from a local dblite database (radar.db). The functions
+in this module provide tools to populate/update said database (from hdw.dat
+and radar.dat files), or simply read hdw.dat and radar.dat files. It also
+provide a function to manually update the local radar.db database using the
+remote db database (requires an active internet connection).
 
 **Classes**:
-	* :class:`pydarn.radar.radInfoIo.updateRadars`
+        * :class:`pydarn.radar.radInfoIo.updateRadars`
 **Functions**:
-	* :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
-	* :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
+        * :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
+        * :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
 """
-		
+
 
 # *************************************************************
 def radarRead(path=None):
-	"""Reads radar.dat file
-	
-	**Args**: 
-		* [**path**] (str): path to radar.dat file; defaults to RST environment variable SD_RADAR
-	**Returns**:
-		* A dictionary with keys matching the radar.dat variables each containing values of length #radars.
+        """Reads radar.dat file
 
-	**Example**:
-		::
+        **Args***
+                * [**path**] (str): path to radar.dat file; defaults to RST
+                             environment variable SD_RADAR
+                **Returns**:
+                * A dictionary with keys matching the radar.dat variables
+                  each containing values of length #radars.
 
-			radars = pydarn.radar.radarRead()
-			
-	Written by Sebastien, 2012-09
-	"""
-	import shlex
-	import os
-	from datetime import datetime
-	from davitpy.utils import parseDate
-	
-	# Read file
+        **Example**:
+                ::
+
+                        radars = pydarn.radar.radarRead()
+
+        Written by Sebastien, 2012-09
+        """
+        import shlex
+        import os
+        from datetime import datetime
+        from davitpy.utils import parseDate
+
+        # Read file
         if path:
-            pathOpen = os.path.join(path, 'radar.dat')
-        else:
-            pathOpen = os.getenv('SD_RADAR')
+		pathOpen = os.path.join(path, 'radar.dat')
+	else:
+		pathOpen = os.getenv('SD_RADAR')
 
 	try:
 		file_net = open(pathOpen, 'r')
@@ -54,20 +57,23 @@ def radarRead(path=None):
 		file_net.close()
 	except:
 		print('radarRead: cannot read {}'.format(pathOpen))
-                print('')
-                txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest radar.dat information.  You can can use a local file instead by setting the SD_RADAR environment variable to the location of a local copy of radar.dat.'
-                print(txt)
-                print('')
-                txt = 'Example, you might add a similar line to your .bashrc:'
-                print(txt)
-                txt = 'export SD_RADAR=/home/username/tables/radar.dat'
-                print(txt)
-                print('')
-                txt = 'Also, make sure your SD_HDWPATH also points to the location of your hdw.dat files.'
-                print(txt)
-                txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
-                print(txt)
-                txt = 'Example, you might add a similar line to your .bashrc:'
+		print('')
+		txt = 'You may be getting this error because your computer cannot contact an '
+                      'appropriate internet server to get the latest radar.dat information.  '
+                      'You can can use a local file instead by setting the SD_RADAR '
+                      'environment variable to the location of a local copy of radar.dat.'
+		print(txt)
+		print('')
+		txt = 'Example, you might add a similar line to your .bashrc:'
+		print(txt)
+		txt = 'export SD_RADAR=/home/username/tables/radar.dat'
+		print(txt)
+		print('')
+		txt = 'Also, make sure your SD_HDWPATH also points to the location of your hdw.dat files.'
+		print(txt)
+		txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
+		print(txt)
+		txt = 'Example, you might add a similar line to your .bashrc:'
                 print(txt)
                 txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
                 print(txt)
@@ -415,29 +421,29 @@ class updateRadars(object):
         This method is hidden and used internatlly by :func:`sqlUpdate`.
         
         **Belongs to**: :class:`updateRadars`
-        
-        **Args**: 
+
+        **Args**:
             * **sel** (pymongo Ptr)
-            * [**dtype**] (str): a list of 'name TYPE' pairsto be inserted into sqlite DB
+            * [**dtype**] (str): a list of 'name TYPE' pairsto be inserted into
+			sqlite DB
         **Returns**:
             * **arr** a list of lists of DB entries
         """
         import pickle
 
         arr = []
-        for ir,row in enumerate(sel):
+        for ir, row in enumerate(sel):
             entry = []
             for typ in dtype:
                 k, d = typ.split()
                 if d == 'BLOB':
                     v = pickle.dumps(row[k])
-                else: 
+                else:
                     v = row[k]
                 entry.append( v )
             arr.append( entry )
 
         return arr
-
 
     def __readFromFiles(self):
         """Read hdw.dat and radar.dat into a slect-like dictionnary from local files
@@ -452,27 +458,28 @@ class updateRadars(object):
 
         nradar = len(radarF['id'])
         for irad in xrange( nradar ):
-            radars.append( {"id": radarF['id'][irad], 
-                            "cnum": radarF['cnum'][irad], 
-                            "code": radarF['code'][irad], 
-                            "name": radarF['name'][irad], 
-                            "operator": radarF['operator'][irad], 
-                            "hdwfname": radarF['hdwfname'][irad], 
-                            "status": radarF['status'][irad], 
-                            "stTime": radarF['stTime'][irad], 
+            radars.append( {"id": radarF['id'][irad],
+                            "cnum": radarF['cnum'][irad],
+                            "code": radarF['code'][irad],
+                            "name": radarF['name'][irad],
+                            "operator": radarF['operator'][irad],
+                            "hdwfname": radarF['hdwfname'][irad],
+                            "status": radarF['status'][irad],
+                            "stTime": radarF['stTime'][irad],
                             "edTime": radarF['edTime'][irad],
                             "snum": 0} )
             siteF = hdwRead(radarF['hdwfname'][irad])
             if not siteF: continue
-            tsnum = 0 
+            tsnum = 0
             for isit in xrange( len(siteF['tval']) ):
                 if siteF['tval'][isit] == 0: continue
-                tval = datetime(3000,1,1) if siteF['tval'][isit] == -1 else siteF['tval'][isit]
-                hdw.append( {"id": radarF['id'][irad],
+                tval = datetime(3000, 1, 1) if siteF['tval'][isit] == -1 \
+					  else siteF['tval'][isit]
+		hdw.append( {"id": radarF['id'][irad],
                              "tval": tval,
                              "geolat": siteF['geolat'][isit],
                              "geolon": siteF['geolon'][isit],
-                             "alt": siteF['alt'][isit], 
+                             "alt": siteF['alt'][isit],
                              "boresite": siteF['boresite'][isit],
                              "bmsep": siteF['bmsep'][isit],
                              "vdir": siteF['vdir'][isit],
@@ -483,10 +490,11 @@ class updateRadars(object):
                              "maxatten": siteF['maxatten'][isit],
                              "maxgate": siteF['maxgate'][isit],
                              "maxbeam": siteF['maxbeam'][isit],
-                             "interfer": siteF['interfer'][isit]} )
-                tsnum += 1     
-            radars[-1]["snum"] = tsnum 
+                             "interfer": siteF['interfer'][isit]})
+                tsnum += 1
+            radars[-1]["snum"] = tsnum
 
-        self.db_select = {'rad': radars, 'hdw': hdw, 'inf': [{"var": '',"description": ''}]}
-        
+        self.db_select = {'rad': radars, 'hdw': hdw,
+                          'inf': [{"var": '',"description": ''}]}
+
         return True
