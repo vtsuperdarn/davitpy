@@ -194,23 +194,24 @@ def hdwRead(fname, path=None):
         if len(ldat) == 0: continue
         if ldat[0] == '#': continue
         if int(ldat[1]) == 2999:
-            siteF['tval'].append( -1 )
+            siteF['tval'].append(-1)
         else:
-            siteF['tval'].append( timeYrsecToDate( int(ldat[2]), int(ldat[1]) ) )
-        siteF['geolat'].append( float(ldat[3]) )
-        siteF['geolon'].append( float(ldat[4]) )
-        siteF['alt'].append( float(ldat[5]) )
-        siteF['boresite'].append( float(ldat[6]) )
-        siteF['bmsep'].append( float(ldat[7]) )
-        siteF['vdir'].append( float(ldat[8]) )
-        siteF['atten'].append( float(ldat[9]) )
-        siteF['tdiff'].append( float(ldat[10]) )
-        siteF['phidiff'].append( float(ldat[11]) )
-        siteF['interfer'].append( [float(ldat[12]), float(ldat[13]), float(ldat[14])] )
-        siteF['recrise'].append( float(ldat[15]) )
-        siteF['maxatten'].append( int(ldat[16]) )
-        siteF['maxgate'].append( int(ldat[17]) )
-        siteF['maxbeam'].append( int(ldat[18]) )
+            siteF['tval'].append(timeYrsecToDate(int(ldat[2]), int(ldat[1])))
+        siteF['geolat'].append(float(ldat[3]))
+        siteF['geolon'].append(float(ldat[4]))
+        siteF['alt'].append(float(ldat[5]))
+        siteF['boresite'].append(float(ldat[6]))
+        siteF['bmsep'].append(float(ldat[7]))
+        siteF['vdir'].append(float(ldat[8]))
+        siteF['atten'].append(float(ldat[9]))
+        siteF['tdiff'].append(float(ldat[10]))
+        siteF['phidiff'].append(float(ldat[11]))
+        siteF['interfer'].append([float(ldat[12]), float(ldat[13]),
+                                 float(ldat[14])])
+        siteF['recrise'].append(float(ldat[15]))
+        siteF['maxatten'].append(int(ldat[16]))
+        siteF['maxgate'].append(int(ldat[17]))
+        siteF['maxbeam'].append(int(ldat[18]))
 
     # Return
     return siteF
@@ -218,10 +219,11 @@ def hdwRead(fname, path=None):
 
 # *************************************************************
 class updateRadars(object):
-    """update local radar.sqlite from remote db database, or from local files if the database cannot be reached. 
-    Currently, the remote database is housed on the VT servers.
-    
-    **Members**: 
+    """Update local radar.sqlite from remote db database, or from local files
+       if the database cannot be reached.  Currently, the remote database is
+       housed on the VT servers.
+
+    **Members**:
         * **sql_path** (str): path to sqlite file
         * **sql_file** (str): sqlite file name
     **Methods**:
@@ -239,16 +241,17 @@ class updateRadars(object):
 
     def __init__(self):
         """Default class constructor
-        
+
         **Belongs to**: :class:`updateRadars`
-        
-        **Args**: 
+
+        **Args**:
             * **None**
         **Returns**:
             * **updateRadars** (obj)
         """
 
-        import os, sys
+        import os
+        import sys
         from datetime import datetime
         from numpy import dtype
         import sqlite3 as lite
@@ -288,7 +291,7 @@ class updateRadars(object):
                           "hdwfname TEXT", 
                           "status INT", 
                           "stTime TIMESTAMP", 
-                          "edTime TIMESTAMP", 
+                          "edTime TIMESTAMP",
                           "snum INT"]
         self.dtype_hdw = ["id INT", 
                           "tval TIMESTAMP", 
