@@ -330,7 +330,7 @@ class updateRadars(object):
         from pymongo import MongoClient
         import sys
 
-        uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd, 
+        uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd,
                                                  self.db_host, self.db_name)
 
         try:
@@ -344,7 +344,9 @@ class updateRadars(object):
             try:
                 colSel = lambda colName: dba[colName].find()
 
-                self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"), 'inf': colSel("metadata")}
+                self.db_select = {'rad': colSel("radars"),
+                                  'hdw': colSel("hdw"),
+                                  'inf': colSel("metadata")}
                 return True
             except:
                 print 'Could not get data from remote DB: ', sys.exc_info()[0]
@@ -356,16 +358,16 @@ class updateRadars(object):
                 print('Could not update .radars.sqlite file with hdw.dat info')
             return result
 
-
     def sqlInit(self):
         """Initialize sqlite file (only if file does not already exists)
-        
+
         **Belongs to**: :class:`updateRadars`
-        
-        **Args**: 
+
+        **Args**:
             * **None**
         **Returns**:
-            * **isConnected** (bool): True if sqlite file already exists or was sussessfully created
+            * **isConnected** (bool): True if sqlite file already exists or was
+                              successfully created
         """
         import sqlite3 as lite
         import os
@@ -375,20 +377,22 @@ class updateRadars(object):
             with lite.connect(fname) as conn: pass
             return True
         except lite.Error, e:
-            print "sqlInit() Error %s: %s" % (e.args[0],fname)
+            print "sqlInit() Error %s: %s" % (e.args[0], fname)
             return False
 
     def sqlUpdate(self):
         """Update sqlite file with provided db selections (if possible).
-        
+
         **Belongs to**: :class:`updateRadars`
-        
-        **Args**: 
+
+        **Args**:
             * **None**
         **Returns**:
-            * **isConnected** (bool): True if sqlite file update was successfull
+            * **isConnected** (bool): True if sqlite file update
+                              was successfull
         """
-        import os, sys
+        import os
+        import sys
         import sqlite3 as lite
 
         # Try to connect to DB
@@ -419,15 +423,14 @@ class updateRadars(object):
             cur.execute("CREATE TABLE hdw (%s)" % ', '.join(self.dtype_hdw))
             cur.execute("CREATE TABLE inf (%s)" % ', '.join(self.dtype_inf))
 
-            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?']*len(self.dtype_rad)), 
-                arr_rad)
-            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?']*len(self.dtype_hdw)), 
-                arr_hdw)
-            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?']*len(self.dtype_inf)), 
-                arr_inf)
+            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?'] *
+                            len(self.dtype_rad)), arr_rad)
+            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?'] *
+                            len(self.dtype_hdw)), arr_hdw)
+            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?'] *
+                            len(self.dtype_inf)), arr_inf)
 
         return True
-
 
     def __makeInsDict(self, sel, dtype):
         """Handles BLOB datatype for arrays before insertion into sqlite DB.
