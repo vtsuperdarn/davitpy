@@ -435,13 +435,13 @@ class updateRadars(object):
     def __makeInsDict(self, sel, dtype):
         """Handles BLOB datatype for arrays before insertion into sqlite DB.
         This method is hidden and used internatlly by :func:`sqlUpdate`.
-        
+
         **Belongs to**: :class:`updateRadars`
 
         **Args**:
             * **sel** (pymongo Ptr)
             * [**dtype**] (str): a list of 'name TYPE' pairsto be inserted into
-			sqlite DB
+                          sqlite DB
         **Returns**:
             * **arr** a list of lists of DB entries
         """
@@ -456,8 +456,8 @@ class updateRadars(object):
                     v = pickle.dumps(row[k])
                 else:
                     v = row[k]
-                entry.append( v )
-            arr.append( entry )
+                entry.append(v)
+            arr.append(entry)
 
         return arr
 
@@ -473,44 +473,43 @@ class updateRadars(object):
         if radarF is None: return False
 
         nradar = len(radarF['id'])
-        for irad in xrange( nradar ):
-            radars.append( {"id": radarF['id'][irad],
-                            "cnum": radarF['cnum'][irad],
-                            "code": radarF['code'][irad],
-                            "name": radarF['name'][irad],
-                            "operator": radarF['operator'][irad],
-                            "hdwfname": radarF['hdwfname'][irad],
-                            "status": radarF['status'][irad],
-                            "stTime": radarF['stTime'][irad],
-                            "edTime": radarF['edTime'][irad],
-                            "snum": 0} )
+        for irad in xrange(nradar):
+            radars.append({"id": radarF['id'][irad],
+                           "cnum": radarF['cnum'][irad],
+                           "code": radarF['code'][irad],
+                           "name": radarF['name'][irad],
+                           "operator": radarF['operator'][irad],
+                           "hdwfname": radarF['hdwfname'][irad],
+                           "status": radarF['status'][irad],
+                           "stTime": radarF['stTime'][irad],
+                           "edTime": radarF['edTime'][irad],
+                           "snum": 0})
             siteF = hdwRead(radarF['hdwfname'][irad])
             if not siteF: continue
             tsnum = 0
-            for isit in xrange( len(siteF['tval']) ):
+            for isit in xrange(len(siteF['tval'])):
                 if siteF['tval'][isit] == 0: continue
-                tval = datetime(3000, 1, 1) if siteF['tval'][isit] == -1 \
-					  else siteF['tval'][isit]
-		hdw.append( {"id": radarF['id'][irad],
-                             "tval": tval,
-                             "geolat": siteF['geolat'][isit],
-                             "geolon": siteF['geolon'][isit],
-                             "alt": siteF['alt'][isit],
-                             "boresite": siteF['boresite'][isit],
-                             "bmsep": siteF['bmsep'][isit],
-                             "vdir": siteF['vdir'][isit],
-                             "tdiff": siteF['tdiff'][isit],
-                             "phidiff": siteF['phidiff'][isit],
-                             "recrise": siteF['recrise'][isit],
-                             "atten": siteF['atten'][isit],
-                             "maxatten": siteF['maxatten'][isit],
-                             "maxgate": siteF['maxgate'][isit],
-                             "maxbeam": siteF['maxbeam'][isit],
-                             "interfer": siteF['interfer'][isit]})
+                tval = datetime(3000, 1, 1) if siteF['tval'][isit] == -1 else siteF['tval'][isit]
+                hdw.append({"id": radarF['id'][irad],
+                            "tval": tval,
+                            "geolat": siteF['geolat'][isit],
+                            "geolon": siteF['geolon'][isit],
+                            "alt": siteF['alt'][isit],
+                            "boresite": siteF['boresite'][isit],
+                            "bmsep": siteF['bmsep'][isit],
+                            "vdir": siteF['vdir'][isit],
+                            "tdiff": siteF['tdiff'][isit],
+                            "phidiff": siteF['phidiff'][isit],
+                            "recrise": siteF['recrise'][isit],
+                            "atten": siteF['atten'][isit],
+                            "maxatten": siteF['maxatten'][isit],
+                            "maxgate": siteF['maxgate'][isit],
+                            "maxbeam": siteF['maxbeam'][isit],
+                            "interfer": siteF['interfer'][isit]})
                 tsnum += 1
             radars[-1]["snum"] = tsnum
 
         self.db_select = {'rad': radars, 'hdw': hdw,
-                          'inf': [{"var": '',"description": ''}]}
+                          'inf': [{"var": '', "description": ''}]}
 
         return True
