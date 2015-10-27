@@ -261,55 +261,55 @@ class updateRadars(object):
         dtfmt = '%Y-%m-%d %H:%M:%S'
         dttest = datetime.utcnow().strftime(dtfmt)
         # File path
-        try: 
-          self.sql_path=davitpy.rcParams['DAVIT_TMPDIR']
+        try:
+            self.sql_path = davitpy.rcParams['DAVIT_TMPDIR']
         except:
-          try:  self.sql_path=os.environ['HOME']
-          except: self.sql_path = os.path.dirname( os.path.abspath( __file__ ) )
+            try:  self.sql_path = os.environ['HOME']
+            except: self.sql_path = os.path.dirname(os.path.abspath(__file__))
         self.sql_file = '.radars.sqlite'
         # MongoDB server
         self.db_name = 'radarInfo'
         try:
-          self.db_user = davitpy.rcParams['DBREADUSER']
+            self.db_user = davitpy.rcParams['DBREADUSER']
         except KeyError:
-          self.db_user = "" 
+            self.db_user = ""
         try:
-          self.db_pswd = davitpy.rcParams['DBREADPASS']
+            self.db_pswd = davitpy.rcParams['DBREADPASS']
         except KeyError:
-          self.db_pswd = "" 
+            self.db_pswd = ""
         try:
-          self.db_host = davitpy.rcParams['SDDB']
+            self.db_host = davitpy.rcParams['SDDB']
         except KeyError:
-          self.db_host = "" 
+            self.db_host = ""
 
         # Declare custom data types
-        self.dtype_rad = ["id INT", 
-                          "cnum INT", 
-                          "code BLOB", 
-                          "name TEXT", 
-                          "operator TEXT", 
-                          "hdwfname TEXT", 
-                          "status INT", 
-                          "stTime TIMESTAMP", 
+        self.dtype_rad = ["id INT",
+                          "cnum INT",
+                          "code BLOB",
+                          "name TEXT",
+                          "operator TEXT",
+                          "hdwfname TEXT",
+                          "status INT",
+                          "stTime TIMESTAMP",
                           "edTime TIMESTAMP",
                           "snum INT"]
-        self.dtype_hdw = ["id INT", 
-                          "tval TIMESTAMP", 
-                          "geolat REAL", 
-                          "geolon REAL", 
-                          "alt REAL", 
-                          "boresite REAL", 
-                          "bmsep REAL", 
-                          "vdir INT", 
-                          "tdiff REAL", 
-                          "phidiff REAL", 
-                          "recrise REAL", 
-                          "atten REAL", 
-                          "maxatten REAL", 
-                          "maxgate INT", 
-                          "maxbeam INT", 
+        self.dtype_hdw = ["id INT",
+                          "tval TIMESTAMP",
+                          "geolat REAL",
+                          "geolon REAL",
+                          "alt REAL",
+                          "boresite REAL",
+                          "bmsep REAL",
+                          "vdir INT",
+                          "tdiff REAL",
+                          "phidiff REAL",
+                          "recrise REAL",
+                          "atten REAL",
+                          "maxatten REAL",
+                          "maxgate INT",
+                          "maxbeam INT",
                           "interfer BLOB"]
-        self.dtype_inf = ["var TEXT", 
+        self.dtype_inf = ["var TEXT",
                           "description TEXT"]
 
         isUp = self.sqlUpdate()
@@ -317,24 +317,24 @@ class updateRadars(object):
         if isUp:
             print "Radars information has been updated."
 
-
     def dbConnect(self):
         """Try to establish a connection to remote db database
-        
+
         **Belongs to**: :class:`updateRadars`
-        
-        **Args**: 
+
+        **Args**:
             * **None**
         **Returns**:
             * **isConnected** (bool): True if the connection was successfull
         """
         from pymongo import MongoClient
         import sys
-        #print self.db_user,self.db_pswd,self.db_host, self.db_name
-        uri='mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd, self.db_host, self.db_name)
-        #print uri
+
+        uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd, 
+                                                 self.db_host, self.db_name)
+
         try:
-            conn = MongoClient(uri) 
+            conn = MongoClient(uri)
             dba = conn[self.db_name]
         except:
             print 'Could not connect to remote DB: ', sys.exc_info()[0]
