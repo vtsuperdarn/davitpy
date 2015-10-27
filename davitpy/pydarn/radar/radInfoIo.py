@@ -118,11 +118,13 @@ def radarRead(path=None):
 def hdwRead(fname, path=None):
     """Reads hdw.dat files for given radar specified by its hdw.dat file name
 
-    **Args**: 
+    **Args**:
         * **fname** (str): hdw.dat file name
-        * [**path**] (str): path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
+        * [**path**] (str): path to hdw.dat file; defaults to RST environment
+                     variable SD_HDWPATH
     **Returns**:
-        * A dictionary with keys matching the hdw.dat variables each containing values of length #site updates.
+        * A dictionary with keys matching the hdw.dat variables each
+          containing values of length #site updates.
 
     **Example**:
         ::
@@ -139,11 +141,11 @@ def hdwRead(fname, path=None):
 
     # Read hardware file FNAME
     # Read file
-        if path:
-            pathOpen = os.path.join(path, fname)
-        else:
-            pathOpen = os.getenv('SD_RADAR')
-            pathOpen = os.path.join(str(os.getenv('SD_HDWPATH')), fname)
+    if path:
+        pathOpen = os.path.join(path, fname)
+    else:
+        pathOpen = os.getenv('SD_RADAR')
+        pathOpen = os.path.join(str(os.getenv('SD_HDWPATH')), fname)
 
     try:
         file_hdw = open(pathOpen, 'r')
@@ -151,62 +153,67 @@ def hdwRead(fname, path=None):
         file_hdw.close()
     except:
         print('hdwRead: cannot read {}'.format(pathOpen))
-                print('')
-                txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest hdw.dat information.  You can can use a local file instead by setting the SD_HDWPATH environment variable to the location of the local hdw.dat path.'
-                print(txt)
-                txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
-                print(txt)
-                print('')
-                txt = 'Example, you might add a similar line to your .bashrc:'
-                print(txt)
-                txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
-                print(txt)
-                print('')
-		return
-	
-	# Site placeholder
-	siteF = {}
-	siteF['tval'] = []
-	siteF['geolat'] = []
-	siteF['geolon'] = []
-	siteF['alt'] = []
-	siteF['boresite'] = []
-	siteF['bmsep'] = []
-	siteF['vdir'] = []
-	siteF['atten'] = []
-	siteF['tdiff'] = []
-	siteF['phidiff'] = []
-	siteF['interfer'] = []
-	siteF['recrise'] = []
-	siteF['maxatten'] = []
-	siteF['maxgate'] = []
-	siteF['maxbeam'] = []
-	# Read line by line, ignoring comments
-	for ldat in data:
-		ldat = shlex.split(ldat)
-		if len(ldat) == 0: continue
-		if ldat[0] == '#': continue
-		if int(ldat[1]) == 2999: 
-			siteF['tval'].append( -1 )
-		else:
-			siteF['tval'].append( timeYrsecToDate( int(ldat[2]), int(ldat[1]) ) )
-		siteF['geolat'].append( float(ldat[3]) )
-		siteF['geolon'].append( float(ldat[4]) )
-		siteF['alt'].append( float(ldat[5]) )
-		siteF['boresite'].append( float(ldat[6]) )
-		siteF['bmsep'].append( float(ldat[7]) )
-		siteF['vdir'].append( float(ldat[8]) )
-		siteF['atten'].append( float(ldat[9]) )
-		siteF['tdiff'].append( float(ldat[10]) )
-		siteF['phidiff'].append( float(ldat[11]) )
-		siteF['interfer'].append( [float(ldat[12]), float(ldat[13]), float(ldat[14])] )
-		siteF['recrise'].append( float(ldat[15]) )
-		siteF['maxatten'].append( int(ldat[16]) )
-		siteF['maxgate'].append( int(ldat[17]) )
-		siteF['maxbeam'].append( int(ldat[18]) )
-		
-	# Return
-	return siteF
+        print('')
+        txt = 'You may be getting this error because your computer cannot ' \
+              'contact an appropriate internet server to get the latest ' \
+              'hdw.dat information.  You can can use a local file instead ' \
+              'by setting the SD_HDWPATH environment variable to the ' \
+              'location of the local hdw.dat path.'
+        print(txt)
+        txt = 'You can get the latest hdw.dat files from ' \
+              'https://github.com/vtsuperdarn/hdw.dat'
+        print(txt)
+        print('')
+        txt = 'Example, you might add a similar line to your .bashrc:'
+        print(txt)
+        txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
+        print(txt)
+        print('')
+        return
+
+    # Site placeholder
+    siteF = {}
+    siteF['tval'] = []
+    siteF['geolat'] = []
+    siteF['geolon'] = []
+    siteF['alt'] = []
+    siteF['boresite'] = []
+    siteF['bmsep'] = []
+    siteF['vdir'] = []
+    siteF['atten'] = []
+    siteF['tdiff'] = []
+    siteF['phidiff'] = []
+    siteF['interfer'] = []
+    siteF['recrise'] = []
+    siteF['maxatten'] = []
+    siteF['maxgate'] = []
+    siteF['maxbeam'] = []
+    # Read line by line, ignoring comments
+    for ldat in data:
+        ldat = shlex.split(ldat)
+        if len(ldat) == 0: continue
+        if ldat[0] == '#': continue
+        if int(ldat[1]) == 2999:
+            siteF['tval'].append( -1 )
+        else:
+            siteF['tval'].append( timeYrsecToDate( int(ldat[2]), int(ldat[1]) ) )
+        siteF['geolat'].append( float(ldat[3]) )
+        siteF['geolon'].append( float(ldat[4]) )
+        siteF['alt'].append( float(ldat[5]) )
+        siteF['boresite'].append( float(ldat[6]) )
+        siteF['bmsep'].append( float(ldat[7]) )
+        siteF['vdir'].append( float(ldat[8]) )
+        siteF['atten'].append( float(ldat[9]) )
+        siteF['tdiff'].append( float(ldat[10]) )
+        siteF['phidiff'].append( float(ldat[11]) )
+        siteF['interfer'].append( [float(ldat[12]), float(ldat[13]), float(ldat[14])] )
+        siteF['recrise'].append( float(ldat[15]) )
+        siteF['maxatten'].append( int(ldat[16]) )
+        siteF['maxgate'].append( int(ldat[17]) )
+        siteF['maxbeam'].append( int(ldat[18]) )
+
+    # Return
+    return siteF
 
 
 # *************************************************************
