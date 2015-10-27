@@ -24,130 +24,133 @@ remote db database (requires an active internet connection).
 
 # *************************************************************
 def radarRead(path=None):
-        """Reads radar.dat file
+    """Reads radar.dat file
 
-        **Args***
-                * [**path**] (str): path to radar.dat file; defaults to RST
-                             environment variable SD_RADAR
-                **Returns**:
-                * A dictionary with keys matching the radar.dat variables
-                  each containing values of length #radars.
+    **Args***
+        * [**path**] (str): path to radar.dat file; defaults to RST
+                     environment variable SD_RADAR
+        **Returns**:
+        * A dictionary with keys matching the radar.dat variables
+          each containing values of length #radars.
 
         **Example**:
                 ::
 
-                        radars = pydarn.radar.radarRead()
+            radars = pydarn.radar.radarRead()
 
-        Written by Sebastien, 2012-09
-        """
-        import shlex
-        import os
-        from datetime import datetime
-        from davitpy.utils import parseDate
+    Written by Sebastien, 2012-09
+    """
+    import shlex
+    import os
+    from datetime import datetime
+    from davitpy.utils import parseDate
 
-        # Read file
-        if path:
-		pathOpen = os.path.join(path, 'radar.dat')
-	else:
-		pathOpen = os.getenv('SD_RADAR')
+    # Read file
+    if path:
+        pathOpen = os.path.join(path, 'radar.dat')
+    else:
+        pathOpen = os.getenv('SD_RADAR')
 
-	try:
-		file_net = open(pathOpen, 'r')
-		data = file_net.readlines()
-		file_net.close()
-	except:
-		print('radarRead: cannot read {}'.format(pathOpen))
-		print('')
-		txt = 'You may be getting this error because your computer cannot contact an '
-                      'appropriate internet server to get the latest radar.dat information.  '
-                      'You can can use a local file instead by setting the SD_RADAR '
-                      'environment variable to the location of a local copy of radar.dat.'
-		print(txt)
-		print('')
-		txt = 'Example, you might add a similar line to your .bashrc:'
-		print(txt)
-		txt = 'export SD_RADAR=/home/username/tables/radar.dat'
-		print(txt)
-		print('')
-		txt = 'Also, make sure your SD_HDWPATH also points to the location of your hdw.dat files.'
-		print(txt)
-		txt = 'You can get the latest hdw.dat files from https://github.com/vtsuperdarn/hdw.dat'
-		print(txt)
-		txt = 'Example, you might add a similar line to your .bashrc:'
-                print(txt)
-                txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
-                print(txt)
-                print('')
-		return None
-	
-	# Initialize placeholder dictionary of lists
-	radarF = {}
-	radarF['id'] = []
-	radarF['status'] = []
-	radarF['stTime'] = []
-	radarF['edTime'] = []
-	radarF['name'] = []
-	radarF['operator'] = []
-	radarF['hdwfname'] = []
-	radarF['code'] = []
-	radarF['cnum'] = []
-	# Fill dictionary with each radar.dat lines
-	for ldat in data:
-		ldat = shlex.split(ldat)
-		if len(ldat) == 0: continue
-		radarF['id'].append( int(ldat[0]) )
-		radarF['status'].append( int(ldat[1]) )
-		tmpDate = parseDate( int(ldat[2]) )
-		radarF['stTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
-		tmpDate = parseDate( int(ldat[3]) )
-		radarF['edTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
-		radarF['name'].append( ldat[4] )
-		radarF['operator'].append( ldat[5] )
-		radarF['hdwfname'].append( ldat[6] )
-		radarF['code'].append( ldat[7:] )
-		radarF['cnum'].append( len(ldat[7:]) )
-	
-	# Return			
-	return radarF
+    try:
+        file_net = open(pathOpen, 'r')
+        data = file_net.readlines()
+        file_net.close()
+    except:
+        print('radarRead: cannot read {}'.format(pathOpen))
+        print('')
+        txt = 'You may be getting this error because your computer ' \
+              'cannot contact an appropriate internet server to get ' \
+              'the latest radar.dat information.  You can can use a ' \
+              'local file instead by setting the SD_RADAR environment ' \
+              'variable to the location of a local copy of radar.dat.'
+        print(txt)
+        print('')
+        txt = 'Example, you might add a similar line to your .bashrc:'
+        print(txt)
+        txt = 'export SD_RADAR=/home/username/tables/radar.dat'
+        print(txt)
+        print('')
+        txt = 'Also, make sure your SD_HDWPATH also points to the location ' \
+              'of your hdw.dat files.'
+        print(txt)
+        txt = 'You can get the latest hdw.dat files from ' \
+              'https://github.com/vtsuperdarn/hdw.dat'
+        print(txt)
+        txt = 'Example, you might add a similar line to your .bashrc:'
+        print(txt)
+        txt = 'export SD_HDWPATH=/home/username/tables/hdw.dat/'
+        print(txt)
+        print('')
+        return None
+
+    # Initialize placeholder dictionary of lists
+    radarF = {}
+    radarF['id'] = []
+    radarF['status'] = []
+    radarF['stTime'] = []
+    radarF['edTime'] = []
+    radarF['name'] = []
+    radarF['operator'] = []
+    radarF['hdwfname'] = []
+    radarF['code'] = []
+    radarF['cnum'] = []
+    # Fill dictionary with each radar.dat lines
+    for ldat in data:
+        ldat = shlex.split(ldat)
+        if len(ldat) == 0: continue
+        radarF['id'].append( int(ldat[0]) )
+        radarF['status'].append( int(ldat[1]) )
+        tmpDate = parseDate( int(ldat[2]) )
+        radarF['stTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
+        tmpDate = parseDate( int(ldat[3]) )
+        radarF['edTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
+        radarF['name'].append( ldat[4] )
+        radarF['operator'].append( ldat[5] )
+        radarF['hdwfname'].append( ldat[6] )
+        radarF['code'].append( ldat[7:] )
+        radarF['cnum'].append( len(ldat[7:]) )
+
+    # Return			
+    return radarF
 
 
 # *************************************************************
 def hdwRead(fname, path=None):
-	"""Reads hdw.dat files for given radar specified by its hdw.dat file name
-	
-	**Args**: 
-		* **fname** (str): hdw.dat file name
-		* [**path**] (str): path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
-	**Returns**:
-		* A dictionary with keys matching the hdw.dat variables each containing values of length #site updates.
+    """Reads hdw.dat files for given radar specified by its hdw.dat file name
 
-	**Example**:
-		::
+    **Args**: 
+        * **fname** (str): hdw.dat file name
+        * [**path**] (str): path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
+    **Returns**:
+        * A dictionary with keys matching the hdw.dat variables each containing values of length #site updates.
 
-			hdw = pydarn.radar.hdwRead('hdw.dat.bks')
-			
-	Written by Sebastien, 2012-09
-	"""
-	import os
-        import sys
-	import shlex
-	from datetime import datetime
-	from davitpy.utils import timeYrsecToDate
-	
-	# Read hardware file FNAME
-	# Read file
+    **Example**:
+        ::
+
+            hdw = pydarn.radar.hdwRead('hdw.dat.bks')
+
+    Written by Sebastien, 2012-09
+    """
+    import os
+    import sys
+    import shlex
+    from datetime import datetime
+    from davitpy.utils import timeYrsecToDate
+
+    # Read hardware file FNAME
+    # Read file
         if path:
             pathOpen = os.path.join(path, fname)
         else:
             pathOpen = os.getenv('SD_RADAR')
             pathOpen = os.path.join(str(os.getenv('SD_HDWPATH')), fname)
 
-	try:
-		file_hdw = open(pathOpen, 'r')
-		data = file_hdw.readlines()
-		file_hdw.close()
-	except:
-		print('hdwRead: cannot read {}'.format(pathOpen))
+    try:
+        file_hdw = open(pathOpen, 'r')
+        data = file_hdw.readlines()
+        file_hdw.close()
+    except:
+        print('hdwRead: cannot read {}'.format(pathOpen))
                 print('')
                 txt = 'You may be getting this error because your computer cannot contact an appropriate internet server to get the latest hdw.dat information.  You can can use a local file instead by setting the SD_HDWPATH environment variable to the location of the local hdw.dat path.'
                 print(txt)
