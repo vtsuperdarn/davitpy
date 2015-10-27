@@ -98,19 +98,19 @@ def radarRead(path=None):
     for ldat in data:
         ldat = shlex.split(ldat)
         if len(ldat) == 0: continue
-        radarF['id'].append( int(ldat[0]) )
-        radarF['status'].append( int(ldat[1]) )
-        tmpDate = parseDate( int(ldat[2]) )
-        radarF['stTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
-        tmpDate = parseDate( int(ldat[3]) )
-        radarF['edTime'].append( datetime(tmpDate[0], tmpDate[1], tmpDate[2]) )
-        radarF['name'].append( ldat[4] )
-        radarF['operator'].append( ldat[5] )
-        radarF['hdwfname'].append( ldat[6] )
-        radarF['code'].append( ldat[7:] )
-        radarF['cnum'].append( len(ldat[7:]) )
+        radarF['id'].append(int(ldat[0]))
+        radarF['status'].append(int(ldat[1]))
+        tmpDate = parseDate(int(ldat[2]))
+        radarF['stTime'].append(datetime(tmpDate[0], tmpDate[1], tmpDate[2]))
+        tmpDate = parseDate(int(ldat[3]))
+        radarF['edTime'].append(datetime(tmpDate[0], tmpDate[1], tmpDate[2]))
+        radarF['name'].append(ldat[4])
+        radarF['operator'].append(ldat[5])
+        radarF['hdwfname'].append(ldat[6])
+        radarF['code'].append(ldat[7:])
+        radarF['cnum'].append(len(ldat[7:]))
 
-    # Return			
+    # Return
     return radarF
 
 
