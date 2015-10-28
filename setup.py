@@ -35,7 +35,7 @@ for s in source_dirs:
             sources.append('.'.join(
                 root.replace(pwd,'').strip('/').split('/')
                 ))
-print 'spurces',sources
+print 'sources',sources
 ################################################################################
 
 def read(fname):
