@@ -32,7 +32,6 @@ load_test_beams
 plot_scan_and_beam
 plot_meteor_figure
 plot_map
-writeASCII_file
 '''
 
 # Import python packages
@@ -54,7 +53,7 @@ import update_backscatter as ub
 #--------------------------------------------------------------------------
 # Define the colors (can be overwritten)
 clinear = "Spectral_r"
-ccenter = "RdYlBu"
+ccenter = "Spectral"
 
 morder =  {"region":{"D":0, "E":1, "F":2},
            "reg":{"0.5D":0, "1.0D":1, "0.5E":2, "1.0E":3, "1.5E":4, "2.0E":5,
@@ -69,12 +68,12 @@ mc = {"region":{"D":"g", "E":"m", "F":"b"},
              "2.0F":"c", "2.5F":(0.25, 0.75, 1.0), "3.0F":(0.0, 1.0, 1.0)},
       "hop":{0.5:"b", 1.0:"r", 1.5:"c", 2.0:"m",
              2.5:(0.25, 0.75, 1.0), 3.0:(0.5, 0, 0.25)},}
-mm = {"region":{"D":"d", "E":"o", "F":"^", "all":"s"},
+mm = {"region":{"D":"d", "E":"o", "F":"^", "all":"|"},
       "reg":{"0.5D":"d", "1.0D":"Y", "0.5E":"^", "1.0E":"o", "1.5E":">",
              "2.0E":"8", "2.5E":"*", "3.0E":"H", "0.5F":"v", "1.0F":"p",
-             "1.5F":"<", "2.0F":"h", "2.5F":"D", "3.0F":"s", "all":"s"},
+             "1.5F":"<", "2.0F":"h", "2.5F":"D", "3.0F":"s", "all":"|"},
       "hop":{0.5:"d", 1.0:"o", 1.5:"s", 2.0:"^", 2.5:"v", 3.0:"p",
-             "all":"s"},}
+             "all":"|"},}
 
 #--------------------------------------------------------------------------
 def add_colorbar(figure_handle, contour_handle, zmin, zmax, zinc=6, name=None,
@@ -211,7 +210,7 @@ def get_fractional_hop_labels(legend_labels):
 #--------------------------------------------------------------------------
 def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                        marker_key="reg", color={"p_l":clinear,"fovelv":clinear},
-                       stime=dt.datetime(1998,10,15,12,10),
+                       acolor="0.9", stime=dt.datetime(1998,10,15,12,10),
                        etime=dt.datetime(1998,10,15,12,50),
                        imin={"p_l":0.0, "fovelv":0.0},
                        imax={"p_l":30.0, "fovelv":40.0},
@@ -226,7 +225,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       label_type="frac", beams=dict()):
+                       strict_gs=True, label_type="frac", beams=dict()):
     '''Plot based on Plate 1  in Yeoman et al (2001) Radio Science, 36, 801-813.
 
 
@@ -244,6 +243,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
         Intensity color scheme.  Defaults to the standard centered color
         scheme for this program.  Yeoman et al (2001) used "jet".
         (default={"p_l":"Spectral_r","fovelv":"Spectral_r"})
+    acolor : (str or tuple)
+        Background color for subplots (default="0.9" - light grey)
     stime : (dt.datetime)
         Starting time of plot (will pad loaded data).
         (default=dt.datetime(1998,10,15,12,10))
@@ -321,6 +322,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
         Test to see if a propagation path is realistic (default=True)
     step : (int)
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=True)
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
     beams : (dict)
@@ -351,7 +354,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                            vh_box=vh_box, max_rg=max_rg, max_hop=max_hop,
                            ut_box=ut_box, tdiff=tdiff, tdiff_e=tdiff_e,
                            tdiff_time=tdiff_time, ptest=ptest, step=step,
-                           beams=beams)
+                           strict_gs=strict_gs, beams=beams)
 
     rad = rad_bms.keys()[0]
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
@@ -384,6 +387,9 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
     for rad in irad.keys():
         # Cycle through the field-of-view keys
         for ff in ax[rad].keys():
+            # Add a background color to the subplot
+            ax[rad][ff].set_axis_bgcolor(acolor)
+
             # Plot the data
             if ff is "all":
                 zz = zi[rad][ff]['all']
@@ -392,7 +398,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                                           c=zdata[rad][ii][zz],
                                           cmap=cm.get_cmap(color[ii]),
                                           vmin=imin[ii], vmax=imax[ii], s=20,
-                                          edgecolor="none",
+                                          edgecolor="face", linewidth=2.0,
                                           marker=mm[marker_key][ff])
             else:
                 ii = intensity_sep
@@ -405,7 +411,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
 
                     if intensity_sep is "hop":
                         ax[rad][ff].plot(xtime[rad][zz], yrange[rad][zz], ms=8,
-                                         edgecolor="none",
+                                         edgecolor="face",
                                          marker=mm[marker_key][hh],
                                          color=mc[marker_key][hh], label=label)
                     elif len(zz) > 0:
@@ -414,7 +420,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                                                   c=zdata[rad][ii][zz],
                                                   cmap=cm.get_cmap(color[ii]),
                                                   vmin=imin[ii], vmax=imax[ii],
-                                                  s=20, edgecolor="none",
+                                                  s=20, edgecolor="face",
                                                   marker=mm[marker_key][hh],
                                                   label=label)
 
@@ -492,7 +498,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
 #-------------------------------------------------------------------------
 def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                        marker_key="reg", color={"p_l":clinear, "p_l":clinear},
-                       stime=dt.datetime(1995,12,14,5),
+                       acolor="0.9", stime=dt.datetime(1995,12,14,5),
                        etime=dt.datetime(1995,12,14,16), imin={"p_l":0.0},
                        imax={"p_l":30.0}, rad="han", bmnum=2, cp=127,
                        figname=None, password=True, logfile=None,
@@ -503,7 +509,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       label_type="frac", beams=dict()):
+                       strict_gs=True, label_type="frac", beams=dict()):
     '''Plot based on Figure 9 in Milan et al (1997) Annales Geophysicae, 15,
     29-39.
 
@@ -520,6 +526,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
     color : (dict of str)
         Intensity color scheme.  Defaults to the standard centered color
         scheme for this program.  Yeoman et al (2001) used "jet".
+    acolor : (str or tuple)
+        Background color for subplots (default="0.9" - light grey)
     stime : (dt.datetime)
         Starting time of plot (will pad loaded data).
         (default=dt.datetime(1998,10,15,12,10))
@@ -585,6 +593,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
         Test to see if a propagation path is realistic (default=True)
     step : (int)
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=True)
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
     beams : (dict)
@@ -615,7 +625,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                            rg_box=rg_box, vh_box=vh_box, max_rg=max_rg,
                            max_hop=max_hop, ut_box=ut_box, tdiff=tdiff,
                            tdiff_e=tdiff_e, tdiff_time=tdiff_time, ptest=ptest,
-                           step=step, beams=beams)
+                           step=step, strict_gs=strict_gs, beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
         print "ERROR! can't find radar [", rad, "] in data:", dout[0].keys()
@@ -652,7 +662,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                                          "Rear\nRange Gate",
                                          "Unassigned\nRange Gate"],
                                 titles=["","","",""], plot_title=ftitle,
-                                label_type=label_type)
+                                label_type=label_type, acolor=acolor)
 
     if figname is not None:
         f.savefig(figname)
@@ -661,7 +671,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
 
 #-------------------------------------------------------------------------
 def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
-                       color={"v":ccenter}, stime=dt.datetime(1997,10,10,15),
+                       color={"v":ccenter}, acolor="0.9",
+                       stime=dt.datetime(1997,10,10,15),
                        etime=dt.datetime(1997,10,10,20),
                        mtimes=[dt.datetime(1997,10,10,16),
                                dt.datetime(1997,10,10,17,30),
@@ -677,7 +688,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       label_type="frac", beams=dict()):
+                       strict_gs=True, label_type="frac", beams=dict()):
     '''Plot showing a period of time where E-region scatter past over the
     radar at pyk.
 
@@ -694,6 +705,11 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
     color : (dict of str)
         Intensity color scheme.  Defaults to the standard centered color
         scheme for this program.
+    color : (dict of str)
+        Intensity color scheme.  Defaults to the standard centered color
+        scheme for this program.
+    acolor : (str or tuple)
+        Background color for subplots (default="0.9" - light grey)
     stime : (dt.datetime)
         Starting time of plot (will pad loaded data).
         (default=dt.datetime(1997,10,10,15))
@@ -767,6 +783,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
         Test to see if a propagation path is realistic (default=True)
     step : (int)
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=True)
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots.  Will create this data
@@ -796,7 +814,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                            rg_box=rg_box, vh_box=vh_box, max_rg=max_rg,
                            max_hop=max_hop, ut_box=ut_box, tdiff=tdiff,
                            tdiff_e=tdiff_e, tdiff_time=tdiff_time, ptest=ptest,
-                           step=step, beams=beams)
+                           step=step, strict_gs=strict_gs, beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
         return(dout[0], dout[1], dout[2], beams)
@@ -832,7 +850,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                                          "Rear\nRange Gate",
                                          "Unassigned\nRange Gate"],
                                 titles=["","","",""], plot_title=ftitle,
-                                label_type=label_type)
+                                label_type=label_type, acolor=acolor)
 
     mlen = len(mtimes)
     if mlen > 0:
@@ -860,6 +878,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                     j += 1
 
             llab = True if ia % 2 == 0 else False
+            axmap[ia].set_axis_bgcolor(acolor)
             mm, fovs, hard, con = plot_map(axmap[ia], scan, hard=hard,
                                            map_handle=mm, fovs=fovs,
                                            plot_beams={1:[bmnum],-1:[bmnum]},
@@ -899,7 +918,8 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
                        ymax=None, zmin=None, zmax=None, xfmt=None, yfmt=None,
                        xinc=None, yinc=None, zinc=dict(), xlabel="",
                        ylabels=["All","Front","Rear","Unassigned"],
-                       titles=["","","",""], plot_title="", label_type="frac"):
+                       titles=["","","",""], plot_title="", label_type="frac",
+                       acolor="w"):
     '''Plot single column of subplots with all data in the first row using one
     type of data in the z-axis, and a second type of data in the z-axis for the
     final rows, which plot only data belonging to the front, rear, and no field-
@@ -956,6 +976,8 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
         Plot title (default="")
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
+    acolor : (str or tuple)
+        Background color for subplots (default="0.9" - light grey)
 
     Returns
     ---------
@@ -988,14 +1010,20 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
 
     # Cycle through the field-of-view keys
     for ff in iax.keys():
+        # Set the plot background color
+        ax[ff].set_axis_bgcolor(acolor)
+
         # Plot the data
         if ff is "all":
             ii = zname[ff]
             zz = zindices[ff]['all']
+            cmap = cm.get_cmap(color[ii]) if isinstance(color[ii],
+                                                        str) else color[ii]
+
             con = ax[ff].scatter(xdata[zz], ydata[zz], c=zdata[ii][zz],
-                                 cmap=cm.get_cmap(color[ii]), vmin=zmin[ii],
-                                 vmax=zmax[ii], s=20, edgecolor="none",
-                                 marker=mm[marker_key][ff])
+                                 cmap=cmap, vmin=zmin[ii],
+                                 vmax=zmax[ii], s=20, edgecolor="face",
+                                 marker=mm[marker_key][ff], linewidth=2.5)
         else:
             ii = zname['sep']
             for hh in hops:
@@ -1003,13 +1031,17 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
                 ll = hh if isinstance(hh, str) else "{:.1f}".format(hh)
                 if ii is 'hop' or ii is 'reg':
                     ax[ff].plot(xdata[zz], ydata[zz], mm[marker_key][hh], ms=5,
-                                markeredgecolor="none",
+                                markeredgecolor="face",
                                 color=mc[marker_key][hh], label=ll)
                 elif len(zz) > 0:
+                    if isinstance(color[ii], str):
+                        cmap = cm.get_cmap(color[ii])
+                    else:
+                        cmap = color[ii]
+
                     con = ax[ff].scatter(xdata[zz], ydata[zz], c=zdata[ii][zz],
-                                         cmap=cm.get_cmap(color[ii]),
-                                         vmin=zmin[ii], vmax=zmax[ii], s=20,
-                                         edgecolor="none",
+                                         cmap=cmap, vmin=zmin[ii],
+                                         vmax=zmax[ii], s=20, edgecolor="none",
                                          marker=mm[marker_key][hh], label=ll)
 
                 # Save legend handles
@@ -1088,7 +1120,7 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                     max_rg=[5,25,40,76], max_hop=3.0,
                     ut_box=dt.timedelta(minutes=20.0),tdiff=list(),
                     tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                    beams=dict()):
+                    strict_gs=True, beams=dict()):
     '''Load data for a test period, updating the beams to include origin field-
     of-view data and returning dictionaries of lists with time, range,
     and intensity data for a specified radar/beam combination.
@@ -1163,6 +1195,8 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
         Test to see if a propagation path is realistic (default=True)
     step : (int)
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=True)
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
     beams : (dict)
@@ -1233,7 +1267,8 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                                                ut_box=ut_box, tdiff=tdiff,
                                                tdiff_e=tdiff_e,
                                                tdiff_time=tdiff_time,
-                                               ptest=ptest, logfile=logfile, 
+                                               ptest=ptest, strict_gs=strict_gs,
+                                               logfile=logfile,
                                                log_level=log_level, step=step)
 
         # Load the data for this beam and radar
@@ -1265,7 +1300,9 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
              
                     for i,s in enumerate(bm.fit.slist):
                         if(not np.isnan(bm.fit.hop[i]) and
-                           len(bm.fit.region[i]) == 1):
+                           len(bm.fit.region[i]) == 1 and
+                           (not strict_gs or
+                            (strict_gs and bm.fit.gflg[i] >= 0))):
                             xtime[rad].append(bm.time)
                             yrange[rad].append(s)
                             for k in idat.keys():
@@ -1526,14 +1563,14 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
             con = fbax.scatter(xbeam[bhop[1][hh]], brange[bhop[1][hh]],
                                c=fbeam[bhop[1][hh]], vmin=zmin, vmax=zmax,
                                cmap=cm.get_cmap(contour_color), s=80,
-                               edgecolor="none", marker=mm[mkey][hh])
+                               edgecolor="face", marker=mm[mkey][hh])
             fbax.plot(xbeam[bfov[1][hh]], brange[bfov[1][hh]], mm[mkey][hh],
                       ms=8, markerfacecolor="none", markeredgecolor=mcolor)
         if len(bhop[-1][hh]) > 0:
             con = rbax.scatter(xbeam[bhop[-1][hh]], brange[bhop[-1][hh]],
                                c=rbeam[bhop[-1][hh]], vmin=zmin, vmax=zmax,
                                cmap=cm.get_cmap(contour_color), s=80,
-                               edgecolor="none", marker=mm[mkey][hh])
+                               edgecolor="face", marker=mm[mkey][hh])
             rbax.plot(xbeam[bfov[-1][hh]], brange[bfov[-1][hh]], mm[mkey][hh],
                       ms=8, markerfacecolor="none", markeredgecolor=mcolor)
         if len(thop[1][hh]) > 0:
@@ -1546,7 +1583,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
             con = ftax.scatter(xtime[thop[1][hh]], trange[thop[1][hh]],
                                c=ftime[thop[1][hh]], vmin=zmin, vmax=zmax,
                                cmap=cm.get_cmap(contour_color), s=80,
-                               edgecolor="none", marker=mm[mkey][hh],
+                               edgecolor="face", marker=mm[mkey][hh],
                                label=label)
             ftax.plot(xtime[tfov[1][hh]], trange[tfov[1][hh]], mm[mkey][hh],
                       ms=8, markerfacecolor="none", markeredgecolor=mcolor)
@@ -1560,7 +1597,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
             con = rtax.scatter(xtime[thop[-1][hh]], trange[thop[-1][hh]],
                                c=rtime[thop[-1][hh]], vmin=zmin, vmax=zmax,
                                cmap=cm.get_cmap(contour_color), s=80,
-                               edgecolor="none", marker=mm[mkey][hh])
+                               edgecolor="face", marker=mm[mkey][hh])
             rtax.plot(xtime[tfov[-1][hh]], trange[tfov[-1][hh]], mm[mkey][hh],
                       ms=8, markerfacecolor="none", markeredgecolor=mcolor)
 
@@ -1679,7 +1716,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       beams=dict()):
+                       strict_gs=True, beams=dict()):
     '''Plot comparing HWM14 neutral winds with the line-of-site velocity
     for two beams at Saskatoon
 
@@ -1756,6 +1793,8 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         Test to see if a propagation path is realistic (default=True)
     step : (int)
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
+    strict_gs : (bool)
+        Use indeterminately flagged backscatter (default=True)
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots.  Will create this data
@@ -1968,7 +2007,13 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                             ihwm = hwm.hwm_input.format_hwm_input(bm.time, alt,
                                                                   glat, glon,
                                                                   ap)
-                            winds = hwm.hwm14(*ihwm)
+                            try:
+                                winds = hwm.hwm14.hwm14(*ihwm)
+                            except:
+                                # The first call to hwm14 creates the module,
+                                # but it works just the same as calling the
+                                # module
+                                winds = hwm.hwm14(*ihwm)
                             hspeed[skey].append(winds[0])
 
     # Recast the data as numpy arrays
@@ -2265,43 +2310,3 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
 
     # Return
     return(map_handle, fovs, hard, pcoll)
-
-#---------------------------------------------------------------------------
-def writeASCII_file(filename, datalines):
-    '''A routine to create an ascii file from a string or list of strings.  Will
-    overwrite a file with the same name if such a file exists
-
-    Parameters
-    -----------
-    filename : (str)
-        Output file name
-    datalines : (str)
-        String or list of strings to be written
-
-    Returns
-    ---------
-    Void
-    '''
-    rn = "writeASCII_file"
-
-    #-----------------------------------------------------------------------
-    # Open and test the file to ensure it can be written
-    try:
-        f = open(filename, 'w')
-
-        # Print data after determinging the appropriate data type
-        try:
-            dlen = len(datalines)
-
-            if type(datalines) is str:
-                f.write(datalines)
-            else:
-                for line in datalines:
-                    line = line+"\n"
-                    f.write(line)
-        except:
-            f.write(datalines)
-
-        f.close()
-    except:
-        print "{:s} ERROR: unable to open [{:s}]".format(rn, filename)
