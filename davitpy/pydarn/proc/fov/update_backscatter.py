@@ -208,37 +208,40 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
             param[1] = cbin[ih]
             try:
                 coeff, var = optimize.curve_fit(gaussian, cbin, hnum, p0=param)
+                # Evaluate for np.nan in coefficients
+                try:
+                    np.isnan(coeff).tolist().index(True)
+                except:
+                    # Get the 3 sigma limits
+                    vmin = coeff[1] - 3.0 * coeff[2]
+                    if vmin < rmin:
+                        vmin = rmin
+                    vmax = coeff[1] + 3.0 * coeff[2]
+                    if vmax > rmax:
+                        vmax = rmax
 
-                # Get the 3 sigma limits
-                vmin = coeff[1] - 3.0 * coeff[2]
-                if vmin < rmin:
-                    vmin = rmin
-                vmax = coeff[1] + 3.0 * coeff[2]
-                if vmax > rmax:
-                    vmax = rmax
+                    # Get the 2 sigma limits
+                    vlow = coeff[1] - 2.0 * coeff[2]
+                    if vlow < rmin:
+                        vlow = rmin
+                    vhigh = coeff[1] + 2.0 * coeff[2]
+                    if vhigh > rmax:
+                        vhigh = rmax
 
-                # Get the 2 sigma limits
-                vlow = coeff[1] - 2.0 * coeff[2]
-                if vlow < rmin:
-                    vlow = rmin
-                vhigh = coeff[1] + 2.0 * coeff[2]
-                if vhigh > rmax:
-                    vhigh = rmax
+                    # If the fitted curve does not include the detected peak
+                    # within a 2 sigma limit, throw out this fit.
+                    if cbin[ih] < vlow or cbin[ih] > vhigh:
+                        coeff = list()
+                    else:
+                        # To allow secondary peaks to be fitted, remove this
+                        # peak from consideration
+                        hnum = [hnum[ic] if cc < vmin or cc >= vmax else 0
+                                for ic,cc in enumerate(cbin)]
 
-                # If the fitted curve does not include the detected peak within
-                # a 2 sigma limit, throw out this fit.
-                if cbin[ih] < vlow or cbin[ih] > vhigh:
-                    coeff = list()
-                else:
-                    # To allow secondary peaks to be fitted, remove this peak
-                    # from consideration
-                    hnum = [hnum[ic] if cc < vmin or cc >= vmax else 0
-                            for ic,cc in enumerate(cbin)]
-
-                    # Save the initial peak boundaries
-                    vh_mins.append(vmin)
-                    vh_maxs.append(vmax)
-                    vh_peaks.append(coeff[1])
+                        # Save the initial peak boundaries
+                        vh_mins.append(vmin)
+                        vh_maxs.append(vmax)
+                        vh_peaks.append(coeff[1])
             except:
                 pass
 
@@ -342,7 +345,7 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
 
             # If there are points that fall above the upper limit, add more
             # regions to include these points.
-            if max(new_max) < tmax:
+            if len(new_max) == 0 or max(new_max) < tmax:
                 vmin = max(new_max)
                 vnum = round((tmax - vmin) / vh_box)
                 if vnum == 0.0:
@@ -1128,7 +1131,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                      region_hmin={"D":75.0,"E":115.0,"F":150.0},
                      rg_box=[2,5,10,20], rg_max=[5,25,40,76],
                      vh_box=[50.0,50.0,50.0,150.0], max_hop=3.0, tdiff=None,
-                     tdiff_e=None, ptest=True, logfile=None,
+                     tdiff_e=None, ptest=True, strict_gs=False, logfile=None,
                      log_level=logging.WARNING, step=6):
     '''
     Updates the propagation path, elevation, backscatter type, structure flag,
@@ -1171,6 +1174,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         tdiff error (in microsec) or None. (default=None)
     ptest : (boolian)
         Perform test to see if propagation modes are realistic? (default=True)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=False)
     logfile : (str or NoneType)
         Print warnings to a logfile or stdout.  (default=None for stdout)
     log_level : (int)
@@ -1354,8 +1359,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
              nhard) = update_beam_fit(beams[bnum-1], hard=hard, tdiff=tdiff,
                                       tdiff_e=tdiff_e, region_hmax=region_hmax,
                                       region_hmin=region_hmin, max_hop=max_hop,
-                                      ptest=ptest, logfile=logfile,
-                                      log_level=log_level)
+                                      ptest=ptest, strict_gs=strict_gs,
+                                      logfile=logfile, log_level=log_level)
 
             if e is None or nhard is None:
                 beams[bnum-1] = None
@@ -1927,7 +1932,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                     region_hmax={"D":115.0,"E":150.0,"F":900.0},
                     region_hmin={"D":75.0,"E":115.0,"F":150.0}, max_hop=3.0,
-                    ptest=True, logfile=None, log_level=logging.WARNING):
+                    ptest=True, strict_gs=False, logfile=None,
+                    log_level=logging.WARNING):
     '''
     Update the beam.fit and beam.prm class, updating and adding attributes
     needed for common data analysis
@@ -1954,6 +1960,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         The maximum allowable hop to be considered physical. (default=2.0)
     ptest : (boolian)
         Perform test to see if propagation modes are realistic? (default=True)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=False)
     logfile : (str or NoneType)
         Print warnings to a logfile or stdout.  (default=None for stdout)
     log_level : (int)
@@ -2102,16 +2110,21 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                 dist['front'][i] *= 0.5
                 dist['back'][i] *= 0.5
             except:
-                # This point was found not to be groundscatter
+                # This point was found not to be groundscatter.  It is probably
+                # slow moving ionospheric backscatter, so treat it like
+                # ionospheric backscatter but change the flag to let the user
+                # know that it was not flagged by the initial ionospheric
+                # backscatter test
                 beam.fit.gflg[i] = -1
 
-                # Update the distance and hop to reflect this status
-                hops['front'][i] = np.nan
-                hops['back'][i] = np.nan
-                dist['front'][i] = np.nan
-                dist['back'][i] = np.nan
-        elif g == -1:
-            # In case the groundflag was specified before loading
+                if strict_gs:
+                    hops['front'][i] = np.nan
+                    hops['back'][i] = np.nan
+                    dist['front'][i] = np.nan
+                    dist['back'][i] = np.nan
+
+        # Remove backscatter with negative power estimates
+        if beam.fit.p_l[i] < 0.0 or beam.fit.p_s[i] < 0.0:
             hops['front'][i] = np.nan
             hops['back'][i] = np.nan
             dist['front'][i] = np.nan
@@ -2248,7 +2261,8 @@ def update_backscatter(rad_bms, min_pnts=3,
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True,
-                       logfile=None, log_level=logging.WARNING, step=6):
+                       strict_gs=False, logfile=None,
+                       log_level=logging.WARNING, step=6):
     '''
     Updates the propagation path, elevation, backscatter type, and origin
     field-of-view (FoV) for all backscatter observations in each beam.  Scans
@@ -2293,6 +2307,8 @@ def update_backscatter(rad_bms, min_pnts=3,
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
+    strict_gs : (boolian)
+        Remove indeterminately flagged backscatter (default=False)
     logfile : (str or NoneType)
         Print warnings to a logfile or stdout.  (default=None for stdout)
     log_level : (int)
@@ -2474,8 +2490,9 @@ def update_backscatter(rad_bms, min_pnts=3,
                                          rg_max=max_rg, max_hop=max_hop,
                                          tdiff=get_tdiff(tdiff,st),
                                          tdiff_e=get_tdiff(tdiff_e,st),
-                                         ptest=ptest, logfile=logfile,
-                                         log_level=log_level, step=step)
+                                         ptest=ptest, strict_gs=strict_gs,
+                                         logfile=logfile,  log_level=log_level,
+                                         step=step)
 
                     if b is not None:
                         beams.extend(list(b))
