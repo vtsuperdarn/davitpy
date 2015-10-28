@@ -192,7 +192,8 @@ if not os.path.exists(aacgm_coeffs_dir):
 
 # a map from key -> value, converter
 defaultParams = {
-    'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir+'aacgm_coeffs',validate_string],
+    'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir+'aacgm_coeffs',
+                                 validate_string],
     'DAVITPY_PATH':             [path, validate_path_exists],
 
     # the verbosity setting for logging
@@ -206,21 +207,26 @@ defaultParams = {
     'DB_PORT':			['22',validate_string],
     # database 
     'SDDB':			['sd-work9.ece.vt.edu:27017',validate_string],
+    'SDBREADUSER':		['sd_dbread',validate_string],
+    'SDBREADPASS':		['5d',validate_string],
     'DBWRITEUSER':		['',validate_string],
     'DBWRITEPASS':		['',validate_string],
     # temporary directory
     'DAVIT_TMPDIR':		['/tmp/sd/',validate_string],
     # radar data file fetching
-    'DAVIT_REMOTE_DIRFORMAT':	['data/{year}/{ftype}/{radar}/',validate_string],
+    'DAVIT_REMOTE_DIRFORMAT':	['data/{year}/{ftype}/{radar}/',
+                                 validate_string],
     'DAVIT_REMOTE_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}',validate_string],
-    'DAVIT_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{radar}/',validate_string],
+    'DAVIT_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{radar}/',
+                                 validate_string],
     'DAVIT_LOCAL_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}',validate_string],
     'DAVIT_REMOTE_TIMEINC':	['2',validate_string],
     'DAVIT_LOCAL_TIMEINC':	['2',validate_string],
     # map file fetching
     'DAVIT_SD_REMOTE_DIRFORMAT':['data/{year}/{ftype}/{hemi}/',validate_string],
     'DAVIT_SD_REMOTE_FNAMEFMT':	['{date}.{hemi}.{ftype}',validate_string],
-    'DAVIT_SD_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{hemi}/',validate_string],
+    'DAVIT_SD_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{hemi}/',
+                                 validate_string],
     'DAVIT_SD_LOCAL_FNAMEFMT':	['{date}.{hemi}.{ftype}',validate_string],
     'DAVIT_SD_REMOTE_TIMEINC':	['24',validate_string],
     'DAVIT_SD_LOCAL_TIMEINC':	['24',validate_string]
