@@ -1,6 +1,10 @@
 ## DaViT-py
 
-This is the ongoing development of a python alternative to the Data Visualization Toolkit for SuperDARN data analysis and visualization.
+Welcome to the Data and Visualization Toolkit-Python.  This code base is designed to allow you to access and visualize SuperDARN (Super Dual Auroral Radar Network) data, as well as other relevant space phyics/space weather data sets and models.  This code is an international collaboration of many institutions and contributors.
+
+This version of the code is based on the "setup" branch, and is designed to make installation easier by more properly conforming to standard python setup/installation practices.  This code is still very much in the development phase, and should not be considered stable.
+
+DaViTPy pulls in datasets and models from a variety of data suppliers and model authors.  All users are requested properly cite the ORIGINAL supplier of the data or models used when presenting or publishing work.  Furthermore, it is often important to contact the original data provider for assistance in data interpration and to arrange for proper attriution
 
 * Project page
 http://vtsuperdarn.github.com/davitpy/
@@ -18,79 +22,77 @@ If you get a Bus Error when using radDataRead() and/or radDataReadRec() function
 
 ### Install instructions
 
-Note that we have developed using python 2.7.  If you use a different version, the code will probably not work.
+We recommend using Ubuntu 14.04 with this DaViTPy.  Although Macintosh install scripts are provided, more active development, testing, and use occurs in the Linux environment.  We do not currently offer any Windows support, although you are more than welcome to try and make it work in any environment you choose.  Please be aware that much of the included code (especially the models) is fortran code  (i.e. MSIS, IRI, IGRF, etc...) wrapped with python wrappers. This means that these models must be compiled with a fortran compiler on your machine before running.  This is normally taken care of in the installation process listed below, but it is useful to know that this is a potential source of problems for making DaViTPy work.
 
-You will need RST to read standard SuperDARN dmap files. You will find a stripped down version of RST here: https://github.com/vtsuperdarn/RSTLite
+**Please note that currently DaViTpy needs to be installed and run from BASH.**
 
-If you have a Mac, make sure you have macports installed.
+####Ubuntu
+Please use Ubuntu 14.04.  Older versions may not install compatible versions of the dependencies.
 
-Then, clone this repository:
+Open a terminal window.  Make sure git is installed:
+
+    sudo apt-get install git
+
+Now download DaViTPy:
 
     git clone https://github.com/vtsuperdarn/davitpy.git
     
-Then cd into the cloned directory:
+This will create a new directory called 'davitpy' in your current directory (probably your home directory).  If you do not want DaViTPy installed in ~/davitpy, you may move the file to a different directory now.  Next, change to your davitpy directory:
 
     cd davitpy
-    
-Then run the install scripts specific to your system.  These install dependencies and can take a bit of time...
 
-####Ubuntu
+We need to install some dependencies using a script that makes calls to apt-get and pip.  To run this script:
 
-    cd install/debian/
-    sudo ./python_install_debian.sh
+    sudo ./install/debian_dependencies.sh
+
+Note that this script also modifies your ~/.bashrc file to set environment variables identifying the DaViTPy installation location, the SuperDARN database access information, and others.  Because of this, please close your terminal and open a new session to refresh your environment variables.
+
+Now, run mastermake to make the fortran code and SuperDARN read routines happy.  Do NOT run mastermake as sudo.
+
+    cd davitpy
+    ./mastermake
+
+Next, do the actual davitpy install (from in the davitpy directory):
+
+    sudo python setup.py install
+
+Now, do one more mastermake just to be safe:
+
+    ./mastermake
+
+That should be it!  You may want to restart your terminal once more just to make sure the environment variables are refreshed.
+
     
 ####MacOS
+You need to have either homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/) installed on your system.
 
-    cd install/mac
-    
-If you are a MacPort user
+Next, follow the instructions for Ubuntu, but for the dependencies script, choose one of the following:
 
+    sudo ./python_install_mac_brew.sh
     sudo ./python_install_mac_port.sh
 
 (**note**: you may encounter some errors because sometimes macport will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries)
     
-If you are a Homebrew user
+####Usage
+To test davitpy and learn more about some of its functionality, please look at the included iPython notebooks.  To run these:
 
-    sudo ./python_install_mac_brew.sh
+    cd davitpy/docs/notebook
+    davitpy-notebook
 
-####openSUSE
+This command will launch a web broswer with an interface that will allow you to run python code directly in a browsing window.  The browser should show a list of the demonstration notebooks.  If you do not see the demonstration notebooks, please make sure you are in the davitpy/doc/notebook/ directory before running the davitpy-notebook command.  To run code within a cell, place your cursor in the cell and press shift-enter.
 
-    cd install/opensuse
-    sudo ./python_install_opensuse.sh
-    
-####Finally
-    
-Now, `source ~/.bashrc`, or open a new terminal.  Then, go to your install directory (davitpy) and run 
-    
-    ./mastermake
-    
-If you are not running Ubuntu or MacOS or openSUSE, you can manually install the dependencies listed in the python_install_*.sh, and edit your profile.  Alternatively, you could write a script for your specific OS, and send it to us so that we can add it to the repository!
-
-Now you are ready to go. From anywhere on your machine just type:
+A number of scripts are provided to bring up a python environment with davitpy functionality pre-loaded:
 
     davitpy
-
-for the interactive terminal, or 
-
     davitpy-notebook
-
-for the notebook, or
- 
     davitpy-qtconsole
     
-for the QT console.
-And code away!
-
-
-### Using the example notebooks
-
-In `docs/notebook` you will find a small collection of notebooks demonstrating the main modules of DaViTpy (see also the documentation: http://davit.ece.vt.edu/davitpy/).
-Go to that directory and run
-
-    davitpy-notebook
-
-
 ### Issues and Bug reporting
+
+This version of davitpy does not support ray tracing.  For this functionality, please see https://github.com/vtsuperdarn/davitpy/releases/tag/0.2-master_with_ray_tracing.
 
 Please report any problems/comments using the Issues tab of the davitpy GitHub page, or use this link: https://github.com/vtsuperdarn/davitpy/issues
 
+###  Developers
+
+Please help us develop this code!  Important instructions can be found in docs/development instructions.  Also, please join our development Google group, davitpy-dev (https://groups.google.com/forum/#!forum/davitpy).

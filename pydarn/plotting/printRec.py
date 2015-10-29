@@ -195,10 +195,10 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
         gazm = d['az']
 
         mlat,mlon,a = models.aacgm.aacgmConv(myFov.latFull[myData.bmnum][myData.fit.slist[i]],
-                                                myFov.lonFull[myData.bmnum][myData.fit.slist[i]],300,0)
+                                                myFov.lonFull[myData.bmnum][myData.fit.slist[i]],300,t.year,0)
 
         mlat2,mlon2,b = models.aacgm.aacgmConv(myFov.latFull[myData.bmnum][myData.fit.slist[i]+1],
-                                                myFov.lonFull[myData.bmnum][myData.fit.slist[i]+1],300,0)
+                                                myFov.lonFull[myData.bmnum][myData.fit.slist[i]+1],300,t.year,0)
 
 
         d = utils.geoPack.calcDistPnt(mlat,mlon,300,distLat=mlat2,distLon=mlon2,distAlt=300)

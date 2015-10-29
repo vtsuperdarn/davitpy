@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import dmapio
-from dmapio import *
+try:
+    from dmapio import *
+except Exception, e:
+    print __file__+' -> dmapio: ', e
 

@@ -446,7 +446,7 @@ def sdDataReadAll(myPtr):
       myData.fType = myPtr.fType
       myList.append(myData)
 
-  if len(myList > 0):
+  if len(myList) > 0:
     print 'returning a list with %d records of data' % len(myList)
     return myList
   else:

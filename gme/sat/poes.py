@@ -527,7 +527,7 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
       try:
         tedPoesAll[sN].append(math.log10(getattr(l,param)))
         if coords == 'mag' or coords == 'mlt':
-          lat,lon,_ = models.aacgm.aacgmConv(l.folat,l.folon, 0., 0)
+          lat,lon,_ = models.aacgm.aacgmConv(l.folat,l.folon, 0., l.time.year, 0)
           latPoesAll[sN].append(lat)
           if coords == 'mag':
             lonPoesAll[sN].append(lon)
@@ -655,7 +655,7 @@ def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1,
 
       if x > equBndCutoffVal:
         if coords == 'mag' or coords == 'mlt':
-          lat,lon,_ = models.aacgm.aacgmConv(currPoesList[l].folat,currPoesList[l].folon, 0., 0)
+          lat,lon,_ = models.aacgm.aacgmConv(currPoesList[l].folat,currPoesList[l].folon, 0., currPoesList[l].time.year, 0)
           latPoesAll[sN].append(lat)
           if coords == 'mag':
             lonPoesAll[sN].append(lon)
