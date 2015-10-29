@@ -462,7 +462,7 @@ class updateRadars(object):
         return arr
 
     def __readFromFiles(self):
-        """Read hdw.dat and radar.dat into a slect-like dictionnary from local files
+        """Read hdw.dat and radar.dat into a select-like dictionary from local files
         """
         from datetime import datetime
 
