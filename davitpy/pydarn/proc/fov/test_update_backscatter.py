@@ -225,7 +225,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, label_type="frac", beams=dict()):
+                       strict_gs=True, draw=True, label_type="frac",
+                       beams=dict()):
     '''Plot based on Plate 1  in Yeoman et al (2001) Radio Science, 36, 801-813.
 
 
@@ -324,6 +325,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=True)
+    draw : (boolian)
+        Output figure to display? (default=True)
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
     beams : (dict)
@@ -490,6 +493,15 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                       handletextpad=0, bbox_to_anchor=(xpos[len(flabels)],-0.3))
     plt.subplots_adjust(hspace=.15, wspace=.15, bottom=.14, left=.1, top=.95)
 
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
+
     if figname is not None:
         f.savefig(figname)
 
@@ -509,7 +521,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, label_type="frac", beams=dict()):
+                       strict_gs=True, draw=True, label_type="frac",
+                       beams=dict()):
     '''Plot based on Figure 9 in Milan et al (1997) Annales Geophysicae, 15,
     29-39.
 
@@ -595,6 +608,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=True)
+    draw : (boolian)
+        Output figure to display? (default=True)
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
     beams : (dict)
@@ -662,7 +677,17 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                                          "Rear\nRange Gate",
                                          "Unassigned\nRange Gate"],
                                 titles=["","","",""], plot_title=ftitle,
-                                label_type=label_type, acolor=acolor)
+                                label_type=label_type, acolor=acolor,
+                                draw=False)
+
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
 
     if figname is not None:
         f.savefig(figname)
@@ -688,7 +713,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, label_type="frac", beams=dict()):
+                       strict_gs=True, draw=True, label_type="frac",
+                       beams=dict()):
     '''Plot showing a period of time where E-region scatter past over the
     radar at pyk.
 
@@ -785,6 +811,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=True)
+    draw : (boolian)
+        Output figure to display? (default=True)
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots.  Will create this data
@@ -850,7 +878,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                                          "Rear\nRange Gate",
                                          "Unassigned\nRange Gate"],
                                 titles=["","","",""], plot_title=ftitle,
-                                label_type=label_type, acolor=acolor)
+                                label_type=label_type, acolor=acolor,
+                                draw=False)
 
     mlen = len(mtimes)
     if mlen > 0:
@@ -888,7 +917,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                                            dmax=imax[intensity_all],
                                            dmin=imin[intensity_all],
                                            dcolor=color[intensity_all],
-                                           lat_label=llab)
+                                           lat_label=llab, draw=False)
 
         label = pyrad.radUtils.getParamDict(intensity_all)['label']
         unit = pyrad.radUtils.getParamDict(intensity_all)['unit']
@@ -900,6 +929,15 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
         fmap = None
         axmap = None
         cbmap = None
+
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
 
     # Save the figures, if desired
     if figname_time is not None:
@@ -919,7 +957,7 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
                        xinc=None, yinc=None, zinc=dict(), xlabel="",
                        ylabels=["All","Front","Rear","Unassigned"],
                        titles=["","","",""], plot_title="", label_type="frac",
-                       acolor="w"):
+                       acolor="w", draw=True):
     '''Plot single column of subplots with all data in the first row using one
     type of data in the z-axis, and a second type of data in the z-axis for the
     final rows, which plot only data belonging to the front, rear, and no field-
@@ -978,6 +1016,8 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
         Type of hop label to use (frac/decimal) (default="frac")
     acolor : (str or tuple)
         Background color for subplots (default="0.9" - light grey)
+    draw : (boolian)
+        Output figure to display? (default=True)
 
     Returns
     ---------
@@ -1107,6 +1147,15 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
 
     plt.subplots_adjust(hspace=.15, wspace=.15, bottom=.14, left=.15,
                         right=ypos-.04, top=.95)
+
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
 
     return ax, cb
 
@@ -1326,7 +1375,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                        binc=ticker.MultipleLocator(3),
                        tinc=mdates.MinuteLocator(interval=15),
                        yinc=ticker.MultipleLocator(15), zinc=6, plot_title="",
-                       label_type="frac", make_plot=True):
+                       label_type="frac", make_plot=True, draw=True):
     '''Plot a specified attribute (elevation angle or virtual height) for the
     front and rear field-of-view, using a scan of beams and a single beam for
     a longer period of time.
@@ -1390,6 +1439,8 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
         Type of hop label to use (frac/decimal) (default="frac")
     make_plot : (boolian)
         Make plot (True) or just process data (False) (default=True)
+    draw : (boolian)
+        Output figure to display? (default=True)
 
     Returns
     ---------
@@ -1703,6 +1754,15 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
         ftax.yaxis.set_major_locator(yinc)
         rtax.yaxis.set_major_locator(yinc)
 
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
+
     return f, [fbax, rbax, ftax, rtax], cb
 
 #-------------------------------------------------------------------------
@@ -1716,7 +1776,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, beams=dict()):
+                       strict_gs=True, draw=True, beams=dict()):
     '''Plot comparing HWM14 neutral winds with the line-of-site velocity
     for two beams at Saskatoon
 
@@ -1795,6 +1855,8 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         Level of processing to perform (1-6).  6 performs all steps. (default=6)
     strict_gs : (bool)
         Use indeterminately flagged backscatter (default=True)
+    draw : (boolian)
+        Output figure to display? (default=True)
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots.  Will create this data
@@ -1831,9 +1893,9 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         # Set constants for exponential function that defines the upper limit of
         # velocity and spectral width error at a given power
         va = 10.0
-        vb = -np.log(50.0)/50.0
+        vb = -np.log(50.0) / 50.0
         wa = 40.0
-        wb = -np.log(40.0/.2)/50.0
+        wb = -np.log(40.0 / .2) / 50.0
 
         # Only test the values if the power and error values are set
         if(not np.isnan(p) and p >= 0.0 and not np.isnan(verr)
@@ -2093,6 +2155,15 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
             np.mean(vdiff["reject"]), unit, np.std(vdiff["reject"]), unit))
     plt.subplots_adjust(wspace=.3, hspace=.1, right=.93)
 
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
+
     # Save figure
     if figname is not None:
         f.savefig(figname)
@@ -2105,7 +2176,7 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
              maxgates=None, fan_model='IS', model_alt=300.0, elv_attr="fovelv",
              alt_attr="vheight", dat_attr="v", fov_attr="fovflg", dmax=500.0,
              dmin=-500.0, dcolor=ccenter, lat_label=True, lon_label=True,
-             gscatter=True):
+             gscatter=True, draw=True):
     '''Plot a fov map
 
     Parameters
@@ -2157,6 +2228,8 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
         Include longitude label on the x-axis (default=True)
     gscatter : (boolian)
         Include groundscatter (default=True)
+    draw : (boolian)
+        Output figure to display? (default=True)
 
     Returns
     ---------
@@ -2307,6 +2380,15 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
         ax.set_title("{:}".format(scan[0].scan_time), fontsize="medium")
     else:
         ax.set_title("{:}".format(scan[0].time), fontsize="medium")
+
+    if draw:
+        # Draw to screen.
+        if plt.isinteractive():
+            plt.draw() #In interactive mode, you just "draw".
+        else:
+            # W/o interactive mode, "show" stops the user from typing more 
+            # at the terminal until plots are drawn.
+            plt.show()
 
     # Return
     return(map_handle, fovs, hard, pcoll)
