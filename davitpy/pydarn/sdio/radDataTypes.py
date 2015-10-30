@@ -50,7 +50,7 @@ class radDataPtr():
                          default = None meaning don't check for UAF named data files
     * **bmnum** (int): beam number of the request
     * **cp** (int): control prog id of the request
-    * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+    * **fType** (str): the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit','fit'
     * **fBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): the first beam of the next scan, useful for when reading into scan objects
     * **recordIndex** (dict): look up dictionary for file offsets for all records 
     * **scanStartIndex** (dict): look up dictionary for file offsets for scan start records
@@ -118,8 +118,8 @@ class radDataPtr():
     assert(cp == None or isinstance(cp,int)), \
       'error, cp must be an int or None'
     assert(fileType == 'rawacf' or fileType == 'fitacf' or \
-      fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
-      'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
+      fileType == 'fitex' or fileType=='fit' or fileType == 'lmfit' or fileType == 'iqdat'), \
+      'error, fileType must be one of: rawacf,fitacf,fitex,fit,lmfit,iqdat'
     assert(fileName == None or isinstance(fileName,str)), \
       'error, fileName must be None or a string'
     assert(isinstance(filtered,bool)), \
@@ -135,9 +135,10 @@ class radDataPtr():
       self.eTime = self.sTime+dt.timedelta(days=1)
 
     filelist = []
-    if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit']
-    elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit']
-    elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf']
+    if(fileType == 'fitex'): arr = ['fitex','fitacf','lmfit','fit']
+    elif(fileType == 'fitacf'): arr = ['fitacf','fitex','lmfit','fit']
+    elif(fileType == 'lmfit'): arr = ['lmfit','fitex','fitacf','fit']
+    elif(fileType=='fit'): arr=['fit','fitacf','fitex','lmfit' ] 
     else: arr = [fileType]
 
     #a temporary directory to store a temporary file
@@ -170,6 +171,11 @@ class radDataPtr():
             else:
                 os.system('cp '+fileName+' '+outname)
                 print 'cp '+fileName+' '+outname
+            if fileType=='fit':    #If a fit file name is given, it is converted to fitacf, as our dmap routines can't read fit files
+                outname_new="_".join((outname,'fitacf'))
+                print "Can't read fit files. Converting to fitacf.."
+                os.system('fittofitacf '+outname+' > '+outname_new)
+                outname=outname_new
             filelist.append(outname)
             self.dType = 'dmap'
 
@@ -232,8 +238,10 @@ class radDataPtr():
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
                 if ('ftype' in local_dict.keys()):
                     local_dict['ftype'] = ftype
+                if local_fnamefmt is None or ftype=='fit':
+                    local_fnamefmt=['{date}{hour}.*{ftype}'] #File name format for fit files
 
-                if local_fnamefmt is None:
+                if local_fnamefmt is None or ftype!='fit':
                     try:
                         local_fnamefmt = davitpy.rcParams['DAVIT_LOCAL_FNAMEFMT'].split(',')
                     except:
@@ -255,11 +263,20 @@ class radDataPtr():
                 temp = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
                                              local_fnamefmt, verbose=verbose)
 
+                if ftype=='fit':   #If fit files found, converting them to fitacf files
+                    print "Can't read fit files. Converting to fitacf.."
+                    temp_new=[]
+                    for f in temp:
+                        new_name=string.replace(f,'fit','fitacf')
+                        os.system('fittofitacf '+f+' >'+new_name)
+                        temp_new.append(new_name)
+                    temp=temp_new[:]
+
+
                 # check to see if the files actually have data between stime and etime
                 valid = self.__validate_fetched(temp,self.sTime,self.eTime)
                 filelist = [x[0] for x in zip(temp,valid) if x[1]]
                 invalid_files = [x[0] for x in zip(temp,valid) if not x[1]]
-
                 if len(invalid_files) > 0:
                     for f in invalid_files:
                         print 'removing invalid file: ' + f
@@ -318,7 +335,10 @@ class radDataPtr():
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 if ('ftype' in remote_dict.keys()):
                     remote_dict['ftype'] = ftype
-                if remote_fnamefmt is None:
+                
+                if remote_fnamefmt is None or ftype=='fit':   # Name for a remote fit file
+                    remote_fnamefmt=['{date}{hour}.*{ftype}'] 
+                if remote_fnamefmt is None or ftype!='fit':
                     try:
                         remote_fnamefmt = davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT'].split(',')
                     except:
@@ -347,6 +367,14 @@ class radDataPtr():
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
                     password=password, port=port, verbose=verbose)
 
+                if ftype=='fit':   #If fit files found, converting them to fitacf files
+                    print "Can't read fit files. Converting to fitacf.."
+                    temp_new=[]
+                    for f in temp:
+                        new_name=string.replace(f,'fit','fitacf')
+                        os.system('fittofitacf '+f+' >'+new_name)
+                        temp_new.append(new_name)
+                    temp=temp_new[:]
                 # check to see if the files actually have data between stime and etime
                 valid = self.__validate_fetched(temp,self.sTime,self.eTime)
                 filelist = [x[0] for x in zip(temp,valid) if x[1]]
@@ -363,7 +391,6 @@ class radDataPtr():
                     self.fType,self.dType = ftype,'dmap'
                     fileType = ftype
                     break
-
                 else:
                     print  'could not find',ftype,'data on sftp server'
 
@@ -420,7 +447,9 @@ class radDataPtr():
     else:
         print '\nSorry, we could not find any data for you :('
 
-
+    if fileType=='fit':
+        fileType='fitacf'  # Changing the fileType to fitacf as the files are now converted
+        self.fType='fitacf'
 
 
   def __repr__(self):
@@ -643,11 +672,10 @@ class radDataPtr():
           print 'Checking file: ' + f
           stimes = []
           etimes = []
-
+            
           # Open the file and create a file pointer
           self.__filename = f
           self.open()
-
           # Iterate through the file and grab the start time for beam
           # integration and calculate the end time from intt.sc and intt.us
           while(1):
