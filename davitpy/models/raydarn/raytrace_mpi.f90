@@ -444,7 +444,9 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
   ihop = 0        ! hop counter
   nrstep = 2      ! number of steps per ray counter
   naspstep = 1    ! number of ionospheric scatter occurence counter
-  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.theta.lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
+
+  !.002 added to theta so theta does not extend beyond edensTHT array RAG 20150410
+  do while (ihop.lt.params%nhop.and.r.lt.(Rav + 500.)*1e3.and.(theta+0.002).lt.edensTHT(500).and.r.ge.Rav*1e3.and.nrstep.lt.5000)
     ! Current position
     latiin = latiout
     longiin = longiout
@@ -598,15 +600,18 @@ SUBROUTINE TRACE_RKCK(params, rayhour, rayazim, rayelev, edensARR, edensTHT, dip
     if (grpran.gt.180e3.and.rtmp*1e-3.gt.(Rav+90.)) then
       CALL CALC_ASPECT(edensTHT, dip, rayazim, theta, thetatmp, r, rtmp, aspectind, aspect)
       if (aspectind.gt.0) then
-        ! Calculate mean range
+        ! Calculate mean range  Changed + h/2 to -h/2 below
+        ! Subtraction is needed here because grpran has already been incremented.
         d = r/rtmp*h*sin(edensTHT(aspectind) - theta)/sin(thetatmp-theta)
-        asp_grpran = grpran + h/2.
-        ! Calculate mean slant range
-!        asp_ran = ransave(nrstep-1) + h/2.*sqrt(nr2)
+        asp_grpran = grpran - h/2.
+
         ! Calculate mean ground range
-        asp_theta = (thetatmp-theta)/2. + theta
+        ! Addition needed here because theta has NOT already been incremented.
+        asp_theta = theta + (thetatmp-theta)/2.
+
         ! Calculate mean altitude
         asp_alt = sqrt( h**2./4. + r**2. + h/2.*r*sin(ranelev) )
+
         ! Calculate weighing (to account for backsground electron density and deviation from perfect aspect conditions)
         asp_w = ( edensARR(nint(((rtmp-r)/2.+r)*1e-3 - 60. - Rav), aspectind) )**2. / asp_grpran**3.
 
@@ -965,7 +970,7 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     real*4,dimension(500,2),intent(out)::       edensPOS, dip
     real*4,dimension(500),intent(out)::         edensTHT
 
-    real*4::                    old_hour, vbeg, vend, vstp
+    real*4::                    old_hour, vbeg, vend, vstp, hstp
     real*4::                    lonDeg, latDeg, thtmp
     integer::                   n, j
     logical::                   jf(50)
@@ -1033,12 +1038,10 @@ SUBROUTINE IRI_ARR(params, hour, azim, edensARR, edensPOS, edensTHT, dip)
     dip(1,2) = oar(27)
 
 ! Lat/lon loop
+    hstp = 8.0 !change to 5.0 for reduced grid
     do n=2,500
         ! Calculates new position after one step
-!        call CALC_POS(edensPOS(n-1,1), edensPOS(n-1,2), 0., azim, 5., 0., &
-!                edensPOS(n,1), edensPOS(n,2))
-
-        call CALC_POS(edensPOS(1,1), edensPOS(1,2), 0., azim, (5.*(n-1)), 0., &
+        call CALC_POS(edensPOS(n-1,1), edensPOS(n-1,2), 0., azim, hstp, 0., &
                 edensPOS(n,1), edensPOS(n,2))
 
         edensTHT(n) = acos( cos(edensPOS(1,1)*PI/180.)*cos(edensPOS(n,1)*PI/180.)* &

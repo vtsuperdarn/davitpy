@@ -57,3 +57,4 @@ clean:
 
 install:
 	cp $(EXEC) rt.py constants.mod mpiutils.mod __init__.py $(INSTALL_DIR)
+#	cp rtFort /usr/local/lib/python2.7/dist-packages/davitpy-0.2-py2.7-linux-x86_64.egg/davitpy/models/raydarn/rtFort
