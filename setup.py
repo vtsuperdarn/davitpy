@@ -98,6 +98,12 @@ data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/mpiutils.mod']))
 
 #############################################################################
+#Include the necessary HWM files
+#############################################################################
+data_files.append(('davitpy/models/hwm',
+                   ['davitpy/models/hwm/hwm123114.bin']))
+
+#############################################################################
 # Now execute the setup
 #############################################################################
 setup(name='davitpy',
