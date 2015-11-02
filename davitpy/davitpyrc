@@ -66,9 +66,9 @@ DAVIT_SD_LOCAL_FNAMEFMT		: {date}.{hemi}.{ftype}
 ####
 # SET THE PATH TO THE AACGM COEFFICIENT FILES
 ####
-# By default, this is set to where the coefficients
-# are installed with DaViTpy, ie)
+# By default, this is set to where the coefficients are installed with
+# DaViTpy after the line below this block is uncommented, ie)
 # 'davitpy install directory'/tables/aacgm/aacgm_coeffs/
 ####
-AACGM_DAVITPY_DAT_PREFIX	: /davitpy_dir_path/tables/aacgm/aacgm_coeffs/
+# AACGM_DAVITPY_DAT_PREFIX	: /davitpy_dir_path/tables/aacgm/aacgm_coeffs/
 
