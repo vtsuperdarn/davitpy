@@ -14,6 +14,8 @@ We recommend using Ubuntu 14.04 with this version of DaViTPy.  Although Macintos
 #### davitpyrc
 Settings pertaining to sevrer addresses and passwords, data file directory structure, and other global parameters are stored in a run control file called davitpyrc.  For most users, the default values in this file should be satisfactory.  However, you may make changes to this file if necessary.  It is stored in davitpy/davitpy/davitpyrc.  After making a change, re-run the setup.py install script (described below) to copy the run control file to the appropriate system location.
 
+**Please note that currently DaViTpy needs to be installed and run from BASH.**
+
 ####Ubuntu
 Please use Ubuntu 14.04 or newer.  Older versions may not install compatible versions of the dependencies.
 
@@ -28,12 +30,6 @@ Now download DaViTPy:
 This will create a new directory called 'davitpy' in your current directory (probably your home directory).  If you do not want DaViTPy installed in ~/davitpy, you may move the file to a different directory now.  Next, change to your davitpy directory:
 
     cd davitpy
-
-To work on this branch (develop), you'll want to change the branch of your local repository with:
-
-    git checkout develop
-
-This will change your repository from the default of the master branch to the develop branch.  
 
 We need to install some dependencies using a script that makes calls to apt-get and pip.  You can either look through this file and install the necessary dependencies yourself (especially if you're on a different flavor of linux/unix or don't use apt-get and pip) or run the script.  To run this script:
 
