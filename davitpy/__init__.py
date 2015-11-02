@@ -88,8 +88,17 @@ def _open_file_or_url(fname):
         yield _url_lines(f)
         f.close()
     else:
-        with io.open(fname, encoding=locale.getdefaultlocale()[1]) as f:
-            yield f
+        # Most files will be encoded using utf-8.  If this doesn't work,
+        # attempt to use locale to detect the file encoding
+        try:
+            with io.open(fname, encoding="utf-8") as f:
+                yield f
+        except:
+            try:
+                with io.open(fname, encoding=locale.getdefaultlocale()[1]) as f:
+                    yield f
+            except:
+                f = None
 
 def _get_home():
     """Find user's home directory if possible.

@@ -38,10 +38,8 @@ exec_command.exec_command(command)
 #############################################################################
 # Fortran extensions
 #############################################################################
-hwm = Extension('hwm07',sources=['davitpy/models/hwm/apexcord.f90',
-                                 'davitpy/models/hwm/dwm07b.f90',
-                                 'davitpy/models/hwm/hwm07e.f90',
-                                 'davitpy/models/hwm/hwm07.pyf'])
+hwm = Extension('hwm14',sources=['davitpy/models/hwm/hwm14.f90',
+                                 'davitpy/models/hwm/hwm14.pyf'])
 igrf = Extension("igrf",sources=['davitpy/models/igrf/igrf11.f90',
                                  'davitpy/models/igrf/igrf11.pyf'])
 iri = Extension('iri',sources=['davitpy/models/iri/irisub.for',
@@ -98,6 +96,12 @@ data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/constants.mod']))
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/mpiutils.mod']))
+
+#############################################################################
+#Include the necessary HWM files
+#############################################################################
+data_files.append(('davitpy/models/hwm',
+                   ['davitpy/models/hwm/hwm123114.bin']))
 
 #############################################################################
 # Now execute the setup
