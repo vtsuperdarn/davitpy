@@ -218,8 +218,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                        rad_bms={"han":5, "pyk":15},
                        rad_cp={"han":-6312, "pyk":-6312},
                        fix_gs={"han":[[0,76]]}, figname=None, password=True,
-                       logfile=None, log_level=logging.WARN, min_pnts=3,
-                       region_hmin={"D":75.0,"E":115.0,"F":150.0},
+                       file_type="fitacf", logfile=None, log_level=logging.WARN,
+                       min_pnts=3, region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        region_hmax={"D":115.0,"E":150.0,"F":900.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
@@ -280,6 +280,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
         When downloading data from your specified SuperDARN mirror site, a
         password may be needed.  It may be included here or, if True is used,
         a prompt will appear for you to enter it securely.  (default=True)
+    file_type : (str)
+        Type of data file to download (default="fitacf")
     logfile : (str or NoneType)
         Name of file to hold the log output or None for stdout. (default=None)
     log_level : (int)
@@ -351,13 +353,13 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
                            rad_bms, rad_cp, fix_gs=fix_gs,
                            marker_key=marker_key,  password=password,
-                           logfile=logfile, log_level=log_level,
-                           min_pnts=min_pnts, region_hmax=region_hmax,
-                           region_hmin=region_hmin, rg_box=rg_box,
-                           vh_box=vh_box, max_rg=max_rg, max_hop=max_hop,
-                           ut_box=ut_box, tdiff=tdiff, tdiff_e=tdiff_e,
-                           tdiff_time=tdiff_time, ptest=ptest, step=step,
-                           strict_gs=strict_gs, beams=beams)
+                           file_type=file_type, logfile=logfile,
+                           log_level=log_level, min_pnts=min_pnts,
+                           region_hmax=region_hmax, region_hmin=region_hmin,
+                           rg_box=rg_box, vh_box=vh_box, max_rg=max_rg,
+                           max_hop=max_hop, ut_box=ut_box, tdiff=tdiff,
+                           tdiff_e=tdiff_e, tdiff_time=tdiff_time, ptest=ptest,
+                           step=step, strict_gs=strict_gs, beams=beams)
 
     rad = rad_bms.keys()[0]
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
@@ -513,8 +515,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                        acolor="0.9", stime=dt.datetime(1995,12,14,5),
                        etime=dt.datetime(1995,12,14,16), imin={"p_l":0.0},
                        imax={"p_l":30.0}, rad="han", bmnum=2, cp=127,
-                       figname=None, password=True, logfile=None,
-                       log_level=logging.WARN, min_pnts=3,
+                       figname=None, password=True, file_type="fitacf",
+                       logfile=None, log_level=logging.WARN, min_pnts=3,
                        region_hmax={"D":115.0,"E":150.0,"F":900.0},
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
@@ -563,6 +565,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
         When downloading data from your specified SuperDARN mirror site, a
         password may be needed.  It may be included here or, if True is used,
         a prompt will appear for you to enter it securely.  (default=True)
+    file_type : (str)
+        Type of data file to download (default="fitacf")
     logfile : (str or NoneType)
         Name of file to hold the log output or None for stdout. (default=None)
     log_level : (int)
@@ -634,13 +638,14 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
     # Load and process the desired data
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
                            {rad:bmnum}, {rad:cp}, marker_key=marker_key,
-                           password=password, logfile=logfile,
-                           log_level=log_level, min_pnts=min_pnts,
-                           region_hmax=region_hmax, region_hmin=region_hmin,
-                           rg_box=rg_box, vh_box=vh_box, max_rg=max_rg,
-                           max_hop=max_hop, ut_box=ut_box, tdiff=tdiff,
-                           tdiff_e=tdiff_e, tdiff_time=tdiff_time, ptest=ptest,
-                           step=step, strict_gs=strict_gs, beams=beams)
+                           password=password, file_type=file_type,
+                           logfile=logfile,log_level=log_level,
+                           min_pnts=min_pnts, region_hmax=region_hmax,
+                           region_hmin=region_hmin, rg_box=rg_box,
+                           vh_box=vh_box, max_rg=max_rg, max_hop=max_hop,
+                           ut_box=ut_box, tdiff=tdiff, tdiff_e=tdiff_e,
+                           tdiff_time=tdiff_time, ptest=ptest, step=step,
+                           strict_gs=strict_gs, beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
         print "ERROR! can't find radar [", rad, "] in data:", dout[0].keys()
@@ -705,8 +710,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                                dt.datetime(1997,10,10,19,30)],
                        imin={"v":-500.0}, imax={"v":500.0}, zinc={"v":5.0},
                        rad="pyk", bmnum=0, cp=None, figname_time=None,
-                       figname_maps=None, password=True, logfile=None,
-                       log_level=logging.WARN, min_pnts=3,
+                       figname_maps=None, password=True, file_type="fitacf",
+                       logfile=None, log_level=logging.WARN, min_pnts=3,
                        region_hmax={"D":115.0,"E":150.0,"F":900.0},
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
@@ -766,6 +771,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
         When downloading data from your specified SuperDARN mirror site, a
         password may be needed.  It may be included here or, if True is used,
         a prompt will appear for you to enter it securely.  (default=True)
+    file_type : (str)
+        Type of data file to download (default="fitacf")
     logfile : (str or NoneType)
         Name of file to hold the log output or None for stdout. (default=None)
     log_level : (int)
@@ -836,13 +843,14 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
     # Load and process the desired data
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
                            {rad:bmnum}, {rad:None}, marker_key=marker_key,
-                           password=password, logfile=logfile,
-                           log_level=log_level, min_pnts=min_pnts,
-                           region_hmax=region_hmax, region_hmin=region_hmin,
-                           rg_box=rg_box, vh_box=vh_box, max_rg=max_rg,
-                           max_hop=max_hop, ut_box=ut_box, tdiff=tdiff,
-                           tdiff_e=tdiff_e, tdiff_time=tdiff_time, ptest=ptest,
-                           step=step, strict_gs=strict_gs, beams=beams)
+                           password=password, file_type=file_type,
+                           logfile=logfile, log_level=log_level,
+                           min_pnts=min_pnts, region_hmax=region_hmax,
+                           region_hmin=region_hmin, rg_box=rg_box,
+                           vh_box=vh_box, max_rg=max_rg, max_hop=max_hop,
+                           ut_box=ut_box, tdiff=tdiff, tdiff_e=tdiff_e,
+                           tdiff_time=tdiff_time, ptest=ptest, step=step,
+                           strict_gs=strict_gs, beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
         return(dout[0], dout[1], dout[2], beams)
@@ -1162,8 +1170,8 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
 #-----------------------------------------------------------------------
 def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                     rad_cp, fix_gs=dict(), marker_key="hop", password=True,
-                    logfile=None, log_level=logging.WARN, min_pnts=3,
-                    region_hmin={"D":75.0,"E":115.0,"F":150.0},
+                    file_type="fitacf", logfile=None, log_level=logging.WARN,
+                    min_pnts=3, region_hmin={"D":75.0,"E":115.0,"F":150.0},
                     region_hmax={"D":115.0,"E":150.0,"F":900.0},
                     rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                     max_rg=[5,25,40,76], max_hop=3.0,
@@ -1201,6 +1209,8 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
         When downloading data from your specified SuperDARN mirror site, a
         password may be needed.  It may be included here or, if True is used,
         a prompt will appear for you to enter it securely.  (default=True)
+    file_type : (str)
+        Type of data file to download (default="fitacf")
     logfile : (str or NoneType)
         Name of file to hold the log output or None for stdout. (default=None)
     log_level : (int)
@@ -1288,7 +1298,7 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
             rad_ptr = sdio.radDataRead.radDataOpen(stime-ut_box, rad,
                                                    eTime=etime+ut_box,
                                                    cp=rad_cp[rad],
-                                                   fileType="fitacf",
+                                                   fileType=file_type,
                                                    password=password)
             if fix_gs.has_key(rad):
                 read_ptr = list()
@@ -1769,8 +1779,9 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
 def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                        etime=dt.datetime(2001,12,28), rad="sas", radar_ns=-1.0,
                        fbmnum=0, rbmnum=15, cp=150, malt=102.7, figname=None,
-                       password=True, logfile=None, log_level=logging.WARN,
-                       min_pnts=3, region_hmax={"D":115.0,"E":150.0,"F":900.0},
+                       password=True, file_type="fitacf", logfile=None,
+                       log_level=logging.WARN, min_pnts=3,
+                       region_hmax={"D":115.0,"E":150.0,"F":900.0},
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
@@ -1810,6 +1821,8 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         When downloading data from your specified SuperDARN mirror site, a
         password may be needed.  It may be included here or, if True is used,
         a prompt will appear for you to enter it securely.  (default=True)
+    file_type : (str)
+        Type of data file to download (default="fitacf")
     logfile : (str or NoneType)
         Name of file to hold the log output or None for stdout. (default=None)
     log_level : (int)
@@ -2009,7 +2022,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         # temporal boxcar window used in the FoV processing
         rad_ptr = sdio.radDataRead.radDataOpen(stime-ut_box, rad,
                                                eTime=etime+ut_box, cp=cp,
-                                               fileType="fitacf",
+                                               fileType=file_type,
                                                password=password)
         beams = ub.update_backscatter(rad_ptr, min_pnts=min_pnts,
                                       region_hmax=region_hmax,
