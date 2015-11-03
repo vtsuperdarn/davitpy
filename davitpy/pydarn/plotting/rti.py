@@ -55,8 +55,9 @@ def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             show=True, filtered=False, fileName=None, tFreqBands=[],
             myFile=None, xtick_size=9, ytick_size=9, xticks=None,
             axvlines=None, plotTerminator=False):
-    """
-    Wrapper for plot_rti. This function is being deprecated.
+
+    """ Wrapper for plot_rti. This function is being deprecated.
+
     """
     print "Warning: This function is being deprecated. Use plot_rti instead."
     print "Calling plot_rti."
@@ -78,8 +79,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
              tfreqbands=[], myFile=None, xtick_size=9, ytick_size=9,
              xticks=None, axvlines=None, plot_terminator=False):
 
-    """
-    create an rti plot for a secified radar and time period
+    """ create an rti plot for a secified radar and time period
 
     **Args**:
         * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
@@ -412,159 +412,190 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         return rti_figs
 
 
-def draw_axes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
-  """draws empty axes for an rti plot
+def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
+              yrng=-1, coords='gate', pos=[.1, .05, .76, .72], xtick_size=9,
+              ytick_size=9, xticks=None, axvlines=None):
+    """ draws empty axes for an rti plot
 
-  **Args**:
-    * **myFig**: the MPL figure we are plotting to
-    * **times**: a list of datetime objects referencing the beam soundings
-    * **rad**: 3 letter radar code
-    * **cpid**: list of the cpids or the beam soundings
-    * **bmnum**: beam number being plotted
-    * **nrang**: list of nrang for the beam soundings
-    * **frang**: list of frang of the beam soundings
-    * **rsep**: list of rsep of the beam soundings
-    * **bottom**: flag indicating if we are at the bottom of the page
-    * **[yrng]**: range of y axis, -1=autoscale (default)
-    * **[coords]**: y axis coordinate system, acceptable values are 'geo', 'mag', 'gate', 'rng'
-    * **[pos]**: position of the plot
-    * **[xtick_size]**: fontsize of xtick labels
-    * **[ytick_size]**: fontsize of ytick labels
-    * **[xticks]**: (list) datetime.datetime objects indicating the location of xticks
-    * **[axvlines]**: (list) datetime.datetime objects indicating the location vertical lines marking the plot
-  **Returns**:
-    * **ax**: an axes object
-    
-  **Example:
-    ::
+    **Args**:
+        * **myFig**: the MPL figure we are plotting to
+        * **times**: a list of datetime objects referencing the beam soundings
+        * **rad**: 3 letter radar code
+        * **cpid**: list of the cpids or the beam soundings
+        * **bmnum**: beam number being plotted
+        * **nrang**: list of nrang for the beam soundings
+        * **frang**: list of frang of the beam soundings
+        * **rsep**: list of rsep of the beam soundings
+        * **bottom**: flag indicating if we are at the bottom of the page
+        * **[yrng]**: range of y axis, -1=autoscale (default)
+        * **[coords]**: y axis coordinate system, acceptable values are 'geo',
+            'mag', 'gate', 'rng'
+        * **[pos]**: position of the plot
+        * **[xtick_size]**: fontsize of xtick labels
+        * **[ytick_size]**: fontsize of ytick labels
+        * **[xticks]**: (list) datetime.datetime objects indicating the
+            location of xticks
+        * **[axvlines]**: (list) datetime.datetime objects indicating the
+            location vertical lines marking the plot
+    **Returns**:
+        * **ax**: an axes object
 
-      ax = draw_axes(aFig,times,rad,cpid,beam,nrang,frang,rsep,0)
-      
-  Written by AJ 20121002
-  """
+    **Example:
+        ::
 
-  from davitpy import pydarn
+            ax = draw_axes(aFig,times,rad,cpid,beam,nrang,frang,rsep,0)
 
-  nrecs = len(times)
-  # add an axes to the figure
-  ax = myFig.add_axes(pos)
-  ax.yaxis.set_tick_params(direction='out')
-  ax.xaxis.set_tick_params(direction='out')
-  ax.yaxis.set_tick_params(direction='out',which='minor')
-  ax.xaxis.set_tick_params(direction='out',which='minor')
+    Written by AJ 20121002
+    """
 
-  # draw the axes
-  ax.plot_date(matplotlib.dates.date2num(times), numpy.arange(len(times)), fmt='w', \
-  tz=None, xdate=True, ydate=False, alpha=0.0)
-  
-  if(yrng == -1):
-    ymin,ymax = 99999999,-999999999
-    if(coords != 'gate'):
-      oldCpid = -99999999
-      for i in range(len(cpid)):
-        if(cpid[i] == oldCpid): continue
-        oldCpid = cpid[i]
-        if(coords == 'geo' or coords == 'mag'):
-          site = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(times[i])
-          myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],nbeams=site.maxbeam,rsep=rsep[i],coords=coords, date_time=times[i])
-          if(myFov.latFull[bmnum].max() > ymax): ymax = myFov.latFull[bmnum].max()
-          if(myFov.latFull[bmnum].min() < ymin): ymin = myFov.latFull[bmnum].min()
+    from davitpy import pydarn
+
+    nrecs = len(times)
+    # add an axes to the figure
+    ax = myFig.add_axes(pos)
+    ax.yaxis.set_tick_params(direction='out')
+    ax.xaxis.set_tick_params(direction='out')
+    ax.yaxis.set_tick_params(direction='out', which='minor')
+    ax.xaxis.set_tick_params(direction='out', which='minor')
+
+    # draw the axes
+    ax.plot_date(matplotlib.dates.date2num(times), numpy.arange(len(times)),
+                 fmt='w', tz=None, xdate=True, ydate=False, alpha=0.0)
+
+    if(yrng == -1):
+        ymin, ymax = 99999999, -999999999
+        if(coords != 'gate'):
+            oldCpid = -99999999
+            for i in range(len(cpid)):
+                if(cpid[i] == oldCpid): continue
+                oldCpid = cpid[i]
+                if(coords == 'geo' or coords == 'mag'):
+                    # HACK NOT SURE IF YOU CAN DO THIS!
+                    site = pydarn.radar.network().getRadarByCode(rad) \
+                           .getSiteByDate(times[i])
+                    myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],
+                                                    nbeams=site.maxbeam,
+                                                    rsep=rsep[i],
+                                                    coords=coords,
+                                                    date_time=times[i])
+                    if(myFov.latFull[bmnum].max() > ymax):
+                        ymax = myFov.latFull[bmnum].max()
+                    if(myFov.latFull[bmnum].min() < ymin):
+                        ymin = myFov.latFull[bmnum].min()
+                else:
+                    ymin = 0
+                    if(nrang[i]*rsep[i]+frang[i] > ymax):
+                        ymax = nrang[i]*rsep[i]+frang[i]
+
         else:
-          ymin = 0
-          if(nrang[i]*rsep[i]+frang[i] > ymax): ymax = nrang[i]*rsep[i]+frang[i]
-    
+            ymin, ymax = 0, max(nrang)
     else:
-      ymin,ymax = 0,max(nrang)
-  else:
-    ymin,ymax = yrng[0],yrng[1]
+        ymin, ymax = yrng[0], yrng[1]
 
-  xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
-  xrng = (xmax-xmin)
-  inter = int(round(xrng/6.*86400.))
-  inter2 = int(round(xrng/24.*86400.))
-  # format the x axis
-  ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
-  ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
+    # HACK SPLIT XMIN XMAX
+    xmin = matplotlib.dates.date2num(times[0])
+    xmax = matplotlib.dates.date2num(times[len(times)-1])
+    xrng = (xmax-xmin)
+    inter = int(round(xrng/6.*86400.))
+    inter2 = int(round(xrng/24.*86400.))
+    # format the x axis
+    ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
+    ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
-  
-  #  ax.xaxis.xticks(size=9)
-  if(not bottom):
-    for tick in ax.xaxis.get_major_ticks():
-      tick.label.set_fontsize(0) 
-  else:
-    if xticks is not None:
-      ax.xaxis.set_ticks(xticks)
+    #  ax.xaxis.xticks(size=9)
+    if(not bottom):
+        for tick in ax.xaxis.get_major_ticks():
+            tick.label.set_fontsize(0)
+    else:
+        if xticks is not None:
+            ax.xaxis.set_ticks(xticks)
 
-  if axvlines is not None:
-    for line in axvlines:
-       ax.axvline(line,color='0.25',ls='--')
+    if axvlines is not None:
+        for line in axvlines:
+            ax.axvline(line, color='0.25', ls='--')
 
-    for tick in ax.xaxis.get_major_ticks():
-      tick.label.set_fontsize(xtick_size) 
-    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
-    ax.xaxis.set_label_text('UT')
-    
-  # set ytick size
-  for tick in ax.yaxis.get_major_ticks():
-    tick.label.set_fontsize(ytick_size) 
-  # format y axis depending on coords
-  if(coords == 'gate'): 
-    ax.yaxis.set_label_text('Range gate',size=10)
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
-    ax.yaxis.set_major_locator(MultipleLocator((ymax-ymin)/5.))
-    ax.yaxis.set_minor_locator(MultipleLocator((ymax-ymin)/25.))
-  elif(coords == 'geo' or coords == 'mag'): 
-    if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]',size=10)
-    else: ax.yaxis.set_label_text('Geo Lat [deg]',size=10)
-  elif(coords == 'rng'): 
-    ax.yaxis.set_label_text('Slant Range [km]',size=10)
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
-    ax.yaxis.set_major_locator(MultipleLocator(1000))
-    ax.yaxis.set_minor_locator(MultipleLocator(250))
-  
-  ax.set_ylim(bottom=ymin,top=ymax)
+        for tick in ax.xaxis.get_major_ticks():
+            tick.label.set_fontsize(xtick_size)
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
+        ax.xaxis.set_label_text('UT')
 
-  return ax
-    
-def rti_title(fig,sTime,rad,fileType,beam,eTime=None,xmin=.1,xmax=.86):
-  """draws title for an rti plot
+    # set ytick size
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(ytick_size)
+    # format y axis depending on coords
+    if(coords == 'gate'):
+        ax.yaxis.set_label_text('Range gate', size=10)
+        ax.yaxis.set_major_formatter(
+            matplotlib.ticker.FormatStrFormatter('%d'))
+        ax.yaxis.set_major_locator(MultipleLocator((ymax-ymin)/5.))
+        ax.yaxis.set_minor_locator(MultipleLocator((ymax-ymin)/25.))
+    elif(coords == 'geo' or coords == 'mag'):
+        if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]', size=10)
+        else: ax.yaxis.set_label_text('Geo Lat [deg]', size=10)
+    elif(coords == 'rng'):
+        ax.yaxis.set_label_text('Slant Range [km]', size=10)
+        ax.yaxis.set_major_formatter(
+            matplotlib.ticker.FormatStrFormatter('%d'))
+        ax.yaxis.set_major_locator(MultipleLocator(1000))
+        ax.yaxis.set_minor_locator(MultipleLocator(250))
 
-  **Args**:
-    * **sTime**: the start time for the data being plotted as a datetime object
-    * **rad**: the 3 letter radar code
-    * **fileType**: the file type being plotted
-    * **beam**: the beam number being plotted
-    * **[eTime]**: the end time for the data being plotted as a datetime object
-    * **[xmin]**: minimum x value o the plot in page coords
-    * **[xmax]**: maximum x value o the plot in page coords
-  * **Returns**:
-    *Nothing.
-    
-  **Example**:
-    ::
+    ax.set_ylim(bottom=ymin, top=ymax)
 
-      import datetime as dt
-      rti_title(dt.datetime(2011,1,1),'bks','fitex',7)
-      
-  Written by AJ 20121002
-  Modified by ASR 20150916
-  """
-  from davitpy import pydarn
+    return ax
 
-  r=pydarn.radar.network().getRadarByCode(rad)
-  
-  fig.text(xmin,.95,r.name+'  ('+fileType+')',ha='left',weight=550)
-  
-  if (eTime is not None) and (((eTime - sTime) > datetime.timedelta(days=1)) or (eTime.day != sTime.day)):
-    title_text = str(sTime.day)+'/'+calendar.month_name[sTime.month][:3]+'/'+str(sTime.year) + ' - ' + \
-                 str(eTime.day)+'/'+calendar.month_name[eTime.month][:3]+'/'+str(eTime.year)
-  else:
-    title_text = str(sTime.day)+'/'+calendar.month_name[sTime.month][:3]+'/'+str(sTime.year)
 
-  fig.text((xmin+xmax)/2.,.95,title_text, weight=550,size='large',ha='center')
-  
-  fig.text(xmax,.95,'Beam '+str(beam),weight=550,ha='right')
-  
+def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
+    """draws title for an rti plot
+
+    **Args**:
+        * **sTime**: the start time for the data being plotted as a
+            datetime object
+        * **rad**: the 3 letter radar code
+        * **fileType**: the file type being plotted
+        * **beam**: the beam number being plotted
+        * **[eTime]**: the end time for the data being plotted as a
+            datetime object
+        * **[xmin]**: minimum x value o the plot in page coords
+        * **[xmax]**: maximum x value o the plot in page coords
+    * **Returns**:
+        *Nothing.
+
+    **Example**:
+        ::
+
+            import datetime as dt
+            rti_title(dt.datetime(2011,1,1),'bks','fitex',7)
+
+    Written by AJ 20121002
+    Modified by ASR 20150916
+    """
+
+    from davitpy import pydarn
+
+    r = pydarn.radar.network().getRadarByCode(rad)
+
+    fig.text(xmin, .95, r.name+'  ('+fileType+')', ha='left', weight=550)
+
+    if ((eTime is not None) and
+        (((eTime - sTime) > datetime.timedelta(days=1)) or
+         (eTime.day != sTime.day))):
+
+        title_text = str(sTime.day) + '/' \
+                     + calendar.month_name[sTime.month][:3] + '/' \
+                     + str(sTime.year) + ' - ' + str(eTime.day) + '/' \
+                     + calendar.month_name[eTime.month][:3]+'/'+str(eTime.year)
+
+    else:
+        title_text = str(sTime.day) + '/' \
+                     + calendar.month_name[sTime.month][:3] + '/' \
+                     + str(sTime.year)
+
+    fig.text((xmin+xmax)/2., .95, title_text, weight=550,
+             size='large', ha='center')
+
+    fig.text(xmax, .95, 'Beam ' + str(beam), weight=550, ha='right')
+
+
 def plot_cpid(ax,times,cpid,mode):
   """plots cpid panel at position pos
 
