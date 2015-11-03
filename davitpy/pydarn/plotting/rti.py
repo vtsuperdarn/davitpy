@@ -410,7 +410,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
               yrng=-1, coords='gate', pos=[.1, .05, .76, .72], xtick_size=9,
               ytick_size=9, xticks=None, axvlines=None):
-    """ draws empty axes for an rti plot
+    """ Draws empty axes for an rti plot.
 
     **Args**:
         * **myFig**: the MPL figure we are plotting to
@@ -421,7 +421,7 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
         * **nrang**: list of nrang for the beam soundings
         * **frang**: list of frang of the beam soundings
         * **rsep**: list of rsep of the beam soundings
-        * **bottom**: flag indicating if we are at the bottom of the page
+        * **bottom**: flag indicating if we are at the bottom of the figure
         * **[yrng]**: range of y axis, -1=autoscale (default)
         * **[coords]**: y axis coordinate system, acceptable values are 'geo',
             'mag', 'gate', 'rng'
@@ -438,25 +438,27 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
     **Example:
         ::
 
-            ax = draw_axes(aFig,times,rad,cpid,beam,nrang,frang,rsep,0)
+            ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
 
     Written by AJ 20121002
+    Modified by ASR 20150917 (refactored)
     """
 
     from davitpy import pydarn
 
     nrecs = len(times)
-    # add an axes to the figure
+    # Add an axes object to the figure.
     ax = myFig.add_axes(pos)
     ax.yaxis.set_tick_params(direction='out')
     ax.xaxis.set_tick_params(direction='out')
     ax.yaxis.set_tick_params(direction='out', which='minor')
     ax.xaxis.set_tick_params(direction='out', which='minor')
 
-    # draw the axes
+    # Draw the axes.
     ax.plot_date(matplotlib.dates.date2num(times), numpy.arange(len(times)),
                  fmt='w', tz=None, xdate=True, ydate=False, alpha=0.0)
 
+    # Determine the yaxis min/max.
     if(yrng == -1):
         ymin, ymax = 99999999, -999999999
         if(coords != 'gate'):
@@ -487,17 +489,16 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
     else:
         ymin, ymax = yrng[0], yrng[1]
 
-    # HACK SPLIT XMIN XMAX
+    # Format the xaxis.
     xmin = matplotlib.dates.date2num(times[0])
     xmax = matplotlib.dates.date2num(times[len(times)-1])
     xrng = (xmax-xmin)
     inter = int(round(xrng/6.*86400.))
     inter2 = int(round(xrng/24.*86400.))
-    # format the x axis
     ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
     ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
-    #  ax.xaxis.xticks(size=9)
+    # If axis is at bottom of figure, draw xticks.
     if(not bottom):
         for tick in ax.xaxis.get_major_ticks():
             tick.label.set_fontsize(0)
@@ -514,10 +515,10 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
         ax.xaxis.set_label_text('UT')
 
-    # set ytick size
+    # Set ytick size.
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(ytick_size)
-    # format y axis depending on coords
+    # Format yaxis depending on coords.
     if(coords == 'gate'):
         ax.yaxis.set_label_text('Range gate', size=10)
         ax.yaxis.set_major_formatter(
@@ -533,7 +534,6 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
             matplotlib.ticker.FormatStrFormatter('%d'))
         ax.yaxis.set_major_locator(MultipleLocator(1000))
         ax.yaxis.set_minor_locator(MultipleLocator(250))
-
     ax.set_ylim(bottom=ymin, top=ymax)
 
     return ax
