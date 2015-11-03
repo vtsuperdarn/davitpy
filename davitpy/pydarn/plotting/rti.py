@@ -733,127 +733,136 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     ax.set_yticklabels([' ', ' '])
 
 
-def plot_searchnoise(ax,times,search,xlim=None,xticks=None,ytickside='right'):
-  """plots a noise panel at position pos
+def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
+                     ytickside='right'):
+    """plots a noise panel at position pos
 
-  **Args**:
-    * **ax**: a MPL axis object to plot to
-    * **times**: a list of the times of the beam soundings
-    * **sky**: a lsit of the noise.sky of the beam soundings
-    * **search**: a list of the noise.search param
-    * **[xlim]**: 2-element limits of the x-axis.  None for default.
-    * **[xticks]**: List of xtick poisitions.  None for default.
-  **Returns**:
-    * Nothing
-    
-  **Example**:
-    ::
+    **Args**:
+        * **ax**: a MPL axis object to plot to
+        * **times**: a list of the times of the beam soundings
+        * **sky**: a lsit of the noise.sky of the beam soundings
+        * **search**: a list of the noise.search param
+        * **[xlim]**: 2-element limits of the x-axis.  None for default.
+        * **[xticks]**: List of xtick poisitions.  None for default.
+    **Returns**:
+        * Nothing
 
-      plot_noise(rti_fig,times,nsky,nsch)
-      
-  Written by AJ 20121002
-  Modified by NAF 20131101
-  Modified by ASR 20150916
-  """
-  
-  # format the y-axis
-  ax.yaxis.tick_left()
-  ax.yaxis.set_tick_params(direction='out')
-  ax.set_ylim(bottom=0,top=6)
-  ax.yaxis.set_minor_locator(MultipleLocator())
-  ax.yaxis.set_tick_params(direction='out',which='minor')
+    **Example**:
+        ::
 
-  # plot the search noise data
-  ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(search), fmt='k:', \
-               tz=None, xdate=True, ydate=False,lw=1.5)
+            plot_noise(rti_fig,times,nsky,nsch)
 
-  if xlim is not None: ax.set_xlim(xlim)
-  if xticks is not None: ax.set_xticks(xticks)
+    Written by AJ 20121002
+    Modified by NAF 20131101
+    Modified by ASR 20150916
+    """
 
-  fig = ax.get_figure()
-  bb = ax.get_position()
-  x0 = bb.x0
-  y0 = bb.y0
-  height = bb.height
-  width = bb.width
-  pos = [x0,y0,width,height]
+    # format the y-axis
+    ax.yaxis.tick_left()
+    ax.yaxis.set_tick_params(direction='out')
+    ax.set_ylim(bottom=0, top=6)
+    ax.yaxis.set_minor_locator(MultipleLocator())
+    ax.yaxis.set_tick_params(direction='out', which='minor')
 
-  fig.text(pos[0]+pos[2]+.01,pos[1]+.004,'10^0',ha='left',va='bottom',size=8)
-  fig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'10^6',ha='left',va='top',size=8)
-  fig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'N.Sch',ha='center',va='center',size=8.5,rotation='vertical')
+    # plot the search noise data
+    ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(search),
+                 fmt='k:', tz=None, xdate=True, ydate=False, lw=1.5)
 
-  l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
-                 transform=fig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
-  ax.add_line(l)
+    if xlim is not None: ax.set_xlim(xlim)
+    if xticks is not None: ax.set_xticks(xticks)
+
+    fig = ax.get_figure()
+    bb = ax.get_position()
+    x0 = bb.x0
+    y0 = bb.y0
+    height = bb.height
+    width = bb.width
+    pos = [x0, y0, width, height]
+
+    fig.text(pos[0]+pos[2]+.01, pos[1]+.004, '10^0', ha='left', va='bottom',
+             size=8)
+    fig.text(pos[0]+pos[2]+.01, pos[1]+pos[3], '10^6', ha='left', va='top',
+             size=8)
+    fig.text(pos[0]+pos[2]+.06, pos[1]+pos[3]/2., 'N.Sch', ha='center',
+             va='center', size=8.5, rotation='vertical')
+
+    l = lines.Line2D([pos[0]+pos[2]+.07, pos[0]+pos[2]+.07],  [pos[1]+.01,
+                     pos[1]+pos[3]-.01], transform=fig.transFigure,
+                     clip_on=False, ls=':', color='k', lw=1.5)
+    ax.add_line(l)
+
+    ax.set_xticklabels([' '])
+    # use only 2 major yticks
+    ax.set_yticks([0, 6])
+    ax.set_yticklabels([' ', ' '])
+    if ytickside == 'right':
+        ax.yaxis.tick_right()
 
 
-  ax.set_xticklabels([' '])
-  # use only 2 major yticks
-  ax.set_yticks([0,6])
-  ax.set_yticklabels([' ',' '])
-  if ytickside=='right':
-    ax.yaxis.tick_right()
+def plot_freq(ax, times, freq, xlim=None, xticks=None):
+    """plots the tx frequency data to an axis object
 
-  
-def plot_freq(ax,times,freq,xlim=None,xticks=None):
-  """plots the tx frequency data to an axis object
+    **Args**:
+        * **ax**: a MPL axis object to plot to
+        * **times**: a list of the times of the beam soundings
+        * **freq**: a lsit of the tfreq of the beam soundings
+        * **search**: a list of the nave param
+        * **[pos]**: position of the panel
+        * **[xlim]**: 2-element limits of the x-axis.  None for default.
+        * **[xticks]**: List of xtick poisitions.  None for default.
+    **Returns**:
+        *Nothing.
 
-  **Args**:
-    * **ax**: a MPL axis object to plot to
-    * **times**: a list of the times of the beam soundings
-    * **freq**: a lsit of the tfreq of the beam soundings
-    * **search**: a list of the nave param
-    * **[pos]**: position of the panel
-    * **[xlim]**: 2-element limits of the x-axis.  None for default.
-    * **[xticks]**: List of xtick poisitions.  None for default.
-  **Returns**:
-    *Nothing.
-    
-  **Example**:
-    ::
+    **Example**:
+        ::
 
-      plot_freq(rti_fig,times,tfreq)
-      
-  Written by AJ 20121002
-  Modified by NAF 20131101
-  Modified by ASR 20150916
-  """
-    
-  # FIRST, DO THE TFREQ PLOTTING
-  ax.yaxis.tick_left()
-  ax.yaxis.set_tick_params(direction='out')
-  # ax.set_ylim(bottom=10,top=16)
-  ax.set_ylim(bottom=8,top=20)
-  ax.yaxis.set_minor_locator(MultipleLocator())
-  ax.yaxis.set_tick_params(direction='out',which='minor')
+            plot_freq(rti_fig, times, tfreq)
 
-  # plot the tx frequency  
-  ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-', \
-  tz=None, xdate=True, ydate=False,markersize=2)
+    Written by AJ 20121002
+    Modified by NAF 20131101
+    Modified by ASR 20150916
+    """
 
-  if xlim is not None: ax.set_xlim(xlim)
-  if xticks is not None: ax.set_xticks(xticks)
+    # FIRST, DO THE TFREQ PLOTTING
+    ax.yaxis.tick_left()
+    ax.yaxis.set_tick_params(direction='out')
+    # ax.set_ylim(bottom=10, top=16)
+    ax.set_ylim(bottom=8, top=20)
+    ax.yaxis.set_minor_locator(MultipleLocator())
+    ax.yaxis.set_tick_params(direction='out', which='minor')
 
-  # label the y axis
-  fig = ax.get_figure()
-  bb = ax.get_position()
-  x0 = bb.x0
-  y0 = bb.y0
-  height = bb.height
-  width = bb.width
-  pos = [x0,y0,width,height]
-  fig.text(pos[0]-.01,pos[1]+.005,'10',ha='right',va='bottom',size=8)
-  fig.text(pos[0]-.01,pos[1]+pos[3]-.015,'16',ha='right',va='top',size=8)
-  fig.text(pos[0]-.07,pos[1]+pos[3]/2.,'Freq',ha='center',va='center',size=9,rotation='vertical')
-  fig.text(pos[0]-.05,pos[1]+pos[3]/2.,'[MHz]',ha='center',va='center',size=7,rotation='vertical')
-  l=lines.Line2D([pos[0]-.04,pos[0]-.04], [pos[1]+.01,pos[1]+pos[3]-.01], \
-                 transform=fig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
-  ax.add_line(l)
+    # plot the tx frequency
+    ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-',
+                 tz=None, xdate=True, ydate=False, markersize=2)
 
-  ax.set_xticklabels([' '])
-  # use only 2 major yticks
-  ax.set_yticks([10,16])
-  ax.set_yticklabels([' ',' '])
+    if xlim is not None: ax.set_xlim(xlim)
+    if xticks is not None: ax.set_xticks(xticks)
+
+    # label the y axis
+    fig = ax.get_figure()
+    bb = ax.get_position()
+    x0 = bb.x0
+    y0 = bb.y0
+    height = bb.height
+    width = bb.width
+    pos = [x0, y0, width, height]
+    fig.text(pos[0]-.01, pos[1]+.005, '10', ha='right', va='bottom',
+             size=8)
+    fig.text(pos[0]-.01, pos[1]+pos[3]-.015, '16', ha='right', va='top',
+             size=8)
+    fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'Freq', ha='center', va='center',
+             size=9, rotation='vertical')
+    fig.text(pos[0]-.05, pos[1]+pos[3]/2., '[MHz]', ha='center', va='center',
+             size=7, rotation='vertical')
+    l = lines.Line2D([pos[0]-.04, pos[0]-.04],  [pos[1]+.01,
+                     pos[1]+pos[3]-.01], transform=fig.transFigure,
+                     clip_on=False, ls='-', color='k', lw=1.5)
+    ax.add_line(l)
+
+    ax.set_xticklabels([' '])
+    # use only 2 major yticks
+    ax.set_yticks([10, 16])
+    ax.set_yticklabels([' ', ' '])
 
 
 def plot_nave(ax,times,nave,xlim=None,xticks=None,ytickside='right'):
