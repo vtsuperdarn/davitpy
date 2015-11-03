@@ -897,8 +897,8 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
     ax.yaxis.set_minor_locator(MultipleLocator(base=5))
     ax.yaxis.set_tick_params(direction='out', which='minor')
 
-    # plot the tx frequency
-    ax.plot_date(matplotlib.dates.date2num(times), nave, fmt='k-',
+    # plot the number of averages
+    ax.plot_date(matplotlib.dates.date2num(times), nave, fmt='k:',
                  tz=None, xdate=True, ydate=False, markersize=2)
 
     if xlim is not None: ax.set_xlim(xlim)
