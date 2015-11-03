@@ -234,8 +234,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
     else:
         # make sure that we will only plot data for the time range specified
         # by sTime and eTime
-        if myFile.sTime <= sTime and myFile.eTime > sTime and
-        myFile.eTime >= eTime:
+        if myFile.sTime <= sTime and myFile.eTime > sTime and \
+                myFile.eTime >= eTime:
+
             myFile.sTime = sTime
             myFile.eTime = eTime
         else:
@@ -309,11 +310,11 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
         # plot each of the parameter panels
         figtop = .77
-        if ((eTime - sTime) <= datetime.timedelta(days=1)) and
-        (eTime.day == sTime.day):
+        if ((eTime - sTime) <= datetime.timedelta(days=1)) and \
+                (eTime.day == sTime.day):
             figheight = .72/len(params)
-        elif ((eTime - sTime) > datetime.timedelta(days=1)) or
-        (eTime.day != sTime.day):
+        elif ((eTime - sTime) > datetime.timedelta(days=1)) or \
+                (eTime.day != sTime.day):
             figheight = .70/len(params)
 
         for p in range(len(params)):
@@ -349,14 +350,18 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                               plot_terminator=plot_terminator)
 
             # Set xaxis formatting depending on amount of data plotted
-            if ((eTime - sTime) <= datetime.timedelta(days=1)) and
-            (eTime.day == sTime.day):
+            if ((eTime - sTime) <= datetime.timedelta(days=1)) and \
+                    (eTime.day == sTime.day):
+
                 ax.xaxis.set_major_formatter(
                     matplotlib.dates.DateFormatter('%H:%M'))
-            elif ((eTime - sTime) > datetime.timedelta(days=1)) or
-            (eTime.day != sTime.day):
+
+            elif ((eTime - sTime) > datetime.timedelta(days=1)) or \
+                    (eTime.day != sTime.day):
+
                 ax.xaxis.set_major_formatter(
                     matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M'))
+
             ax.set_xlabel('UT')
 
             # Draw the colorbar
@@ -374,10 +379,12 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                     l.append(str(bounds[i])[:ln])
                     continue
                 if((i == 0 and
-                   (params[p] == 'velocity' or params[p] == 'velocity_error'))
-                or i == len(bounds)-1):
+                    (params[p] == 'velocity' or
+                     params[p] == 'velocity_error')) or i == len(bounds)-1):
+
                     l.append(' ')
                     continue
+
                 l.append(str(int(bounds[i])))
             cb.ax.set_yticklabels(l)
 
@@ -386,22 +393,25 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                 t.set_fontsize(9)
 
             # set colorbar label
-            if(params[p] == 'velocity'): cb.set_label('Velocity [m/s]',size=10)
-            if(params[p] == 'grid'): cb.set_label('Velocity [m/s]',size=10)
-            if(params[p] == 'power'): cb.set_label('SNR [dB]',size=10)
-            if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]',size=10)
-            if(params[p] == 'elevation'): cb.set_label('Elev [deg]',size=10)
-            if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]',size=10)
-            if(params[p] == 'velocity_error'): cb.set_label('Velocity Error [m/s]',size=10)
+            if(params[p] == 'velocity'):
+                cb.set_label('Velocity [m/s]', size=10)
+            if(params[p] == 'grid'): cb.set_label('Velocity [m/s]', size=10)
+            if(params[p] == 'power'): cb.set_label('SNR [dB]', size=10)
+            if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]', size=10)
+            if(params[p] == 'elevation'): cb.set_label('Elev [deg]', size=10)
+            if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]', size=10)
+            if(params[p] == 'velocity_error'):
+                cb.set_label('Velocity Error [m/s]', size=10)
 
         if show:
             rti_fig.show()
-      
-        print 'plotting took:',datetime.datetime.now()-t1
+
+        print 'plotting took:', datetime.datetime.now()-t1
         # end of plotting for loop
-     
+
         return rti_figs
-  
+
+
 def draw_axes(myFig,times,rad,cpid,bmnum,nrang,frang,rsep,bottom,yrng=-1,coords='gate',pos=[.1,.05,.76,.72],xtick_size=9,ytick_size=9,xticks=None,axvlines=None):
   """draws empty axes for an rti plot
 
