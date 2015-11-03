@@ -79,7 +79,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
              tfreqbands=[], myFile=None, xtick_size=9, ytick_size=9,
              xticks=None, axvlines=None, plot_terminator=False):
 
-    """ create an rti plot for a secified radar and time period
+    """ Create an rti plot for a secified radar and time period.
 
     **Args**:
         * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
@@ -146,7 +146,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         ::
 
       import datetime as dt
-      pydarn.plotting.rti.plotRti(dt.datetime(2013,3,16), 'bks',
+      pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
                                   eTime=dt.datetime(2013,3,16,14,30),
                                   bmnum=12, fileType='fitacf',
                                   scales=[[-500,500],[],[]], coords='geo',
@@ -160,7 +160,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
     """
     import os
     from davitpy import pydarn
-    from davitpy import utils\
+    from davitpy import utils
 
     t1 = datetime.datetime.now()
     # check the inputs
@@ -170,6 +170,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                                                     'string 3 chars long'
     assert(isinstance(eTime, datetime.datetime) or
            eTime is None), 'error, eTime must be a datetime object or None'
+    if eTime is None:
+        eTime = sTime+datetime.timedelta(days=1)
+    assert(sTime < eTime), "eTime must be greater than sTime!"
     assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or
            coords == 'mag'), "error, coords must be one of 'gate', 'rng', " \
                              "'geo', 'mag'"
@@ -198,7 +201,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
            colors == 'aj'), "error, valid inputs for color are " \
                             "'lasse' and 'aj'"
 
-    # assign any default color scales
+    # Assign any default color scale parameter limits.
     tscales = []
     for i in range(0, len(params)):
         if(scales == [] or scales[i] == []):
@@ -211,42 +214,40 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         else: tscales.append(scales[i])
     scales = tscales
 
-    # assign default frequency band
+    # Assign default frequency band.
     tbands = []
-    if tfreqbands == []: tbands.append([8000, 20000])
+    if tfreqbands == []:
+        tbands.append([8000, 20000])
     else:
         for band in tfreqbands:
-            # make sure that starting frequncy is less than the ending
-            # frequency for each band
+            # Make sure that starting frequncy is less than the ending
+            # frequency for each band.
             assert(band[0] < band[1]), "Starting frequency must be less " \
                                        "than ending frequency!"
             tbands.append(band)
 
-    if eTime is None: eTime = sTime+datetime.timedelta(days=1)
-    assert(sTime < eTime), "eTime must be greater than sTime!"
-
-    # open the file if a pointer was not given to us
-    # if fileName is specified then it will be read
+    # Open the file if a pointer was not given to us
+    # if fileName is specified then it will be read.
     if not myFile:
         myFile = radDataOpen(sTime, rad, eTime, channel=channel, bmnum=bmnum,
                              fileType=fileType, filtered=filtered,
                              fileName=fileName)
     else:
-        # make sure that we will only plot data for the time range specified
-        # by sTime and eTime
+        # Make sure that we will only plot data for the time range specified
+        # by sTime and eTime.
         if myFile.sTime <= sTime and myFile.eTime > sTime and \
                 myFile.eTime >= eTime:
 
             myFile.sTime = sTime
             myFile.eTime = eTime
         else:
-            # if the times range is not covered by the file, throw an error
+            # If the times range is not covered by the file, throw an error.
             print 'error, data not available in myFile for the whole sTime ' \
                   'to eTime'
             return None
 
-    # check that we have data available now that we may have tried
-    # to read it using radDataOpen
+    # Check that we have data available now that we may have tried
+    # to read it using radDataOpen.
     if not myFile:
         print 'error, no files available for the requested ' \
               'time/radar/filetype combination'
@@ -273,11 +274,11 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             rti_figs.append(None)
             continue
 
-        # create a figure
+        # Create a figure.
         rti_fig = plot.figure(figsize=(11, 8.5))
         rti_figs.append(rti_fig)
 
-        # create the axes for noise, tx freq, and cpid
+        # Create the axes for noise, tx freq, and cpid.
         noise_pos = [.1, .88, .76, .06]
         freq_pos = [.1, .82, .76, .06]
         cpid_pos = [.1, .77, .76, .05]
@@ -289,26 +290,26 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         nave_ax = rti_fig.add_axes(freq_pos, label='nave', frameon=False)
         cpid_ax = rti_fig.add_axes(cpid_pos)
 
-        # give the plot a title
+        # Give the plot a title.
         rti_title(rti_fig, sTime, rad, fileType, bmnum, eTime=eTime)
 
-        # plot the sky noise
+        # Plot the sky noise.
         plot_skynoise(skynoise_ax, data_dict['times'][fplot],
                       data_dict['nsky'][fplot])
-        # plot the search noise
+        # Plot the search noise.
         plot_searchnoise(searchnoise_ax, data_dict['times'][fplot],
                          data_dict['nsch'][fplot])
-        # plot the frequency bar
+        # plot the frequency bar.
         plot_freq(freq_ax, data_dict['times'][fplot],
                   data_dict['freq'][fplot])
-        # plot the nave data
+        # Plot the nave data.
         plot_nave(nave_ax, data_dict['times'][fplot],
                   data_dict['nave'][fplot])
-        # plot the cpid bar
+        # Plot the cpid bar
         plot_cpid(cpid_ax, data_dict['times'][fplot],
                   data_dict['cpid'][fplot], data_dict['mode'][fplot])
 
-        # plot each of the parameter panels
+        # Plot each of the parameter panels.
         figtop = .77
         if ((eTime - sTime) <= datetime.timedelta(days=1)) and \
                 (eTime.day == sTime.day):
@@ -318,7 +319,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             figheight = .70/len(params)
 
         for p in range(len(params)):
-            # use draw_axes to create and set formatting of the axes to plot to
+            # Use draw_axes to create and set formatting of the axes to plot to.
             pos = [.1, figtop-figheight*(p+1)+.02, .76, figheight-.02]
             ax = draw_axes(rti_fig, data_dict['times'][fplot], rad,
                            data_dict['cpid'][fplot], bmnum,
@@ -339,38 +340,34 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
             if(pArr == []): continue
 
-            # Generate the color map
+            # Generate the color map.
             cmap, norm, bounds = utils.plotUtils.genCmap(params[p], scales[p],
                                                          colors=colors,
                                                          lowGray=low_gray)
 
-            # Plot the data to the axis object
+            # Plot the data to the axis object.
             pcoll = rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum,
                               coords, cmap, norm,
                               plot_terminator=plot_terminator)
 
-            # Set xaxis formatting depending on amount of data plotted
+            # Set xaxis formatting depending on amount of data plotted.
             if ((eTime - sTime) <= datetime.timedelta(days=1)) and \
                     (eTime.day == sTime.day):
-
                 ax.xaxis.set_major_formatter(
                     matplotlib.dates.DateFormatter('%H:%M'))
-
             elif ((eTime - sTime) > datetime.timedelta(days=1)) or \
                     (eTime.day != sTime.day):
-
                 ax.xaxis.set_major_formatter(
                     matplotlib.dates.DateFormatter('%d/%m/%y \n%H:%M'))
-
             ax.set_xlabel('UT')
 
-            # Draw the colorbar
+            # Draw the colorbar.
             cb = utils.drawCB(rti_fig, pcoll, cmap, norm, map_plot=0,
                               pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
 
-            # Label the colorbar
+            # Label the colorbar.
             l = []
-            # define the colorbar labels
+            # Define the colorbar labels.
             for i in range(0, len(bounds)):
                 if(params[p] == 'phi0'):
                     ln = 4
@@ -381,18 +378,16 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                 if((i == 0 and
                     (params[p] == 'velocity' or
                      params[p] == 'velocity_error')) or i == len(bounds)-1):
-
                     l.append(' ')
                     continue
-
                 l.append(str(int(bounds[i])))
             cb.ax.set_yticklabels(l)
 
-            # set colorbar ticklabel size
+            # Set colorbar ticklabel size.
             for t in cb.ax.get_yticklabels():
                 t.set_fontsize(9)
 
-            # set colorbar label
+            # Set colorbar label.
             if(params[p] == 'velocity'):
                 cb.set_label('Velocity [m/s]', size=10)
             if(params[p] == 'grid'): cb.set_label('Velocity [m/s]', size=10)
@@ -407,7 +402,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             rti_fig.show()
 
         print 'plotting took:', datetime.datetime.now()-t1
-        # end of plotting for loop
+        # End of plotting for loop.
 
         return rti_figs
 
