@@ -865,123 +865,139 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
     ax.set_yticklabels([' ', ' '])
 
 
-def plot_nave(ax,times,nave,xlim=None,xticks=None,ytickside='right'):
-  """plots the nave data to an axis object
+def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
+    """plots the nave data to an axis object
 
-  **Args**:
-    * **ax**: a MPL axis object to plot to
-    * **times**: a list of the times of the beam soundings
-    * **nave**: a lsit of the nave of the beam soundings
-    * **search**: a list of the nave param
-    * **[pos]**: position of the panel
-    * **[xlim]**: 2-element limits of the x-axis.  None for default.
-    * **[xticks]**: List of xtick poisitions.  None for default.
-  **Returns**:
-    *Nothing.
-    
-  **Example**:
-    ::
+    **Args**:
+        * **ax**: a MPL axis object to plot to
+        * **times**: a list of the times of the beam soundings
+        * **nave**: a lsit of the nave of the beam soundings
+        * **search**: a list of the nave param
+        * **[pos]**: position of the panel
+        * **[xlim]**: 2-element limits of the x-axis.  None for default.
+        * **[xticks]**: List of xtick poisitions.  None for default.
+    **Returns**:
+        *Nothing.
 
-      plot_nave(ax,times,nave)
-      
-  Written by AJ 20121002
-  Modified by NAF 20131101
-  Modified by ASR 20150916
-  """
-    
-  # FIRST, DO THE TFREQ PLOTTING
-  ax.yaxis.tick_left()
-  ax.yaxis.set_tick_params(direction='out')
-  # ax.set_ylim(bottom=10,top=16)
-  ax.set_ylim(bottom=0,top=80)
-  ax.yaxis.set_minor_locator(MultipleLocator(base=5))
-  ax.yaxis.set_tick_params(direction='out',which='minor')
+    **Example**:
+        ::
 
-  # plot the tx frequency  
-  ax.plot_date(matplotlib.dates.date2num(times), nave, fmt='k-', \
-               tz=None, xdate=True, ydate=False,markersize=2)
+            plot_nave(ax, times, nave)
 
-  if xlim is not None: ax.set_xlim(xlim)
-  if xticks is not None: ax.set_xticks(xticks)
+    Written by AJ 20121002
+    Modified by NAF 20131101
+    Modified by ASR 20150916
+    """
 
-  # label the y axis
-  fig = ax.get_figure()
-  bb = ax.get_position()
-  x0 = bb.x0
-  y0 = bb.y0
-  height = bb.height
-  width = bb.width
-  pos = [x0,y0,width,height]
-  fig.text(pos[0]+pos[2]+.01,pos[1]-.004,'0',ha='left',va='bottom',size=8)
-  fig.text(pos[0]+pos[2]+.01,pos[1]+pos[3],'80',ha='left',va='top',size=8)
-  fig.text(pos[0]+pos[2]+.06,pos[1]+pos[3]/2.,'Nave',ha='center',va='center',size=8.5,rotation='vertical')
+    # FIRST, DO THE TFREQ PLOTTING
+    ax.yaxis.tick_left()
+    ax.yaxis.set_tick_params(direction='out')
+    # ax.set_ylim(bottom=10, top=16)
+    ax.set_ylim(bottom=0, top=80)
+    ax.yaxis.set_minor_locator(MultipleLocator(base=5))
+    ax.yaxis.set_tick_params(direction='out', which='minor')
 
-  l=lines.Line2D([pos[0]+pos[2]+.07,pos[0]+pos[2]+.07], [pos[1]+.01,pos[1]+pos[3]-.01], \
-                 transform=fig.transFigure,clip_on=False,ls=':',color='k',lw=1.5)                              
-  ax.add_line(l)
+    # plot the tx frequency
+    ax.plot_date(matplotlib.dates.date2num(times), nave, fmt='k-',
+                 tz=None, xdate=True, ydate=False, markersize=2)
 
-  ax.set_xticklabels([' '])
-  # use only 2 major yticks
-  ax.set_yticks([0,80])
-  ax.set_yticklabels([' ',' '])
-  if ytickside=='right':
-    ax.yaxis.tick_right()
+    if xlim is not None: ax.set_xlim(xlim)
+    if xticks is not None: ax.set_xticks(xticks)
 
-def read_data(myPtr,myBeam,bmnum,params,tbands):
-  """Reads data from the file pointed to by myPtr
+    # label the y axis
+    fig = ax.get_figure()
+    bb = ax.get_position()
+    x0 = bb.x0
+    y0 = bb.y0
+    height = bb.height
+    width = bb.width
+    pos = [x0, y0, width, height]
+    fig.text(pos[0]+pos[2]+.01, pos[1]-.004, '0', ha='left', va='bottom',
+             size=8)
+    fig.text(pos[0]+pos[2]+.01, pos[1]+pos[3], '80', ha='left', va='top',
+             size=8)
+    fig.text(pos[0]+pos[2]+.06, pos[1]+pos[3]/2., 'Nave', ha='center',
+             va='center', size=8.5, rotation='vertical')
 
-  **Args**:
-    * **myPtr**: a davitpy file pointer object
-    * **myBeam**: a davitpy beam object
-    * **bmnum**: beam number of data to read in
-    * **params**: a list of the parameters to read
-    * **tbands**: a list of the frequency bands to separate data into
-  **Returns**:
-    * A dictionary of the data. Data is stored in lists and separated in to tbands.
-      
-  Written by ASR 20150914
-  """
-  data = dict()
-  # initialize empty lists
-  data_keys = ['vel','pow','wid','elev','phi0','times','freq','cpid',
-               'nave','nsky','nsch','slist','mode','rsep','nrang',
-               'frang','gsflg','velocity_error']
-  for d in data_keys:
-    data[d]=[]
-    for i in range(len(tbands)):
-      data[d].append([])
-  
-  # read the parameters of interest
-  while(myBeam is not None):
-    if(myBeam.time > myPtr.eTime): break
-    if(myBeam.bmnum == bmnum and (myPtr.sTime <= myBeam.time)):
-      for i in range(len(tbands)):
-        if myBeam.prm.tfreq >= tbands[i][0] and myBeam.prm.tfreq <= tbands[i][1]:
-          data['times'][i].append(myBeam.time)
-          data['cpid'][i].append(myBeam.cp)
-          data['nave'][i].append(myBeam.prm.nave)
-          data['nsky'][i].append(myBeam.prm.noisesky)
-          data['rsep'][i].append(myBeam.prm.rsep)
-          data['nrang'][i].append(myBeam.prm.nrang)
-          data['frang'][i].append(myBeam.prm.frang)
-          data['nsch'][i].append(myBeam.prm.noisesearch)
-          data['freq'][i].append(myBeam.prm.tfreq/1e3)
-          data['slist'][i].append(myBeam.fit.slist)
-          data['mode'][i].append(myBeam.prm.ifmode)
-          # to save time and RAM, only keep the data specified in params
-          if('velocity' in params): data['vel'][i].append(myBeam.fit.v)
-          if('power' in params): data['pow'][i].append(myBeam.fit.p_l)
-          if('width' in params): data['wid'][i].append(myBeam.fit.w_l)
-          if('elevation' in params): data['elev'][i].append(myBeam.fit.elv)
-          if('phi0' in params): data['phi0'][i].append(myBeam.fit.phi0)
-          if('velocity_error' in params): data['velocity_error'][i].append(myBeam.fit.v_e)
-          data['gsflg'][i].append(myBeam.fit.gflg)
-      
-    myBeam = myPtr.readRec()
-  return data
+    l = lines.Line2D([pos[0]+pos[2]+.07, pos[0]+pos[2]+.07],  [pos[1]+.01,
+                     pos[1]+pos[3]-.01], transform=fig.transFigure,
+                     clip_on=False, ls=':', color='k', lw=1.5)
+    ax.add_line(l)
+
+    ax.set_xticklabels([' '])
+    # use only 2 major yticks
+    ax.set_yticks([0, 80])
+    ax.set_yticklabels([' ', ' '])
+    if ytickside == 'right':
+        ax.yaxis.tick_right()
 
 
-# Replace draw axes with a function that can simply formats an existing axis object
+def read_data(myPtr, myBeam, bmnum, params, tbands):
+    """Reads data from the file pointed to by myPtr
+
+    **Args**:
+        * **myPtr**: a davitpy file pointer object
+        * **myBeam**: a davitpy beam object
+        * **bmnum**: beam number of data to read in
+        * **params**: a list of the parameters to read
+        * **tbands**: a list of the frequency bands to separate data into
+    **Returns**:
+        * A dictionary of the data. Data is stored in lists and separated in
+            to tbands.
+
+    Written by ASR 20150914
+    """
+
+    data = dict()
+    # initialize empty lists
+    data_keys = ['vel', 'pow', 'wid', 'elev', 'phi0', 'times', 'freq', 'cpid',
+                 'nave', 'nsky', 'nsch', 'slist', 'mode', 'rsep', 'nrang',
+                 'frang', 'gsflg', 'velocity_error']
+    for d in data_keys:
+        data[d] = []
+        for i in range(len(tbands)):
+            data[d].append([])
+
+    # read the parameters of interest
+    while(myBeam is not None):
+        if(myBeam.time > myPtr.eTime): break
+        if(myBeam.bmnum == bmnum and (myPtr.sTime <= myBeam.time)):
+            for i in range(len(tbands)):
+                if (myBeam.prm.tfreq >= tbands[i][0] and
+                        myBeam.prm.tfreq <= tbands[i][1]):
+                    data['times'][i].append(myBeam.time)
+                    data['cpid'][i].append(myBeam.cp)
+                    data['nave'][i].append(myBeam.prm.nave)
+                    data['nsky'][i].append(myBeam.prm.noisesky)
+                    data['rsep'][i].append(myBeam.prm.rsep)
+                    data['nrang'][i].append(myBeam.prm.nrang)
+                    data['frang'][i].append(myBeam.prm.frang)
+                    data['nsch'][i].append(myBeam.prm.noisesearch)
+                    data['freq'][i].append(myBeam.prm.tfreq/1e3)
+                    data['slist'][i].append(myBeam.fit.slist)
+                    data['mode'][i].append(myBeam.prm.ifmode)
+                    # to save time and RAM, only keep the data specified
+                    # in params
+                    if('velocity' in params):
+                        data['vel'][i].append(myBeam.fit.v)
+                    if('power' in params):
+                        data['pow'][i].append(myBeam.fit.p_l)
+                    if('width' in params):
+                        data['wid'][i].append(myBeam.fit.w_l)
+                    if('elevation' in params):
+                        data['elev'][i].append(myBeam.fit.elv)
+                    if('phi0' in params):
+                        data['phi0'][i].append(myBeam.fit.phi0)
+                    if('velocity_error' in params):
+                        data['velocity_error'][i].append(myBeam.fit.v_e)
+                    data['gsflg'][i].append(myBeam.fit.gflg)
+
+        qmyBeam = myPtr.readRec()
+    return data
+
+
+# Replace draw axes with a function that can simply formats an existing
+# axis object
 
 def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=True):
 
