@@ -540,9 +540,10 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 
 
 def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
-    """draws title for an rti plot
+    """Draws title for an rti plot.
 
     **Args**:
+        * **fig**: a matplotlib.figure.Figure object
         * **sTime**: the start time for the data being plotted as a
             datetime object
         * **rad**: the 3 letter radar code
@@ -559,7 +560,9 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
         ::
 
             import datetime as dt
-            rti_title(dt.datetime(2011,1,1),'bks','fitex',7)
+            from matplotlib import pyplot
+            fig = pyplot.figure()
+            rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
 
     Written by AJ 20121002
     Modified by ASR 20150916
@@ -567,14 +570,16 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
 
     from davitpy import pydarn
 
+    # Obtain the davitpy.pydarn.radar.radStruct.radar object for rad.
     r = pydarn.radar.network().getRadarByCode(rad)
 
+    # Plot the main title
     fig.text(xmin, .95, r.name+'  ('+fileType+')', ha='left', weight=550)
 
+    # Determine what time information should be plotted in the secondary title
     if ((eTime is not None) and
         (((eTime - sTime) > datetime.timedelta(days=1)) or
          (eTime.day != sTime.day))):
-
         title_text = str(sTime.day) + '/' \
                      + calendar.month_name[sTime.month][:3] + '/' \
                      + str(sTime.year) + ' - ' + str(eTime.day) + '/' \
@@ -585,14 +590,14 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
                      + calendar.month_name[sTime.month][:3] + '/' \
                      + str(sTime.year)
 
+    # Plot the secondary title.
     fig.text((xmin+xmax)/2., .95, title_text, weight=550,
              size='large', ha='center')
-
     fig.text(xmax, .95, 'Beam ' + str(beam), weight=550, ha='right')
 
 
 def plot_cpid(ax, times, cpid, mode):
-    """plots cpid panel at position pos
+    """Plots cpid panel at position pos.
 
     **Args**:
         * **ax**: a MPL axis object to plot to
@@ -605,7 +610,7 @@ def plot_cpid(ax, times, cpid, mode):
     **Example**:
         ::
 
-            plot_cpid(rti_fig,times,cpid,mode)
+            plot_cpid(ax,times,cpid,mode)
 
         Written by AJ 20121002
         Modified by ASR 20150916
@@ -614,48 +619,44 @@ def plot_cpid(ax, times, cpid, mode):
     from davitpy import pydarn
     oldCpid = -9999999
 
-    # format the y-axis
+    # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
     ax.set_ylim(bottom=0, top=1)
     ax.yaxis.set_minor_locator(MultipleLocator(1))
     ax.yaxis.set_tick_params(direction='out', which='minor')
 
-    # draw the axes
+    # Draw the axes.
     ax.plot_date(matplotlib.dates.date2num(times), numpy.arange(len(times)),
                  fmt='w', tz=None, xdate=True, ydate=False, alpha=0.0)
 
+    # Label the CPIDs.
     for i in range(0, len(times)):
         if(cpid[i] != oldCpid):
             ax.plot_date([matplotlib.dates.date2num(times[i]),
                          matplotlib.dates.date2num(times[i])],
                          [0, 1], fmt='k-', tz=None, xdate=True, ydate=False)
-
             oldCpid = cpid[i]
-
             s = ' '+pydarn.radar.radUtils.getCpName(oldCpid)
-
             istr = ' '
             if(mode[i] == 1): istr = ' IF'
             if(mode == 0): istr = ' RF'
-
             ax.text(times[i], .5, ' ' + str(oldCpid) + s + istr, ha='left',
                     va='center', size=10)
 
-    # SPLIT XMIN XMAX TO TWO LINES
+    # Format the xaxis.
     xmin = matplotlib.dates.date2num(times[0])
     xmax = matplotlib.dates.date2num(times[len(times)-1])
     xrng = (xmax-xmin)
     inter = int(round(xrng/6.*86400.))
     inter2 = int(round(xrng/24.*86400.))
-    # format the x axis
     ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
     ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(0)
 
-    # CPID label
+    # Identify the CPID axis with a label.
     fig = ax.get_figure()
     bb = ax.get_position()
     x0 = bb.x0
@@ -665,12 +666,11 @@ def plot_cpid(ax, times, cpid, mode):
     pos = [x0, y0, width, height]
     fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'CPID', ha='center', va='center',
              size=8.5, rotation='vertical')
-
     ax.set_yticks([])
 
 
 def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
-    """plots a noise panel at position pos
+    """Plots a noise panel at position pos.
 
     **Args**:
         * **ax**: a MPL axis object to plot to
@@ -685,27 +685,29 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     **Example**:
         ::
 
-            plot_noise(rti_fig,times,nsky,nsch)
+            plot_skynoise(ax,times,sky)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
     """
 
-    # format the y-axis
+    # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
     ax.set_ylim(bottom=0, top=6)
     ax.yaxis.set_minor_locator(MultipleLocator())
     ax.yaxis.set_tick_params(direction='out', which='minor')
 
-    # plot the sky noise data
+    # Plot the sky noise data.
     ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-',
                  tz=None, xdate=True, ydate=False)
 
+    # Format the xaxis.
     if xlim is not None: ax.set_xlim(xlim)
     if xticks is not None: ax.set_xticks(xticks)
 
+    # Add labels to identify the noise axis.
     fig = ax.get_figure()
     bb = ax.get_position()
     x0 = bb.x0
@@ -721,16 +723,15 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
                      transform=fig.transFigure, clip_on=False, ls='-',
                      color='k', lw=1.5)
     ax.add_line(l)
-
     ax.set_xticklabels([' '])
-    # use only 2 major yticks
+    # Only use 2 major yticks.
     ax.set_yticks([0, 6])
     ax.set_yticklabels([' ', ' '])
 
 
 def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
                      ytickside='right'):
-    """plots a noise panel at position pos
+    """Plots a noise panel at position pos.
 
     **Args**:
         * **ax**: a MPL axis object to plot to
@@ -745,27 +746,29 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
     **Example**:
         ::
 
-            plot_noise(rti_fig,times,nsky,nsch)
+            plot_searchnoise(ax,times,search)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
     """
 
-    # format the y-axis
+    # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
     ax.set_ylim(bottom=0, top=6)
     ax.yaxis.set_minor_locator(MultipleLocator())
     ax.yaxis.set_tick_params(direction='out', which='minor')
 
-    # plot the search noise data
+    # Plot the search noise data.
     ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(search),
                  fmt='k:', tz=None, xdate=True, ydate=False, lw=1.5)
 
+    # Format the xaxis.
     if xlim is not None: ax.set_xlim(xlim)
     if xticks is not None: ax.set_xticks(xticks)
 
+    # Add labels to identify the noise axis.
     fig = ax.get_figure()
     bb = ax.get_position()
     x0 = bb.x0
@@ -785,7 +788,6 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
                      pos[1]+pos[3]-.01], transform=fig.transFigure,
                      clip_on=False, ls=':', color='k', lw=1.5)
     ax.add_line(l)
-
     ax.set_xticklabels([' '])
     # use only 2 major yticks
     ax.set_yticks([0, 6])
@@ -795,7 +797,7 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
 
 
 def plot_freq(ax, times, freq, xlim=None, xticks=None):
-    """plots the tx frequency data to an axis object
+    """Plots the tx frequency data to an axis object.
 
     **Args**:
         * **ax**: a MPL axis object to plot to
@@ -811,29 +813,29 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
     **Example**:
         ::
 
-            plot_freq(rti_fig, times, tfreq)
+            plot_freq(ax, times, tfreq)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
     """
 
-    # FIRST, DO THE TFREQ PLOTTING
+    # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
-    # ax.set_ylim(bottom=10, top=16)
     ax.set_ylim(bottom=8, top=20)
     ax.yaxis.set_minor_locator(MultipleLocator())
     ax.yaxis.set_tick_params(direction='out', which='minor')
 
-    # plot the tx frequency
+    # Plot the TX frequency.
     ax.plot_date(matplotlib.dates.date2num(times), freq, fmt='k-',
                  tz=None, xdate=True, ydate=False, markersize=2)
 
+    # Format the xaxis.
     if xlim is not None: ax.set_xlim(xlim)
     if xticks is not None: ax.set_xticks(xticks)
 
-    # label the y axis
+    # Add labels to identify the frequency axis.
     fig = ax.get_figure()
     bb = ax.get_position()
     x0 = bb.x0
@@ -853,7 +855,6 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
                      pos[1]+pos[3]-.01], transform=fig.transFigure,
                      clip_on=False, ls='-', color='k', lw=1.5)
     ax.add_line(l)
-
     ax.set_xticklabels([' '])
     # use only 2 major yticks
     ax.set_yticks([10, 16])
@@ -861,7 +862,7 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 
 
 def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
-    """plots the nave data to an axis object
+    """Plots the nave data to an axis object.
 
     **Args**:
         * **ax**: a MPL axis object to plot to
@@ -884,22 +885,22 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
     Modified by ASR 20150916
     """
 
-    # FIRST, DO THE TFREQ PLOTTING
+    # Format the yaxis
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
-    # ax.set_ylim(bottom=10, top=16)
     ax.set_ylim(bottom=0, top=80)
     ax.yaxis.set_minor_locator(MultipleLocator(base=5))
     ax.yaxis.set_tick_params(direction='out', which='minor')
 
-    # plot the number of averages
+    # Plot the number of averages.
     ax.plot_date(matplotlib.dates.date2num(times), nave, fmt='k:',
                  tz=None, xdate=True, ydate=False, markersize=2)
 
+    # Format the xaxis.
     if xlim is not None: ax.set_xlim(xlim)
     if xticks is not None: ax.set_xticks(xticks)
 
-    # label the y axis
+    # Add labels to identify the nave axis.
     fig = ax.get_figure()
     bb = ax.get_position()
     x0 = bb.x0
@@ -918,7 +919,6 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
                      pos[1]+pos[3]-.01], transform=fig.transFigure,
                      clip_on=False, ls=':', color='k', lw=1.5)
     ax.add_line(l)
-
     ax.set_xticklabels([' '])
     # use only 2 major yticks
     ax.set_yticks([0, 80])
@@ -940,11 +940,19 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
         * A dictionary of the data. Data is stored in lists and separated in
             to tbands.
 
+    **Example**:
+        ::
+            from davitpy import pydarn
+            from datetime import datetime
+            myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
+            myBeam = myPtr.readRec()
+            data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
+
     Written by ASR 20150914
     """
 
+    # Initialize some things.
     data = dict()
-    # initialize empty lists
     data_keys = ['vel', 'pow', 'wid', 'elev', 'phi0', 'times', 'freq', 'cpid',
                  'nave', 'nsky', 'nsch', 'slist', 'mode', 'rsep', 'nrang',
                  'frang', 'gsflg', 'velocity_error']
@@ -953,7 +961,7 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
         for i in range(len(tbands)):
             data[d].append([])
 
-    # read the parameters of interest
+    # Read the parameters of interest.
     while(myBeam is not None):
         if(myBeam.time > myPtr.eTime): break
         if(myBeam.bmnum == bmnum and (myPtr.sTime <= myBeam.time)):
@@ -971,8 +979,8 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
                     data['freq'][i].append(myBeam.prm.tfreq/1e3)
                     data['slist'][i].append(myBeam.fit.slist)
                     data['mode'][i].append(myBeam.prm.ifmode)
-                    # to save time and RAM, only keep the data specified
-                    # in params
+                    # To save time and RAM, only keep the data specified
+                    # in params.
                     if('velocity' in params):
                         data['vel'][i].append(myBeam.fit.v)
                     if('power' in params):
@@ -986,18 +994,14 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
                     if('velocity_error' in params):
                         data['velocity_error'][i].append(myBeam.fit.v_e)
                     data['gsflg'][i].append(myBeam.fit.gflg)
-
         myBeam = myPtr.readRec()
     return data
 
 
-# Replace draw axes with a function that can simply formats an existing
-# axis object
-
 def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
               norm, plot_terminator=True):
 
-    """plots the data given by pArr to an axis object
+    """Plots the data given by pArr to an axis object.
 
     **Args**:
         * **ax**: a MPL axis object to plot to
@@ -1024,13 +1028,14 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
     """
 
     from davitpy import pydarn
-    # initialize arrays
+    # Initialize things.
     rmax = max(data_dict['nrang'][fplot])
     tmax = (len(data_dict['times'][fplot]))*2
     data = numpy.zeros((tmax, rmax))*numpy.nan
     x = numpy.zeros(tmax)
     tcnt = 0
 
+    # Build a list of datetimes to plot each data point at.
     dt_list = []
     for i in range(len(data_dict['times'][fplot])):
         x[tcnt] = matplotlib.dates.date2num(data_dict['times'][fplot][i])
@@ -1055,6 +1060,7 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
                 elif gsct and data_dict['gsflg'][fplot][i][j] == 1:
                     data[tcnt][data_dict['slist'][fplot][i][j]] = -100000.
 
+    # For geo or mag coords, get radar FOV lats/lons.
     if (coords != 'gate' and coords != 'rng') or plot_terminator is True:
         site = pydarn.radar.network().getRadarByCode(rad) \
                .getSiteByDate(data_dict['times'][fplot][0])
@@ -1066,21 +1072,25 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
         myLat = myFov.latCenter[bmnum]
         myLon = myFov.lonCenter[bmnum]
 
-    if(coords == 'gate'): y = numpy.linspace(0, rmax, rmax+1)
-    elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],
-                                              rmax*data_dict['rsep'][fplot][0],
-                                              rmax+1)
-    else: y = myFov.latFull[bmnum]
+    # Determine the yaxis range limits to plot data to.
+    if(coords == 'gate'):
+        y = numpy.linspace(0, rmax, rmax+1)
+    elif(coords == 'rng'):
+        y = numpy.linspace(data_dict['frang'][fplot][0],
+                           rmax*data_dict['rsep'][fplot][0],
+                           rmax+1)
+    else:
+        y = myFov.latFull[bmnum]
 
+    # Generate a mesh of x and y coords to plot data to.
     X, Y = numpy.meshgrid(x[:tcnt], y)
 
-    #  Calculate terminator
+    # Calculate terminator as required.
     if plot_terminator:
         daylight = np.ones([len(dt_list), len(myLat)], np.bool)
         for tm_inx in range(len(dt_list)):
             tm = dt_list[tm_inx]
             term_lats, tau, dec = daynight_terminator(tm, myLon)
-
             if dec > 0:
                 # NH Summer
                 day_inx = np.where(myLat < term_lats)[0]
@@ -1089,18 +1099,17 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 
             if day_inx.size != 0:
                 daylight[tm_inx, day_inx] = False
-
             from numpy import ma
             daylight = ma.array(daylight, mask=daylight)
             ax.pcolormesh(X, Y, daylight.T, lw=0, alpha=0.10,
                           cmap=matplotlib.cm.binary_r, zorder=99)
 
-    # mask the nan's in the data array so they aren't plotted
+    # Mask the nan's in the data array so they aren't plotted.
     Zm = numpy.ma.masked_where(numpy.isnan(data[:tcnt][:].T), data[:tcnt][:].T)
-    # set colormap so that masked data (bad) is transparent
+    # Set colormap so that masked data (bad) is transparent.
     cmap.set_bad('w', alpha=0.0)
 
-    # now let's plot all data
+    # Now let's plot all data.
     pcoll = ax.pcolormesh(X, Y, Zm, lw=0.01, edgecolors='None', lod=True,
                           cmap=cmap, norm=norm)
 
@@ -1108,7 +1117,16 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 
 
 def daynight_terminator(date, lons):
-    """ date is datetime object (assumed UTC).
+    """ Return the coordinates of day/night terminator for RTI plotting.
+
+    **Args**:
+        * **date**: a datetime.datetime object (assumed UTC)
+        * **lons**: a numpy array of lons
+
+    **Returns**:
+        *lat, the latitude of the day night terminator
+        *tau, grenwich hour angle
+        *dec, solar declination
 
     """
 
