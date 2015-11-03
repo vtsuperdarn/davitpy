@@ -992,7 +992,7 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
                         data['velocity_error'][i].append(myBeam.fit.v_e)
                     data['gsflg'][i].append(myBeam.fit.gflg)
 
-        qmyBeam = myPtr.readRec()
+        myBeam = myPtr.readRec()
     return data
 
 
