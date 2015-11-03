@@ -16,7 +16,7 @@
 
 """
 .. module:: rti
-   :synopsis: A module for generating rti plots
+   :synopsis: A module for generating rti plots.
 
 .. moduleauthor:: AJ, 20130123
 
@@ -26,12 +26,16 @@
 **Functions**:
   * :func:`pydarn.plotting.rti.plotRti`
   * :func:`pydarn.plotting.rti.plot_freq`
-  * :func:`pydarn.plotting.rti.plot_noise`
+  * :func:`pydarn.plotting.rti.plot_searchnoise`
+  * :func:`pydarn.plotting.rti.plot_skynoise`
   * :func:`pydarn.plotting.rti.plot_cpid`
+  * :func:`pydarn.plotting.rti.plot_nave`
   * :func:`pydarn.plotting.rti.rti_title`
   * :func:`pydarn.plotting.rti.draw_axes`
+  * :func:`pydarn.plotting.rti.read_data`
+  * :func:`pydarn.plotting.rti.rti_panel`
+  * :func:`pydarn.plotting.rti.daynight_terminator`
 """
-
 
 import numpy
 import math
