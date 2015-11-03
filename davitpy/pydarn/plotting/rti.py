@@ -999,103 +999,124 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
 # Replace draw axes with a function that can simply formats an existing
 # axis object
 
-def rti_panel(ax,data_dict,pArr,fplot,gsct,rad,bmnum,coords,cmap,norm,plot_terminator=True):
+def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
+              norm, plot_terminator=True):
 
-  """plots the data given by pArr to an axis object
+    """plots the data given by pArr to an axis object
 
-  **Args**:
-    * **ax**: a MPL axis object to plot to
-    * **data_dict**: the data dictionary returned by pydarn.plotting.read_data
-    * **pArr**: the list of data to be plotted (e.g. data_dict['vel'] for velocity)
-    * **fplot**: the index of the frequency band of data to plot
-    * **gsct**: a boolean stating whether to flag ground scatter data or not
-    * **rad**: the 3 letter radar code
-    * **bmnum**: The beam number of the data to plot
-    * **coords**: plotting coordinates ('gate','range','geo','mag')
-    * **cmap**: a matplotlib.colors.ListedColormap (such as that returned by utils.plotUtils.genCmap)
-    * **norm**: a matplotlib.colors.BoundaryNorm (such as that returned by utils.plotUtils.genCmap)
-    * **[plot_terminator]**: A boolean stating whether or not to plot the terminator
-  **Returns**:
-    *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
-      
-  Written by ASR 20150916
-  """
-  from davitpy import pydarn  
-  # initialize arrays
-  rmax = max(data_dict['nrang'][fplot])
-  tmax = (len(data_dict['times'][fplot]))*2
-  data=numpy.zeros((tmax,rmax))*numpy.nan
-  x=numpy.zeros(tmax)
-  tcnt = 0
+    **Args**:
+        * **ax**: a MPL axis object to plot to
+        * **data_dict**: the data dictionary returned by
+                pydarn.plotting.read_data
+        * **pArr**: the list of data to be plotted (e.g. data_dict['vel'] for
+                velocity)
+        * **fplot**: the index of the frequency band of data to plot
+        * **gsct**: a boolean stating whether to flag ground scatter
+                data or not
+        * **rad**: the 3 letter radar code
+        * **bmnum**: The beam number of the data to plot
+        * **coords**: plotting coordinates ('gate', 'range', 'geo', 'mag')
+        * **cmap**: a matplotlib.colors.ListedColormap (such as that returned
+                by utils.plotUtils.genCmap)
+        * **norm**: a matplotlib.colors.BoundaryNorm (such as that returned by
+                utils.plotUtils.genCmap)
+        * **[plot_terminator]**: A boolean stating whether or not to plot
+                the terminator
+    **Returns**:
+        *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
 
-  dt_list   = []
-  for i in range(len(data_dict['times'][fplot])):
-    x[tcnt]=matplotlib.dates.date2num(data_dict['times'][fplot][i])
-    dt_list.append(data_dict['times'][fplot][i])
+    Written by ASR 20150916
+    """
 
-    if(i < len(data_dict['times'][fplot])-1):
-      if(matplotlib.dates.date2num(data_dict['times'][fplot][i+1])-x[tcnt] > 4./1440.):
+    from davitpy import pydarn
+    # initialize arrays
+    rmax = max(data_dict['nrang'][fplot])
+    tmax = (len(data_dict['times'][fplot]))*2
+    data = numpy.zeros((tmax, rmax))*numpy.nan
+    x = numpy.zeros(tmax)
+    tcnt = 0
+
+    dt_list = []
+    for i in range(len(data_dict['times'][fplot])):
+        x[tcnt] = matplotlib.dates.date2num(data_dict['times'][fplot][i])
+        dt_list.append(data_dict['times'][fplot][i])
+
+        if(i < len(data_dict['times'][fplot])-1):
+            if(matplotlib.dates.date2num(
+                    data_dict['times'][fplot][i+1])-x[tcnt] > 4./1440.):
+                tcnt += 1
+                # 1440 minutes in a day, hardcoded 1 minute step per data point
+                # but only if time between data points is > 4 minutes
+                x[tcnt] = x[tcnt-1]+1./1440.
+                dt_list.append(matplotlib.dates.num2date(x[tcnt]))
         tcnt += 1
-        x[tcnt] = x[tcnt-1]+1./1440. # 1440 minutes in a day, hardcoded 1 minute step per data point but only if time between data points is > 4 minutes
-        dt_list.append(matplotlib.dates.num2date(x[tcnt]))
-    tcnt += 1
-            
-    if(pArr[i] == []): continue
-        
-    if data_dict['slist'][fplot][i] is not None:
-      for j in range(len(data_dict['slist'][fplot][i])):
-        if(not gsct or data_dict['gsflg'][fplot][i][j] == 0):
-          data[tcnt][data_dict['slist'][fplot][i][j]] = pArr[i][j]
-        elif gsct and data_dict['gsflg'][fplot][i][j] == 1:
-          data[tcnt][data_dict['slist'][fplot][i][j]] = -100000.
-  
-  if (coords != 'gate' and coords != 'rng') or plot_terminator == True:
-    site    = pydarn.radar.network().getRadarByCode(rad).getSiteByDate(data_dict['times'][fplot][0])
-    myFov   = pydarn.radar.radFov.fov(site=site,ngates=rmax,nbeams=site.maxbeam,
-                                      rsep=data_dict['rsep'][fplot][0],coords=coords, 
-                                      date_time=data_dict['times'][fplot][0])
-    myLat   = myFov.latCenter[bmnum]
-    myLon   = myFov.lonCenter[bmnum]
-          
-  if(coords == 'gate'): y = numpy.linspace(0,rmax,rmax+1)
-  elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],rmax*data_dict['rsep'][fplot][0],rmax+1)
-  else: y = myFov.latFull[bmnum]
 
-  X, Y = numpy.meshgrid(x[:tcnt], y)
+        if(pArr[i] == []): continue
 
-  #  Calculate terminator
-  if plot_terminator:
-    daylight = np.ones([len(dt_list),len(myLat)],np.bool)
-    for tm_inx in range(len(dt_list)):
-        tm                  = dt_list[tm_inx]
-        term_lats,tau,dec   = daynight_terminator(tm,myLon)
+        if data_dict['slist'][fplot][i] is not None:
+            for j in range(len(data_dict['slist'][fplot][i])):
+                if(not gsct or data_dict['gsflg'][fplot][i][j] == 0):
+                    data[tcnt][data_dict['slist'][fplot][i][j]] = pArr[i][j]
+                elif gsct and data_dict['gsflg'][fplot][i][j] == 1:
+                    data[tcnt][data_dict['slist'][fplot][i][j]] = -100000.
 
-        if dec > 0: # NH Summer
-            day_inx = np.where(myLat < term_lats)[0]
-        else:
-            day_inx = np.where(myLat > term_lats)[0]
+    if (coords != 'gate' and coords != 'rng') or plot_terminator is True:
+        site = pydarn.radar.network().getRadarByCode(rad) \
+               .getSiteByDate(data_dict['times'][fplot][0])
+        myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,
+                                        nbeams=site.maxbeam,
+                                        rsep=data_dict['rsep'][fplot][0],
+                                        coords=coords,
+                                        date_time=data_dict['times'][fplot][0])
+        myLat = myFov.latCenter[bmnum]
+        myLon = myFov.lonCenter[bmnum]
 
-        if day_inx.size != 0:
-            daylight[tm_inx,day_inx] = False
-     
-        from numpy import ma
-        daylight = ma.array(daylight,mask=daylight)
-        ax.pcolormesh(X, Y, daylight.T, lw=0,alpha=0.10,cmap=matplotlib.cm.binary_r,zorder=99)
+    if(coords == 'gate'): y = numpy.linspace(0, rmax, rmax+1)
+    elif(coords == 'rng'): y = numpy.linspace(data_dict['frang'][fplot][0],
+                                              rmax*data_dict['rsep'][fplot][0],
+                                              rmax+1)
+    else: y = myFov.latFull[bmnum]
 
-  # mask the nan's in the data array so they aren't plotted
-  Zm = numpy.ma.masked_where(numpy.isnan(data[:tcnt][:].T),data[:tcnt][:].T)
-  # set colormap so that masked data (bad) is transparent
-  cmap.set_bad('w',alpha=0.0)
+    X, Y = numpy.meshgrid(x[:tcnt], y)
 
-  # now let's plot all data
-  pcoll = ax.pcolormesh(X, Y,Zm, lw=0.01,edgecolors='None',lod=True,cmap=cmap,norm=norm)
- 
-  return pcoll
+    #  Calculate terminator
+    if plot_terminator:
+        daylight = np.ones([len(dt_list), len(myLat)], np.bool)
+        for tm_inx in range(len(dt_list)):
+            tm = dt_list[tm_inx]
+            term_lats, tau, dec = daynight_terminator(tm, myLon)
+
+            if dec > 0:
+                # NH Summer
+                day_inx = np.where(myLat < term_lats)[0]
+            else:
+                day_inx = np.where(myLat > term_lats)[0]
+
+            if day_inx.size != 0:
+                daylight[tm_inx, day_inx] = False
+
+            from numpy import ma
+            daylight = ma.array(daylight, mask=daylight)
+            ax.pcolormesh(X, Y, daylight.T, lw=0, alpha=0.10,
+                          cmap=matplotlib.cm.binary_r, zorder=99)
+
+    # mask the nan's in the data array so they aren't plotted
+    Zm = numpy.ma.masked_where(numpy.isnan(data[:tcnt][:].T), data[:tcnt][:].T)
+    # set colormap so that masked data (bad) is transparent
+    cmap.set_bad('w', alpha=0.0)
+
+    # now let's plot all data
+    pcoll = ax.pcolormesh(X, Y, Zm, lw=0.01, edgecolors='None', lod=True,
+                          cmap=cmap, norm=norm)
+
+    return pcoll
+
 
 def daynight_terminator(date, lons):
+    """ date is datetime object (assumed UTC).
+
     """
-    date is datetime object (assumed UTC).
-    """
+
     import mpl_toolkits.basemap.solar as solar
     dg2rad = np.pi/180.
     # compute greenwich hour angle and solar declination
@@ -1104,5 +1125,4 @@ def daynight_terminator(date, lons):
     # compute day/night terminator from hour angle, declination.
     longitude = lons + tau
     lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
-    return lats,tau,dec
-
+    return lats, tau, dec
