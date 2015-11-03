@@ -596,137 +596,143 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     fig.text(xmax, .95, 'Beam ' + str(beam), weight=550, ha='right')
 
 
-def plot_cpid(ax,times,cpid,mode):
-  """plots cpid panel at position pos
+def plot_cpid(ax, times, cpid, mode):
+    """plots cpid panel at position pos
 
-  **Args**:
-    * **ax**: a MPL axis object to plot to
-    * **times**: a list of the times of the beam soundings
-    * **cpid**: a lsit of the cpids of th beam soundings
-    * **mode**: a list of the ifmode param
-  **Returns**:
-    * Nothing.
-    
-  **Example**:
-    ::
+    **Args**:
+        * **ax**: a MPL axis object to plot to
+        * **times**: a list of the times of the beam soundings
+        * **cpid**: a lsit of the cpids of th beam soundings
+        * **mode**: a list of the ifmode param
+    **Returns**:
+        * Nothing.
 
-      plot_cpid(rti_fig,times,cpid,mode)
-      
-  Written by AJ 20121002
-  Modified by ASR 20150916
-  """
-  from davitpy import pydarn
-  oldCpid = -9999999
-  
-  # format the y-axis
-  ax.yaxis.tick_left()
-  ax.yaxis.set_tick_params(direction='out')
-  ax.set_ylim(bottom=0,top=1)
-  ax.yaxis.set_minor_locator(MultipleLocator(1))
-  ax.yaxis.set_tick_params(direction='out',which='minor')
-  
-  # draw the axes
-  ax.plot_date(matplotlib.dates.date2num(times), numpy.arange(len(times)), fmt='w', \
-  tz=None, xdate=True, ydate=False, alpha=0.0)
-  
-  for i in range(0,len(times)):
-    if(cpid[i] != oldCpid):
-      ax.plot_date([matplotlib.dates.date2num(times[i]),matplotlib.dates.date2num(times[i])],\
-      [0,1], fmt='k-', tz=None, xdate=True, ydate=False)
-      
-      oldCpid = cpid[i]
-      
-      s = ' '+pydarn.radar.radUtils.getCpName(oldCpid)
-    
-      istr = ' '
-      if(mode[i] == 1): istr = ' IF'
-      if(mode == 0): istr = ' RF'
-      
-      ax.text(times[i],.5,' '+str(oldCpid)+s+istr,ha='left',va='center', size=10)
-      
-      
-  xmin,xmax = matplotlib.dates.date2num(times[0]),matplotlib.dates.date2num(times[len(times)-1])
-  xrng = (xmax-xmin)
-  inter = int(round(xrng/6.*86400.))
-  inter2 = int(round(xrng/24.*86400.))
-  # format the x axis
-  ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
-  ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
+    **Example**:
+        ::
 
-  for tick in ax.xaxis.get_major_ticks():
-    tick.label.set_fontsize(0) 
+            plot_cpid(rti_fig,times,cpid,mode)
 
-  # CPID label
-  fig = ax.get_figure()
-  bb = ax.get_position()
-  x0 = bb.x0
-  y0 = bb.y0
-  height = bb.height
-  width = bb.width
-  pos = [x0,y0,width,height]
-  fig.text(pos[0]-.07,pos[1]+pos[3]/2.,'CPID',ha='center',va='center', \
-           size=8.5,rotation='vertical')
+        Written by AJ 20121002
+        Modified by ASR 20150916
+    """
 
-  ax.set_yticks([])
-  
-  
-def plot_skynoise(ax,times,sky,xlim=None,xticks=None):
-  """plots a noise panel at position pos
+    from davitpy import pydarn
+    oldCpid = -9999999
 
-  **Args**:
-    * **ax**: a MPL axis object to plot to
-    * **times**: a list of the times of the beam soundings
-    * **sky**: a lsit of the noise.sky of the beam soundings
-    * **search**: a list of the noise.search param
-    * **[xlim]**: 2-element limits of the x-axis.  None for default.
-    * **[xticks]**: List of xtick poisitions.  None for default.
-  **Returns**:
-    * Nothing
-    
-  **Example**:
-    ::
+    # format the y-axis
+    ax.yaxis.tick_left()
+    ax.yaxis.set_tick_params(direction='out')
+    ax.set_ylim(bottom=0, top=1)
+    ax.yaxis.set_minor_locator(MultipleLocator(1))
+    ax.yaxis.set_tick_params(direction='out', which='minor')
 
-      plot_noise(rti_fig,times,nsky,nsch)
-      
-  Written by AJ 20121002
-  Modified by NAF 20131101
-  Modified by ASR 20150916
-  """
-  
-  # format the y-axis
-  ax.yaxis.tick_left()
-  ax.yaxis.set_tick_params(direction='out')
-  ax.set_ylim(bottom=0,top=6)
-  ax.yaxis.set_minor_locator(MultipleLocator())
-  ax.yaxis.set_tick_params(direction='out',which='minor')
+    # draw the axes
+    ax.plot_date(matplotlib.dates.date2num(times), numpy.arange(len(times)),
+                 fmt='w', tz=None, xdate=True, ydate=False, alpha=0.0)
 
-  # plot the sky noise data
-  ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-', \
-               tz=None, xdate=True, ydate=False)
-  
-  if xlim is not None: ax.set_xlim(xlim)
-  if xticks is not None: ax.set_xticks(xticks)
+    for i in range(0, len(times)):
+        if(cpid[i] != oldCpid):
+            ax.plot_date([matplotlib.dates.date2num(times[i]),
+                         matplotlib.dates.date2num(times[i])],
+                         [0, 1], fmt='k-', tz=None, xdate=True, ydate=False)
 
-  fig = ax.get_figure()
-  bb = ax.get_position()
-  x0 = bb.x0
-  y0 = bb.y0
-  height = bb.height
-  width = bb.width
-  pos = [x0,y0,width,height]
-  fig.text(pos[0]-.01,pos[1]+.004,'10^0',ha='right',va='bottom',size=8)
-  fig.text(pos[0]-.01,pos[1]+pos[3],'10^6',ha='right',va='top',size=8)
-  fig.text(pos[0]-.07,pos[1]+pos[3]/2.,'N.Sky',ha='center',va='center',size=8.5,rotation='vertical')
-  l=lines.Line2D([pos[0]-.06,pos[0]-.06], [pos[1]+.01,pos[1]+pos[3]-.01], \
-                 transform=fig.transFigure,clip_on=False,ls='-',color='k',lw=1.5)                              
-  ax.add_line(l)
+            oldCpid = cpid[i]
+
+            s = ' '+pydarn.radar.radUtils.getCpName(oldCpid)
+
+            istr = ' '
+            if(mode[i] == 1): istr = ' IF'
+            if(mode == 0): istr = ' RF'
+
+            ax.text(times[i], .5, ' ' + str(oldCpid) + s + istr, ha='left',
+                    va='center', size=10)
+
+    # SPLIT XMIN XMAX TO TWO LINES
+    xmin = matplotlib.dates.date2num(times[0])
+    xmax = matplotlib.dates.date2num(times[len(times)-1])
+    xrng = (xmax-xmin)
+    inter = int(round(xrng/6.*86400.))
+    inter2 = int(round(xrng/24.*86400.))
+    # format the x axis
+    ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
+    ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
+
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
+
+    # CPID label
+    fig = ax.get_figure()
+    bb = ax.get_position()
+    x0 = bb.x0
+    y0 = bb.y0
+    height = bb.height
+    width = bb.width
+    pos = [x0, y0, width, height]
+    fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'CPID', ha='center', va='center',
+             size=8.5, rotation='vertical')
+
+    ax.set_yticks([])
 
 
-  ax.set_xticklabels([' '])
-  # use only 2 major yticks
-  ax.set_yticks([0,6])
-  ax.set_yticklabels([' ',' '])
-   
+def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
+    """plots a noise panel at position pos
+
+    **Args**:
+        * **ax**: a MPL axis object to plot to
+        * **times**: a list of the times of the beam soundings
+        * **sky**: a lsit of the noise.sky of the beam soundings
+        * **search**: a list of the noise.search param
+        * **[xlim]**: 2-element limits of the x-axis.  None for default.
+        * **[xticks]**: List of xtick poisitions.  None for default.
+    **Returns**:
+        * Nothing
+
+    **Example**:
+        ::
+
+            plot_noise(rti_fig,times,nsky,nsch)
+
+    Written by AJ 20121002
+    Modified by NAF 20131101
+    Modified by ASR 20150916
+    """
+
+    # format the y-axis
+    ax.yaxis.tick_left()
+    ax.yaxis.set_tick_params(direction='out')
+    ax.set_ylim(bottom=0, top=6)
+    ax.yaxis.set_minor_locator(MultipleLocator())
+    ax.yaxis.set_tick_params(direction='out', which='minor')
+
+    # plot the sky noise data
+    ax.plot_date(matplotlib.dates.date2num(times), numpy.log10(sky), fmt='k-',
+                 tz=None, xdate=True, ydate=False)
+
+    if xlim is not None: ax.set_xlim(xlim)
+    if xticks is not None: ax.set_xticks(xticks)
+
+    fig = ax.get_figure()
+    bb = ax.get_position()
+    x0 = bb.x0
+    y0 = bb.y0
+    height = bb.height
+    width = bb.width
+    pos = [x0, y0, width, height]
+    fig.text(pos[0]-.01, pos[1]+.004, '10^0', ha='right', va='bottom', size=8)
+    fig.text(pos[0]-.01, pos[1]+pos[3], '10^6', ha='right', va='top', size=8)
+    fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'N.Sky', ha='center', va='center',
+             size=8.5, rotation='vertical')
+    l = lines.Line2D([pos[0]-.06, pos[0]-.06], [pos[1]+.01, pos[1]+pos[3]-.01],
+                     transform=fig.transFigure, clip_on=False, ls='-',
+                     color='k', lw=1.5)
+    ax.add_line(l)
+
+    ax.set_xticklabels([' '])
+    # use only 2 major yticks
+    ax.set_yticks([0, 6])
+    ax.set_yticklabels([' ', ' '])
+
+
 def plot_searchnoise(ax,times,search,xlim=None,xticks=None,ytickside='right'):
   """plots a noise panel at position pos
 
