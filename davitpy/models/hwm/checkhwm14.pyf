@@ -1,0 +1,20 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module checkhwm14 ! in 
+    interface  ! in :checkhwm14
+        subroutine checkhwm14(path) ! in :checkhwm14:checkhwm14.f90
+            character*250 intent(in) :: path
+            character(len=250) :: datapath
+            common /datpth/ datapath
+        end subroutine checkhwm14
+        function pershift(x,perint) ! in :checkhwm14:checkhwm14.f90
+            real(kind=4) :: x
+            real(kind=4) dimension(2) :: perint
+            real(kind=4) :: pershift
+        end function pershift
+    end interface 
+end python module checkhwm14
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

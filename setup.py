@@ -39,7 +39,8 @@ exec_command.exec_command(command)
 # Fortran extensions
 #############################################################################
 checkhwm = Extension('checkhwm14',sources=['davitpy/models/hwm/checkhwm14.pyf',
-                                           'davitpy/models/hwm/checkhwm14.f90'])
+                                           'davitpy/models/hwm/checkhwm14.f90',
+                                           'davitpy/models/hwm/hwm14.f90'])
 hwm = Extension('hwm14',sources=['davitpy/models/hwm/hwm14.f90',
                                  'davitpy/models/hwm/hwm14.pyf'])
 igrf = Extension("igrf",sources=['davitpy/models/igrf/igrf11.f90',

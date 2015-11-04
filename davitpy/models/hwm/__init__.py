@@ -20,7 +20,7 @@ def checkhwm14(path=None):
 
     if path is None:
         from davitpy import rcParams
-        path = rcParams['DAVITPY_PATH']
+        path = "{:s}/davitpy/models/hwm/".format(rcParams['DAVITPY_PATH'])
 
     return checkhwm14(path)
 
