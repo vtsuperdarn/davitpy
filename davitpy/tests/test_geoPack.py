@@ -49,7 +49,7 @@ class TestGeoPack(unittest.TestCase):
         from numpy import array
         from numpy.testing import assert_array_almost_equal
         lat_list = [52., -52., 46.5, -80., 33.333]
-        lon_list = [0.,45.,274.2,-76.2,122.5]
+        lon_list = [0.,45.,-85.8,-76.2,122.5]
         re_list = [6378.1,6378.1,6378.1,6378.1,6378.1]
         expected = [(lat_list[i],lon_list[i],re_list[i]) for i in range(5)]
 
@@ -63,10 +63,133 @@ class TestGeoPack(unittest.TestCase):
 
         output = list()
         for i in range(len(X_list)):
-          output.append(gspToGcar(X_list[i],Y_list[i],Y_list[i],inverse=True))
+          output.append(gspToGcar(X_list[i],Y_list[i],Z_list[i],inverse=True))
         assert_array_almost_equal(output, expected,decimal=3)
 
+    def test_gcarToLcar(self):
+        from numpy import array
+        from numpy.testing import assert_array_almost_equal
+        X_list = [10.1,29.4,74.3,22.2,56.2]
+        Y_list = [410.1,221.4,-374.3,222.2,956.2]
+        Z_list = [80.1,42.4,374.3,762.2,-756.2]
+        lat_list = [52., -52., 46.5, -80., 33.333]
+        lon_list = [0.,45.,-85.8,-76.2,122.5]
+        re_list = [6378.1,6378.1,6378.1,6378.1,6378.1]
+        expected = [(X_list[i],Y_list[i],Z_list[i]) for i in range(5)]
 
+        output = list()
+        for i in range(len(lat_list)):
+          output.append(gcarToLcar(X_list[i],Y_list[i],Z_list[i],lat_list[i],lon_list[i],re_list[i],inverse=False))
 
+        X_list = [x[0] for x in output]
+        Y_list = [x[1] for x in output]
+        Z_list = [x[2] for x in output]
 
+        output = list()
+        for i in range(len(X_list)):
+          output.append(gcarToLcar(X_list[i],Y_list[i],Z_list[i],lat_list[i],lon_list[i],re_list[i],inverse=True))
+        assert_array_almost_equal(output, expected,decimal=3)
 
+    def test_lspToLcar(self):
+        from numpy import array
+        from numpy.testing import assert_array_almost_equal
+        r_list = [52., 52., 46.5, 80., 33.333]
+        el_list = [0.,45.,85.8,76.2,32.5]
+        az_list = [22.11,47.2,-121.32,38.9,-141.12]
+        expected = [(r_list[i],el_list[i],az_list[i]) for i in range(5)]
+
+        output = list()
+        for i in range(len(r_list)):
+          output.append(lspToLcar(r_list[i],el_list[i],az_list[i],inverse=True))
+
+        X_list = [x[0] for x in output]
+        Y_list = [x[1] for x in output]
+        Z_list = [x[2] for x in output]
+
+        output = list()
+        for i in range(len(X_list)):
+          output.append(lspToLcar(X_list[i],Y_list[i],Z_list[i],inverse=False))
+        assert_array_almost_equal(output, expected,decimal=3)
+
+    def test_calcDistPnt(self):
+        from numpy import array
+        from numpy.testing import assert_array_almost_equal
+        lat_list = [52., -52., 46.5, -80., 33.333]
+        lon_list = [0.,45.,-85.8,-76.2,122.5]
+        re_list = [6378.1,6378.1,6378.1,6378.1,6378.1]
+        dist_list = [22.11,47.2,121.32,38.9,141.12]
+        el_list = [0.,45.,85.8,76.2,32.5]
+        az_list = [22.11,47.2,-121.32,38.9,-141.12]
+        expected = [(52.091937359015823, 0.060647668612696243, 6378.0857244761773),
+                    (-51.898823786915756, 45.177235405131974, 6411.5558883635795),
+                    (46.481235000226803, -85.848916437100286, 6499.1049363992561),
+                    (-79.967972807748083, -76.050933616564549, 6415.8846381328785),
+                    (32.918406120330644, 122.103236254511, 6454.6180688827299)]
+
+        temp = list()
+        for i in range(len(lat_list)):
+          temp.append(calcDistPnt(lat_list[i],lon_list[i],re_list[i],dist=dist_list[i],el=el_list[i],az=az_list[i]))
+
+        output = [(temp[i]['distLat'],temp[i]['distLon'],temp[i]['distAlt']) for i in range(5)]
+
+        assert_array_almost_equal(output, expected,decimal=3)
+
+    def test_greatCircleMove(self):
+        from numpy import array
+        from numpy.testing import assert_array_almost_equal
+        lat_list = [52., -52., 46.5, -80., 33.333]
+        lon_list = [0.,45.,-85.8,-76.2,122.5]
+        az_list = [22.11,47.2,-121.32,38.9,-141.12]
+        dist_list = [2432.11,21.2,156.32,89.9,945.12]
+
+        expected = [(array([ 70.69627228]), array([ 25.0980127])),
+                    (array([-51.87024249]), array([ 45.22656326])),
+                    (array([ 45.75619724]), array([-87.52136696])),
+                    (array([-79.35880316]), array([-73.44961841])),
+                    (array([ 26.57298858]), array([ 116.54583168]))]
+
+        output = list()
+        for i in range(len(lat_list)):
+          output.append(greatCircleMove(lat_list[i],lon_list[i],dist_list[i],az_list[i]))
+
+        assert_array_almost_equal(output, expected,decimal=3)
+
+    def test_greatCircleAzm(self):
+        from numpy import array
+        from numpy.testing import assert_array_almost_equal
+        lat_list = [52., -52., 46.5, -80., 33.333]
+        lon_list = [0.,45.,-85.8,-76.2,122.5]
+        lat2_list = [42., -32., 86.5, -82., 17.333]
+        lon2_list = [10.,-75.,-15.8,-7.2,32.5]
+
+        expected = [141.92928739300785,
+                    -131.96126816607148,
+                    4.8799014206022431,
+                    133.39365975918201,
+                    -75.38530121386124]
+
+        output = list()
+        for i in range(len(lat_list)):
+          output.append(greatCircleAzm(lat_list[i],lon_list[i],lat2_list[i],lon2_list[i]))
+
+        assert_array_almost_equal(output, expected,decimal=3)
+
+    def test_greatCircleDist(self):
+        from numpy import array
+        from numpy.testing import assert_array_almost_equal
+        lat_list = [52., -52., 46.5, -80., 33.333]
+        lon_list = [0.,45.,-85.8,-76.2,122.5]
+        lat2_list = [42., -32., 86.5, -82., 17.333]
+        lon2_list = [10.,-75.,-15.8,-7.2,32.5]
+
+        expected = [0.21083308521623639,
+                    1.4136231996540889,
+                    0.74011037711462302,
+                    0.17977244958303099,
+                    1.406345223574035]
+
+        output = list()
+        for i in range(len(lat_list)):
+          output.append(greatCircleDist(lat_list[i],lon_list[i],lat2_list[i],lon2_list[i]))
+
+        assert_array_almost_equal(output, expected,decimal=3)
