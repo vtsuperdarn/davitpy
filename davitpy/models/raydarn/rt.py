@@ -412,7 +412,8 @@ class Edens(object):
 
     def plot(self, time, beam=None, maxground=2000, maxalt=500,
         nel_cmap='jet', nel_lim=[10, 12], title=False, 
-        fig=None, rect=111, ax=None, aax=None,plot_colorbar=True):
+        fig=None, rect=111, ax=None, aax=None,plot_colorbar=True,
+        nel_rasterize=False):
         """Plot electron density profile
         
         **Args**: 
@@ -427,6 +428,9 @@ class Edens(object):
             * [**ax**]: Existing main axes
             * [**aax**]: Existing auxialary axes
             * [**title**]: Show default title
+            * [**plot_colorbar**]: Plot a colorbar
+            * [**nel_rasterize**]: Rasterize the electron density plot
+                (make your pdf files more managable)
         **Returns**:
             * **ax**: matplotlib.axes object containing formatting
             * **aax**: matplotlib.axes object containing data
@@ -480,7 +484,7 @@ class Edens(object):
 
         X, Y = np.meshgrid(self.edens[time][beam]['th'], ax.Re + np.linspace(60,560,250))
         im = aax.pcolormesh(X, Y, np.log10( self.edens[time][beam]['nel'] ), 
-            vmin=nel_lim[0], vmax=nel_lim[1], cmap=nel_cmap)
+            vmin=nel_lim[0], vmax=nel_lim[1], cmap=nel_cmap,rasterized=nel_rasterize)
 
         # Plot title with date ut time and local time
         if title:

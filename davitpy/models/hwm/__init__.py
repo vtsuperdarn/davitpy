@@ -6,36 +6,38 @@
 *********************
 
 **Modules**:
-    * :mod:`hwm07`: fortran subroutines
+    * :mod:`hwm14`: fortran subroutines
   
 *********************
 """
 
-
-def checkhwm07(data_file_path=None):
-
-    try:
-        from checkhwm07 import checkhwm07
-    except Exception as e:
-        print __file__+' -> models.hwm.checkhwm07: ', e
-
-    if data_file_path is None:
-        from davitpy import rcParams
-        data_file_path = rcParams['DAVITPY_PATH']
-
-    return checkhwm07(data_file_path)
-
-
-def hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,data_file_path=None):
+def checkhwm14(path=None):
 
     try:
-        from hwm07 import hwm07
+        from checkhwm14 import checkhwm14
     except Exception as e:
-        print __file__+' -> models.hwm.hwm07: ', e
+        print __file__+' -> models.hwm.checkhwm14: ', e
 
-    if data_file_path is None:
+    if path is None:
         from davitpy import rcParams
-        data_file_path = rcParams['DAVITPY_PATH']
+        path = rcParams['DAVITPY_PATH']
 
-    return hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,data_file_path)
+    return checkhwm14(path)
 
+def hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path=None):
+
+    try:
+        from hwm14 import hwm14
+    except Exception as e:
+        print __file__+' -> models.hwm.hwm14: ', e
+
+    if path is None:
+        from davitpy import rcParams
+        try:
+            path = "{:s}/davitpy/models/hwm/".format(rcParams['DAVITPY_PATH'])
+        except Exception as e:
+            print __file__+' -> models.hwm.hwm14: ', e
+
+    return hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path)
+
+import hwm_input

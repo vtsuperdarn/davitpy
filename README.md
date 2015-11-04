@@ -14,6 +14,8 @@ We recommend using Ubuntu 14.04 with this version of DaViTPy.  Although Macintos
 #### davitpyrc
 Settings pertaining to sevrer addresses and passwords, data file directory structure, and other global parameters are stored in a run control file called davitpyrc.  For most users, the default values in this file should be satisfactory.  However, you may make changes to this file if necessary.  It is stored in davitpy/davitpy/davitpyrc.  After making a change, re-run the setup.py install script (described below) to copy the run control file to the appropriate system location.
 
+**Please note that currently DaViTpy needs to be installed and run from BASH.**
+
 ####Ubuntu
 Please use Ubuntu 14.04 or newer.  Older versions may not install compatible versions of the dependencies.
 
