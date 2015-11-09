@@ -51,8 +51,8 @@ class rbspFp(object):
                 from davitpy import rcParams
 
 		# MongoDB server
-		self._db_user = rcParams['DBREADUSER']
-		self._db_pswd = rcParams['DBREADPASS']
+		self._db_user = rcParams['SDBREADUSER']
+		self._db_pswd = rcParams['SDBREADPASS']
 		self._db_host = rcParams['SDDB']
 		self._db_name = 'rbsp'
 

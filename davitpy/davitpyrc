@@ -14,6 +14,8 @@ DB_PORT		: 22
 # RADAR HARDWARE.DAT SERVER ADDRESS and PORT
 ####
 SDDB		: sd-work9.ece.vt.edu:27017
+SDBREADUSER	: sd_dbread
+SDBREADPASS	: 5d
 DBWRITEUSER	: 
 DBWRITEPASS	: 
 
@@ -24,9 +26,9 @@ DAVIT_TMPDIR		: /tmp/sd/
 
 ####
 # RADAR DATA FILE FETCHING
-# The evironment variables are python dictionary capable formatted strings appended 
-# encode radar name, channel, and/or date information.  Currently supported 
-# dictionary keys which can be used are: 
+# The evironment variables are python dictionary capable formatted strings
+# appended encode radar name, channel, and/or date information.  Currently
+# supported dictionary keys which can be used are: 
 #
 #    "date"    : datetime.datetime.strftime("%Y%m%d")
 #    "year"    : 0 padded 4 digit year 
@@ -64,9 +66,9 @@ DAVIT_SD_LOCAL_FNAMEFMT		: {date}.{hemi}.{ftype}
 ####
 # SET THE PATH TO THE AACGM COEFFICIENT FILES
 ####
-# By default, this is set to where the coefficients
-# are installed with DaViTpy, ie)
+# By default, this is set to where the coefficients are installed with
+# DaViTpy after the line below this block is uncommented, ie)
 # 'davitpy install directory'/tables/aacgm/aacgm_coeffs/
 ####
-# AACGM_DAVITPY_DAT_PREFIX	: /path/to/coefficients/
+# AACGM_DAVITPY_DAT_PREFIX	: /davitpy_dir_path/tables/aacgm/aacgm_coeffs/
 
