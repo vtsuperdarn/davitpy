@@ -9,10 +9,10 @@ c.InteractiveShellApp.log_level = 20
 c.InteractiveShellApp.exec_lines = [
   '%load_ext autoreload',
   '%autoreload 2',
-  'import pydarn',
-  'import utils',
-  'import models',
-  'import gme',
+  'from davitpy import pydarn',
+  'from davitpy import utils',
+  'from davitpy import models',
+  'from davitpy import gme',
   'from datetime import *'
 ]
 
