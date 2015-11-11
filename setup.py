@@ -70,7 +70,7 @@ aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 #############################################################################
 pwd = os.getcwd()
 sources = []
-source_dirs = ['davitpy/davitpy']
+source_dirs = ['davitpy']
 for s in source_dirs:
     for root, dirs, files in os.walk(pwd+'/'+s):
         if '__init__.py' in files:
