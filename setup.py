@@ -3,6 +3,7 @@ import glob
 # Need to use the enhanced version of distutils packaged with
 # numpy so that we can compile fortran extensions
 from setuptools.command import install as _install
+from setuptools import find_packages
 from numpy.distutils.core import Extension, setup
 from numpy.distutils import exec_command
 
@@ -66,15 +67,15 @@ aacgm = Extension("aacgm", sources=glob.glob('davitpy/models/aacgm/*.c'),)
 #############################################################################
 # And now get a list of all Python source files
 #############################################################################
-pwd = os.getcwd()
-sources = []
-source_dirs = ['davitpy']
-for s in source_dirs:
-    for root, dirs, files in os.walk(pwd+'/'+s):
-        if '__init__.py' in files:
-            sources.append('.'.join(
-                root.replace(pwd,'').strip('/').split('/')
-                ))
+#pwd = os.getcwd()
+#sources = []
+#source_dirs = ['davitpy']
+#for s in source_dirs:
+#    for root, dirs, files in os.walk(pwd+'/'+s):
+#        if '__init__.py' in files:
+#            sources.append('.'.join(
+#                root.replace(pwd,'').strip('/').split('/')
+#                ))
 #############################################################################
 # And a list of all the AACGM tables
 #############################################################################
@@ -107,13 +108,13 @@ data_files.append(('davitpy/models/hwm',
 # Now execute the setup
 #############################################################################
 setup(name='davitpy',
-      version = "0.2",
+      version = "0.5",
       description = "Space Science Toolkit",
       author = "VT SuperDARN Lab and friends",
       author_email = "ajribeiro86@gmail.com",
       url = "",
       download_url = "https://github.com/vtsuperdarn/davitpy",
-      packages = sources,
+      packages = find_packages(),
       long_description = read('README.md'),
       zip_safe = False,
       ext_modules = [dmap,aacgm,tsyg,hwm,msis,igrf,iri],
@@ -135,7 +136,7 @@ setup(name='davitpy',
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
-    print 'Sources',sources
+    print 'Sources',find_packages()
 
 
 
