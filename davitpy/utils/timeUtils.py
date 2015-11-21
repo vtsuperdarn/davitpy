@@ -47,7 +47,7 @@ def dateToYyyymmdd(my_date):
     ::
 
       import datetime as dt
-      dateStr = utils.timeUtils.dateToYyyymmdd(dt.datetime(2012,7,10))
+      date_str = utils.timeUtils.dateToYyyymmdd(dt.datetime(2012,7,10))
 
   Written by AJ 20120718
   Modified by ASR 20151120
@@ -71,7 +71,7 @@ def yyyymmddToDate(date_str):
   **Example**:
     ::
 
-      myDate = utils.timeUtils.yyyymmddToDate('20120710')
+      my_date = utils.timeUtils.yyyymmddToDate('20120710')
 
   Written by AJ 20120718
   Modified by ASR 20151120
@@ -86,30 +86,31 @@ def yyyymmddToDate(date_str):
 
     
 def timeYrsecToDate(yrsec, year):
-  """Converts time expressed in seconds from start of year to a python DATETIME object
+  """Converts time expressed in seconds from start of year to a python datetime object
 
   **Args**:
     * **yrsec** (int): seconds since start of year
     * **year** (int): year in YYYY 
   **Returns**:
-    * **myDate** (`datetime <http://tinyurl.com/bl352yx>`_): a python DATETIME object.
+    * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a python datetime object.
 
   **Example**:
     ::
 
-      myDate = utils.timeUtils.timeYrsecToDate(1205304,2012)
+      my_date = utils.timeUtils.timeYrsecToDate(1205304,2012)
 
   Written by Sebastien, Jul. 2012
+  Modified by ASR 20151120
   """
+
   from datetime import datetime
   from datetime import timedelta
-  
-  if year >= 2038: 
-    print 'timeYrsecToDate: Year {:d} out of range: forcing 2038'.format(year)
-    year = 2038
-  myDate = datetime(year, 1, 1) + timedelta(seconds = yrsec)
-  
-  return myDate
+
+  assert(isinstance(yrsec,int)),'error, yrsec must be of type int'
+  assert(isinstance(year,int)),'error, year must be of type int'
+
+  return datetime(year, 1, 1) + timedelta(seconds = yrsec)
+
 
 def julToDatetime( ndarray ) :
   """Convert a julian date to a datetime object.
