@@ -84,7 +84,7 @@ def yyyymmddToDate(date_str):
     assert(isinstance(date_str, str)), 'error, input must be of type str'
     assert(len(date_str) == 8), 'error, input must be of yyyymmdd format'
 
-    my_date = datetime.strptime('20121124', '%Y%m%d')
+    return datetime.strptime('20121124', '%Y%m%d')
 
 
 def timeYrsecToDate(yrsec, year):
