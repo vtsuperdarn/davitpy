@@ -112,7 +112,7 @@ def timeYrsecToDate(yrsec, year):
   return datetime(year, 1, 1) + timedelta(seconds = yrsec)
 
 
-def julToDatetime( ndarray ) :
+def julToDatetime(ndarray) :
   """Convert a julian date to a datetime object.
 
   **Args**: 
@@ -140,33 +140,39 @@ def julToDatetime( ndarray ) :
   return dt
   
   
-def datetimeToEpoch(myDate):
+def datetimeToEpoch(my_date):
   """reads in a datetime and outputs the equivalent epoch time
 
   **Args**:
-    * **myDate** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object
+    * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime object
   **Returns**:
-    * **myEpoch** (float): an epoch time equal to the datetime object
+    * **my_epoch** (float or list of floats): an epoch time equal to the datetime object
   
   **Example**
     ::
 
       import datetime as dt
-      epoch = utils.timeUtils.datetimeToEpoch(dt.datetime(2012,7,10))
+      my_epoch = utils.timeUtils.datetimeToEpoch(dt.datetime(2012,7,10))
 
   Written by AJ 20120914
   Modified by Nathaniel Frissell 20130729 - Added list support.
   Modified by AJ 20130925 - fixed local time bug with conversion
   Modified by Nathaniel Frissell 20130930 - Fixed list support.
+  Modified by ASR 20151120
   """
-  import datetime
+  from datetime import datetime
   import calendar
-  import numpy
+  import numpy as np
 
-  if numpy.size(myDate) == 1:
-    unx = calendar.timegm(myDate.timetuple())+myDate.microsecond/1e6
+  assert(isinstance(my_date,(list,datetime))),'error, input must be of type datetime or list of datetimes'
+  if isinstance(my_date,list):
+    for dt in my_date:
+      assert(isinstance(dt,datetime)),'error, each member of my_date list must be of type datetime'
+
+  if isinstance(my_date,datetime):
+    unx = calendar.timegm(my_date.timetuple())+my_date.microsecond/1e6
   else:
-    unx = [calendar.timegm(dt.timetuple())+dt.microsecond/1e6 for dt in myDate]
+    unx = [calendar.timegm(dt.timetuple())+dt.microsecond/1e6 for dt in my_date]
 
   return unx
 
