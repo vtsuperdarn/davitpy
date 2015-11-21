@@ -60,13 +60,13 @@ def dateToYyyymmdd(my_date):
   return my_date.strftime('%Y%m%d')
 
   
-def yyyymmddToDate(dateStr):
+def yyyymmddToDate(date_str):
   """takes a string in yyyymmdd format and returns a python date object
 
   **Args**:
-    * **dateStr** (str): a string in yyyymmdd format
+    * **date_str** (str): a string in yyyymmdd format
   **Returns**:
-    * **myDate** (`datetime <http://tinyurl.com/bl352yx>`_): a python datetime object
+    * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a python datetime object
     
   **Example**:
     ::
@@ -78,20 +78,12 @@ def yyyymmddToDate(dateStr):
   """
   
   from datetime import datetime
-  import sys
-  #check input type
-  if isinstance(dateStr,str):
-    #try to make the date object
-    try:
-      return datetime(int(dateStr[0:4]),int(dateStr[4:6]),int(dateStr[6:8]))
-    #if there was a problem with the input
-    except:
-      print 'error in input '+dateStr 
-      sys.exit()
-  else:
-    print 'error, input must be a string'
-    sys.exit()
-    
+
+  assert(isinstance(date_str,str)),'error, input must be of type str'
+  assert(len(date_str)==8),'error, input must be of yyyymmdd format'
+
+  my_date = datetime.strptime('20121124','%Y%m%d')
+
     
 def timeYrsecToDate(yrsec, year):
   """Converts time expressed in seconds from start of year to a python DATETIME object
