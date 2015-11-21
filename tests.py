@@ -4,7 +4,8 @@ default_test_modules = [
     'davitpy.tests.test_aacgm',
     'davitpy.tests.test_coordUtils',
     'davitpy.tests.test_geoPack',
-    'davitpy.tests.test_hwm'
+    'davitpy.tests.test_hwm',
+    'davitpy.tests.test_msis'
 #    'davitpy.tests.test_calcSun'
     ]
 

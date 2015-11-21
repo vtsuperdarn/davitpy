@@ -53,6 +53,9 @@ iri = Extension('iri',sources=['davitpy/models/iri/irisub.for',
                                'davitpy/models/iri/cira.for',
                                'davitpy/models/iri/iridreg.for',
                                'davitpy/models/iri/iri.pyf'])
+checkmsis = Extension("checkmsisFort",sources=['davitpy/models/msis/nrlmsise_test.for',
+                                     'davitpy/models/msis/checkmsis.pyf',
+                                     'davitpy/models/msis/nrlmsise00_sub.for'])
 msis = Extension("msisFort",sources=['davitpy/models/msis/nrlmsise00_sub.for',
                                      'davitpy/models/msis/nrlmsis.pyf'])
 tsyg = Extension('tsygFort',sources=['davitpy/models/tsyganenko/T02.f',
@@ -119,7 +122,7 @@ setup(name='davitpy',
       packages = sources,
       long_description = read('README.md'),
       zip_safe = False,
-      ext_modules = [dmap,aacgm,tsyg,hwm,checkhwm,msis,igrf,iri],
+      ext_modules = [dmap,aacgm,tsyg,hwm,checkhwm,msis,checkmsis,igrf,iri],
       package_data={
         'davitpy.models.iri': ['*.dat','*.asc'],
         'davitpy.models.hwm': ['*.dat']

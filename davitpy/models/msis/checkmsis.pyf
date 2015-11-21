@@ -1,0 +1,18 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module checkmsisFort ! in 
+    interface  ! in :checkmsisFort
+        subroutine checkmsis ! in :checkmsisFort:nrlmsise_test.for
+            integer dimension(3) :: isdate
+            integer dimension(2) :: istime
+            integer dimension(2) :: name
+            real dimension(16) :: dl
+            common /datime/ isdate,istime,name
+            common /gts3c/ dl
+        end subroutine checkmsis
+    end interface 
+end python module checkmsisFort
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

@@ -46,6 +46,11 @@ try:
 except Exception as e:
     print __file__+' -> models.msis: ', e 
 
+try: 
+    from checkmsisFort import *
+except Exception as e:
+    print __file__+' -> models.msis: ', e 
+
 def getF107Ap(mydatetime=None):
   """
 Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
