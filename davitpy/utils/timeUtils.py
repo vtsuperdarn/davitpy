@@ -35,13 +35,13 @@
 """
 
 
-def dateToYyyymmdd(myDate):
+def dateToYyyymmdd(my_date):
   """takes a python datetime object and returns a string in yyyymmdd format
 
   **Args**:
-    * **myDate** (`datetime <http://tinyurl.com/bl352yx>`_): a python datetime object
+    * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a python datetime object
   **Returns**:
-    * **dateStr** (str): a string in yyyymmdd format
+    * **date_str** (str): a string in yyyymmdd format
 
   **Example**:
     ::
@@ -50,42 +50,15 @@ def dateToYyyymmdd(myDate):
       dateStr = utils.timeUtils.dateToYyyymmdd(dt.datetime(2012,7,10))
 
   Written by AJ 20120718
+  Modified by ASR 20151120
   """
 
   from datetime import datetime
   
-  if isinstance(myDate,datetime):
-    dateStr = ''
-    #create year string
-    yr = myDate.year
-    if(yr < 10):
-      dateStr += '000'+str(yr)
-    elif(yr < 100):
-      dateStr += '00'+str(yr)
-    elif(yr < 1000):
-      dateStr += '0'+str(yr)
-    else:
-      dateStr += str(yr)
-      
-    #create month string
-    mon = myDate.month
-    if(mon < 10):
-      dateStr += '0'+str(mon)
-    else:
-      dateStr += str(mon)
-      
-    #create day string
-    day = myDate.day
-    if(day < 10):
-      dateStr += '0'+str(day)
-    else:
-      dateStr += str(day)
-      
-    #return everything together
-    return dateStr
-  else:
-    print 'error, input must be type datetime'
-    sys.exit()
+  assert(isinstance(my_date,datetime)),'error, input must be type datetime'
+  
+  return my_date.strftime('%Y%m%d')
+
   
 def yyyymmddToDate(dateStr):
   """takes a string in yyyymmdd format and returns a python date object
@@ -101,6 +74,7 @@ def yyyymmddToDate(dateStr):
       myDate = utils.timeUtils.yyyymmddToDate('20120710')
 
   Written by AJ 20120718
+  Modified by ASR 20151120
   """
   
   from datetime import datetime
