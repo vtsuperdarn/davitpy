@@ -49,7 +49,7 @@ class MapConv(object):
     import matplotlib.cm as cm
 
     def __init__(self, startTime, mObj, 
-        axisHandle, hemi = 'north', 
+        axisHandle, mapPtr = None, hemi = 'north', 
         maxVelScale = 1000., plotCoords = 'mag'):
         import datetime
         from davitpy.pydarn.sdio import sdDataOpen
@@ -82,10 +82,13 @@ class MapConv(object):
         # This is the way I'm setting stuff up to avoid confusion of reading and plotting seperately.
         # Just give the date/hemi and the code reads the corresponding rec
         endTime = startTime + datetime.timedelta(minutes=2)
-        grdPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='grdex')
-        self.grdData = grdPtr.readRec()
-        mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
-        self.mapData = mapPtr.readRec()
+        if mapPtr is None:
+          grdPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='grdex')
+          self.grdData = grdPtr.readRec()
+          mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
+          self.mapData = mapPtr.readRec()
+        else:
+          self.mapData = mapPtr.readRec()
 
     def overlayGridVel(self, pltColBar=True, 
         overlayRadNames=True, annotateTime=True, 
@@ -513,8 +516,8 @@ class MapConv(object):
         cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, 
             zorder = 2.,
             vmax=potCntr.max(), vmin=potCntr.min(), 
-            colors = 'DarkSlateGray', linewidths=1., 
-            locator=LinearLocator(12) )
+            colors = 'DarkSlateGray', linewidths=1.)#, 
+        #    locator=LinearLocator(12) )
         plt.clabel(cntrPlt, inline=1, fontsize=10)
         return cntrPlt
 

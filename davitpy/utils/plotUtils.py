@@ -198,6 +198,7 @@ class mapObj(basemap.Basemap):
           if self._gridLabels: 
             lablon = int(self.llcrnrlon/10)*10
             if self.coords == "mlt":
+              print "Hi!"
               lonfmt = lambda x: "%02g"%(x*24./360.)
             else:
               lonfmt = "%g"
@@ -221,7 +222,7 @@ class mapObj(basemap.Basemap):
           else: 
             merLabels = [False,False,False,False]
           # draw meridians
-          out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+          out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10, fmt=lonfmt)
       
     def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
         from copy import deepcopy
