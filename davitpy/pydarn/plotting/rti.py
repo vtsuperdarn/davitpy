@@ -1055,7 +1055,7 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
                 dt_list.append(matplotlib.dates.num2date(x[tcnt]))
         tcnt += 1
 
-        if(pArr[i] == [] or pArr[i] is None): continue
+        if(pArr[i] == []): continue
 
         if data_dict['slist'][fplot][i] is not None:
             for j in range(len(data_dict['slist'][fplot][i])):
@@ -1114,7 +1114,7 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
     cmap.set_bad('w', alpha=0.0)
 
     # Now let's plot all data.
-    pcoll = ax.pcolormesh(X, Y, Zm, lw=0.01, edgecolors='None', lod=True,
+    pcoll = ax.pcolormesh(X, Y, Zm, lw=0.01, edgecolors='None',
                           cmap=cmap, norm=norm)
 
     return pcoll
