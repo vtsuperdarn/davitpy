@@ -507,47 +507,124 @@ class radDataPtr():
       from davitpy.pydarn.dmapio import setDmapOffset 
       return setDmapOffset(self.__fd,0)
 
-  def readScan(self):
-        """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+  def readScan(self, firstBeam=None, useEvery=None, showBeams=False):
+    """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
 
-        .. note
-        This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
+    .. note::
+      This will ignore any bmnum request in :func:`~pydarn.sdio.radDataRead.radDataOpen`.
+      Also, if no channel was specified, it will only read channel 'a'.
 
-        **Returns**:
-        * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData`): an object filled with the data we are after.  *will return None when finished reading*
+    Parameters
+    ----------
+        firstBeam : int, optional
+            If manually specifying a scan pattern, will start picking beams at this index in the scan
+        useEvery : int, optional
+            If manually specifying a scan pattern, will pick every `useEvery` beam
+        showBeams : bool, optional
+            `showBeams` will print the collected scan numbers. Useful for debugging or if you manually want to
+            find the correct combination of `firstBeam` and `useEvery`.
 
-        """
-        from davitpy.pydarn.sdio import scanData
-        from davitpy import pydarn
-        #Save the radDataPtr's bmnum setting temporarily and set it to None
-        orig_beam=self.bmnum
-        self.bmnum=None
+    Returns
+    -------
+        myScan : :class:`~pydarn.sdio.radDataTypes.scanData` or None
+            A sequence of beams (``None`` when no more data are available)
 
-        if self.__ptr is None:
-            print 'Error, self.__ptr is None.  There is probably no data available for your selected time.'
+    Notes
+    -----
+
+    For patterned scans (e.g. if beam numbers are [5, 0, 5, 1, 5, 2, ...]) the function will try to find
+    a subset of the beams where beam numbers are increasing/decreasing by 1 throughout the scan.
+    Alternatively you can specify the pattern manually by using `firstBeam` and `useEvery`. You will
+    then get the subset of the beams starting at `firstBeam` (which is the beam's index in the list
+    of beams in the scan, not the beam number) and only including every `useEvery` beam.
+
+    """
+
+    from davitpy.pydarn.sdio import scanData
+    from davitpy import pydarn
+
+    #Save the radDataPtr's bmnum setting temporarily and set it to None
+    orig_beam = self.bmnum
+    self.bmnum = None
+
+    if self.__ptr is None:
+        print 'Error, self.__ptr is None.  There is probably no data available for your selected time.'
+        self.bmnum = orig_beam
+        return None
+
+    if self.__ptr.closed:
+        print 'error, your file pointer is closed'
+        self.bmnum = orig_beam
+        return None
+
+    myScan = scanData()
+
+    # get first beam in the scan
+    myBeam = self.readRec()
+    if myBeam is None:  # no more data
+        self.bmnum = orig_beam
+        return None
+    while not myBeam.prm.scan:  # continue to read until we encounter a set scan flag
+        myBeam = self.readRec()
+        if myBeam is None:  # no more data
+            self.bmnum = orig_beam
             return None
 
-        if self.__ptr.closed:
-            print 'error, your file pointer is closed'
-            return None
+    # myBeam is now the first beam we encountered where scan flag is set
+    myScan.append(myBeam)
+    firstBeam = myBeam.bmnum
 
-        myScan = scanData()
-        while(1):
-            myBeam=self.readRec()
-            if myBeam is None: 
-                break
+    # get the rest of the beams in the scan
+    while True:
 
-            if ((myBeam.prm.scan == 1 and len(myScan) == 0)         # Append a beam if it is the first in a scan AND nothing has been added to the myScan object. 
-             or (myBeam.prm.scan == 0 and  len(myScan) > 0) ):      # Append a beam if it is not the first in a scan AND the myScan object has items.
-                myScan.append(myBeam)
-                offset = pydarn.dmapio.getDmapOffset(self.__fd)
-            elif myBeam.prm.scan == 1 and len(myScan) > 0:          # Break out of the loop if we are on to the next scan and rewind the pointer to the previous beam.
-                s = pydarn.dmapio.setDmapOffset(self.__fd,offset)
-                break 
+        # get current offset (in case we have to revert) and next beam
+        offset = pydarn.dmapio.getDmapOffset(self.__fd)
+        myBeam = self.readRec()
+        if myBeam is None:  # no more data
+            break
 
-        if len(myScan) == 0: myScan = None
-        self.bmnum=orig_beam
-        return myScan
+        # Scan detection algorithm: We have a new scan if scan flag
+        # is set AND beam number is the same as the first beam number
+        # in the previous scan.
+        # The latter condition is important since we can encounter
+        # patterned scans with
+        #   scan flags:    [1, 1, 0, 0, 0, 0, ...]
+        #   beam numbers:  [5, 0, 5, 1, 5, 2, ...]
+        # and we don't want to break out on the 2nd beam in this case.
+        if myBeam.prm.scan and myBeam.bmnum == firstBeam:  # if start of (next) scan
+            # revert offset to start of scan and break out of loop
+            pydarn.dmapio.setDmapOffset(self.__fd, offset)
+            break
+        else:
+            # append beam to current scan
+            myScan.append(myBeam)
+
+    self.bmnum = orig_beam
+
+    # use scan pattern from parameters if given
+    if None not in [firstBeam, useEvery]:
+        if showBeams:
+            print('Beam numbers in scan pattern for firstBeam={}, useEvery={}: {}'.format(
+                firstBeam, useEvery, list(beam.bmnum for beam in myScan)))
+        return myScan[firstBeam::useEvery] or None  # return None if scan is empty
+
+    # try to find the scan pattern automatically
+    import itertools
+    import numpy as np
+    for firstBeam, useEvery in itertools.product(range(10), range(1, 10)):
+        scan = myScan[firstBeam::useEvery]
+        bmnums = [beam.bmnum for beam in scan]
+        # assume correct pattern if beam numbers are increasing/decreasing by one
+        # throughout the scan
+        if np.all(np.diff(bmnums) == 1) or np.all(np.diff(bmnums) == -1):
+            if showBeams:
+                print('Auto-detected scan pattern with firstBeam={}, useEvery={}, beam numbers are {}'.format(
+                    firstBeam, useEvery, list(beam.bmnum for beam in scan)))
+            return scan or None  # return None if scan is empty
+
+    # the only reason for not having returned yet is that the automatic detection failed
+    raise ValueError(('Auto-detection of scan pattern failed, set pattern '
+                      'manually using the firstBeam and useEvery parameters'))
 
   def readRec(self):
      """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
