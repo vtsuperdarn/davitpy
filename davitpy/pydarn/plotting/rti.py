@@ -1055,7 +1055,7 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
                 dt_list.append(matplotlib.dates.num2date(x[tcnt]))
         tcnt += 1
 
-        if(pArr[i] == []): continue
+        if(pArr[i] == [] or pArr[i] is None): continue
 
         if data_dict['slist'][fplot][i] is not None:
             for j in range(len(data_dict['slist'][fplot][i])):
