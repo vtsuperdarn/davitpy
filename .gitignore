@@ -89,3 +89,5 @@ docs/_build/
 target/
 
 .ipynb_checkpoints
+
+*.py#

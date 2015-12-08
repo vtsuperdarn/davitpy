@@ -13,12 +13,10 @@ OPT_FLAGS = -O2 -fPIC
 REQ_FLAGS = -w
 
 # Declare source code
-SOURCES = apexcord.f90 \
-	  dwm07b.f90 \
-	  hwm07e.f90
+SOURCES = hwm14.f90
 OBJ = $(SOURCES:.f90=.o)
 
-PYF = hwm07.pyf
+PYF = hwm14.pyf
 PYO = $(PYF:.pyf=.so)
 
 # Define operations
@@ -31,7 +29,7 @@ clean:
 
 # Define test operations
 test:
-	$(F2PY) hwm07e.f90 -m hwm07 -h hwm07_test.pyf
+	$(F2PY) $(SOURCES) -m hwm14 -h hwm14_test.pyf
 
 test_clean:
-	rm -f hwm07_test.pyf
+	rm -f hwm14_test.pyf

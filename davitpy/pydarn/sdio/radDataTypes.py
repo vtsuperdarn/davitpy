@@ -854,7 +854,8 @@ class beamData(radBaseData):
     * **cp** (int): radar control program id number
     * **stid** (int): radar station id number
     * **time** (`datetime <http://tinyurl.com/bl352yx>`_): timestamp of beam sounding
-    * **channel** (str): radar operating channel, eg 'a', 'b', ...
+    * **channel** (int): radar operating channel defined by STEREO operations, eg 0, 1, 2.  Zero is for 
+    *                    non-stereo operations and 1 & 2 are for STEREO operations of A & B channels
     * **bmnum** (int): beam number
     * **prm** (:class:`pydarn.sdio.radDataTypes.prmData`): operating params
     * **fit** (:class:`pydarn.sdio.radDataTypes.fitData`): fitted params
