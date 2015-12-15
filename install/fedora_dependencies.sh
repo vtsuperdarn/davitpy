@@ -7,7 +7,7 @@
 # Installs dependencies for python 2.7.
 
 dnf install -y python
-dnf install -d python-dev
+dnf install -y python-devel
 dnf install -y python-pip
 dnf install -y python-zmq
 dnf install -y python-imaging
