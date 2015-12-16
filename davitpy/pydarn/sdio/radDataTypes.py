@@ -516,21 +516,21 @@ class radDataPtr():
 
     Parameters
     ----------
-        firstBeam : int, optional
-            If manually specifying a scan pattern, will start picking beams at this index in the scan
-        useEvery : int, optional
-            If manually specifying a scan pattern, will pick every `useEvery` beam
-        warnNonStandard : bool, optional
-            If True, display a warning when auto-detecting a non-standard scan pattern
-            (``firstBeam != 0`` or ``useEvery != 1``)
-        showBeams : bool, optional
-            `showBeams` will print the collected scan numbers. Useful for debugging or if you manually want to
-            find the correct combination of `firstBeam` and `useEvery`.
+    firstBeam : int, optional
+        If manually specifying a scan pattern, will start picking beams at this index in the scan
+    useEvery : int, optional
+        If manually specifying a scan pattern, will pick every `useEvery` beam
+    warnNonStandard : bool, optional
+        If True, display a warning when auto-detecting a non-standard scan pattern
+        (``firstBeam != 0`` or ``useEvery != 1``)
+    showBeams : bool, optional
+        `showBeams` will print the collected scan numbers. Useful for debugging or if you manually want to
+        find the correct combination of `firstBeam` and `useEvery`.
 
     Returns
     -------
-        myScan : :class:`~pydarn.sdio.radDataTypes.scanData` or None
-            A sequence of beams (``None`` when no more data are available)
+    myScan : :class:`~pydarn.sdio.radDataTypes.scanData` or None
+        A sequence of beams (``None`` when no more data are available)
 
     Notes
     -----
