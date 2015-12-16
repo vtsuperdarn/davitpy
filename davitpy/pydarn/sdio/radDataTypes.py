@@ -575,7 +575,7 @@ class radDataPtr():
 
     # myBeam is now the first beam we encountered where scan flag is set
     myScan.append(myBeam)
-    firstBeam = myBeam.bmnum
+    firstBeamNum = myBeam.bmnum
 
     # get the rest of the beams in the scan
     while True:
@@ -594,7 +594,7 @@ class radDataPtr():
         #   scan flags:    [1, 1, 0, 0, 0, 0, ...]
         #   beam numbers:  [5, 0, 5, 1, 5, 2, ...]
         # and we don't want to break out on the 2nd beam in this case.
-        if myBeam.prm.scan and myBeam.bmnum == firstBeam:  # if start of (next) scan
+        if myBeam.prm.scan and myBeam.bmnum == firstBeamNum:  # if start of (next) scan
             # revert offset to start of scan and break out of loop
             pydarn.dmapio.setDmapOffset(self.__fd, offset)
             break
