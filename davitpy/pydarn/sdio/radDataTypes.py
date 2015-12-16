@@ -507,7 +507,7 @@ class radDataPtr():
       from davitpy.pydarn.dmapio import setDmapOffset 
       return setDmapOffset(self.__fd,0)
 
-  def readScan(self, firstBeam=None, useEvery=None, showBeams=False):
+  def readScan(self, firstBeam=None, useEvery=None, warnNonStandard=True, showBeams=False):
     """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
 
     .. note::
@@ -520,6 +520,9 @@ class radDataPtr():
             If manually specifying a scan pattern, will start picking beams at this index in the scan
         useEvery : int, optional
             If manually specifying a scan pattern, will pick every `useEvery` beam
+        warnNonStandard : bool, optional
+            If True, display a warning when auto-detecting a non-standard scan pattern
+            (``firstBeam != 0`` or ``useEvery != 1``)
         showBeams : bool, optional
             `showBeams` will print the collected scan numbers. Useful for debugging or if you manually want to
             find the correct combination of `firstBeam` and `useEvery`.
@@ -617,7 +620,7 @@ class radDataPtr():
         # assume correct pattern if beam numbers are increasing/decreasing by one
         # throughout the scan
         if np.all(np.diff(bmnums) == 1) or np.all(np.diff(bmnums) == -1):
-            if showBeams:
+            if showBeams or (warnNonStandard and (firstBeam != 0 or useEvery != 1)):
                 print('Auto-detected scan pattern with firstBeam={}, useEvery={}, beam numbers are {}'.format(
                     firstBeam, useEvery, list(beam.bmnum for beam in scan)))
             return scan or None  # return None if scan is empty
