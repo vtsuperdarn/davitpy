@@ -614,7 +614,7 @@ class radDataPtr():
     # try to find the scan pattern automatically
     import itertools
     import numpy as np
-    for firstBeam, useEvery in itertools.product(range(10), range(1, 10)):
+    for firstBeam, useEvery in itertools.product(range(24), range(1, 24)):
         scan = myScan[firstBeam::useEvery]
         bmnums = [beam.bmnum for beam in scan]
         # assume correct pattern if beam numbers are increasing/decreasing by one
