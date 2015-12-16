@@ -91,11 +91,16 @@ class DataPtr(object):
         # specific methods to use credit to Adam Knox (github 
         # @aknox-va) for the idea.          
 
-        __read        = {'dmap':self.__readDmap}
-        __createIndex = {'dmap':self.__createIndexDmap}
-        __offsetSeek  = {'dmap':self.__offsetSeekDmap}
-        __offsetTell  = {'dmap':self.__offsetTellDmap}
-        __rewind      = {'dmap':self.__rewindDmap}
+        __read        = {'dmap':self.__readDmap,
+                         'json':self.__readJson}
+        __createIndex = {'dmap':self.__createIndexDmap,
+                         'json':self.__createIndexJson}
+        __offsetSeek  = {'dmap':self.__offsetSeekDmap,
+                         'json':self.__offsetSeekJson}
+        __offsetTell  = {'dmap':self.__offsetTellDmap,
+                         'json':self.__offsetTellJson}
+        __rewind      = {'dmap':self.__rewindDmap,
+                         'json':self.__rewindJson}
         dataTypeList = __read.keys()
 
         #Check input variables
@@ -275,6 +280,168 @@ class DataPtr(object):
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
                return dfile
 
+
+    ########################################
+    #                 JSON
+    ########################################
+
+    # NOW ALL OF THE JSON SPECIFIC METHODS
+    def __createIndexJson(self):
+        """
+           Create dictionary of offsets as a function of timestamp.
+  
+        """
+
+        import datetime as dt
+
+        # Initilize some dictionaries.
+        recordDict={}
+        scanStartDict={}
+
+        # Save the current file offset.
+        starting_offset=self._ptr.tell() #alternatively 
+        # self.__offsetJsonTell(), but this adds an extra function 
+        # call and slows things down
+
+        # Rewind back to start of file.
+        self._ptr.seek(0) #alternatively __rewindJson()
+        while True:
+            # Read the next record from the dmap file.
+            offset= self._ptr.tell()
+            jfile = self.__read_json_rec()
+            if(jfile is None):
+                # If we dont have valid data, clean up, get out.
+                print '\nreached end of data'
+                break
+            else:
+                if(dt.datetime.utcfromtimestamp(jfile['time']) >= self.sTime and \
+                  dt.datetime.utcfromtimestamp(jfile['time']) <= self.eTime) : 
+                    rectime = dt.datetime.utcfromtimestamp(jfile['time'])
+                    recordDict[rectime]=offset
+                    if jfile['scan']==1: scanStartDict[rectime]=offset
+
+        # Reset back to before building the index.
+        self.recordIndex=recordDict
+        self._ptr.seek(starting_offset)
+        self.scanStartIndex=scanStartDict
+        return recordDict,scanStartDict
+
+
+    def __offsetSeekJson(self,offset,force=False):
+        """
+           Jump to a json record at supplied byte offset.
+           Require offset to be in record index list unless forced. 
+        """
+
+        if force:
+            return self._ptr.seek(offset)
+        else:
+            if self.recordIndex is None:    
+                self.__createIndexDmap()
+            if offset in self.recordIndex.values():
+                return self._ptr.seek(offset)
+            else:
+                return self._ptr.tell()
+
+
+    def __offsetTellJson(self):
+        """
+           Jump to json record at supplied byte offset. 
+
+        """
+        return self._ptr.tell()
+
+
+    def __rewindJson(self):
+        """
+           Jump to beginning of json file.
+        """
+
+        # This method will have to do different things depending 
+        # on self.dType (for future other data file support ie. hdf5)
+        try:
+            self._ptr.seek(0)
+            return True
+        except:
+            return False
+
+    def __readJson(self):
+       """
+          A function to read a single record of data from a dmap file.
+
+       **Returns**:
+       * **dfile** (dict): a dictionary with the data in the dmap record.  *will return None when finished reading*
+
+       """
+
+       # This method will have to do different things depending 
+       # on self.dType (for future other data file support ie. hdf5)
+
+       import json
+       import datetime as dt
+
+       #check input
+       if(self._ptr == None):
+           print 'error, your pointer does not point to any data'
+           return None
+       if self._ptr.closed:
+           print 'error, your file pointer is closed'
+           return None
+
+       #do this until we reach the requested start time
+       #and have a parameter match
+       while True:
+           jfile = self.__read_json_rec(self._ptr)
+           #check for valid data
+           if jfile == None or dt.datetime.utcfromtimestamp(jfile['time']) > self.eTime:
+               #if we dont have valid data, clean up, get out
+               print '\nreached end of data'
+               return None
+
+           #check that we're in the time window
+           if (dt.datetime.utcfromtimestamp(jfile['time']) >= self.sTime and \
+               dt.datetime.utcfromtimestamp(jfile['time']) <= self.eTime):
+               return jfile
+
+    def __read_json_rec(self):
+        # This function will read one json record at a time out of a
+        # file containing json objects in the form of:
+        #{
+        #"keys":data,
+        #"keys":data
+        #}
+        #{
+        #"keys":data,
+        #"keys":data
+        #}
+        #
+        # Solution courtesy http://stackoverflow.com/questions/20400818/python-trying-to-deserialize-multiple-json-objects-in-a-file-with-each-object-s
+        #
+        # get a line of the file
+        import json
+        line = f.next() #using next is faster than readline()
+        while True:
+            # now try to parse the line of the file using json.loads
+            # if this fails, append the next line in the file and try
+            # again until a record has been read.
+            try:
+                jfile = json.loads(line)
+                break
+            except ValueError:
+                line += next(f)
+        # If we can decode the json, then we need to add a 'time' key
+        yr = jfile['time.yr']
+        mon = jfile['time.mo']
+        dy = jfile['time.dy']
+        hr = jfile['time.hr']
+        m = jfile['time.mt']
+        s = jfile['time.sc']
+        us = jfile['time.us']
+        time = datetime(yr,mon,dy,hr,m,s,us)
+        time -= datetime(1970,1,1)
+        epoch = time.total_seconds()
+        jfile['time'] = time
+        return jfile
 
 
     ########################################
