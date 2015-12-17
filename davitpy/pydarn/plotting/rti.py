@@ -175,7 +175,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
     assert(isinstance(eTime, datetime.datetime) or
            eTime is None), 'error, eTime must be a datetime object or None'
     if eTime is None:
-        eTime = sTime+datetime.timedelta(days=1)
+        eTime = sTime + datetime.timedelta(days=1)
     assert(sTime < eTime), "eTime must be greater than sTime!"
     assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or
            coords == 'mag'), "error, coords must be one of 'gate', 'rng', " \
@@ -317,19 +317,21 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         figtop = .77
         if ((eTime - sTime) <= datetime.timedelta(days=1)) and \
                 (eTime.day == sTime.day):
-            figheight = .72/len(params)
+            figheight = .72 / len(params)
         elif ((eTime - sTime) > datetime.timedelta(days=1)) or \
                 (eTime.day != sTime.day):
-            figheight = .70/len(params)
+            figheight = .70 / len(params)
 
         for p in range(len(params)):
-            # Use draw_axes to create and set formatting of the axes to plot to.
-            pos = [.1, figtop-figheight*(p+1)+.02, .76, figheight-.02]
+            # Use draw_axes to create and set formatting of the axes to
+            # plot to.
+            pos = [.1, figtop - figheight * (p + 1) + .02, .76,
+                   figheight - .02]
             ax = draw_axes(rti_fig, data_dict['times'][fplot], rad,
                            data_dict['cpid'][fplot], bmnum,
                            data_dict['nrang'][fplot],
                            data_dict['frang'][fplot], data_dict['rsep'][fplot],
-                           p == len(params)-1, yrng=yrng, coords=coords,
+                           p == len(params) - 1, yrng=yrng, coords=coords,
                            pos=pos, xtick_size=xtick_size,
                            ytick_size=ytick_size, xticks=xticks,
                            axvlines=axvlines)
@@ -367,7 +369,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
             # Draw the colorbar.
             cb = utils.drawCB(rti_fig, pcoll, cmap, norm, map_plot=0,
-                              pos=[pos[0]+pos[2]+.02, pos[1], 0.02, pos[3]])
+                              pos=[pos[0] + pos[2] + .02, pos[1], 0.02,
+                              pos[3]])
 
             # Label the colorbar.
             l = []
@@ -381,7 +384,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                     continue
                 if((i == 0 and
                     (params[p] == 'velocity' or
-                     params[p] == 'velocity_error')) or i == len(bounds)-1):
+                     params[p] == 'velocity_error')) or i == len(bounds) - 1):
                     l.append(' ')
                     continue
                 l.append(str(int(bounds[i])))
@@ -405,7 +408,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         if show:
             rti_fig.show()
 
-        print 'plotting took:', datetime.datetime.now()-t1
+        print 'plotting took:', datetime.datetime.now() - t1
         # End of plotting for loop.
 
         return rti_figs
@@ -485,8 +488,8 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
                         ymin = myFov.latFull[bmnum].min()
                 else:
                     ymin = 0
-                    if(nrang[i]*rsep[i]+frang[i] > ymax):
-                        ymax = nrang[i]*rsep[i]+frang[i]
+                    if(nrang[i] * rsep[i] + frang[i] > ymax):
+                        ymax = nrang[i] * rsep[i] + frang[i]
 
         else:
             ymin, ymax = 0, max(nrang)
@@ -495,10 +498,10 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 
     # Format the xaxis.
     xmin = matplotlib.dates.date2num(times[0])
-    xmax = matplotlib.dates.date2num(times[len(times)-1])
-    xrng = (xmax-xmin)
-    inter = int(round(xrng/6.*86400.))
-    inter2 = int(round(xrng/24.*86400.))
+    xmax = matplotlib.dates.date2num(times[len(times) - 1])
+    xrng = (xmax - xmin)
+    inter = int(round(xrng / 6. * 86400.))
+    inter2 = int(round(xrng / 24. * 86400.))
     ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
     ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
@@ -527,11 +530,13 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
         ax.yaxis.set_label_text('Range gate', size=10)
         ax.yaxis.set_major_formatter(
             matplotlib.ticker.FormatStrFormatter('%d'))
-        ax.yaxis.set_major_locator(MultipleLocator((ymax-ymin)/5.))
-        ax.yaxis.set_minor_locator(MultipleLocator((ymax-ymin)/25.))
+        ax.yaxis.set_major_locator(MultipleLocator((ymax - ymin) / 5.))
+        ax.yaxis.set_minor_locator(MultipleLocator((ymax - ymin) / 25.))
     elif(coords == 'geo' or coords == 'mag'):
-        if(coords == 'mag'): ax.yaxis.set_label_text('Mag Lat [deg]', size=10)
-        else: ax.yaxis.set_label_text('Geo Lat [deg]', size=10)
+        if(coords == 'mag'):
+            ax.yaxis.set_label_text('Mag Lat [deg]', size=10)
+        else:
+            ax.yaxis.set_label_text('Geo Lat [deg]', size=10)
     elif(coords == 'rng'):
         ax.yaxis.set_label_text('Slant Range [km]', size=10)
         ax.yaxis.set_major_formatter(
@@ -578,7 +583,7 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     r = pydarn.radar.network().getRadarByCode(rad)
 
     # Plot the main title
-    fig.text(xmin, .95, r.name+'  ('+fileType+')', ha='left', weight=550)
+    fig.text(xmin, .95, r.name + '  (' + fileType + ')', ha='left', weight=550)
 
     # Determine what time information should be plotted in the secondary title
     if ((eTime is not None) and
@@ -587,7 +592,8 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
         title_text = str(sTime.day) + '/' \
                      + calendar.month_name[sTime.month][:3] + '/' \
                      + str(sTime.year) + ' - ' + str(eTime.day) + '/' \
-                     + calendar.month_name[eTime.month][:3]+'/'+str(eTime.year)
+                     + calendar.month_name[eTime.month][:3] + '/' \
+                     + str(eTime.year)
 
     else:
         title_text = str(sTime.day) + '/' \
@@ -595,7 +601,7 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
                      + str(sTime.year)
 
     # Plot the secondary title.
-    fig.text((xmin+xmax)/2., .95, title_text, weight=550,
+    fig.text((xmin + xmax) / 2., .95, title_text, weight=550,
              size='large', ha='center')
     fig.text(xmax, .95, 'Beam ' + str(beam), weight=550, ha='right')
 
@@ -641,7 +647,7 @@ def plot_cpid(ax, times, cpid, mode):
                          matplotlib.dates.date2num(times[i])],
                          [0, 1], fmt='k-', tz=None, xdate=True, ydate=False)
             oldCpid = cpid[i]
-            s = ' '+pydarn.radar.radUtils.getCpName(oldCpid)
+            s = ' ' + pydarn.radar.radUtils.getCpName(oldCpid)
             istr = ' '
             if(mode[i] == 1): istr = ' IF'
             if(mode == 0): istr = ' RF'
@@ -650,10 +656,10 @@ def plot_cpid(ax, times, cpid, mode):
 
     # Format the xaxis.
     xmin = matplotlib.dates.date2num(times[0])
-    xmax = matplotlib.dates.date2num(times[len(times)-1])
-    xrng = (xmax-xmin)
-    inter = int(round(xrng/6.*86400.))
-    inter2 = int(round(xrng/24.*86400.))
+    xmax = matplotlib.dates.date2num(times[len(times) - 1])
+    xrng = (xmax - xmin)
+    inter = int(round(xrng / 6. * 86400.))
+    inter2 = int(round(xrng / 24. * 86400.))
     ax.xaxis.set_minor_locator(matplotlib.dates.SecondLocator(interval=inter2))
     ax.xaxis.set_major_locator(matplotlib.dates.SecondLocator(interval=inter))
 
@@ -668,8 +674,8 @@ def plot_cpid(ax, times, cpid, mode):
     height = bb.height
     width = bb.width
     pos = [x0, y0, width, height]
-    fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'CPID', ha='center', va='center',
-             size=8.5, rotation='vertical')
+    fig.text(pos[0] - .07, pos[1] + pos[3] / 2., 'CPID', ha='center',
+             va='center', size=8.5, rotation='vertical')
     ax.set_yticks([])
 
 
@@ -719,13 +725,15 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     height = bb.height
     width = bb.width
     pos = [x0, y0, width, height]
-    fig.text(pos[0]-.01, pos[1]+.004, '10^0', ha='right', va='bottom', size=8)
-    fig.text(pos[0]-.01, pos[1]+pos[3], '10^6', ha='right', va='top', size=8)
-    fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'N.Sky', ha='center', va='center',
-             size=8.5, rotation='vertical')
-    l = lines.Line2D([pos[0]-.06, pos[0]-.06], [pos[1]+.01, pos[1]+pos[3]-.01],
-                     transform=fig.transFigure, clip_on=False, ls='-',
-                     color='k', lw=1.5)
+    fig.text(pos[0] - .01, pos[1] + .004, '10^0', ha='right', va='bottom',
+             size=8)
+    fig.text(pos[0] - .01, pos[1] + pos[3], '10^6', ha='right', va='top',
+             size=8)
+    fig.text(pos[0] - .07, pos[1] + pos[3] / 2., 'N.Sky', ha='center',
+             va='center', size=8.5, rotation='vertical')
+    l = lines.Line2D([pos[0] - .06, pos[0] - .06], [pos[1] + .01,
+                     pos[1] + pos[3] - .01], transform=fig.transFigure,
+                     clip_on=False, ls='-', color='k', lw=1.5)
     ax.add_line(l)
     ax.set_xticklabels([' '])
     # Only use 2 major yticks.
@@ -781,16 +789,17 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
     width = bb.width
     pos = [x0, y0, width, height]
 
-    fig.text(pos[0]+pos[2]+.01, pos[1]+.004, '10^0', ha='left', va='bottom',
-             size=8)
-    fig.text(pos[0]+pos[2]+.01, pos[1]+pos[3], '10^6', ha='left', va='top',
-             size=8)
-    fig.text(pos[0]+pos[2]+.06, pos[1]+pos[3]/2., 'N.Sch', ha='center',
+    fig.text(pos[0] + pos[2] + .01, pos[1] + .004, '10^0', ha='left',
+             va='bottom', size=8)
+    fig.text(pos[0] + pos[2] + .01, pos[1] + pos[3], '10^6', ha='left',
+             va='top', size=8)
+    fig.text(pos[0] + pos[2] + .06, pos[1] + pos[3] / 2., 'N.Sch', ha='center',
              va='center', size=8.5, rotation='vertical')
 
-    l = lines.Line2D([pos[0]+pos[2]+.07, pos[0]+pos[2]+.07],  [pos[1]+.01,
-                     pos[1]+pos[3]-.01], transform=fig.transFigure,
-                     clip_on=False, ls=':', color='k', lw=1.5)
+    l = lines.Line2D([pos[0] + pos[2] + .07, pos[0] + pos[2] + .07],
+                     [pos[1] + .01, pos[1] + pos[3] - .01],
+                     transform=fig.transFigure, clip_on=False, ls=':',
+                     color='k', lw=1.5)
     ax.add_line(l)
     ax.set_xticklabels([' '])
     # use only 2 major yticks
@@ -847,16 +856,16 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
     height = bb.height
     width = bb.width
     pos = [x0, y0, width, height]
-    fig.text(pos[0]-.01, pos[1]+.005, '10', ha='right', va='bottom',
+    fig.text(pos[0] - .01, pos[1] + .005, '10', ha='right', va='bottom',
              size=8)
-    fig.text(pos[0]-.01, pos[1]+pos[3]-.015, '16', ha='right', va='top',
+    fig.text(pos[0] - .01, pos[1] + pos[3] - .015, '16', ha='right', va='top',
              size=8)
-    fig.text(pos[0]-.07, pos[1]+pos[3]/2., 'Freq', ha='center', va='center',
-             size=9, rotation='vertical')
-    fig.text(pos[0]-.05, pos[1]+pos[3]/2., '[MHz]', ha='center', va='center',
-             size=7, rotation='vertical')
-    l = lines.Line2D([pos[0]-.04, pos[0]-.04],  [pos[1]+.01,
-                     pos[1]+pos[3]-.01], transform=fig.transFigure,
+    fig.text(pos[0] - .07, pos[1] + pos[3] / 2., 'Freq', ha='center',
+             va='center', size=9, rotation='vertical')
+    fig.text(pos[0] - .05, pos[1] + pos[3] / 2., '[MHz]', ha='center',
+             va='center', size=7, rotation='vertical')
+    l = lines.Line2D([pos[0] - .04, pos[0] - .04], [pos[1] + .01,
+                     pos[1] + pos[3] - .01], transform=fig.transFigure,
                      clip_on=False, ls='-', color='k', lw=1.5)
     ax.add_line(l)
     ax.set_xticklabels([' '])
@@ -912,16 +921,17 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
     height = bb.height
     width = bb.width
     pos = [x0, y0, width, height]
-    fig.text(pos[0]+pos[2]+.01, pos[1]-.004, '0', ha='left', va='bottom',
+    fig.text(pos[0] + pos[2] + .01, pos[1] - .004, '0', ha='left', va='bottom',
              size=8)
-    fig.text(pos[0]+pos[2]+.01, pos[1]+pos[3], '80', ha='left', va='top',
+    fig.text(pos[0] + pos[2] + .01, pos[1] + pos[3], '80', ha='left', va='top',
              size=8)
-    fig.text(pos[0]+pos[2]+.06, pos[1]+pos[3]/2., 'Nave', ha='center',
+    fig.text(pos[0] + pos[2] + .06, pos[1] + pos[3] / 2., 'Nave', ha='center',
              va='center', size=8.5, rotation='vertical')
 
-    l = lines.Line2D([pos[0]+pos[2]+.07, pos[0]+pos[2]+.07],  [pos[1]+.01,
-                     pos[1]+pos[3]-.01], transform=fig.transFigure,
-                     clip_on=False, ls=':', color='k', lw=1.5)
+    l = lines.Line2D([pos[0] + pos[2] + .07, pos[0] + pos[2] + .07],
+                     [pos[1] + .01, pos[1] + pos[3] - .01],
+                     transform=fig.transFigure, clip_on=False, ls=':',
+                     color='k', lw=1.5)
     ax.add_line(l)
     ax.set_xticklabels([' '])
     # use only 2 major yticks
@@ -980,7 +990,7 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
                     data['nrang'][i].append(myBeam.prm.nrang)
                     data['frang'][i].append(myBeam.prm.frang)
                     data['nsch'][i].append(myBeam.prm.noisesearch)
-                    data['freq'][i].append(myBeam.prm.tfreq/1e3)
+                    data['freq'][i].append(myBeam.prm.tfreq / 1e3)
                     data['slist'][i].append(myBeam.fit.slist)
                     data['mode'][i].append(myBeam.prm.ifmode)
                     # To save time and RAM, only keep the data specified
@@ -1034,8 +1044,8 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
     from davitpy import pydarn
     # Initialize things.
     rmax = max(data_dict['nrang'][fplot])
-    tmax = (len(data_dict['times'][fplot]))*2
-    data = numpy.zeros((tmax, rmax))*numpy.nan
+    tmax = (len(data_dict['times'][fplot])) * 2
+    data = numpy.zeros((tmax, rmax)) * numpy.nan
     x = numpy.zeros(tmax)
     tcnt = 0
 
@@ -1045,13 +1055,13 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
         x[tcnt] = matplotlib.dates.date2num(data_dict['times'][fplot][i])
         dt_list.append(data_dict['times'][fplot][i])
 
-        if(i < len(data_dict['times'][fplot])-1):
+        if(i < len(data_dict['times'][fplot]) - 1):
             if(matplotlib.dates.date2num(
-                    data_dict['times'][fplot][i+1])-x[tcnt] > 4./1440.):
+                    data_dict['times'][fplot][i + 1]) - x[tcnt] > 4. / 1440.):
                 tcnt += 1
                 # 1440 minutes in a day, hardcoded 1 minute step per data point
                 # but only if time between data points is > 4 minutes
-                x[tcnt] = x[tcnt-1]+1./1440.
+                x[tcnt] = x[tcnt - 1] + 1. / 1440.
                 dt_list.append(matplotlib.dates.num2date(x[tcnt]))
         tcnt += 1
 
@@ -1078,11 +1088,11 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 
     # Determine the yaxis range limits to plot data to.
     if(coords == 'gate'):
-        y = numpy.linspace(0, rmax, rmax+1)
+        y = numpy.linspace(0, rmax, rmax + 1)
     elif(coords == 'rng'):
         y = numpy.linspace(data_dict['frang'][fplot][0],
-                           rmax*data_dict['rsep'][fplot][0],
-                           rmax+1)
+                           rmax * data_dict['rsep'][fplot][0],
+                           rmax + 1)
     else:
         y = myFov.latFull[bmnum]
 
@@ -1135,11 +1145,12 @@ def daynight_terminator(date, lons):
     """
 
     import mpl_toolkits.basemap.solar as solar
-    dg2rad = np.pi/180.
+    dg2rad = np.pi / 180.
     # compute greenwich hour angle and solar declination
     # from datetime object (assumed UTC).
     tau, dec = solar.epem(date)
     # compute day/night terminator from hour angle, declination.
     longitude = lons + tau
-    lats = np.arctan(-np.cos(longitude*dg2rad)/np.tan(dec*dg2rad))/dg2rad
+    lats = np.arctan(-np.cos(longitude * dg2rad) /
+           np.tan(dec * dg2rad)) / dg2rad
     return lats, tau, dec
