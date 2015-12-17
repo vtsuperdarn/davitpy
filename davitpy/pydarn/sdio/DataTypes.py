@@ -120,9 +120,9 @@ class DataPtr(object):
         self.dType = dataType
         self.recordIndex = None
         self.scanStartIndex = None
-        self.__filename = fileName 
-        self.__fd = None
-        self.__ptr =  None
+        self._filename = fileName 
+        self._fd = None
+        self._ptr =  None
 
         #Set the data Type specific methods
         self.read = __read[dataType]
@@ -143,17 +143,17 @@ class DataPtr(object):
     def open(self):
         """open the associated filename."""
         import os
-        self.__fd = os.open(self.__filename,os.O_RDONLY)
-        self.__ptr = os.fdopen(self.__fd)
+        self._fd = os.open(self._filename,os.O_RDONLY)
+        self._ptr = os.fdopen(self._fd)
  
     def close(self):
         """
            Close the associated file.
         """
         import os
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd=None
+        if self._ptr is not None:
+            self._ptr.close()
+            self._fd=None
 
 
     # BEGIN DATA TYPE SPECIFIC HIDDEN METHODS
@@ -181,8 +181,8 @@ class DataPtr(object):
         self.__rewindDmap()
         while(1):
             #read the next record from the dmap file
-            offset= getDmapOffset(self.__fd)
-            dfile = readDmapRec(self.__fd)
+            offset= getDmapOffset(self._fd)
+            dfile = readDmapRec(self._fd)
             if(dfile is None):
                 #if we dont have valid data, clean up, get out
                 print '\nreached end of data'
@@ -210,14 +210,14 @@ class DataPtr(object):
 
         from davitpy.pydarn.dmapio import setDmapOffset,getDmapOffset 
         if force:
-            return setDmapOffset(self.__fd,offset)
+            return setDmapOffset(self._fd,offset)
         else:
             if self.recordIndex is None:        
                 self.__createIndexDmap()
             if offset in self.recordIndex.values():
-                return setDmapOffset(self.__fd,offset)
+                return setDmapOffset(self._fd,offset)
             else:
-                return getDmapOffset(self.__fd)
+                return getDmapOffset(self._fd)
 
     def __offsetTellDmap(self):
         """
@@ -229,7 +229,7 @@ class DataPtr(object):
         # on self.dType (for future other data file support ie. hdf5)
 
         from davitpy.pydarn.dmapio import getDmapOffset
-        return getDmapOffset(self.__fd)
+        return getDmapOffset(self._fd)
 
     def __rewindDmap(self):
         """
@@ -239,7 +239,7 @@ class DataPtr(object):
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
         from davitpy.pydarn.dmapio import setDmapOffset 
-        return setDmapOffset(self.__fd,0)
+        return setDmapOffset(self._fd,0)
 
     def __readDmap(self):
        """
@@ -257,18 +257,18 @@ class DataPtr(object):
        import datetime as dt
 
        #check input
-       if(self.__ptr == None):
+       if(self._ptr == None):
            print 'error, your pointer does not point to any data'
            return None
-       if self.__ptr.closed:
+       if self._ptr.closed:
            print 'error, your file pointer is closed'
            return None
 
        #do this until we reach the requested start time
        #and have a parameter match
        while(1):
-           offset = pydarn.dmapio.getDmapOffset(self.__fd)
-           dfile = pydarn.dmapio.readDmapRec(self.__fd)
+           offset = pydarn.dmapio.getDmapOffset(self._fd)
+           dfile = pydarn.dmapio.readDmapRec(self._fd)
            #check for valid data
            if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
                #if we dont have valid data, clean up, get out
@@ -299,15 +299,15 @@ class DataPtr(object):
         scanStartDict={}
 
         # Save the current file offset.
-        starting_offset=self.__ptr.tell() #alternatively 
+        starting_offset=self._ptr.tell() #alternatively 
         # self.__offsetJsonTell(), but this adds an extra function 
         # call and slows things down
 
         # Rewind back to start of file.
-        self.__ptr.seek(0) #alternatively __rewindJson()
+        self._ptr.seek(0) #alternatively __rewindJson()
         while True:
             # Read the next record from the dmap file.
-            offset= self.__ptr.tell()
+            offset= self._ptr.tell()
             jfile = self.__read_json_rec()
             if(jfile is None):
                 # If we dont have valid data, clean up, get out.
@@ -322,7 +322,7 @@ class DataPtr(object):
 
         # Reset back to before building the index.
         self.recordIndex=recordDict
-        self.__ptr.seek(starting_offset)
+        self._ptr.seek(starting_offset)
         self.scanStartIndex=scanStartDict
         return recordDict,scanStartDict
 
@@ -334,14 +334,14 @@ class DataPtr(object):
         """
 
         if force:
-            return self.__ptr.seek(offset)
+            return self._ptr.seek(offset)
         else:
             if self.recordIndex is None:    
                 self.__createIndexDmap()
             if offset in self.recordIndex.values():
-                return self.__ptr.seek(offset)
+                return self._ptr.seek(offset)
             else:
-                return self.__ptr.tell()
+                return self._ptr.tell()
 
 
     def __offsetTellJson(self):
@@ -349,7 +349,7 @@ class DataPtr(object):
            Jump to json record at supplied byte offset. 
 
         """
-        return self.__ptr.tell()
+        return self._ptr.tell()
 
 
     def __rewindJson(self):
@@ -360,7 +360,7 @@ class DataPtr(object):
         # This method will have to do different things depending 
         # on self.dType (for future other data file support ie. hdf5)
         try:
-            self.__ptr.seek(0)
+            self._ptr.seek(0)
             return True
         except:
             return False
@@ -381,17 +381,17 @@ class DataPtr(object):
        import datetime as dt
 
        #check input
-       if(self.__ptr == None):
+       if(self._ptr == None):
            print 'error, your pointer does not point to any data'
            return None
-       if self.__ptr.closed:
+       if self._ptr.closed:
            print 'error, your file pointer is closed'
            return None
 
        #do this until we reach the requested start time
        #and have a parameter match
        while True:
-           jfile = self.__read_json_rec(self.__ptr)
+           jfile = self.__read_json_rec()
            #check for valid data
            if jfile == None or dt.datetime.utcfromtimestamp(jfile['time']) > self.eTime:
                #if we dont have valid data, clean up, get out
@@ -419,6 +419,8 @@ class DataPtr(object):
         #
         # get a line of the file
         import json
+        from datetime import datetime
+        f = self._ptr
         line = f.next() #using next is faster than readline()
         while True:
             # now try to parse the line of the file using json.loads
@@ -440,7 +442,7 @@ class DataPtr(object):
         time = datetime(yr,mon,dy,hr,m,s,us)
         time -= datetime(1970,1,1)
         epoch = time.total_seconds()
-        jfile['time'] = time
+        jfile['time'] = epoch
         return jfile
 
 

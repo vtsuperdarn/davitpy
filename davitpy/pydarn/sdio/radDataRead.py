@@ -37,7 +37,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
                 noCache=False,verbose=False,local_dirfmt=None,           \
                 local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
                 remote_fnamefmt=None,remote_dict=None,remote_site=None,  \
-                username=None,password=None, port=None,tmpdir=None):
+                username=None,password=None, port=None,tmpdir=None,dataType='dmap'):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
 
@@ -63,6 +63,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     * **[local_dirfmt]** (str): The local directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}' 
     * **[local_fnamefmt]** (str/list): The local file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
     * **[tmpdir]** (str): The directory in which to store temporary files.
+    * **[dataType]** (str): Specifies the data type, ie. dmap or json.
 
 
   **Returns**:
@@ -111,7 +112,7 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
                remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,  \
                username=username,port=port,password=password,            \
                stid=int(network().getRadarByCode(radcode).id),           \
-               tmpdir=tmpdir)
+               tmpdir=tmpdir,dataType=dataType)
   return myPtr
   
 def radDataReadRec(myPtr):

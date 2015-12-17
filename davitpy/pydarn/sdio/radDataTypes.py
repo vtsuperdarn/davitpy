@@ -34,11 +34,12 @@
 
 import davitpy
 from davitpy.utils import twoWayDict
+from davitpy.pydarn.sdio.DataTypes import DataPtr
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
 
-class radDataPtr():
+class radDataPtr(DataPtr):
   """A class which contains a pipeline to a data source
   
   **Public Attrs**:
@@ -79,7 +80,7 @@ class radDataPtr():
                 fileType=None,filtered=False, src=None,fileName=None,noCache=False,verbose=False, \
                 local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,      \
                 remote_fnamefmt=None, remote_dict=None,remote_site=None, username=None, port=None,\
-                password=None,tmpdir=None):
+                password=None,tmpdir=None,dataType='dmap'):
 
     import datetime as dt
     import os,glob,string
@@ -87,23 +88,18 @@ class radDataPtr():
     from davitpy import utils
     from davitpy.pydarn.sdio.fetchUtils import fetch_local_files, fetch_remote_files
     
-    self.sTime = sTime
-    self.eTime = eTime
+    super(radDataPtr,self).__init__(sTime,dataType,eTime=eTime,fileName=fileName)
+
     self.stid = stid
     self.channel = channel
     self.bmnum = bmnum
     self.cp = cp
     self.fType = fileType
-    self.dType = None
+    self.dType = dataType
     self.fBeam = None
-    self.recordIndex = None
-    self.scanStartIndex = None
-    self.__filename = fileName 
     self.__filtered = filtered
     self.__nocache  = noCache
     self.__src = src
-    self.__fd = None
-    self.__ptr =  None
 
     #check inputs
     assert(isinstance(self.sTime,dt.datetime)), \
@@ -281,7 +277,7 @@ class radDataPtr():
             print 'Will attempt fetching data from remote.'
             src=None
     #finally, check the VT sftp server if we have not yet found files
-    if (src == None or src == 'sftp') and self.__ptr == None and len(filelist) == 0 and fileName == None:
+    if (src == None or src == 'sftp') and self._ptr == None and len(filelist) == 0 and fileName == None:
         for ftype in arr:
             print '\nLooking on the remote SFTP server for',ftype,'files'
             try:
@@ -396,7 +392,7 @@ class radDataPtr():
 
         #filter(if desired) and open the file
         if(not filtered):
-            self.__filename=tmpName
+            self._filename=tmpName
             self.open()
         else:
             if not fileType+'f' in tmpName:
@@ -410,12 +406,12 @@ class radDataPtr():
             else:
                 fTmpName = tmpName
             try:
-                self.__filename=fTmpName
+                self._filename=fTmpName
                 self.open()
             except Exception,e:
                 print 'problem opening file'
                 print e
-    if(self.__ptr != None):
+    if(self._ptr != None):
         if(self.dType == None): self.dType = 'dmap'
     else:
         print '\nSorry, we could not find any data for you :('
@@ -446,67 +442,6 @@ class radDataPtr():
     else:
       return beam
 
-
-  def open(self):
-      """open the associated dmap filename."""
-      import os
-      self.__fd = os.open(self.__filename,os.O_RDONLY)
-      self.__ptr = os.fdopen(self.__fd)
-
-  def createIndex(self):
-      import datetime as dt
-      from davitpy.pydarn.dmapio import getDmapOffset,readDmapRec,setDmapOffset
-      recordDict={}
-      scanStartDict={}
-      starting_offset=self.offsetTell()
-      #rewind back to start of file
-      self.rewind()
-      while(1):
-          #read the next record from the dmap file
-          offset= getDmapOffset(self.__fd)
-          dfile = readDmapRec(self.__fd)
-          if(dfile is None):
-              #if we dont have valid data, clean up, get out
-              print '\nreached end of data'
-              break
-          else:
-              if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
-                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime) : 
-                  rectime = dt.datetime.utcfromtimestamp(dfile['time'])
-                  recordDict[rectime]=offset
-                  if dfile['scan']==1: scanStartDict[rectime]=offset
-      #reset back to before building the index 
-      self.recordIndex=recordDict
-      self.offsetSeek(starting_offset)
-      self.scanStartIndex=scanStartDict
-      return recordDict,scanStartDict
-
-  def offsetSeek(self,offset,force=False):
-      """jump to dmap record at supplied byte offset.
-         Require offset to be in record index list unless forced. 
-      """
-      from davitpy.pydarn.dmapio import setDmapOffset,getDmapOffset 
-      if force:
-        return setDmapOffset(self.__fd,offset)
-      else:
-        if self.recordIndex is None:        
-          self.createIndex()
-        if offset in self.recordIndex.values():
-          return setDmapOffset(self.__fd,offset)
-        else:
-          return getDmapOffset(self.__fd)
-
-  def offsetTell(self):
-      """jump to dmap record at supplied byte offset. 
-      """
-      from davitpy.pydarn.dmapio import getDmapOffset
-      return getDmapOffset(self.__fd)
-
-  def rewind(self):
-      """jump to beginning of dmap file."""
-      from davitpy.pydarn.dmapio import setDmapOffset 
-      return setDmapOffset(self.__fd,0)
-
   def readScan(self):
         """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
 
@@ -523,11 +458,11 @@ class radDataPtr():
         orig_beam=self.bmnum
         self.bmnum=None
 
-        if self.__ptr is None:
-            print 'Error, self.__ptr is None.  There is probably no data available for your selected time.'
+        if self._ptr is None:
+            print 'Error, self._ptr is None.  There is probably no data available for your selected time.'
             return None
 
-        if self.__ptr.closed:
+        if self._ptr.closed:
             print 'error, your file pointer is closed'
             return None
 
@@ -540,9 +475,9 @@ class radDataPtr():
             if ((myBeam.prm.scan == 1 and len(myScan) == 0)         # Append a beam if it is the first in a scan AND nothing has been added to the myScan object. 
              or (myBeam.prm.scan == 0 and  len(myScan) > 0) ):      # Append a beam if it is not the first in a scan AND the myScan object has items.
                 myScan.append(myBeam)
-                offset = pydarn.dmapio.getDmapOffset(self.__fd)
+                offset = self.offsetTell()
             elif myBeam.prm.scan == 1 and len(myScan) > 0:          # Break out of the loop if we are on to the next scan and rewind the pointer to the previous beam.
-                s = pydarn.dmapio.setDmapOffset(self.__fd,offset)
+                s = self.offsetSeek(offset)
                 break 
 
         if len(myScan) == 0: myScan = None
@@ -560,58 +495,45 @@ class radDataPtr():
      import datetime as dt
 
      #check input
-     if(self.__ptr == None):
+     if(self._ptr == None):
          print 'error, your pointer does not point to any data'
          return None
-     if self.__ptr.closed:
+     if self._ptr.closed:
          print 'error, your file pointer is closed'
          return None
      myBeam = beamData()
      #do this until we reach the requested start time
      #and have a parameter match
-     while(1):
-         offset=pydarn.dmapio.getDmapOffset(self.__fd)
-         dfile = pydarn.dmapio.readDmapRec(self.__fd)
-         #check for valid data
-         if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
-             #if we dont have valid data, clean up, get out
-             print '\nreached end of data'
-             #self.close()
-             return None
+     offset = self.offsetTell()
+     record = self.read()
+     if record is not None:
          #check that we're in the time window, and that we have a 
          #match for the desired params
          #if dfile['channel'] < 2: channel = 'a'  THIS CHECK IS BAD. 'channel' in a dmap file specifies STEREO operation or not.
          #else: channel = alpha[dfile['channel']-1]
-         if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
-               dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and \
-               (self.stid == None or self.stid == dfile['stid']) and
+         if(dt.datetime.utcfromtimestamp(record['time']) >= self.sTime and \
+               dt.datetime.utcfromtimestamp(record['time']) <= self.eTime and \
+               (self.stid == None or self.stid == record['stid']) and
                #(self.channel == None or self.channel == channel) and ASR removed because of bad check as above.
-               (self.bmnum == None or self.bmnum == dfile['bmnum']) and
-               (self.cp == None or self.cp == dfile['cp'])):
+               (self.bmnum == None or self.bmnum == record['bmnum']) and
+               (self.cp == None or self.cp == record['cp'])):
              #fill the beamdata object
-             myBeam.updateValsFromDict(dfile)
-             myBeam.recordDict=dfile
+             myBeam.updateValsFromDict(record)
+             myBeam.recordDict=record
              myBeam.fType = self.fType
              myBeam.fPtr = self
              myBeam.offset = offset
              #file prm object
-             myBeam.prm.updateValsFromDict(dfile)
+             myBeam.prm.updateValsFromDict(record)
              if myBeam.fType == "rawacf":
-                 myBeam.rawacf.updateValsFromDict(dfile)
+                 myBeam.rawacf.updateValsFromDict(record)
              if myBeam.fType == "iqdat":
-                 myBeam.iqdat.updateValsFromDict(dfile)
+                 myBeam.iqdat.updateValsFromDict(record)
              if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or myBeam.fType == 'lmfit'):
-                 myBeam.fit.updateValsFromDict(dfile)
+                 myBeam.fit.updateValsFromDict(record)
              if myBeam.fit.slist == None:
                  myBeam.fit.slist = []
              return myBeam
-
-  def close(self):
-    """close associated dmap file."""
-    import os
-    if self.__ptr is not None:
-      self.__ptr.close()
-      self.__fd=None
 
 
   def __validate_fetched(self,filelist,stime,etime):
@@ -635,7 +557,6 @@ class radDataPtr():
       import os
       import datetime as dt
       import numpy as np
-      from davitpy.pydarn.dmapio import readDmapRec
 
       valid = []
 
@@ -645,24 +566,24 @@ class radDataPtr():
           etimes = []
 
           # Open the file and create a file pointer
-          self.__filename = f
+          self._filename = f
           self.open()
 
           # Iterate through the file and grab the start time for beam
           # integration and calculate the end time from intt.sc and intt.us
           while(1):
-              #read the next record from the dmap file
-              dfile = readDmapRec(self.__fd)
-              if(dfile is None):
+              #read the next record from file
+              record = self.read()
+              if(record is None):
                   break
               else:
-                  temp = dt.datetime.utcfromtimestamp(dfile['time'])
+                  temp = dt.datetime.utcfromtimestamp(record['time'])
                   stimes.append(temp)
-                  sec = dfile['intt.sc'] + dfile['intt.us'] / (10. ** 6)
+                  sec = record['intt.sc'] + record['intt.us'] / (10. ** 6)
                   etimes.append(temp + dt.timedelta(seconds=sec))
           # Close the file and clean up
           self.close()
-          self.__ptr = None
+          self._ptr = None
 
           inds = np.where((np.array(stimes) >= stime) & (np.array(stimes) <= etime))
           inde = np.where((np.array(etimes) >= stime) & (np.array(etimes) <= etime))
@@ -679,7 +600,7 @@ class radBaseData():
   **ATTRS**:
     * Nothing.
   **METHODS**:
-    * :func:`updateValsFromDict`: converts a dict from a dmap file to radBaseData
+    * :func:`updateValsFromDict`: converts a dict from a file to radBaseData
     
   Written by AJ 20130108
   """
@@ -709,7 +630,7 @@ class radBaseData():
         setattr(self,key,val)
 
   def updateValsFromDict(self, aDict):
-    """A function to to fill a radar params structure with the data in a dictionary that is returned from the reading of a dmap file
+    """A function to to fill a radar params structure with the data in a dictionary that is returned from the reading of a file
     
     .. note::
       In general, users will not need to us this.
@@ -740,7 +661,7 @@ class radBaseData():
   # REMOVED BY ASR on 11 SEP 2014
   # the channel attribute in fitted files (fitacf, lmfit, fitex) specifies
   # if the data came from a STEREO radar, so we shouldn't clobber the value
-  # from the dmap file.
+  # from the file.
   #    elif(attr == 'channel'):
   #      if(aDict.has_key('channel')): 
   #        if(isinstance(aDict.has_key('channel'), int)):
