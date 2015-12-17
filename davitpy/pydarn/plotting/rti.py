@@ -1103,10 +1103,10 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 
             if day_inx.size != 0:
                 daylight[tm_inx, day_inx] = False
-            from numpy import ma
-            daylight = ma.array(daylight, mask=daylight)
-            ax.pcolormesh(X, Y, daylight.T, lw=0, alpha=0.10,
-                          cmap=matplotlib.cm.binary_r, zorder=99)
+         from numpy import ma
+         daylight = ma.array(daylight, mask=daylight)
+         ax.pcolormesh(X, Y, daylight.T, lw=0, alpha=0.10,
+                       cmap=matplotlib.cm.binary_r, zorder=99)
 
     # Mask the nan's in the data array so they aren't plotted.
     Zm = numpy.ma.masked_where(numpy.isnan(data[:tcnt][:].T), data[:tcnt][:].T)
