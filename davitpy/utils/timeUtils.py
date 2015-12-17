@@ -189,7 +189,8 @@ def datetimeToEpoch(my_date):
 
 
 def dateToDecYear(date):
-    """Convert (`datetime <http://tinyurl.com/bl352yx>`_) object to decimal year
+    """Convert (`datetime <http://tinyurl.com/bl352yx>`_) object to decimal
+        year
 
     **Args**:
       * **date** (`datetime <http://tinyurl.com/bl352yx>`_): date and time
@@ -264,8 +265,9 @@ def parseTime(time):
 
     **Args**:
       * **TIME** (str or list): time in HHMM or HHMMSS OR [HH,MM] or [HH,MM,SS]
-    **Returns** 
-      * **ttime** (list or int): time in [HH,MM] or [HH,MM,SS] OR HHMM or HHMMSS
+    **Returns**
+      * **ttime** (list or int): time in [HH,MM] or [HH,MM,SS] OR HHMM
+                                 or HHMMSS
 
     **Example**:
       ::
