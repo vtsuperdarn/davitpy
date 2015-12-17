@@ -550,11 +550,8 @@ class radDataPtr():
     from davitpy.pydarn.sdio import scanData
     from davitpy import pydarn
 
-    assert((firstBeam is None and useEvery is None) or 
-           (firstBeam is not None and useEvery is not None)), \
-          'error, firstBeam and useEvery must both either be None or specified'
-    assert(isinstance(warnNonStandard,bool)), 'error, warnNonStandard must be of type bool'
-    assert(isinstance(showBeams,bool)), 'error, showBeams must be of type bool'
+    if None in [firstBeam, useEvery] and firstBeam is not useEvery:
+        raise ValueError('firstBeam and useEvery must both either be None or specified')
 
     #Save the radDataPtr's bmnum setting temporarily and set it to None
     orig_beam = self.bmnum
