@@ -508,7 +508,9 @@ class radDataPtr():
       return setDmapOffset(self.__fd,0)
 
   def readScan(self, firstBeam=None, useEvery=None, warnNonStandard=True, showBeams=False):
-    """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+    """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object. 
+    This function is capable of reading standard scans and extracting standard scans from patterned or 
+    interleaved scans (see Notes).
 
     .. note::
       This will ignore any bmnum request in :func:`~pydarn.sdio.radDataRead.radDataOpen`.
@@ -517,9 +519,11 @@ class radDataPtr():
     Parameters
     ----------
     firstBeam : int, optional
-        If manually specifying a scan pattern, will start picking beams at this index in the scan
+        If manually specifying a scan pattern, will start picking beams at this index in the scan. 
+        Requires useEvery to also be specified.
     useEvery : int, optional
-        If manually specifying a scan pattern, will pick every `useEvery` beam
+        If manually specifying a scan pattern, will pick every `useEvery` beam. Requires firstBeam
+        to also be specified.
     warnNonStandard : bool, optional
         If True, display a warning when auto-detecting a non-standard scan pattern
         (``firstBeam != 0`` or ``useEvery != 1``)
@@ -545,6 +549,12 @@ class radDataPtr():
 
     from davitpy.pydarn.sdio import scanData
     from davitpy import pydarn
+
+    assert((firstBeam is None and useEvery is None) or 
+           (firstBeam is not None and useEvery is not None)), \
+          'error, firstBeam and useEvery must both either be None or specified'
+    assert(isinstance(warnNonStandard,bool)), 'error, warnNonStandard must be of type bool'
+    assert(isinstance(showBeams,bool)), 'error, showBeams must be of type bool'
 
     #Save the radDataPtr's bmnum setting temporarily and set it to None
     orig_beam = self.bmnum
