@@ -265,6 +265,7 @@ defaultParams = {
     'DAVIT_SD_LOCAL_FNAMEFMT':	['{date}.{hemi}.{ftype}', validate_string],
     'DAVIT_SD_REMOTE_TIMEINC':	['24', validate_string],
     'DAVIT_SD_LOCAL_TIMEINC':	['24', validate_string]
+    'verbosity':                ['helpful',validate_verbose]
 }
 
 
