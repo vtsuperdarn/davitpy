@@ -22,7 +22,8 @@ from davitpy.pydarn.sdio.radDataTypes import *
 import datetime, os
 
 
-def getServerConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams['DBREADPASS'],\
+def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
+                  password=davitpy.rcParams['SDBREADPASS'],
                   dbAddress=davitpy.rcParams['SDDB']):
   """
   **PACKAGE**: pydarn.sdio.dbUtils
@@ -64,8 +65,9 @@ def getServerConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcPar
   #return connection for good, none for bad
   return sConn
   
-def getDbConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams['DBREADPASS'],\
-              dbAddress=davitpy.rcParams['SDDB'],dbName='radData'):
+def getDbConn(username=davitpy.rcParams['SDBREADUSER'],
+              password=davitpy.rcParams['SDBREADPASS'],
+              dbAddress=davitpy.rcParams['SDDB'], dbName='radData'):
   """
   **PACKAGE**: pydarn.sdio.dbUtils
   **FUNCTION**: getDbConn([username],[password],[dbAddress],[dbName])
@@ -112,8 +114,10 @@ def getDbConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams[
   else: return None
     
   
-def getDataConn(username=davitpy.rcParams['DBREADUSER'],password=davitpy.rcParams['DBREADPASS'],\
-                dbAddress=davitpy.rcParams['SDDB'],dbName='radData',collName='beams'):
+def getDataConn(username=davitpy.rcParams['SDBREADUSER'],
+                password=davitpy.rcParams['SDBREADPASS'],
+                dbAddress=davitpy.rcParams['SDDB'], dbName='radData',
+                collName='beams'):
   """
   **PACKAGE**: pydarn.sdio.dbUtils
   **FUNCTION**: getDataConn([username],[password],[dbAddress],[dbName],[collName])
