@@ -33,6 +33,7 @@
 """
 
 import davitpy
+import logging
 from davitpy.utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
@@ -105,6 +106,9 @@ class radDataPtr():
     self.__fd = None
     self.__ptr =  None
 
+    verbosity = davitpy.rcParams['verbosity']
+#    print verbosity
+
     #check inputs
     assert(isinstance(self.sTime,dt.datetime)), \
       'error, sTime must be datetime object'
@@ -156,26 +160,31 @@ class radDataPtr():
     if fileName != None:
         try:
             if(not os.path.isfile(fileName)):
-                print 'problem reading',fileName,':file does not exist'
+                if verbosity is not 'silent':
+                    logging.error('problem reading',fileName,':file does not exist')
                 return None
             outname = tmpDir+str(int(utils.datetimeToEpoch(dt.datetime.now())))
             if(string.find(fileName,'.bz2') != -1):
                 outname = string.replace(fileName,'.bz2','')
-                print 'bunzip2 -c '+fileName+' > '+outname+'\n'
+                if verbosity is not 'silent':
+                    logging.info('bunzip2 -c '+fileName+' > '+outname+'\n')
                 os.system('bunzip2 -c '+fileName+' > '+outname)
             elif(string.find(fileName,'.gz') != -1):
                 outname = string.replace(fileName,'.gz','')
-                print 'gunzip -c '+fileName+' > '+outname+'\n'
+                if verbosity is not 'silent':
+                    logging.info('gunzip -c '+fileName+' > '+outname+'\n')
                 os.system('gunzip -c '+fileName+' > '+outname)
             else:
                 os.system('cp '+fileName+' '+outname)
-                print 'cp '+fileName+' '+outname
+                if verbosity is not 'silent':
+                    logging.info('cp '+fileName+' '+outname)
             filelist.append(outname)
             self.dType = 'dmap'
 
         except Exception, e:
-            print e
-            print 'problem reading file',fileName
+            if verbosity is not 'silent':
+                logging.error(e)
+                logging.error('problem reading file',fileName)
             return None
     #Next, check for a cached file
     if fileName == None and not noCache:
