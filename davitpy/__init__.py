@@ -24,7 +24,7 @@ import re
 import warnings
 import contextlib
 from itertools import chain
-
+import logging
 from davitpy.rcsetup import defaultParams
 
 __version__ = str('0.3')
@@ -374,6 +374,19 @@ class RcParams(dict):
                 return
             try:
                 cval = self.validate[key](val)
+                if key == 'verbosity':
+                    level_dict = {'silent': 60,
+                                  'helpful': 30,
+                                  'debug': 20,
+                                  'debug-annoying': 10
+                                  }
+
+                    # Set up the logger using a basic config
+                    logging.basicConfig()
+                    # Update the logging level (do it this way so init_logging can be 
+                    # called to update the logging level of a root logger).
+                    logging.getLogger().setLevel(level_dict[val])
+
             except ValueError as ve:
                 raise ValueError("Key %s: %s" % (key, str(ve)))
             dict.__setitem__(self, key, cval)
@@ -575,6 +588,7 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
     return config
 
 
+# Set up the rcParams dictionary
 rcParams = rc_params()
 
 
