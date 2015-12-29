@@ -660,7 +660,7 @@ class radDataPtr():
          #check for valid data
          if dfile == None or dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime:
              #if we dont have valid data, clean up, get out
-             print '\nreached end of data'
+             logging.info('reached end of data')
              #self.close()
              return None
          #check that we're in the time window, and that we have a 
