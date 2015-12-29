@@ -174,8 +174,8 @@ class radDataPtr():
             self.dType = 'dmap'
 
         except Exception, e:
-            logging.error(e)
-            logging.error('problem reading file',fileName)
+            logging.exception(e)
+            logging.exception('problem reading file',fileName)
             return None
     #Next, check for a cached file
     if fileName == None and not noCache:
