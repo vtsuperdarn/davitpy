@@ -374,7 +374,7 @@ class radDataPtr():
     if len(filelist) != 0:
         #concatenate the files into a single file
         if not cached:
-            print 'Concatenating all the files in to one'
+            logging.info('Concatenating all the files in to one')
             #choose a temp file name with time span info for cacheing
             if (self.channel is None):
                 tmpName = '%s%s.%s.%s.%s.%s.%s' % (tmpDir, \
@@ -384,11 +384,11 @@ class radDataPtr():
                 tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % (tmpDir, \
                   self.sTime.strftime("%Y%m%d"),self.sTime.strftime("%H%M%S"), \
                   self.eTime.strftime("%Y%m%d"),self.eTime.strftime("%H%M%S"),radcode,self.channel,fileType)
-            print 'cat '+string.join(filelist)+' > '+tmpName
-            os.system('cat '+string.join(filelist)+' > '+tmpName)
+            logging.debug('cat ' + string.join(filelist) + ' > ' + tmpName)
+            os.system('cat ' + string.join(filelist) + ' > ' + tmpName)
             for filename in filelist:
-                print 'rm '+filename
-                os.system('rm '+filename)
+                logging.debug('rm ' + filename)
+                os.system('rm ' + filename)
         else:
             tmpName = filelist[0]
             self.fType = fileType
@@ -401,11 +401,11 @@ class radDataPtr():
         else:
             if not fileType+'f' in tmpName:
                 try:
-                    fTmpName = tmpName+'f'
-                    print 'fitexfilter '+tmpName+' > '+fTmpName
-                    os.system('fitexfilter '+tmpName+' > '+fTmpName)
+                    fTmpName = tmpName + 'f'
+                    logging.debug('fitexfilter ' + tmpName + ' > ' + fTmpName)
+                    os.system('fitexfilter ' + tmpName + ' > ' + fTmpName)
                 except Exception,e:
-                    print 'problem filtering file, using unfiltered'
+                    logging.warning('problem filtering file, using unfiltered')
                     fTmpName = tmpName
             else:
                 fTmpName = tmpName
@@ -413,14 +413,12 @@ class radDataPtr():
                 self.__filename=fTmpName
                 self.open()
             except Exception,e:
-                print 'problem opening file'
-                print e
+                logging.exception('problem opening file')
+                logging.exception(e)
     if(self.__ptr != None):
         if(self.dType == None): self.dType = 'dmap'
     else:
-        print '\nSorry, we could not find any data for you :('
-
-
+        logging.error('Sorry, we could not find any data for you :(')
 
 
   def __repr__(self):
@@ -467,7 +465,7 @@ class radDataPtr():
           dfile = readDmapRec(self.__fd)
           if(dfile is None):
               #if we dont have valid data, clean up, get out
-              print '\nreached end of data'
+              logging.info('reached end of data')
               break
           else:
               if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and \
@@ -558,12 +556,12 @@ class radDataPtr():
     self.bmnum = None
 
     if self.__ptr is None:
-        print 'Error, self.__ptr is None.  There is probably no data available for your selected time.'
+        logging.error('Self.__ptr is None.  There is probably no data available for your selected time.')
         self.bmnum = orig_beam
         return None
 
     if self.__ptr.closed:
-        print 'error, your file pointer is closed'
+        logging.error('Your file pointer is closed')
         self.bmnum = orig_beam
         return None
 
@@ -614,7 +612,7 @@ class radDataPtr():
     # use scan pattern from parameters if given
     if None not in [firstBeam, useEvery]:
         if showBeams:
-            print('Beam numbers in scan pattern for firstBeam={}, useEvery={}: {}'.format(
+            logging.info('Beam numbers in scan pattern for firstBeam={}, useEvery={}: {}'.format(
                 firstBeam, useEvery, list(beam.bmnum for beam in myScan)))
         return myScan[firstBeam::useEvery] or None  # return None if scan is empty
 
@@ -628,7 +626,7 @@ class radDataPtr():
         # throughout the scan
         if np.all(np.diff(bmnums) == 1) or np.all(np.diff(bmnums) == -1):
             if showBeams or (warnNonStandard and (firstBeam != 0 or useEvery != 1)):
-                print('Auto-detected scan pattern with firstBeam={}, useEvery={}, beam numbers are {}'.format(
+                logging.info('Auto-detected scan pattern with firstBeam={}, useEvery={}, beam numbers are {}'.format(
                     firstBeam, useEvery, list(beam.bmnum for beam in scan)))
             return scan or None  # return None if scan is empty
 
@@ -648,10 +646,10 @@ class radDataPtr():
 
      #check input
      if(self.__ptr == None):
-         print 'error, your pointer does not point to any data'
+         logging.error('Your pointer does not point to any data')
          return None
      if self.__ptr.closed:
-         print 'error, your file pointer is closed'
+         logging.error('Your file pointer is closed')
          return None
      myBeam = beamData()
      #do this until we reach the requested start time
