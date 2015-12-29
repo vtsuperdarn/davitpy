@@ -226,7 +226,7 @@ class radDataPtr():
                         local_dirfmt = davitpy.rcParams['DAVIT_LOCAL_DIRFORMAT']
                     except:
                         local_dirfmt = '/sd-data/{year}/{ftype}/{radar}/'
-                        logging.exception('Config entry DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt)
+                        logging.exception('Config entry DAVIT_LOCAL_DIRFORMAT not set, using default:' + local_dirfmt)
 
                 if local_dict is None:
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
@@ -295,25 +295,25 @@ class radDataPtr():
                         remote_site = davitpy.rcParams['DB']
                     except:
                         remote_site = 'sd-data.ece.vt.edu'
-                        logging.warning('Config entry DB not set, using default:',remote_site)
+                        logging.warning('Config entry DB not set, using default:' + remote_site)
                 if username is None:
                     try:
                         username = davitpy.rcParams['DBREADUSER']
                     except:
                         username = 'sd_dbread'
-                        logging.warning('Config entry DBREADUSER not set, using default:',username)
+                        logging.warning('Config entry DBREADUSER not set, using default:' + username)
                 if password is None:
                     try:
                         password = davitpy.rcParams['DBREADPASS']
                     except:
                         password = '5d'
-                        logging.warning('Config entry DBREADPASS not set, using default:',password)
+                        logging.warning('Config entry DBREADPASS not set, using default:' + password)
                 if remote_dirfmt is None:
                     try:
                         remote_dirfmt = davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
                     except:
                         remote_dirfmt = 'data/{year}/{ftype}/{radar}/'
-                        logging.warning('Config entry DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt)
+                        logging.warning('Config entry DAVIT_REMOTE_DIRFORMAT not set, using default:' + remote_dirfmt)
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 if ('ftype' in remote_dict.keys()):
@@ -324,13 +324,13 @@ class radDataPtr():
                     except:
                         remote_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                                           '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        logging.warning('Config entry DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt)
+                        logging.warning('Config entry DAVIT_REMOTE_FNAMEFMT not set, using default:' + remote_fnamefmt)
                 if port is None:
                     try:
                         port = davitpy.rcParams['DB_PORT']
                     except:
                         port = '22'
-                        logging.warning('Config entry DB_PORT not set, using default:',port)
+                        logging.warning('Config entry DB_PORT not set, using default:' + str(port))
 
                 outdir = tmpDir
 
