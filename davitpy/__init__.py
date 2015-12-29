@@ -261,7 +261,6 @@ def _get_data_path():
     _file = _decode_filesystem_path(davitpy.rcsetup.__file__)
     path = os.sep.join([os.path.dirname(_file)])
 
-    print(path)
     if os.path.isdir(path):
         return path
 
@@ -476,10 +475,7 @@ def rc_params(fail_on_error=False):
     """
     fname = davitpy_fname()
 
-    if os.path.exists(fname):
-        print('Loaded davitpyrc file from {type}. Path: {path}'.format(**message_dict))
-
-    else:
+    if not os.path.exists(fname):
         # this should never happen, default in davitpy install directory should always be found
         ret = RcParams([(key, default) for key, (default, _) in
                         six.iteritems(defaultParams)
@@ -499,7 +495,6 @@ def _rc_params_in_file(fname, fail_on_error=False):
     rc_temp = {}
     with _open_file_or_url(fname) as fd:
         for line in fd:
-            print
             cnt += 1
             strippedline = line.split('#', 1)[0].strip()
             if not strippedline:
@@ -585,6 +580,9 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
     #if config['datapath'] is None:
     #    config['datapath'] = get_data_path()
 
+    if os.path.exists(fname):
+        logging.debug('Loaded davitpyrc file from {type}. Path: {path}'.format(**message_dict))
+
     return config
 
 
@@ -597,16 +595,16 @@ rcParams = rc_params()
 
 try: from davitpy import pydarn
 except Exception, e:
-    print('problem importing pydarn: ', e)
+    logging.exception('problem importing pydarn: ', e)
 
 try: from davitpy import gme
 except Exception, e:
-    print('problem importing gme: ', e)
+    logging.exception('problem importing gme: ', e)
 
 try: from davitpy import utils
 except Exception, e:
-    print('problem importing utils: ', e)
+    logging.exception('problem importing utils: ', e)
 
 try: from davitpy import models
 except Exception, e:
-    print('problem importing models: ', e)
+    logging.exception('problem importing models: ', e)
