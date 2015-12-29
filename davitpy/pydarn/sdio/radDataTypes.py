@@ -33,7 +33,6 @@
 """
 
 import davitpy
-import logging
 from davitpy.utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
           'n','o','p','q','r','s','t','u','v','w','x','y','z']
@@ -106,30 +105,27 @@ class radDataPtr():
     self.__fd = None
     self.__ptr =  None
 
-    verbosity = davitpy.rcParams['verbosity']
-#    print verbosity
-
     #check inputs
     assert(isinstance(self.sTime,dt.datetime)), \
-      'error, sTime must be datetime object'
+      logging.error('sTime must be datetime object')
     assert(self.eTime == None or isinstance(self.eTime,dt.datetime)), \
-      'error, eTime must be datetime object or None'
+      logging.error('eTime must be datetime object or None')
     assert(self.channel == None or (isinstance(self.channel,str) and len(self.channel) == 1) \
            or (self.channel == 'all')), \
-      'error, channel must be None or a 1-letter string'
+      logging.error('channel must be None or a 1-letter string')
     assert(bmnum == None or isinstance(bmnum,int)), \
-      'error, bmnum must be an int or None'
+      logging.error('bmnum must be an int or None')
     assert(cp == None or isinstance(cp,int)), \
-      'error, cp must be an int or None'
+      logging.error('cp must be an int or None')
     assert(fileType == 'rawacf' or fileType == 'fitacf' or \
       fileType == 'fitex' or fileType == 'lmfit' or fileType == 'iqdat'), \
-      'error, fileType must be one of: rawacf,fitacf,fitex,lmfit,iqdat'
+      logging.error('fileType must be one of: rawacf, fitacf, fitex, lmfit, iqdat')
     assert(fileName == None or isinstance(fileName,str)), \
-      'error, fileName must be None or a string'
+      logging.error('fileName must be None or a string')
     assert(isinstance(filtered,bool)), \
-      'error, filtered must be True of False'
+      logging.error('filtered must be True of False')
     assert(src == None or src == 'local' or src == 'sftp'), \
-      'error, src must be one of None,local,sftp'
+      logging.error('src must be one of: None, local, sftp')
 
     # If channel is all, then make the channel a wildcard, then it will pull in all UAF channels
     if (self.channel=='all'):
@@ -160,31 +156,26 @@ class radDataPtr():
     if fileName != None:
         try:
             if(not os.path.isfile(fileName)):
-                if verbosity is not 'silent':
-                    logging.error('problem reading',fileName,':file does not exist')
+                logging.error('problem reading',fileName,':file does not exist')
                 return None
             outname = tmpDir+str(int(utils.datetimeToEpoch(dt.datetime.now())))
             if(string.find(fileName,'.bz2') != -1):
                 outname = string.replace(fileName,'.bz2','')
-                if verbosity is not 'silent':
-                    logging.info('bunzip2 -c '+fileName+' > '+outname+'\n')
+                logging.info('bunzip2 -c '+fileName+' > '+outname+'\n')
                 os.system('bunzip2 -c '+fileName+' > '+outname)
             elif(string.find(fileName,'.gz') != -1):
                 outname = string.replace(fileName,'.gz','')
-                if verbosity is not 'silent':
-                    logging.info('gunzip -c '+fileName+' > '+outname+'\n')
+                logging.info('gunzip -c '+fileName+' > '+outname+'\n')
                 os.system('gunzip -c '+fileName+' > '+outname)
             else:
                 os.system('cp '+fileName+' '+outname)
-                if verbosity is not 'silent':
-                    logging.info('cp '+fileName+' '+outname)
+                logging.info('cp '+fileName+' '+outname)
             filelist.append(outname)
             self.dType = 'dmap'
 
         except Exception, e:
-            if verbosity is not 'silent':
-                logging.error(e)
-                logging.error('problem reading file',fileName)
+            logging.error(e)
+            logging.error('problem reading file',fileName)
             return None
     #Next, check for a cached file
     if fileName == None and not noCache:
