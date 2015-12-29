@@ -191,10 +191,10 @@ class radDataPtr():
                         if t1 <= self.sTime and t2 >= self.eTime:
                             cached = True
                             filelist.append(f)
-                            print 'Found cached file: %s' % f
+                            logging.info('Found cached file: %s' % f)
                             break
                     except Exception,e:
-                        print e
+                        logging.exception(e)
             else:
                 for f in glob.glob("%s????????.??????.????????.??????.%s.%s.%s" % (tmpDir,radcode,self.channel,fileType)):
                     try: 
@@ -206,17 +206,17 @@ class radDataPtr():
                         if t1 <= self.sTime and t2 >= self.eTime:
                             cached = True
                             filelist.append(f)
-                            print 'Found cached file: %s' % f
+                            logging.info('Found cached file: %s' % f)
                             break
                     except Exception,e:
-                        print e
+                        logging.exception(e)
         except Exception,e:
-            print e
+            logging.exception(e)
     #Next, LOOK LOCALLY FOR FILES
     if not cached and (src == None or src == 'local') and fileName == None:
         try:
             for ftype in arr:
-                print "\nLooking locally for %s files with radcode: %s channel: %s" % (ftype,radcode,self.channel)
+                logging.info("\nLooking locally for %s files with radcode: %s channel: %s" % (ftype,radcode,self.channel))
                 #If the following aren't already, in the near future
                 #they will be assigned by a configuration dictionary 
                 #much like matplotlib's rcsetup.py (matplotlibrc)
@@ -226,7 +226,7 @@ class radDataPtr():
                         local_dirfmt = davitpy.rcParams['DAVIT_LOCAL_DIRFORMAT']
                     except:
                         local_dirfmt = '/sd-data/{year}/{ftype}/{radar}/'
-                        print 'Config entry DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt
+                        logging.exception('Config entry DAVIT_LOCAL_DIRFORMAT not set, using default:',local_dirfmt)
 
                 if local_dict is None:
                     local_dict = {'radar':radcode, 'ftype':ftype, 'channel':channel}
@@ -239,7 +239,7 @@ class radDataPtr():
                     except:
                         local_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                 '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        print 'Config entry DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt
+                        logging.exception('Config entry DAVIT_LOCAL_FNAMEFMT not set, using default:',local_fnamefmt)
 
                 outdir = tmpDir
 
@@ -248,7 +248,7 @@ class radDataPtr():
                     if ((channel is not None) and ('channel' not in fname)):
                         local_fnamefmt.pop(f)
                 if len(local_fnamefmt) == 0:
-                    print "Error, no file name formats containing channel exists!"
+                    logging.error('No file name formats containing channel exists!')
                     break
 
                 #fetch the local files
@@ -262,28 +262,28 @@ class radDataPtr():
 
                 if len(invalid_files) > 0:
                     for f in invalid_files:
-                        print 'removing invalid file: ' + f
+                        logging.info('removing invalid file: ' + f)
                         os.system('rm ' + f)
 
                 # If we have valid files then continue
                 if(len(filelist) > 0):
-                    print 'found',ftype,'data in local files'
+                    logging.info('found',ftype,'data in local files')
                     self.fType,self.dType = ftype,'dmap'
                     fileType = ftype
                     break
 
                 else:
-                    print  'could not find',ftype,'data in local files'
+                    logging.info('could not find ',ftype,' data in local files')
 
         except Exception, e:
-            print e
-            print 'There was a problem reading local data, perhaps you are not at VT?'
-            print 'Will attempt fetching data from remote.'
+            logging.exception(e)
+            logging.exception('There was a problem reading local data, perhaps you are not at VT?')
+            logging.exception('Will attempt fetching data from remote.')
             src=None
     #finally, check the VT sftp server if we have not yet found files
     if (src == None or src == 'sftp') and self.__ptr == None and len(filelist) == 0 and fileName == None:
         for ftype in arr:
-            print '\nLooking on the remote SFTP server for',ftype,'files'
+            logging.info('Looking on the remote SFTP server for ',ftype,' files')
             try:
                 
                 #If the following aren't already, in the near future
@@ -295,25 +295,25 @@ class radDataPtr():
                         remote_site = davitpy.rcParams['DB']
                     except:
                         remote_site = 'sd-data.ece.vt.edu'
-                        print 'Config entry DB not set, using default:',remote_site
+                        logging.warning('Config entry DB not set, using default:',remote_site)
                 if username is None:
                     try:
                         username = davitpy.rcParams['DBREADUSER']
                     except:
                         username = 'sd_dbread'
-                        print 'Config entry DBREADUSER not set, using default:',username
+                        logging.warning('Config entry DBREADUSER not set, using default:',username)
                 if password is None:
                     try:
                         password = davitpy.rcParams['DBREADPASS']
                     except:
                         password = '5d'
-                        print 'Config entry DBREADPASS not set, using default:',password
+                        logging.warning('Config entry DBREADPASS not set, using default:',password)
                 if remote_dirfmt is None:
                     try:
                         remote_dirfmt = davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
                     except:
                         remote_dirfmt = 'data/{year}/{ftype}/{radar}/'
-                        print 'Config entry DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt
+                        logging.warning('Config entry DAVIT_REMOTE_DIRFORMAT not set, using default:',remote_dirfmt)
                 if remote_dict is None:
                     remote_dict = {'ftype':ftype, 'channel':channel, 'radar':radcode}
                 if ('ftype' in remote_dict.keys()):
@@ -324,13 +324,13 @@ class radDataPtr():
                     except:
                         remote_fnamefmt = ['{date}.{hour}......{radar}.{ftype}', \
                                           '{date}.{hour}......{radar}.{channel}.{ftype}']
-                        print 'Config entry DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt
+                        logging.warning('Config entry DAVIT_REMOTE_FNAMEFMT not set, using default:',remote_fnamefmt)
                 if port is None:
                     try:
                         port = davitpy.rcParams['DB_PORT']
                     except:
                         port = '22'
-                        print 'Config entry DB_PORT not set, using default:',port
+                        logging.warning('Config entry DB_PORT not set, using default:',port)
 
                 outdir = tmpDir
 
@@ -339,7 +339,7 @@ class radDataPtr():
                     if ((channel is not None) and ('channel' not in fname)):
                         remote_fnamefmt.pop(f)
                 if len(remote_fnamefmt) == 0:
-                    print "Error, no file name formats containing channel exists!"
+                    logging.error("no file name formats containing channel exists!")
                     break
 
                 #Now fetch the files
@@ -354,22 +354,22 @@ class radDataPtr():
 
                 if len(invalid_files) > 0:
                     for f in invalid_files:
-                        print 'removing invalid file: ' + f
+                        logging.info('removing invalid file: ' + f)
                         os.system('rm ' + f)
 
                 # If we have valid files then continue
                 if len(filelist) > 0 :
-                    print 'found',ftype,'data on sftp server'
+                    logging.info('found',ftype,'data on sftp server')
                     self.fType,self.dType = ftype,'dmap'
                     fileType = ftype
                     break
 
                 else:
-                    print  'could not find',ftype,'data on sftp server'
+                    logging.info('could not find ' ,ftype, ' data on sftp server')
 
             except Exception,e:
-                print e
-                print 'problem reading from sftp server'
+                logging.exception(e)
+                logging.exception('problem reading from sftp server')
     #check if we have found files
     if len(filelist) != 0:
         #concatenate the files into a single file
