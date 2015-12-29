@@ -32,7 +32,6 @@
   * :class:`pydarn.sdio.radDataTypes.iqData`
 """
 
-import davitpy
 import logging
 from davitpy.utils import twoWayDict
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m', \
