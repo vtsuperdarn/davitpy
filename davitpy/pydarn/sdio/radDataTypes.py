@@ -162,15 +162,15 @@ class radDataPtr():
             outname = tmpDir+str(int(utils.datetimeToEpoch(dt.datetime.now())))
             if(string.find(fileName,'.bz2') != -1):
                 outname = string.replace(fileName,'.bz2','')
-                logging.info('bunzip2 -c '+fileName+' > '+outname+'\n')
+                logging.debug('bunzip2 -c '+fileName+' > '+outname+'\n')
                 os.system('bunzip2 -c '+fileName+' > '+outname)
             elif(string.find(fileName,'.gz') != -1):
                 outname = string.replace(fileName,'.gz','')
-                logging.info('gunzip -c '+fileName+' > '+outname+'\n')
+                logging.debug('gunzip -c '+fileName+' > '+outname+'\n')
                 os.system('gunzip -c '+fileName+' > '+outname)
             else:
                 os.system('cp '+fileName+' '+outname)
-                logging.info('cp '+fileName+' '+outname)
+                logging.debug('cp '+fileName+' '+outname)
             filelist.append(outname)
             self.dType = 'dmap'
 
@@ -263,18 +263,18 @@ class radDataPtr():
 
                 if len(invalid_files) > 0:
                     for f in invalid_files:
-                        logging.info('removing invalid file: ' + f)
+                        logging.debug('removing invalid file: ' + f)
                         os.system('rm ' + f)
 
                 # If we have valid files then continue
                 if(len(filelist) > 0):
-                    logging.info('found',ftype,'data in local files')
+                    logging.info('found ' + ftype + ' data in local files')
                     self.fType,self.dType = ftype,'dmap'
                     fileType = ftype
                     break
 
                 else:
-                    logging.info('could not find ',ftype,' data in local files')
+                    logging.info('could not find ' + ftype + ' data in local files')
 
         except Exception, e:
             logging.exception(e)
@@ -355,12 +355,12 @@ class radDataPtr():
 
                 if len(invalid_files) > 0:
                     for f in invalid_files:
-                        logging.info('removing invalid file: ' + f)
+                        logging.debug('removing invalid file: ' + f)
                         os.system('rm ' + f)
 
                 # If we have valid files then continue
                 if len(filelist) > 0 :
-                    logging.info('found',ftype,'data on sftp server')
+                    logging.info('found ' + ftype + ' data on sftp server')
                     self.fType,self.dType = ftype,'dmap'
                     fileType = ftype
                     break
@@ -726,7 +726,7 @@ class radDataPtr():
       valid = []
 
       for f in filelist:
-          logging.info('Checking file: ' + f)
+          logging.debug('Checking file: ' + f)
           stimes = []
           etimes = []
 
