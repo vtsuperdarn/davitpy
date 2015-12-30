@@ -1241,7 +1241,7 @@ if __name__=="__main__":
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
   print "  DB: " + davitpy.rcParams['DB']
-  print "  DB_PORT: " + davitpy.rcParams['DB_PORT'])
+  print "  DB_PORT: " + davitpy.rcParams['DB_PORT']
   print "  DBREADUSER: " + davitpy.rcParams['DBREADUSER']
   print "  DBREADPASS: " + davitpy.rcParams['DBREADPASS']
   print "  DAVIT_REMOTE_DIRFORMAT: " + davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
