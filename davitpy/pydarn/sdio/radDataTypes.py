@@ -726,7 +726,7 @@ class radDataPtr():
       valid = []
 
       for f in filelist:
-          print 'Checking file: ' + f
+          logging.info('Checking file: ' + f)
           stimes = []
           etimes = []
 
@@ -1236,18 +1236,18 @@ if __name__=="__main__":
   expected_path=os.path.join(tmpDir,expected_filename)
   expected_filesize=19377805
   expected_md5sum="cfd48945be0fd5bf82119da9a4a66994"
-  print "Expected File:",expected_path
+  print "Expected File: " + expected_path
 
   print "\nRunning sftp grab example for radDataPtr."
   print "Environment variables used:"
-  print "  DB:", davitpy.rcParams['DB']
-  print "  DB_PORT:",davitpy.rcParams['DB_PORT']
-  print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
-  print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
-  print "  DAVIT_REMOTE_DIRFORMAT:", davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
-  print "  DAVIT_REMOTE_FNAMEFMT:", davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT']
-  print "  DAVIT_REMOTE_TIMEINC:", davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
-  print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
+  print "  DB: " + davitpy.rcParams['DB']
+  print "  DB_PORT: " + davitpy.rcParams['DB_PORT'])
+  print "  DBREADUSER: " + davitpy.rcParams['DBREADUSER']
+  print "  DBREADPASS: " + davitpy.rcParams['DBREADPASS']
+  print "  DAVIT_REMOTE_DIRFORMAT: " + davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT']
+  print "  DAVIT_REMOTE_FNAMEFMT: " + davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT']
+  print "  DAVIT_REMOTE_TIMEINC: " + davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
+  print "  DAVIT_TMPDIR: " + davitpy.rcParams['DAVIT_TMPDIR']
   src='sftp'
   if os.path.isfile(expected_path):
     os.remove(expected_path)
