@@ -1,13 +1,19 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: davipty
-*********************
-Module for everything SuperDARN
+davitpy
+-------
 
-**Modules**:
-    * :mod:`davipty.pydarn`: superdarn data I/O and plotting utilities
+The SuperDARN Data Visualization Toolkit in Python
+
+Modules
+-------------------------------------------------
+pydarn superdarn data I/O and plotting utilities
+utils  general utilities
+models python wrapped geophysical models
+gme    geomagnetic environment modules
+------ ------------------------------------------
 """
 
 # Most of the rc stuff in this file was taken/adapted from matplotlib code:
@@ -27,10 +33,9 @@ from itertools import chain
 import logging
 from davitpy.rcsetup import defaultParams
 
-__version__ = str('0.3')
+__version__ = str('0.5')
 
 _error_details_fmt = 'line #%d\n\t"%s"\n\tin file "%s"'
-
 
 default_rc_not_found_message = 'Could not find the defaul davitpyrc file that should have been installed when DaViTpy was installed!'
 
@@ -72,14 +77,17 @@ def _is_writable_dir(p):
 
 URL_REGEX = re.compile(r'http://|https://|ftp://|file://|file:\\')
 
+
 def is_url(filename):
     """Return True if string is an http, ftp, or file URL path."""
     return URL_REGEX.match(filename) is not None
+
 
 def _url_lines(f):
     # Compatibility for urlopen in python 3, which yields bytes.
     for line in f:
         yield line.decode('utf8')
+
 
 @contextlib.contextmanager
 def _open_file_or_url(fname):
@@ -123,6 +131,7 @@ def _get_home():
             return path
     return None
 
+
 def get_home():
     return _get_home()
 
@@ -147,6 +156,7 @@ def _create_tmp_config_dir():
 
     return tempdir
 
+
 def _get_xdg_config_dir():
     """
     Returns the XDG configuration directory, according to the `XDG
@@ -160,6 +170,7 @@ def _get_xdg_config_dir():
             path = os.path.join(path, '.config')
     return path
 
+
 def _get_xdg_cache_dir():
     """
     Returns the XDG cache directory, according to the `XDG
@@ -172,6 +183,7 @@ def _get_xdg_cache_dir():
         if path is not None:
             path = os.path.join(path, '.cache')
     return path
+
 
 def mkdirs(newdir, mode=0o777):
     """
@@ -191,6 +203,7 @@ def mkdirs(newdir, mode=0o777):
         # Reraise the error unless it's about an already existing directory
         if err.errno != errno.EEXIST or not os.path.isdir(newdir):
             raise
+
 
 def _get_config_or_cache_dir(xdg_base):
     configdir = os.environ.get('DAVITCONFIGDIR')
@@ -224,6 +237,7 @@ def _get_config_or_cache_dir(xdg_base):
 
     return _create_tmp_config_dir()
 
+
 def _get_configdir():
     """
     Return the string representing the configuration directory.
@@ -241,11 +255,13 @@ def _get_configdir():
     """
     return _get_config_or_cache_dir(_get_xdg_config_dir())
 
+
 def _decode_filesystem_path(path):
     if isinstance(path, bytes):
         return path.decode(sys.getfilesystemencoding())
     else:
         return path
+
 
 def _get_data_path():
 
@@ -283,14 +299,15 @@ def _get_data_path():
 
     raise RuntimeError('Could not find the davitpy data files')
 
+
 def get_data_path():
     return _get_data_path()
+
 
 def _get_data_path_cached():
     if defaultParams['datapath'][0] is None:
         defaultParams['datapath'][0] = _get_data_path()
     return defaultParams['datapath'][0]
-
 
 
 def davitpy_fname():
@@ -342,6 +359,7 @@ def davitpy_fname():
 
     return fname
 
+
 class RcParams(dict):
 
     """
@@ -392,6 +410,7 @@ class RcParams(dict):
         except KeyError:
             raise KeyError('%s is not a valid rc parameter.\
 See rcParams.keys() for a list of valid parameters.' % (key,))
+
 
     def __getitem__(self, key):
         if key in _deprecated_map:
@@ -485,6 +504,7 @@ def rc_params(fail_on_error=False):
         return ret
 
     return rc_params_from_file(fname, fail_on_error)
+
 
 def _rc_params_in_file(fname, fail_on_error=False):
     """Return :class:`matplotlib.RcParams` from the contents of the given file.
@@ -589,22 +609,25 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
 # Set up the rcParams dictionary
 rcParams = rc_params()
 
-
 #TO DO
 #Change these try: excepts to trigger on proper exception, ie) except importError
 
-try: from davitpy import pydarn
+try:
+    from davitpy import pydarn
 except Exception, e:
-    logging.exception('problem importing pydarn: ', e)
+    logging.exception('problem importing pydarn: ' + e)
 
-try: from davitpy import gme
+try:
+    from davitpy import gme
 except Exception, e:
-    logging.exception('problem importing gme: ', e)
+    logging.exception('problem importing gme: ' + e)
 
-try: from davitpy import utils
+try:
+    from davitpy import utils
 except Exception, e:
-    logging.exception('problem importing utils: ', e)
+    logging.exception('problem importing utils: ' + e)
 
-try: from davitpy import models
+try:
+    from davitpy import models
 except Exception, e:
-    logging.exception('problem importing models: ', e)
+    logging.exception('problem importing models: ' + e)
