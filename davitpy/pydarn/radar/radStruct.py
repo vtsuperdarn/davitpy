@@ -16,6 +16,8 @@ Radar structures
     * :class:`pydarn.radar.radStruct.site`: hdw.dat information
 """
 
+import logging
+
 # *************************************************************
 class network(object):
     """ This class stores information from all radars according to their
@@ -69,7 +71,7 @@ class network(object):
         dbname = os.path.join(rad_path, '.radars.sqlite')
 
         if not os.path.isfile(dbname):
-            print "%s not found" % dbname
+            logging.errror("%s not found", dbname)
             return
 
         with lite.connect(dbname) as conn:
@@ -228,10 +230,10 @@ class network(object):
                     return self.radars[irad]
                     break
             else:
-                print 'getRadarBy: invalid method by {}'.format(by)
+                logging.error('getRadarBy: invalid method by {}'.format(by))
                 break
         if not found:
-            print 'getRadarBy: could not find radar {}: {}'.format(by, radN)
+            logger.error('getRadarBy: could not find radar {}: {}'.format(by, radN))
             return found
 
     def getRadarsByPosition(self, lat, lon, alt, distMax=4000., datetime=None):
@@ -408,7 +410,7 @@ class radar(object):
             dbname = os.path.join(rad_path, '.radars.sqlite')
 
             if not os.path.isfile(dbname):
-                print "%s not found" % dbname
+                logging.error("%s not found", dbname)
                 return
 
             # if the radar code was provided, look for corresponding id
@@ -442,7 +444,7 @@ class radar(object):
         import os
 
         if not os.path.isfile(dbname):
-            print "%s not found" % dbname
+            logging.error("%s not found", dbname)
             return
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
@@ -451,7 +453,7 @@ class radar(object):
 
             row = cur.fetchone()
             if not row:
-                print 'Radar not found in DB: {}'.format(radId)
+                logging.error('Radar not found in DB: {}'.format(radId))
                 return
 
             self.id = row[0]
@@ -538,7 +540,7 @@ class radar(object):
                 return self.sites[isit]
         if not found:
             estr = 'getSiteByDate: could not get SITE for date '
-            print '{:s}{}'.format(estr, datetime)
+            logging.error('{:s}{}'.format(estr, datetime))
             return found
 
 
@@ -623,7 +625,7 @@ class site(object):
             dbname = os.path.join(rad_path, '.radars.sqlite')
 
             if not os.path.isfile(dbname):
-                print "%s not found" % dbname
+                logging.error("%s not found", dbname)
                 return
 
             # if the radar code was provided, look for corresponding id
@@ -659,7 +661,7 @@ class site(object):
         import os
 
         if not os.path.isfile(dbname):
-            print "%s not found" % dbname
+            logging.error("%s not found", dbname)
             return
 
         with lite.connect(dbname, detect_types=lite.PARSE_DECLTYPES) as conn:
