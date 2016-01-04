@@ -49,8 +49,8 @@ def readPrintRec(filename):
   #open the file
   try: fp = open(filename)
   except Exception,e:
-    print e
-    print 'problem opening the file %s' % filename
+    logging.exception(e)
+    logging.exception('problem opening the file %s', filename)
     return None
 
   #read the first line
@@ -68,7 +68,7 @@ def readPrintRec(filename):
       time = dt.datetime(int(d[:4]),int(d[5:7]),int(d[8:]),int(t[:2]),int(t[3:5]),int(t[6:]))
       radname = cols[2]
       filetype = cols[3]
-      print time
+      logging.debug(str(time))
     #check for second header line
     elif cnt == 2:
       bmnum = int(cols[2])
