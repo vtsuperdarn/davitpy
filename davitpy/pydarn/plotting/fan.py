@@ -41,6 +41,7 @@ from davitpy.pydarn.sdio.radDataRead import *
 from matplotlib.figure import Figure
 import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+import logging
 
 def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=False ,\
         scale=[],channel=None,coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
@@ -257,7 +258,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
             #this was missing fovObj! We need to plot the fov for this particular sTime.
             pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i]) 
     
-    print dt.datetime.now()-t1
+    logging.debug(dt.datetime.now()-t1)
     #manually draw the legend
     if((not fill) and legend):
         #draw the box
