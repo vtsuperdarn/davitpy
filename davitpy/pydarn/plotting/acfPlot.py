@@ -30,6 +30,7 @@
   * :func:`pydarn.plotting.acfPlot.nuft`
 """
 
+import logging
 
 def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
              xcf=False, panel=0, ax=None, show=True, png=False,
@@ -95,7 +96,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     # Grab the appropriate data for plotting
     if ((xcf) and (myBeam.prm.xcf == 0)):
-        print "No interferometer data available."
+        logging.warning("No interferometer data available.")
         return
     elif ((xcf) and (myBeam.prm.xcf == 1)):
         re = np.array([x[0] for x in myBeam.rawacf.xcfd[gate]])
@@ -450,7 +451,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
 
         # Grab the appropriate data for plotting
         if ((xcf) and (myBeam.prm.xcf == 0)):
-            print "No interferometer data available."
+            logging.warning("No interferometer data available.")
             return
         elif ((xcf) and (myBeam.prm.xcf == 1)):
             re = np.array([x[0] for x in myBeam.rawacf.xcfd[r]])
