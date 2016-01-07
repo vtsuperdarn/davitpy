@@ -16,30 +16,32 @@ This subpackage contains various plotting routines for DaViT-py
 	* :mod:`iqPlot`
 """
 
+import logging
+
 try:
     from rti import *
 except Exception,e: 
-    print 'problem importing rti: ', e
+    logging.exception('problem importing rti: ' + e)
 
 try:
     from acfPlot import *
 except Exception,e: 
-    print 'problem importing acfPlot: ', e
+    logging.exception('problem importing acfPlot: ' + e)
 
 try:
     from iqPlot import *
 except Exception,e: 
-    print 'problem importing iqPlot: ', e
+    logging.exception('problem importing iqPlot: ' + e)
 
 try:
     from fan import *
 except Exception,e: 
-    print 'problem importing fan: ', e
+    logging.exception('problem importing fan: ' + e)
 
 try:
     from mapOverlay import *
 except Exception,e: 
-    print 'problem importing mapOverlay: ', e
+    logging.exception('problem importing mapOverlay: ' + e)
 
 # try:
 # 	from pygridPlot import *
@@ -49,14 +51,14 @@ except Exception,e:
 try:
     from printRec import *
 except Exception,e: 
-    print 'problem importing printRec: ', e
+    logging.exception('problem importing printRec: ' + e)
 
 try:
     from plotMapGrd import *
 except Exception, e:
-    print __file__+' -> utils.plotMapGrd: ', e
+    logging.exception(__file__ + ' -> utils.plotMapGrd: ' + e)
 
 try:
     from musicPlot import *
 except Exception,e: 
-    print 'problem importing musicPlot: ', e
+    logging.exception('problem importing musicPlot: ' + e)
