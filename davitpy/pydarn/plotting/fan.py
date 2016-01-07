@@ -122,11 +122,11 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     assert(isinstance(rad, list)), "error, rad must be a list, eg ['bks'] or ['bks','fhe']"
     for r in rad:
         assert(isinstance(r, str) and len(r) == 3), 'error, elements of rad list must be 3 letter strings'
-    assert(param == 'velocity' or param == 'power' or param == 'width' or \
-           param == 'elevation' or param == 'phi0'),
-           "error, allowable params are 'velocity','power','width','elevation','phi0'"
-    assert(scale == [] or len(scale) == 2),
-    'error, if present, scales must have 2 elements'
+    assert(param == 'velocity' or param == 'power' or param == 'width' or
+           param == 'elevation' or param == 'phi0'), (
+         "error, allowable params are 'velocity','power','width','elevation','phi0'" )
+    assert(scale == [] or len(scale) == 2), (
+    'error, if present, scales must have 2 elements' )
     assert(colors == 'lasse' or colors == 'aj'), "error, valid inputs for color are 'lasse' and 'aj'"
 
     # check freq band and set to default if needed
