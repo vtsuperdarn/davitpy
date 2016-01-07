@@ -188,7 +188,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     assert(os.path.isdir(outdir)), \
         "{:s} ERROR: outdir is not a directory".format(rn)
     assert(isinstance(fnamefmt, (str,list))), \
-        '{:s} ERROR: fnamefmt must be str or list'.format(rn))
+        '{:s} ERROR: fnamefmt must be str or list'.format(rn)
 
     #--------------------------------------------------------------------------
     # If fnamefmt isn't a list, make it one.
