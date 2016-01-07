@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -29,28 +29,36 @@
 """
 
 from davitpy import utils
-import numpy,math,matplotlib,calendar,pylab
+import numpy
+import math
+import matplotlib
+import calendar
+import pylab
 import matplotlib.pyplot as plot
 import matplotlib.lines as lines
 from matplotlib.ticker import MultipleLocator
 import matplotlib.patches as patches
-from matplotlib.collections import PolyCollection,LineCollection
-from mpl_toolkits.basemap import Basemap, pyproj
-from davitpy.utils.timeUtils import *
-from davitpy.pydarn.sdio.radDataRead import *
+from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib.figure import Figure
 import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from mpl_toolkits.basemap import Basemap, pyproj
+from davitpy.utils.timeUtils import *
+from davitpy.pydarn.sdio.radDataRead import *
 import logging
 
-def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=False ,\
-        scale=[],channel=None,coords='geo',colors='lasse',gsct=False,fov=True,edgeColors='face',lowGray=False,fill=True,\
-        velscl=1000.,legend=True,overlayPoes=False,poesparam='ted',poesMin=-3.,poesMax=0.5, \
-        poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",overlayBnd=False, \
-        show=True,png=False,pdf=False,dpi=500,tFreqBands=[]):
+
+def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
+            filtered=False, scale=[], channel=None, coords='geo',
+            colors='lasse', gsct=False, fov=True, edgeColors='face',
+            lowGray=False, fill=True, velscl=1000., legend=True,
+            overlayPoes=False, poesparam='ted', poesMin=-3., poesMax=0.5,
+            poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
+            overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
+            tFreqBands=[]):
 
     """A function to make a fan plot
-    
+
     **Args**:
         * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the start time you want to plot
         * **rad** (list): a list of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
@@ -60,8 +68,8 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
         * **[filtered]** (boolean): a flag indicating whether the data should be boxcar filtered.  default = False
         * **[scale]** (list): the min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
         * **[channel] (char)**: the channel for which to plot data.  default = 'a'
-        * **[coords]** (str): the coordinate system to use; valid 
-            inputs are anything handled by coord_conv (see 
+        * **[coords]** (str): the coordinate system to use; valid
+            inputs are anything handled by coord_conv (see
             davitpy.utils.get_coord_dict).  Default:  geo
         * **[colors]** (str): the color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
         * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray.  default = False
@@ -87,7 +95,7 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
 
     **Example**:
         ::
-        
+
             import datetime as dt
             pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
             pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
@@ -97,50 +105,52 @@ def plotFan(sTime,rad,interval=60,fileType='fitex',param='velocity',filtered=Fal
     """
     from davitpy import pydarn
     from davitpy import gme
-    import datetime as dt, pickle
+    import datetime as dt
+    import pickle
     from matplotlib.backends.backend_pdf import PdfPages
-    
+
     import davitpy.models.aacgm as aacgm
-    import os, copy
+    # Is this leftover from a debugging point?  Not sure where os is needed here.
+    import os
+    import copy
     from davitpy.utils.coordUtils import coord_conv
 
     tt = dt.datetime.now()
-    
-    #check the inputs
-    assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
-    assert(isinstance(rad,list)),"error, rad must be a list, eg ['bks'] or ['bks','fhe']"
+
+    # check the inputs
+    assert(isinstance(sTime, dt.datetime)), 'error, sTime must be a datetime object'
+    assert(isinstance(rad, list)), "error, rad must be a list, eg ['bks'] or ['bks','fhe']"
     for r in rad:
-        assert(isinstance(r,str) and len(r) == 3),'error, elements of rad list must be 3 letter strings'
-    assert(param == 'velocity' or param == 'power' or param == 'width' or \
-        param == 'elevation' or param == 'phi0'), \
-        "error, allowable params are 'velocity','power','width','elevation','phi0'"
-    assert(scale == [] or len(scale)==2), \
+        assert(isinstance(r, str) and len(r) == 3), 'error, elements of rad list must be 3 letter strings'
+    assert(param == 'velocity' or param == 'power' or param == 'width' or
+           param == 'elevation' or param == 'phi0'),
+            "error, allowable params are 'velocity','power','width','elevation','phi0'"
+    assert(scale == [] or len(scale) == 2),
     'error, if present, scales must have 2 elements'
-    assert(colors == 'lasse' or colors == 'aj'),"error, valid inputs for color are 'lasse' and 'aj'"
-    
-    #check freq band and set to default if needed
-    assert(tFreqBands == [] or len(tFreqBands) == len(rad)),'error, if present, tFreqBands must have same number of elements as rad'
+    assert(colors == 'lasse' or colors == 'aj'), "error, valid inputs for color are 'lasse' and 'aj'"
+
+    # check freq band and set to default if needed
+    assert(tFreqBands == [] or len(tFreqBands) == len(rad)), 'error, if present, tFreqBands must have same number of elements as rad'
     tbands = []
     for i in range(len(rad)):
-        if tFreqBands == [] or tFreqBands[i] == []: tbands.append([8000,20000])
+        if tFreqBands == [] or tFreqBands[i] == []: tbands.append([8000, 20000])
         else: tbands.append(tFreqBands[i])
 
     for i in range(len(tbands)):
-        assert(tbands[i][1] > tbands[i][0]),'error, frequency upper bound must be > lower bound'
+        assert(tbands[i][1] > tbands[i][0]), 'error, frequency upper bound must be > lower bound'
 
     if(scale == []):
-        if(param == 'velocity'): scale=[-200,200]
-        elif(param == 'power'): scale=[0,30]
-        elif(param == 'width'): scale=[0,150]
-        elif(param == 'elevation'): scale=[0,50]
-        elif(param == 'phi0'): scale=[-numpy.pi,numpy.pi]
+        if(param == 'velocity'): scale = [-200, 200]
+        elif(param == 'power'): scale = [0, 30]
+        elif(param == 'width'): scale = [0, 150]
+        elif(param == 'elevation'): scale = [0, 50]
+        elif(param == 'phi0'): scale = [-numpy.pi, numpy.pi]
 
-        
     fbase = sTime.strftime("%Y%m%d")
-        
-    cmap,norm,bounds = utils.plotUtils.genCmap(param,scale,colors=colors,lowGray=lowGray)
-    
-    #open the data files
+
+    cmap, norm, bounds = utils.plotUtils.genCmap(param, scale, colors=colors, lowGray=lowGray)
+
+    # open the data files
     myFiles = []
     myBands = []
     for i in range(len(rad)):
