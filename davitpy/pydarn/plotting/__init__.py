@@ -17,29 +17,29 @@ This subpackage contains various plotting routines for DaViT-py
 """
 
 try:
-	from rti import *
+    from rti import *
 except Exception,e: 
-	print 'problem importing rti: ', e
+    print 'problem importing rti: ', e
 
 try:
-	from acfPlot import *
+    from acfPlot import *
 except Exception,e: 
-	print 'problem importing acfPlot: ', e
+    print 'problem importing acfPlot: ', e
 
 try:
-	from iqPlot import *
+    from iqPlot import *
 except Exception,e: 
-	print 'problem importing iqPlot: ', e
+    print 'problem importing iqPlot: ', e
 
 try:
-	from fan import *
+    from fan import *
 except Exception,e: 
-	print 'problem importing fan: ', e
+    print 'problem importing fan: ', e
 
 try:
-	from mapOverlay import *
+    from mapOverlay import *
 except Exception,e: 
-	print 'problem importing mapOverlay: ', e
+    print 'problem importing mapOverlay: ', e
 
 # try:
 # 	from pygridPlot import *
@@ -47,9 +47,9 @@ except Exception,e:
 # 	print 'problem importing pygridPlot: ', e
 
 try:
-	from printRec import *
+    from printRec import *
 except Exception,e: 
-	print 'problem importing printRec: ', e
+    print 'problem importing printRec: ', e
 
 try:
     from plotMapGrd import *
@@ -57,6 +57,6 @@ except Exception, e:
     print __file__+' -> utils.plotMapGrd: ', e
 
 try:
-	from musicPlot import *
+    from musicPlot import *
 except Exception,e: 
-	print 'problem importing musicPlot: ', e
+    print 'problem importing musicPlot: ', e
