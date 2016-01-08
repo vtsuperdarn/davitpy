@@ -175,40 +175,39 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             allBeams[i] = radDataReadRec(myFiles[i])
 
         # check that the file has data in the target interval
-        if(allBeams[i] is None): 
+        if(allBeams[i] is None):
             myFiles[i].close()
             myFiles[i] = None
             continue
 
-    
         # get to field of view coords in order to determine map limits
-        t=allBeams[i].time
-        site = pydarn.radar.site(radId=allBeams[i].stid,dt=t)
+        t = allBeams[i].time
+        site = pydarn.radar.site(radId=allBeams[i].stid, dt=t)
         sites.append(site)
         # Make lists of site lats and lons.  latC and lonC are used
         # for finding the map centre.
-        xlon, xlat = coord_conv(site.geolon, site.geolat, "geo", coords, 
+        xlon, xlat = coord_conv(site.geolon, site.geolat, "geo", coords,
                                 altitude=0., date_time=t)
         latFull.append(xlat)
         lonFull.append(xlon)
         latC.append(xlat)
         lonC.append(xlon)
-        myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,\
-                                        ngates=allBeams[i].prm.nrang+1,
+        myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,
+                                        ngates=allBeams[i].prm.nrang + 1,
                                         nbeams=site.maxbeam, coords=coords,
                                         date_time=t)
         fovs.append(myFov)
-        for b in range(0,site.maxbeam+1):
-            for k in range(0,allBeams[i].prm.nrang+1):
+        for b in range(0, site.maxbeam + 1):
+            for k in range(0, allBeams[i].prm.nrang + 1):
                 lonFull.append(myFov.lonFull[b][k])
                 latFull.append(myFov.latFull[b][k])
         oldCpids.append(allBeams[i].cp)
-        
-        k=allBeams[i].prm.nrang
-        b=0
+
+        k = allBeams[i].prm.nrang
+        b = 0
         latC.append(myFov.latFull[b][k])
         lonC.append(myFov.lonFull[b][k])
-        b=site.maxbeam
+        b = site.maxbeam
         latC.append(myFov.latFull[b][k])
         lonC.append(myFov.lonFull[b][k])
 
@@ -216,89 +215,89 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     # to center the map on. We can simply do this by converting from Spherical coords
     # to Cartesian, taking the mean of each coordinate and then converting back
     # to get lat_0 and lon_0
-    lonC,latC = (numpy.array(lonC)+360.)%360.0,numpy.array(latC)
-    xs=numpy.cos(numpy.deg2rad(latC))*numpy.cos(numpy.deg2rad(lonC))
-    ys=numpy.cos(numpy.deg2rad(latC))*numpy.sin(numpy.deg2rad(lonC))
-    zs=numpy.sin(numpy.deg2rad(latC))
-    xc=numpy.mean(xs)
-    yc=numpy.mean(ys)
-    zc=numpy.mean(zs)
-    lon_0=numpy.rad2deg(numpy.arctan2(yc,xc))
-    lat_0=numpy.rad2deg(numpy.arctan2(zc,numpy.sqrt(xc*xc+yc*yc)))
+    lonC, latC = (numpy.array(lonC) + 360.) % 360.0, numpy.array(latC)
+    xs = numpy.cos(numpy.deg2rad(latC)) * numpy.cos(numpy.deg2rad(lonC))
+    ys = numpy.cos(numpy.deg2rad(latC)) * numpy.sin(numpy.deg2rad(lonC))
+    zs = numpy.sin(numpy.deg2rad(latC))
+    xc = numpy.mean(xs)
+    yc = numpy.mean(ys)
+    zc = numpy.mean(zs)
+    lon_0 = numpy.rad2deg(numpy.arctan2(yc, xc))
+    lat_0 = numpy.rad2deg(numpy.arctan2(zc, numpy.sqrt(xc * xc + yc * yc)))
 
     # Now do some stuff in map projection coords to get necessary width and height of map
     # and also figure out the corners of the map
-    t1=dt.datetime.now()
-    lonFull,latFull = (numpy.array(lonFull)+360.)%360.0,numpy.array(latFull)
+    t1 = dt.datetime.now()
+    lonFull, latFull = (numpy.array(lonFull) + 360.) % 360.0, numpy.array(latFull)
 
-    tmpmap = utils.mapObj(coords=coords,projection='stere', width=10.0**3, 
+    tmpmap = utils.mapObj(coords=coords, projection='stere', width=10.0**3,
                           height=10.0**3, lat_0=lat_0, lon_0=lon_0,
-                          datetime = sTime)
-    x,y = tmpmap(lonFull,latFull)
-    minx = x.min()*1.05     # since we don't want the map to cut off labels or
-    miny = y.min()*1.05     # FOVs of the radars we should alter the extrema a bit.
-    maxx = x.max()*1.05
-    maxy = y.max()*1.05
-    width = (maxx-minx)
-    height = (maxy-miny)
-    llcrnrlon,llcrnrlat = tmpmap(minx,miny,inverse=True)
-    urcrnrlon,urcrnrlat = tmpmap(maxx,maxy,inverse=True)
+                          datetime=sTime)
+    x, y = tmpmap(lonFull, latFull)
+    minx = x.min() * 1.05     # since we don't want the map to cut off labels or
+    miny = y.min() * 1.05     # FOVs of the radars we should alter the extrema a bit.
+    maxx = x.max() * 1.05
+    maxy = y.max() * 1.05
+    width = (maxx - minx)
+    height = (maxy - miny)
+    llcrnrlon, llcrnrlat = tmpmap(minx, miny, inverse=True)
+    urcrnrlon, urcrnrlat = tmpmap(maxx, maxy, inverse=True)
 
-    dist = width/50.
+    dist = width / 50.
     cTime = sTime
 
     # Clear temporary figure from memory.
     fig = plot.gcf()
     fig.clf()
 
-    myFig = plot.figure(figsize=(12,8))
-    
+    myFig = plot.figure(figsize=(12, 8))
+
     # draw the actual map we want
-    myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0, 
+    myMap = utils.mapObj(coords=coords, projection='stere', lat_0=lat_0,
                          lon_0=lon_0, llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat,
                          urcrnrlon=urcrnrlon, urcrnrlat=urcrnrlat,
                          coastLineWidth=0.5, coastLineColor='k',
-                         fillOceans='w',fillContinents='w', fillLakes='w',
-                         datetime = sTime)
+                         fillOceans='w', fillContinents='w', fillLakes='w',
+                         datetime=sTime)
     # overlay fields of view, if desired
     if(fov == 1):
-        for i,r in enumerate(rad):
+        for i, r in enumerate(rad):
             pydarn.plotting.overlayRadar(myMap, codes=r, dateTime=sTime)
             # this was missing fovObj! We need to plot the fov for this particular sTime.
-            pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i]) 
-    
-    logging.debug(dt.datetime.now()-t1)
+            pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i])
+
+    logging.debug(dt.datetime.now() - t1)
     # manually draw the legend
     if((not fill) and legend):
         # draw the box
-        y = [myMap.urcrnry*.82,myMap.urcrnry*.99]
-        x = [myMap.urcrnrx*.86,myMap.urcrnrx*.99]
-        verts = [x[0],y[0]],[x[0],y[1]],[x[1],y[1]],[x[1],y[0]]
-        poly = patches.Polygon(verts,fc='w',ec='k',zorder=11)
+        y = [myMap.urcrnry * .82, myMap.urcrnry * .99]
+        x = [myMap.urcrnrx * .86, myMap.urcrnrx * .99]
+        verts = [x[0], y[0]], [x[0], y[1]], [x[1], y[1]], [x[1], y[0]]
+        poly = patches.Polygon(verts, fc='w', ec='k', zorder=11)
         myFig.gca().add_patch(poly)
-        labs = ['5 dB','15 dB','25 dB','35 dB','gs','1000 m/s']
-        pts = [5,15,25,35]
+        labs = ['5 dB', '15 dB', '25 dB', '35 dB', 'gs', '1000 m/s']
+        pts = [5, 15, 25, 35]
         # plot the icons and labels
         for w in range(6):
-            myFig.gca().text(x[0]+.35*(x[1]-x[0]),y[1]*(.98-w*.025),labs[w],zorder=15,color='k',size=8,va='center')
-            xctr = x[0]+.175*(x[1]-x[0])
+            myFig.gca().text(x[0] + .35 * (x[1] - x[0]), y[1] * (.98 - w * .025), labs[w], zorder=15, color='k', size=8, va='center')
+            xctr = x[0] + .175 * (x[1] - x[0])
             if(w < 4):
-                myFig.scatter(xctr,y[1]*(.98-w*.025),s=.1*pts[w],zorder=15,marker='o',linewidths=.5,\
-                edgecolor='face',facecolor='k')
+                myFig.scatter(xctr, y[1] * (.98 - w * .025), s=.1 * pts[w], zorder=15, marker='o', linewidths=.5,
+                              edgecolor='face', facecolor='k')
             elif(w == 4):
-                myFig.scatter(xctr,y[1]*(.98-w*.025),s=.1*35.,zorder=15,marker='o',\
-                linewidths=.5,edgecolor='k',facecolor='w')
+                myFig.scatter(xctr, y[1] * (.98 - w * .025), s=.1 * 35., zorder=15, marker='o',
+                              linewidths=.5, edgecolor='k', facecolor='w')
             elif(w == 5):
-                y=LineCollection(numpy.array([((xctr-dist/2.,y[1]*(.98-w*.025)),(xctr+dist/2.,y[1]*(.98-w*.025)))]),linewidths=.5,zorder=15,color='k')
+                y = LineCollection(numpy.array([((xctr - dist / 2., y[1] * (.98 - w * .025)), (xctr + dist / 2., y[1] * (.98 - w * .025)))]), linewidths=.5, zorder=15, color='k')
                 myFig.gca().add_collection(y)
-                
+
     bbox = myFig.gca().get_axes().get_position()
     # now, loop through desired time interval
 
     tz = dt.datetime.now()
     cols = []
     bndTime = sTime + dt.timedelta(seconds=interval)
-    
+
     ft = 'None'
     # go though all files
     pcoll = None
@@ -310,65 +309,66 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         # until we reach the end of the time window
         while(allBeams[i] is not None and allBeams[i].time < bndTime):
             # filter on frequency
-            if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]: 
+            if allBeams[i].prm.tfreq >= myBands[i][0] and allBeams[i].prm.tfreq <= myBands[i][1]:
                 scans.append(allBeams[i])
             # read the next record
             allBeams[i] = radDataReadRec(myFiles[i])
         # if there is no data in scans, overlayFan will object
         if scans == []: continue
-        intensities, pcoll = overlayFan(scans,myMap,myFig,param,coords,gsct=gsct,site=sites[i],fov=fovs[i], fill=fill,velscl=velscl,dist=dist,cmap=cmap,norm=norm)
+        intensities, pcoll = overlayFan(scans, myMap, myFig, param, coords, gsct=gsct, site=sites[i],
+                                        fov=fovs[i], fill=fill, velscl=velscl, dist=dist, cmap=cmap,
+                                        norm=norm)
 
-                                                                            
-    # if no data has been found pcoll will not have been set, and the following code will object                                   
-    if pcoll: 
-        cbar = myFig.colorbar(pcoll,orientation='vertical',shrink=.65,fraction=.1,drawedges=True)
-        
+    # if no data has been found pcoll will not have been set, and the following code will object
+    if pcoll:
+        cbar = myFig.colorbar(pcoll, orientation='vertical', shrink=.65, fraction=.1, drawedges=True)
+
         l = []
         # define the colorbar labels
-        for i in range(0,len(bounds)):
+        for i in range(0, len(bounds)):
             if(param == 'phi0'):
                 ln = 4
                 if(bounds[i] == 0): ln = 3
                 elif(bounds[i] < 0): ln = 5
                 l.append(str(bounds[i])[:ln])
                 continue
-            if((i == 0 and param == 'velocity') or i == len(bounds)-1):
+            if((i == 0 and param == 'velocity') or i == len(bounds) - 1):
                 l.append(' ')
                 continue
             l.append(str(int(bounds[i])))
         cbar.ax.set_yticklabels(l)
-        cbar.ax.tick_params(axis='y',direction='out')
+        cbar.ax.tick_params(axis='y', direction='out')
         # set colorbar ticklabel size
         for ti in cbar.ax.get_yticklabels():
             ti.set_fontsize(12)
-        if(param == 'velocity'): 
-            cbar.set_label('Velocity [m/s]',size=14)
-            cbar.extend='max'
-            
-        if(param == 'grid'): cbar.set_label('Velocity [m/s]',size=14)
-        if(param == 'power'): cbar.set_label('Power [dB]',size=14)
-        if(param == 'width'): cbar.set_label('Spec Wid [m/s]',size=14)
-        if(param == 'elevation'): cbar.set_label('Elev [deg]',size=14)
-        if(param == 'phi0'): cbar.set_label('Phi0 [rad]',size=14)
-    
+        if(param == 'velocity'):
+            cbar.set_label('Velocity [m/s]', size=14)
+            cbar.extend = 'max'
+
+        if(param == 'grid'): cbar.set_label('Velocity [m/s]', size=14)
+        if(param == 'power'): cbar.set_label('Power [dB]', size=14)
+        if(param == 'width'): cbar.set_label('Spec Wid [m/s]', size=14)
+        if(param == 'elevation'): cbar.set_label('Elev [deg]', size=14)
+        if(param == 'phi0'): cbar.set_label('Phi0 [rad]', size=14)
+
     # myFig.gca().set_rasterized(True)
     # label the plot
-    tx1 = myFig.text((bbox.x0+bbox.x1)/2.,bbox.y1+.02,cTime.strftime('%Y/%m/%d'),ha='center',size=14,weight=550)
-    tx2 = myFig.text(bbox.x1+.02,bbox.y1+.02,cTime.strftime('%H:%M - ')+\
-                bndTime.strftime('%H:%M      '),ha='right',size=13,weight=550)
-    tx3 = myFig.text(bbox.x0,bbox.y1+.02,'['+ft+']',ha='left',size=13,weight=550)
+    tx1 = myFig.text((bbox.x0 + bbox.x1) / 2., bbox.y1 + .02, cTime.strftime('%Y/%m/%d'), ha='center', size=14, weight=550)
+    tx2 = myFig.text(bbox.x1 + .02, bbox.y1 + .02, cTime.strftime('%H:%M - ') +
+                     bndTime.strftime('%H:%M      '), ha='right', size=13, weight=550)
+    tx3 = myFig.text(bbox.x0, bbox.y1 + .02, '[' + ft + ']', ha='left', size=13, weight=550)
     # label with frequency bands
-    tx4 = myFig.text(bbox.x1+.02,bbox.y1,'Frequency filters:',ha='right',size=8,weight=550)
+    tx4 = myFig.text(bbox.x1 + .02, bbox.y1, 'Frequency filters:', ha='right', size=8, weight=550)
     for i in range(len(rad)):
-        myFig.text(bbox.x1+.02,bbox.y1-((i+1)*.015),rad[i]+': '+\
-                str(tbands[i][0]/1e3)+' - '+str(tbands[i][1]/1e3)+\
-                ' MHz',ha='right',size=8,weight=550)
-    
+        myFig.text(bbox.x1 + .02, bbox.y1 - ((i + 1) * .015), rad[i] + ': ' +
+                   str(tbands[i][0] / 1e3) + ' - ' + str(tbands[i][1] / 1e3) +
+                   ' MHz', ha='right', size=8, weight=550)
+
     if(overlayPoes):
         pcols = gme.sat.poes.overlayPoesTed(myMap, myFig.gca(), cTime, param=poesparam, scMin=poesMin, scMax=poesMax)
         if(pcols is not None):
             cols.append(pcols)
-            pTicks = numpy.linspace(poesMin,poesMax,8)
+            pTicks = numpy.linspace(poesMin, poesMax, 8)
             cbar = myFig.colorbar(pcols,ticks=pTicks,orientation='vertical',shrink=0.65,fraction=.1)
             cbar.ax.set_yticklabels(pTicks)
             cbar.set_label(poesLabel,size=14)
