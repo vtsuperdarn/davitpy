@@ -369,32 +369,33 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         if(pcols is not None):
             cols.append(pcols)
             pTicks = numpy.linspace(poesMin, poesMax, 8)
-            cbar = myFig.colorbar(pcols,ticks=pTicks,orientation='vertical',shrink=0.65,fraction=.1)
+            cbar = myFig.colorbar(pcols, ticks=pTicks, orientation='vertical', shrink=0.65, fraction=.1)
             cbar.ax.set_yticklabels(pTicks)
-            cbar.set_label(poesLabel,size=14)
-            cbar.ax.tick_params(axis='y',direction='out')
+            cbar.set_label(poesLabel, size=14)
+            cbar.ax.tick_params(axis='y', direction='out')
             # set colorbar ticklabel size
             for ti in cbar.ax.get_yticklabels():
                 ti.set_fontsize(12)
-            
+
     if(overlayBnd):
         gme.sat.poes.overlayPoesBnd(myMap, myFig.gca(), cTime)
 
     # handle the outputs
-    if png == True:
+    if png is True:
         # if not show:
         #   canvas = FigureCanvasAgg(myFig)
-        myFig.savefig(sTime.strftime("%Y%m%d.%H%M.")+str(interval)+'.fan.png',dpi=dpi)
+        myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) + '.fan.png', dpi=dpi)
     if pdf:
         # if not show:
         #   canvas = FigureCanvasAgg(myFig)
-        myFig.savefig(sTime.strftime("%Y%m%d.%H%M.")+str(interval)+'.fan.pdf')
+        myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) + '.fan.pdf')
     if show:
         myFig.show()
 
-def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
-                                fov=None,gs_flg=[],fill=True,velscl=1000.,dist=1000.,
-                                cmap=None,norm=None,alpha=1):
+
+def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
+               fov=None, gs_flg=[], fill=True, velscl=1000., dist=1000.,
+               cmap=None, norm=None, alpha=1):
 
     """A function of overlay radar scan data on a map
 
@@ -417,7 +418,7 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
 
     **EXAMPLE**:
         ::
-            
+
             overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],\
                                                         verts=verts,intensities=intensities,gs_flg=gs_flg)
 
@@ -428,30 +429,30 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
         site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
     if(fov is None):
         fov = pydarn.radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
-                                      ngates=myData[0].prm.nrang+1,
-                                      nbeams= site.maxbeam, coords=coords,
-                                      date_time=myData[0].time) 
-    
-    if(isinstance(myData,pydarn.sdio.beamData)): myData = [myData]
-    
-    gs_flg,lines = [],[]
-    if fill: verts,intensities = [],[]
-    else: verts,intensities = [[],[]],[[],[]]
-    
+                                      ngates=myData[0].prm.nrang + 1,
+                                      nbeams=site.maxbeam, coords=coords,
+                                      date_time=myData[0].time)
+
+    if(isinstance(myData, pydarn.sdio.beamData)): myData = [myData]
+
+    gs_flg, lines = [], []
+    if fill: verts, intensities = [], []
+    else: verts, intensities = [[], []], [[], []]
+
     # loop through gates with scatter
     for myBeam in myData:
-        for k in range(0,len(myBeam.fit.slist)):
+        for k in range(0, len(myBeam.fit.slist)):
             if myBeam.fit.slist[k] not in fov.gates: continue
             r = myBeam.fit.slist[k]
 
             if fill:
-                x1,y1 = myMap(fov.lonFull[myBeam.bmnum,r],fov.latFull[myBeam.bmnum,r])
-                x2,y2 = myMap(fov.lonFull[myBeam.bmnum,r+1],fov.latFull[myBeam.bmnum,r+1])
-                x3,y3 = myMap(fov.lonFull[myBeam.bmnum+1,r+1],fov.latFull[myBeam.bmnum+1,r+1])
-                x4,y4 = myMap(fov.lonFull[myBeam.bmnum+1,r],fov.latFull[myBeam.bmnum+1,r])
+                x1, y1 = myMap(fov.lonFull[myBeam.bmnum, r], fov.latFull[myBeam.bmnum, r])
+                x2, y2 = myMap(fov.lonFull[myBeam.bmnum, r+1], fov.latFull[myBeam.bmnum, r + 1])
+                x3, y3 = myMap(fov.lonFull[myBeam.bmnum + 1, r + 1], fov.latFull[myBeam.bmnum + 1, r + 1])
+                x4, y4 = myMap(fov.lonFull[myBeam.bmnum + 1, r], fov.latFull[myBeam.bmnum + 1, r])
 
                 # save the polygon vertices
-                verts.append(((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x1,y1)))
+                verts.append(((x1, y1), (x2, y2), (x3, y3), (x4, y4), (x1, y1)))
                 
                 # save the param to use as a color scale
                 if(param == 'velocity'): intensities.append(myBeam.fit.v[k])
@@ -459,16 +460,16 @@ def overlayFan(myData,myMap,myFig,param,coords='geo',gsct=0,site=None,\
                 elif(param == 'width'): intensities.append(myBeam.fit.w_l[k])
                 elif(param == 'elevation' and myBeam.prm.xcf): intensities.append(myBeam.fit.elv[k])
                 elif(param == 'phi0' and myBeam.prm.xcf): intensities.append(myBeam.fit.phi0[k])
-                
+
             else:
-                x1,y1 = myMap(fov.lonCenter[myBeam.bmnum,r],fov.latCenter[myBeam.bmnum,r])
+                x1, y1 = myMap(fov.lonCenter[myBeam.bmnum, r], fov.latCenter[myBeam.bmnum, r])
                 verts[0].append(x1)
                 verts[1].append(y1)
-                
-                x2,y2 = myMap(fov.lonCenter[myBeam.bmnum,r+1],fov.latCenter[myBeam.bmnum,r+1])
-                
-                theta = math.atan2(y2-y1,x2-x1)
-                
+
+                x2, y2 = myMap(fov.lonCenter[myBeam.bmnum, r + 1], fov.latCenter[myBeam.bmnum, r + 1])
+
+                theta = math.atan2(y2 - y1, x2 - x1)
+
                 x2,y2 = x1+myBeam.fit.v[k]/velscl*(-1.0)*math.cos(theta)*dist,y1+myBeam.fit.v[k]/velscl*(-1.0)*math.sin(theta)*dist
                 
                 lines.append(((x1,y1),(x2,y2)))
