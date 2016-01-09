@@ -66,56 +66,75 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     interval : Optional[int]
         The the time period to be plotted, in seconds.  default = 60
     fileType : Optional[str]
-        The file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.  default = 'fitex'
+        The file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.
+        default = 'fitex'
     param : Optional[str]
-        The parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity'
+        The parameter to be plotted, valid inputs are 'velocity', 'power',
+        'width', 'elevation', 'phi0'.  default = 'velocity'
     filtered : Optional[boolean]
-        A flag indicating whether the data should be boxcar filtered.  default = False
+        A flag indicating whether the data should be boxcar filtered.
+        default = False
     scale : Optional[list]
-        The min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
+        The min and max values of the color scale, i.e. [min,max].  If this is
+        set to [], then default values will be used
     channel : Optional[char]
         The channel for which to plot data.  default = 'a'
     coords : Optional[str]
-        The coordinate system to use; valid inputs are anything handled by coord_conv (see
-        davitpy.utils.get_coord_dict).  Default:  geo
+        The coordinate system to use; valid inputs are anything handled by
+        coord_conv (see davitpy.utils.get_coord_dict).  Default:  geo
     colors : Optional[str]
-        The color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
+        The color map to use, valid inputs are 'lasse', 'aj'.
+        default = 'lasse'
     gsct : Optional[boolean]
-        A flag indicating whether to plot ground scatter as gray.  default = False
+        A flag indicating whether to plot ground scatter as gray.
+        default = False
     fov : Optional[boolean]
-        A flag indicating whether to overplot the radar fields of view.  default = True
+        A flag indicating whether to overplot the radar fields of view.
+        default = True
     edgeColors : Optional[str]
         Edge colors of the polygons, default = 'face'
     lowGray : Optional[boolean]
-        A flag indicating whether to plot low velocities in gray.  default = False
+        A flag indicating whether to plot low velocities in gray.
+        default = False
     fill : Optional[boolean]
-        A flag indicating whether to plot filled or point RB cells.  default = True
+        A flag indicating whether to plot filled or point RB cells.
+        default = True
     velscl : Optional[float]
-        The velocity to use as baseline for velocity vector length, only applicable if fill = 0.  default = 1000
+        The velocity to use as baseline for velocity vector length, only
+        applicable if fill = 0.  default = 1000
     legend : Optional[boolean]
-        A flag indicating whether to plot the legend, only applicable if fill = 0.  default = True
+        A flag indicating whether to plot the legend, only applicable if
+        fill = 0.  default = True
     overlayPoes : Optional[boolean]
         A flag indicating whether to overlay poes data.  default = False
     poesparam : Optional[str]
-        The poes parameter to plot.  default = 'ted'.  available params can be found in :class:`gme.sat.poes.poesRec`
+        The poes parameter to plot.  default = 'ted'.  available params can be
+        found in :class:`gme.sat.poes.poesRec`
     poesMin : Optional[float]
         The min value for the poes data color scale.  default = -3.
     poesMax : Optional[float]
         The max value for the poes data color scale.  default = 0.5
     poesLabel : Optional[str]
-        The label for the poes color bar.  default = r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]"
+        The label for the poes color bar.  default = r"Total Log Energy Flux
+        [ergs cm$^{-2}$ s$^{-1}$]"
     overlayBnd : Optional[boolean]
-        A flag indicating whether to plot an auroral boundary determined from fitting poes data.  default = False
+        A flag indicating whether to plot an auroral boundary determined from
+        fitting poes data.  default = False
     show : Optional[boolean]
-        A flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
+        A flag indicating whether to display the figure on the screen.  This
+        can cause problems over ssh.  default = True
     pdf : Optional[boolean]
-        A flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow
+        A flag indicating whether to output to a pdf file.  default = False.
+        WARNING: saving as pdf is slow
     png : Optional[boolean]
         A flag indicating whether to output to a png file.  default = False
     dpi : Optional[int]
         Dots per inch if saving as png.  default = 300
     **tFreqBands : optional
-        Upper and lower bounds of frequency in kHz to be used.  Must be unset (or set to []) or have a pair for each radar, and for any band set to [] the default will be used.  default = [[8000,20000]], [[8000,20000],[8000,20000]], etc.
+        Upper and lower bounds of frequency in kHz to be used.  Must be unset
+        (or set to []) or have a pair for each radar, and for any band set to
+        [] the default will be used.  default = [[8000,20000]],
+        [[8000,20000],[8000,20000]], etc.
 
     Returns
     -------
@@ -123,7 +142,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
 
     Examples
     --------
-    
+
     import datetime as dt
     pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
     pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
@@ -136,7 +155,8 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     from matplotlib.backends.backend_pdf import PdfPages
 
     import davitpy.models.aacgm as aacgm
-    # Is this leftover from a debugging point?  Not sure where os is needed here.
+    # Is this leftover from a debugging point?
+    # Not sure where os is needed here.
     import os
     import copy
     from davitpy.utils.coordUtils import coord_conv
@@ -144,8 +164,10 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     tt = dt.datetime.now()
 
     # check the inputs
-    assert(isinstance(sTime, dt.datetime)), 'error, sTime must be a datetime object'
-    assert(isinstance(rad, list)), "error, rad must be a list, eg ['bks'] or ['bks','fhe']"
+    assert(isinstance(sTime, dt.datetime)), 'error, sTime must be a datetime \
+           object'
+    assert(isinstance(rad, list)), "error, rad must be a list, eg ['bks'] or \
+           ['bks','fhe']"
     for r in rad:
         assert(isinstance(r, str) and len(r) == 3), 'error, elements of rad list must be 3 letter strings'
     assert(param == 'velocity' or param == 'power' or param == 'width' or
