@@ -447,13 +447,13 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
             if fill:
                 x1, y1 = myMap(fov.lonFull[myBeam.bmnum, r], fov.latFull[myBeam.bmnum, r])
-                x2, y2 = myMap(fov.lonFull[myBeam.bmnum, r+1], fov.latFull[myBeam.bmnum, r + 1])
+                x2, y2 = myMap(fov.lonFull[myBeam.bmnum, r + 1], fov.latFull[myBeam.bmnum, r + 1])
                 x3, y3 = myMap(fov.lonFull[myBeam.bmnum + 1, r + 1], fov.latFull[myBeam.bmnum + 1, r + 1])
                 x4, y4 = myMap(fov.lonFull[myBeam.bmnum + 1, r], fov.latFull[myBeam.bmnum + 1, r])
 
                 # save the polygon vertices
                 verts.append(((x1, y1), (x2, y2), (x3, y3), (x4, y4), (x1, y1)))
-                
+
                 # save the param to use as a color scale
                 if(param == 'velocity'): intensities.append(myBeam.fit.v[k])
                 elif(param == 'power'): intensities.append(myBeam.fit.p_l[k])
@@ -470,20 +470,19 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
                 theta = math.atan2(y2 - y1, x2 - x1)
 
-                x2,y2 = x1+myBeam.fit.v[k]/velscl*(-1.0)*math.cos(theta)*dist,y1+myBeam.fit.v[k]/velscl*(-1.0)*math.sin(theta)*dist
-                
-                lines.append(((x1,y1),(x2,y2)))
+                x2, y2 = x1 + myBeam.fit.v[k] / velscl * (-1.0) * math.cos(theta) * dist, y1 + myBeam.fit.v[k] / velscl * (-1.0) * math.sin(theta) * dist
+
+                lines.append(((x1, y1), (x2, y2)))
                 # save the param to use as a color scale
                 if(param == 'velocity'): intensities[0].append(myBeam.fit.v[k])
                 elif(param == 'power'): intensities[0].append(myBeam.fit.p_l[k])
                 elif(param == 'width'): intensities[0].append(myBeam.fit.w_l[k])
                 elif(param == 'elevation' and myBeam.prm.xcf): intensities[0].append(myBeam.fit.elv[k])
                 elif(param == 'phi0' and myBeam.prm.xcf): intensities[0].append(myBeam.fit.phi0[k])
-                
+
                 if(myBeam.fit.p_l[k] > 0): intensities[1].append(myBeam.fit.p_l[k])
                 else: intensities[1].append(0.)
             if(gsct): gs_flg.append(myBeam.fit.gflg[k])
-            
 
     # do the actual overlay
     if(fill):
@@ -492,67 +491,67 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
             if(gsct == 0):
                 inx = numpy.arange(len(verts))
             else:
-                inx = numpy.where(numpy.array(gs_flg)==0)
-                x = PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg)==1)],
-                    facecolors='.3',linewidths=0,zorder=5,alpha=alpha)
+                inx = numpy.where(numpy.array(gs_flg) == 0)
+                x = PolyCollection(numpy.array(verts)[numpy.where(numpy.array(gs_flg) == 1)],
+                                   facecolors='.3', linewidths=0, zorder=5, alpha=alpha)
                 myFig.gca().add_collection(x, autolim=True)
-                
+
             pcoll = PolyCollection(numpy.array(verts)[inx],
-                edgecolors='face',linewidths=0,closed=False,zorder=4,
-                alpha=alpha,cmap=cmap,norm=norm)
+                                   edgecolors='face', linewidths=0, closed=False, zorder=4,
+                                   alpha=alpha, cmap=cmap, norm=norm)
             # set color array to intensities
             pcoll.set_array(numpy.array(intensities)[inx])
             myFig.gca().add_collection(pcoll, autolim=True)
-            return intensities,pcoll
+            return intensities, pcoll
     else:
         # if we have data
-        if(verts != [[],[]]):
+        if(verts != [[], []]):
             if(gsct == 0):
                 inx = numpy.arange(len(verts[0]))
             else:
-                inx = numpy.where(numpy.array(gs_flg)==0)
+                inx = numpy.where(numpy.array(gs_flg) == 0)
                 # plot the ground scatter as open circles
-                x = myFig.scatter(numpy.array(verts[0])[numpy.where(numpy.array(gs_flg)==1)],\
-                        numpy.array(verts[1])[numpy.where(numpy.array(gs_flg)==1)],\
-                        s=.1*numpy.array(intensities[1])[numpy.where(numpy.array(gs_flg)==1)],\
-                        zorder=5,marker='o',linewidths=.5,facecolors='w',edgecolors='k')
+                x = myFig.scatter(numpy.array(verts[0])[numpy.where(numpy.array(gs_flg) == 1)],
+                                  numpy.array(verts[1])[numpy.where(numpy.array(gs_flg) == 1)],
+                                  s=.1 * numpy.array(intensities[1])[numpy.where(numpy.array(gs_flg) == 1)],
+                                  zorder=5, marker='o', linewidths=.5, facecolors='w', edgecolors='k')
                 myFig.gca().add_collection(x, autolim=True)
-                
+
             # plot the i-s as filled circles
-            ccoll = myFig.gca().scatter(numpy.array(verts[0])[inx],numpy.array(verts[1])[inx], \
-                            s=.1*numpy.array(intensities[1])[inx],zorder=10,marker='o',linewidths=.5, \
-                            edgecolors='face',cmap=cmap,norm=norm)
-            
+            ccoll = myFig.gca().scatter(numpy.array(verts[0])[inx], numpy.array(verts[1])[inx],
+                                        s=.1 * numpy.array(intensities[1])[inx], zorder=10, marker='o', linewidths=.5,
+                                        edgecolors='face', cmap=cmap, norm=norm)
+
             # set color array to intensities
             ccoll.set_array(numpy.array(intensities[0])[inx])
             myFig.gca().add_collection(ccoll)
             # plot the velocity vectors
-            lcoll = LineCollection(numpy.array(lines)[inx],linewidths=.5,zorder=12,cmap=cmap,norm=norm)
+            lcoll = LineCollection(numpy.array(lines)[inx], linewidths=.5, zorder=12, cmap=cmap, norm=norm)
             lcoll.set_array(numpy.array(intensities[0])[inx])
             myFig.gca().add_collection(lcoll)
 
-            return intensities,lcoll
+            return intensities, lcoll
 
-if __name__=="__main__":
+if __name__ == "__main__":
     from datetime import datetime
 
-    time = datetime(2014,8,7,18,30)
-    
+    time = datetime(2014, 8, 7, 18, 30)
+
     print "Testing some of the plotFan stuff.  Time used is:"
     print time
     print "Generating a plot of Saskatoon and Hankasalmi velocity"
     print "in geographic coords with ground scatter on."
-    plotFan(time, ["sas","han"], param="velocity", coords="geo", gsct=True, 
+    plotFan(time, ["sas", "han"], param="velocity", coords="geo", gsct=True,
             show=True)
     print "Now a plot of power."
-    plotFan(time, ["sas","han"], param="power", coords="geo", gsct=True, 
+    plotFan(time, ["sas", "han"], param="power", coords="geo", gsct=True,
             show=True)
     print "Now change to magnetic coords."
-    plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
+    plotFan(time, ["sas", "han"], param="power", coords="mag", gsct=True,
             show=True)
     print "Now change to MLT coords."
-    plotFan(time, ["sas","han"], param="power", coords="mlt", gsct=True, 
+    plotFan(time, ["sas", "han"], param="power", coords="mlt", gsct=True,
             show=True)
     print "Now generate a png instead of showing the plot."
-    plotFan(time, ["sas","han"], param="power", coords="mag", gsct=True, 
+    plotFan(time, ["sas", "han"], param="power", coords="mag", gsct=True,
             show=False, png=True)
