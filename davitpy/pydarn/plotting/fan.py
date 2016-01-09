@@ -467,6 +467,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     if pdf:
         # if not show:
         #   canvas = FigureCanvasAgg(myFig)
+        logging.warning('Saving as pdf...this may take a moment...')
         myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) +
                       '.fan.pdf')
     if show:
