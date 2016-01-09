@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 #
@@ -14,18 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-.. module:: fan
-     :synopsis: A module generating fan plots
+"""The fan module
 
-.. moduleauthor:: AJ, 20130218
+Module generating fan plots
 
-***************************
-**Module**: pydarn.plotting.fan
-***************************
-**Functions**:
-    * :func:`pydarn.plotting.fan.plotFan`
-    * :func:`pydarn.plotting.fan.overlayFan`
+Methods
+-----------------------------------------
+plotFan     plot a scan of data
+overlayFan  plot a scan of data on a map
+-----------------------------------------
+
 """
 
 from davitpy import utils
@@ -56,52 +55,79 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
             overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
             tFreqBands=[]):
-
     """A function to make a fan plot
 
-    **Args**:
-        * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the start time you want to plot
-        * **rad** (list): a list of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
-        * **[interval]** (int): the the time period to be plotted, in seconds.  default = 60
-        * **[fileType]** (str): the file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.  default = 'fitex'
-        * **[param]** (str): the parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity'
-        * **[filtered]** (boolean): a flag indicating whether the data should be boxcar filtered.  default = False
-        * **[scale]** (list): the min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
-        * **[channel] (char)**: the channel for which to plot data.  default = 'a'
-        * **[coords]** (str): the coordinate system to use; valid
-            inputs are anything handled by coord_conv (see
-            davitpy.utils.get_coord_dict).  Default:  geo
-        * **[colors]** (str): the color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
-        * **[gsct]** (boolean): a flag indicating whether to plot ground scatter as gray.  default = False
-        * **[fov]**  (boolean): a flag indicating whether to overplot the radar fields of view.  default = True
-        * **[edgeColors]** (str): edge colors of the polygons, default = 'face'
-        * **[lowGray]** (boolean): a flag indicating whether to plot low velocities in gray.  default = False
-        * **[fill]** (boolean): a flag indicating whether to plot filled or point RB cells.  default = True
-        * **[velscl]** (float): the velocity to use as baseline for velocity vector length, only applicable if fill = 0.  default = 1000
-        * **[legend]** (boolean): a flag indicating whether to plot the legend, only applicable if fill = 0.  default = True
-        * **[overlayPoes]** (boolean): a flag indicating whether to overlay poes data.  default = False
-        * **[poesparam]** (str): the poes parameter to plot.  default = 'ted'.  available params can be found in :class:`gme.sat.poes.poesRec`
-        * **[poesMin]** (float): the min value for the poes data color scale.  default = -3.
-        * **[poesMax]**  (float): the max value for the poes data color scale.  default = 0.5
-        * **[poesLabel]** (str): the label for the poes color bar.  default = r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]"
-        * **[overlayBnd]** (boolean): a flag indicating whether to plot an auroral boundary determined from fitting poes data.  default = False
-        * **[show]** (boolean): a flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
-        * **[pdf]** (boolean): a flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow
-        * **[png]** (boolean): a flag indicating whether to output to a png file.  default = False
-        * **[dpi]** (int): dots per inch if saving as png.  default = 300
-        * **[tFreqBands]** (list): upper and lower bounds of frequency in kHz to be used.  Must be unset (or set to []) or have a pair for each radar, and for any band set to [] the default will be used.  default = [[8000,20000]], [[8000,20000],[8000,20000]], etc.
-    **Returns**:
-        * Nothing
+    Parameters
+    ----------
+    sTime : datetime
+        The start time you want to plot
+    *rad
+        A list of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
+    interval : Optional[int]
+        The the time period to be plotted, in seconds.  default = 60
+    fileType : Optional[str]
+        The file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.  default = 'fitex'
+    param : Optional[str]
+        The parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity'
+    filtered : Optional[boolean]
+        A flag indicating whether the data should be boxcar filtered.  default = False
+    scale : Optional[list]
+        The min and max values of the color scale, i.e. [min,max].  If this is set to [], then default values will be used
+    channel : Optional[char]
+        The channel for which to plot data.  default = 'a'
+    coords : Optional[str]
+        The coordinate system to use; valid inputs are anything handled by coord_conv (see
+        davitpy.utils.get_coord_dict).  Default:  geo
+    colors : Optional[str]
+        The color map to use, valid inputs are 'lasse', 'aj'.  default = 'lasse'
+    gsct : Optional[boolean]
+        A flag indicating whether to plot ground scatter as gray.  default = False
+    fov : Optional[boolean]
+        A flag indicating whether to overplot the radar fields of view.  default = True
+    edgeColors : Optional[str]
+        Edge colors of the polygons, default = 'face'
+    lowGray : Optional[boolean]
+        A flag indicating whether to plot low velocities in gray.  default = False
+    fill : Optional[boolean]
+        A flag indicating whether to plot filled or point RB cells.  default = True
+    velscl : Optional[float]
+        The velocity to use as baseline for velocity vector length, only applicable if fill = 0.  default = 1000
+    legend : Optional[boolean]
+        A flag indicating whether to plot the legend, only applicable if fill = 0.  default = True
+    overlayPoes : Optional[boolean]
+        A flag indicating whether to overlay poes data.  default = False
+    poesparam : Optional[str]
+        The poes parameter to plot.  default = 'ted'.  available params can be found in :class:`gme.sat.poes.poesRec`
+    poesMin : Optional[float]
+        The min value for the poes data color scale.  default = -3.
+    poesMax : Optional[float]
+        The max value for the poes data color scale.  default = 0.5
+    poesLabel : Optional[str]
+        The label for the poes color bar.  default = r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]"
+    overlayBnd : Optional[boolean]
+        A flag indicating whether to plot an auroral boundary determined from fitting poes data.  default = False
+    show : Optional[boolean]
+        A flag indicating whether to display the figure on the screen.  This can cause problems over ssh.  default = True
+    pdf : Optional[boolean]
+        A flag indicating whether to output to a pdf file.  default = False.  WARNING: saving as pdf is slow
+    png : Optional[boolean]
+        A flag indicating whether to output to a png file.  default = False
+    dpi : Optional[int]
+        Dots per inch if saving as png.  default = 300
+    **tFreqBands : optional
+        Upper and lower bounds of frequency in kHz to be used.  Must be unset (or set to []) or have a pair for each radar, and for any band set to [] the default will be used.  default = [[8000,20000]], [[8000,20000],[8000,20000]], etc.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing
 
-            import datetime as dt
-            pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
-            pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
+    Examples
+    --------
+    
+    import datetime as dt
+    pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
+    pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
 
-    Written by AJ 20121004
-    Modified by Matt W. 20130717
     """
     from davitpy import pydarn
     from davitpy import gme
@@ -399,30 +425,50 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
     """A function of overlay radar scan data on a map
 
-    **Args**:
-        * **myData (:class:`pydarn.sdio.radDataTypes.scanData` or :class:`pydarn.sdio.radDataTypes.beamData` or list of :class:`pydarn.sdio.radDataTypes.beamData` objects)**: a radar beam object, a radar scanData object, or simply a list of radar beams
-        * **myMap**: the map we are plotting on
-        * **[param]**: the parameter we are plotting
-        * **[coords]**: the coordinates we are plotting in.  Default: geo
-        * **[param]**: the parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity
-        * **[gsct]**: a flag indicating whether we are distinguishing ground scatter.  default = 0
-        * **[intensities]**: a list of intensities (used for colorbar)
-        * **[fov]**: a radar fov object
-        * **[gs_flg]**: a list of gs flags, 1 per range gate
-        * **[fill]**: a flag indicating whether to plot filled or point RB cells.  default = True
-        * **[velscl]**: the velocity to use as baseline for velocity vector length, only applicable if fill = 0.  default = 1000
-        * **[lines]**: an array to have the endpoints of velocity vectors.  only applicable if fill = 0.  default = []
-        * **[dist]**: the length in map projection coords of a velscl length velocity vector.  default = 1000. km
-    **OUTPUTS**:
-        NONE
+    Parameters
+    ----------
+    myData : pydarn.sdio.radDataTypes.scanData or pydarn.sdio.radDataTypes.beamData or list of pydarn.sdio.radDataTypes.beamData objects
+        A radar beam object, a radar scanData object, or simply a list of radar beams
+    myMap :
+        The map we are plotting on
+    myFig : 
+        Figure object that we are plotting to
+    coords : Optional[str]
+        The coordinates we are plotting in.  Default: geo
+    param : Optional[str] 
+        The parameter to be plotted, valid inputs are 'velocity', 'power', 'width', 'elevation', 'phi0'.  default = 'velocity
+    gsct : Optional[boolean]
+        A flag indicating whether we are distinguishing ground scatter.  default = 0
+    *intensities : optional
+        A list of intensities (used for colorbar)
+    fov : Optional[pydarn.radar.radFov.fov]
+        A radar fov object
+    *gs_flg : optional
+        A list of gs flags, 1 per range gate
+    fill : Optional[boolean]
+        A flag indicating whether to plot filled or point RB cells.  default = True
+    velscl : Optional[float]
+        The velocity to use as baseline for velocity vector length, only applicable if fill = 0.  default = 1000
+    *lines : optional
+        An array to have the endpoints of velocity vectors.  only applicable if fill = 0.  default = []
+    dist : Optional [float] 
+        The length in map projection coords of a velscl length velocity vector.  default = 1000. km
+    
+    Returns
+    -------
+    intensities
 
-    **EXAMPLE**:
-        ::
+    pcoll
 
-            overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],\
-                                                        verts=verts,intensities=intensities,gs_flg=gs_flg)
+    lcoll
+    
 
-    Written by AJ 20121004
+    Example
+    -------
+
+    overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],
+               verts=verts,intensities=intensities,gs_flg=gs_flg)
+
     """
     from davitpy import pydarn
     if(site is None):
