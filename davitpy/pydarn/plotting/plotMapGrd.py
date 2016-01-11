@@ -48,6 +48,8 @@ class MapConv(object):
     """
     import matplotlib.cm as cm
 
+    import logging
+
     def __init__(self, startTime, mObj, 
         axisHandle, hemi = 'north', 
         maxVelScale = 1000., plotCoords = 'mag'):
@@ -67,13 +69,17 @@ class MapConv(object):
 
         #check if the mapObj is indicating the same hemisphere as data requested
         if hemi == "north" :
-            assert( mObj.boundarylats[0] > 0. ),"Map object is using one hemisphere and data the other"
+            assert( mObj.boundarylats[0] > 0. ), \
+                logging.error("Map object is using one hemisphere and data the other")
         else :
-            assert( mObj.boundarylats[0] < 0. ),"Map object is using one hemisphere and data the other"
+            assert( mObj.boundarylats[0] < 0. ), \
+                logging.error("Map object is using one hemisphere and data the other")
 
         # check if hemi and coords keywords are correct
-        assert(hemi == "north" or hemi == "south"),"error, hemi should either be 'north' or 'south'"
-        assert(plotCoords == 'mag' or coords == 'mlt'),"error, coords must be one of 'mag' or 'mlt'"
+        assert(hemi == "north" or hemi == "south"), \
+            logging.error("hemi should either be 'north' or 'south'")
+        assert(plotCoords == 'mag' or coords == 'mlt'), \
+            logging.error("error, coords must be one of 'mag' or 'mlt'")
 
         self.hemi = hemi
         self.plotCoords = plotCoords
@@ -134,7 +140,7 @@ class MapConv(object):
             elif self.plotCoords == 'mlt' :
                 endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
             else :
-                print 'Check the coords'
+                logging.warning('Check the coords')
 
             # get the start and end vecs
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords )
@@ -473,7 +479,7 @@ class MapConv(object):
                 potArr[:,q] = 0
                 
         else :
-            print 'LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero'
+            logging.warning('LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero')
 
         # mlt conversion stuff
         if self.plotCoords == 'mlt' :
@@ -583,7 +589,7 @@ class MapConv(object):
             elif self.plotCoords == 'mlt' :
                 endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
             else :
-                print 'Check the coords.'
+                logging.warning('Check the coords.')
                 
             
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
@@ -660,7 +666,7 @@ class MapConv(object):
             elif self.plotCoords == 'mlt' :
                 endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
             else :
-                print 'Check the coords.'
+                logging.warning('Check the coords.')
                 
             
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], 
