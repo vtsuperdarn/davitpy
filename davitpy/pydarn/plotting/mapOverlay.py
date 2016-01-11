@@ -12,6 +12,8 @@ Overlay information on maps
 
 """
 
+import logging
+
 # *************************************************************
 def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None, 
                  annotate=True, plot_all=False, hemi=None, zorder=2,
@@ -55,8 +57,6 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     from datetime import timedelta
     from davitpy.utils.plotUtils import textHighlighted
 
-    rn = "overlayRadar"
-
     # List paired radars.  Each member of a pair is placed in a different
     # sublist, with the more westward member in the first sublist
     nearby_rad = [['adw','kod','cve','fhe','wal','gbr','pyk','aze','sys'],
@@ -65,9 +65,9 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # Set dateTime.
     if dateTime is not None:
         if hasattr(mapObj, 'dateTime') and dateTime != mapObj.dateTime:
-            estr = '{:s} WARNING: dateTime is {:}'.format(rn,dateTime)
-            estr = '{:s}, not mapObj.dateTime {:}'.format(estr,mapObj.dateTime)
-            print estr
+            estr = 'dateTime is {:}'.format(dateTime)
+            estr += ' not mapObj.dateTime {:}'.format(mapObj.dateTime)
+            logging.warning(estr)
     else:
         dateTime = mapObj.dateTime
 	
@@ -86,7 +86,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     elif names:
         rad_input = {'meth': 'name', 'vals': names}
     else:
-        print 'overlayRadar: no radars to plot'
+        logging.error('No radars to plot')
         return
 	
     # Check if radars is given as a list
@@ -224,8 +224,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # Set dateTime.
     if dateTime is not None:
         if hasattr(mapObj, 'dateTime') and dateTime != mapObj.dateTime:
-            print "Warning, dateTime is " + str(dateTime) + \
-                    ", not mapObj.dateTime " + str(mapObj.dateTime)
+            logging.warning("dateTime is " + str(dateTime) + \
+                    ", not mapObj.dateTime " + str(mapObj.dateTime))
     else:
         dateTime = mapObj.dateTime
 
@@ -243,7 +243,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     elif names:
         rad_input = {'meth': 'name', 'vals': names}
     else:
-        print 'overlayFov: no radars to plot'
+        logging.error('No radars to plot')
         return
 
     # Check if radars is given as a list
