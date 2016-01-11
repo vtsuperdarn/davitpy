@@ -76,10 +76,10 @@ class radDataPtr():
     
   Written by AJ 20130108
   """
-  def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None, \
-                fileType=None,filtered=False, src=None,fileName=None,noCache=False,verbose=False, \
-                local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,      \
-                remote_fnamefmt=None, remote_dict=None,remote_site=None, username=None, port=None,\
+  def __init__(self,sTime=None,radcode=None,eTime=None,stid=None,channel=None,bmnum=None,cp=None,
+                fileType=None,filtered=False, src=None,fileName=None,noCache=False,
+                local_dirfmt=None, local_fnamefmt=None, local_dict=None, remote_dirfmt=None,      
+                remote_fnamefmt=None, remote_dict=None,remote_site=None, username=None, port=None,
                 password=None,tmpdir=None):
 
     import datetime as dt
@@ -254,7 +254,7 @@ class radDataPtr():
 
                 #fetch the local files
                 temp = fetch_local_files(self.sTime, self.eTime, local_dirfmt, local_dict, outdir, \
-                                             local_fnamefmt, verbose=verbose)
+                                             local_fnamefmt)
 
                 # check to see if the files actually have data between stime and etime
                 valid = self.__validate_fetched(temp,self.sTime,self.eTime)
@@ -346,7 +346,7 @@ class radDataPtr():
                 #Now fetch the files
                 temp = fetch_remote_files(self.sTime, self.eTime, 'sftp', remote_site, \
                     remote_dirfmt, remote_dict, outdir, remote_fnamefmt, username=username, \
-                    password=password, port=port, verbose=verbose)
+                    password=password, port=port)
 
                 # check to see if the files actually have data between stime and etime
                 valid = self.__validate_fetched(temp,self.sTime,self.eTime)

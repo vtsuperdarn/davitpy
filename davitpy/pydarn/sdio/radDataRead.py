@@ -32,11 +32,11 @@
   * :func:`pydarn.sdio.radDataRead.radDataCreateIndex`
 """
 
-def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
-                fileType='fitex',filtered=False, src=None,fileName=None, \
-                noCache=False,verbose=False,local_dirfmt=None,           \
-                local_fnamefmt=None,local_dict=None,remote_dirfmt=None,  \
-                remote_fnamefmt=None,remote_dict=None,remote_site=None,  \
+def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,
+                fileType='fitex',filtered=False, src=None,fileName=None,
+                noCache=False, local_dirfmt=None,
+                local_fnamefmt=None,local_dict=None,remote_dirfmt=None,
+                remote_fnamefmt=None,remote_dict=None,remote_site=None,
                 username=None,password=None, port=None,tmpdir=None):
 
   """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
@@ -53,7 +53,6 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
     * **[src]** (str): the source of the data.  valid inputs are 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
     * **[fileName]** (str): the name of a specific file which you want to open.  default=None
     * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
-    * **[verbose]** (boolean): Be very verbose about file fetching and reading. default=False
     * **[remote_site]** (str): The remote data server's address.
     * **[port]** (str): The port number to use for remote_site.
     * **[username]** (str): Username for remote_site.
@@ -102,15 +101,15 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,\
   from davitpy.pydarn.sdio import radDataPtr
   from davitpy.pydarn.radar import network
 
-  myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,            \
-               channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,      \
-               filtered=filtered,src=src,fileName=fileName,              \
-               noCache=noCache,verbose=verbose,local_dirfmt=local_dirfmt,\
-               local_fnamefmt=local_fnamefmt,local_dict=local_dict,      \
-               remote_dirfmt=remote_dirfmt,remote_dict=remote_dict,      \
-               remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,  \
-               username=username,port=port,password=password,            \
-               stid=int(network().getRadarByCode(radcode).id),           \
+  myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,
+               channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,
+               filtered=filtered,src=src,fileName=fileName,
+               noCache=noCache, local_dirfmt=local_dirfmt,
+               local_fnamefmt=local_fnamefmt,local_dict=local_dict,
+               remote_dirfmt=remote_dirfmt,remote_dict=remote_dict,
+               remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,
+               username=username,port=port,password=password,
+               stid=int(network().getRadarByCode(radcode).id),
                tmpdir=tmpdir)
   return myPtr
   

@@ -188,7 +188,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     assert(os.path.isdir(outdir)), \
         "{:s} ERROR: outdir is not a directory".format(rn)
     assert(isinstance(fnamefmt, (str,list))), \
-        '{:s} ERROR: fnamefmt must be str or list'.format(rn))
+        '{:s} ERROR: fnamefmt must be str or list'.format(rn)
 
     #--------------------------------------------------------------------------
     # If fnamefmt isn't a list, make it one.
@@ -291,7 +291,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     # attempt to unzip the files
     for lf in temp_filelist:
         outname = os.path.join(outdir,lf)
-        uncompressed = uncompress_file(outname, None, verbose)
+        uncompressed = uncompress_file(outname, None)
 
         if (type(uncompressed) is str):
         # save name of uncompressed file for output
@@ -682,7 +682,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     # attempt to unzip the files
     for rf in temp_filelist:
         outname = os.path.join(outdir,rf)
-        uncompressed = uncompress_file(outname, None, verbose)
+        uncompressed = uncompress_file(outname, None)
 
         if type(uncompressed) is str:
             # save name of uncompressed file for output
