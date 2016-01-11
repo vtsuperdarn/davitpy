@@ -65,44 +65,42 @@ def uncompress_file(filename, outname=None):
     """
     import os
 
-    rn = "uncompress_files"
+    # Check the inputs
+    assert isinstance(filename, str), logging.error('filename must be a string')
+    assert isinstance(outname, (str, type(None))), \
+        logging.error('outname must be a string or None')
 
-    #Check the inputs
-    assert(isinstance(filename,str)), 'error, filename must be a string'
-    assert(isinstance(outname,(str,type(None)))), \
-        'error, outname must be a string or None'
+    command = None  # Initialize command as None. It will be updated 
+                    # if a known file compression is found.
 
-    command = None  #Initialize command as None. It will be updated 
-                    #if a known file compression is found.
-
-    if (outname is None):
+    if outname is None:
         outname = filename
 
-    if (filename.find('.bz2') != -1):
-        outname = outname.replace('.bz2','')
-        command = 'bunzip2 -c '+filename+' > '+outname
-    elif (filename.find('.gz') != -1):
-        outname = outname.replace('.gz','')
-        command = 'gunzip -c '+filename+' > '+outname
-    elif (filename.find('.zip') != -1):
-        outname = outname.replace('.zip','')
+    if filename.find('.bz2') != -1:
+        outname = outname.replace('.bz2', '')
+        command = 'bunzip2 -c ' + filename + ' > ' + outname
+    elif filename.find('.gz') != -1:
+        outname = outname.replace('.gz', '')
+        command = 'gunzip -c ' + filename + ' > ' + outname
+    elif filename.find('.zip') != -1:
+        outname = outname.replace('.zip', '')
         command = 'unzip -c '+filename+' > '+outname
-    elif (filename.find('.tar') != -1):
-        outname = outname.replace('.tar','')
-        command = 'tar -xf '+filename
+    #elif filename.find('.tar') != -1:
+    #    outname = outname.replace('.tar', '')
+    #    command = 'tar -xf ' + filename
 
     if type(command) is str:
         try:
             os.system(command)
-            logging.info("{:s} performed [{:s}]".format(rn, command))
+            logging.info("performed [{:s}]".format(command))
         except:
-            logging.warning("{:s} unable to perform [{:s}]".format(rn, command))
+            logging.warning("unable to perform [{:s}]".format(command))
             # Returning None instead of setting outname=None to avoid
             # messing with inputted outname variable
-            return(None)
+            return None
     else:
-        return(None)
-        estr = "{:s} unknown compression type for [{:s}]".format(rn, filename)
+        return None
+        estr = "unknown compression type for [{:s}]".format(filename)
         logging.warning(estr)
 
     return outname
@@ -131,8 +129,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
             {'ftype':'fitacf'}, \
             "/tmp/sd/",'{date}.{hour}......{radar}.{channel}.{ftype}')
 
-    Returns
-    --------
+    Parameters
+    ------------
     stime : (datetime)
         data starting time
     etime : (datetime)
@@ -167,28 +165,25 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     Weird edge case behaviour occurs when attempting to fetch all channel data
     (e.g. localdict['channel'] = '.').
     """
-
     import os
     import glob
     import re
 
-    rn = "fetch_local_files"
     filelist = []
     temp_filelist = []
 
     # Test input
-    assert(isinstance(stime, dt.datetime)), \
-        '{:s} ERROR: stime must be datetime object'.format(rn)
-    assert(isinstance(etime,dt.datetime)), \
-        '{:s} ERROR: eTime must be datetime object'.format(rn)
-    assert(isinstance(localdirfmt, str) and localdirfmt[-1] == "/"), \
-        '{:s} ERROR: localdirfmt must be a string ending in "/"'.format(rn)
-    assert(isinstance(outdir, str) and outdir[-1] == "/"), \
-        '{:s} ERROR: outdir must be a string ending in "/"'.format(rn)
-    assert(os.path.isdir(outdir)), \
-        "{:s} ERROR: outdir is not a directory".format(rn)
-    assert(isinstance(fnamefmt, (str,list))), \
-        '{:s} ERROR: fnamefmt must be str or list'.format(rn)
+    assert isinstance(stime, dt.datetime), \
+        logging.error('stime must be datetime object')
+    assert isinstance(etime,dt.datetime), \
+        logging.error('eTime must be datetime object')
+    assert isinstance(localdirfmt, str) and localdirfmt[-1] == "/", \
+        logging.error('localdirfmt must be a string ending in "/"')
+    assert isinstance(outdir, str) and outdir[-1] == "/", \
+        logging.error('outdir must be a string ending in "/"')
+    assert os.path.isdir(outdir), logging.error("outdir is not a directory")
+    assert isinstance(fnamefmt, (str, list)), \
+        logging.error('fnamefmt must be str or list')
 
     #--------------------------------------------------------------------------
     # If fnamefmt isn't a list, make it one.
@@ -236,7 +231,6 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
-
             # create a regular expression to check for the desired files
             name = namefmt.format(**localdict)
             regex = re.compile(name)
@@ -256,16 +250,13 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                                                   outname)
                     try:
                         os.system(command)
-                        estr = "{:s} performed [{:s}]".format(rn, command)
-                        logging.info(estr)
+                        logging.info("performed [{:s}]".format(command))
                     except:
-                        estr = "{:s} unable to perform [{:s}]".format(rn,
-                                                                      command)
+                        estr = "unable to perform [{:s}]".format(command)
                         logging.warning(estr)
 
         # Advance the cycle time by the "lowest" time increment 
         # in the namefmt (either forward or reverse)
-
         if (time_reverse == 1 and len(temp_filelist) > 0) or ctime < mintime:
             time_reverse = 0
             ctime = stime.replace(second=0, microsecond=0)
@@ -288,6 +279,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     # Make sure the found files are in order.  Otherwise the concatenation later
     # will put records out of order
     temp_filelist = sorted(temp_filelist)
+
     # attempt to unzip the files
     for lf in temp_filelist:
         outname = os.path.join(outdir,lf)
@@ -398,36 +390,35 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     import os
     import re
 
-    rn = "fetch_remote_files"
     filelist = []
     temp_filelist = []
 
     #--------------------------------------------------------------------------
     # Test input
-    estr = '{:s} ERROR: method must be one of: sftp, http, ftp, or '.format(rn)
-    estr = '{:s}file. Other protocols may work but need testing'.format(estr)
-    assert(isinstance(stime, dt.datetime)), \
-        '{:s} ERROR: stime must be datetime object'.format(rn)
+    estr = 'method must be one of: sftp, http, ftp, or file. Other protocols '
+    estr = '{:s}may work but need testing'.format(estr)
+    assert isinstance(stime, dt.datetime), \
+        logging.error('stime must be datetime object')
     assert(isinstance(etime,dt.datetime)), \
-        '{:s} ERROR: eTime must be datetime object'.format(rn)
+        logging.error('eTime must be datetime object')
     assert(method == 'sftp' or method == 'http' or method == 'ftp' or
-           method == 'file'), '{:s}'.format(estr)
+           method == 'file'), logging.error('{:s}'.format(estr))
     assert(isinstance(remotesite, str)), \
-        '{:s} ERROR: remotesite must be a string'.format(rn)
+        logging.error('remotesite must be a string')
     assert(isinstance(remotedirfmt, str)), \
-        '{:s} ERROR: remotedirfmt must be a string'.format(rn)
+        logging.error('remotedirfmt must be a string')
     assert(isinstance(outdir, str) and outdir[-1] == "/"), \
-        '{:s} ERROR: outdir must be a string ending in "/"'.format(rn)
+        logging.error('outdir must be a string ending in "/"')
     assert(os.path.isdir(outdir)), \
-        "{:s} ERROR: outdir is not a directory".format(rn)
+        logging.error("outdir is not a directory")
     assert(isinstance(username, str) or username is None), \
-        '{:s} ERROR: username must be a string or None'.format(rn)
+        logging.error('username must be a string or None')
     assert(isinstance(password, str) or isinstance(password, bool)), \
-        '{:s} ERROR: password must be a string or Boolean'.format(rn)
+        logging.error('password must be a string or Boolean')
     assert(isinstance(port, str) or port is None), \
-        '{:s} ERROR: port must be a string'.format(rn)
+        logging.error('port must be a string')
     assert(isinstance(fnamefmt, (str,list))), \
-        '{:s} ERROR: fnamefmt must be str or list'.format(rn)
+        logging.error('fnamefmt must be str or list')
 
     #--------------------------------------------------------------------------
     # Initialize the unchanging parts of the remote access (not *) (not used +)
@@ -473,16 +464,14 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
             transport.connect(username=remoteaccess['username'],
                               password=remoteaccess['password'])
         except:
-            estr = "{:s} can't connect to {:s} with ".format(rn, remotesite)
-            estr = "{:s}username and password".format(estr)
-            logging.error(estr)
+            estr = "can't connect to {:s} with username and ".format(remotesite)
+            logging.error("{:s}password".format(estr))
             return filelist
 
         try:
             sftp = p.SFTPClient.from_transport(transport)
         except:
-            estr = "{:s} cannot engage sftp client at {:s}".format(rn,
-                                                                   remotesite)
+            estr = "cannot engage sftp client at {:s}".format(remotesite)
             logging.error(estr)
             return filelist
 
@@ -539,8 +528,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 try:
                     remotefiles = sftp.listdir(remoteaccess['path'])
                 except:
-                    logging.warning("{:s} cannot access [{:s}]".format(rn,
-                                                                       path))
+                    logging.warning("cannot access [{:s}]".format(path))
             else:
                 # Any other method can use urllib2
                 url = remoteaccfmt.format(**remoteaccess) # Build the url
@@ -556,10 +544,10 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                for f in response.readlines()
                                if f.find('<a href="') >= 0])
     
-                        # Close the connection
+                    # Close the connection
                     response.close()
                 except:
-                    estr = "{:s} unable to connect to [{:s}]".format(rn, url)
+                    estr = "unable to connect to [{:s}]".format(url)
                     logging.warning(estr)
 
         #----------------------------------------------------------------------
@@ -605,8 +593,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                     if rfsize != tfsize:
                                         tfsize = -1
                                     else:
-                                        estr = "{:s} found tmp file ".format(rn)
-                                        estr = "{:s}{:s}".format(estr, tf)
+                                        estr = "found tmp file {:s}".format(tf)
                                         logging.info(estr)
 
                                 except:
@@ -616,12 +603,11 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                 # Use the open sftp connection to get the file
                                 try:
                                     sftp.get(rflong,tf)
-                                    estr = "{:s} downloading file ".format(rn)
-                                    logging.info("{:s}{:s}".format(estr, tf))
+                                    estr = "downloading file {:s}".format(tf)
+                                    logging.info(estr)
                                 except:
                                     tf = None
-                                    estr = "{:s} can't retrieve ".format(rn)
-                                    estr = "{:s}{:s}".format(estr, rflong)
+                                    estr = "can't retrieve {:s}".format(rflong)
                                     logging.info(estr)
                         else:
                             # Use a different connection method
@@ -637,8 +623,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                                     if rfsize != tfsize:
                                         tfsize = -1
                                     else:
-                                        estr = "{:s} found tmp file".format(rn)
-                                        estr = "{:s} {:s}".format(estr, tf)
+                                        estr = "found tmp file {:s}".format(tf)
                                         logging.info(estr)
                                 else:
                                     tfsize = -1
@@ -646,13 +631,11 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                             if tfsize < 0 or not check_cache:
                                 try:
                                     urllib.urlretrieve(furl, tf)
-                                    estr = "{:s} downloading file ".format(rn)
-                                    estr = "{:s}{:s}".format(estr, tf)
+                                    estr = "downloading file {:s}".format(tf)
                                     logging.info(estr)
                                 except:
                                     tf = None
-                                    estr = "{:s} can't retrieve ".format(rn)
-                                    estr = "{:s}{:s}".format(estr, furl)
+                                    estr = "can't retrieve {:s}".format(furl)
                                     logging.info(estr)
 
         # Advance the cycle time by the "lowest" time increment 
