@@ -27,6 +27,8 @@
   * :func:`pydarn.plotting.iqPlot.plot_iq`
 """
 
+import logging
+
 def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
 
     """create an rti plot for a secified radar and time period
@@ -90,7 +92,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     # check input
 
     if ((int_data) and (myBeam.prm.xcf == 0)):
-        print "No interferometer data available."
+        logging.info("No interferometer data available.")
         return
 
     # default to plotting all sequences
@@ -98,10 +100,10 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
         sequences = range(0,seqnum)
 
     # figure out when the tx pulses went out
-    #number of ranges per tau
+    # number of ranges per tau
     tp_in_tau = tau/tp
 
-    #determine which samples overlap with tx pulses
+    # determine which samples overlap with tx pulses
     tx_times=[p*tp_in_tau for p in ptab]
     blanked_samples=[]
     for tx in tx_times:
@@ -118,13 +120,13 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     else:
         figheight = .82/len_seq
 
-    #plot the iq data for each of the requested pulse sequences
+    # plot the iq data for each of the requested pulse sequences
     for s,seq in enumerate(sequences):
 
-        #calculate the positions of the data axis and colorbar axis 
-        #for the current parameter and then add them to the figure
+        # calculate the positions of the data axis and colorbar axis 
+        # for the current parameter and then add them to the figure
         pos = [.1,figtop-figheight*(s+1)+.05,.8,figheight]#-.04]
-        #cpos = [.86,figtop-figheight*(p+1)+.05,.03,figheight-.04]    
+        # cpos = [.86,figtop-figheight*(p+1)+.05,.03,figheight-.04]    
         if user_ax is None:
             ax = fig.add_axes(pos)
         else:
