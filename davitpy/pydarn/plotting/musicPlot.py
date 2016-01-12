@@ -60,6 +60,8 @@ from davitpy.pydarn.radar.radUtils import getParamDict
 
 from davitpy.pydarn.proc.music import getDataSet
 
+import logging
+
 #Global Figure Size
 figsize=(20,10)
 
@@ -537,7 +539,7 @@ class musicRTI(object):
 #            coords      = metadata['coords']
 #
         if coords not in ['gate','range']:
-            print 'Coords "%s" not supported for RTI plots.  Using "gate".' % coords
+            logging.warning('Coords "%s" not supported for RTI plots.  Using "gate".' % coords)
             coords = 'gate'
 
         if coords == 'gate':

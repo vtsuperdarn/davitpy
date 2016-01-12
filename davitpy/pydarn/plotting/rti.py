@@ -52,6 +52,8 @@ from davitpy.utils.timeUtils import *
 from davitpy.pydarn.sdio import *
 from matplotlib.figure import Figure
 
+import logging
+
 
 def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             params=['velocity', 'power', 'width'], scales=[], channel=None,
@@ -63,8 +65,9 @@ def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
     """ Wrapper for plot_rti. This function is being deprecated.
 
     """
-    print "Warning: This function is being deprecated. Use plot_rti instead."
-    print "Calling plot_rti."
+    logging.warning("Warning: This function is being deprecated. Use"
+                    " plot_rti instead.")
+    logging.warning("Calling plot_rti.")
 
     return plot_rti(sTime, rad, eTime=eTime, bmnum=bmnum, fileType=fileType,
                     params=params, scales=scales, channel=channel,
@@ -168,42 +171,44 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
     t1 = datetime.datetime.now()
     # check the inputs
-    assert(isinstance(sTime, datetime.datetime)), 'error, sTime must be a ' \
-                                                  'datetime object'
-    assert(isinstance(rad, str) and len(rad) == 3), 'error, rad must be a ' \
-                                                    'string 3 chars long'
+    assert(isinstance(sTime, datetime.datetime)), logging.error(
+        'sTime must be a datetime object')
+    assert(isinstance(rad, str) and len(rad) == 3), logging.error(
+        'rad must be a string 3 chars long')
     assert(isinstance(eTime, datetime.datetime) or
-           eTime is None), 'error, eTime must be a datetime object or None'
+           eTime is None), (
+        logging.error('eTime must be a datetime object or None'))
     if eTime is None:
         eTime = sTime + datetime.timedelta(days=1)
-    assert(sTime < eTime), "eTime must be greater than sTime!"
+    assert(sTime < eTime), logging.error("eTime must be greater than sTime!")
     assert(coords == 'gate' or coords == 'rng' or coords == 'geo' or
-           coords == 'mag'), "error, coords must be one of 'gate', 'rng', " \
-                             "'geo', 'mag'"
-    assert(isinstance(bmnum, int)), 'error, beam must be integer'
-    assert(0 < len(params) < 6), 'error, must input between 1 and 5 params \
-           in LIST form'
+           coords == 'mag'), logging.error("coords must be one of 'gate', "
+                                           "'rng', 'geo', 'mag'")
+    assert(isinstance(bmnum, int)), logging.error('beam must be integer')
+    assert(0 < len(params) < 6), (
+        logging.error('must input between 1 and 5 params in LIST form'))
     for i in range(0, len(params)):
         assert(params[i] == 'velocity' or params[i] == 'power' or
                params[i] == 'width' or params[i] == 'elevation' or
-               params[i] == 'phi0' or params[i] == 'velocity_error'), \
-               "error, allowable params are 'velocity', 'power', 'width'," \
-               " 'elevation', 'phi0', 'velocity_error'"
+               params[i] == 'phi0' or params[i] == 'velocity_error'), (
+            logging.error("allowable params are 'velocity', 'power',"
+                          " 'width', 'elevation', 'phi0', 'velocity_error'"))
     for i in range(0, len(scales)):
-        assert(isinstance(scales[i], list)), \
-               'error, each item in scales must be a list of upper and ' \
-               'lower bounds on paramaters.'
+        assert(isinstance(scales[i], list)), (
+            logging.error('each item in scales must be a list of upper and '
+                          'lower bounds on paramaters.'))
     assert(scales == [] or
-           len(scales) == len(params)), 'error, if present, scales must ' \
-                                        'have same number of elements as ' \
-                                        'params'
+           len(scales) == len(params)), (
+        logging.error('if present, scales must have same number of elements '
+                      'as params'))
     assert(yrng == -1 or
            (isinstance(yrng, list) and
-            yrng[0] <= yrng[1])), 'error, yrng must equal -1 or be a list ' \
-                                  'with the 2nd element larger than the first'
+            yrng[0] <= yrng[1])), (
+        logging.error('yrng must equal -1 or be a list with the 2nd element '
+                      'larger than the first'))
     assert(colors == 'lasse' or
-           colors == 'aj'), "error, valid inputs for color are " \
-                            "'lasse' and 'aj'"
+           colors == 'aj'), (
+        logging.error("Valid inputs for color are 'lasse' and 'aj'"))
 
     # Assign any default color scale parameter limits.
     tscales = []
@@ -226,8 +231,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         for band in tfreqbands:
             # Make sure that starting frequncy is less than the ending
             # frequency for each band.
-            assert(band[0] < band[1]), "Starting frequency must be less " \
-                                       "than ending frequency!"
+            assert(band[0] < band[1]), (
+                logging.error("Starting frequency must be less "
+                              "than ending frequency!"))
             tbands.append(band)
 
     # Open the file if a pointer was not given to us
@@ -246,22 +252,22 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             myFile.eTime = eTime
         else:
             # If the times range is not covered by the file, throw an error.
-            print 'error, data not available in myFile for the whole sTime ' \
-                  'to eTime'
+            logging.error('Data not available in myFile for the whole sTime '
+                          'to eTime')
             return None
 
     # Check that we have data available now that we may have tried
     # to read it using radDataOpen.
     if not myFile:
-        print 'error, no files available for the requested ' \
-              'time/radar/filetype combination'
+        logging.error('no files available for the requested '
+                      'time/radar/filetype combination')
         return None
 
     # Finally we can start reading the data file
     myBeam = myFile.readRec()
     if not myBeam:
-        print 'error, no data available for the requested ' \
-              'time/radar/filetype combination'
+        logging.error('no data available for the requested '
+                      'time/radar/filetype combination')
         return None
 
     # Now read the data that we need to make the plots
@@ -272,9 +278,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         # Check to ensure that data exists for the requested frequency
         # band else continue on to the next range of frequencies
         if not data_dict['freq'][fplot]:
-            print 'error, no data in frequency range ' + \
-                  str(tbands[fplot][0]) + ' kHz to ' + \
-                  str(tbands[fplot][1]) + ' kHz'
+            logging.error('no data in frequency range ' +
+                          str(tbands[fplot][0]) + ' kHz to ' +
+                          str(tbands[fplot][1]) + ' kHz')
             rti_figs.append(None)
             continue
 
@@ -370,7 +376,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             # Draw the colorbar.
             cb = utils.drawCB(rti_fig, pcoll, cmap, norm, map_plot=0,
                               pos=[pos[0] + pos[2] + .02, pos[1], 0.02,
-                              pos[3]])
+                                   pos[3]])
 
             # Label the colorbar.
             l = []
@@ -408,7 +414,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         if show:
             rti_fig.show()
 
-        print 'plotting took:', datetime.datetime.now() - t1
+        logging.info('plotting took:', datetime.datetime.now() - t1)
         # End of plotting for loop.
 
         return rti_figs
@@ -476,7 +482,7 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
                 if(coords == 'geo' or coords == 'mag'):
                     # HACK NOT SURE IF YOU CAN DO THIS!
                     site = pydarn.radar.network().getRadarByCode(rad) \
-                           .getSiteByDate(times[i])
+                        .getSiteByDate(times[i])
                     myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],
                                                     nbeams=site.maxbeam,
                                                     rsep=rsep[i],
@@ -590,15 +596,15 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
         (((eTime - sTime) > datetime.timedelta(days=1)) or
          (eTime.day != sTime.day))):
         title_text = str(sTime.day) + '/' \
-                     + calendar.month_name[sTime.month][:3] + '/' \
-                     + str(sTime.year) + ' - ' + str(eTime.day) + '/' \
-                     + calendar.month_name[eTime.month][:3] + '/' \
-                     + str(eTime.year)
+            + calendar.month_name[sTime.month][:3] + '/' \
+            + str(sTime.year) + ' - ' + str(eTime.day) + '/' \
+            + calendar.month_name[eTime.month][:3] + '/' \
+            + str(eTime.year)
 
     else:
         title_text = str(sTime.day) + '/' \
-                     + calendar.month_name[sTime.month][:3] + '/' \
-                     + str(sTime.year)
+            + calendar.month_name[sTime.month][:3] + '/' \
+            + str(sTime.year)
 
     # Plot the secondary title.
     fig.text((xmin + xmax) / 2., .95, title_text, weight=550,
@@ -1077,7 +1083,7 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
     # For geo or mag coords, get radar FOV lats/lons.
     if (coords != 'gate' and coords != 'rng') or plot_terminator is True:
         site = pydarn.radar.network().getRadarByCode(rad) \
-               .getSiteByDate(data_dict['times'][fplot][0])
+            .getSiteByDate(data_dict['times'][fplot][0])
         myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,
                                         nbeams=site.maxbeam,
                                         rsep=data_dict['rsep'][fplot][0],
@@ -1152,5 +1158,5 @@ def daynight_terminator(date, lons):
     # compute day/night terminator from hour angle, declination.
     longitude = lons + tau
     lats = np.arctan(-np.cos(longitude * dg2rad) /
-           np.tan(dec * dg2rad)) / dg2rad
+                     np.tan(dec * dg2rad)) / dg2rad
     return lats, tau, dec
