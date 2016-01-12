@@ -24,61 +24,115 @@
 **Module**: pydarn.sdio.radDataRead
 ************************************
 
-**Functions**:
-  * :func:`pydarn.sdio.radDataRead.radDataOpen`
-  * :func:`pydarn.sdio.radDataRead.radDataReadRec`
-  * :func:`pydarn.sdio.radDataRead.radDataReadScan`
-  * :func:`pydarn.sdio.radDataRead.radDataReadAll`
-  * :func:`pydarn.sdio.radDataRead.radDataCreateIndex`
+Functions
+----------
+  :func:`pydarn.sdio.radDataRead.radDataOpen`
+  :func:`pydarn.sdio.radDataRead.radDataReadRec`
+  :func:`pydarn.sdio.radDataRead.radDataReadScan`
+  :func:`pydarn.sdio.radDataRead.radDataReadAll`
+  :func:`pydarn.sdio.radDataRead.radDataCreateIndex`
 """
+import logging
 
-def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,
-                fileType='fitex',filtered=False, src=None,fileName=None,
-                noCache=False, local_dirfmt=None,
-                local_fnamefmt=None,local_dict=None,remote_dirfmt=None,
-                remote_fnamefmt=None,remote_dict=None,remote_site=None,
-                username=None,password=None, port=None,tmpdir=None):
+def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
+                fileType='fitex', filtered=False, src=None, fileName=None,
+                noCache=False, local_dirfmt=None, local_fnamefmt=None,
+                local_dict=None, remote_dirfmt=None, remote_fnamefmt=None,
+                remote_dict=None, remote_site=None, username=None,
+                password=None, port=None, tmpdir=None):
 
-  """A function to establish a pipeline through which we can read radar data.  first it tries the mongodb, then it tries to find local files, and lastly it sftp's over to the VT data server.
+    """A function to establish a pipeline through which we can read radar data.
+    first it tries the mongodb, then it tries to find local files, and lastly
+    it sftp's over to the VT data server.
 
-  **Args**:
-    * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the beginning time for which you want data
-    * **radcode** (str): the 3-letter radar code with optional channel extension for which you want data
-    * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): the last time that you want data for.  if this is set to None, it will be set to 1 day after sTime.  default = None
-    * **[channel]** (str): the 1-letter code for what channel you want data from, eg 'a','b',...  if this is set to None, data from ALL channels will be read. default = None
-    * **[bmnum]** (int): the beam number which you want data for.  If this is set to None, data from all beams will be read. default = None
-    * **[cp]** (int): the control program which you want data for.  If this is set to None, data from all cp's will be read.  default = None
-    * **[fileType]** (str):  The type of data you want to read.  valid inputs are: 'fitex','fitacf','lmfit','rawacf','iqdat'.   if you choose a fit file format and the specified one isn't found, we will search for one of the others.  Beware: if you ask for rawacf/iq data, these files are large and the data transfer might take a long time.  default = 'fitex'
-    * **[filtered]** (boolean): a boolean specifying whether you want the fit data to be boxcar filtered.  ONLY VALID FOR FIT.  default = False
-    * **[src]** (str): the source of the data.  valid inputs are 'local' 'sftp'.  if this is set to None, it will try all possibilites sequentially.  default = None
-    * **[fileName]** (str): the name of a specific file which you want to open.  default=None
-    * **[noCache]** (boolean): flag to indicate that you do not want to check first for cached files.  default = False.
-    * **[remote_site]** (str): The remote data server's address.
-    * **[port]** (str): The port number to use for remote_site.
-    * **[username]** (str): Username for remote_site.
-    * **[password]** (str/bool): Password for remote_site. If password is set to True, the user is prompted for the remote_site password.
-    * **[remote_dirfmt]** (str): The remote_site directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}'
-    * **[remote_fnamefmt]** (str/list): The remote_site file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
-    * **[local_dirfmt]** (str): The local directory structure. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_dirfmt='/{year}/{month}' 
-    * **[local_fnamefmt]** (str/list): The local file naming format. Can include keywords to be replaced by dictionary keys in remote_dict. ex) remote_fnamefmt=['{date}.{radar}.{ftype}','{date}.{channel}.{radar}.{ftype}']
-    * **[tmpdir]** (str): The directory in which to store temporary files.
+    Parameters
+    -----------
+    sTime : (datetime)
+        The beginning time for which you want data
+    radcode : (str)
+        The 3-letter radar code with optional channel extension for which you
+        want data
+    eTime : (datetime/NoneType)
+        The last time that you want data for.  If this is set to None, it will
+        be set to 1 day after sTime.  (default=None)
+    channel : (str/NoneType)
+        The 1-letter code for what channel you want data from, eg 'a','b',...
+        if this is set to None, data from ALL channels will be read.
+        (default=None)
+    bmnum : (int/NoneType)
+        The beam number which you want data for.  If this is set to None, data
+        from all beams will be read. (default=None)
+    cp : (int)
+        The control program which you want data for.  If this is set to None,
+        data from all cp's will be read.  (default=None)
+    fileType : (str)
+        The type of data you want to read.  valid inputs are: 'fitex','fitacf',
+        'lmfit','rawacf','iqdat'.   If you choose a fit file format and the
+        specified one isn't found, we will search for one of the others.
+        Beware: if you ask for rawacf/iq data, these files are large and the
+        data transfer might take a long time.  (default='fitex')
+    filtered : (boolean)
+        A boolean specifying whether you want the fit data to be boxcar
+        filtered.  ONLY VALID FOR FIT.  (default=False)
+    src : (str/NoneType)
+        The source of the data.  Valid inputs are 'local' 'sftp'.  If this is
+        set to None, it will try all possibilites sequentially.  (default=None)
+    fileName : (str/NoneType)
+        The name of a specific file which you want to open.  (default=None)
+    noCache : (boolean)
+        Flag to indicate that you do not want to check first for cached files.
+        (default=False)
+    remote_site : (str/NoneType)
+        The remote data server's address.  If None, the rcParam value DB will be
+        used. (default=None)
+    port : (str/NoneType)
+        The port number to use for remote_site.  If None, the rcParam value
+        DB_PORT will be used. (default=None)
+    username : (str/NoneType)
+        Username for remote_site.  If None, the rcParam value DBREADUSER will
+        be used.
+    password : (str/bool/NoneType)
+        Password for remote_site. If password is set to True, the user is
+        prompted for the remote_site password.  If set to None, the rcParam
+        value DBREADPASS will be used (default=None)
+    remote_dirfmt : (str/NoneType)
+        The remote_site directory structure. Can include keywords to be
+        replaced by dictionary keys in remote_dict.  If None, the rcParam value
+        DAVIT_REMOTE_DIRFORMAT will be used. (default=None)
+        Ex) remote_dirfmt='/{year}/{month}'
+    remote_fnamefmt : (str/list/NoneType)
+        The remote_site file naming format. Can include keywords to be replaced
+        by dictionary keys in remote_dict. If None, the rcParam value
+        DAVIT_REMOTE_FNAMEFMT will be used.  (default=None)
+        Ex) remote_fnamefmt=['{date}.{radar}.{ftype}',
+                             '{date}.{channel}.{radar}.{ftype}']
+    local_dirfmt : (str/None)
+        The local directory structure. Can include keywords to be replaced by
+        dictionary keys in remote_dict. If None, the rcParam value
+        DAVIT_LOCAL_DIRFORMAT will be used. (default=None)
+        Ex) local_dirfmt='/{year}/{month}' 
+    local_fnamefmt : (str/list/NoneType)
+        The local file naming format. Can include keywords to be replaced by
+        dictionary keys in remote_dict. If None, the rcParam value
+        DAVIT_LOCAL_FNAMEFMT will be used. (default=None)
+        Ex) local_fnamefmt=['{date}.{radar}.{ftype}',
+                            '{date}.{channel}.{radar}.{ftype}']
+    tmpdir : (str/NoneType)
+        The directory in which to store temporary files. If None, the rcParam
+        value DAVIT_TMPDIR will be used. (default=None)
 
+    Returns
+    --------
+    myPtr : (pydarn.sdio.radDataTypes.radDataPtr)
+        A radDataPtr object which contains a link to the data to be read.
+        This can then be passed to radDataReadRec in order to actually read the
+        data.
 
-  **Returns**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): a radDataPtr object which contains a link to the data to be read.  this can then be passed to radDataReadRec in order to actually read the data.
-
-  **ENVIRONMENT Variables**:
-    * DB                     : Used to specify the DB address (overridden by remote_site).
-    * DB_PORT                : Used to specify the DB port (overridden by port).
-    * DBREADUSER             : Used to specify the DB user username (overridden by username).
-    * DBREADPASS             : Used to specify the DB user password (overridden by password).
-    * DAVIT_REMOTE_DIRFORMAT : Used to specify the remote data directory structure (overridden by remote_dirfmt).
-    * DAVIT_REMOTE_FNAMEFMT  : Used to specify the remote filename format (overridden by remote_fnamefmt).
-    * DAVIT_LOCAL_DIRFORMAT  : Used to specify the local data directory structure (overridden by local_dirfmt).
-    * DAVIT_LOCAL_FNAMEFMT   : Used to specify the local filename format (overridden by local_fnamefmt).
-    * DAVIT_TMPDIR           : Directory used for davitpy temporary file cache (overridden by tmpdir).
-
-    The evironment variables are python dictionary capable formatted strings appended encode radar name, channel, and/or date information. Currently supported dictionary keys which can be used are: 
+    Notes
+    -------
+    The evironment variables are python dictionary capable formatted strings
+    appended encode radar name, channel, and/or date information. Currently
+    supported dictionary keys which can be used are: 
 
     "date"    : datetime.datetime.strftime("%Y%m%d")
     "year"    : 0 padded 4 digit year 
@@ -89,136 +143,194 @@ def radDataOpen(sTime,radcode,eTime=None,channel=None,bmnum=None,cp=None,
     "radar"   : 3-chr radarcode 
     "channel" : single character string, ex) 'a'
 
+    Example
+    ----------
+    ::
 
-  **Example**:
+    import datetime as dt
+    myPtr = pydarn.sdio.radDataOpen(dt.datetime(2011,1,1),'bks', \
+                  eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
+                  fileType='fitex',filtered=False, src=None)
+
+    Written by AJ 20130110
+    """
+    from davitpy.pydarn.sdio import radDataPtr
+    from davitpy.pydarn.radar import network
+
+    myPtr = radDataPtr(sTime=sTime, radcode=radcode, eTime=eTime,
+                       channel=channel, bmnum=bmnum, cp=cp, fileType=fileType,
+                       filtered=filtered, src=src, fileName=fileName,
+                       noCache=noCache, local_dirfmt=local_dirfmt,
+                       local_fnamefmt=local_fnamefmt, local_dict=local_dict,
+                       remote_dirfmt=remote_dirfmt, remote_dict=remote_dict,
+                       remote_fnamefmt=remote_fnamefmt, remote_site=remote_site,
+                       username=username, port=port, password=password,
+                       stid=int(network().getRadarByCode(radcode).id),
+                       tmpdir=tmpdir)
+    return myPtr
+  
+def radDataReadRec(my_ptr):
+    """A function to read a single record of radar data from a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+
+    Parameters
+    ------------
+    my_ptr : (pydarn.sdio.radDataTypes.radDataPtr)
+        Contains the pipeline to the data we are after.
+
+    Returns
+    ---------
+    my_beam : (pydarn.sdio.radDataTypes.beamData/NoneType)
+        An object filled with the data we are after.  Will return None when
+        finished reading.
+    
+    Example
+    ---------
     ::
     
-      import datetime as dt
-      myPtr = pydarn.sdio.radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
+    import datetime as dt
+    my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
+                   eTime=dt.datetime(2011,1,1,2),channel=None,bmnum=7,cp=153,
+                   fileType='fitex',filtered=False,src=None)
+    my_beam = radDataReadRec(my_ptr)
     
-  Written by AJ 20130110
-  """
-  from davitpy.pydarn.sdio import radDataPtr
-  from davitpy.pydarn.radar import network
+    Notes
+    ------
+    To use this, you must first create a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object with
+    :func:`radDataOpen` 
 
-  myPtr = radDataPtr(sTime=sTime,radcode=radcode,eTime=eTime,
-               channel=channel,bmnum=bmnum,cp=cp,fileType=fileType,
-               filtered=filtered,src=src,fileName=fileName,
-               noCache=noCache, local_dirfmt=local_dirfmt,
-               local_fnamefmt=local_fnamefmt,local_dict=local_dict,
-               remote_dirfmt=remote_dirfmt,remote_dict=remote_dict,
-               remote_fnamefmt=remote_fnamefmt,remote_site=remote_site,
-               username=username,port=port,password=password,
-               stid=int(network().getRadarByCode(radcode).id),
-               tmpdir=tmpdir)
-  return myPtr
-  
-def radDataReadRec(myPtr):
-  """A function to read a single record of radar data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen` 
+    Written by AJ 20130110
+    """
+    from davitpy.pydarn.sdio import radDataPtr
 
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myBeam** (:class:`pydarn.sdio.radDataTypes.beamData`): an object filled with the data we are after.  *will return None when finished reading*
-    
-  **Example**:
-    ::
-    
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myBeam = radDataReadRec(myPtr)
-    
-  Written by AJ 20130110
-  """
-  from davitpy.pydarn.sdio import radDataPtr
-  assert(isinstance(myPtr,radDataPtr)),\
-    'error, input must be of type radDataPtr'
+    assert isinstance(my_ptr, radDataPtr), \
+      logging.error('input must be of type radDataPtr')
 
-  return myPtr.readRec() 
+    return my_ptr.readRec()
       
-def radDataReadScan(myPtr):
-  """A function to read a full scan of data from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+def radDataReadScan(my_ptr):
+    """A function to read a full scan of data from a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object
   
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
-    
-  .. note::
-    This will ignore any bmnum request.  Also, if no channel was specified in radDataOpen, it will only read channel 'a'
+    Parameters
+    -----------
+    my_ptr : (pydarn.sdio.radDataTypes.radDataPtr)
+        Contains the pipeline to the data we are after
 
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myScan** (:class:`pydarn.sdio.radDataTypes.scanData`): an object filled with the data we are after.  *will return None when finished reading*
-    
-  **Example**:
+    Returns
+    --------
+    my_scan : (pydarn.sdio.radDataTypes.scanData)
+        A class created to define a list of pydarn.sdio.radDataTypes.beamData
+        objects, filled with a scan (pattern of beams) of data from the
+        specified pipeline.  The pointer will return None when finished reading.
+
+    Example
+    --------
     ::
     
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myBeam = radDataReadScan(myPtr)
-    
-  Written by AJ 20130110
-  """
-  from davitpy.pydarn.sdio import radDataPtr
-  
-  #check input
-  assert(isinstance(myPtr,radDataPtr)),\
-    'error, input must be of type radDataPtr'
-  return myPtr.readScan()
- 
-def radDataCreateIndex(myPtr):
-  """A function to index radar data into dict from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
+    import datetime as dt
+    my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
+                  eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
+                  fileType='fitex',filtered=False, src=None):
+    my_scan = radDataReadScan(my_ptr)
 
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myIndex** (dict): keys are record timedate objects and values are byte offsets into the file. 
+    Notes
+    -------
+    To use this, you must first create a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
+
+    This will ignore any beam number (bmnum) request.  Also, if no channel was
+    specified in radDataOpen, it will only read channel 'a'
+
+    Written by AJ 20130110
+    """
+    from davitpy.pydarn.sdio import radDataPtr
+
+    # check input
+    assert isinstance(my_ptr, radDataPtr), \
+      logging.error('input must be of type radDataPtr')
+
+    return my_ptr.readScan()
+
+def radDataCreateIndex(my_ptr):
+    """A function to index radar data into dict from a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+  
+    Parameters
+    -----------
+    my_ptr : (pydarn.sdio.radDataTypes.radDataPtr)
+        Contains the pipeline to the data we are after
+
+    Returns
+    --------
+    my_index : (dict)
+        A dictionary with keys recording the time of each bean in the specified
+        pointer and the value corresponding to the location for that record
+        in the data file (byte offsets in the file). 
     
-  **Example**:
+    Example
+    ---------
+    ::
+
+    import datetime as dt
+    my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
+                   eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
+                   fileType='fitex',filtered=False, src=None)
+    my_index = radDataCreateIndex(my_ptr)
+    
+    Notes
+    ------
+    To use this, you must first create a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
+
+    Written by JDS 20140606
+    """
+    from davitpy.pydarn.sdio.radDataTypes import radDataPtr
+
+    assert isinstance(my_ptr, radDataPtr), \
+      logging.error('input must be of type radDataPtr')
+
+    return my_ptr.createIndex() 
+
+def radDataReadAll(my_ptr):
+    """A function to read a large amount (to the end of the request) of radar
+    data into a list from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+
+    Parameters
+    -----------
+    my_ptr : (pydarn.sdio.radDataTypes.radDataPtr)
+        Contains the pipeline to the data we are after
+
+    Returns
+    ----------
+    my_list : (list)
+        A list filled with pydarn.sdio.radDataTypes.scanData objects holding
+        the data we are after.  The list will contain None if nothing is found.
+
+    Example
+    -----------
     ::
     
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myIndex = radDataCreateIndex(myPtr)
-    
-  Written by JDS 20140606
-  """
-  from davitpy.pydarn.sdio.radDataTypes import radDataPtr
-  assert(isinstance(myPtr,radDataPtr)),\
-    'error, input must be of type radDataPtr'
-  return myPtr.createIndex() 
+    import datetime as dt
+    my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
+             eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
+             fileType='fitex',filtered=False, src=None)
+    my_list = radDataReadAll(my_ptr)
 
-def radDataReadAll(myPtr):
-  """A function to read a large amount (to the end of the request) of radar data into a list from a :class:`pydarn.sdio.radDataTypes.radDataPtr` object
+    Notes
+    ------
+    To use this, you must first create a
+    :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
+
+    Written by AJ 20130606
+    """
+    from davitpy.pydarn.sdio import radDataPtr
   
-  .. note::
-    to use this, you must first create a :class:`pydarn.sdio.radDataTypes.radDataPtr` object with :func:`radDataOpen`
+    # check input
+    assert isinstance(my_ptr, radDataPtr), \
+      logging.error('input must be of type radDataPtr')
 
-  **Args**:
-    * **myPtr** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains the pipeline to the data we are after
-  **Returns**:
-    * **myList** (list): a list filled with :class:`pydarn.sdio.radDataTypes.scanData` objects holding the data we are after.  *will return None if nothing is found*
-    
-  **Example**:
-    ::
-    
-      import datetime as dt
-      myPtr = radDataOpen(dt.datetime(2011,1,1),'bks',eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153,fileType='fitex',filtered=False, src=None):
-      myList = radDataReadAll(myPtr)
-    
-  Written by AJ 20130606
-  """
-  from davitpy.pydarn.sdio import radDataPtr
-  
-  #check input
-  assert(isinstance(myPtr,radDataPtr)),\
-    'error, input must be of type radDataPtr'
-  myList=[beam for beam in myPtr]
-  return myList
+    my_list = [beam for beam in my_ptr]
 
+    return my_list
