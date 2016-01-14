@@ -25,37 +25,37 @@ import logging
 
 try:
     from rti import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing rti: ' + e)
 
 try:
     from acfPlot import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing acfPlot: ' + e)
 
 try:
     from iqPlot import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing iqPlot: ' + e)
 
 try:
     from fan import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing fan: ' + e)
 
 try:
     from mapOverlay import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing mapOverlay: ' + e)
 
 # try:
 # 	from pygridPlot import *
-# except Exception,e: 
+# except Exception,e:
 # 	print 'problem importing pygridPlot: ', e
 
 try:
     from printRec import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing printRec: ' + e)
 
 try:
@@ -65,5 +65,5 @@ except Exception, e:
 
 try:
     from musicPlot import *
-except Exception,e: 
+except Exception, e:
     logging.exception('problem importing musicPlot: ' + e)
