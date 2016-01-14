@@ -1,20 +1,25 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: pydarn.plotting
-*********************
+pydarn.plotting
+---------------
+
 This subpackage contains various plotting routines for DaViT-py
 
-**Modules**:
-	* :mod:`mapOverlay`
-	* :mod:`rti`
-	* :mod:`fan`
-	* :mod:`pygridPlot`
-	* :mod:`printRec`
-	* :mod:`acfPlot`
-	* :mod:`iqPlot`
+Modules
+-------------------------------------------------------------------
+acfPlot         ACF and XCF data
+fan             fan and field of view data
+iqPlot          IQ voltage data
+mapOverlay      overlay information on maps
+musicPlot       data created with the pydarn.proc.music module
+plotMapGrid     gridded velocities, convection and contour plotting
+printRec        print radar data records to plain text
+rti             range-time-intensity data
+-------------------------------------------------------------------
+
 """
+
 
 import logging
 
