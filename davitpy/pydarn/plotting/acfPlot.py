@@ -45,34 +45,34 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     Parameters
     ----------
-        myBeam : a beamData object from pydarn.sdio.radDataTypes
-            The data object taht you would like to plot.
-        gate : (int)
-            The range gate to plot data for.
-        normalized : Optional[boolean]
-            Specifies whether to normalize the ACF/XCF data by the
-            lag-zero power. Default is true.
-        mark_blanked : Optional[boolean]
-            Specifies whether magnitude and phase should be
-            plotted instead of real and imaginary. Default is true.
-        xcf : Optional[boolean]
-            Specifies whether to plot XCF data or not.  Default is false.
-        panel : Optional[int]
-            From 0 to 3 specifies which data to plot of ACF/XCF, ACF/XCF
-            amplitude, ACF/XCF phase, or power spectrum, respectively.
-            Default is panel=0.
-        ax : Optional[matplotlib axis object]
-            Default is none.
-        show : Optional[boolean]
-            Specifies whether plot to a figure window. If set to false
-            and png or pdf are set to false, then the figure is plotted
-            to a png file.
-        png : Optional[boolean]
-            Flag to set the output format to a png file.  Default
-            is false.
-        pdf : Optional[boolean]
-            Flag to set the output format to a pdf file.  Default
-            is false.
+    myBeam : a beamData object from pydarn.sdio.radDataTypes
+        The data object taht you would like to plot.
+    gate : (int)
+        The range gate to plot data for.
+    normalized : Optional[boolean]
+        Specifies whether to normalize the ACF/XCF data by the
+        lag-zero power. Default is true.
+    mark_blanked : Optional[boolean]
+        Specifies whether magnitude and phase should be
+        plotted instead of real and imaginary. Default is true.
+    xcf : Optional[boolean]
+        Specifies whether to plot XCF data or not.  Default is false.
+    panel : Optional[int]
+        From 0 to 3 specifies which data to plot of ACF/XCF, ACF/XCF
+        amplitude, ACF/XCF phase, or power spectrum, respectively.
+        Default is panel=0.
+    ax : Optional[matplotlib axis object]
+        Default is none.
+    show : Optional[boolean]
+        Specifies whether plot to a figure window. If set to false
+        and png or pdf are set to false, then the figure is plotted
+        to a png file.
+    png : Optional[boolean]
+        Flag to set the output format to a png file.  Default
+        is false.
+    pdf : Optional[boolean]
+        Flag to set the output format to a pdf file.  Default
+        is false.
 
     Returns
     -------
