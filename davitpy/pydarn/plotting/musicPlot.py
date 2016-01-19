@@ -1280,29 +1280,49 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
     """Plots 1D time series or line spectral plots of selected cells in a 3d-array. Two data sets can be plotted simultaneously for comparison.
     This defaults to 9 cells of the 3d-array.
 
-    **Args**:
-        * **xData1** (1d list or numpy.array): x-axis values
-        * **yData1** (3d numpy.array): Data to plot.  First axis should correspond to xData1.
-        * [**beams**] (list): list identifying the beams present in the second axis of xData1.
-        * [**gates**] (list)  list identifying the gates present in the second axis of xData1.
-        * [**yData1_title**] (str): Name of yData1 data.
-        * [**plot_beam**] (list of int): list of beams to plot from (corresponds to yData1 second axis)
-        * [**plot_gate**] (list of int): list of range gates to plot from (corresponds to yData1 third axis)
-        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * [**xlim**] (None or 2-element iterable): X-axis limits of all plots
-        * [**ylim**] (None or 2-element iterable): Y-axis limits of all plots
-        * [**xlabel**] (None or str): X-axis label
-        * [**ylabel**] (None or str): Y-axis label
-        * [**title**] (None or str): Title of plot
-        * [**xData2**] (1d list or numpy.array): x-axis values of second data set
-        * [**yData1**] (3d numpy.array): Second data set data to plot.  First axis should correspond to xData1.
-        * [**yData2_title**] (str): Name of yData2 data.
-        * [**xBoundaryLimits**] (None or 2-element iterable) : Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-            Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
-            in the metadata, if they exist.
+    Parameters
+    ----------
+    xData1 : 1d list or numpy.array
+        x-axis values
+    yData1 : 3d numpy.array
+        Data to plot.  First axis should correspond to xData1.
+    beams : Optional[list]
+        list identifying the beams present in the second axis of xData1.
+    gates : Optional[list]
+        list identifying the gates present in the second axis of xData1.
+    yData1_title : Optional[str]
+        Name of yData1 data.
+    plot_beam : Optional[list of int]
+        list of beams to plot from (corresponds to yData1 second axis)
+    plot_gate : Optional[list of int]
+        list of range gates to plot from (corresponds to yData1 third axis)
+    fig : Optional[matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    xlim : Optional[None or 2-element iterable]
+        X-axis limits of all plots
+    ylim : Optional[None or 2-element iterable]
+        Y-axis limits of all plots
+    xlabel : Optional[None or str]
+        X-axis label
+    ylabel : Optional[None or str]
+        Y-axis label
+    title : Optional[None or str]
+        Title of plot
+    xData2 : Optional[1d list or numpy.array]
+        x-axis values of second data set
+    yData1 : Optional[3d numpy.array]
+        Second data set data to plot.  First axis should correspond to xData1.
+    yData2_title : Optional[str]
+        Name of yData2 data.
+    xBoundaryLimits : Optional[None or 2-element iterable]
+        Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+        Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+        in the metadata, if they exist.
 
-    **Returns**:
-        * **fig**:      matplotlib figure object that was plotted to
+    Returns
+    -------
+    fig : matplotlib.figure
+        matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1457,21 +1477,36 @@ def plotFullSpectrum(dataObj,dataSet='active',
     data, from left to right.  The y-axis shows the range gates of the data object.  The color bar at the top of the plot shows which
     FFT bin contains the most power when integrating over the entire bin.
 
-    **Args**:
-        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * [**axis**] : Matplotlib axis object to plot on.
-        * [**xlim**] (None or 2-element iterable): X-axis limits in Hz
-        * [**plot_title**] : If True, plot the title information
-        * [**maxXTicks**] (int): Maximum number of xtick labels.
-        * [**cbar_label**] (str): Text for color bar label
-        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
-        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
-        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
-        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
-        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
-        * [**cbar_gstext_enable**] (bool): Enable "Ground Scatter Only" text
+    Parameters
+    ----------
+    dataObj : pydarn.proc.music.musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    fig : Optional[matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    axis : Optional[ ]
+        Matplotlib axis object to plot on.
+    xlim : Optional[None or 2-element iterable]
+        X-axis limits in Hz
+    plot_title : Optional[bool]
+        If True, plot the title information
+    maxXTicks : Optional[int]
+        Maximum number of xtick labels.
+    cbar_label : Optional[str]
+        Text for color bar label
+    cbar_ticks : Optional[list]
+        Where to put the ticks on the color bar.
+    cbar_shrink : Optional[float]
+        fraction by which to shrink the colorbar
+    cbar_fraction : Optional[float]
+        fraction of original axes to use for colorbar
+    cbar_gstext_offset : Optional[float]
+        y-offset from colorbar of "Ground Scatter Only" text
+    cbar_gstext_fontsize : Optional[float]
+        fontsize of "Ground Scatter Only" text
+    cbar_gstext_enable : Optional[bool]
+        Enable "Ground Scatter Only" text
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1683,10 +1718,14 @@ def plotDlm(dataObj,dataSet='active',fig=None):
     """Plot the cross spectral matrix of a pydarn.proc.music.musicArray object.  The cross-spectral matrix must have already
     been calculated for the chosen data set using pydarn.proc.music.calculateDlm().
 
-    **Args**:
-        * **dataObj** (:class:`musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    Parameters
+    ----------
+    dataObj : musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    fig : Optional[matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
