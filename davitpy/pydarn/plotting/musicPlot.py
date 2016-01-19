@@ -217,7 +217,7 @@ class musicFan(object):
 
         from scipy import stats
 
-        #Make some variables easier to get to...
+        # Make some variables easier to get to...
         currentData = getDataSet(dataObject,dataSet)
         metadata    = currentData.metadata
         latFull     = currentData.fov.latFull
@@ -225,16 +225,16 @@ class musicFan(object):
 
         coords      = metadata['coords']
 
-        #Translate parameter information from short to long form.
+        # Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
         if paramDict.has_key('label'):
             param     = paramDict['param']
             cbarLabel = paramDict['label']
         else:
-            param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
+            param = 'width' # Set param = 'width' at this point just to not screw up the colorbar function.
             cbarLabel = metadata['param']
 
-        #Set colorbar scale if not explicitly defined.
+        # Set colorbar scale if not explicitly defined.
         if(scale is None):
             if autoScale:
                 sd          = stats.nanstd(np.abs(currentData.data),axis=None)
@@ -250,13 +250,13 @@ class musicFan(object):
                 else:
                     scale = [-200,200]
 
-        #See if an axis is provided... if not, set one up!
+        # See if an axis is provided... if not, set one up!
         if axis is None:
             axis  = fig.add_subplot(111)
         else:
             fig   = axis.get_figure()
 
-        #Figure out which scan we are going to plot...
+        # Figure out which scan we are going to plot...
         if time is None:
             timeInx = 0
         else:
@@ -266,7 +266,7 @@ class musicFan(object):
             else:
                 timeInx = int(np.min(timeInx))
 
-        #do some stuff in map projection coords to get necessary width and height of map
+        # do some stuff in map projection coords to get necessary width and height of map
         lonFull,latFull = (np.array(lonFull)+360.)%360.,np.array(latFull)
 
         goodLatLon  = np.logical_and( np.logical_not(np.isnan(lonFull)), np.logical_not(np.isnan(latFull)) )
@@ -289,7 +289,7 @@ class musicFan(object):
         dist = width/50.
 
 
-        #Fill the entire subplot area without changing the data aspect ratio.
+        # Fill the entire subplot area without changing the data aspect ratio.
         bbox        = axis.get_window_extent()
         bbox_width  = bbox.width
         bbox_height = bbox.height
@@ -301,7 +301,7 @@ class musicFan(object):
         if map_aspect > ax_aspect:
             height  = (width*bbox_height) / bbox_width
 
-        #Zoom!
+        # Zoom!
         width       = zoom * width
         height      = zoom * height
         lat_0       = lat_0 + lat_shift
@@ -313,7 +313,7 @@ class musicFan(object):
         lat_0       = bmd.pop('lat_0',  lat_0)
         lon_0       = bmd.pop('lon_0',  lon_0)
 
-        #draw the actual map we want
+        # draw the actual map we want
         m = Basemap(projection='stere',width=width,height=height,lon_0=lon_0,lat_0=lat_0,ax=axis,**bmd)
         if parallels_ticks is None:
             parallels_ticks = np.arange(-80.,81.,10.)
@@ -329,7 +329,7 @@ class musicFan(object):
             m.drawmapboundary(fill_color='w')
             m.fillcontinents(color='w', lake_color='w')
 
-        #Plot the SuperDARN data!
+        # Plot the SuperDARN data!
         ngates = np.shape(currentData.data)[2]
         nbeams = np.shape(currentData.data)[1]
         verts = []
@@ -362,7 +362,7 @@ class musicFan(object):
         pcoll.set_array(np.array(scan))
         axis.add_collection(pcoll,autolim=False)
 
-        #Mark Cell
+        # Mark Cell
         if markCell is not None:
             beamInx = int(np.where(currentData.fov.beams == markCell[0])[0])
             gateInx = int(np.where(currentData.fov.gates == markCell[1])[0])
@@ -377,7 +377,7 @@ class musicFan(object):
             poly = Polygon(mkv,facecolor='#000000',edgecolor='none',zorder=100)
             axis.add_patch(poly)
 
-        #Mark Beam
+        # Mark Beam
         if markBeam is not None:
             beamInx = int(np.where(currentData.fov.beams == markBeam)[0])
             startedMarking = False
@@ -396,7 +396,7 @@ class musicFan(object):
                     axis.plot([x3,x4],[y3,y4],zorder=150,**markBeam_dict)
 
 
-        dataName = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing.
+        dataName = currentData.history[max(currentData.history.keys())] # Label the plot with the current level of data processing.
         if plot_title:
             if title is None:
                 axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
@@ -517,7 +517,7 @@ class musicRTI(object):
             from matplotlib import pyplot as plt
             fig   = plt.figure(figsize=figsize)
 
-        #Make some variables easier to get to...
+        # Make some variables easier to get to...
         currentData = getDataSet(dataObject,dataSet)
         metadata    = currentData.metadata
         latFull     = currentData.fov.latFull
@@ -545,16 +545,16 @@ class musicRTI(object):
                 if day_inx.size != 0:
                     daylight[tm_inx,day_inx] = False
 
-        #Translate parameter information from short to long form.
+        # Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
         if paramDict.has_key('label'):
             param     = paramDict['param']
             cbarLabel = paramDict['label']
         else:
-            param = 'width' #Set param = 'width' at this point just to not screw up the colorbar function.
+            param = 'width' # Set param = 'width' at this point just to not screw up the colorbar function.
             cbarLabel = metadata['param']
 
-        #Set colorbar scale if not explicitly defined.
+        # Set colorbar scale if not explicitly defined.
         if(scale is None):
             if autoScale:
                 sd          = stats.nanstd(np.abs(currentData.data),axis=None)
@@ -570,7 +570,7 @@ class musicRTI(object):
                 else:
                     scale = [-200,200]
 
-        #See if an axis is provided... if not, set one up!
+        # See if an axis is provided... if not, set one up!
         if axis is None:
             axis    = fig.add_subplot(111)
         else:
@@ -580,7 +580,7 @@ class musicRTI(object):
             beamInx = 0
             beam    = currentData.fov.beams[0]
 
-        #Plot the SuperDARN data!
+        # Plot the SuperDARN data!
         verts = []
         scan  = []
         data  = np.squeeze(currentData.data[:,beamInx,:])
@@ -735,7 +735,7 @@ class musicRTI(object):
                     txt.append('%d' % tck)
                     txt = '\n'.join(txt)
 
-                    ytick_str.append(txt) #Put both lat and range on same string
+                    ytick_str.append(txt) # Put both lat and range on same string
                 axis.set_yticklabels(ytick_str,rotation=90,ma='center') # Set yticklabels
                 # Label y-axis
                 geo_mag = 'Geographic' if currentData.fov.coords == 'geo' else 'Magnetic'
@@ -750,7 +750,7 @@ class musicRTI(object):
                     axis.set_ylabel('GS Mapped Range [km]',labelpad=y_labelpad)
 
         axis.set_ylim(ylim)
-        #Shade xBoundary Limits
+        # Shade xBoundary Limits
         if xBoundaryLimits is None:
             if currentData.metadata.has_key('timeLimits'):
                 xBoundaryLimits = currentData.metadata['timeLimits']
@@ -764,7 +764,7 @@ class musicRTI(object):
             axis.axvline(x=xBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axvline(x=xBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
 
-        #Shade yBoundary Limits
+        # Shade yBoundary Limits
         if yBoundaryLimits is None:
             if currentData.metadata.has_key('gateLimits') and coords == 'gate':
                 yBoundaryLimits = currentData.metadata['gateLimits']
@@ -820,17 +820,17 @@ class musicRTI(object):
                 size=model_text_size,
                 transform=axis.transAxes)
 
-        #Get axis position information.
+        # Get axis position information.
         pos = list(axis.get_position().bounds)
 
         # Plot frequency and noise information. ######################################## 
         if hasattr(dataObject,'prm') and plot_info:
-            #Adjust current plot position to fit in the freq and noise plots.
+            # Adjust current plot position to fit in the freq and noise plots.
             super_plot_hgt  = 0.06
             pos[3] = pos[3] - (2*super_plot_hgt)
             axis.set_position(pos)
 
-            #Get current colorbar position and adjust it.
+            # Get current colorbar position and adjust it.
             cbar_pos = list(cbar.ax.get_position().bounds)
             cbar_pos[1] = pos[1]
             cbar_pos[3] = pos[3]
@@ -857,7 +857,7 @@ class musicRTI(object):
 
             txt     = []
             txt.append(xlim[0].strftime('%Y %b %d %H%M UT - ')+xlim[1].strftime('%Y %b %d %H%M UT'))
-            txt.append(currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
+            txt.append(currentData.history[max(currentData.history.keys())]) # Label the plot with the current level of data processing.
             txt     = '\n'.join(txt)
             fig.text((xmin+xmax)/2.,title_y,txt,weight=550,size='large',ha='center')
 
@@ -900,7 +900,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     from matplotlib.figure import Figure
     import matplotlib
 
-    #Get center of FOV.
+    # Get center of FOV.
     ctrBeamInx  = currentData.fov.relative_centerInx[0]
     ctrGateInx  = currentData.fov.relative_centerInx[1]
     ctrBeam     = currentData.fov.beams[ctrBeamInx]
@@ -912,7 +912,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     axis  = fig.add_subplot(gs[0:2, 1]) 
     musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
 
-    #Determine the color scale for plotting.
+    # Determine the color scale for plotting.
     def myround(x, base=50):
         return int(base * round(float(x)/base))
 
@@ -920,7 +920,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     rnd     = myround(absnanmax)
     scale   = (-rnd, rnd)
 
-    #Determine nanmaximum ranges.
+    # Determine nanmaximum ranges.
     xRange    = np.nanmax(currentData.fov.relative_x) - np.nanmin(currentData.fov.relative_x)
     yRange    = np.nanmax(currentData.fov.relative_y) - np.nanmin(currentData.fov.relative_y)
     latRange  = np.nanmax(currentData.fov.latCenter)  - np.nanmin(currentData.fov.latCenter)
@@ -1061,7 +1061,7 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
         yData2 = None
         yData2_title = None
 
-    #Define x-axis range
+    # Define x-axis range
     if xlim is None:
         tmpLim = []
         tmpLim.append(min(xData1))
@@ -1071,7 +1071,7 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
             tmpLim.append(max(xData2))
         xlim = (min(tmpLim),max(tmpLim))
 
-    #Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
+    # Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
     if xBoundaryLimits is None:
         tmpLim = []
         if currentData.metadata.has_key('timeLimits'):
@@ -1086,16 +1086,16 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
         if tmpLim != []:
             xBoundaryLimits = (min(tmpLim), max(tmpLim))
 
-    #Get X-Axis title.
+    # Get X-Axis title.
     if xlabel is None:
         xlabel = 'UT'
 
-    #Get Y-Axis title.
+    # Get Y-Axis title.
     paramDict = getParamDict(currentData.metadata['param'])
     if ylabel is None and paramDict.has_key('label'):
         ylabel = paramDict['label']
 
-    yData1_title = currentData.history[max(currentData.history.keys())] #Label the plot with the current level of data processing
+    yData1_title = currentData.history[max(currentData.history.keys())] # Label the plot with the current level of data processing
     if title is None:
         title = []
         title.append('Selected Cells: '+yData1_title)
@@ -1176,16 +1176,16 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
     beams       = currentData.fov.beams
     gates       = currentData.fov.gates
 
-    #Get the time limits.
+    # Get the time limits.
     timeLim = (np.min(currentData.time),np.max(currentData.time))
 
-    #Get X-Axis title.
+    # Get X-Axis title.
     if xlabel is None:
         xlabel = 'Frequency [Hz]'
 
     if title is None:
         title = []
-        title.append('Selected Cells: '+currentData.history[max(currentData.history.keys())]) #Label the plot with the current level of data processing.
+        title.append('Selected Cells: '+currentData.history[max(currentData.history.keys())]) # Label the plot with the current level of data processing.
         title.append(currentData.metadata['code'][0].upper() + ': ' +
             timeLim[0].strftime('%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M'))
         title = '\n'.join(title)
@@ -1232,7 +1232,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
     from matplotlib import dates as md
 
-    #Calculate three default beams and gates to plot.
+    # Calculate three default beams and gates to plot.
     if plotBeam is None:
         beamMin = min(beams)
         beamMed = int(np.median(beams))
@@ -1247,12 +1247,12 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
         plotGate     = np.array([gateMin,gateMed,gateMax])
 
-    #Put things in the correct order.  Gates need to be backwards.
+    # Put things in the correct order.  Gates need to be backwards.
     plotBeam.sort()
     plotGate.sort()
-    plotGate = plotGate[::-1] #Reverse the order.
+    plotGate = plotGate[::-1] # Reverse the order.
 
-    #Determine the indices of the beams and gates.
+    # Determine the indices of the beams and gates.
     plotBeamInx = []
     for item in plotBeam:
         plotBeamInx.append(int(np.where(beams == item)[0]))
@@ -1267,7 +1267,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
     nCols = len(plotBeam)
     nRows = len(plotGate)
 
-    #Define x-axis range
+    # Define x-axis range
     if xlim is None:
         tmpLim = []
         tmpLim.append(min(xData1))
@@ -1277,7 +1277,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
             tmpLim.append(max(xData2))
         xlim = (min(tmpLim),max(tmpLim))
 
-    #Autorange y-axis... make all plots have the same range.
+    # Autorange y-axis... make all plots have the same range.
     data = []
     if ylim is None:
         for rg,rgInx in zip(plotGate,plotGateInx):
@@ -1309,11 +1309,11 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
             if yData2 is not None:
                 l2, = axis.plot(xData2,yData2[:,bmInx,rgInx],label=yData2_title)
 
-            #Set axis limits.
+            # Set axis limits.
             axis.set_xlim(xlim)
             axis.set_ylim(ylim)
 
-            #Special handling for time axes.
+            # Special handling for time axes.
             if xlabel == 'UT': 
                 axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
 
@@ -1321,7 +1321,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
                 for label in labels:
                     label.set_rotation(30)
 
-            #Gray out area outside of the boundary.
+            # Gray out area outside of the boundary.
             if xBoundaryLimits is not None:
                 gray = '0.75'
                 axis.axvspan(xlim[0],xBoundaryLimits[0],color=gray)
@@ -1332,11 +1332,11 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
             text = 'Beam: %i, Gate: %i' % (bm, rg)
             axis.text(0.02,0.92,text,transform=axis.transAxes)
 
-            #Only the first column gets labels.
+            # Only the first column gets labels.
             if ii % nCols == 1:
                 axis.set_ylabel(ylabel)
 
-            #Only have the last row have time ticks
+            # Only have the last row have time ticks
             if ii <= (nRows-1)*nCols:
                 axis.xaxis.set_visible(False)
             else:
@@ -1409,27 +1409,27 @@ def plotFullSpectrum(dataObj,dataSet='active',
         posFreqInx  = np.where(np.logical_and(currentData.freqVec >= xlim[0],currentData.freqVec <= xlim[1]))[0]
 
     posFreqVec  = currentData.freqVec[posFreqInx]
-    npf         = len(posFreqVec) #Number of positive frequencies
+    npf         = len(posFreqVec) # Number of positive frequencies
 
-    data        = np.abs(currentData.spectrum[posFreqInx,:,:]) #Use the magnitude of the positive frequency data.
+    data        = np.abs(currentData.spectrum[posFreqInx,:,:]) # Use the magnitude of the positive frequency data.
 
     if normalize:
         data    = data / data.max()
 
-    #Determine scale for colorbar.
+    # Determine scale for colorbar.
     sd          = stats.nanstd(data,axis=None)
     mean        = stats.nanmean(data,axis=None)
     scMax       = mean + 2.*sd
     if scale is None:
         scale       = scMax*np.array([0,1.])
 
-    nXBins      = nrBeams * npf #number of bins we are going to plot
+    nXBins      = nrBeams * npf # number of bins we are going to plot
 
-    #Average Power Spectral Density
+    # Average Power Spectral Density
     avg_psd = np.zeros(npf)
     for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
 
-    #Do plotting here!
+    # Do plotting here!
     if fig is None and axis is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -1441,7 +1441,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
 
     verts   = []
     scan    = []
-    #Plot Spectrum
+    # Plot Spectrum
     sep     = 0.1
     for ff in range(npf):
         for bb in range(nrBeams):
@@ -1469,7 +1469,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
     axis.add_collection(pcoll,autolim=False)
     spect_pcoll = pcoll
 
-    #Colorbar
+    # Colorbar
     if plot_cbar:
         cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
         cbar.set_label(cbar_label)
@@ -1483,7 +1483,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
             if currentData.metadata['gscat'] == 1:
                 cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
-    #Plot average values.
+    # Plot average values.
     verts   = []
     scan    = []
     yy0      = nrGates
@@ -1508,7 +1508,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
-    #Mark maximum PSD column.
+    # Mark maximum PSD column.
     maxInx = np.argmax(avg_psd)
     xx0      = nrBeams*(maxInx + 0.5*sep)
     xx1      = xx0 + nrBeams*(1-sep)
@@ -1521,7 +1521,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
     poly = Polygon(mkv,facecolor='Red',edgecolor='none',zorder=100)
     axis.add_patch(poly)
 
-    #X-Labels
+    # X-Labels
     modX      = np.ceil(npf / np.float(maxXTicks))
 
     xlabels = []
@@ -1542,7 +1542,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
     axis.set_xticks(xpos)
     axis.set_xticklabels(xlabels,ha='left')
 
-    #Y-Labels
+    # Y-Labels
     maxYTicks       = 10.
     modY            = np.ceil(nrGates/maxYTicks)
 
@@ -1569,11 +1569,11 @@ def plotFullSpectrum(dataObj,dataSet='active',
         xpos = 0.130
         fig.text(xpos,0.99,'Full Spectrum View',fontsize=20,va='top')
 
-        #Get the time limits.
+        # Get the time limits.
         timeLim = (np.min(currentData.time),np.max(currentData.time))
         md = currentData.metadata
 
-        #Translate parameter information from short to long form.
+        # Translate parameter information from short to long form.
         paramDict = getParamDict(md['param'])
         param     = paramDict['param']
 #        cbarLabel = paramDict['label']
@@ -1622,20 +1622,20 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     data        = np.abs(currentData.Dlm)
 
-    #Determine scale for colorbar.
+    # Determine scale for colorbar.
     sd          = stats.nanstd(data,axis=None)
     mean        = stats.nanmean(data,axis=None)
     scMax       = mean + 4.*sd
     scale       = scMax*np.array([0,1.])
 
-    #Do plotting here!
+    # Do plotting here!
     axis = fig.add_subplot(111)
 
     nrL, nrM = np.shape(data)
 
     verts   = []
     scan    = []
-    #Plot Spectrum
+    # Plot Spectrum
     for ll in range(nrL):
         xx0      = ll
         xx1      = ll+1
@@ -1662,7 +1662,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
     pcoll.set_array(np.array(scan))
     axis.add_collection(pcoll,autolim=False)
 
-    #Colorbar
+    # Colorbar
     cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
     cbar.set_label('ABS(Spectral Density)')
     if currentData.metadata.has_key('gscat'):
@@ -1700,11 +1700,11 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     xpos = 0.130
     fig.text(xpos,0.99,'ABS(Cross Spectral Density Matrix Dlm)',fontsize=20,va='top')
-    #Get the time limits.
+    # Get the time limits.
     timeLim = (np.min(currentData.time),np.max(currentData.time))
     md = currentData.metadata
 
-    #Translate parameter information from short to long form.
+    # Translate parameter information from short to long form.
     paramDict = getParamDict(md['param'])
     param     = paramDict['param']
     cbarLabel = paramDict['label']
@@ -1757,7 +1757,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
 
     currentData = getDataSet(dataObj,dataSet)
 
-    #Do plotting here!
+    # Do plotting here!
     if axis is None:
         axis = fig.add_subplot(111,aspect='equal')
     else:
@@ -1770,11 +1770,11 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
     if plot_title:
         xpos = 0.130
         fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
-        #Get the time limits.
+        # Get the time limits.
         timeLim = (np.min(currentData.time),np.max(currentData.time))
         md = currentData.metadata
 
-        #Translate parameter information from short to long form.
+        # Translate parameter information from short to long form.
         paramDict = getParamDict(md['param'])
         param     = paramDict['param']
 
@@ -1822,7 +1822,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
     from scipy import stats
     import matplotlib.patheffects as PathEffects
 
-    #Do plotting here!
+    # Do plotting here!
     if roiPlot:
         axis = fig.add_subplot(121,aspect='equal')
     else:
@@ -1831,11 +1831,11 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
     # Page-wide header #############################################################
     xpos = 0.130
     fig.text(xpos,0.99,'Horizontal Wave Number',fontsize=20,va='top')
-    #Get the time limits.
+    # Get the time limits.
     timeLim = (np.min(currentData.time),np.max(currentData.time))
     md = currentData.metadata
 
-    #Translate parameter information from short to long form.
+    # Translate parameter information from short to long form.
     paramDict = getParamDict(md['param'])
     param     = paramDict['param']
     cbarLabel = paramDict['label']
@@ -1862,16 +1862,16 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
     if roiPlot:
         ################################################################################
-        #Feature detection...
+        # Feature detection...
         data2 = currentData.sigDetect.labels
         nrL, nrM = np.shape(data2)
         scale = [0,data2.max()]
 
-        #Do plotting here!
+        # Do plotting here!
         axis = fig.add_subplot(122,aspect='equal')
         verts   = []
         scan    = []
-        #Plot Spectrum
+        # Plot Spectrum
         for ll in range(nrL-1):
             xx0      = currentData.kxVec[ll]
             xx1      = currentData.kxVec[ll+1]
@@ -1898,7 +1898,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
         axis.axvline(color='0.82',lw=2,zorder=150)
         axis.axhline(color='0.82',lw=2,zorder=150)
 
-        #Colorbar
+        # Colorbar
         cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
         cbar.set_label('Region of Interest')
         cbar.set_ticks([])
@@ -1943,7 +1943,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
         if hasattr(currentData,'sigDetect'):
             pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
-            tmpList = range(currentData.sigDetect.nrSigs)[::-1] #Force list to plot backwards so number 1 is on top!
+            tmpList = range(currentData.sigDetect.nrSigs)[::-1] # Force list to plot backwards so number 1 is on top!
             for signal in currentData.sigDetect.info:
                 if maxSignals is not None:
                     if signal['order'] > maxSignals: continue 
@@ -1989,7 +1989,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     currentData = getDataSet(dataObj,dataSet)
 
     data        = np.abs(currentData.karr) - np.min(np.abs(currentData.karr))
-    #Determine scale for colorbar.
+    # Determine scale for colorbar.
     sd          = stats.nanstd(data,axis=None)
     mean        = stats.nanmean(data,axis=None)
     scMax       = mean + 6.5*sd
@@ -2000,7 +2000,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     nrL, nrM = np.shape(data)
     verts   = []
     scan    = []
-    #Plot Spectrum
+    # Plot Spectrum
     for ll in range(nrL-1):
         xx0      = currentData.kxVec[ll]
         xx1      = currentData.kxVec[ll+1]
@@ -2026,11 +2026,11 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     axis.add_collection(pcoll,autolim=False)
 
     ################################################################################
-    #Annotations
+    # Annotations
     axis.axvline(color='0.82',lw=2,zorder=150)
     axis.axhline(color='0.82',lw=2,zorder=150)
 
-    #Colorbar
+    # Colorbar
     cbar_label  = 'Normalized Wavenumber Power'
     if plot_colorbar:
         cbar = fig.colorbar(pcoll,orientation='vertical',shrink=cbar_shrink,fraction=cbar_fraction,pad=cbar_pad)
@@ -2091,7 +2091,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
 
     md = currentData.metadata
 
-    #Translate parameter information from short to long form.
+    # Translate parameter information from short to long form.
     paramDict = getParamDict(md['param'])
     param     = paramDict['param']
     cbarLabel = paramDict['label']
