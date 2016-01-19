@@ -1508,6 +1508,11 @@ def plotFullSpectrum(dataObj,dataSet='active',
     cbar_gstext_enable : Optional[bool]
         Enable "Ground Scatter Only" text
 
+    Returns
+    -------
+    return_dict
+
+
     Written by Nathaniel A. Frissell, Fall 2013
     """
 
@@ -1854,19 +1859,34 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
     If the chosen data set has signals stored in the sigDetect attribute, numbers identifying each of the signals will
     be plotted on the kArr plot.
 
-    **Args**:
-        * **dataObj** (:class:`musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * [**axis**] : Matplotlib axis object to plot on.
-        * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
-        * [**sig_fontsize**] (float): fontsize of signal markers
-        * [**plot_title**] : If True, plot the title information
-        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
-        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
-        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
-        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
-        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
+    Parameters
+    ----------
+    dataObj : musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    fig : Optional[None or matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    axis : Optional[ ]
+        Matplotlib axis object to plot on.
+    maxSignals : Optional[None or int]
+        Maximum number of signals to plot if detected signals exist for the chosen data set.
+    sig_fontsize : Optional[float]
+        fontsize of signal markers
+    plot_title : Optional[bool]
+        If True, plot the title information
+    cbar_ticks : Optional[list]
+        Where to put the ticks on the color bar.
+    cbar_shrink : Optional[float]
+        fraction by which to shrink the colorbar
+    cbar_fraction : Optional[float]
+        fraction of original axes to use for colorbar
+    cbar_gstext_offset : Optional[float]
+        y-offset from colorbar of "Ground Scatter Only" text
+    cbar_gstext_fontsize : Optional[float]
+        fontsize of "Ground Scatter Only" text
+    **kwArgs
+        Keywords arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1923,13 +1943,19 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
     If the chosen data set has signals stored in the sigDetect attribute, numbers identifying each of the signals will
     be plotted on the kArr plot.
 
-    **Args**:
-        * **dataObj** (:class:`musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**fig**] (None or matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
-        * [**roiPlot**] (bool): If true, a region of interest plot showing the features detected using pydarn.proc.music.detectSignals()
-            will be displayed alongside the kArr plot.
+    Parameters
+    ----------
+    dataObj : musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    fig : Optional[None or matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    maxSignals : Optional[None or int]
+        Maximum number of signals to plot if detected signals exist for the chosen data set.
+    roiPlot : Optional[bool]
+        If true, a region of interest plot showing the features detected using pydarn.proc.music.detectSignals()
+        will be displayed alongside the kArr plot.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -2082,19 +2108,37 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
 
     This routine will make the plot without titles, etc.  It is used as the foundation for plotKarr() and plotKarrDetected().
 
-    **Args**:
-        * **dataObj** (:class:`musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**axis**] (matplotlib.figure.axis): matplotlib axis object that will be plotted to.  If not provided, this function will return.
-        * [**maxSignals**] (None or int): Maximum number of signals to plot if detected signals exist for the chosen data set.
-        * [**sig_fontsize**] (float): fontsize of signal markers
-        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
-        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
-        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
-        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
-        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
-        * [**cmap**] (None or matplotlib colormap object): If None and cmap_handling=='matplotlib', use jet.
-        * [**plot_colorbar**] (bool): Enable or disable colorbar plotting.
+    Parameters
+    ----------
+    dataObj : musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    axis : Optional[matplotlib.figure.axis]
+        matplotlib axis object that will be plotted to.  If not provided, this function will return.
+    maxSignals : Optional[None or int]
+        Maximum number of signals to plot if detected signals exist for the chosen data set.
+    sig_fontsize : Optional[float]
+        fontsize of signal markers
+    cbar_ticks : Optional[list]
+        Where to put the ticks on the color bar.
+    cbar_shrink : Optional[float]
+        fraction by which to shrink the colorbar
+    cbar_fraction : Optional[float]
+        fraction of original axes to use for colorbar
+    cbar_gstext_offset : Optional[float]
+        y-offset from colorbar of "Ground Scatter Only" text
+    cbar_gstext_fontsize : Optional[float]
+        fontsize of "Ground Scatter Only" text
+    cmap : Optional[None or matplotlib colormap object]
+        If None and cmap_handling=='matplotlib', use jet.
+    plot_colorbar : Optional[bool]
+        Enable or disable colorbar plotting.
+
+    Returns
+    -------
+    return_dict
+
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
