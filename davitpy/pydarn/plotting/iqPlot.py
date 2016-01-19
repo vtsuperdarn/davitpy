@@ -15,53 +15,58 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: iqPlot
-   :synopsis: A module for generating plotting IQ voltage data
+plotting.iqPlot
+---------------
 
-.. moduleauthor:: ASR, 20141225
+A module for generating plotting IQ voltage data
 
-*********************
-**Module**: pydarn.plotting.iqPlot
-*********************
-**Functions**:
-  * :func:`pydarn.plotting.iqPlot.plot_iq`
+moduleauthor ASR, 20141225
+
+Functions
+---------
+pydarn.plotting.iqPlot.plot_iq
 """
 
 import logging
 
 def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
 
-    """create an rti plot for a secified radar and time period
+    """Create an rti plot for a secified radar and time period.
 
-    **Args**:
-        * **myBeam** : a beamData object from pydarn.sdio.radDataTypes
-        * **[sequences]**: (list of ints or None) Defines which sequences
-                           of voltage data to plot. Default is None which
-                           plots all.
-        * **[mag_phase]**: (boolean) Specifies whether magnitude and 
-                           phase should be plotted instead of real and 
-                           imaginary.
-        * **[scale]**: (None or float) Specifies the scaling to use on 
-                       real, imaginary, or magnitude axes. Default is 
-                       None which auto-scales.
-        * **[user_ax]**: a matplotlib axis object
-        * **[tx_pulse]**: (boolean) Specifies whether or not to plot Tx 
-                          pulses
-        * **[int_data]**: (boolean) Specifies whether or not to plot 
-                          voltage samples from the interferometer array 
-                          (checks beamData.prm.xcf)
+    Parameters
+    ----------
+    myBeam : beamData object from pydarn.sdio.radDataTypes
+        Data that you would like to plot.
+    *sequences : Optional[list of ints or None]
+        Defines which sequences of voltage data to plot. Default is
+        None which plots all.
+    mag_phase : Optional[boolean]
+        Specifies whether magnitude and phase should be plotted
+        instead of real and imaginary.  Default is false.
+    scale : Optional[None or float]
+        Specifies the scaling to use on real, imaginary, or
+        magnitude axes. Default is None which auto-scales.
+    user_ax : Optional[matplotlib axis object]
+        Default is None.
+    tx_pulse : Optional[boolean]
+        Specifies whether or not to plot Tx pulses.  Default is true.
+    int_data : Optional[boolean]
+        Specifies whether or not to plot voltage samples from the
+        interferometer array (checks beamData.prm.xcf). Default
+        is false.
 
-    **Returns**:
-        Nothing.
+    Returns
+    -------
+    Nothing
 
-    **Example**:
-        ::
+    Example
+    -------
             from datetime import datetime
             myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
                                             'kap',fileType='iqdat')
             pydarn.plotting.iqPlot.plot_iq(myBeam)
 
-        Written by ASR 20141225
+    Written by ASR 20141225
     """
 
     from matplotlib import pyplot

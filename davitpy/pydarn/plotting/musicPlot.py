@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -15,33 +16,40 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: musicPlot
-    :synopsis: A module for plotting objects created and processed with the pydarn.proc.music module.
+plotting.musicPlot
+------------------
+
+A module for plotting objects created and processed with the pydarn.proc.music module.
+
+Notes
+-----
 
     Please see the pydarn.proc.music module documentation and the iPython notebooks included in the docs
     folder of the DaViTPy distribution.
 
-.. moduleauthor:: Nathaniel A. Frissell, Fall 2013
+Nathaniel A. Frissell, Fall 2013
 
-*********************
-**Module**: pydarn.plotting.rti
-*********************
-**Functions**:
-    * :func:`pydarn.plotting.daynight_terminator`
-    * :func:`pydarn.plotting.plotRelativeRanges`
-    * :func:`pydarn.plotting.rangeBeamPlot`
-    * :func:`pydarn.plotting.timeSeriesMultiPlot`
-    * :func:`pydarn.plotting.spectrumMultiPlot`
-    * :func:`pydarn.plotting.multiPlot`
-    * :func:`pydarn.plotting.plotFullSpectrum`
-    * :func:`pydarn.plotting.plotDlm`
-    * :func:`pydarn.plotting.plotKarr`
-    * :func:`pydarn.plotting.plotKarrDetected`
-    * :func:`pydarn.plotting.plotKarrAxis`
+Functions
+----------------------------
+plotting.daynight_terminator
+plotting.plotRelativeRanges
+plotting.rangeBeamPlot
+plotting.timeSeriesMultiPlot
+plotting.spectrumMultiPlot
+plotting.multiPlot
+plotting.plotFullSpectrum
+plotting.plotDlm
+plotting.plotKarr
+plotting.plotKarrDetected
+plotting.plotKarrAxis
+----------------------------
 
-**Classes**:
-    * :class:`pydarn.plotting.musicFan`
-    * :class:`pydarn.plotting.musicRTI`
+Classes
+-----------------
+plotting.musicFan
+plotting.musicRTI
+-----------------    
+
 """
 
 import numpy as np
@@ -66,21 +74,32 @@ import logging
 figsize=(20,10)
 
 def daynight_terminator(date, lons):
-    """Calculates the latitude, Greenwich Hour Angle, and solar declination from a given latitude and longitude.
+    """Calculates the latitude, Greenwich Hour Angle, and solar 
+    declination from a given latitude and longitude.
 
     This routine is used by musicRTI for terminator calculations.
 
-    **Args**:
-        * **date** (datetime.datetime): UT date and time of terminator calculation.
-        * **lons** (np.array): Longitudes of which to calculate the terminator.
-    **Returns**:
-        * **lats** (np.array): Latitudes of solar terminator.
-        * **tau** (np.array): Greenwhich Hour Angle.
-        * **dec** (np.array): Solar declination.
+    Parameters
+    ----------
+    date : (datetime.datetime)
+        UT date and time of terminator calculation.
+    lons : (np.array)
+        Longitudes of which to calculate the terminator.
+
+    Returns
+    -------
+    lats : (np.array)
+        Latitudes of solar terminator.
+    tau : (np.array)
+        Greenwhich Hour Angle.
+    dec : (np.array)
+        Solar declination.
 
     Adapted from mpl_toolkits.basemap.solar by Nathaniel A. Frissell, Fall 2013
     """
+    
     import mpl_toolkits.basemap.solar as solar
+
     dg2rad = np.pi/180.
     # compute greenwich hour angle and solar declination
     # from datetime object (assumed UTC).
@@ -93,40 +112,73 @@ def daynight_terminator(date, lons):
 class musicFan(object):
     """Class to plot a fan plot using a pydarn.proc.music.musicArray object as the data source.
 
-    **Args**:
-        * **dataObj** (:class:`pydarn.proc.music.musicArray`):  musicArray object
-        * [**dataSet**] (str):  which dataSet in the musicArray object to plot
-        * [**time**] (None or datetime.datetime): Time scan plot.  If None, the first time in dataSet will be used.
-        * [**axis**] (None or matplotlib.figure.axis): Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
-        * [**scale**] (None or 2-Element iterable): Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
-        * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
-        * [**plotZeros**] (bool): If True, plot cells that are exactly 0.
-        * [**markCell**] (None or 2-Element iterable): Mark the (beam, rangeGate) with black.
-        * [**markBeam**] (None or int): Mark a chosen beam.
-        * [**markBeam_dict**] (dict): dictionary of keywords defining markBeam line properties.
-        * [**plotTerminator**] (bool): If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
-        * [**plot_title**] (bool): If True, plot the title information
-        * [**title**] (str): Overide default title text.
-        * [**parallels_ticks**] (list): Where to draw the parallel (latitude) lines
-        * [**meridians_ticks**] (list): Where to draw the meridian (longitude) lines
-        * [**zoom**] (float): Multiply the map height and width by this factor (bigger number shows more area).
-        * [**lat_shift**] (float): Add this number to the computed lat_0 sent to basemap.
-        * [**lon_shift**] (float): Add this number to the computed lon_0 sent to basemap.
-        * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
-                'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
-        * [**cmap**] (None or matplotlib colormap object): If Nonei and cmap_handling=='matplotlib', use jet.
-        * [**plot_cbar**] (bool): If True, plot the color bar.
-        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
-        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
-        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
-        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
-        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
-        * [**model_text_size**] : fontsize of model and coordinate indicator text
-        * [**draw_coastlines**] (bool): If True, draw the coastlines.
-        * [**basemap_dict**] (dict): dictionary of keywords sent to the basemap invocation
-        * [**kwArgs**] (**kwArgs): Keyword Arguments
+    Parameters
+    ----------
+    dataObj : (`pydarn.proc.music.musicArray`)
+        musicArray object
+    dataSet : Optional[str]
+        Which dataSet in the musicArray object to plot
+    time : Optional[None or datetime.datetime]
+        Time scan plot.  If None, the first time in dataSet will be used.
+    axis : Optional[None or matplotlib.figure.axis]
+        Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
+    scale : Optional[None or 2-Element iterable]
+        Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
+    autoScale : Optional[bool]
+        If True, automatically scale the color bar for good data visualization. Keyword scale must
+        be None when using autoScale.
+    plotZeros : Optional[bool]
+        If True, plot cells that are exactly 0.
+    markCell : Optional[None or 2-Element iterable]
+        Mark the (beam, rangeGate) with black.
+    markBeam : Optional[None or int]
+        Mark a chosen beam.
+    **markBeam_dict : Optional[dict]
+        dictionary of keywords defining markBeam line properties.
+    plotTerminator : Optional[bool]
+        If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
+    plot_title : Optional[bool]
+        If True, plot the title information
+    title : Optional[str]
+        Overide default title text.
+    *parallels_ticks : Optional[list]
+        Where to draw the parallel (latitude) lines
+    *meridians_ticks : Optional[list]
+        Where to draw the meridian (longitude) lines
+    zoom : Optional[float]
+        Multiply the map height and width by this factor (bigger number shows more area).
+    lat_shift : Optional[float]
+        Add this number to the computed lat_0 sent to basemap.
+    lon_shift : Optional[float]
+        Add this number to the computed lon_0 sent to basemap.
+    cmap_handling : Optional[str]
+        'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
+        'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+    cmap : Optional[one or matplotlib colormap object]
+        If Nonei and cmap_handling=='matplotlib', use jet.
+    plot_cbar : Optional[bool]
+        If True, plot the color bar.
+    *cbar_ticks : Optional[list]
+        Where to put the ticks on the color bar.
+    cbar_shrink : Optional[float]
+        Fraction by which to shrink the colorbar
+    cbar_fraction : Optional[float]
+        Fraction of original axes to use for colorbar
+    cbar_gstext_offset : Optional[float]
+        y-offset from colorbar of "Ground Scatter Only" text
+    cbar_gstext_fontsize : Optional[float]
+        Fontsize of "Ground Scatter Only" text
+    model_text_size : Optional[int]
+        fontsize of model and coordinate indicator text
+    draw_coastlines : Optional[bool]
+        If True, draw the coastlines.
+    **basemap_dict : Optional[dict]
+        Dictionary of keywords sent to the basemap invocation
+    **kwArgs
+        Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     def __init__(self,dataObject,
         dataSet                 = 'active',

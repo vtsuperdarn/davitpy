@@ -1,48 +1,67 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: pydarn.plotting.mapOverlay
-*********************
+plotting.mapOverlay
+-------------------
+
 Overlay information on maps
 
-**Functions**:
-	* :func:`overlayRadar`: Overlay radar position and name on a map
-	* :func:`overlayFov`: Overlay field(s)-of-view on a map
+Functions
+----------------------------------------------------------------
+plotting.overlayRadar   Overlay radar position and name on a map
+plotting.overlayFov     Overlay field(s)-of-view on a map
+----------------------------------------------------------------
 
 """
 
 import logging
 
-# *************************************************************
+
 def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None, 
                  annotate=True, plot_all=False, hemi=None, zorder=2,
                  markerColor='k', markerSize=10, fontSize=10, font_color='k',
                  xOffset=None,yOffset=-5):
-    """
-    Overlay radar position(s) and name(s) on map 
+    """Overlay radar position(s) and name(s) on map 
     
-    **Args**: 
-        * **mapObj**: a mapObj class object or Basemap map object
-        * **[codes]**: a list of radar 3-letter codes to plot
-        * **[ids]**: a list of radar IDs to plot
-        * **[names]**: a list of radar names to plot
-        * **[dateTime]**: a datetime.datetime object to use for the radar.
-                          Default: uses mapObj.dateTime
-        * **[annotate]**: wether or not to show the radar(s) name(s)
-        * **[plot_all]**: set to true to plot all the radars (active ones)
-        * **[hemi]**: 'north', 'south', or None.  If a hemisphere is specified,
-                      limits radar calls to that hemisphere.  Default: None
-        * **[zorder]**: the overlay order number. Default: 2
-        * **[markerColor]**: Default: 'k' (black)
-        * **[markerSize]**: [point] Default: 10
-        * **[fontSize]**: [point] Default: 10
-        * **[xOffset]**: x-Offset of the annotation in points.  Default: None 
-        * **[yOffset]**: y-Offset of the annotation in points.  Default: -5
-    **Returns**:
-        * None
-    **Example**:
-        ::
+    Parameters
+    ---------- 
+    mapObj : mapObj class object or Basemap map object
+
+    **codes : list 
+        Radar 3-letter codes to plot
+    ids : Optional[list]
+        Radar IDs to plot
+    names : Optional[list]
+        Radar names to plot
+    dateTime : Optional[datetime.datetime]
+        Datetime object to use for the radar.  Default: uses mapObj.dateTime
+    annotate : Optional[boolean]
+        Flag to show whether or not to show the radar(s) name(s)
+    plot_all : Optional[boolean]
+        Set to true to plot all the radars (active ones)
+    hemi : Optional[str]
+        'north', 'south', or None.  If a hemisphere is specified, limits 
+        radar calls to that hemisphere.  Default: None
+    zorder : Optional[int]
+        The overlay order number. Default: 2
+    markerColor : Optional[str]
+        Default: 'k' (black)
+    markerSize : Optional[int]
+        [point] Default: 10
+    fontSize : Optional[int]
+        [point] Default: 10
+    xOffset : Optional[int]
+        x-Offset of the annotation in points.  Default: None 
+    yOffset : Optional[int]
+        y-Offset of the annotation in points.  Default: -5
+
+    Returns
+    -------
+    None
+
+    Example
+    -------
 
         import pydarn
         import utils
@@ -155,7 +174,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 
     return
 
-# *************************************************************
+
 def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                plot_all=False, maxGate=None, rangeLimits=None, beamLimits=None,
                model='IS', fov_dir='front', fovColor=None, fovAlpha=0.2,
@@ -163,42 +182,58 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                lineColor='k', lineWidth=1):
     """ Overlay FoV position(s) on map
 
-    **Args**: 
-        * **mapObj**: a mapObj or Basemap object on which to overplot
-                      the radar position(s)
-        * **[codes]**: a list of radar 3-letter codes to plot
-        * **[ids]**: a list of radar IDs to plot
-        * **[names]**: a list of radar names to plot
-        * **[dateTime]**: a datetime.datetime object to use for the FOV.
-        Default: uses mapObj.dateTime
-        * **[plot_all]**: set to true to plot all the radars (active ones)
-        * **[maxGate]**: Maximum number of gates to be plotted. Defaults to
-                         hdw.dat information.
-        * **[rangeLimits]**: (2-element list) Plot only between the range gates
-                             specified.
-        * **[beamLimits]**: (2-element list) Plot only between the beams
-                             specified.
-        * **model**:
-            * **'IS'**: for ionopsheric scatter projection model (default)
-            * **'GS'**: for ground scatter projection model
-            * **None**: if you are really confident in your elevation or
-                        altitude values
-        * **[fov_dir]**: Field of view direction ('front' or 'back').
-                         Default='front'
-        * **[zorder]**: the overlay order number
-        * **[lineColor]**: FoV contour line color
-        * **[lineWidth]**: FoV contour line width
-        * **[fovColor]**: field of view fill color
-        * **[fovAlpha]**: field of view fill color transparency
-        * **[fovObj]**: a fov object. See pydarn.radar.radFov.fov
-        * **[hemi]**: 'north' or 'south', ignore radars from the other
-                      hemisphere
-        * **[beams]**: hightlight specified beams
-        * **[beamsColors]**: colors of the hightlighted beams
-    **Returns**:
-        * None
-    **Example**:
-        ::
+    Parameters
+    ----------
+    mapObj : mapObj or Basemap object
+        Object on which to overplot the radar position(s)
+    *codes : Optional[list]
+        List of radar 3-letter codes to plot
+    *ids : Optional[list]
+        List of radar IDs to plot
+    names : Optional[list]
+        List of radar names to plot
+    dateTime : Optional[datetime.datetime]
+        Object to use for the FOV.  Default: uses mapObj.dateTime
+    plot_all : Optional[boolean]
+        Set to true to plot all the radars (active ones)
+    maxGate : Optional[int]
+        Maximum number of gates to be plotted. Defaults to
+        hdw.dat information.
+    *rangeLimits : Optional[list, int]
+        Plot only between the range gates specified.
+    *beamLimits : Optional[2-element list]
+        Plot only between the beams specified.
+    model : Optional[str]
+        'IS for ionopsheric scatter projection model (default), 'GS' for
+        ground scatter projection model, None if you are really
+        confident in your elevation or altitude values
+    fov_dir : Optional[str] 
+        Field of view direction ('front' or 'back'). Default='front'
+    zorder : Optional[int]
+        The overlay order number
+    lineColor : Optional[str]
+        FoV contour line color. Default is 'k' for black.
+    lineWidth : Optional[int]
+        FoV contour line width
+    fovColor : Optional[str]
+        Field of view fill color
+    fovAlpha : Optional[str]
+        Field of view fill color transparency
+    fovObj : Optional[fov object]
+        See pydarn.radar.radFov.fov
+    hemi : Optional[str]
+        'north' or 'south', ignore radars from the other hemisphere
+    beams : Optional[int]
+        hightlight specified beams
+    beamsColors : Optional[str] 
+        colors of the hightlighted beams
+    
+    Returns
+    -------
+    None
+    
+    Example
+    -------
 
         import pydarn, utils
         # Width and height give the window size in meters

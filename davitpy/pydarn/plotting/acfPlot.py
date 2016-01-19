@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 #
@@ -15,60 +16,78 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: acfPlot
-   :synopsis: A module for generating plotting ACF and XCF data
+plotting.acfPlot
+----------------
 
-.. moduleauthor:: ASR, 20141230
+A module for generating plotting ACF and XCF data
 
-*********************
-**Module**: pydarn.plotting.acfPlot
-*********************
-**Functions**:
-  * :func:`pydarn.plotting.acfPlot.plot_acf`
-  * :func:`pydarn.plotting.acfPlot.calc_blanked`
-  * :func:`pydarn.plotting.acfPlot.plot_rli`
-  * :func:`pydarn.plotting.acfPlot.nuft`
+moduleauthor:: ASR, 20141230
+
+
+Functions
+---------
+pydarn.plotting.acfPlot.plot_acf
+pydarn.plotting.acfPlot.calc_blanked
+pydarn.plotting.acfPlot.plot_rli
+pydarn.plotting.acfPlot.nuft
+
+
 """
 
 import logging
 
+
 def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
              xcf=False, panel=0, ax=None, show=True, png=False,
              pdf=False):
-    """
-    Plot the ACF/XCF for a specified beamData object at a
+    """Plot the ACF/XCF for a specified beamData object at a
     specified range gate
 
-    **Args**:
-        * **myBeam** : a beamData object from pydarn.sdio.radDataTypes
-        * **gate**: (int) The range gate to plot data for.
-        * **[normalized]**: (boolean) Specifies whether to normalize the
-                            ACF/XCF data by the lag-zero power.
-        * **[mark_blanked]**: (boolean) Specifies whether magnitude and
-                              phase should be plotted instead of real and
-                              imaginary.
-        * **[xcf]**: (boolean) Specifies whether to plot XCF data or not
-        * **[panel]**: (int) from 0 to 3 specifies which data to plot of
-                       ACF/XCF, ACF/XCF amplitude, ACF/XCF phase, or
-                       power spectrum, respectively. Default is panel=0.
-        * **[ax]**: a matplotlib axis object
-        * **[show]**: (boolean) Specifies whether plot to a figure
-                                window. If set to false and png or pdf
-                                are set to false, then the figure is
-                                plotted to a png file.
+    Parameters
+    ----------
+    myBeam : a beamData object from pydarn.sdio.radDataTypes
+        The data object taht you would like to plot.
+    gate : (int)
+        The range gate to plot data for.
+    normalized : Optional[boolean]
+        Specifies whether to normalize the ACF/XCF data by the
+        lag-zero power. Default is true.
+    mark_blanked : Optional[boolean]
+        Specifies whether magnitude and phase should be
+        plotted instead of real and imaginary. Default is true.
+    xcf : Optional[boolean]
+        Specifies whether to plot XCF data or not.  Default is false.
+    panel : Optional[int]
+        From 0 to 3 specifies which data to plot of ACF/XCF, ACF/XCF
+        amplitude, ACF/XCF phase, or power spectrum, respectively.
+        Default is panel=0.
+    ax : Optional[matplotlib axis object]
+        Default is none.
+    show : Optional[boolean]
+        Specifies whether plot to a figure window. If set to false
+        and png or pdf are set to false, then the figure is plotted
+        to a png file.
+    png : Optional[boolean]
+        Flag to set the output format to a png file.  Default
+        is false.
+    pdf : Optional[boolean]
+        Flag to set the output format to a pdf file.  Default
+        is false.
 
-    **Returns**:
-        Nothing.
+    Returns
+    -------
+    Nothing
 
-    **Example**:
-        ::
+    Example
+    -------
             from datetime import datetime
             myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
                                           'kap',fileType='rawacf')
             myBeam = myPtr.readRec()
             pydarn.plotting.acfPlot.plot_acf(myBeam,24)
 
-        Written by ASR 20141230
+
+    Written by ASR 20141230
     """
 
     from matplotlib import pyplot
@@ -264,8 +283,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
             ax4.get_yaxis().get_offset_text().set_x(1)
             ax4.yaxis.set_major_locator(MaxNLocator(prune='upper'))
 
-
-    #handle the outputs
+    # handle the outputs
     rad = pydarn.radar.network().getRadarById(myBeam.stid).code[0]
     if png and (ax is None):
         if not show:
@@ -273,45 +291,50 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         if xcf:
             fig.savefig('XCF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad +'_gate' + str(gate) + '.png')
+                        '_' + rad + '_gate' + str(gate) + '.png')
         else:
             fig.savefig('ACF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad +'_gate' + str(gate) + '.png')
+                        '_' + rad + '_gate' + str(gate) + '.png')
     if pdf and (ax is None):
         if not show:
             canvas = FigureCanvasAgg(fig)
         if xcf:
             fig.savefig('XCF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad +'_gate' + str(gate) + '.pdf')
+                        '_' + rad + '_gate' + str(gate) + '.pdf')
         else:
             fig.savefig('ACF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad +'_gate' + str(gate) + '.pdf')
+                        '_' + rad + '_gate' + str(gate) + '.pdf')
     if show and (ax is None):
         fig.show()
 
 
-
 def calc_blanked(ltab, tp, tau, tfr, gate):
-    """
-    Function that calculates the lags that are affected by Tx pulse
+    """Function that calculates the lags that are affected by Tx pulse
     receiver blanking.
 
-    **Args**:
-        * **ltab** : (list) The received lag table for the Tx-ed pulse
-                            sequence.
-        * **tp**: (int) The Tx pulse length in microseconds.
-        * **tau**: (int) The lag time in microseconds.
-        * **tfr**: (int) The time to first range gate in microseconds.
-        * **gate**: (int) The range gate to plot data for.
+    Parameters
+    ----------
+    ltab : (list)
+        The received lag table for the Tx-ed pulse sequence.
+    tp : (int)
+        The Tx pulse length in microseconds.
+    tau : (int)
+        The lag time in microseconds.
+    tfr : (int)
+        The time to first range gate in microseconds.
+    gate : (int)
+        The range gate to plot data for.
 
-    **Returns**:
-        Nothing.
+    Returns
+    -------
+    txs_in_lag
+        An array of lags where the transmit blanking was found.
 
-    **Example**:
-        ::
+    Example
+    -------
             from datetime import datetime
             myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
                                           'kap',fileType='rawacf')
@@ -322,7 +345,7 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
             tp = myBeam.prm.txpl
             pydarn.plotting.acfPlot.calc_blanked(ltab,tp,tau,tfr,24)
 
-        Written by ASR 20141230
+    Written by ASR 20141230
     """
 
     # Calculate the lags and the pulse table
@@ -367,33 +390,40 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
 
 
 def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False):
-    """
-    This function plots a range-lag-intensity plot of ACF/XCF data
+    """This function plots a range-lag-intensity plot of ACF/XCF data
     for an input beamData object.
 
-    **Args**:
-        * **myBeam** : A beamData object from pydarn.sdio.radDataTypes.
-        * **[normalized]**: (boolean) Specifies whether to normalize the
-                            ACF/XCF data by the lag-zero power.
-        * **[xcf]**: (boolean) Specifies whether to plot XCF data or
-                               not.
-        * **[show]**: (boolean) Specifies whether plot to a figure
-                                window. If set to false and png or pdf
-                                are set to false, then the figure is
-                                plotted to a png file.
+    Parameters
+    ----------
+    myBeam : (beamData object from pydarn.sdio.radDataTypes)
+        Beam data to plot.
+    normalized : Optional[boolean]
+        Specifies whether to normalize the ACF/XCF data by the lag-zero power.
+        Default is true.
+    xcf : Optional[boolean]
+        Specifies whether to plot XCF data or not.  Default is false.
+    show : Optional[boolean]
+        Specifies whether plot to a figure window. If set to false and
+        png or pdf are set to false, then the figure is plotted to a png file.
+        Default is true.
+    png : Optional[boolean]
+        Flag for setting the output format to png.  Default is false.
+    pdf : Optional[boolena]
+        Flag for setting the output format to pdf.  Default is false.
 
-    **Returns**:
-        Nothing.
+    Returns
+    -------
+    Nothing
 
-    **Example**:
-        ::
+    Example
+    -------
             from datetime import datetime
             myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
                                           'kap',fileType='rawacf')
             myBeam = myPtr.readRec()
             pydarn.plotting.acfPlot.plot_rli(myBeam)
 
-        Written by ASR 20141230
+    Written by ASR 20141230
     """
 
     from matplotlib import pyplot
@@ -545,19 +575,24 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
 
 
 def nuft(a, tn, T):
-    """
-    A function to calculate the non-uniformly sampled discrete
+    """A function to calculate the non-uniformly sampled discrete
     Fourier transform.
 
-    **Args**:
-        * **a** : (np.array) The input array to be transformed.
-        * **tn**: (float) An array of timestamps for the input array.
-        * **T**: (float) The end time of the input array.
+    Parameters
+    ----------
+    a : np.array
+        The input array to be transformed.
+    tn : float
+        An array of timestamps for the input array.
+    T : float
+        The end time of the input array.
 
-    **Returns**:
-        Nothing.
+    Returns
+    -------
+    ft
+        The Fourier transform result.
 
-        Written by ASR 20141230
+    Written by ASR 20141230
     """
 
     import numpy as np
@@ -611,4 +646,3 @@ if __name__ == "__main__":
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31, ax=ax)
 
     pyplot.show()
-
