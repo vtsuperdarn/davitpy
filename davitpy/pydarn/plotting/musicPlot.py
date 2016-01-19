@@ -433,44 +433,75 @@ class musicFan(object):
 class musicRTI(object):
     """Class to create an RTI plot using a pydarn.proc.music.musicArray object as the data source.
 
-    **Args**:
-        * **dataObj** (:class:`pydarn.proc.music.musicArray`):  musicArray object
-        * [**dataSet**] (str):  which dataSet in the musicArray object to plot
-        * [**beam**] (int): Beam number to plot.
-        * [**xlim**] (None or 2-element iterable of datetime.datetime): Limits for x-axis.
-        * [**ylim**] (None or 2-element iterable of floats): Limits for y-axis.
-        * [**axis**] (None or matplotlib.figure.axis): Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
-        * [**scale**] (None or 2-Element iterable): Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
-        * [**plotZeros**] (bool): If True, plot data cells that are identically zero.
-        * [**max_sounding_time**] (None or datetime.timedelta): Do not allow data to be plotted for longer than this duration.
-        * [**xBoundaryLimits**] (None or 2-element iterable of datetime.datetime): Mark a region of times on the RTI plot.  A green dashed vertical line will be plotted
-            at each of the boundary times.  The region of time outside of the boundary will be shaded gray.
-            If set to None, this will automatically be set to the timeLimits set in the metadata, if they exist.
-        * [**yBoundaryLimits**] (None or 2-element iterable of floats): Mark a region of range on the RTI plot.  A green dashed horizontal line will be plotted
-            at each of the boundary ranges.  The region of time outside of the boundary will be shaded gray.
-            If set to None, this will automatically be set to the gateLimits set in the metadata, if they exist.
-        * [**yticks**] (list): Where to put the ticks on the y-axis.
-        * [**ytick_lat_format**] (str):  %-style string format code for latitude y-tick labels
-        * [**autoScale**] (bool):  If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
+    Parameters
+    ----------
+    dataObj : pydarn.proc.music.musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    beam : Optional[int]
+        Beam number to plot.
+    xlim : Optoinal[None or 2-element iterable of datetime.datetime]
+        Limits for x-axis.
+    ylim : Optional[None or 2-element iterable of floats]
+        Limits for y-axis.
+    axis : Optional[None or matplotlib.figure.axis]
+        Matplotlib axis on which to plot.  If None, a new figure and axis will be created.
+    scale : Optional[None or 2-Element iterable]
+        Colorbar scale.  If None, the default scale for the current SuperDARN parameter will be used.
+    plotZeros : Optional[bool]
+        If True, plot data cells that are identically zero.
+    max_sounding_time : Optional[None or datetime.timedelta]
+        Do not allow data to be plotted for longer than this duration.
+    xBoundaryLimits: Optional[None or 2-element iterable of datetime.datetime]
+        Mark a region of times on the RTI plot.  A green dashed vertical line will be plotted
+        at each of the boundary times.  The region of time outside of the boundary will be shaded gray.
+        If set to None, this will automatically be set to the timeLimits set in the metadata, if they exist.
+    yBoundaryLimits : Optional[None or 2-element iterable of floats]
+        Mark a region of range on the RTI plot.  A green dashed horizontal line will be plotted
+        at each of the boundary ranges.  The region of time outside of the boundary will be shaded gray.
+        If set to None, this will automatically be set to the gateLimits set in the metadata, if they exist.
+    yticks : Optional[list]
+        Where to put the ticks on the y-axis.
+    ytick_lat_format : Optional[str]
+         %-style string format code for latitude y-tick labels
+    autoScale : Optional[bool]
+        If True, automatically scale the color bar for good data visualization. Keyword scale must be None when using autoScale.
         ax.set_xlim(xlim)
-        * [**plotTerminator**] (bool): If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
-            terminator resolution will match the resolution of the RTI plot data.
-        * [**axvlines**] (None or list of datetime.datetime): Dashed vertical lines will be drawn at each specified datetime.datetime.
-        * [**axvline_color**] : Matplotlib color code specifying color of the axvlines.
-        * [**secondary_coords**] (str): Secondary coordate system for RTI plot y-axis ('lat' or 'range')
-        * [**plot_info**] (bool): If True, plot frequency/noise plots
-        * [**plot_title**] (bool): If True, plot the title information
-        * [**plot_range_limits_label**] (bool): If True, plot the label corresponding to the range limits on the right-hand y-axis.
-        * [**cmap_handling**] (str): 'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
-                'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
-        * [**plot_cbar**] (bool): If True, plot the color bar.
-        * [**cbar_ticks**] (list): Where to put the ticks on the color bar.
-        * [**cbar_shrink**] (float): fraction by which to shrink the colorbar
-        * [**cbar_fraction**] (float): fraction of original axes to use for colorbar
-        * [**cbar_gstext_offset**] (float): y-offset from colorbar of "Ground Scatter Only" text
-        * [**cbar_gstext_fontsize**] (float): fontsize of "Ground Scatter Only" text
-        * [**model_text_size**] : fontsize of model and coordinate indicator text
-        * [**kwArgs**] (**kwArgs): Keyword Arguments
+    plotTerminator : Optional[bool]
+        If True, overlay day/night terminator on the RTI plot.  Every cell is evaluated for day/night and shaded accordingly.  Therefore,
+        terminator resolution will match the resolution of the RTI plot data.
+    axvlines : Optional[None or list of datetime.datetime]
+        Dashed vertical lines will be drawn at each specified datetime.datetime.
+    axvline_color : Optional[str]
+        Matplotlib color code specifying color of the axvlines.
+    secondary_coords : Optional[str]
+        Secondary coordate system for RTI plot y-axis ('lat' or 'range')
+    plot_info : Optional[bool]
+        If True, plot frequency/noise plots
+    plot_title : Optional[bool]
+        If True, plot the title information
+    plot_range_limits_label : Optoinal[bool]
+        If True, plot the label corresponding to the range limits on the right-hand y-axis.
+    cmap_handling : Optional[str]
+        'superdarn' to use SuperDARN-style colorbars, 'matplotlib' for direct use of matplotlib's colorbars.
+        'matplotlib' is recommended when using custom scales and the 'superdarn' mode is not providing a desirable result.
+    plot_cbar : Optional[bool]
+        If True, plot the color bar.
+    cbar_ticks : Optional[list]
+        Where to put the ticks on the color bar.
+    cbar_shrink : Optional[float]
+        fraction by which to shrink the colorbar
+    cbar_fraction : Optional[float]
+        fraction of original axes to use for colorbar
+    cbar_gstext_offset : Optional[float]
+        y-offset from colorbar of "Ground Scatter Only" text
+    cbar_gstext_fontsize : Optional[float]
+        fontsize of "Ground Scatter Only" text
+    model_text_size : Optional[int]
+        fontsize of model and coordinate indicator text
+    **kwArgs :
+        Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -875,17 +906,25 @@ class musicRTI(object):
 
 
 def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
-    """Plots the N-S and E-W distance from the center cell of a field-of-view in a pydarn.proc.music.musicArray object.
-    Also plots one scan of the chosen dataSet, with the center cell marked in black.
+    """Plots the N-S and E-W distance from the center cell of a field-of-view in a
+    pydarn.proc.music.musicArray object.  Also plots one scan of the chosen
+    dataSet, with the center cell marked in black.
 
-    **Args**:
-        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**time**] (None or datetime.datetime): Time scan plot.  If None, the first time in dataSet will be used.
-        * [**fig**] (None of matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    Parameters
+    ----------
+    dataObj : pydarn.proc.music.musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    time : Optional[None or datetime.datetime]
+        Time scan plot.  If None, the first time in dataSet will be used.
+    fig : Optional[None of matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
 
-    **Returns**:
-        * [**fig**] (None of matplotlib.figure): matplotlib figure object that was plotted to
+    Returns
+    -------
+    fig : None of matplotlib.figure
+        matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -960,16 +999,26 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
 def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param='velocity',scale=None,cbarLabel=None):
     """Plots data on a range versus beam plot with a colorbar.
 
-    **Args**:
-        * **currentData** (:class:`pydarn.proc.music.musicDataObj`): musicDataObj
-        * **data** (numpy.array): nBeams x nGates Numpy array of data
-        * **axis** (:class:`matplotlib.axis`): matplotlib axis object on which to plot
-        * [**title**] (None or str): Title of plot.
-        * [**xlabel**] (None or str): X-axis label
-        * [**ylabel**] (None or str): Y-axis label
-        * [**param**] (None or str): Parameter used for colorbar selection.
-        * [**scale**] (None or 2-element iterable): Two-element colorbar scale.
-        * [**cbarLabel**] (str): Colorbar label.
+    Parameters
+    ----------
+    currentData : pydarn.proc.music.musicDataObj
+        musicDataObj
+    data : numpy.array
+        nBeams x nGates Numpy array of data
+    axis : matplotlib.axis
+        matplotlib axis object on which to plot
+    title : Optional[None or str]
+        Title of plot.
+    xlabel : Optional[None or str]
+        X-axis label
+    ylabel : Optional[None or str]
+        Y-axis label
+    param : Optional[None or str]
+        Parameter used for colorbar selection.
+    scale : Optional[None or 2-element iterable]
+        Two-element colorbar scale.
+    cbarLabel : Optional[str]
+        Colorbar label.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1018,25 +1067,41 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
     """Plots 1D line time series of selected cells in a pydarn.proc.music.musicArray object.
     This defaults to 9 cells of the FOV.
 
-    **Args**:
-        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**dataObj2**] (:class:`pydarn.proc.music.musicArray`): A second musicArray object to be overlain on the the first dataObj plot.
-        * [**dataSet2**] (str):  which dataSet in the second musicArray to plot
-        * [**plotBeam**] (list of int): list of beams to plot from
-        * [**plotGate**] (list of int): list of range gates to plot from
-        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * [**xlim**] (None or 2-element iterable): X-axis limits of all plots
-        * [**ylim**] (None or 2-element iterable): Y-axis limits of all plots
-        * [**xlabel**] (None or str): X-axis label
-        * [**ylabel**] (None or str): Y-axis label
-        * [**title**] (None or str): Title of plot
-        * [**xBoundaryLimits**] (None or 2-element iterable) : Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-            Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
-            in the metadata, if they exist.
+    Parameters
+    ----------
+    dataObj : pydarn.proc.music.musicArray
+        musicArray object
+    dataSet : Optoinal[str]
+        which dataSet in the musicArray object to plot
+    dataObj2 : Optional[pydarn.proc.music.musicArray]
+        A second musicArray object to be overlain on the the first dataObj plot.
+    dataSet2 : Optional[str]
+        which dataSet in the second musicArray to plot
+    plotBeam : Optional[list of int]
+        list of beams to plot from
+    plotGate : Optional[list of int]
+        list of range gates to plot from
+    fig : Optional[matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    xlim : Optional[None or 2-element iterable]
+        X-axis limits of all plots
+    ylim : Optional[None or 2-element iterable]
+        Y-axis limits of all plots
+    xlabel : Optional[None or str]
+        X-axis label
+    ylabel : Optional[None or str]
+        Y-axis label
+    title : Optional[None or str]
+        Title of plot
+    xBoundaryLimits : Optional[None or 2-element iterable]
+        Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+        Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+        in the metadata, if they exist.
 
-    **Returns**:
-        * **fig**:      matplotlib figure object that was plotted to
+    Returns
+    -------
+    fig : matplotlib.figure
+        matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
@@ -1110,24 +1175,39 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
     """Plots 1D line spectral plots of selected cells in a pydarn.proc.music.musicArray object.
     This defaults to 9 cells of the FOV.
 
-    **Args**:
-        * **dataObj** (:class:`pydarn.proc.music.musicArray`): musicArray object
-        * [**dataSet**] (str): which dataSet in the musicArray object to plot
-        * [**plotType**] (str): {'real_imag'|'magnitude'|'phase'}
-        * [**plotBeam**] (list of int): list of beams to plot from
-        * [**plotGate**] (list of int): list of range gates to plot from
-        * [**fig**] (matplotlib.figure): matplotlib figure object that will be plotted to.  If not provided, one will be created.
-        * [**xlim**] (None or 2-element iterable): X-axis limits of all plots
-        * [**ylim**] (None or 2-element iterable): Y-axis limits of all plots
-        * [**xlabel**] (None or str): X-axis label
-        * [**ylabel**] (None or str): Y-axis label
-        * [**title**] (None or str): Title of plot
-        * [**xBoundaryLimits**] (None or 2-element iterable) : Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
-            Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
-            in the metadata, if they exist.
+    Parameters
+    ----------
+    dataObj : pydarn.proc.music.musicArray
+        musicArray object
+    dataSet : Optional[str]
+        which dataSet in the musicArray object to plot
+    plotType : Optional[str]
+        {'real_imag'|'magnitude'|'phase'}
+    plotBeam : Optional[list of int]
+        list of beams to plot from
+    plotGate : Optional[list of int]
+        list of range gates to plot from
+    fig : Optional[matplotlib.figure]
+        matplotlib figure object that will be plotted to.  If not provided, one will be created.
+    xlim : Optional[None or 2-element iterable]
+        X-axis limits of all plots
+    ylim : Optional[None or 2-element iterable]
+        Y-axis limits of all plots
+    xlabel : Optional[None or str]
+        X-axis label
+    ylabel : Optional[None or str]
+        Y-axis label
+    title : Optional[None or str]
+        Title of plot
+    xBoundaryLimits : Optional[None or 2-element iterable]
+        Element sequence to shade out portions of the data.  Data outside of this range will be shaded gray,
+        Data inside of the range will have a white background.  If set to None, this will automatically be set to the timeLimits set
+        in the metadata, if they exist.
 
-    **Returns**:
-        * **fig**:      matplotlib figure object that was plotted to
+    Returns
+    -------
+    fig : matplotlib.figure
+        matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
