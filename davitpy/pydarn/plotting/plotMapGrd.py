@@ -117,10 +117,27 @@ class MapConv(object):
                        colMap=cm.jet):
         """Overlay Gridded LoS velocity data from grdex files
 
-        **Belongs to**: :class:`MapConv`
+        Note
+        ----
+        Belongs to class MapConv
 
-        **Returns**:
-            Gridded LoS data is overlayed on the map object.
+        Parameters
+        ---------
+        pltColBar : Optional[bool]
+
+        overlayRadNames : Optional[bool]
+
+        annotateTime : Optional[bool]
+
+        colorBarLabelSize : Optional[float]
+
+        colMap : Optional[ ]
+
+        Returns
+        -------
+        Gridded LoS data is overlayed on the map object. HOW? OR IN WHAT
+        VARIABLE?
+
         """
         import matplotlib
         import datetime
@@ -203,14 +220,19 @@ class MapConv(object):
         """Calculate fitted convection velocity magnitude and azimuth from
            mapex data (basically coefficients of the fit)
 
-        **Belongs to**: :class:`MapConv`
+        Note
+        ----
+        Belongs to class MapConv
 
-        **Returns**:
+        Returns
+        ---------
             Arrays of Fitted velocity magnitude and azimuth
-        **Example**:
-            ::
+
+        Example
+        -------
 
                 ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
+
         """
 
         import datetime
@@ -407,15 +429,19 @@ class MapConv(object):
 
     def calcCnvPots(self):
         """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
-        
-        **Belongs to**: :class:`MapConv`
 
-        **Returns**:
+        Note
+        ----        
+        Belongs to class MapConv
+
+        Returns
+        -------
             Arrays of latitude, longitude and potentials
-        **Example**:
-            ::
+        Example
+        -------
 
                 (lats, lons, pots) = MapConv.calcCnvPots()
+
         """
         import datetime
         import numpy
@@ -551,15 +577,20 @@ class MapConv(object):
 
     def overlayCnvCntrs(self):
         """Overlay convection contours from mapex data
-        
-        **Belongs to**: :class:`MapConv`
 
-        **Returns**:
+        Note
+        ----
+        Belongs to class MapConv
+
+        Returns
+        -------
             contours of convection are overlayed on the map object.
-        **Example**:
-            ::
+
+        Example
+        -------
 
                 MapConv.overlayCnvCntrs()
+
         """
         from matplotlib.ticker import LinearLocator
         import matplotlib.pyplot as plt
@@ -580,15 +611,24 @@ class MapConv(object):
 
     def overlayHMB(self, hmbCol='Gray'):
         """Overlay Heppnard-Maynard boundary from mapex data
-        
-        **Belongs to**: :class:`MapConv`
 
-        **Returns**:
+        Note
+        ----
+        Belongs to class MapConv
+
+        Parameters
+        ----------
+        hmbCol : Optional[str]
+
+        Returns
+        -------
             Heppnard-Maynard boundary is overlayed on the map object.
-        **Example**:
-            ::
+
+        Example
+        -------
 
                 MapConv.overlayHMB()
+
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
             self.mapData.model.boundarymlat, coords = self.plotCoords )
