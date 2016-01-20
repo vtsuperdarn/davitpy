@@ -39,26 +39,28 @@ class MapConv(object):
     Example
     -------
 
-            # Plot contours, fitted velocities and Heppnard-Maynard
-            # boundary from convection map data on April-3-2011
-            import datetime
-            import matplotlib.pyplot as plt
-            import pydarn.plotting.plotMapGrd
-            from utils import *
+    Plot contours, fitted velocities and Heppnard-Maynard
+    boundary from convection map data on April-3-2011
 
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
+    import datetime
+    import matplotlib.pyplot as plt
+    import pydarn.plotting.plotMapGrd
+    from utils import *
 
-            sdate = datetime.datetime(2011,4,3,4,0)
-            mObj = plotUtils.mapObj(boundinglat=50.,
-                gridLabels=True, coords='mag')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
 
-            mapDatObj = pydarn.plotting.plotMapGrd.MapConv(sdate, mObj, ax)
-            mapDatObj.overlayMapFitVel()
-            mapDatObj.overlayCnvCntrs()
-            mapDatObj.overlayHMB()
+    sdate = datetime.datetime(2011,4,3,4,0)
+    mObj = plotUtils.mapObj(boundinglat=50.,
+                            gridLabels=True, coords='mag')
+
+    mapDatObj = pydarn.plotting.plotMapGrd.MapConv(sdate, mObj, ax)
+    mapDatObj.overlayMapFitVel()
+    mapDatObj.overlayCnvCntrs()
+    mapDatObj.overlayHMB()
 
     written by Bharat Kunduri and Sebastien de Larquier, 2013-08
+
     """
     import matplotlib.cm as cm
 
@@ -226,12 +228,20 @@ class MapConv(object):
 
         Returns
         ---------
+        mlatsPlot : NEEDS TYPE
+
+        mlonsPlot : NEEDS TYPE
+
+        velMagn : NEEDS TYPE
+
+        velAzm : NEEDS TYPE
+
             Arrays of Fitted velocity magnitude and azimuth
 
         Example
         -------
 
-                ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
+        ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
 
         """
 
@@ -436,11 +446,17 @@ class MapConv(object):
 
         Returns
         -------
-            Arrays of latitude, longitude and potentials
+        latCntr : NEEDS TYPE
+            Array of latitudes
+        lonCntr : NEEDS TYPE
+            Array of longitudes
+        potArr : NEEDS TYPE
+            Array of potentials
+
         Example
         -------
 
-                (lats, lons, pots) = MapConv.calcCnvPots()
+        (lats, lons, pots) = MapConv.calcCnvPots()
 
         """
         import datetime
@@ -584,12 +600,13 @@ class MapConv(object):
 
         Returns
         -------
+        cntrPlt : NEEDS TYPE
             contours of convection are overlayed on the map object.
 
         Example
         -------
 
-                MapConv.overlayCnvCntrs()
+        MapConv.overlayCnvCntrs()
 
         """
         from matplotlib.ticker import LinearLocator
@@ -627,7 +644,7 @@ class MapConv(object):
         Example
         -------
 
-                MapConv.overlayHMB()
+        MapConv.overlayHMB()
 
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
@@ -642,14 +659,29 @@ class MapConv(object):
         colMap=cm.jet):
         """Overlay model velocity vectors from mapex data
         
-        **Belongs to**: :class:`MapConv`
+        Note
+        ----
+        Belongs to class MapConv
 
-        **Returns**:
+        Parameters
+        ----------
+        pltColBar : Optional[bool]
+
+        annotateTime : Optional[bool]
+
+        colorBarLabelSize : Optional[float]
+
+        colMap : Optional[ ]
+
+        Returns
+        -------
             velocity vectors from the model are overlayed on the map object.
-        **Example**:
-            ::
 
-                MapConv.overlayMapModelVel()
+        Example
+        -------
+
+        MapConv.overlayMapModelVel()
+
         """
         import matplotlib
         import datetime
@@ -711,14 +743,32 @@ class MapConv(object):
         colorBarLabelSize=15., colMap=cm.jet):
         """Overlay fitted velocity vectors from mapex data
         
-        **Belongs to**: :class:`MapConv`
+        Note
+        ----
+        Belongs to class MapConv
 
-        **Returns**:
+        Parameters
+        ----------
+        plotColBar : Optional[bool]
+
+        overlayRadNames : Optional[bool]
+
+        annotateTime : Optional[bool]
+
+        colorBarLabelSize : Optional[bool]
+
+        colMap : Optional[ ]
+
+
+        Returns
+        -------
             vectors of fitted convection velocities are overlayed on the map object.
-        **Example**:
-            ::
 
-                MapConv.overlayMapFitVel()
+        Example
+        -------
+
+        MapConv.overlayMapFitVel()
+
         """
         import matplotlib
         import datetime
