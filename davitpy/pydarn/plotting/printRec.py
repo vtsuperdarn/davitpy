@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -15,35 +16,41 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: printRec
-   :synopsis: functions for printing radar data records to plain text
+plotting.printRec
+   
+Functions for printing radar data records to plain text
 
-.. moduleauthor:: AJ, 20130327
+moduleauthor: AJ, 20130327
 
-*****************************
-**Module**: printRec
-*****************************
-**Functions**:
-  * :func:`fitPrintRec`
-  * :func:`readPrintRec`
+Functions
+------------------------------------------
+fitPrintRec     Print fit-type files
+readPrintRec    Read printrec output files
+------------------------------------------
 
 """
 
 def readPrintRec(filename):
   """A function to read the output of fitPrintRec
   
-    **Args**:
-      * **filename**: the name of the file
-    **Returns**:
-      * Nothing
+    Parameters
+    ----------
+    filename : str
+        the name of the file
+
+    Returns
+    -------
+    Nothing
     
-  **Example**:
-    ::
+    Example
+    -------
     
-      pydarn.plotting.readPrintRec('myfile.txt')
+    pydarn.plotting.readPrintRec('myfile.txt')
       
     Written by AJ 20130327
+
   """
+
   import datetime as dt
 
   #open the file
