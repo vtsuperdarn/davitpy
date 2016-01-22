@@ -822,24 +822,34 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
                      ytickside='right'):
     """Plots a noise panel at position pos.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **sky**: a lsit of the noise.sky of the beam soundings
-        * **search**: a list of the noise.search param
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        * Nothing
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    sky : list
+        a lsit of the noise.sky of the beam soundings
+    search : list
+        a list of the noise.search param
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing
 
-            plot_searchnoise(ax,times,search)
+    Example
+    -------
+
+    plot_searchnoise(ax,times,search)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
+
     """
 
     # Format the yaxis.
@@ -889,25 +899,39 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
 def plot_freq(ax, times, freq, xlim=None, xticks=None):
     """Plots the tx frequency data to an axis object.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **freq**: a lsit of the tfreq of the beam soundings
-        * **search**: a list of the nave param
-        * **[pos]**: position of the panel
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        *Nothing.
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    freq : list
+        a lsit of the tfreq of the beam soundings
+    ### THIS VAR HAS BEEN DEPRECIATED?
+    search :
+        a list of the nave param
+    ### THIS VAR HAS BEEN DEPRECIATED?
+    pos : 
+        position of the panel
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            plot_freq(ax, times, tfreq)
+
+    Example
+    -------
+
+    plot_freq(ax, times, tfreq)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
+
     """
 
     # Format the yaxis.
@@ -954,25 +978,38 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
     """Plots the nave data to an axis object.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **nave**: a lsit of the nave of the beam soundings
-        * **search**: a list of the nave param
-        * **[pos]**: position of the panel
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        *Nothing.
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    nave : list
+        a lsit of the nave of the beam soundings
+    ### THIS VAR IS DEPRECIATIED?
+    search : list
+        a list of the nave param
+    ### THIS VAR IS DEPRECIATED?
+    pos :
+        position of the panel
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            plot_nave(ax, times, nave)
+    Example
+    -------
+
+    plot_nave(ax, times, nave)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
+
     """
 
     # Format the yaxis
@@ -1021,25 +1058,35 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
 def read_data(myPtr, myBeam, bmnum, params, tbands):
     """Reads data from the file pointed to by myPtr
 
-    **Args**:
-        * **myPtr**: a davitpy file pointer object
-        * **myBeam**: a davitpy beam object
-        * **bmnum**: beam number of data to read in
-        * **params**: a list of the parameters to read
-        * **tbands**: a list of the frequency bands to separate data into
-    **Returns**:
-        * A dictionary of the data. Data is stored in lists and separated in
-            to tbands.
+    Parameter
+    ---------
+    myPtr :
+        a davitpy file pointer object
+    myBeam : 
+        a davitpy beam object
+    bmnum : int
+        beam number of data to read in
+    params : list
+        a list of the parameters to read
+    tbands : list
+        a list of the frequency bands to separate data into
 
-    **Example**:
-        ::
-            from davitpy import pydarn
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
-            myBeam = myPtr.readRec()
-            data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
+    Returns
+    -------
+    A dictionary of the data. Data is stored in lists and separated in
+    to tbands.
+
+    Example
+    -------
+
+    from davitpy import pydarn
+    from datetime import datetime
+    myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
+    myBeam = myPtr.readRec()
+    data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
 
     Written by ASR 20150914
+
     """
 
     # Initialize some things.
@@ -1094,28 +1141,41 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 
     """Plots the data given by pArr to an axis object.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **data_dict**: the data dictionary returned by
-                pydarn.plotting.read_data
-        * **pArr**: the list of data to be plotted (e.g. data_dict['vel'] for
-                velocity)
-        * **fplot**: the index of the frequency band of data to plot
-        * **gsct**: a boolean stating whether to flag ground scatter
-                data or not
-        * **rad**: the 3 letter radar code
-        * **bmnum**: The beam number of the data to plot
-        * **coords**: plotting coordinates ('gate', 'range', 'geo', 'mag')
-        * **cmap**: a matplotlib.colors.ListedColormap (such as that returned
-                by utils.plotUtils.genCmap)
-        * **norm**: a matplotlib.colors.BoundaryNorm (such as that returned by
-                utils.plotUtils.genCmap)
-        * **[plot_terminator]**: A boolean stating whether or not to plot
-                the terminator
-    **Returns**:
-        *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    data_dict :
+        the data dictionary returned by pydarn.plotting.read_data
+    pArr : list
+        the list of data to be plotted (e.g. data_dict['vel'] for
+        velocity)
+    fplot : 
+        the index of the frequency band of data to plot
+    gsct : bool
+        a boolean stating whether to flag ground scatter data or not
+    rad : str
+        the 3 letter radar code
+    bmnum : int
+        The beam number of the data to plot
+    coords : str
+        plotting coordinates ('gate', 'range', 'geo', 'mag')
+    cmap :
+        a matplotlib.colors.ListedColormap (such as that returned
+        by utils.plotUtils.genCmap)
+    norm :
+        a matplotlib.colors.BoundaryNorm (such as that returned by
+        utils.plotUtils.genCmap)
+    plot_terminator : Optional[bool]
+        A boolean stating whether or not to plot the terminator
+
+    Returns
+    -------
+
+    *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
 
     Written by ASR 20150916
+
     """
 
     from davitpy import pydarn
@@ -1210,14 +1270,18 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 def daynight_terminator(date, lons):
     """ Return the coordinates of day/night terminator for RTI plotting.
 
-    **Args**:
-        * **date**: a datetime.datetime object (assumed UTC)
-        * **lons**: a numpy array of lons
+    Parameters
+    ----------
+    date : datetime.datetime
+        a datetime.datetime object (assumed UTC)
+    lons : list
+        a numpy array of lons
 
-    **Returns**:
-        *lat, the latitude of the day night terminator
-        *tau, grenwich hour angle
-        *dec, solar declination
+    Returns
+    -------
+    *lat, the latitude of the day night terminator
+    *tau, grenwich hour angle
+    *dec, solar declination
 
     """
 
