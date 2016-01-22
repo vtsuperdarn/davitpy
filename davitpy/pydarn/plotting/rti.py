@@ -449,36 +449,56 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
               ytick_size=9, xticks=None, axvlines=None):
     """ Draws empty axes for an rti plot.
 
-    **Args**:
-        * **myFig**: the MPL figure we are plotting to
-        * **times**: a list of datetime objects referencing the beam soundings
-        * **rad**: 3 letter radar code
-        * **cpid**: list of the cpids or the beam soundings
-        * **bmnum**: beam number being plotted
-        * **nrang**: list of nrang for the beam soundings
-        * **frang**: list of frang of the beam soundings
-        * **rsep**: list of rsep of the beam soundings
-        * **bottom**: flag indicating if we are at the bottom of the figure
-        * **[yrng]**: range of y axis, -1=autoscale (default)
-        * **[coords]**: y axis coordinate system, acceptable values are 'geo',
-            'mag', 'gate', 'rng'
-        * **[pos]**: position of the plot
-        * **[xtick_size]**: fontsize of xtick labels
-        * **[ytick_size]**: fontsize of ytick labels
-        * **[xticks]**: (list) datetime.datetime objects indicating the
-            location of xticks
-        * **[axvlines]**: (list) datetime.datetime objects indicating the
-            location vertical lines marking the plot
-    **Returns**:
-        * **ax**: an axes object
+    Parameters
+    ----------
+    myFig :
+        the MPL figure we are plotting to
+    times : list
+        a list of datetime objects referencing the beam soundings
+    rad : str
+        3 letter radar code
+    cpid : list
+        list of the cpids or the beam soundings
+    bmnum : int
+        beam number being plotted
+    nrang : list
+        list of nrang for the beam soundings
+    frang : list
+        list of frang of the beam soundings
+    rsep : list
+        list of rsep of the beam soundings
+    bottom : bool
+        flag indicating if we are at the bottom of the figure
+    yrng : Optional[list]
+        range of y axis, -1=autoscale (default)
+    coords : Optional[ ]
+        y axis coordinate system, acceptable values are 'geo',
+        'mag', 'gate', 'rng'
+    pos : Optional[ ]
+        position of the plot
+    xtick_size : Optional[ ]
+        fontsize of xtick labels
+    ytick_size : Optional[ ]
+        fontsize of ytick labels
+    xticks : Optional[list]
+        datetime.datetime objects indicating the location of xticks
+    axvlines : Optional[list]
+        datetime.datetime objects indicating the location vertical
+        lines marking the plot
 
-    **Example:
-        ::
+    Returns
+    -------
+    ax : 
+        an axes object
 
-            ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
+    Example
+    -------
+
+    ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
 
     Written by AJ 20121002
     Modified by ASR 20150917 (refactored)
+
     """
 
     from davitpy import pydarn
@@ -504,7 +524,7 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
                 if(cpid[i] == oldCpid): continue
                 oldCpid = cpid[i]
                 if(coords == 'geo' or coords == 'mag'):
-                    # HACK NOT SURE IF YOU CAN DO THIS!
+                    # HACK NOT SURE IF YOU CAN DO THIS(Formatting)!
                     site = pydarn.radar.network().getRadarByCode(rad) \
                         .getSiteByDate(times[i])
                     myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],
@@ -581,30 +601,40 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     """Draws title for an rti plot.
 
-    **Args**:
-        * **fig**: a matplotlib.figure.Figure object
-        * **sTime**: the start time for the data being plotted as a
-            datetime object
-        * **rad**: the 3 letter radar code
-        * **fileType**: the file type being plotted
-        * **beam**: the beam number being plotted
-        * **[eTime]**: the end time for the data being plotted as a
-            datetime object
-        * **[xmin]**: minimum x value o the plot in page coords
-        * **[xmax]**: maximum x value o the plot in page coords
-    * **Returns**:
-        *Nothing.
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        a matplotlib.figure.Figure object
+    sTime : datetime
+        the start time for the data being plotted as a datetime object
+    rad : str
+        the 3 letter radar code
+    fileType : str
+        the file type being plotted
+    beam : int
+        the beam number being plotted
+    eTime : Optional[datetime]
+        the end time for the data being plotted as a datetime object
+    xmin : Optional[ ]
+        minimum x value o the plot in page coords
+    xmax : Optional[ ]
+        maximum x value o the plot in page coords
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            import datetime as dt
-            from matplotlib import pyplot
-            fig = pyplot.figure()
-            rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
+    Example
+    -------
+
+    import datetime as dt
+    from matplotlib import pyplot
+    fig = pyplot.figure()
+    rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
 
     Written by AJ 20121002
     Modified by ASR 20150916
+
     """
 
     from davitpy import pydarn
@@ -639,21 +669,28 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
 def plot_cpid(ax, times, cpid, mode):
     """Plots cpid panel at position pos.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **cpid**: a lsit of the cpids of th beam soundings
-        * **mode**: a list of the ifmode param
-    **Returns**:
-        * Nothing.
+    Parameters
+    ----------
+    ax : 
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    cpid : list
+        a list of the cpids of th beam soundings
+    mode : list
+        a list of the ifmode param
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            plot_cpid(ax,times,cpid,mode)
+    Example
 
-        Written by AJ 20121002
-        Modified by ASR 20150916
+    plot_cpid(ax,times,cpid,mode)
+
+    Written by AJ 20121002
+    Modified by ASR 20150916
+
     """
 
     from davitpy import pydarn
@@ -712,24 +749,34 @@ def plot_cpid(ax, times, cpid, mode):
 def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     """Plots a noise panel at position pos.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **sky**: a lsit of the noise.sky of the beam soundings
-        * **search**: a list of the noise.search param
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        * Nothing
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    sky: list
+        a lsit of the noise.sky of the beam soundings
+    search : list
+        a list of the noise.search param
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing
 
-            plot_skynoise(ax,times,sky)
+    Example
+    -------
+
+    plot_skynoise(ax,times,sky)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
+
     """
 
     # Format the yaxis.
