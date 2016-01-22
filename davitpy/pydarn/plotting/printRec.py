@@ -130,25 +130,35 @@ def readPrintRec(filename):
 def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     """A function to print the contents of a fit-type file
 
-    **Args**:
-      * **sTime**: the start time as a datetime
-      * **eTime**: the end time as a datetime
-      * **rad**: the 3 letter radar code, eg 'bks'
-      * **outfile**: the txt file we are outputting to
-      * **[fileType]**: the filetype to read, 'fitex','fitacf','lmfit';
+    Parameters
+    ----------
+    sTime : datetime
+        the start time as a datetime
+    eTime : datetime
+        the end time as a datetime
+    rad : str 
+        the 3 letter radar code, eg 'bks'
+    outfile : str
+        the txt file we are outputting to
+    fileType : Optional[str]
+        the filetype to read, 'fitex','fitacf','lmfit';
         default = 'fitex'
-      * **[summ]**: option to output a beam summary instead of all data
-    **Returns**:
-      * Nothing
+    summ : Optional[int]
+        option to output a beam summary instead of all data
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing
 
-      pydarn.plotting.fitPrintRec(datetime(2011,1,1,1,0),
-                                  datetime(2011,1,1,2,0),
-                                  'bks', 'myoutfile.txt', summ=1)
+    Example
+    -------
 
-        Written by AJ 20130327
+    pydarn.plotting.fitPrintRec(datetime(2011,1,1,1,0),
+                                datetime(2011,1,1,2,0),
+                                'bks', 'myoutfile.txt', summ=1)
+
+    Written by AJ 20130327
+
     """
 
     from davitpy import pydarn
