@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 #
@@ -15,26 +16,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: rti
-   :synopsis: A module for generating rti plots.
+plotting.rti
 
-.. moduleauthor:: AJ, 20130123
+A module for generating rti plots.
 
-*********************
-**Module**: pydarn.plotting.rti
-*********************
-**Functions**:
-  * :func:`pydarn.plotting.rti.plotRti`
-  * :func:`pydarn.plotting.rti.plot_freq`
-  * :func:`pydarn.plotting.rti.plot_searchnoise`
-  * :func:`pydarn.plotting.rti.plot_skynoise`
-  * :func:`pydarn.plotting.rti.plot_cpid`
-  * :func:`pydarn.plotting.rti.plot_nave`
-  * :func:`pydarn.plotting.rti.rti_title`
-  * :func:`pydarn.plotting.rti.draw_axes`
-  * :func:`pydarn.plotting.rti.read_data`
-  * :func:`pydarn.plotting.rti.rti_panel`
-  * :func:`pydarn.plotting.rti.daynight_terminator`
+moduleauthor: AJ, 20130123
+
+Functions
+---------
+plotRti
+plot_freq
+plot_searchnoise
+plot_skynoise
+plot_cpid
+plot_nave
+rti_title
+draw_axes
+read_data
+rti_panel
+daynight_terminator
+
 """
 
 import numpy
@@ -88,82 +89,105 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
     """ Create an rti plot for a secified radar and time period.
 
-    **Args**:
-        * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
-            object indicating the start time which you would like to plot
-        * **rad** (str): the 3 letter radar code, e.g. 'bks'
-        * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
-            object indicating th end time you would like plotted.  If this
-            is None, 24 hours will be plotted.  default = None.
-        * **[bmnum] (int)**: The beam to plot.  default: 7
-        * **[fileType]** (str): The file type to be plotted, one of ['fitex',
-            'fitacf', 'lmfit'].  default = 'fitex'.
-        * **[params]** (list): a list of the fit parameters to plot, allowable
-            values are: ['velocity', 'power', 'width', 'elevation',
-            'phi0'].  default: ['velocity', 'power', 'width']
-        * **[scales]** (list): a list of the min/max values for the color scale
-            for each param.  If omitted, default scales will be used.  If
-            present, the list should be n x 2 where n is the number of elements
-            in the params list.  Use an empty list for default range, e.g.
-            [[-250,300],[],[]].  default: [[-200,200], [0,30],[0,150]]
-        * **[channel]** (char): the channel you wish to plot, e.g. 'a', 'b',
-            'c', ...  default: 'a'
-        * **[coords]** (str): the coordinates to use for the y axis.  The
-            allowable values are 'gate', 'rng', 'geo', 'mag' default: 'gate'
-        * **[colors]** (str): a string indicating what color bar to use, valid
-            inputs are ['lasse','aj'].  default: 'lasse'
-        * **[yrng]** (list or -1): a list indicating the min and max values
-            for the y axis in the chosen coordinate system, or a -1 indicating
-            to plot everything.  default: -1.
-        * **[gsct]** (boolean): a flag indicating whether to plot ground
-            scatter as gray. default: False (ground scatter plotted normally)
-        * **[low_gray]** (boolean): a flag indicating whether to plot low
-            velocity scatter as gray. default: False (low velocity scatter
-            plotted normally)
-        * **[show]** (boolean): a flag indicating whether to display the figure
-            on the screen.  This can cause problems over ssh.  default = True
-        * **[retfig]** (boolean):  a flag indicating that you want the figure
-            to be returned from the function.  Only the last figure in the list
-            of frequency bands will be returned.  default = False
-        * **[filtered]** (boolean): a flag indicating whether to boxcar filter
-            the data.  default = False (no filter)
-        * **[fileName]** (string): If you want to plot for a specific file,
-            indicate the name of the file as fileName.  Include the type of
-            the file in custType.
-        * **[tfreqbands]** (list): a list of the min/max values for the
-            transmitter frequencies in kHz.  If omitted, the default band will
-            be used.  If more than one band is specified, retfig will cause
-            only the last one to be returned.  default: [[8000,20000]]
-        * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains
-            the pipeline to the data we want to plot. If specified, data will
-            be plotted from the file pointed to by myFile. default: None
-        * **[figure]** (matplotlib.figure) figure object to plot on.  If None,
-            a figure object will be created for you.
-        * **[xtick_size]**: (int) fontsize of xtick labels
-        * **[ytick_size]**: (int) fontsize of ytick labels
-        * **[xticks]**: (list) datetime.datetime objects indicating the
-            location of xticks
-        * **[axvlines]**: (list) datetime.datetime objects indicating the
-            location vertical lines marking the plot
-        * **[plot_terminator]**: (boolean) Overlay the day/night terminator.
-    **Returns**:
-        * A list of figures of length len(tfreqbands)
+    Parameters
+    ----------
+    sTime : datetime
+        a datetime object indicating the start time which you would like
+        to plot
+    rad : str
+        the 3 letter radar code, e.g. 'bks'
+    eTime : Optional[datetime]
+        a datetime object indicating th end time you would like plotted.
+        If this is None, 24 hours will be plotted.  default = None.
+    bmnum : Optional[int]
+        The beam to plot.  default: 7
+    fileType : Optional[str]
+        The file type to be plotted, one of ['fitex', 'fitacf', 'lmfit'].
+        default = 'fitex'.
+    **params : Optional[list]
+        a list of the fit parameters to plot, allowable values are:
+        ['velocity', 'power', 'width', 'elevation', 'phi0'].  default:
+        ['velocity', 'power', 'width']
+    scales : Optional[list]
+        a list of the min/max values for the color scale for each param.
+        If omitted, default scales will be used.  If present, the list
+        should be n x 2 where n is the number of elements in the params
+        list.  Use an empty list for default range, e.g. [[-250,300],[],[]].
+        default: [[-200,200], [0,30],[0,150]]
+    channel : Optional[char]
+        the channel you wish to plot, e.g. 'a', 'b', 'c', ...  default: 'a'
+    coords : Optional[str]
+        the coordinates to use for the y axis.  The allowable values are
+        'gate', 'rng', 'geo', 'mag' default: 'gate'
+    colors : Optional[str]
+        a string indicating what color bar to use, valid inputs are
+        ['lasse','aj'].  default: 'lasse'
+    yrng : Optional[list or -1]
+        a list indicating the min and max values for the y axis in the
+        chosen coordinate system, or a -1 indicating to plot everything.
+        default: -1.
+    gsct : Optional[boolean]
+        a flag indicating whether to plot ground scatter as gray. default:
+        False (ground scatter plotted normally)
+    low_gray : Optional[boolean]
+        a flag indicating whether to plot low velocity scatter as gray.
+        default: False (low velocity scatter plotted normally)
+    show : Optional[boolean]
+        a flag indicating whether to display the figure on the screen.
+        This can cause problems over ssh.  default = True
+    retfig : Optional[boolean]
+        a flag indicating that you want the figure to be returned from
+        the function.  Only the last figure in the list of frequency bands
+        will be returned.  default = False
+    filtered : Optional[boolean]
+        a flag indicating whether to boxcar filter the data.  default:
+        False (no filter)
+    fileName : Optional[string]
+        If you want to plot for a specific file, indicate the name of the
+        file as fileName.  Include the type of the file in custType.
+    tfreqbands : Optional[list]
+        a list of the min/max values for the transmitter frequencies in
+        kHz.  If omitted, the default band will be used.  If more than
+        one band is specified, retfig will cause only the last one to be
+        returned.  default: [[8000,20000]]
+    myFile : Optional[pydarn.sdio.radDataTypes.radDataPtr]
+        contains the pipeline to the data we want to plot. If specified,
+        data will be plotted from the file pointed to by myFile. default: None
+    figure : Optional[matplotlib.figure]
+        figure object to plot on.  If None, a figure object will be created
+        for you.
+    xtick_size : Optional[int]
+        fontsize of xtick labels
+    ytick_size : Optional[int]
+        fontsize of ytick labels
+    *xticks : Optional[list]
+        datetime.datetime objects indicating the location of xticks
+    *axvlines : Optoinal[list]
+        datetime.datetime objects indicating the location vertical lines
+        marking the plot
+    plot_terminator : Optional[boolean]
+        Overlay the day/night terminator.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    A list of figures of length len(tfreqbands)
 
-      import datetime as dt
-      pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
-                                  eTime=dt.datetime(2013,3,16,14,30),
-                                  bmnum=12, fileType='fitacf',
-                                  scales=[[-500,500],[],[]], coords='geo',
-                                  colors='aj', filtered=True, show=True)
+    Example
+    -------
+
+    import datetime as dt
+    pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
+                                 eTime=dt.datetime(2013,3,16,14,30),
+                                 bmnum=12, fileType='fitacf',
+                                 scales=[[-500,500],[],[]], coords='geo',
+                                 colors='aj', filtered=True, show=True)
 
 
     Written by AJ 20121002
     Modified by Matt W. 20130715
     Modified by Nathaniel F. 20131031 (added plot_terminator)
     Modified by ASR 20150917 (refactored)
+
     """
     import os
     from davitpy import pydarn
