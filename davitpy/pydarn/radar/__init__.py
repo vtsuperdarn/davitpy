@@ -1,15 +1,20 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: pydarn.radar
-*********************
-This subpackage contains various radar information/routines for DaViT-py
+Subpackage
+----------
+pydarn.radar
+    This subpackage contains various radar information/routines for DaViT-py
 
-**Modules**:
-    * :mod:`pydarn.radar.radFov`: radar fields-of-view calculations
-    * :mod:`pydarn.radar.radInfo`: radar information
-    * :mod:`pydarn.radar.radUtils`: misc. radar parameters (cpid...)
+Modules
+-------
+pydarn.radar.radFov
+    radar fields-of-view calculations
+pydarn.radar.radInfo
+    radar information
+pydarn.radar.radUtils
+    misc. radar parameters (cpid...)
+
 """
 
 
