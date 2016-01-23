@@ -8,18 +8,19 @@ Module
 
 Functions
 ---------
-    func : getCpName
-        get the name of a control program from cp id number
-    func : getParamDict
-        Get information about a parameter, including units,
-        default ranges, and axis labels.
+getCpName
+    get the name of a control program from cp id number
+getParamDict
+    Get information about a parameter, including units,
+    default ranges, and axis labels.
 
 """
+import logging
 
 def getCpName(cpid):
     """Get the name of a control program from cp id number
 
-    parameters
+    Parameters
     ----------
     cpid : int
         the control prog. id number
@@ -31,15 +32,15 @@ def getCpName(cpid):
 
     Example
     -------
-
         s = getCpName(3310)
 
     written by AJ, 2012-08
+
     """
     from math import fabs
 
     assert(isinstance(cpid, int) or isinstance(cpid, float)), \
-        'error, cpid must be a number'
+        logging.error('error, cpid must be a number')
     if(fabs(cpid) == 26003):
         return 'stereoscan (b)'
     if(fabs(cpid) == 153):
@@ -70,17 +71,22 @@ def getParamDict(param):
     """Get information about a parameter, including units, default ranges,
     and axis labels.
 
-    **Args**:
-          * **param** (str): name of parameter
-    **Returns**:
-          * **paramDict** (str): dictionary containing information about
-          the chosen parameter
+    Parameters
+    ----------
+    param : str
+        name of parameter
+
+    Returns
+    -------
+    paramDict : str
+        dictionary containing information about the chosen parameter
+
     Example
     -------
-
-                paramDict = getParamDict('w_l')
+        paramDict = getParamDict('w_l')
 
     written by Nathaniel Frissell, 2013-07
+
     """
     import numpy as np
 
