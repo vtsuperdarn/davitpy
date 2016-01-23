@@ -4,7 +4,7 @@
 """
 Module
 ------
-    pydarn.radar.radUtils
+pydarn.radar.radUtils
 
 Functions
 ---------
