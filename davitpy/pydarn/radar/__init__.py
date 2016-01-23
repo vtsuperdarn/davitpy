@@ -43,7 +43,8 @@ except Exception as e:
 ####################################
 # Update local HDF5
 ####################################
-import os.path, time
+import os.path
+import time
 import davitpy
 try:
     dirn = davitpy.rcParams['DAVIT_TMPDIR']
@@ -51,7 +52,7 @@ try:
     if not os.path.exists(d):
         os.makedirs(d)
 except:
-    dirn=os.environ['HOME']
+    dirn = os.environ['HOME']
 filn = os.path.join(dirn, '.radars.sqlite')
 ctime = time.time()
 # Update if not there or unreadable
