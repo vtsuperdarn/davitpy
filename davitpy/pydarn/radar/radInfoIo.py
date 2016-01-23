@@ -25,7 +25,7 @@ remote db database (requires an active internet connection).
 # *************************************************************
 def radarRead(path=None):
     """Reads radar.dat file
-	
+
     Parameters
     ----------
         * [**path**] : (str)
@@ -82,9 +82,9 @@ def radarRead(path=None):
         return None
 
     # Initialize placeholder dictionary of lists
-    radarF = {'id':list(), 'status':list(), 'stTime':list(), 'edTime':list(),
-              'name':list(), 'operator':list(), 'hdwfname':list(),
-              'code':list(), 'cnum':list()}
+    radarF = {'id': list(), 'status': list(), 'stTime': list(),
+              'edTime': list(), 'name': list(), 'operator': list(),
+              'hdwfname': list(), 'code': list(), 'cnum': list()}
 
     # Fill dictionary with each radar.dat lines
     for ldat in data:
@@ -113,7 +113,7 @@ def hdwRead(fname, path=None):
     """Reads hdw.dat files for given radar specified by its hdw.dat file name
 
     Parameters
-    ----------- 
+    -----------
     **fname** : (str)
         hdw.dat file name
     [**path**] : (str)
@@ -132,11 +132,9 @@ def hdwRead(fname, path=None):
     Written by Sebastien, 2012-09
     """
     import os
-    import sys
     import shlex
-    from datetime import datetime
     from davitpy.utils import timeYrsecToDate
-	
+
     # Read hardware file FNAME
     # Read file
     if path:
@@ -168,11 +166,11 @@ def hdwRead(fname, path=None):
         return
 
     # Site placeholder
-    siteF = {'tval':list(), 'geolat':list(),'geolon':list(), 'alt':list(),
-             'boresite':list(), 'bmsep':list(),'vdir':list(), 'atten':list(),
-             'tdiff':list(), 'phidiff':list(), 'interfer':list(),
-             'recrise':list(), 'maxatten':list(), 'maxgate':list(),
-             'maxbeam':list()}
+    siteF = {'tval': list(), 'geolat': list(), 'geolon': list(), 'alt': list(),
+             'boresite': list(), 'bmsep': list(), 'vdir': list(),
+             'atten': list(), 'tdiff': list(), 'phidiff': list(),
+             'interfer': list(), 'recrise': list(), 'maxatten': list(),
+             'maxgate': list(), 'maxbeam': list()}
 
     # Read line by line, ignoring comments
     for ldat in data:
@@ -181,7 +179,7 @@ def hdwRead(fname, path=None):
             continue
         if ldat[0] == '#':
             continue
-        if int(ldat[1]) == 2999: 
+        if int(ldat[1]) == 2999:
             siteF['tval'].append(-1)
         else:
             siteF['tval'].append(timeYrsecToDate(int(ldat[2]), int(ldat[1])))
@@ -208,9 +206,9 @@ def hdwRead(fname, path=None):
 # *************************************************************
 class updateRadars(object):
     """Update local radar.sqlite from remote db database, or from local files
-    if the database cannot be reached. 
+    if the database cannot be reached.
     Currently, the remote database is housed on the VT servers.
-    
+
     **Members**:
         * **sql_path** (str): path to sqlite file
         * **sql_file** (str): sqlite file name
@@ -239,21 +237,14 @@ class updateRadars(object):
         """
 
         import os
-        import sys
-        from datetime import datetime
-        from numpy import dtype
-        import sqlite3 as lite
         import davitpy
 
-        # Date format
-        dtfmt = '%Y-%m-%d %H:%M:%S'
-        dttest = datetime.utcnow().strftime(dtfmt)
         # File path
-        try: 
-            self.sql_path=davitpy.rcParams['DAVIT_TMPDIR']
+        try:
+            self.sql_path = davitpy.rcParams['DAVIT_TMPDIR']
         except:
             try:
-                self.sql_path=os.environ['HOME']
+                self.sql_path = os.environ['HOME']
             except:
                 self.sql_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -263,11 +254,11 @@ class updateRadars(object):
         try:
             self.db_user = davitpy.rcParams['SDBREADUSER']
         except KeyError:
-            self.db_user = "" 
+            self.db_user = ""
         try:
             self.db_pswd = davitpy.rcParams['SDBREADPASS']
         except KeyError:
-            self.db_pswd = "" 
+            self.db_pswd = ""
         try:
             self.db_host = davitpy.rcParams['SDDB']
         except KeyError:
@@ -303,10 +294,10 @@ class updateRadars(object):
         from pymongo import MongoClient
         import sys
 
-        #print self.db_user,self.db_pswd,self.db_host, self.db_name
-        uri='mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd,
-                                               self.db_host, self.db_name)
-        #print uri
+        # print self.db_user,self.db_pswd,self.db_host, self.db_name
+        uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd,
+                                                 self.db_host, self.db_name)
+        # print uri
         try:
             conn = MongoClient(uri)
             dba = conn[self.db_name]
@@ -338,7 +329,7 @@ class updateRadars(object):
 
         **Belongs to**: :class:`updateRadars`
 
-        **Args**: 
+        **Args**:
             * **None**
 
         **Returns**:
@@ -350,7 +341,8 @@ class updateRadars(object):
 
         fname = os.path.join(self.sql_path, self.sql_file)
         try:
-            with lite.connect(fname) as conn: pass
+            with lite.connect(fname) as conn:
+                pass
             return True
         except lite.Error, e:
             print "sqlInit() Error %s: %s" % (e.args[0], fname)
@@ -361,23 +353,24 @@ class updateRadars(object):
 
         **Belongs to**: :class:`updateRadars`
 
-        **Args**: 
+        **Args**:
             * **None**
         **Returns**:
             * **isConnected** (bool): True if sqlite file update
                               was successfull
         """
         import os
-        import sys
         import sqlite3 as lite
 
         # Try to connect to DB
         conn = self.dbConnect()
-        if not conn: return False
+        if not conn:
+            return False
 
         # Try to open sqlite file
         isInit = self.sqlInit()
-        if not isInit: return False
+        if not isInit:
+            return False
 
         # Format BD output for sqlite input
         arr_rad = self.__makeInsDict(self.db_select['rad'], self.dtype_rad)
@@ -400,11 +393,11 @@ class updateRadars(object):
             cur.execute("CREATE TABLE inf (%s)" % ', '.join(self.dtype_inf))
 
             cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?'] * \
-                                len(self.dtype_rad)), arr_rad)
+                            len(self.dtype_rad)), arr_rad)
             cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?'] * \
-                                len(self.dtype_hdw)), arr_hdw)
+                            len(self.dtype_hdw)), arr_hdw)
             cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?'] * \
-                                len(self.dtype_inf)), arr_inf)
+                            len(self.dtype_inf)), arr_inf)
 
         return True
 
@@ -448,23 +441,25 @@ class updateRadars(object):
         radars = []
         hdw = []
         radarF = radarRead()
-        if radarF is None: return False
+        if radarF is None:
+            return False
 
         nradar = len(radarF['id'])
         for irad in xrange(nradar):
-            radars.append({"id": radarF['id'][irad], 
-                            "cnum": radarF['cnum'][irad], 
-                            "code": radarF['code'][irad], 
-                            "name": radarF['name'][irad], 
-                            "operator": radarF['operator'][irad], 
-                            "hdwfname": radarF['hdwfname'][irad], 
-                            "status": radarF['status'][irad], 
-                            "stTime": radarF['stTime'][irad], 
-                            "edTime": radarF['edTime'][irad],
-                            "snum": 0})
+            radars.append({"id": radarF['id'][irad],
+                           "cnum": radarF['cnum'][irad],
+                           "code": radarF['code'][irad],
+                           "name": radarF['name'][irad],
+                           "operator": radarF['operator'][irad],
+                           "hdwfname": radarF['hdwfname'][irad],
+                           "status": radarF['status'][irad],
+                           "stTime": radarF['stTime'][irad],
+                           "edTime": radarF['edTime'][irad],
+                           "snum": 0})
             siteF = hdwRead(radarF['hdwfname'][irad])
 
-            if not siteF: continue
+            if not siteF:
+                continue
             tsnum = 0
 
             for isit in xrange(len(siteF['tval'])):
@@ -472,7 +467,7 @@ class updateRadars(object):
                     continue
 
                 if siteF['tval'][isit] == -1:
-                    tval = datetime(3000,1,1)
+                    tval = datetime(3000, 1, 1)
                 else:
                     tval = siteF['tval'][isit]
 
@@ -491,10 +486,9 @@ class updateRadars(object):
                             "maxgate": siteF['maxgate'][isit],
                             "maxbeam": siteF['maxbeam'][isit],
                             "interfer": siteF['interfer'][isit]})
-                tsnum += 1     
-            radars[-1]["snum"] = tsnum 
+                tsnum += 1
+            radars[-1]["snum"] = tsnum
 
-        self.db_select = {'rad':radars, 'hdw':hdw,
-                          'inf':[{"var":'', "description": ''}]}
-        
+        self.db_select = {'rad': radars, 'hdw': hdw,
+                          'inf': [{"var": '', "description": ''}]}
         return True
