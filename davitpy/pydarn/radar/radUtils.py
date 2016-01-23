@@ -65,7 +65,8 @@ def getCpName(cpid):
         return 'twofsound'
     if(fabs(cpid) == 1200):
         return 'icescan'
-    return ''
+    else:
+        return ''
 
 def getParamDict(param):
     """Get information about a parameter, including units, default ranges,
