@@ -17,26 +17,27 @@ pydarn.radar.radUtils
 
 """
 
+import logging
 
 try:
     from radFov import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radFov: ', e
+    logging.exception(__file__+' -> pydarn.radar.radFov: ', e)
 
 try:
     from radUtils import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radUtils: ', e
+    logging.exception(__file__+' -> pydarn.radar.radUtils: ', e)
 
 try:
     from radInfoIo import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radInfoIo: ', e
+    logging.exception(__file__+' -> pydarn.radar.radInfoIo: ', e)
 
 try:
     from radStruct import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radStruct: ', e
+    logging.exception(__file__+' -> pydarn.radar.radStruct: ', e)
 
 
 ####################################
