@@ -1,47 +1,53 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-.. module:: radInfoIo
-:synopsis: read/write radar information
-.. moduleauthor:: Sebastien
-*********************
-**Module**: pydarn.radar.radInfoIo
-*********************
-Input/Output for radar information (location, boresight, interferometer
-position...) is read from a local dblite database (radar.db). The functions
-in this module provide tools to populate/update said database (from hdw.dat
-and radar.dat files), or simply read hdw.dat and radar.dat files. It also
-provide a function to manually update the local radar.db database using the
-remote db database (requires an active internet connection).
+Module
+------
+pydarn.radar.radInfoIo
+    Input/Output for radar information (location, boresight, interferometer
+    position...) is read from a local dblite database (radar.db). The functions
+    in this module provide tools to populate/update said database (from hdw.dat
+    and radar.dat files), or simply read hdw.dat and radar.dat files. It also
+    provide a function to manually update the local radar.db database using the
+    remote db database (requires an active internet connection).
 
-**Classes**:
-        * :class:`pydarn.radar.radInfoIo.updateRadars`
-**Functions**:
-        * :func:`pydarn.radar.radInfoIo.hdwRead`: reads hdw.dat files
-        * :func:`pydarn.radar.radInfoIo.radarRead`: reads radar.dat file
+Classes
+-------
+pydarn.radar.radInfoIo.updateRadars
+
+Functions
+---------
+pydarn.radar.radInfoIo.hdwRead
+    reads hdw.dat files
+pydarn.radar.radInfoIo.radarRead
+    reads radar.dat file
+
+Moduleauthor
+------------
+Sebastien
+
 """
 
-
-# *************************************************************
 def radarRead(path=None):
     """Reads radar.dat file
 
     Parameters
     ----------
-        * [**path**] : (str)
+    path : str
         path to radar.dat file; defaults to RST environment variable SD_RADAR
 
     Returns
     --------
-        * A dictionary with keys matching the radar.dat variables each
+    dict
+        A dictionary with keys matching the radar.dat variables each
         containing values of length #radars.
 
     Example
     --------
-        ::
         radars = pydarn.radar.radarRead()
 
     Written by Sebastien, 2012-09
+
     """
     import shlex
     import os
@@ -113,23 +119,24 @@ def hdwRead(fname, path=None):
     """Reads hdw.dat files for given radar specified by its hdw.dat file name
 
     Parameters
-    -----------
-    **fname** : (str)
+    ----------
+    fname : str
         hdw.dat file name
-    [**path**] : (str)
+    path : str
         path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
 
     Returns
     -------
-        * A dictionary with keys matching the hdw.dat variables each containing
+    dict
+        A dictionary with keys matching the hdw.dat variables each containing
         values of length #site updates.
 
     Example
     -------
-        ::
         hdw = pydarn.radar.hdwRead('hdw.dat.bks')
 
     Written by Sebastien, 2012-09
+
     """
     import os
     import shlex
@@ -209,31 +216,41 @@ class updateRadars(object):
     if the database cannot be reached.
     Currently, the remote database is housed on the VT servers.
 
-    **Members**:
-        * **sql_path** (str): path to sqlite file
-        * **sql_file** (str): sqlite file name
-    **Methods**:
-        * :func:`updateRadars.sqlInit`
-        * :func:`updateRadars.sqlUpdate`
-        * :func:`updateRadars.dbConnect`
+    Members
+    -------
+    sql_path : str
+        path to sqlite file
+    sql_file : str
+        sqlite file name
 
-    **Example**:
-        ::
+    Methods
+    -------
+    updateRadars.sqlInit
+    updateRadars.sqlUpdate
+    updateRadars.dbConnect
 
+    Example
+    -------
         obj = pydarn.radar.updateRadars()
 
     Written by Sebastien, 2013-05
-    """
 
+    """
     def __init__(self):
         """Default class constructor
 
-        **Belongs to**: :class:`updateRadars`
+        Belongs to
+        ----------
+        class : updateRadars
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **updateRadars** (obj)
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        updateRadars : obj
+
         """
 
         import os
@@ -284,12 +301,19 @@ class updateRadars(object):
     def dbConnect(self):
         """Try to establish a connection to remote db database
 
-        **Belongs to**: :class:`updateRadars`
+        Belongs to
+        ----------
+        class : updateRadars
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **isConnected** (bool): True if the connection was successfull
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        isConnected : bool
+            True if the connection was successfull
+
         """
         from pymongo import MongoClient
         import sys
@@ -327,14 +351,20 @@ class updateRadars(object):
     def sqlInit(self):
         """Initialize sqlite file (only if file does not already exists)
 
-        **Belongs to**: :class:`updateRadars`
+        Belongs to
+        ----------
+        class : updateRadars
 
-        **Args**:
-            * **None**
+        Parameters
+        ----------
+        None
 
-        **Returns**:
-            * **isConnected** (bool): True if sqlite file already exists or
+        Returns
+        -------
+        isConnected : bool
+            True if sqlite file already exists or
             was sussessfully created
+
         """
         import sqlite3 as lite
         import os
@@ -351,13 +381,20 @@ class updateRadars(object):
     def sqlUpdate(self):
         """Update sqlite file with provided db selections (if possible).
 
-        **Belongs to**: :class:`updateRadars`
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **isConnected** (bool): True if sqlite file update
-                              was successfull
+        Belongs to
+        ----------
+        class : updateRadars
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        isConnected : bool
+            True if sqlite file update was successfull
+
         """
         import os
         import sqlite3 as lite
@@ -405,15 +442,21 @@ class updateRadars(object):
         """Handles BLOB datatype for arrays before insertion into sqlite DB.
         This method is hidden and used internatlly by :func:`sqlUpdate`.
 
-        **Belongs to**: :class:`updateRadars`
+        Belongs to
+        ----------
+        class : updateRadars
 
-        **Args**:
-            * **sel** (pymongo Ptr)
-            * [**dtype**] (str): a list of 'name TYPE' pairsto be inserted into
-            sqlite DB
+        Paremeters
+        ----------
+        sel : pymongo Ptr
+        dtype : str
+            a list of 'name TYPE' pairs to be inserted into sqlite DB
 
-        **Returns**:
-            * **arr** a list of lists of DB entries
+        Returns
+        -------
+        arr : list
+            a list of lists of DB entries
+
         """
         import pickle
 
