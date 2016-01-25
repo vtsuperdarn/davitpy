@@ -1,31 +1,34 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: pydarn.radar.radFov
-*********************
-This module handles generating field-of-view projctions
+Module
+------
+pydarn.radar.radFov
+    This module handles generating field-of-view projctions
 
-**Classes**:
-    * :class:`fov`: field of view position
+Classes
+-------
+pydarn.radar.radFov.fov
+    field of view position
 
-**Functions**:
-    * :func:`pydarn.radar.radFov.slantRange`: Calculate slant range
-    * :func:`pydarn.radar.radFov.calcAzOffBore`: Calculate off-array-normal
-                                                 azimuth
-    * :func:`pydarn.radar.radFov.calcFieldPnt`: Calculate field point projection
+Functions
+---------
+pydarn.radar.radFov.slantRange
+    Calculate slant range
+pydarn.radar.radFov.calcAzOffBore
+    Calculate off-array-normal azimuth
+pydarn.radar.radFov.calcFieldPnt
+    Calculate field point projection
 
+References
+----------
 Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
-"""
 
+"""
 import numpy as np
 
-# *************************************************************
-
-
 class fov(object):
-
     """ This class calculates and stores field-of-view coordinates.
     Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object.
     Parameters from the input-set will always take precedence over parameters
@@ -34,47 +37,53 @@ class fov(object):
     at each corner of each gate, in the following order: looking in the beam
     direction, lower-left, lower-right, upper-right, upper-left.
 
-    **Args**:
-        * **site**: site structure for a given radar and date-time
-        * **frang**: first range gate position [km] (defaults to 180 km)
-                     (scalar or ndarray(nbeams))
-        * **rsep**: range gate separation [km] (defaults to 45 km)
-                    (scalar or ndarray(nbeams))
-        * **nbeams**: number of beams (use site information if not provided)
-        * **ngates**: number of gates (use site information if not provided)
-        * **bmsep**: beam separation [degree] (use site information if not
-                     provided)
-        * **siteLat**: geographic latitude of radar [degree] (use site
-                       information if not provided)
-        * **siteLon**: geographic longitude of radar [degree] (use site
-                       information if not provided)
-        * **siteAlt**: altitude of radar site [m] (use site information if not
-                       provided)
-        * **siteBore**: radar boresite [degree] (use site information if not
-                        provided)
-        * **recrise**: receiver rise time [us] (use site information if not
-                       provided) (scalar or ndarray(nbeams))
-        * **elevation**: elevation angle [degree] (if not provided, is evaluated
-                         using 'model') (scalar or ndarray(ngates) or
-                         ndarray(nbeams,ngates))
-        * **altitude**: altitude [km] (if not provided, set to 300 km) (scalar
-                        or ndarray(ngates) or ndarray(nbeams,ngates))
-        * **model**:
-            * **'IS'**: for ionopsheric scatter projection model (default)
-            * **'GS'**: for ground scatter projection model
-            * **None**: if you trust your elevation or altitude values
-            * ... more to come
-        * **coords**: anything accepted by coord_conv; see
-            utils.get_coord_dict.  Default:  geo
-        * **date_time**: (datetime.datetime object) the datetime for
-            which the FOV is desired.  Required for mag and mlt, and
-            possibly others in the future.  Default:  None
-        * **coord_alt**: like altitude, but only used for conversion
-            from geographic to other coordinate systems.  Default: 0.
-        * **fov_dir**: (str) Provide the front or back field of view?  If not
-                       specified, defaults to 'front'.  Use 'front' or 'back'.
-    """
+    Parameters
+    ----------
+    site
+        site structure for a given radar and date-time
+    frang : scalar or ndarray(nbeams)
+        first range gate position [km] (defaults to 180 km)
+    rsep : scalar or ndarray(nbeams)
+        range gate separation [km] (defaults to 45 km)
+    nbeams
+        number of beams (use site information if not provided)
+    ngates
+        number of gates (use site information if not provided)
+    bmsep
+        beam separation [degree] (use site information if not provided)
+    siteLat
+        geographic latitude of radar [degree] (use site information if not
+        provided)
+    siteLon
+        geographic longitude of radar [degree] (use site information if not
+        provided)
+    siteAlt
+        altitude of radar site [m] (use site information if not provided)
+    siteBore
+        radar boresite [degree] (use site information if not provided)
+    recrise : scalar or ndarray(nbeams)
+        receiver rise time [us] (use site information if not provided)
+    elevation : scalar or ndarray(ngates) or ndarray(nbeams,ngates)
+        elevation angle [degree] (if not provided, is evaluated using 'model')
+    altitude : scalar or ndarray(ngates) or ndarray(nbeams,ngates)
+        altitude [km] (if not provided, set to 300 km)
+    model
+        IS : for ionopsheric scatter projection model (default)
+        GS : for ground scatter projection model
+        None : if you trust your elevation or altitude values. more to come
+    coords
+        anything accepted by coord_conv; see utils.get_coord_dict. Default: geo
+    date_time : datetime.datetime object
+        the datetime for which the FOV is desired. Required for mag and mlt,
+        and possibly others in the future. Default: None
+    coord_alt
+        like altitude, but only used for conversion from geographic to
+        other coordinate systems. Default: 0.
+    fov_dir : str
+        Provide the front or back field of view?  If not specified,
+        defaults to 'front'. Use 'front' or 'back'.
 
+    """
     def __init__(self, frang=180.0, rsep=45.0, site=None, nbeams=None,
                  ngates=None, bmsep=None, recrise=None, siteLat=None,
                  siteLon=None, siteBore=None, siteAlt=None, siteYear=None,
@@ -422,29 +431,39 @@ class fov(object):
 def calcFieldPnt(tGeoLat, tGeoLon, tAlt, boreSight, boreOffset, slantRange,
                  elevation=None, altitude=None, model=None, coords='geo',
                  fov_dir='front'):
-    """
-    Calculate coordinates of field point given the radar coordinates and
+    """Calculate coordinates of field point given the radar coordinates and
     boresight, the pointing direction deviation from boresight and elevation
     angle, and the field point slant range and altitude. Either the elevation
     or the altitude must be provided. If none is provided, the altitude is set
     to 300 km and the elevation evaluated to accomodate altitude and range.
 
-    **INPUTS**:
-        * **tGeoLat**: transmitter latitude [degree, N]
-        * **tGeoLon**: transmitter longitude [degree, E]
-        * **tAlt**: transmitter altitude [km]
-        * **boreSight**: boresight azimuth [degree, E]
-        * **boreOffset**: offset from boresight [degree]
-        * **slantRange**: slant range [km]
-        * **elevation**: elevation angle [degree] (estimated if None)
-        * **altitude**: altitude [km] (default 300 km)
-        * **model**:
-            * **'IS'**: for ionopsheric scatter projection model
-            * **'GS'**: for ground scatter projection model
-            * **None**: if you trust your elevation or altitude data
-            * ... more to come
-        * **coords**: 'geo' (more to come)
-        * **fov_dir**: 'front' (default) or 'back'.  Specifies fov direction
+    Parameters
+    ----------
+    tGeoLat
+        transmitter latitude [degree, N]
+    tGeoLon
+        transmitter longitude [degree, E]
+    tAlt
+        transmitter altitude [km]
+    boreSight
+        boresight azimuth [degree, E]
+    boreOffset
+        offset from boresight [degree]
+    slantRange
+        slant range [km]
+    elevation
+        elevation angle [degree] (estimated if None)
+    altitude
+        altitude [km] (default 300 km)
+    model
+        IS : for ionopsheric scatter projection model
+        GS : for ground scatter projection model
+        None : if you trust your elevation or altitude values. more to come
+    coords
+        'geo' (more to come)
+    fov_dir
+        'front' (default) or 'back'.  Specifies fov direction
+
     """
     from math import asin
     from davitpy.utils import Re, geoPack
@@ -545,16 +564,25 @@ def calcFieldPnt(tGeoLat, tGeoLon, tAlt, boreSight, boreOffset, slantRange,
 def slantRange(frang, rsep, recrise, range_gate, center=True):
     """ Calculate slant range
 
-    **INPUTS**:
-        * **frang**: first range gate position [km]
-        * **rsep**: range gate separation [km]
-        * **recrise**: receiver rise time [us]
-        * **range_gate**: range gate number(s)
-        * **center**: whether or not to compute the slant range in the center
-                      of the gate rather than at the edge
+    Parameters
+    ----------
+    frang
+        first range gate position [km]
+    rsep
+        range gate separation [km]
+    recrise
+        receiver rise time [us]
+    range_gate
+        range gate number(s)
+    center
+        whether or not to compute the slant range in the center of
+        the gate rather than at the edge
 
-    **OUTPUT**:
-        * **srang**: slant range [km]
+    Returns
+    -------
+    srang
+        slant range [km]
+
     """
     # Lag to first range gate [us]
     lagfr = frang * 2. / 0.3
@@ -572,18 +600,24 @@ def slantRange(frang, rsep, recrise, range_gate, center=True):
 # *************************************************************
 # *************************************************************
 def calcAzOffBore(elevation, boreOffset0, fov_dir='front'):
-    """
-    Calculate off-boresight azimuth as a function of elevation angle and
+    """Calculate off-boresight azimuth as a function of elevation angle and
     zero-elevation off-boresight azimuth.
     See Milan et al. [1997] for more details on how this works.
 
-    **INPUTS**:
-        * **elevation**: elevation angle [degree]
-        * **boreOffset0**: zero-elevation off-boresight azimuth [degree]
-        * **fov_dir**: field-of-view direction ('front','back'). Default='front'
+    Parameters
+    ----------
+    elevation
+        elevation angle [degree]
+    boreOffset0
+        zero-elevation off-boresight azimuth [degree]
+    fov_dir
+        field-of-view direction ('front','back'). Default='front'
 
-    **OUTPUT**:
-        * **bore_offset**: off-boresight azimuth [degree]
+    Returns
+    -------
+    bore_offset
+        off-boresight azimuth [degree]
+
     """
     from math import atan
 
@@ -621,20 +655,25 @@ def calcAzOffBore(elevation, boreOffset0, fov_dir='front'):
 
 
 def gsMapSlantRange(slantRange, altitude=None, elevation=None):
-    """
-    Calculate the ground scatter mapped slant range.
+    """Calculate the ground scatter mapped slant range.
     See Bristow et al. [1994] for more details.
 
-    **INPUTS**:
-        * **slantRange**: normal slant range [km]
-        * **altitude**:   altitude [km] (defaults to 300 km)
-        * **elevation**:  elevation angle [degree]
+    Parameters
+    ----------
+    slantRange
+        normal slant range [km]
+    altitude
+        altitude [km] (defaults to 300 km)
+    elevation
+        elevation angle [degree]
 
-    **OUTPUT**:
-        * **gsSlantRange**: ground scatter mapped slant range [km] (typically
-                            slightly less than 0.5*slantRange.
-    Will return -1 if (slantRange**2/4. - altitude**2 >= 0). This occurs when
-    the scatter is too close and this model breaks down.
+    Returns
+    -------
+    gsSlantRange
+        ground scatter mapped slant range [km] (typically slightly less than
+        0.5*slantRange. Will return -1 if (slantRange**2/4. - altitude**2 >= 0).
+        This occurs when the scatter is too close and this model breaks down.
+
     """
     from math import asin
     from davitpy.utils import Re
