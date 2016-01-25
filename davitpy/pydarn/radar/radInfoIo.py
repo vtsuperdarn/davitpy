@@ -27,6 +27,7 @@ Moduleauthor
 Sebastien
 
 """
+import logging
 
 def radarRead(path=None):
     """Reads radar.dat file
@@ -65,10 +66,10 @@ def radarRead(path=None):
         data = file_net.readlines()
         file_net.close()
     except:
-        print 'radarRead: cannot read {:}\n'.format(pathOpen)
+        logging.exception('radarRead: cannot read {:}\n'.format(pathOpen))
         txt = 'You may be getting this error because your computer cannot '
         txt = '{:s}contact an appropriate internet server to get '.format(txt)
-        txt = '{:s}the latest radar.dat information.  You can can '.format(txt)
+        txt = '{:s}the latest radar.dat information.  You can '.format(txt)
         txt = '{:s}use a local file instead by setting the SD_RADAR'.format(txt)
         txt = '{:s} environment variable to the location of a local'.format(txt)
         txt = '{:s} copy of radar.dat.\n'.format(txt)
@@ -155,7 +156,7 @@ def hdwRead(fname, path=None):
         data = file_hdw.readlines()
         file_hdw.close()
     except:
-        print 'hdwRead: cannot read {}\n'.format(pathOpen)
+        logging.exception('hdwRead: cannot read {}\n'.format(pathOpen))
 
         txt = 'You may be getting this error because your computer cannot '
         txt = '{:s}contact an appropriate internet server to get '.format(txt)
@@ -296,7 +297,7 @@ class updateRadars(object):
         isUp = self.sqlUpdate()
 
         if isUp:
-            print "Radars information has been updated."
+            logging.info("Radars information has been updated.")
 
     def dbConnect(self):
         """Try to establish a connection to remote db database
@@ -326,7 +327,7 @@ class updateRadars(object):
             conn = MongoClient(uri)
             dba = conn[self.db_name]
         except:
-            print 'Could not connect to remote DB: ', sys.exc_info()[0]
+            logging.exception('Could not connect to remote DB: ', sys.exc_info()[0])
             dba = False
 
         if dba:
@@ -339,13 +340,13 @@ class updateRadars(object):
             except:
                 txt = 'Could not get data from remote DB: '
                 txt = '{:s}{}'.format(txt, sys.exc_info()[0])
-                print txt
-                print 'Could not update .radars.sqlite file with hdw.dat info'
+                logging.exception(txt)
+                logging.exception'Could not update .radars.sqlite file with hdw.dat info')
                 return False
         else:
             result = self.__readFromFiles()
             if not result:
-                print 'Could not update .radars.sqlite file with hdw.dat info'
+                logging.error('Could not update .radars.sqlite file with hdw.dat info')
             return result
 
     def sqlInit(self):
@@ -375,7 +376,7 @@ class updateRadars(object):
                 pass
             return True
         except lite.Error, e:
-            print "sqlInit() Error %s: %s" % (e.args[0], fname)
+            logging.exception("sqlInit() Error %s: %s" % (e.args[0], fname))
             return False
 
     def sqlUpdate(self):
