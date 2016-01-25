@@ -27,6 +27,7 @@ Based on R.J. Barnes radar.pro
 
 """
 import numpy as np
+import logging
 
 class fov(object):
     """ This class calculates and stores field-of-view coordinates.
@@ -101,7 +102,7 @@ class fov(object):
             estr = '{:s}: must provide either a site object or '.format(rn)
             estr = '{:s}[nbeams, ngates, bmsep, recrise, siteLat,'.format(estr)
             estr = '{:s} siteLon, siteBore, siteAlt, siteYear].'.format(estr)
-            print estr
+            logging.error(estr)
             return
 
         # date_time checking is handled by coord_conv, and it already
@@ -141,7 +142,7 @@ class fov(object):
                 estr = "{:s}: frang must be a scalar or numpy ".format(rn)
                 estr = "{:s}ndarray of size (nbeams). Using first".format(estr)
                 estr = "{:s} element: {}".format(estr, frang[0])
-                print estr
+                logging.error(estr)
                 frang = frang[0] * np.ones(nbeams + 1)
             else:
                 frang = np.append(frang, frang[-1])
@@ -157,7 +158,7 @@ class fov(object):
                 estr = "{:s} of size (nbeams). Using first element".format(
                     estr)
                 estr = "{:s}: {}".format(estr, rsep[0])
-                print estr
+                logging.error(estr)
                 rsep = rsep[0] * np.ones(nbeams + 1)
             else:
                 rsep = np.append(rsep, rsep[-1])
@@ -172,7 +173,7 @@ class fov(object):
                 estr = "{:s}ndarray of size (nbeams). Using first ".format(
                     estr)
                 estr = "{:s}element: {}".format(estr, recrise[0])
-                print estr
+                logging.error(estr)
                 recrise = recrise[0] * np.ones(nbeams + 1)
             else:
                 recrise = np.append(recrise, recrise[-1])
@@ -192,7 +193,7 @@ class fov(object):
                         estr)
                     estr = '{:s}(nbeans,ngates). Using first '.format(estr)
                     estr = '{:s}element: {}'.format(estr, altitude[0])
-                    print estr
+                    logging.error(estr)
                     altitude = altitude[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     altitude = np.resize(np.append(altitude, altitude[-1]),
@@ -206,7 +207,7 @@ class fov(object):
                         estr)
                     estr = '{:s}(nbeans,ngates). Using first '.format(estr)
                     estr = '{:s}element: {}'.format(altitude[0])
-                    print estr
+                    logging.error(estr)
                     altitude = altitude[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     altitude = np.append(altitude,
@@ -221,7 +222,7 @@ class fov(object):
                 estr = '{:s}(nbeans,ngates). Using first element: '.format(
                     estr)
                 estr = '{:s}{}'.format(estr, altitude[0])
-                print estr
+                logging.error(estr)
                 altitude = altitude[0] * np.ones((nbeams + 1, ngates + 1))
         if isinstance(elevation, np.ndarray):
             if elevation.ndim == 1:
@@ -234,7 +235,7 @@ class fov(object):
                         estr)
                     estr = '{:s}(nbeans,ngates). Using first '.format(estr)
                     estr = '{:s}element: {}'.format(estr, elevation[0])
-                    print estr
+                    logging.error(estr)
                     elevation = elevation[0] * \
                         np.ones((nbeams + 1, ngates + 1))
                 else:
@@ -249,7 +250,7 @@ class fov(object):
                         estr)
                     estr = '{:s}(nbeans,ngates). Using first '.format(estr)
                     estr = '{:s}element: {}'.format(estr, elevation[0])
-                    print estr
+                    logging.error(estr)
                     elevation = elevation[0] * \
                         np.ones((nbeams + 1, ngates + 1))
                 else:
@@ -264,7 +265,7 @@ class fov(object):
                 estr = '{:s}numpy ndarray of size (ngates) or '.format(estr)
                 estr = '{:s}(nbeans,ngates). Using first element'.format(estr)
                 estr = '{:s}: {}'.format(estr, elevation[0])
-                print estr
+                logging.error(estr)
                 elevation = elevation[0] * np.ones((nbeams + 1, ngates + 1))
 
         # Do for coord_alt what we just did for altitude.
@@ -279,7 +280,7 @@ class fov(object):
                         estr)
                     estr = '{:s}(nbeans,ngates). Using first '.format(estr)
                     estr = '{:s}element: {}'.format(estr, coord_alt[0])
-                    print estr
+                    logging.error(estr)
                     coord_alt = coord_alt[0] * \
                         np.ones((nbeams + 1, ngates + 1))
                 else:
@@ -294,7 +295,7 @@ class fov(object):
                         estr)
                     estr = '{:s}(nbeans,ngates). Using first '.format(estr)
                     estr = '{:s}element: {}'.format(estr, coord_alt[0])
-                    print estr
+                    logging.error(estr)
                     coord_alt = coord_alt[0] * \
                         np.ones((nbeams + 1, ngates + 1))
                 else:
@@ -309,7 +310,7 @@ class fov(object):
                 estr = '{:s}numpy ndarray of size (ngates) or '.format(estr)
                 estr = '{:s}(nbeans,ngates). Using first element'.format(estr)
                 estr = '{:s}: {}'.format(estr, coord_alt[0])
-                print estr
+                logging.error(estr)
                 coord_alt = coord_alt[0] * np.ones((nbeams + 1, ngates + 1))
 
         # Generate beam/gate arrays
