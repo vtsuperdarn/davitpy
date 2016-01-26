@@ -89,7 +89,7 @@ class network(object):
         dbname = os.path.join(rad_path, '.radars.sqlite')
 
         if not os.path.isfile(dbname):
-            logging.errror("%s not found", dbname)
+            logging.error("%s not found", dbname)
             return
 
         with lite.connect(dbname) as conn:
