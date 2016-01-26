@@ -201,7 +201,7 @@ class network(object):
         Belongs to
         ----------
         class : network
- 
+
         Parameters
         ----------
         name : str
@@ -228,7 +228,7 @@ class network(object):
         Belongs to
         ----------
         class : network
- 
+
         Parameters
         ----------
         code : str
@@ -257,7 +257,7 @@ class network(object):
         Belongs to
         ----------
         class : network
- 
+
         Parameters
         ----------
         radN : str/int
@@ -304,7 +304,7 @@ class network(object):
         Belongs to
         ----------
         class : network
- 
+
         Parameters
         ----------
         lat
@@ -391,7 +391,7 @@ class network(object):
         Belongs to
         ----------
         class : network
- 
+
         Parameters
         ----------
         datetime : python datetime object
@@ -478,8 +478,8 @@ class radar(object):
 
         Belongs to
         ----------
-        class : radar 
- 
+        class : radar
+
         Parameters
         ----------
         code : str
@@ -547,8 +547,8 @@ class radar(object):
 
         Belongs to
         ----------
-        class : radar 
- 
+        class : radar
+
         Parameters
         ----------
         dbname : str
@@ -604,8 +604,8 @@ class radar(object):
 
         Belongs to
         ----------
-        class : radar 
- 
+        class : radar
+
         Parameters
         ----------
         None
@@ -646,8 +646,8 @@ class radar(object):
 
         Belongs to
         ----------
-        class : radar 
- 
+        class : radar
+
         Parameters
         ----------
         datetime : datetime.datetime
@@ -737,8 +737,8 @@ class site(object):
 
         Belongs to
         ----------
-        class : site 
- 
+        class : site
+
         Parameters
         ----------
         radId : int
@@ -810,8 +810,8 @@ class site(object):
 
         Belongs to
         ----------
-        class : site 
- 
+        class : site
+
         Parameters
         ----------
         dbname : str
