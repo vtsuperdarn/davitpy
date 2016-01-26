@@ -1,64 +1,77 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-.. module:: radStruct
-   :synopsis: Load and browse radar information
-.. moduleauthor:: Sebastien
-*********************
-**Module**: pydarn.radar.radStruct
-*********************
-Radar structures
+Module
+------
+pydarn.radar.radStruct
+   Load and browse radar information
 
-**Classes**:
-    * :class:`pydarn.radar.radStruct.network`: radar.dat and hdw.dat information
-                                               from all the radars
-    * :class:`pydarn.radar.radStruct.radar`: radar.dat and hdw.dat information
-    * :class:`pydarn.radar.radStruct.site`: hdw.dat information
+Classes
+-------
+pydarn.radar.radStruct.network
+    radar.dat and hdw.dat information from all the radars
+pydarn.radar.radStruct.radar
+    radar.dat and hdw.dat information
+pydarn.radar.radStruct.site
+    hdw.dat information
+
+Moduleauthor
+------------
+Sebastien
+
 """
-
 import logging
 
-# *************************************************************
-
-
 class network(object):
-
     """ This class stores information from all radars according to their
     hdw.dat and radar.dat files.  This information is read from the radar.sqlite
     files provided with the pydarn module.
 
-    **Members**:
-        * **nradar** (int): number of radars in class
-        * **radars** (list): list of :class:`radar` objects
-    **Methods**:
-        * :func:`network.getRadarById`
-        * :func:`network.getRadarByName`
-        * :func:`network.getRadarByCode`
-        * :func:`network.getRadarsByPosition`
-        * :func:`network.getAllCodes`
-    **Example**:
-        ::
+    Attributes
+    ----------
+    nradar : int
+        number of radars in class
+    radars : list
+        list of :class:`radar` objects
 
-            obj = pydarn.radar.network()
+    Methods
+    -------
+    network.getRadarById
+    network.getRadarByName
+    network.getRadarByCode
+    network.getRadarsByPosition
+    network.getAllCodes
 
-    .. note:: To add your own radar information to this class you can use the
-    :func:`radInfoIO.radarRead` and the :func:`radInfoIO.hdwRead`. Then,
-    manually append the output of these functions to this object.
+    Example
+    -------
+        obj = pydarn.radar.network()
+
+    Note
+    ----
+        To add your own radar information to this class you can use the
+        :func:`radInfoIO.radarRead` and the :func:`radInfoIO.hdwRead`. Then,
+        manually append the output of these functions to this object.
 
     written by Sebastien, 2012-08
-    """
 
+    """
     def __init__(self):
         """ Default class constructor
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **network** (obj)
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        network : obj
 
         written by Sebastien, 2012-08
+
         """
         import sqlite3 as lite
         import os
@@ -93,36 +106,48 @@ class network(object):
     def __len__(self):
         """Object length (number of radars)
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **number of radars** (int)
-        **Example**:
-            ::
+        Parameters
+        ----------
+        None
 
-                len(obj)
+        Returns
+        -------
+        number of radars : int
+
+        Example
+        -------
+            len(obj)
 
         written by Sebastien, 2012-08
+
         """
         return self.nradar
 
     def __str__(self):
         """Object string representation
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **a string** (str)
-        **Example**:
-            ::
+        Parameters
+        ----------
+        None
 
-                print(obj)
+        Returns
+        -------
+        a string : str
+
+        Example
+        -------
+            print(obj)
 
         written by Sebastien, 2012-08
+
         """
         outstring = "Network information object: \
                 \n\tTotal radars: {:d}".format(self.nradar)
@@ -146,19 +171,26 @@ class network(object):
     def getRadarById(self, id):
         """Get a specific radar from its ID
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
 
-        **Args**:
-            * **id** (int): radar ID
-        **Returns**:
-            * **radar** (:class:`radar`)
-        **Example**:
-            ::
+        Parameters
+        ----------
+        id : int
+            radar ID
 
-                # To get the Blackstone radar by its ID
-                radar = obj.getRadarById(33)
+        Returns
+        -------
+        radar : radar class object
+
+        Example
+        -------
+            # To get the Blackstone radar by its ID
+            radar = obj.getRadarById(33)
 
         written by Sebastien, 2012-08
+
         """
         radar = self.getRadarBy(id, by='id')
         return radar
@@ -166,19 +198,26 @@ class network(object):
     def getRadarByName(self, name):
         """Get a specific radar from its name
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
+ 
+        Parameters
+        ----------
+        name : str
+            radar full name
 
-        **Args**:
-            * **name** (str): radar full name
-        **Returns**:
-            * **radar** (:class:`radar`)
-        **Example**:
-            ::
+        Returns
+        -------
+        radar : radar class object
 
-                # To get the Blackstone radar by its name
-                radar = obj.getRadarById('Blackstone')
+        Example
+        -------
+            # To get the Blackstone radar by its name
+            radar = obj.getRadarById('Blackstone')
 
         written by Sebastien, 2012-08
+
         """
         radar = self.getRadarBy(name, by='name')
         return radar
@@ -186,19 +225,26 @@ class network(object):
     def getRadarByCode(self, code):
         """Get a specific radar from its 3-letter code
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
+ 
+        Parameters
+        ----------
+        code : str
+            radar 3-letter code
 
-        **Args**:
-            * **code** (str): radar 3-letter code
-        **Returns**:
-            * **radar** (:class:`radar`)
-        **Example**:
-            ::
+        Returns
+        -------
+        radar : radar class object
 
-                # To get the Blackstone radar by its code
-                radar = obj.getRadarById('bks')
+        Example
+        -------
+            # To get the Blackstone radar by its code
+            radar = obj.getRadarById('bks')
 
         written by Sebastien, 2012-08
+
         """
         radar = self.getRadarBy(code, by='code')
         return radar
@@ -208,15 +254,23 @@ class network(object):
         This method is the underlying function behing getRadarByCode,
         getRadarByName and getRadarById
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
+ 
+        Parameters
+        ----------
+        radN : str/int
+            radar identifier (either code, name or id)
+        by : str
+            look-up method: 'code', 'name', 'id'
 
-        **Args**:
-            * **radN** (str/int): radar identifier (either code, name or id)
-            * **by** (str): look-up method: 'code', 'name', 'id'
-        **Returns**:
-            * **radar** (:class:`radar`)
+        Returns
+        -------
+        radar : radar class object
 
         written by Sebastien, 2012-08
+
         """
         found = False
         for irad in xrange(self.nradar):
@@ -247,26 +301,37 @@ class network(object):
     def getRadarsByPosition(self, lat, lon, alt, distMax=4000., datetime=None):
         """Get a list of radars able to see a given point on Earth
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
+ 
+        Parameters
+        ----------
+        lat
+            latitude of given point in geographic coordinates
+        lon
+            longitude of given point in geographic coordinates
+        alt
+            altitude of point above the Earth's surface in km
+        distMax
+            maximum distance of given point from radar
+        datetime
+            python datetime object (defaults to today)
 
-        **Args**:
-            * **lat**: latitude of given point in geographic coordinates
-            * **lon**: longitude of given point in geographic coordinates
-            * **alt**: altitude of point above the Earth's surface in km
-            * **[distMax]**: maximum distance of given point from radar
-            * **[datetime]**: python datetime object (defaults to today)
-        **Returns**:
-            * A dictionnary with keys:
-                * 'radars': a list of radar objects (:class:`radar`)
-                * 'dist': a list of distance from radar to given point
-                          (1 perradar)
-                * 'beam': a list of beams (1 per radar) seeing the given point
-        **Example**:
-            ::
+        Returns
+        -------
+        dict
+            A dictionnary with keys:
+            radars : a list of radar objects (:class:`radar`)
+            dist: a list of distance from radar to given point (1 perradar)
+            beam: a list of beams (1 per radar) seeing the given point
 
-                radars = obj.getRadarsByPosition(67., 134., 300.)
+        Example
+        -------
+            radars = obj.getRadarsByPosition(67., 134., 300.)
 
         written by Sebastien, 2012-08
+
         """
         from datetime import datetime as dt
         from davitpy.utils import geoPack as geo
@@ -323,15 +388,24 @@ class network(object):
     def getAllCodes(self, datetime=None, hemi=None):
         """Get a list of all active radar codes
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : network
+ 
+        Parameters
+        ----------
+        datetime : python datetime object
+            defaults to today
+        hemi : str
+            'north' or 'south', defaults to both
 
-        **Args**:
-            * **[datetime]**: python datetime object (defaults to today)
-            * **[hemi]**: 'north' or 'south' defaults to both
-        **Returns**:
-            * **codes** (list): A list of 3-letter codes
+        Returns
+        -------
+        codes : list
+            A list of 3-letter codes
 
         written by Sebastien, 2012-08
+
         """
         from datetime import datetime as dt
 
@@ -358,30 +432,42 @@ class radar(object):
     """ Reads radar.dat file and hdw.dat for a given radar and fills a radar
     structure
 
-    **Members**:
-        * **id** (int): radar ID
-        * **status** (int): radar status (active, inactive or planned)
-        * **cnum** (int): number of code names (usually 2, a 3-letter and
-                          1-letter)
-        * **code** (list): list of radar codes (usually 2, a 3-letter and
-                           1-letter)
-        * **name** (str): radar name
-        * **operator** (str): PI institution
-        * **hdwfname** (str): hdw.dat file name
-        * **stTime** (datetime.datetime): date of first lights
-        * **edTime** (datetime.datetime): last day of operations
-        * **snum** (int): number of site objects (i.e. number of updates to the
-                          hdw.dat)
-        * **sites** (list): list of :class:`site` objects
-    **Methods**:
-        * :func:`radar.fillFromSqlite`
-        * :func:`radar.getSiteByDate`
-    **Example**:
-        ::
+    Attributes
+    ----------
+    id : int
+        radar ID
+    status : int
+        radar status (active, inactive or planned)
+    cnum : int
+        number of code names (usually 2, a 3-letter and 1-letter)
+    code : list
+        list of radar codes (usually 2, a 3-letter and 1-letter)
+    name : str
+        radar name
+    operator : str
+        PI institution
+    hdwfname : str
+        hdw.dat file name
+    stTime : datetime.datetime
+        date of first lights
+    edTime : datetime.datetime
+        last day of operations
+    snum : int
+        number of site objects (i.e. number of updates to the hdw.dat)
+    sites : list
+        list of :class:`site` objects
 
-            obj = pydarn.radar.radar()
+    Methods
+    -------
+    radar.fillFromSqlite
+    radar.getSiteByDate
+
+    Example
+    -------
+        obj = pydarn.radar.radar()
 
     written by Sebastien, 2012-08
+
     """
     # __slots__ = ('id', 'status', 'cnum', 'code', 'name', 'operator',
     #              'hdwfname', 'stTime', 'edTime', 'snum', 'site')
@@ -390,17 +476,27 @@ class radar(object):
         """Default class constructor
         If no argument is passed, the object is initialized to 0
 
-        **Belongs to**: :class:`radar`
+        Belongs to
+        ----------
+        class : radar 
+ 
+        Parameters
+        ----------
+        code : str
+            3-letter radar code
+        radId : int
+            radar ID
 
-        **Args**:
-            * [**code**] (str): 3-letter radar code
-            * [**radId**] (int): radar ID
-        **Returns**:
-            * **radar** (:class:`radar`)
+        Returns
+        -------
+        radar : radar class object
 
-        .. note:: you should provide either **code** OR **radId**, not both
+        Note
+        ----
+            you should provide either **code** OR **radId**, not both
 
         written by Sebastien, 2012-08
+
         """
         import sqlite3 as lite
         import pickle
@@ -449,15 +545,23 @@ class radar(object):
     def fillFromSqlite(self, dbname, radId):
         """fill radar structure from sqlite DB
 
-        **Belongs to**: :class:`radar`
+        Belongs to
+        ----------
+        class : radar 
+ 
+        Parameters
+        ----------
+        dbname : str
+            sqlite database path/name
+        radID : int
+            radar ID
 
-        **Args**:
-            * **dbname** (str): sqlite database path/name
-            * **radID** (int): radar ID
-        **Returns**:
-            * **None**
+        Returns
+        -------
+        None
 
         written by Sebastien, 2013-02
+
         """
         import sqlite3 as lite
         import pickle
@@ -492,25 +596,30 @@ class radar(object):
             del self.sites[-1]
 
     def __len__(self):
-        """ Object length (number of site updates)
-        """
+        """Object length (number of site updates)"""
         return self.snum
 
     def __str__(self):
         """Object string representation
 
-        **Belongs to**: :class:`radar`
+        Belongs to
+        ----------
+        class : radar 
+ 
+        Parameters
+        ----------
+        None
 
-        **Args**:
-            * **None**
-        **Returns**:
-            * **a string** (str)
-        **Example**:
-            ::
+        Returns
+        -------
+        a string : str
 
-                print(obj)
+        Example
+        -------
+            print(obj)
 
         written by Sebastien, 2012-08
+
         """
         outstring = 'id: {0} \
                     \nstatus: {1} \
@@ -535,19 +644,25 @@ class radar(object):
     def getSiteByDate(self, datetime):
         """Get a specific radar site at a given date
 
-        **Belongs to**: :class:`network`
+        Belongs to
+        ----------
+        class : radar 
+ 
+        Parameters
+        ----------
+        datetime : datetime.datetime
 
-        **Args**:
-            * **datetime** (datetime.datetime)
-        **Returns**:
-            * **site** (:class:`site`)
-        **Example**:
-            ::
+        Returns
+        -------
+        site : site class object
 
-                # To get the Blackstone radar configuration today
-                site = obj.getSiteByDate(datetime.datetime.utcnow())
+        Example
+        -------
+            # To get the Blackstone radar configuration today
+            site = obj.getSiteByDate(datetime.datetime.utcnow())
 
         written by Sebastien, 2012-08
+
         """
         found = False
         for isit in range(self.snum):
@@ -569,53 +684,80 @@ class site(object):
 
     """Reads hdw.dat for a given radar and fills a SITE structure
 
-    **Members**:
-        * **tval** (datetime.datetime): last date and time operating with these
-                                        parameters
-        * **geolat** (float): main array latitude [deg]
-        * **geolon** (float): main array longitude [deg]
-        * **alt** (float): main array altitude [km]
-        * **boresite** (float): boresight azimuth [deg]
-        * **bmsep** (float): beam separation [deg]
-        * **vdir** (int): velocity sign
-        * **atten** (float): Analog Rx attenuator step [dB]
-        * **tdiff** (float): Propagation time from interferometer array antenna
-                             to phasing matrix [us]
-        * **phidiff** (float): phase sign for interferometric calculations
-        * **interfer** (list): Interferometer offset [x, y, z]
-        * **recrise** (float): Analog Rx rise time [us]
-        * **maxatten** (int): maximum number of analog attenuation stages
-        * **maxgate** (int): maximum number of range gates (assuming 45km gates)
-        * **maxbeam** (int): maximum number of beams
-    **Methods**:
-        * :func:`site.fillFromSqlite`
-        * :func:`site.beamToAzim`
-        * :func:`site.azimToBeam`
+    Attributes
+    ---------
+    tval : datetime.datetime
+        last date and time operating with these parameters
+    geolat : float
+        main array latitude [deg]
+    geolon : float
+        main array longitude [deg]
+    alt : float
+        main array altitude [km]
+    boresite : float
+        boresight azimuth [deg]
+    bmsep : float
+        beam separation [deg]
+    vdir : int
+        velocity sign
+    atten : float
+        Analog Rx attenuator step [dB]
+    tdiff : float
+        Propagation time from interferometer array antenna to
+        phasing matrix [us]
+    phidiff : float
+        phase sign for interferometric calculations
+    interfer : list
+        Interferometer offset [x, y, z]
+    recrise : float
+        Analog Rx rise time [us]
+    maxatten : int
+        maximum number of analog attenuation stages
+    maxgate : int
+        maximum number of range gates (assuming 45km gates)
+    maxbeam : int
+        maximum number of beams
 
-    **Example**:
-        ::
+    Methods
+    -------
+    site.fillFromSqlite
+    site.beamToAzim
+    site.azimToBeam
 
-            obj = pydarn.radar.site()
+    Example
+    -------
+        obj = pydarn.radar.site()
 
     written by Sebastien, 2012-08
+
     """
 
     def __init__(self, radId=None, code=None, dt=None):
         """Default class constructor
 
-        **Belongs to**: :class:`site`
+        Belongs to
+        ----------
+        class : site 
+ 
+        Parameters
+        ----------
+        radId : int
+            radar ID
+        code : str
+            3-letter radar code
+        dt : datetime.datetime
+            date and time of radar configurationation
 
-        **Args**:
-            * [**radId**] (int): radar ID
-            * [**code**] (str): 3-letter radar code
-            * [**dt**] (datetime.datetime): date and time of radar
-                                            configurationation
-        **Returns**:
-            * **site** (:class:`site`)
+        Returns
+        -------
+        site : site class object
 
-        .. note:: you should provide either **code** OR **radId**, not both
+        Note
+        ----
+            you should provide either **code** OR **radId**, not both
 
         written by Sebastien, 2012-08
+
         """
         import sqlite3 as lite
         import pickle
@@ -666,17 +808,26 @@ class site(object):
     def fillFromSqlite(self, dbname, radId, ind=-1, dt=None):
         """fill site structure from sqlite databse
 
-        **Belongs to**: :class:`site`
+        Belongs to
+        ----------
+        class : site 
+ 
+        Parameters
+        ----------
+        dbname : str
+            sqlite database path/name
+        radID : int
+            radar ID
+        ind : int
+            site index; defaults to most recent configuration
+        dt : datetime.datetime
 
-        **Args**:
-            * **dbname** (str): sqlite database path/name
-            * **radID** (int): radar ID
-            * [**ind**] (int): site index; defaults to most recent configuration
-            * [**dt**] (datetime.datetime)
-        **Returns**:
-            * **None**
+        Returns
+        -------
+        None
 
         written by Sebastien, 2013-02
+
         """
         import sqlite3 as lite
         import pickle
@@ -716,15 +867,11 @@ class site(object):
             self.interfer = pickle.loads(row[15].encode('ascii'))
 
     def __len__(self):
-        """
-        Object length
-        """
+        """Object length"""
         return 1
 
     def __str__(self):
-        """
-        Object string representation
-        """
+        """Object string representation"""
         outstring = 'tval: {0} \
                     \ngeolat: {1:5.2f} \
                     \ngeolon: {2:5.2f} \
@@ -751,10 +898,16 @@ class site(object):
     def beamToAzim(self, beam, fov_dir='front'):
         ''' Get azimuth of given beam
 
-        **Args**:
-            * **beam** (int): beam number
-        **Returns**:
-            * **azim** (float): beam azimuth
+        Parameters
+        ----------
+        beam : int
+            beam number
+
+        Returns
+        -------
+        azim : float
+            beam azimuth
+
         '''
         phi = ((self.maxbeam - 1) / 2. - beam) * self.bmsep
 
@@ -768,10 +921,16 @@ class site(object):
         one instead of zero) if the azimuth corresponds to the back lobe.
         Return np.nan if the azimuth is not covered by any beam.
 
-        **Args**:
-            * **azim** (float): beam azimuth [deg. East]
-        **Returns**:
-            * **beam** (int): beam number
+        Parameters
+        ----------
+        azim : float
+            beam azimuth [deg. East]
+
+        Returns
+        -------
+        beam : int
+            beam number
+
         '''
         import numpy as np
 
