@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-plotting.plotMapGrd
+"""plotMapGrd module
 
 Plotting/Retreiving SuperDARN gridded velocities, fitted convection velocities
 and contour plotting routines
@@ -36,9 +35,28 @@ class MapConv(object):
     plotCoords : Optional[str]
         coordinates of the plot, only use either 'mag' or 'mlt'
 
+    Methods
+    --------
+    overlayGridVel(pltColBar=True, overlayRadNames=True, annotateTime=True,
+                   colorBarLabelSize=15., colmap=cm.jet)
+        Overlay gridded LoS velocity data from grdex files
+    calcFitCnvVel()
+        Calculate fitted convection velocity from mapex data
+    calcCnvPots()
+        Calculte equipotential contour values from mapex data
+    overlayCnvCntrs()
+        Overlay convection contours from mapex data
+    overlayHMB(hmbCol='Gray')
+        Overlay Heppnard-Maynard boundary from mapex data
+    overlayMapModelVel(pltColBar=False, annotateTime=True,
+                       colorBarLabelSize=15., colMap=cm.jet)
+        Overlay model velocity vectors from mapex data
+    overlayMapFitVel(pltColBar=True, overlayRadNames=True, annotateTime=True,
+                     colorBarLabelSize=15., colMap=cm.jet)
+        Overlay fitted velocity vectors from mapex data
+
     Example
     -------
-
     Plot contours, fitted velocities and Heppnard-Maynard
     boundary from convection map data on April-3-2011
 
@@ -119,10 +137,6 @@ class MapConv(object):
                        colMap=cm.jet):
         """Overlay Gridded LoS velocity data from grdex files
 
-        Note
-        ----
-        Belongs to class MapConv
-
         Parameters
         ---------
         pltColBar : Optional[bool]
@@ -134,6 +148,10 @@ class MapConv(object):
         colorBarLabelSize : Optional[float]
 
         colMap : Optional[ ]
+
+        Note
+        ----
+        Belongs to class MapConv
 
         Returns
         -------
@@ -222,10 +240,6 @@ class MapConv(object):
         """Calculate fitted convection velocity magnitude and azimuth from
            mapex data (basically coefficients of the fit)
 
-        Note
-        ----
-        Belongs to class MapConv
-
         Returns
         ---------
         mlatsPlot : NEEDS TYPE
@@ -238,9 +252,12 @@ class MapConv(object):
 
             Arrays of Fitted velocity magnitude and azimuth
 
+        Note
+        ----
+        Belongs to class MapConv
+
         Example
         -------
-
         ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
 
         """
@@ -440,10 +457,6 @@ class MapConv(object):
     def calcCnvPots(self):
         """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
 
-        Note
-        ----        
-        Belongs to class MapConv
-
         Returns
         -------
         latCntr : NEEDS TYPE
@@ -453,9 +466,12 @@ class MapConv(object):
         potArr : NEEDS TYPE
             Array of potentials
 
+        Note
+        ----        
+        Belongs to class MapConv
+
         Example
         -------
-
         (lats, lons, pots) = MapConv.calcCnvPots()
 
         """
@@ -594,18 +610,17 @@ class MapConv(object):
     def overlayCnvCntrs(self):
         """Overlay convection contours from mapex data
 
-        Note
-        ----
-        Belongs to class MapConv
-
         Returns
         -------
         cntrPlt : NEEDS TYPE
             contours of convection are overlayed on the map object.
 
+        Note
+        ----
+        Belongs to class MapConv
+
         Example
         -------
-
         MapConv.overlayCnvCntrs()
 
         """
@@ -629,10 +644,6 @@ class MapConv(object):
     def overlayHMB(self, hmbCol='Gray'):
         """Overlay Heppnard-Maynard boundary from mapex data
 
-        Note
-        ----
-        Belongs to class MapConv
-
         Parameters
         ----------
         hmbCol : Optional[str]
@@ -641,9 +652,12 @@ class MapConv(object):
         -------
             Heppnard-Maynard boundary is overlayed on the map object.
 
+        Note
+        ----
+        Belongs to class MapConv
+
         Example
         -------
-
         MapConv.overlayHMB()
 
         """
@@ -659,10 +673,6 @@ class MapConv(object):
         colMap=cm.jet):
         """Overlay model velocity vectors from mapex data
         
-        Note
-        ----
-        Belongs to class MapConv
-
         Parameters
         ----------
         pltColBar : Optional[bool]
@@ -677,9 +687,12 @@ class MapConv(object):
         -------
             velocity vectors from the model are overlayed on the map object.
 
+        Note
+        ----
+        Belongs to class MapConv
+
         Example
         -------
-
         MapConv.overlayMapModelVel()
 
         """
@@ -743,10 +756,6 @@ class MapConv(object):
         colorBarLabelSize=15., colMap=cm.jet):
         """Overlay fitted velocity vectors from mapex data
         
-        Note
-        ----
-        Belongs to class MapConv
-
         Parameters
         ----------
         plotColBar : Optional[bool]
@@ -759,14 +768,16 @@ class MapConv(object):
 
         colMap : Optional[ ]
 
-
         Returns
         -------
             vectors of fitted convection velocities are overlayed on the map object.
 
+        Note
+        ----
+        Belongs to class MapConv
+
         Example
         -------
-
         MapConv.overlayMapFitVel()
 
         """
