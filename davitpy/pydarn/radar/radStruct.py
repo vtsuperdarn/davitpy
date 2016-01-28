@@ -57,23 +57,6 @@ class network(object):
 
     """
     def __init__(self):
-        """ Default class constructor
-
-        Belongs to
-        ----------
-        class : network
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        network : obj
-
-        written by Sebastien, 2012-08
-
-        """
         import sqlite3 as lite
         import os
         import davitpy
@@ -316,7 +299,7 @@ class network(object):
             altitude of point above the Earth's surface in km
         distMax
             maximum distance of given point from radar
-        datetime
+        datetime : Optional[datetime.datetime object]
             python datetime object (defaults to today)
 
         Returns
@@ -395,9 +378,9 @@ class network(object):
 
         Parameters
         ----------
-        datetime : python datetime object
+        datetime : Optional[python datetime object]
             defaults to today
-        hemi : str
+        hemi : Optional[str]
             'north' or 'south', defaults to both
 
         Returns
@@ -433,6 +416,17 @@ class radar(object):
     """ Reads radar.dat file and hdw.dat for a given radar and fills a radar
     structure
 
+    Parameters
+    ----------
+    code : Optional[str]
+        3-letter radar code
+    radId : Optional[int]
+        radar ID
+
+    Note
+    ----
+        you should provide either **code** OR **radId**, not both
+
     Attributes
     ----------
     id : int
@@ -441,7 +435,7 @@ class radar(object):
         radar status (active, inactive or planned)
     cnum : int
         number of code names (usually 2, a 3-letter and 1-letter)
-    code : list
+    code : Optional[list]
         list of radar codes (usually 2, a 3-letter and 1-letter)
     name : str
         radar name
@@ -474,31 +468,6 @@ class radar(object):
     #              'hdwfname', 'stTime', 'edTime', 'snum', 'site')
 
     def __init__(self, code=None, radId=None):
-        """Default class constructor
-        If no argument is passed, the object is initialized to 0
-
-        Belongs to
-        ----------
-        class : radar
-
-        Parameters
-        ----------
-        code : str
-            3-letter radar code
-        radId : int
-            radar ID
-
-        Returns
-        -------
-        radar : radar class object
-
-        Note
-        ----
-            you should provide either **code** OR **radId**, not both
-
-        written by Sebastien, 2012-08
-
-        """
         import sqlite3 as lite
         import pickle
         import os
@@ -685,6 +654,19 @@ class site(object):
 
     """Reads hdw.dat for a given radar and fills a SITE structure
 
+    Parameters
+    ----------
+    radId : Optional[int]
+        radar ID
+    code : Optional[str]
+        3-letter radar code
+    dt : Optional[datetime.datetime]
+        date and time of radar configurationation
+
+    Note
+    ----
+        you should provide either **code** OR **radId**, not both
+
     Attributes
     ---------
     tval : datetime.datetime
@@ -734,32 +716,6 @@ class site(object):
     """
 
     def __init__(self, radId=None, code=None, dt=None):
-        """Default class constructor
-
-        Belongs to
-        ----------
-        class : site
-
-        Parameters
-        ----------
-        radId : int
-            radar ID
-        code : str
-            3-letter radar code
-        dt : datetime.datetime
-            date and time of radar configurationation
-
-        Returns
-        -------
-        site : site class object
-
-        Note
-        ----
-            you should provide either **code** OR **radId**, not both
-
-        written by Sebastien, 2012-08
-
-        """
         import sqlite3 as lite
         import pickle
         import os
@@ -821,7 +777,7 @@ class site(object):
             radar ID
         ind : int
             site index; defaults to most recent configuration
-        dt : datetime.datetime
+        dt : Optional[datetime.datetime]
 
         Returns
         -------
