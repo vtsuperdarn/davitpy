@@ -41,31 +41,31 @@ class fov(object):
 
     Parameters
     ----------
-    site
+    site : Optional[site object]
         site structure for a given radar and date-time
     frang : scalar or ndarray(nbeams)
         first range gate position [km] (defaults to 180 km)
     rsep : scalar or ndarray(nbeams)
         range gate separation [km] (defaults to 45 km)
-    nbeams
+    nbeams : Optional[int]
         number of beams (use site information if not provided)
-    ngates
+    ngates : Optional[int]
         number of gates (use site information if not provided)
-    bmsep
+    bmsep : Optional[float]
         beam separation [degree] (use site information if not provided)
-    siteLat
+    siteLat : Optional[float]
         geographic latitude of radar [degree] (use site information if not
         provided)
-    siteLon
+    siteLon : Optional[float]
         geographic longitude of radar [degree] (use site information if not
         provided)
-    siteAlt
+    siteAlt : Optional[float]
         altitude of radar site [m] (use site information if not provided)
-    siteBore
+    siteBore : Optional[float]
         radar boresite [degree] (use site information if not provided)
-    recrise : scalar or ndarray(nbeams)
+    recrise : Optional[scalar or ndarray(nbeams)]
         receiver rise time [us] (use site information if not provided)
-    elevation : scalar or ndarray(ngates) or ndarray(nbeams,ngates)
+    elevation : Optional[scalar or ndarray(ngates) or ndarray(nbeams,ngates)]
         elevation angle [degree] (if not provided, is evaluated using 'model')
     altitude : scalar or ndarray(ngates) or ndarray(nbeams,ngates)
         altitude [km] (if not provided, set to 300 km)
@@ -75,7 +75,7 @@ class fov(object):
         None : if you trust your elevation or altitude values. more to come
     coords
         anything accepted by coord_conv; see utils.get_coord_dict. Default: geo
-    date_time : datetime.datetime object
+    date_time : Optional[datetime.datetime object]
         the datetime for which the FOV is desired. Required for mag and mlt,
         and possibly others in the future. Default: None
     coord_alt
@@ -453,11 +453,11 @@ def calcFieldPnt(tGeoLat, tGeoLon, tAlt, boreSight, boreOffset, slantRange,
         offset from boresight [degree]
     slantRange
         slant range [km]
-    elevation
+    elevation : Optional[float]
         elevation angle [degree] (estimated if None)
-    altitude
+    altitude : Optional[float]
         altitude [km] (default 300 km)
-    model
+    model : Optional[str]
         IS : for ionopsheric scatter projection model
         GS : for ground scatter projection model
         None : if you trust your elevation or altitude values. more to come
@@ -664,9 +664,9 @@ def gsMapSlantRange(slantRange, altitude=None, elevation=None):
     ----------
     slantRange
         normal slant range [km]
-    altitude
+    altitude : Optional[float]
         altitude [km] (defaults to 300 km)
-    elevation
+    elevation : Optional[float]
         elevation angle [degree]
 
     Returns
