@@ -35,7 +35,7 @@ def radarRead(path=None):
 
     Parameters
     ----------
-    path : str
+    path : Optional[str]
         path to radar.dat file; defaults to RST environment variable SD_RADAR
 
     Returns
@@ -124,7 +124,7 @@ def hdwRead(fname, path=None):
     ----------
     fname : str
         hdw.dat file name
-    path : str
+    path : Optional[str]
         path to hdw.dat file; defaults to RST environment variable SD_HDWPATH
 
     Returns
@@ -218,7 +218,7 @@ class updateRadars(object):
     if the database cannot be reached.
     Currently, the remote database is housed on the VT servers.
 
-    Members
+    Attributes 
     -------
     sql_path : str
         path to sqlite file
@@ -239,22 +239,6 @@ class updateRadars(object):
 
     """
     def __init__(self):
-        """Default class constructor
-
-        Belongs to
-        ----------
-        class : updateRadars
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        updateRadars : obj
-
-        """
-
         import os
         import davitpy
 
