@@ -61,7 +61,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     ----------
     sTime : datetime
         The start time you want to plot
-    *rad
+    rad
         A list of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
     interval : Optional[int]
         The the time period to be plotted, in seconds.  default = 60
@@ -130,7 +130,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         A flag indicating whether to output to a png file.  default = False
     dpi : Optional[int]
         Dots per inch if saving as png.  default = 300
-    **tFreqBands : optional
+    tFreqBands : optional
         Upper and lower bounds of frequency in kHz to be used.  Must be unset
         (or set to []) or have a pair for each radar, and for any band set to
         [] the default will be used.  default = [[8000,20000]],
@@ -142,7 +142,6 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
 
     Examples
     --------
-
     import datetime as dt
     pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
     pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
@@ -499,11 +498,11 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
     gsct : Optional[boolean]
         A flag indicating whether we are distinguishing ground scatter.
         default = 0
-    *intensities : optional
+    intensities : Optional[  ]
         A list of intensities (used for colorbar)
     fov : Optional[pydarn.radar.radFov.fov]
         A radar fov object
-    *gs_flg : optional
+    gs_flg : Optional[  ]
         A list of gs flags, 1 per range gate
     fill : Optional[boolean]
         A flag indicating whether to plot filled or point RB cells.
@@ -511,7 +510,7 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
     velscl : Optional[float]
         The velocity to use as baseline for velocity vector length, only
         applicable if fill = 0.  default = 1000
-    *lines : optional
+    lines : Optional[  ]
         An array to have the endpoints of velocity vectors.  only applicable if
         fill = 0.  default = []
     dist : Optional [float]
@@ -529,7 +528,6 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
     Example
     -------
-
     overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],
                verts=verts,intensities=intensities,gs_flg=gs_flg)
 

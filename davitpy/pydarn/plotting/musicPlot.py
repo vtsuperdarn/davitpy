@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-plotting.musicPlot
-------------------
+"""musicPlot module
 
 A module for plotting objects created and processed with the pydarn.proc.music module.
 
@@ -27,7 +25,7 @@ Notes
     Please see the pydarn.proc.music module documentation and the iPython notebooks included in the docs
     folder of the DaViTPy distribution.
 
-Nathaniel A. Frissell, Fall 2013
+Module author: Nathaniel A. Frissell, Fall 2013
 
 Functions
 ----------------------------
@@ -81,23 +79,26 @@ def daynight_terminator(date, lons):
 
     Parameters
     ----------
-    date : (datetime.datetime)
+    date : datetime.datetime
         UT date and time of terminator calculation.
-    lons : (np.array)
+    lons : np.array
         Longitudes of which to calculate the terminator.
 
     Returns
     -------
-    lats : (np.array)
+    lats : np.array
         Latitudes of solar terminator.
-    tau : (np.array)
+    tau : np.array
         Greenwhich Hour Angle.
-    dec : (np.array)
+    dec : np.array
         Solar declination.
 
+    Notes
+    -----
     Adapted from mpl_toolkits.basemap.solar by Nathaniel A. Frissell, Fall 2013
+
     """
-    
+
     import mpl_toolkits.basemap.solar as solar
 
     dg2rad = np.pi/180.
@@ -114,7 +115,7 @@ class musicFan(object):
 
     Parameters
     ----------
-    dataObj : (`pydarn.proc.music.musicArray`)
+    dataObj : pydarn.proc.music.musicArray
         musicArray object
     dataSet : Optional[str]
         Which dataSet in the musicArray object to plot
@@ -133,7 +134,7 @@ class musicFan(object):
         Mark the (beam, rangeGate) with black.
     markBeam : Optional[None or int]
         Mark a chosen beam.
-    **markBeam_dict : Optional[dict]
+    markBeam_dict : Optional[dict]
         dictionary of keywords defining markBeam line properties.
     plotTerminator : Optional[bool]
         If True, overlay day/night terminator on map.  Uses Basemap's nightshade.
@@ -141,9 +142,9 @@ class musicFan(object):
         If True, plot the title information
     title : Optional[str]
         Overide default title text.
-    *parallels_ticks : Optional[list]
+    parallels_ticks : Optional[list]
         Where to draw the parallel (latitude) lines
-    *meridians_ticks : Optional[list]
+    meridians_ticks : Optional[list]
         Where to draw the meridian (longitude) lines
     zoom : Optional[float]
         Multiply the map height and width by this factor (bigger number shows more area).
@@ -158,7 +159,7 @@ class musicFan(object):
         If Nonei and cmap_handling=='matplotlib', use jet.
     plot_cbar : Optional[bool]
         If True, plot the color bar.
-    *cbar_ticks : Optional[list]
+    cbar_ticks : Optional[list]
         Where to put the ticks on the color bar.
     cbar_shrink : Optional[float]
         Fraction by which to shrink the colorbar
@@ -172,7 +173,7 @@ class musicFan(object):
         fontsize of model and coordinate indicator text
     draw_coastlines : Optional[bool]
         If True, draw the coastlines.
-    **basemap_dict : Optional[dict]
+    basemap_dict : Optional[dict]
         Dictionary of keywords sent to the basemap invocation
     **kwArgs
         Keyword Arguments
@@ -504,6 +505,7 @@ class musicRTI(object):
         Keyword Arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     def __init__(self,dataObject,
         dataSet                 = 'active',
@@ -927,6 +929,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
         matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
 
     if fig is None:
@@ -1021,6 +1024,7 @@ def rangeBeamPlot(currentData,data,axis,title=None,xlabel=None,ylabel=None,param
         Colorbar label.
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     fig     = axis.get_figure()
 
@@ -1104,6 +1108,7 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
         matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     currentData = getDataSet(dataObj,dataSet)
     xData1      = currentData.time
@@ -1210,6 +1215,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
         matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     currentData   = getattr(dataObj,dataSet)
 
@@ -1325,6 +1331,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
         matplotlib figure object that was plotted to
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     if fig is None:
         from matplotlib import pyplot as plt
@@ -1507,13 +1514,16 @@ def plotFullSpectrum(dataObj,dataSet='active',
         fontsize of "Ground Scatter Only" text
     cbar_gstext_enable : Optional[bool]
         Enable "Ground Scatter Only" text
+    **kwArgs :
+        Keyword Arguments
+
 
     Returns
     -------
     return_dict
 
-
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
 
     from scipy import stats
@@ -1733,6 +1743,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
         matplotlib figure object that will be plotted to.  If not provided, one will be created.
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     if fig is None:
         from matplotlib import pyplot as plt
@@ -1889,6 +1900,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
         Keywords arguments
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     if fig is None and axis is None:
         from matplotlib import pyplot as plt
@@ -1958,6 +1970,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
         will be displayed alongside the kArr plot.
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     if fig is None:
         from matplotlib import pyplot as plt
@@ -2141,6 +2154,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
 
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     if axis is None: return
     return_dict = {}
