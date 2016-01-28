@@ -15,12 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-plotting.rti
+"""Range-time-intensity plotting
 
 A module for generating rti plots.
 
-moduleauthor: AJ, 20130123
+Module author: AJ, 20130123
 
 Functions
 ---------
@@ -104,7 +103,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
     fileType : Optional[str]
         The file type to be plotted, one of ['fitex', 'fitacf', 'lmfit'].
         default = 'fitex'.
-    **params : Optional[list]
+    params : Optional[list]
         a list of the fit parameters to plot, allowable values are:
         ['velocity', 'power', 'width', 'elevation', 'phi0'].  default:
         ['velocity', 'power', 'width']
@@ -160,9 +159,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
         fontsize of xtick labels
     ytick_size : Optional[int]
         fontsize of ytick labels
-    *xticks : Optional[list]
+    xticks : Optional[list]
         datetime.datetime objects indicating the location of xticks
-    *axvlines : Optoinal[list]
+    axvlines : Optoinal[list]
         datetime.datetime objects indicating the location vertical lines
         marking the plot
     plot_terminator : Optional[boolean]
@@ -174,14 +173,12 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
     Example
     -------
-
     import datetime as dt
     pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
                                  eTime=dt.datetime(2013,3,16,14,30),
                                  bmnum=12, fileType='fitacf',
                                  scales=[[-500,500],[],[]], coords='geo',
                                  colors='aj', filtered=True, show=True)
-
 
     Written by AJ 20121002
     Modified by Matt W. 20130715
@@ -493,7 +490,6 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 
     Example
     -------
-
     ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
 
     Written by AJ 20121002
@@ -626,7 +622,6 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
 
     Example
     -------
-
     import datetime as dt
     from matplotlib import pyplot
     fig = pyplot.figure()
@@ -636,7 +631,6 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     Modified by ASR 20150916
 
     """
-
     from davitpy import pydarn
 
     # Obtain the davitpy.pydarn.radar.radStruct.radar object for rad.
@@ -685,14 +679,13 @@ def plot_cpid(ax, times, cpid, mode):
     Nothing.
 
     Example
-
+    -------
     plot_cpid(ax,times,cpid,mode)
 
     Written by AJ 20121002
     Modified by ASR 20150916
 
     """
-
     from davitpy import pydarn
     oldCpid = -9999999
 
@@ -770,7 +763,6 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
 
     Example
     -------
-
     plot_skynoise(ax,times,sky)
 
     Written by AJ 20121002
@@ -778,7 +770,6 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     Modified by ASR 20150916
 
     """
-
     # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -836,6 +827,8 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
         2-element limits of the x-axis.  None for default.
     xticks : Optional[list]
         List of xtick poisitions.  None for default.
+    ytickside : Optional[string]
+        Default is right.
 
     Returns
     -------
@@ -843,7 +836,6 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
 
     Example
     -------
-
     plot_searchnoise(ax,times,search)
 
     Written by AJ 20121002
@@ -907,12 +899,6 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
         a list of the times of the beam soundings
     freq : list
         a lsit of the tfreq of the beam soundings
-    ### THIS VAR HAS BEEN DEPRECIATED?
-    search :
-        a list of the nave param
-    ### THIS VAR HAS BEEN DEPRECIATED?
-    pos : 
-        position of the panel
     xlim : Optional[list]
         2-element limits of the x-axis.  None for default.
     xticks : Optional[list]
@@ -925,7 +911,6 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 
     Example
     -------
-
     plot_freq(ax, times, tfreq)
 
     Written by AJ 20121002
@@ -933,7 +918,6 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
     Modified by ASR 20150916
 
     """
-
     # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -986,16 +970,12 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
         a list of the times of the beam soundings
     nave : list
         a lsit of the nave of the beam soundings
-    ### THIS VAR IS DEPRECIATIED?
-    search : list
-        a list of the nave param
-    ### THIS VAR IS DEPRECIATED?
-    pos :
-        position of the panel
     xlim : Optional[list]
         2-element limits of the x-axis.  None for default.
     xticks : Optional[list]
         List of xtick poisitions.  None for default.
+    ytickside : Optional[str]
+        Default is right.
 
     Returns
     -------
@@ -1003,7 +983,6 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
 
     Example
     -------
-
     plot_nave(ax, times, nave)
 
     Written by AJ 20121002
@@ -1011,7 +990,6 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
     Modified by ASR 20150916
 
     """
-
     # Format the yaxis
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -1078,7 +1056,6 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
 
     Example
     -------
-
     from davitpy import pydarn
     from datetime import datetime
     myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
@@ -1088,7 +1065,6 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
     Written by ASR 20150914
 
     """
-
     # Initialize some things.
     data = dict()
     data_keys = ['vel', 'pow', 'wid', 'elev', 'phi0', 'times', 'freq', 'cpid',
@@ -1138,7 +1114,6 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
 
 def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
               norm, plot_terminator=True):
-
     """Plots the data given by pArr to an axis object.
 
     Parameters
@@ -1167,17 +1142,16 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
         a matplotlib.colors.BoundaryNorm (such as that returned by
         utils.plotUtils.genCmap)
     plot_terminator : Optional[bool]
-        A boolean stating whether or not to plot the terminator
+        A boolean stating whether or not to plot the terminator; default
+        is true.
 
     Returns
     -------
-
     *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
 
     Written by ASR 20150916
 
     """
-
     from davitpy import pydarn
     # Initialize things.
     rmax = max(data_dict['nrang'][fplot])
@@ -1284,7 +1258,6 @@ def daynight_terminator(date, lons):
     *dec, solar declination
 
     """
-
     import mpl_toolkits.basemap.solar as solar
     dg2rad = np.pi / 180.
     # compute greenwich hour angle and solar declination
