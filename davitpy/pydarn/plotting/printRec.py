@@ -15,12 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-plotting.printRec
+"""Functions for printing radar data records to plain text
 
-Functions for printing radar data records to plain text
-
-moduleauthor: AJ, 20130327
+Module author: AJ, 20130327
 
 Functions
 ------------------------------------------
@@ -45,13 +42,11 @@ def readPrintRec(filename):
 
     Example
     -------
-
     pydarn.plotting.readPrintRec('myfile.txt')
 
     Written by AJ 20130327
 
     """
-
     import datetime as dt
 
     # open the file
@@ -152,7 +147,6 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
 
     Example
     -------
-
     pydarn.plotting.fitPrintRec(datetime(2011,1,1,1,0),
                                 datetime(2011,1,1,2,0),
                                 'bks', 'myoutfile.txt', summ=1)
@@ -160,7 +154,6 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     Written by AJ 20130327
 
     """
-
     from davitpy import pydarn
     from davitpy import utils
     from davitpy import models
