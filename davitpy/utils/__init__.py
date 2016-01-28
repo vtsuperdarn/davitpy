@@ -14,30 +14,33 @@ This subpackage contains various utilities for DaViT-py
     * :mod:`utils.coordUtils`: coordinate system tools
 
 """
+
+import logging
+
 try:
     from plotUtils import *
 except Exception, e:
-    print __file__+' -> utils.plotUtils: ', e
+    logging.exception(__file__ + ' -> utils.plotUtils: ' + e)
 
 try:
     from geoPack import *
 except Exception, e:
-    print __file__+' -> utils.geoPack: ', e
+    logging.exception(__file__ + ' -> utils.geoPack: ' + e)
 
 try:
     from timeUtils import *
 except Exception, e:
-    print __file__+' -> utils.timeUtils: ', e
+    logging.exception(__file__ + ' -> utils.timeUtils: ' + e)
 
 try:
     from calcSun import *
 except Exception, e:
-    print __file__+' -> utils.calcSun: ', e
+    logging.exception(__file__ + ' -> utils.calcSun: ' + e)
 
 try:
     from coordUtils import *
 except Exception, e:
-    print __file__+' -> utils.coordUtils: ', e
+    logging.exception(__file__ + ' -> utils.coordUtils: ' + e)
 
 
 # *************************************************************
