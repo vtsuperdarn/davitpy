@@ -1,17 +1,30 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: utils
-*********************
+utils
+-----
+
 This subpackage contains various utilities for DaViT-py
 
-**Modules**:
-    * :mod:`utils.plotUtils`: Basic plotting tools 
-    * :mod:`utils.geoPack`: geographic transformations
-    * :mod:`utils.timeUtils`: date/time manipulations 
-    * :mod:`utils.calcSun`: solar position calculator
-    * :mod:`utils.coordUtils`: coordinate system tools
+Modules
+--------------------------------------
+plotUtils   Basic plotting tools 
+geoPack     geographic transformations
+timeUtils   date/time manipulations 
+calcSun     solar position calculator
+coordUtils  coordinate system tools
+--------------------------------------
+
+Attributes
+----------
+Re : float
+    Mean Earth radius in kilometers
+RePol : float
+    Polar Earth radius in kilometers
+ReEqu : float
+    Equatorial Earth radisu in kilometers
+
 
 """
 
@@ -43,19 +56,20 @@ except Exception, e:
     logging.exception(__file__ + ' -> utils.coordUtils: ' + e)
 
 
-# *************************************************************
 # Define a few general-use constants
 
-# Mean Earth radius [km]
 Re = 6371.0
-# Polar Earth radius [km]
 RePol = 6378.1370
-# Equatorial Earth radius [km]
 ReEqu = 6356.7523
 
-#thanks to Sasha Chedygov on stackoverflow for this idea
 class twoWayDict(dict):
-	#I added the initialization fucntion
+    """Thanks to Sasha Chedygov on stackoverflow for this idea
+
+    Note
+    ----
+    The initialization function was added on here
+        
+    """
 	def __init__(self,initDict={}):
 		for key,val in initDict.iteritems():
 			self[key] = val
