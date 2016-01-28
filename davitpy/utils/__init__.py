@@ -70,15 +70,15 @@ class twoWayDict(dict):
     The initialization function was added on here
         
     """
-	def __init__(self,initDict={}):
-		for key,val in initDict.iteritems():
-			self[key] = val
-			self[val] = key
+    def __init__(self,initDict={}):
+        for key,val in initDict.iteritems():
+            self[key] = val
+            self[val] = key
+
+    def __len__(self):
+        return dict.__len__(self) / 2
 		
-	def __len__(self):
-		return dict.__len__(self) / 2
-		
-	def __setitem__(self, key, value):
-		dict.__setitem__(self, key, value)
-		dict.__setitem__(self, value, key)
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        dict.__setitem__(self, value, key)
 
