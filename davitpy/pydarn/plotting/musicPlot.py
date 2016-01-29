@@ -28,28 +28,27 @@ Notes
 Module author: Nathaniel A. Frissell, Fall 2013
 
 Functions
-----------------------------
-plotting.daynight_terminator
-plotting.plotRelativeRanges
-plotting.rangeBeamPlot
-plotting.timeSeriesMultiPlot
-plotting.spectrumMultiPlot
-plotting.multiPlot
-plotting.plotFullSpectrum
-plotting.plotDlm
-plotting.plotKarr
-plotting.plotKarrDetected
-plotting.plotKarrAxis
-----------------------------
+--------------------------------------------------
+daynight_terminator Calculate day/night terminator
+plotRelativeRanges  cell distances
+rangeBeamPlot       range versus beam
+timeSeriesMultiPlot time series
+spectrumMultiPlot   1D line spectral data
+multiPlot           time series or spectral data
+plotFullSpectrum    full spectrum of musicArray
+plotDlm             cross spectral matrix
+plotKarr            horizontal wave number
+plotKarrDetected    add in use of detectSignals()
+plotKarrAxis        Karr plot without titles
+--------------------------------------------------
 
 Classes
------------------
-plotting.musicFan
-plotting.musicRTI
------------------    
+---------------------------------------
+musicFan    fan plot of musicArray data
+musicRTI    RTI plot of musicArray data
+---------------------------------------
 
 """
-
 import numpy as np
 import scipy as sp
 import datetime
@@ -98,7 +97,6 @@ def daynight_terminator(date, lons):
     Adapted from mpl_toolkits.basemap.solar by Nathaniel A. Frissell, Fall 2013
 
     """
-
     import mpl_toolkits.basemap.solar as solar
 
     dg2rad = np.pi/180.
@@ -177,6 +175,13 @@ class musicFan(object):
         Dictionary of keywords sent to the basemap invocation
     **kwArgs
         Keyword Arguments
+
+
+    Attributes
+    ----------
+    map_obj
+
+    pcoll
 
     Written by Nathaniel A. Frissell, Fall 2013
 
@@ -503,6 +508,11 @@ class musicRTI(object):
         fontsize of model and coordinate indicator text
     **kwArgs :
         Keyword Arguments
+
+    Attributes
+    ----------
+    cbar_info : list
+
 
     Written by Nathaniel A. Frissell, Fall 2013
 
@@ -931,7 +941,6 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     Written by Nathaniel A. Frissell, Fall 2013
 
     """
-
     if fig is None:
         from matplotlib import pyplot as plt
         fig   = plt.figure(figsize=figsize)
@@ -1525,7 +1534,6 @@ def plotFullSpectrum(dataObj,dataSet='active',
     Written by Nathaniel A. Frissell, Fall 2013
 
     """
-
     from scipy import stats
 
     return_dict = {}

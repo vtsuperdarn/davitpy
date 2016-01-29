@@ -23,11 +23,11 @@ Module author: ASR, 20141225
 
 Functions
 ---------
-pydarn.plotting.iqPlot.plot_iq
+plot_iq
 
 """
-
 import logging
+
 
 def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
     """Create an rti plot for a secified radar and time period.

@@ -19,19 +19,17 @@
 
 A module for generating plotting ACF and XCF data
 
-Module Author ASR, 20141230
-
+Module author ASR, 20141230
 
 Functions
----------
-plot_acf
-calc_blanked
-plot_rli
-nuft
-
+-----------------------------------------
+plot_acf        Plot acf/xcf data
+calc_blanked    Calc RX lag blanking
+plot_rli        Plot range-lag-intensity
+nuft            special Fourier transform
+-----------------------------------------
 
 """
-
 import logging
 
 

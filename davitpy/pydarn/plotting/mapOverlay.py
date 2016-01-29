@@ -12,7 +12,6 @@ overlayFov     Overlay field(s)-of-view on a map
 -------------------------------------------------------
 
 """
-
 import logging
 
 

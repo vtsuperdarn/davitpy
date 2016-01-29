@@ -22,21 +22,22 @@ A module for generating rti plots.
 Module author: AJ, 20130123
 
 Functions
----------
-plotRti
-plot_freq
-plot_searchnoise
-plot_skynoise
-plot_cpid
-plot_nave
-rti_title
-draw_axes
-read_data
-rti_panel
-daynight_terminator
+--------------------------------------------------
+plotRti             deprecated rti code
+plot_rti            range-time-intensity plot
+plot_freq           TX frequency data
+plot_searchnoise    noise panel
+plot_skynoise       sky noise panel
+plot_cpid           control program ID panel
+plot_nave           number of averges panel
+rti_title           title an rti plot
+draw_axes           draw empty axes
+read_data           read data in
+rti_panel           plot the main rti data
+daynight_terminator calculate day/night terminator
+--------------------------------------------------
 
 """
-
 import numpy
 import math
 import matplotlib
@@ -62,7 +63,11 @@ def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             myFile=None, xtick_size=9, ytick_size=9, xticks=None,
             axvlines=None, plotTerminator=False):
 
-    """ Wrapper for plot_rti. This function is being deprecated.
+    """ Wrapper for plot_rti.
+
+    .. note:: Deprecated in davitpy 0.3?
+              `plotRti` will be removed in davitpy 0.6, it is replaced by
+              `plot_rti` because we liked that name better.
 
     """
     logging.warning("Warning: This function is being deprecated. Use"
@@ -86,7 +91,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
              tfreqbands=[], myFile=None, xtick_size=9, ytick_size=9,
              xticks=None, axvlines=None, plot_terminator=False):
 
-    """ Create an rti plot for a secified radar and time period.
+    """ Create an rti plot for a specified radar and time period.
 
     Parameters
     ----------
@@ -661,7 +666,7 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
 
 
 def plot_cpid(ax, times, cpid, mode):
-    """Plots cpid panel at position pos.
+    """Plots control program ID (cpid) panel at position pos.
 
     Parameters
     ----------
@@ -960,7 +965,7 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 
 
 def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
-    """Plots the nave data to an axis object.
+    """Plots the number of averages (nave) data to an axis object.
 
     Parameters
     ----------

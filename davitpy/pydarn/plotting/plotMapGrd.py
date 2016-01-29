@@ -7,17 +7,19 @@ Plotting/Retreiving SuperDARN gridded velocities, fitted convection velocities
 and contour plotting routines
 
 Class
------
-MapConv :
-    Read a record (from a time) from grdex and mapex files and plot or retreive
-    the gridded LoS velocity vectors, convection contours, fitted velocity
-    vectors, model vectors and Heppnard-Maynard Boundary.
+-------
+MapConv
+-------
 
 """
 import logging
 
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
+
+    Read a record (from a time) from grdex and mapex files and plot or retreive
+    the gridded LoS velocity vectors, convection contours, fitted velocity
+    vectors, model vectors and Heppnard-Maynard Boundary.
 
     Parameters
     ----------
@@ -34,6 +36,23 @@ class MapConv(object):
         [0,1000]
     plotCoords : Optional[str]
         coordinates of the plot, only use either 'mag' or 'mlt'
+
+    Attributes
+    ----------
+    radEarth : float
+        Earth radius in kilometers
+    lenFactor : float
+        Used to change the length of the vector on the plot
+    radEarthMtrs : float
+        Earth radius in meters
+    maxVelPlot : Optional[float]
+        maximum velocity to be used for plotting, min is zero so scale is
+        [0,1000]
+    axisHandle :
+        the axis handle used
+    mObj : utils.plotUtils.mapObj
+        the map object you want data to be overlayed on.
+    
 
     Methods
     --------
