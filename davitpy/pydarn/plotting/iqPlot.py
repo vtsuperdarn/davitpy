@@ -60,10 +60,10 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
 
     Example
     -------
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
-                                            'kap',fileType='iqdat')
-            pydarn.plotting.iqPlot.plot_iq(myBeam)
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                        'kap',fileType='iqdat')
+        pydarn.plotting.iqPlot.plot_iq(myBeam)
 
     Written by ASR 20141225
 

@@ -173,12 +173,12 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
 
     Example
     -------
-    import datetime as dt
-    pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
-                                 eTime=dt.datetime(2013,3,16,14,30),
-                                 bmnum=12, fileType='fitacf',
-                                 scales=[[-500,500],[],[]], coords='geo',
-                                 colors='aj', filtered=True, show=True)
+        import datetime as dt
+        pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
+                                     eTime=dt.datetime(2013,3,16,14,30),
+                                     bmnum=12, fileType='fitacf',
+                                     scales=[[-500,500],[],[]], coords='geo',
+                                     colors='aj', filtered=True, show=True)
 
     Written by AJ 20121002
     Modified by Matt W. 20130715
@@ -490,7 +490,7 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 
     Example
     -------
-    ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
+        ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
 
     Written by AJ 20121002
     Modified by ASR 20150917 (refactored)
@@ -622,10 +622,10 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
 
     Example
     -------
-    import datetime as dt
-    from matplotlib import pyplot
-    fig = pyplot.figure()
-    rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
+        import datetime as dt
+        from matplotlib import pyplot
+        fig = pyplot.figure()
+        rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
 
     Written by AJ 20121002
     Modified by ASR 20150916
@@ -680,7 +680,7 @@ def plot_cpid(ax, times, cpid, mode):
 
     Example
     -------
-    plot_cpid(ax,times,cpid,mode)
+        plot_cpid(ax,times,cpid,mode)
 
     Written by AJ 20121002
     Modified by ASR 20150916
@@ -763,7 +763,7 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
 
     Example
     -------
-    plot_skynoise(ax,times,sky)
+        plot_skynoise(ax,times,sky)
 
     Written by AJ 20121002
     Modified by NAF 20131101
@@ -836,7 +836,7 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
 
     Example
     -------
-    plot_searchnoise(ax,times,search)
+        plot_searchnoise(ax,times,search)
 
     Written by AJ 20121002
     Modified by NAF 20131101
@@ -911,7 +911,7 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 
     Example
     -------
-    plot_freq(ax, times, tfreq)
+        plot_freq(ax, times, tfreq)
 
     Written by AJ 20121002
     Modified by NAF 20131101
@@ -983,7 +983,7 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
 
     Example
     -------
-    plot_nave(ax, times, nave)
+        plot_nave(ax, times, nave)
 
     Written by AJ 20121002
     Modified by NAF 20131101
@@ -1056,11 +1056,11 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
 
     Example
     -------
-    from davitpy import pydarn
-    from datetime import datetime
-    myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
-    myBeam = myPtr.readRec()
-    data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
+        from davitpy import pydarn
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
+        myBeam = myPtr.readRec()
+        data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
 
     Written by ASR 20150914
 
@@ -1147,7 +1147,8 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 
     Returns
     -------
-    *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
+    pcoll
+        the polygon collection returned by matplotib.pyplot.pcolormesh.
 
     Written by ASR 20150916
 
@@ -1253,9 +1254,12 @@ def daynight_terminator(date, lons):
 
     Returns
     -------
-    *lat, the latitude of the day night terminator
-    *tau, grenwich hour angle
-    *dec, solar declination
+    lat
+        the latitude of the day night terminator
+    tau
+        grenwich hour angle
+    dec
+        solar declination
 
     """
     import mpl_toolkits.basemap.solar as solar

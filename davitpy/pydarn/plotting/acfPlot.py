@@ -78,11 +78,11 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     Example
     -------
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
-                                          'kap',fileType='rawacf')
-            myBeam = myPtr.readRec()
-            pydarn.plotting.acfPlot.plot_acf(myBeam,24)
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                      'kap',fileType='rawacf')
+        myBeam = myPtr.readRec()
+        pydarn.plotting.acfPlot.plot_acf(myBeam,24)
 
 
     Written by ASR 20141230

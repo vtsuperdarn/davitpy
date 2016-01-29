@@ -26,7 +26,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     ---------- 
     mapObj : mapObj class object or Basemap map object
 
-    codes : list 
+    codes : Optional[list]
         Radar 3-letter codes to plot
     ids : Optional[list]
         Radar IDs to plot

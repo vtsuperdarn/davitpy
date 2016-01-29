@@ -42,7 +42,7 @@ def readPrintRec(filename):
 
     Example
     -------
-    pydarn.plotting.readPrintRec('myfile.txt')
+        pydarn.plotting.readPrintRec('myfile.txt')
 
     Written by AJ 20130327
 
@@ -147,9 +147,9 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
 
     Example
     -------
-    pydarn.plotting.fitPrintRec(datetime(2011,1,1,1,0),
-                                datetime(2011,1,1,2,0),
-                                'bks', 'myoutfile.txt', summ=1)
+        pydarn.plotting.fitPrintRec(datetime(2011,1,1,1,0),
+                                    datetime(2011,1,1,2,0),
+                                    'bks', 'myoutfile.txt', summ=1)
 
     Written by AJ 20130327
 

@@ -14,7 +14,7 @@ MapConv :
     vectors, model vectors and Heppnard-Maynard Boundary.
 
 """
-
+import logging
 
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
@@ -57,32 +57,31 @@ class MapConv(object):
 
     Example
     -------
-    Plot contours, fitted velocities and Heppnard-Maynard
-    boundary from convection map data on April-3-2011
+        Plot contours, fitted velocities and Heppnard-Maynard
+        boundary from convection map data on April-3-2011
 
-    import datetime
-    import matplotlib.pyplot as plt
-    import pydarn.plotting.plotMapGrd
-    from utils import *
+        import datetime
+        import matplotlib.pyplot as plt
+        import pydarn.plotting.plotMapGrd
+        from utils import *
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
 
-    sdate = datetime.datetime(2011,4,3,4,0)
-    mObj = plotUtils.mapObj(boundinglat=50.,
-                            gridLabels=True, coords='mag')
+        sdate = datetime.datetime(2011,4,3,4,0)
+        mObj = plotUtils.mapObj(boundinglat=50.,
+                                gridLabels=True, coords='mag')
 
-    mapDatObj = pydarn.plotting.plotMapGrd.MapConv(sdate, mObj, ax)
-    mapDatObj.overlayMapFitVel()
-    mapDatObj.overlayCnvCntrs()
-    mapDatObj.overlayHMB()
+        mapDatObj = pydarn.plotting.plotMapGrd.MapConv(sdate, mObj, ax)
+        mapDatObj.overlayMapFitVel()
+        mapDatObj.overlayCnvCntrs()
+        mapDatObj.overlayHMB()
 
     written by Bharat Kunduri and Sebastien de Larquier, 2013-08
 
     """
     import matplotlib.cm as cm
 
-    import logging
 
     def __init__(self, startTime, mObj, axisHandle, hemi='north',
                  maxVelScale=1000., plotCoords='mag'):
@@ -258,7 +257,7 @@ class MapConv(object):
 
         Example
         -------
-        ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
+            ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
 
         """
 
@@ -472,7 +471,7 @@ class MapConv(object):
 
         Example
         -------
-        (lats, lons, pots) = MapConv.calcCnvPots()
+            (lats, lons, pots) = MapConv.calcCnvPots()
 
         """
         import datetime
@@ -621,7 +620,7 @@ class MapConv(object):
 
         Example
         -------
-        MapConv.overlayCnvCntrs()
+            MapConv.overlayCnvCntrs()
 
         """
         from matplotlib.ticker import LinearLocator
@@ -658,7 +657,7 @@ class MapConv(object):
 
         Example
         -------
-        MapConv.overlayHMB()
+            MapConv.overlayHMB()
 
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
@@ -693,7 +692,7 @@ class MapConv(object):
 
         Example
         -------
-        MapConv.overlayMapModelVel()
+            MapConv.overlayMapModelVel()
 
         """
         import matplotlib
@@ -778,7 +777,7 @@ class MapConv(object):
 
         Example
         -------
-        MapConv.overlayMapFitVel()
+            MapConv.overlayMapFitVel()
 
         """
         import matplotlib

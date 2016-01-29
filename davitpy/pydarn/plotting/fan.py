@@ -142,9 +142,9 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
 
     Examples
     --------
-    import datetime as dt
-    pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
-    pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
+        import datetime as dt
+        pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
+        pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
 
     """
     from davitpy import pydarn
@@ -466,7 +466,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     if pdf:
         # if not show:
         #   canvas = FigureCanvasAgg(myFig)
-        logging.warning('Saving as pdf...this may take a moment...')
+        logging.info('Saving as pdf...this may take a moment...')
         myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) +
                       '.fan.pdf')
     if show:
@@ -528,8 +528,8 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
     Example
     -------
-    overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],
-               verts=verts,intensities=intensities,gs_flg=gs_flg)
+        overlayFan(aBeam,myMap,param,coords,gsct=gsct,site=sites[i],fov=fovs[i],
+                   verts=verts,intensities=intensities,gs_flg=gs_flg)
 
     """
     from davitpy import pydarn
