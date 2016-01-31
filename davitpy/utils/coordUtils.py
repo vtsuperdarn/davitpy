@@ -152,19 +152,22 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 
     # Check that the coordinates are possible.
     assert(start in coords_dict and end in coords_dict),\
-            "Start coords are " + start + " and end coords are " +\
-            end + ".\n" + coords_string
+            logging.error("Start coords are " + start +
+                          " and end coords are " + end +
+                          ".\n" + coords_string)
 
     # Check whether altitude is needed and provided.
     if start in alti_sys or end in alti_sys or end_altitude is not None:
         assert(altitude is not None),\
-                "altitude must be provided for: " + alti_string +\
-                "\nto perform altitude conversions"
+                logging.error("altitude must be provided for: " +
+                              alti_string + "\nto perform altitude " +
+                              "conversions")
     
     # Check whether date_time is needed and provided.
     if start in dt_sys or end in dt_sys:
         assert(date_time is not None),\
-                "date_time must be provided for: " + dt_string
+                logging.error("date_time must be provided for: " +
+                              dt_string)
 
     # Sanitise inputs.
     if isinstance(lon, int):
@@ -175,7 +178,8 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
         lon, lat = [lon], [lat]
     if not (is_float or is_list):
         assert(isinstance(lon, np.ndarray)),\
-                "Must input int, float, list, or numpy array."
+                logging.error("Must input int, float, list, or " +
+                              "numpy array.")
 
     # Make the inputs into numpy arrays because single element lists 
     # have no len.
@@ -243,7 +247,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             ############################################################
         
             # Now it is in AACGM.  
-            assert(start == "mag"),"Error, should be in AACGM now"
+            assert(start == "mag"),logging.error("should be in AACGM now")
 
             # If the end result is not an AACGM system or there is an
             # altitude conversion, convert to geo.
@@ -296,7 +300,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                 start = "mag"
 
             # It is in AACGM now.
-            assert(start == "mag"),"Error, should be in AACGM now"
+            assert(start == "mag"),logging.error("should be in AACGM now")
 
             # Convert AACGM to all other AACGM systems.  Follow the
             # example of the MLT block to add new systems within the
@@ -330,7 +334,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     ####################################################################
 
     # Now it should be in the end system.
-    assert(start == end),"Error, not in correct end system...?????"
+    assert(start == end),logging.error"not in correct end system...?????")
 
     # Convert outputs to input type and shape.
     if is_list:
