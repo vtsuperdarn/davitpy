@@ -25,9 +25,7 @@ RePol : float
 ReEqu : float
     Equatorial Earth radisu in kilometers
 
-
 """
-
 import logging
 
 try:
@@ -63,11 +61,21 @@ RePol = 6378.1370
 ReEqu = 6356.7523
 
 class twoWayDict(dict):
-    """Thanks to Sasha Chedygov on stackoverflow for this idea
+    """Two way hash map implementation.  Thanks to Sasha
+    Chedygov on stackoverflow for this idea [1]
+
+    Parameters
+    ----------
+    dict : dict
+
 
     Note
     ----
     The initialization function was added on here
+
+    References
+    ----------
+    [1] http://stackoverflow.com/questions/1456373/two-way-reverse-map
         
     """
     def __init__(self,initDict={}):
