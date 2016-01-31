@@ -334,7 +334,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     ####################################################################
 
     # Now it should be in the end system.
-    assert(start == end),logging.error"not in correct end system...?????")
+    assert(start == end),logging.error("not in correct end system...?????")
 
     # Convert outputs to input type and shape.
     if is_list:
