@@ -14,9 +14,7 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-dmapio
-------
+"""dmapio module
 
 Module for interfacing with dmapio c code
 
