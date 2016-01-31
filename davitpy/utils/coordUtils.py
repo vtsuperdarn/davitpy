@@ -1,88 +1,107 @@
+# -*- coding: utf-8 -*-
 #!usr/bin/env python
 # Copyright (C) 2014 University of Saskatchewan SuperDARN group
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-.. module:: coordUtils
-    :synopsis: A module for manipulating coordinates
+"""The coordUtils module
 
-.. moduleauthor:: mrwessel
+A module for manipulating coordinates
 
-****************************
-**Module**: utils.coordUtils
-****************************
-**Functions**:
-    
-    * :func:`utils.coordUtils.coordConv`: Kept for back-compat, calls
-        coord_conv
-    * :func:`utils.coordUtils.coord_conv`: Convert between coordinate
-        systems
-    * :func:`utils.coordUtils.planeRot`: Rotate coordinates in the plane
-    * :func:`utils.coordUtils.get_coord_dict`: Returns a dict and string
-        describing possible coordinate systems
+Functions
+------------------------------------------------------
+coordConv       Kept for back-compat, calls coord_conv
+coord_conv      Convert between coordinate systems
+planeRot        Rotate coordinates in the plane
+get_coord_dict  dict and string for coordinate systems
+------------------------------------------------------
 
 Written by Matt W.
+
 """
+import logging
+
+
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
-    """coordConv has been renamed coord_conv and dateTime has been 
-        renamed date_time for PEP 8 compliance.  Please use those 
+    """coordConv has been renamed coord_conv and dateTime has been
+        renamed date_time for PEP 8 compliance.  Please use those
         from now on.  Also altitude is now optional.
+
+    .. note:: Deprecated in davitpy 0.3?
+              `coordConv` will be removed in davitpy 0.6, it is
+              replaced by `coord_conv` to comply with PEP8.
+
     """
     from davitpy.utils.coordUtils import coord_conv
-    print "coordConv has been renamed coord_conv and dateTime has"
-    print "been renamed date_time for PEP 8 compliance.  Please use"
-    print "those from now on.  Also altitude is now optional."
-    return coord_conv(lon, lat, start, end, altitude=altitude, 
+    logging.warning("coordConv has been renamed coord_conv and dateTime has")
+    logging.warning("been renamed date_time for PEP 8 compliance.  Please use")
+    logging.warning("those from now on.  Also altitude is now optional.")
+    return coord_conv(lon, lat, start, end, altitude=altitude,
                       date_time=dateTime)
+
 
 def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                end_altitude=None):
     """Convert between geographical, AACGM, and MLT coordinates.  
         date_time must be set to use any AACGM systems.
   
-    **Args**: 
-        * **lon**: longitude (MLT must be in degrees, not hours)
-        * **lat**: latitude
-        * **start**: coordinate system of input. Options: 'geo', 'mag',
-            'mlt'
-        * **end**: desired output coordinate system. Options: 'geo', 
-            'mag', 'mlt'
-        * **[altitude]**: altitude to be used (km).  Can be int/float or
-            list of same size as lon and lat.  Default:  None
-        * **[date_time]**: python datetime object.  Default:  None
-        * **[end_altitude]**: used for conversions from coords at one
-            altitude to coords at another.  In km.  Can be int/float or
-            list of same size as lon and lat.  Default:  None
-    **Returns**:
-        * **lon, lat**: (float, list, or numpy array) MLT is in degrees,
-            not hours.  Output type is the same as input type (except 
-            int becomes float)
-    **Example**:
-        ::
+    Parameters
+    ----------
+    lon : float
+        longitude (MLT must be in degrees, not hours)
+    lat : float
+        latitude
+    start : str
+        coordinate system of input. Options: 'geo', 'mag', 'mlt'
+    end : str
+        desired output coordinate system. Options: 'geo', 'mag', 'mlt'
+    altitude : Optional[int/float/list]
+        altitude to be used (km).  Can be int/float or
+        list of same size as lon and lat.  Default:  None
+    date_time : Optional[datetime]
+        Default:  None
+    end_altitude : Optional[int/float/list]
+        used for conversions from coords at one
+        altitude to coords at another.  In km.  Can be int/float or
+        list of same size as lon and lat.  Default:  None
+
+    Returns
+    -------
+    lon : (float, list, or numpy array) 
+        MLT is in degrees, not hours.  Output type is the same as
+        input type (except int becomes float)
+    lat : (float, list, numpy array)
+        MLT is in degrees, not hours.  Output type is the same as
+        input type (except int becomes float)
+
+    Example
+    -------
         import utils
         lon, lat = utils.coord_conv(lon, lat, 'geo', 'mlt',
                                     altitude=300.,
                                     date_time=datetime(2012,3,12,0,56))
         
+    Notes
+    -----
+    A how-to for expansion of this function to handle new coordinate
+        systems is included in the code comments.
+
     original version written by Matt W., 2013-09,
         based on code by...Sebastien?
     brand new version by Matt W., 2014-08
-    
-    A how-to for expansion of this function to handle new coordinate
-        systems is included in the code comments.
+
     """
     import numpy as np
     
@@ -328,18 +347,29 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 def planeRot(x, y, theta):
     """Rotate coordinates in the plane.
   
-    **Args**: 
-        * **x**: x coordinate
-        * **y**: y coordinate
-        * **theta**: angle of rotation of new coordinate frame
-    **Returns**:
-        * **x_prime,y_prime**: x, y coordinates in rotated frame
-    **Example**:
-        ::
+    Parameters
+    ----------
+    x :
+        x coordinate
+    y :
+        y coordinate
+    theta : float
+        angle of rotation of new coordinate frame
+
+    Returns
+    -------
+    x_prime
+        x coordinates in rotated frame
+    y_prime : 
+        y coordinates in rotated frame
+
+    Example
+    -------
         import numpy as np
         x, y = planeRot(x, y, 30.*np.pi/180.)
         
     written by Matt W., 2013-09
+
     """
     import numpy as np
 
@@ -355,10 +385,15 @@ def get_coord_dict():
     """A function to return the coordinate dictionary and a string
         listing the possible coordinates for use.
 
-    **Returns**:
-        * **coord_dict, coord_string**: the dictionary and string
-    **Example**:
-        ::
+    Returns
+    -------
+    coord_dict : dict
+        the dictonary
+    coord_string : str
+        the string
+
+    Example
+    -------
         from utils.coordUtils import get_coord_dict
         coord_dict, coord_string = get_coord_dict()
         print coord_string
@@ -368,6 +403,7 @@ def get_coord_dict():
           MLT (mlt)
 
     written by Matt W., 2014-08
+
     """
     # Define the dictionary.
     coord_dict = {"mag": "AACGM",
