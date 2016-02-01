@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -14,30 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-plotting.iqPlot
----------------
+"""Plotting iq data
 
 A module for generating plotting IQ voltage data
 
-moduleauthor ASR, 20141225
+Module author: ASR, 20141225
 
 Functions
 ---------
-pydarn.plotting.iqPlot.plot_iq
-"""
+plot_iq
 
+"""
 import logging
 
-def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
 
+def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
     """Create an rti plot for a secified radar and time period.
 
     Parameters
     ----------
     myBeam : beamData object from pydarn.sdio.radDataTypes
         Data that you would like to plot.
-    *sequences : Optional[list of ints or None]
+    sequences : Optional[list of ints or None]
         Defines which sequences of voltage data to plot. Default is
         None which plots all.
     mag_phase : Optional[boolean]
@@ -61,12 +60,13 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
 
     Example
     -------
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
-                                            'kap',fileType='iqdat')
-            pydarn.plotting.iqPlot.plot_iq(myBeam)
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                        'kap',fileType='iqdat')
+        pydarn.plotting.iqPlot.plot_iq(myBeam)
 
     Written by ASR 20141225
+
     """
 
     from matplotlib import pyplot

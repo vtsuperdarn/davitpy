@@ -15,25 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-plotting.acfPlot
-----------------
+"""acf plotting module
 
 A module for generating plotting ACF and XCF data
 
-moduleauthor:: ASR, 20141230
-
+Module author ASR, 20141230
 
 Functions
----------
-pydarn.plotting.acfPlot.plot_acf
-pydarn.plotting.acfPlot.calc_blanked
-pydarn.plotting.acfPlot.plot_rli
-pydarn.plotting.acfPlot.nuft
-
+-----------------------------------------
+plot_acf        Plot acf/xcf data
+calc_blanked    Calc RX lag blanking
+plot_rli        Plot range-lag-intensity
+nuft            special Fourier transform
+-----------------------------------------
 
 """
-
 import logging
 
 
@@ -47,7 +43,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     ----------
     myBeam : a beamData object from pydarn.sdio.radDataTypes
         The data object taht you would like to plot.
-    gate : (int)
+    gate : int
         The range gate to plot data for.
     normalized : Optional[boolean]
         Specifies whether to normalize the ACF/XCF data by the
@@ -80,11 +76,11 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     Example
     -------
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
-                                          'kap',fileType='rawacf')
-            myBeam = myPtr.readRec()
-            pydarn.plotting.acfPlot.plot_acf(myBeam,24)
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                      'kap',fileType='rawacf')
+        myBeam = myPtr.readRec()
+        pydarn.plotting.acfPlot.plot_acf(myBeam,24)
 
 
     Written by ASR 20141230
@@ -317,15 +313,15 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
 
     Parameters
     ----------
-    ltab : (list)
+    ltab : list
         The received lag table for the Tx-ed pulse sequence.
-    tp : (int)
+    tp : int
         The Tx pulse length in microseconds.
-    tau : (int)
+    tau : int
         The lag time in microseconds.
-    tfr : (int)
+    tfr : int
         The time to first range gate in microseconds.
-    gate : (int)
+    gate : int
         The range gate to plot data for.
 
     Returns
@@ -395,7 +391,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
 
     Parameters
     ----------
-    myBeam : (beamData object from pydarn.sdio.radDataTypes)
+    myBeam : beamData object from pydarn.sdio.radDataTypes
         Beam data to plot.
     normalized : Optional[boolean]
         Specifies whether to normalize the ACF/XCF data by the lag-zero power.

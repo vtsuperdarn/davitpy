@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 #
@@ -14,29 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Range-time-intensity plotting
+
+A module for generating rti plots.
+
+Module author: AJ, 20130123
+
+Functions
+--------------------------------------------------
+plotRti             deprecated rti code
+plot_rti            range-time-intensity plot
+plot_freq           TX frequency data
+plot_searchnoise    noise panel
+plot_skynoise       sky noise panel
+plot_cpid           control program ID panel
+plot_nave           number of averges panel
+rti_title           title an rti plot
+draw_axes           draw empty axes
+read_data           read data in
+rti_panel           plot the main rti data
+daynight_terminator calculate day/night terminator
+--------------------------------------------------
+
 """
-.. module:: rti
-   :synopsis: A module for generating rti plots.
-
-.. moduleauthor:: AJ, 20130123
-
-*********************
-**Module**: pydarn.plotting.rti
-*********************
-**Functions**:
-  * :func:`pydarn.plotting.rti.plotRti`
-  * :func:`pydarn.plotting.rti.plot_freq`
-  * :func:`pydarn.plotting.rti.plot_searchnoise`
-  * :func:`pydarn.plotting.rti.plot_skynoise`
-  * :func:`pydarn.plotting.rti.plot_cpid`
-  * :func:`pydarn.plotting.rti.plot_nave`
-  * :func:`pydarn.plotting.rti.rti_title`
-  * :func:`pydarn.plotting.rti.draw_axes`
-  * :func:`pydarn.plotting.rti.read_data`
-  * :func:`pydarn.plotting.rti.rti_panel`
-  * :func:`pydarn.plotting.rti.daynight_terminator`
-"""
-
 import numpy
 import math
 import matplotlib
@@ -62,7 +63,11 @@ def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
             myFile=None, xtick_size=9, ytick_size=9, xticks=None,
             axvlines=None, plotTerminator=False):
 
-    """ Wrapper for plot_rti. This function is being deprecated.
+    """ Wrapper for plot_rti.
+
+    .. note:: Deprecated in davitpy 0.3?
+              `plotRti` will be removed in davitpy 0.6, it is replaced by
+              `plot_rti` because we liked that name better.
 
     """
     logging.warning("Warning: This function is being deprecated. Use"
@@ -86,84 +91,105 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
              tfreqbands=[], myFile=None, xtick_size=9, ytick_size=9,
              xticks=None, axvlines=None, plot_terminator=False):
 
-    """ Create an rti plot for a secified radar and time period.
+    """ Create an rti plot for a specified radar and time period.
 
-    **Args**:
-        * **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
-            object indicating the start time which you would like to plot
-        * **rad** (str): the 3 letter radar code, e.g. 'bks'
-        * **[eTime]** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
-            object indicating th end time you would like plotted.  If this
-            is None, 24 hours will be plotted.  default = None.
-        * **[bmnum] (int)**: The beam to plot.  default: 7
-        * **[fileType]** (str): The file type to be plotted, one of ['fitex',
-            'fitacf', 'lmfit'].  default = 'fitex'.
-        * **[params]** (list): a list of the fit parameters to plot, allowable
-            values are: ['velocity', 'power', 'width', 'elevation',
-            'phi0'].  default: ['velocity', 'power', 'width']
-        * **[scales]** (list): a list of the min/max values for the color scale
-            for each param.  If omitted, default scales will be used.  If
-            present, the list should be n x 2 where n is the number of elements
-            in the params list.  Use an empty list for default range, e.g.
-            [[-250,300],[],[]].  default: [[-200,200], [0,30],[0,150]]
-        * **[channel]** (char): the channel you wish to plot, e.g. 'a', 'b',
-            'c', ...  default: 'a'
-        * **[coords]** (str): the coordinates to use for the y axis.  The
-            allowable values are 'gate', 'rng', 'geo', 'mag' default: 'gate'
-        * **[colors]** (str): a string indicating what color bar to use, valid
-            inputs are ['lasse','aj'].  default: 'lasse'
-        * **[yrng]** (list or -1): a list indicating the min and max values
-            for the y axis in the chosen coordinate system, or a -1 indicating
-            to plot everything.  default: -1.
-        * **[gsct]** (boolean): a flag indicating whether to plot ground
-            scatter as gray. default: False (ground scatter plotted normally)
-        * **[low_gray]** (boolean): a flag indicating whether to plot low
-            velocity scatter as gray. default: False (low velocity scatter
-            plotted normally)
-        * **[show]** (boolean): a flag indicating whether to display the figure
-            on the screen.  This can cause problems over ssh.  default = True
-        * **[retfig]** (boolean):  a flag indicating that you want the figure
-            to be returned from the function.  Only the last figure in the list
-            of frequency bands will be returned.  default = False
-        * **[filtered]** (boolean): a flag indicating whether to boxcar filter
-            the data.  default = False (no filter)
-        * **[fileName]** (string): If you want to plot for a specific file,
-            indicate the name of the file as fileName.  Include the type of
-            the file in custType.
-        * **[tfreqbands]** (list): a list of the min/max values for the
-            transmitter frequencies in kHz.  If omitted, the default band will
-            be used.  If more than one band is specified, retfig will cause
-            only the last one to be returned.  default: [[8000,20000]]
-        * **[myFile]** (:class:`pydarn.sdio.radDataTypes.radDataPtr`): contains
-            the pipeline to the data we want to plot. If specified, data will
-            be plotted from the file pointed to by myFile. default: None
-        * **[figure]** (matplotlib.figure) figure object to plot on.  If None,
-            a figure object will be created for you.
-        * **[xtick_size]**: (int) fontsize of xtick labels
-        * **[ytick_size]**: (int) fontsize of ytick labels
-        * **[xticks]**: (list) datetime.datetime objects indicating the
-            location of xticks
-        * **[axvlines]**: (list) datetime.datetime objects indicating the
-            location vertical lines marking the plot
-        * **[plot_terminator]**: (boolean) Overlay the day/night terminator.
-    **Returns**:
-        * A list of figures of length len(tfreqbands)
+    Parameters
+    ----------
+    sTime : datetime
+        a datetime object indicating the start time which you would like
+        to plot
+    rad : str
+        the 3 letter radar code, e.g. 'bks'
+    eTime : Optional[datetime]
+        a datetime object indicating th end time you would like plotted.
+        If this is None, 24 hours will be plotted.  default = None.
+    bmnum : Optional[int]
+        The beam to plot.  default: 7
+    fileType : Optional[str]
+        The file type to be plotted, one of ['fitex', 'fitacf', 'lmfit'].
+        default = 'fitex'.
+    params : Optional[list]
+        a list of the fit parameters to plot, allowable values are:
+        ['velocity', 'power', 'width', 'elevation', 'phi0'].  default:
+        ['velocity', 'power', 'width']
+    scales : Optional[list]
+        a list of the min/max values for the color scale for each param.
+        If omitted, default scales will be used.  If present, the list
+        should be n x 2 where n is the number of elements in the params
+        list.  Use an empty list for default range, e.g. [[-250,300],[],[]].
+        default: [[-200,200], [0,30],[0,150]]
+    channel : Optional[char]
+        the channel you wish to plot, e.g. 'a', 'b', 'c', ...  default: 'a'
+    coords : Optional[str]
+        the coordinates to use for the y axis.  The allowable values are
+        'gate', 'rng', 'geo', 'mag' default: 'gate'
+    colors : Optional[str]
+        a string indicating what color bar to use, valid inputs are
+        ['lasse','aj'].  default: 'lasse'
+    yrng : Optional[list or -1]
+        a list indicating the min and max values for the y axis in the
+        chosen coordinate system, or a -1 indicating to plot everything.
+        default: -1.
+    gsct : Optional[boolean]
+        a flag indicating whether to plot ground scatter as gray. default:
+        False (ground scatter plotted normally)
+    low_gray : Optional[boolean]
+        a flag indicating whether to plot low velocity scatter as gray.
+        default: False (low velocity scatter plotted normally)
+    show : Optional[boolean]
+        a flag indicating whether to display the figure on the screen.
+        This can cause problems over ssh.  default = True
+    retfig : Optional[boolean]
+        a flag indicating that you want the figure to be returned from
+        the function.  Only the last figure in the list of frequency bands
+        will be returned.  default = False
+    filtered : Optional[boolean]
+        a flag indicating whether to boxcar filter the data.  default:
+        False (no filter)
+    fileName : Optional[string]
+        If you want to plot for a specific file, indicate the name of the
+        file as fileName.  Include the type of the file in custType.
+    tfreqbands : Optional[list]
+        a list of the min/max values for the transmitter frequencies in
+        kHz.  If omitted, the default band will be used.  If more than
+        one band is specified, retfig will cause only the last one to be
+        returned.  default: [[8000,20000]]
+    myFile : Optional[pydarn.sdio.radDataTypes.radDataPtr]
+        contains the pipeline to the data we want to plot. If specified,
+        data will be plotted from the file pointed to by myFile. default: None
+    figure : Optional[matplotlib.figure]
+        figure object to plot on.  If None, a figure object will be created
+        for you.
+    xtick_size : Optional[int]
+        fontsize of xtick labels
+    ytick_size : Optional[int]
+        fontsize of ytick labels
+    xticks : Optional[list]
+        datetime.datetime objects indicating the location of xticks
+    axvlines : Optoinal[list]
+        datetime.datetime objects indicating the location vertical lines
+        marking the plot
+    plot_terminator : Optional[boolean]
+        Overlay the day/night terminator.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    A list of figures of length len(tfreqbands)
 
-      import datetime as dt
-      pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
-                                  eTime=dt.datetime(2013,3,16,14,30),
-                                  bmnum=12, fileType='fitacf',
-                                  scales=[[-500,500],[],[]], coords='geo',
-                                  colors='aj', filtered=True, show=True)
-
+    Example
+    -------
+        import datetime as dt
+        pydarn.plotting.rti.plot_rti(dt.datetime(2013,3,16), 'bks',
+                                     eTime=dt.datetime(2013,3,16,14,30),
+                                     bmnum=12, fileType='fitacf',
+                                     scales=[[-500,500],[],[]], coords='geo',
+                                     colors='aj', filtered=True, show=True)
 
     Written by AJ 20121002
     Modified by Matt W. 20130715
     Modified by Nathaniel F. 20131031 (added plot_terminator)
     Modified by ASR 20150917 (refactored)
+
     """
     import os
     from davitpy import pydarn
@@ -425,36 +451,55 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
               ytick_size=9, xticks=None, axvlines=None):
     """ Draws empty axes for an rti plot.
 
-    **Args**:
-        * **myFig**: the MPL figure we are plotting to
-        * **times**: a list of datetime objects referencing the beam soundings
-        * **rad**: 3 letter radar code
-        * **cpid**: list of the cpids or the beam soundings
-        * **bmnum**: beam number being plotted
-        * **nrang**: list of nrang for the beam soundings
-        * **frang**: list of frang of the beam soundings
-        * **rsep**: list of rsep of the beam soundings
-        * **bottom**: flag indicating if we are at the bottom of the figure
-        * **[yrng]**: range of y axis, -1=autoscale (default)
-        * **[coords]**: y axis coordinate system, acceptable values are 'geo',
-            'mag', 'gate', 'rng'
-        * **[pos]**: position of the plot
-        * **[xtick_size]**: fontsize of xtick labels
-        * **[ytick_size]**: fontsize of ytick labels
-        * **[xticks]**: (list) datetime.datetime objects indicating the
-            location of xticks
-        * **[axvlines]**: (list) datetime.datetime objects indicating the
-            location vertical lines marking the plot
-    **Returns**:
-        * **ax**: an axes object
+    Parameters
+    ----------
+    myFig :
+        the MPL figure we are plotting to
+    times : list
+        a list of datetime objects referencing the beam soundings
+    rad : str
+        3 letter radar code
+    cpid : list
+        list of the cpids or the beam soundings
+    bmnum : int
+        beam number being plotted
+    nrang : list
+        list of nrang for the beam soundings
+    frang : list
+        list of frang of the beam soundings
+    rsep : list
+        list of rsep of the beam soundings
+    bottom : bool
+        flag indicating if we are at the bottom of the figure
+    yrng : Optional[list]
+        range of y axis, -1=autoscale (default)
+    coords : Optional[ ]
+        y axis coordinate system, acceptable values are 'geo',
+        'mag', 'gate', 'rng'
+    pos : Optional[ ]
+        position of the plot
+    xtick_size : Optional[ ]
+        fontsize of xtick labels
+    ytick_size : Optional[ ]
+        fontsize of ytick labels
+    xticks : Optional[list]
+        datetime.datetime objects indicating the location of xticks
+    axvlines : Optional[list]
+        datetime.datetime objects indicating the location vertical
+        lines marking the plot
 
-    **Example:
-        ::
+    Returns
+    -------
+    ax : 
+        an axes object
 
-            ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
+    Example
+    -------
+        ax = draw_axes(myFig,times,rad,cpid,beam,nrang,frang,rsep,0)
 
     Written by AJ 20121002
     Modified by ASR 20150917 (refactored)
+
     """
 
     from davitpy import pydarn
@@ -480,7 +525,7 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
                 if(cpid[i] == oldCpid): continue
                 oldCpid = cpid[i]
                 if(coords == 'geo' or coords == 'mag'):
-                    # HACK NOT SURE IF YOU CAN DO THIS!
+                    # HACK NOT SURE IF YOU CAN DO THIS(Formatting)!
                     site = pydarn.radar.network().getRadarByCode(rad) \
                         .getSiteByDate(times[i])
                     myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],
@@ -557,32 +602,40 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     """Draws title for an rti plot.
 
-    **Args**:
-        * **fig**: a matplotlib.figure.Figure object
-        * **sTime**: the start time for the data being plotted as a
-            datetime object
-        * **rad**: the 3 letter radar code
-        * **fileType**: the file type being plotted
-        * **beam**: the beam number being plotted
-        * **[eTime]**: the end time for the data being plotted as a
-            datetime object
-        * **[xmin]**: minimum x value o the plot in page coords
-        * **[xmax]**: maximum x value o the plot in page coords
-    * **Returns**:
-        *Nothing.
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        a matplotlib.figure.Figure object
+    sTime : datetime
+        the start time for the data being plotted as a datetime object
+    rad : str
+        the 3 letter radar code
+    fileType : str
+        the file type being plotted
+    beam : int
+        the beam number being plotted
+    eTime : Optional[datetime]
+        the end time for the data being plotted as a datetime object
+    xmin : Optional[ ]
+        minimum x value o the plot in page coords
+    xmax : Optional[ ]
+        maximum x value o the plot in page coords
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            import datetime as dt
-            from matplotlib import pyplot
-            fig = pyplot.figure()
-            rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
+    Example
+    -------
+        import datetime as dt
+        from matplotlib import pyplot
+        fig = pyplot.figure()
+        rti_title(fig,dt.datetime(2011,1,1),'bks','fitex',7)
 
     Written by AJ 20121002
     Modified by ASR 20150916
-    """
 
+    """
     from davitpy import pydarn
 
     # Obtain the davitpy.pydarn.radar.radStruct.radar object for rad.
@@ -613,25 +666,31 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
 
 
 def plot_cpid(ax, times, cpid, mode):
-    """Plots cpid panel at position pos.
+    """Plots control program ID (cpid) panel at position pos.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **cpid**: a lsit of the cpids of th beam soundings
-        * **mode**: a list of the ifmode param
-    **Returns**:
-        * Nothing.
+    Parameters
+    ----------
+    ax : 
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    cpid : list
+        a list of the cpids of th beam soundings
+    mode : list
+        a list of the ifmode param
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            plot_cpid(ax,times,cpid,mode)
+    Example
+    -------
+        plot_cpid(ax,times,cpid,mode)
 
-        Written by AJ 20121002
-        Modified by ASR 20150916
+    Written by AJ 20121002
+    Modified by ASR 20150916
+
     """
-
     from davitpy import pydarn
     oldCpid = -9999999
 
@@ -688,26 +747,34 @@ def plot_cpid(ax, times, cpid, mode):
 def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     """Plots a noise panel at position pos.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **sky**: a lsit of the noise.sky of the beam soundings
-        * **search**: a list of the noise.search param
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        * Nothing
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    sky: list
+        a lsit of the noise.sky of the beam soundings
+    search : list
+        a list of the noise.search param
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing
 
-            plot_skynoise(ax,times,sky)
+    Example
+    -------
+        plot_skynoise(ax,times,sky)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
-    """
 
+    """
     # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -751,24 +818,35 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
                      ytickside='right'):
     """Plots a noise panel at position pos.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **sky**: a lsit of the noise.sky of the beam soundings
-        * **search**: a list of the noise.search param
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        * Nothing
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    sky : list
+        a lsit of the noise.sky of the beam soundings
+    search : list
+        a list of the noise.search param
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
+    ytickside : Optional[string]
+        Default is right.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing
 
-            plot_searchnoise(ax,times,search)
+    Example
+    -------
+        plot_searchnoise(ax,times,search)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
+
     """
 
     # Format the yaxis.
@@ -818,27 +896,33 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
 def plot_freq(ax, times, freq, xlim=None, xticks=None):
     """Plots the tx frequency data to an axis object.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **freq**: a lsit of the tfreq of the beam soundings
-        * **search**: a list of the nave param
-        * **[pos]**: position of the panel
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        *Nothing.
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    freq : list
+        a lsit of the tfreq of the beam soundings
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            plot_freq(ax, times, tfreq)
+
+    Example
+    -------
+        plot_freq(ax, times, tfreq)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
-    """
 
+    """
     # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -881,29 +965,36 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 
 
 def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
-    """Plots the nave data to an axis object.
+    """Plots the number of averages (nave) data to an axis object.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **times**: a list of the times of the beam soundings
-        * **nave**: a lsit of the nave of the beam soundings
-        * **search**: a list of the nave param
-        * **[pos]**: position of the panel
-        * **[xlim]**: 2-element limits of the x-axis.  None for default.
-        * **[xticks]**: List of xtick poisitions.  None for default.
-    **Returns**:
-        *Nothing.
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    times : list
+        a list of the times of the beam soundings
+    nave : list
+        a lsit of the nave of the beam soundings
+    xlim : Optional[list]
+        2-element limits of the x-axis.  None for default.
+    xticks : Optional[list]
+        List of xtick poisitions.  None for default.
+    ytickside : Optional[str]
+        Default is right.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    Nothing.
 
-            plot_nave(ax, times, nave)
+    Example
+    -------
+        plot_nave(ax, times, nave)
 
     Written by AJ 20121002
     Modified by NAF 20131101
     Modified by ASR 20150916
-    """
 
+    """
     # Format the yaxis
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -950,27 +1041,35 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
 def read_data(myPtr, myBeam, bmnum, params, tbands):
     """Reads data from the file pointed to by myPtr
 
-    **Args**:
-        * **myPtr**: a davitpy file pointer object
-        * **myBeam**: a davitpy beam object
-        * **bmnum**: beam number of data to read in
-        * **params**: a list of the parameters to read
-        * **tbands**: a list of the frequency bands to separate data into
-    **Returns**:
-        * A dictionary of the data. Data is stored in lists and separated in
-            to tbands.
+    Parameter
+    ---------
+    myPtr :
+        a davitpy file pointer object
+    myBeam : 
+        a davitpy beam object
+    bmnum : int
+        beam number of data to read in
+    params : list
+        a list of the parameters to read
+    tbands : list
+        a list of the frequency bands to separate data into
 
-    **Example**:
-        ::
-            from davitpy import pydarn
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
-            myBeam = myPtr.readRec()
-            data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
+    Returns
+    -------
+    A dictionary of the data. Data is stored in lists and separated in
+    to tbands.
+
+    Example
+    -------
+        from davitpy import pydarn
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,11,24),'sas')
+        myBeam = myPtr.readRec()
+        data_dict = read_data(myPtr, myBeam, 7, ['velocity'], [8000,20000])
 
     Written by ASR 20150914
-    """
 
+    """
     # Initialize some things.
     data = dict()
     data_keys = ['vel', 'pow', 'wid', 'elev', 'phi0', 'times', 'freq', 'cpid',
@@ -1020,33 +1119,45 @@ def read_data(myPtr, myBeam, bmnum, params, tbands):
 
 def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
               norm, plot_terminator=True):
-
     """Plots the data given by pArr to an axis object.
 
-    **Args**:
-        * **ax**: a MPL axis object to plot to
-        * **data_dict**: the data dictionary returned by
-                pydarn.plotting.read_data
-        * **pArr**: the list of data to be plotted (e.g. data_dict['vel'] for
-                velocity)
-        * **fplot**: the index of the frequency band of data to plot
-        * **gsct**: a boolean stating whether to flag ground scatter
-                data or not
-        * **rad**: the 3 letter radar code
-        * **bmnum**: The beam number of the data to plot
-        * **coords**: plotting coordinates ('gate', 'range', 'geo', 'mag')
-        * **cmap**: a matplotlib.colors.ListedColormap (such as that returned
-                by utils.plotUtils.genCmap)
-        * **norm**: a matplotlib.colors.BoundaryNorm (such as that returned by
-                utils.plotUtils.genCmap)
-        * **[plot_terminator]**: A boolean stating whether or not to plot
-                the terminator
-    **Returns**:
-        *pcoll, the polygon collection returned by matplotib.pyplot.pcolormesh.
+    Parameters
+    ----------
+    ax :
+        a MPL axis object to plot to
+    data_dict :
+        the data dictionary returned by pydarn.plotting.read_data
+    pArr : list
+        the list of data to be plotted (e.g. data_dict['vel'] for
+        velocity)
+    fplot : 
+        the index of the frequency band of data to plot
+    gsct : bool
+        a boolean stating whether to flag ground scatter data or not
+    rad : str
+        the 3 letter radar code
+    bmnum : int
+        The beam number of the data to plot
+    coords : str
+        plotting coordinates ('gate', 'range', 'geo', 'mag')
+    cmap :
+        a matplotlib.colors.ListedColormap (such as that returned
+        by utils.plotUtils.genCmap)
+    norm :
+        a matplotlib.colors.BoundaryNorm (such as that returned by
+        utils.plotUtils.genCmap)
+    plot_terminator : Optional[bool]
+        A boolean stating whether or not to plot the terminator; default
+        is true.
+
+    Returns
+    -------
+    pcoll
+        the polygon collection returned by matplotib.pyplot.pcolormesh.
 
     Written by ASR 20150916
-    """
 
+    """
     from davitpy import pydarn
     # Initialize things.
     rmax = max(data_dict['nrang'][fplot])
@@ -1139,17 +1250,23 @@ def rti_panel(ax, data_dict, pArr, fplot, gsct, rad, bmnum, coords, cmap,
 def daynight_terminator(date, lons):
     """ Return the coordinates of day/night terminator for RTI plotting.
 
-    **Args**:
-        * **date**: a datetime.datetime object (assumed UTC)
-        * **lons**: a numpy array of lons
+    Parameters
+    ----------
+    date : datetime.datetime
+        a datetime.datetime object (assumed UTC)
+    lons : list
+        a numpy array of lons
 
-    **Returns**:
-        *lat, the latitude of the day night terminator
-        *tau, grenwich hour angle
-        *dec, solar declination
+    Returns
+    -------
+    lat
+        the latitude of the day night terminator
+    tau
+        grenwich hour angle
+    dec
+        solar declination
 
     """
-
     import mpl_toolkits.basemap.solar as solar
     dg2rad = np.pi / 180.
     # compute greenwich hour angle and solar declination

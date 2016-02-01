@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-plotting.mapOverlay
--------------------
+"""Plot data on maps
 
 Overlay information on maps
 
 Functions
-----------------------------------------------------------------
-plotting.overlayRadar   Overlay radar position and name on a map
-plotting.overlayFov     Overlay field(s)-of-view on a map
-----------------------------------------------------------------
+-------------------------------------------------------
+overlayRadar   Overlay radar position and name on a map
+overlayFov     Overlay field(s)-of-view on a map
+-------------------------------------------------------
 
 """
-
 import logging
 
 
@@ -28,7 +25,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     ---------- 
     mapObj : mapObj class object or Basemap map object
 
-    **codes : list 
+    codes : Optional[list]
         Radar 3-letter codes to plot
     ids : Optional[list]
         Radar IDs to plot
@@ -62,7 +59,6 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 
     Example
     -------
-
         import pydarn
         import utils
         m1 = utils.plotUtils.mapObj(boundinglat=30., gridLabels=True, \
@@ -70,6 +66,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
         pydarn.plot.overlayRadar(m1, fontSize=8, plot_all=True, markerSize=5)
 			
     written by Sebastien, 2012-08
+
     """
     from davitpy.pydarn.radar import network
     from datetime import datetime as dt
@@ -186,9 +183,9 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     ----------
     mapObj : mapObj or Basemap object
         Object on which to overplot the radar position(s)
-    *codes : Optional[list]
+    codes : Optional[list]
         List of radar 3-letter codes to plot
-    *ids : Optional[list]
+    ids : Optional[list]
         List of radar IDs to plot
     names : Optional[list]
         List of radar names to plot
@@ -199,9 +196,9 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     maxGate : Optional[int]
         Maximum number of gates to be plotted. Defaults to
         hdw.dat information.
-    *rangeLimits : Optional[list, int]
+    rangeLimits : Optional[list, int]
         Plot only between the range gates specified.
-    *beamLimits : Optional[2-element list]
+    beamLimits : Optional[2-element list]
         Plot only between the beams specified.
     model : Optional[str]
         'IS for ionopsheric scatter projection model (default), 'GS' for
@@ -234,7 +231,6 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     
     Example
     -------
-
         import pydarn, utils
         # Width and height give the window size in meters
         width = 111e3*40
@@ -245,6 +241,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         pydarn.plot.overlayFov(m, codes='bks', maxGate=75, beams=[0,4,7,8,23])
 
     written by Sebastien, 2012-09
+
     """
     from davitpy.pydarn.radar import network
     from davitpy.pydarn.radar.radFov import fov

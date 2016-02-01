@@ -1,51 +1,54 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: utils.geoPack
-*********************
+"""geoPack module
 
-This module contains the following functions:
-    * :func:`utils.geoPack.geodToGeoc`: 
-        converts from geodetic to geocentric (and vice-versa)
-    * :func:`utils.geoPack.geodToGeocAzEl`: 
-        converts azimuth and elevation from geodetic to geocentric (and vice-versa)
-    * :func:`utils.geoPack.gspToGcar`: 
-        converts global spherical coordinates to global cartesian coordinates (and vice-versa)
-    * :func:`utils.geoPack.gcarToLcar`: 
-        converts from global cartesian coordinates to local cartesian coordinates (and vice-versa)
-    * :func:`utils.geoPack.lspToLcar`: 
-        converts from local spherical coordinates to local cartesian coordinates (and vice-versa)
-    * :func:`utils.geoPack.calcDistPnt`: 
-        calculates the coordines|distance,elevation,azimuth of a point given a point of origin and 
+Functions
+---------
+geodToGeoc          converts from geodetic to geocentric (and vice-versa)
+geodToGeocAzEl      converts azimuth and elevation from geodetic to geocentric (and vice-versa)
+gspToGcar           converts global spherical coordinates to global cartesian coordinates (and vice-versa)
+gcarToLcar          converts from global cartesian coordinates to local cartesian coordinates (and vice-versa)
+lspToLcar           converts from local spherical coordinates to local cartesian coordinates (and vice-versa)
+calcDistPnt         calculates the coordines|distance,elevation,azimuth of a point given a point of origin and 
         distance,elevation,azimuth|distant point coordinates
-    * :func: `utils.geoPack.greatCircleMove`:
-        Calculates the coordinates of an end point along a great circle path 
+greatCircleMove     Calculates the coordinates of an end point along a great circle path 
         given the original coordinates, distance, azimuth, and altitude.
-    * :func: `utils.geoPack.greatCircleAzm`:
-        Calculates the azimuth from the coordinates of a start point to and end point
+greatCircleAzm      Calculates the azimuth from the coordinates of a start point to and end point
         along a great circle path.
-    * :func: `utils.geoPack.greatCircleDist`:
-        Calculates the distance in radians along a great circle path between two points.
+greatCircleDist     Calculates the distance in radians along a great circle path between two points.
 
+References
+----------
 Based on J.M. Ruohoniemi's geopack
 Based on R.J. Barnes radar.pro
 
 """
+import logging
 
-# *************************************************************
+
 def geodToGeoc(lat,lon,inverse=False):
     """Converts position from geodetic to geocentric and vice-versa.
     Based on the IAU 1964 oblate spheroid model of the Earth.
 
-    **Args**:
-        * **lat**: latitude [degree]
-        * **lon**: longitude [degree]
-        * **[inverse]**: inverse conversion
-    **Returns**:
-        * **lat**: latitude [degree]
-        * **lon**: longitude [degree]
-        * **Re**: Earth radius [km]
+    Parameters
+    ----------
+    lat : float
+        latitude [degree]
+    lon : float
+        longitude [degree]
+    inverse : Optional[bool]
+        inverse conversion.  Default is false.
+
+    Returns
+    -------
+    lat : float
+        latitude [degree]
+    lon : float
+        longitude [degree]
+    Re : float
+        Earth radius [km]
+
     """
     import numpy as np
     
@@ -68,24 +71,37 @@ def geodToGeoc(lat,lon,inverse=False):
     return latOut, lonOut, Re
 
 
-# *************************************************************
 def geodToGeocAzEl(lat,lon,az,el,inverse=False):
     """Converts pointing azimuth and elevation measured with respect to the local horizon 
     to azimuth and elevation with respect to the horizon defined by the plane perpendicular 
     to the Earth-centered radial vector drawn through a user defined point.
 
-    **Args**:
-        * **lat**: latitude [degree]
-        * **lon**: longitude [degree]
-        * **az**: azimuth [degree, N]
-        * **el**: elevation [degree]
-        * **[inverse]**: inverse conversion
-    **Returns**:
-        * **lat**: latitude [degree]
-        * **lon**: longitude [degree]
-        * **Re**: Earth radius [km]
-        * **az**: azimuth [degree, N]
-        * **el**: elevation [degree]
+    Parameters
+    ----------
+    lat : float
+        latitude [degree]
+    lon : float
+        longitude [degree]
+    az : float
+        azimuth [degree, N]
+    el : float
+        elevation [degree]
+    inverse : Optional[bool]
+        inverse conversion
+
+    Returns
+    -------
+    lat : float
+        latitude [degree]
+    lon : float
+        longitude [degree]
+    Re : float
+        Earth radius [km]
+    az : float
+        azimuth [degree, N]
+    el : float
+        elevation [degree]
+
     """
     from numpy import degrees, radians, cos, sin, tan, arctan, arctan2, sqrt
     
@@ -131,10 +147,8 @@ def geodToGeocAzEl(lat,lon,az,el,inverse=False):
     return latOut, lonOut, Re, azOut, elOut
 
 
-# *************************************************************
 def gspToGcar(X, Y, Z, inverse=False):
-    """
-    Converts a position from global spherical (geocentric) to global cartesian (and vice-versa).
+    """Converts a position from global spherical (geocentric) to global cartesian (and vice-versa).
     The global cartesian coordinate system is defined as:
         - origin: center of the Earth
         - X axis in the equatorial plane and through the prime meridian.
@@ -142,15 +156,26 @@ def gspToGcar(X, Y, Z, inverse=False):
     The meaning of the input (X,Y,Z) depends on the direction of the conversion 
     (to global cartesian or to global spherical).
 
-    **Args**:
-        * **X**: latitude [degree] or global cartesian X [km]
-        * **Y**: longitude [degree] or global cartesian Y [km]
-        * **Z**: distance from center of the Earth [km] or global cartesian Z [km]
-        * **[inverse]**: inverse conversion
-    **Returns**:
-        * **X**: global cartesian X [km] or latitude [degree]
-        * **Y**: global cartesian Y [km] or longitude [degree]
-        * **Z**: global cartesian Z [km] or distance from center of the Earth [km]
+    Parameters
+    ----------
+    X : float
+        latitude [degree] or global cartesian X [km]
+    Y : float
+        longitude [degree] or global cartesian Y [km]
+    Z : float
+        distance from center of the Earth [km] or global cartesian Z [km]
+    inverse : Optional[bool]
+        inverse conversion
+
+    Returns
+    -------
+    X : float
+        global cartesian X [km] or latitude [degree]
+    Y : float
+        global cartesian Y [km] or longitude [degree]
+    Z : float
+        global cartesian Z [km] or distance from center of the Earth [km]
+
     """
     from numpy import radians, degrees, cos, sin, arcsin, arctan2, sqrt
     
@@ -168,7 +193,6 @@ def gspToGcar(X, Y, Z, inverse=False):
     return xOut, yOut, zOut
 
 
-# *************************************************************
 def gcarToLcar(X, Y, Z, lat, lon, rho , inverse=False):
     """Converts a position from global cartesian to local cartesian (and vice-versa).
     The global cartesian coordinate system is defined as:
@@ -183,18 +207,32 @@ def gcarToLcar(X, Y, Z, lat, lon, rho , inverse=False):
     The meaning of the input (X,Y,Z) depends on the direction of the conversion 
     (to global cartesian or to global spherical).
 
-    **Args**:
-        * **X**: global cartesian X [km] or local cartesian X [km]
-        * **Y**: global cartesian Y [km] or local cartesian Y [km]
-        * **Z**: global cartesian Z [km] or local cartesian Z [km]
-        * **lat**: geocentric latitude [degree] of local cartesian system origin
-        * **lon**: geocentric longitude [degree] of local cartesian system origin
-        * **rho**: distance from center of the Earth [km] of local cartesian system origin
-        * **[inverse]**: inverse conversion
-    **Returns**:
-        * **X**: local cartesian X [km] or global cartesian X [km]
-        * **Y**: local cartesian Y [km] or global cartesian Y [km]
-        * **Z**: local cartesian Z [km] or global cartesian Z [km]
+    Parameters
+    ----------
+    X : float
+        global cartesian X [km] or local cartesian X [km]
+    Y : flaot
+        global cartesian Y [km] or local cartesian Y [km]
+    Z : float
+        global cartesian Z [km] or local cartesian Z [km]
+    lat : float
+        geocentric latitude [degree] of local cartesian system origin
+    lon : float
+        geocentric longitude [degree] of local cartesian system origin
+    rho : float
+        distance from center of the Earth [km] of local cartesian system origin
+    inverse : Optional[bool]
+        inverse conversion
+
+    Returns
+    -------
+    X : float
+        local cartesian X [km] or global cartesian X [km]
+    Y : float
+        local cartesian Y [km] or global cartesian Y [km]
+    Z : float
+        local cartesian Z [km] or global cartesian Z [km]
+
     """
     from numpy import radians, degrees, cos, sin
     
@@ -235,7 +273,6 @@ def gcarToLcar(X, Y, Z, lat, lon, rho , inverse=False):
     return xOut, yOut, zOut
 
 
-# *************************************************************
 def lspToLcar(X, Y, Z, inverse=False):
     """Converts a position from local spherical to local cartesian (and vice-versa).
     The local spherical coordinate system is defined as:
@@ -251,15 +288,26 @@ def lspToLcar(X, Y, Z, inverse=False):
     The meaning of the input (X,Y,Z) depends on the direction of the conversion 
     (to global cartesian or to global spherical).
 
-    **Args**:
-        * **X**: azimuth [degree, N] or local cartesian X [km]
-        * **Y**: elevation [degree] or local cartesian Y [km]
-        * **Z**: distance origin [km] or local cartesian Z [km]
-        * **[inverse]**: inverse conversion
-    **Returns**:
-        * **X**: local cartesian X [km] or azimuth [degree, N]
-        * **Y**: local cartesian Y [km] or elevation [degree]
-        * **Z**: local cartesian Z [km] or distance from origin [km]
+    Parameters
+    ----------
+    X : float
+        azimuth [degree, N] or local cartesian X [km]
+    Y : float
+        elevation [degree] or local cartesian Y [km]
+    Z : float
+        distance origin [km] or local cartesian Z [km]
+    inverse : Optional[bool]
+        inverse conversion
+
+    Returns
+    -------
+    X : float
+        local cartesian X [km] or azimuth [degree, N]
+    Y : float
+        local cartesian Y [km] or elevation [degree]
+    Z : float
+        local cartesian Z [km] or distance from origin [km]
+
     """
     from numpy import radians, degrees, cos, sin, arcsin, arctan2, sqrt
     
@@ -295,18 +343,32 @@ def calcDistPnt(origLat, origLon, origAlt, \
         a point of origin, distant point and elevation angle.
     Input/output is in geodetic coordinates, distances are in km and angles in degrees.
 
-    **Args**:
-        * **origLat**: geographic latitude of point of origin [degree]
-        * **origLon**: geographic longitude of point of origin [degree]
-        * **origAlt**: altitude of point of origin [km]
-        * **[dist]**: distance to point [km]
-        * **[el]**: azimuth [degree]
-        * **[az]**: elevation [degree]
-        * **[distLat]**: latitude [degree] of distant point
-        * **[distLon]**: longitude [degree] of distant point
-        * **[distAlt]**: altitide [km] of distant point
-    **Returns**:
-        * **dict**: a dictionary containing all the information about origin and distant points and their relative positions
+    Parameters
+    ----------
+    origLat : float
+        geographic latitude of point of origin [degree]
+    origLon : float
+        geographic longitude of point of origin [degree]
+    origAlt : float
+        altitude of point of origin [km]
+    dist : Optional[float]
+        distance to point [km]
+    el : Optional[float]
+        azimuth [degree]
+    az : Optional[float]
+        elevation [degree]
+    distLat : Optional[float]
+        latitude [degree] of distant point
+    distLon : Optional[float]
+        longitude [degree] of distant point
+    distAlt : Optional[float]
+        altitide [km] of distant point
+
+    Returns
+    -------
+    dict : dict
+        a dictionary containing all the information about origin and distant points and their relative positions
+
     """
     from math import sqrt, pi
     import numpy
@@ -403,19 +465,30 @@ def calcDistPnt(origLat, origLon, origAlt, \
     return dictOut
 
 
-# *************************************************************
 def greatCircleMove(origLat, origLon, dist, az, alt=0,Re=6371.):
     """Calculates the coordinates of an end point along a great circle path 
     given the original coordinates, distance, azimuth, and altitude.
 
-    **Args**:
-        * **origLat**:  latitude [degree]
-        * **origLon**:  longitude [degree]
-        * **dist**:     distance [km]
-        * **az**:       azimuth [deg]
-        * **alt**:      altitude [km] (added to default Re = 6378.1 km)
-    **Returns**:
-        * **list**:     [latitude, longitude] [deg]
+    Parameters
+    ----------
+    origLat : float
+        latitude [degree]
+    origLon : float
+        longitude [degree]
+    dist : float
+        distance [km]
+    az : float
+        azimuth [deg]
+    alt : Optional[float]
+        altitude [km] (added to default Re = 6378.1 km)
+    Re : Optional[float]
+        Earth radius, default 6371.
+
+    Returns
+    -------
+    list : list
+        latitude, longitude in deg
+
     """
     import numpy
     
@@ -450,20 +523,28 @@ def greatCircleMove(origLat, origLon, dist, az, alt=0,Re=6371.):
 
     return (ret_lat,ret_lon)
 
-# *************************************************************
+
 def greatCircleAzm(lat1,lon1,lat2,lon2):
     """Calculates the azimuth from the coordinates of a start point to and end point
     along a great circle path.
 
-    **Args**:
-        * **lat1**:  latitude [deg]
-        * **lon1**:  longitude [deg]
-        * **lat2**:  latitude [deg]
-        * **lon2**:  longitude [deg]
-    **Returns**:
-        * **azm**:   azimuth [deg]
-    """
+    Parameters
+    ----------
+    lat1 : float
+        latitude [deg]
+    lon1 : float
+        longitude [deg]
+    lat2 : float
+        latitude [deg]
+    lon2 : float
+        longitude [deg]
 
+    Returns
+    -------
+    azm : float
+        azimuth [deg]
+
+    """
     from numpy import sin, cos, arctan2, degrees, radians
     lat1,lon1,lat2,lon2 = radians(lat1),radians(lon1),radians(lat2),radians(lon2)
     dlon  = lon2-lon1
@@ -474,17 +555,25 @@ def greatCircleAzm(lat1,lon1,lat2,lon2):
     return azm
 
 
-# *************************************************************
 def greatCircleDist(lat1,lon1,lat2,lon2):
     """Calculates the distance in radians along a great circle path between two points.
 
-    **Args**:
-        * **lat1**:  latitude [deg]
-        * **lon1**:  longitude [deg]
-        * **lat2**:  latitude [deg]
-        * **lon2**:  longitude [deg]
-    **Returns**:
-        * **radDist**:  distance [radians]
+    Parameters
+    ----------
+    lat1 : float
+        latitude [deg]
+    lon1 : float
+        longitude [deg]
+    lat2 : float
+        latitude [deg]
+    lon2 : float
+        longitude [deg]
+
+    Returns
+    -------
+    radDist : float
+        distance [radians]
+
     """
     from numpy import cos, sin, arctan2, radians, sqrt
 
