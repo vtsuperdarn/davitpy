@@ -19,19 +19,20 @@
    :synopsis: the classes needed for reading, writing, and storing fundamental
               radar data (iq,raw,fit)
 .. moduleauthor:: AJ, 20130108
-*********************
-**Module**: pydarn.sdio.radDataTypes
-*********************
+
+pydarn.sdio.radDataTypes
+-------------------------
+
 Classes
 --------
-  * :class:`pydarn.sdio.radDataTypes.radDataPtr`
-  * :class:`pydarn.sdio.radDataTypes.radBaseData`
-  * :class:`pydarn.sdio.radDataTypes.scanData`
-  * :class:`pydarn.sdio.radDataTypes.beamData`
-  * :class:`pydarn.sdio.radDataTypes.prmData`
-  * :class:`pydarn.sdio.radDataTypes.fitData`
-  * :class:`pydarn.sdio.radDataTypes.rawData`
-  * :class:`pydarn.sdio.radDataTypes.iqData`
+radDataPtr
+radBaseData
+scanData
+beamData
+prmData
+fitData
+rawData
+iqData
 """
 
 import davitpy
