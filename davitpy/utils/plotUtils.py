@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
@@ -20,6 +21,7 @@ Basic plotting tools
 
 """
 from mpl_toolkits import basemap
+import logging
 
 ##########################################################################
 ##########################################################################
@@ -132,25 +134,25 @@ class mapObj(basemap.Basemap):
         self._coordsDict, self._coords_string = get_coord_dict()
 
         if datetime is None and dateTime is None:
-          print "Warning, datetime/dateTime not specified, using current time."
+          logging.warning("datetime/dateTime not specified, using current time.")
           datetime = dt.datetime.utcnow()
           dateTime = datetime
         elif datetime is None and dateTime is not None:
-          print "Warning, setting datetime to dateTime"
+          logging.warning("setting datetime to dateTime")
           datetime = dateTime
         elif datetime is not None and dateTime is None:
-          print "Warning, setting dateTime to datetime"
+          logging.warning("setting dateTime to datetime")
           dateTime = datetime
         else:
           assert(datetime == dateTime),\
-                  "Cannot set datetime and dateTime to different times!"
+                  logging.error("Cannot set datetime and dateTime to different times!")
         self.datetime = datetime
         self.dateTime = dateTime
     
         # Still a good idea to check whether coords are possible, because
         # there may be no call to coord_conv within this init.
         assert(coords in self._coordsDict),\
-                "coords set to " + coords + ",\n" + self.coords_string
+                logging.error("coords set to " + coords + ",\n" + self.coords_string)
     
         # Add an extra member to the Basemap class.
         self.coords = coords
