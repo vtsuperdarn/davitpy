@@ -68,21 +68,24 @@ def dateToYyyymmdd(my_date):
 def yyyymmddToDate(date_str):
     """takes a string in yyyymmdd format and returns a python date object
 
-    **Args**:
-        * **date_str** (str): a string in yyyymmdd format
-    **Returns**:
-        * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a python
-        datetime object
+    Parameters
+    ----------
+    date_str : str
+        a string in yyyymmdd format
 
-    **Example**:
-        ::
+    Returns
+    -------
+    my_date : datetime
+        a python datetime object
 
-            my_date = utils.timeUtils.yyyymmddToDate('20120710')
+    Example
+    -------
+        my_date = utils.timeUtils.yyyymmddToDate('20120710')
 
     Written by AJ 20120718
     Modified by ASR 20151120
-    """
 
+    """
     from datetime import datetime
 
     assert(isinstance(date_str, str)), logging.error(
@@ -97,22 +100,25 @@ def timeYrsecToDate(yrsec, year):
     """Converts time expressed in seconds from start of year to a python
     datetime object
 
-    **Args**:
-        * **yrsec** (int): seconds since start of year
-        * **year** (int): year in YYYY
-    **Returns**:
-        * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a python
-        datetime object.
+    Parameters
+    ----------
+    yrsec : int
+        seconds since start of year
+    year : int
+        year in YYYY
 
-    **Example**:
-        ::
+    Returns
+    -------
+    my_date : datetime
+        a python datetime object.
 
-            my_date = utils.timeUtils.timeYrsecToDate(1205304,2012)
+    Example
+        my_date = utils.timeUtils.timeYrsecToDate(1205304,2012)
 
     Written by Sebastien, Jul. 2012
     Modified by ASR 20151120
-    """
 
+    """
     from datetime import datetime
     from datetime import timedelta
 
@@ -127,18 +133,22 @@ def timeYrsecToDate(yrsec, year):
 def julToDatetime(ndarray):
     """Convert a julian date to a datetime object.
 
-    **Args**:
-        * **NDARRAY** (float or list): single float64 or a numpy array of
-        Julian Dates.
-    **Returns**:
-        * **dt** (list): list of datetime objects
+    Parameters
+    ----------
+    ndarray : float or list
+        single float64 or a numpy array of Julian Dates.
 
-    **Example**:
-        ::
+    Returns
+    -------
+    dt : list
+        list of datetime objects
 
-            myDateList = utils.timeUtils.julToDatetime(2456118.5)
+    Example
+    -------
+        myDateList = utils.timeUtils.julToDatetime(2456118.5)
 
     Created by Nathaniel Frissell 20120810
+
     """
     import datetime
     import dateutil.parser
@@ -157,24 +167,27 @@ def julToDatetime(ndarray):
 def datetimeToEpoch(my_date):
     """reads in a datetime and outputs the equivalent epoch time
 
-    **Args**:
-        * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a datetime
-        object
-    **Returns**:
-        * **my_epoch** (float or list of floats): an epoch time equal to the
-        datetime object
+    Parameters
+    ----------
+    my_date : datetime
+        a datetime object
 
-    **Example**
-        ::
+    Returns
+    -------
+    my_epoch : float or list of floats
+        an epoch time equal to the datetime object
 
-            import datetime as dt
-            my_epoch = utils.timeUtils.datetimeToEpoch(dt.datetime(2012,7,10))
+    Example
+    -------
+        import datetime as dt
+        my_epoch = utils.timeUtils.datetimeToEpoch(dt.datetime(2012,7,10))
 
     Written by AJ 20120914
     Modified by Nathaniel Frissell 20130729 - Added list support.
     Modified by AJ 20130925 - fixed local time bug with conversion
     Modified by Nathaniel Frissell 20130930 - Fixed list support.
     Modified by ASR 20151120
+
     """
     from datetime import datetime
     import calendar
@@ -200,18 +213,23 @@ def dateToDecYear(date):
     """Convert (`datetime <http://tinyurl.com/bl352yx>`_) object to decimal
         year
 
-    **Args**:
-      * **date** (`datetime <http://tinyurl.com/bl352yx>`_): date and time
-    **Returns**:
-      * **dyear** (float): decimal year
+    Parameters
+    ----------
+    date : datetime
+        date and time
 
-    **Example**
-      ::
+    Returns
+    -------
+    dyear : float
+        decimal year
 
+    Example
+    -------
         import datetime as dt
         decYr = utils.timeUtils.dateToDecYear(dt.datetime(2012,7,10))
 
     written by Sebastien, 2013-02
+
     """
     from datetime import datetime as dt
     import time
@@ -233,18 +251,23 @@ def dateToDecYear(date):
 def parseDate(date):
     """ Parse YYYYMMDD dates in YYYY, MM, DD and vice versa
 
-    **Args**:
-      * **date** (str or list): experiment date in YYYYMMDD or [YYYY,MM,DD]
-    **Returns**:
-      * **tdate** (list or int): experiment date in [YYYY,MM,DD] or YYYYMMDD
+    Parameters
+    ----------
+    date : str or list
+        experiment date in YYYYMMDD or [YYYY,MM,DD]
 
-    **Example**:
-      ::
+    Returns
+    -------
+    tdate : list or int
+        experiment date in [YYYY,MM,DD] or YYYYMMDD
 
+    Example
+    -------
         tlist = utils.timeUtils.parseDate('20120710')
         ttime = utils.timeUtils.parseDate([2012,07,10])
 
     Created by Sebastien
+
     """
     # transform date into an array for testing
     if not isinstance(date, list):
@@ -271,19 +294,23 @@ def parseDate(date):
 def parseTime(time):
     """ Parse HHMM or HHMMSS dates in HH, MM, SS and vice versa
 
-    **Args**:
-      * **TIME** (str or list): time in HHMM or HHMMSS OR [HH,MM] or [HH,MM,SS]
-    **Returns**
-      * **ttime** (list or int): time in [HH,MM] or [HH,MM,SS] OR HHMM
-                                 or HHMMSS
+    Parameters
+    ----------
+    time : str or list
+        time in HHMM or HHMMSS OR [HH,MM] or [HH,MM,SS]
 
-    **Example**:
-      ::
+    Returns
+    -------
+    ttime : list or int
+        time in [HH,MM] or [HH,MM,SS] OR HHMM or HHMMSS
 
+    Example
+    -------
         tlist = utils.timeUtils.parseDate('065022')
         tstr = utils.timeUtils.parseDate([6,50,22])
 
     Created by Sebastien
+
     """
     # transform time into an array for testing
     if not isinstance(time, list):
