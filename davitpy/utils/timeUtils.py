@@ -32,6 +32,7 @@ yyyymmddToDate  string to date
 -----------------------------------
 
 """
+import logging
 
 
 def dateToYyyymmdd(my_date):
@@ -58,7 +59,8 @@ def dateToYyyymmdd(my_date):
     """
     from datetime import datetime
 
-    assert(isinstance(my_date, datetime)), 'error, input must be type datetime'
+    assert(isinstance(my_date, datetime)), logging.error(
+        'input must be type datetime')
 
     return my_date.strftime('%Y%m%d')
 
@@ -83,8 +85,10 @@ def yyyymmddToDate(date_str):
 
     from datetime import datetime
 
-    assert(isinstance(date_str, str)), 'error, input must be of type str'
-    assert(len(date_str) == 8), 'error, input must be of yyyymmdd format'
+    assert(isinstance(date_str, str)), logging.error(
+        'input must be of type str')
+    assert(len(date_str) == 8), logging.error(
+        'input must be of yyyymmdd format')
 
     return datetime.strptime(date_str, '%Y%m%d')
 
@@ -112,8 +116,10 @@ def timeYrsecToDate(yrsec, year):
     from datetime import datetime
     from datetime import timedelta
 
-    assert(isinstance(yrsec, int)), 'error, yrsec must be of type int'
-    assert(isinstance(year, int)), 'error, year must be of type int'
+    assert(isinstance(yrsec, int)), logging.erorr(
+        'yrsec must be of type int')
+    assert(isinstance(year, int)), logging.error(
+        'year must be of type int')
 
     return datetime(year, 1, 1) + timedelta(seconds=yrsec)
 
@@ -174,12 +180,12 @@ def datetimeToEpoch(my_date):
     import calendar
     import numpy as np
 
-    assert(isinstance(my_date, (list, datetime))), \
-        'error, input must be of type datetime or list of datetimes'
+    assert(isinstance(my_date, (list, datetime))), logging.error(
+        'input must be of type datetime or list of datetimes')
     if isinstance(my_date, list):
         for dt in my_date:
-            assert(isinstance(dt, datetime)), \
-                'error, each member of my_date list must be of type datetime'
+            assert(isinstance(dt, datetime)), logging.error(
+                'each member of my_date list must be of type datetime')
 
     if isinstance(my_date, datetime):
         unx = calendar.timegm(my_date.timetuple()) + my_date.microsecond / 1e6
@@ -256,7 +262,7 @@ def parseDate(date):
         tdate = [date[0] / 10000, date[0] / 100 - date[0] /
                  10000 * 100, date[0] - date[0] / 100 * 100]
     else:
-        print 'Invalid date format: ', date
+        logging.error('Invalid date format: ', date)
         return
 
     return tdate
@@ -299,7 +305,7 @@ def parseTime(time):
     elif len(time) == 1 and len(str(time[0])) >= 1 and len(str(time[0])) <= 4:
         ttime = [time[0] / 100, time[0] - time[0] / 100 * 100]
     else:
-        print 'Invalid time format: ', time
+        logging.error('Invalid time format: ', time)
         return
 
     return ttime
