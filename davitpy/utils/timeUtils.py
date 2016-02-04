@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 #
@@ -14,46 +15,47 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-.. module:: timeUtils
-    :synopsis: A module for manipulating time representations
+"""timeUtils module
 
-.. moduleauthor:: VTSD Lab
+A module for manipulating time representations
 
-****************************
-**Module**: utils.timeUtils
-****************************
-**Functions**:
-    * :func:`utils.timeUtils.dateToDecYear`
-    * :func:`utils.timeUtils.dateToYyyymmdd`
-    * :func:`utils.timeUtils.datetimeToEpoch`
-    * :func:`utils.timeUtils.julToDatetime`
-    * :func:`utils.timeUtils.parseDate`
-    * :func:`utils.timeUtils.parseTime`
-    * :func:`utils.timeUtils.timeYrsecToDate`
-    * :func:`utils.timeUtils.yyyymmddToDate`
+Functions
+-----------------------------------
+dateToDecYear   datetime to decimal
+dateToYyyymmdd  datetime to string
+datetimeToEpoch datetime to epoch
+julToDatetime   julian to datetime
+parseDate       parse yr, mn, day
+parseTime       parse hr, min, sec
+timeYrsecToDate time to datetime
+yyyymmddToDate  string to date
+-----------------------------------
+
 """
 
 
 def dateToYyyymmdd(my_date):
     """Takes a python datetime object and returns a string in yyyymmdd format
 
-    **Args**:
-        * **my_date** (`datetime <http://tinyurl.com/bl352yx>`_): a python
-        datetime object
-    **Returns**:
-        * **date_str** (str): a string in yyyymmdd format
+    Parameters
+    ----------
+    my_date : datetime
+        a python datetime object
 
-    **Example**:
-        ::
+    Returns
+    -------
+    date_str : str
+        a string in yyyymmdd format
 
-            import datetime as dt
-            date_str = utils.timeUtils.dateToYyyymmdd(dt.datetime(2012,7,10))
+    Example
+    -------
+        import datetime as dt
+        date_str = utils.timeUtils.dateToYyyymmdd(dt.datetime(2012,7,10))
 
     Written by AJ 20120718
     Modified by ASR 20151120
-    """
 
+    """
     from datetime import datetime
 
     assert(isinstance(my_date, datetime)), 'error, input must be type datetime'
