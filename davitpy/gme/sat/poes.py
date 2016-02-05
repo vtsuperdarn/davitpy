@@ -30,8 +30,10 @@
   * :func:`mapPoesMongo`
   * :func:`overlayPoesTed`
 """
-
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
+
 class poesRec(gmeData):
   """a class to represent a record of poes data.  Extends :class:`gmeBase.gmeData`.  Insight on the class members can be obtained from `the NOAA NGDC site <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>`_.  Note that Poes data is available from 1998-present day (or whatever the latest NOAA has uploaded is).  **The data are the 16-second averages**
   
@@ -120,8 +122,8 @@ class poesRec(gmeData):
       if(key == 'dataSet' or key == 'info' or key == 'satnum' or key == 'time'): continue
       try: ind = head.index(key)
       except Exception,e:
-        print e
-        print 'problem setting attribute',key
+        logging.exception(e)
+        logging.exception('problem setting attribute' + key)
       #check for a good value
       if(float(cols[ind]) != -999.): setattr(self,key,float(cols[ind]))
   
@@ -219,16 +221,17 @@ def readPoes(sTime,eTime=None,satnum=None,folat=None,folon=None,ted=None,echar=N
   import davitpy.pydarn.sdio.dbUtils as db
   
   #check all the inputs for validity
-  assert(isinstance(sTime,dt.datetime)), \
-    'error, sTime must be a datetime object'
-  assert(eTime == None or isinstance(eTime,dt.datetime)), \
-    'error, eTime must be either None or a datetime object'
-  assert(satnum == None or isinstance(satnum,int)), 'error, satnum must be an int'
+  assert(isinstance(sTime,dt.datetime)), logging.error(
+    'sTime must be a datetime object')
+  assert(eTime == None or isinstance(eTime,dt.datetime)), logging.error(
+    'eTime must be either None or a datetime object')
+  assert(satnum == None or isinstance(satnum,int)), logging.error('satnum must be an int')
   var = locals()
   for name in ['folat','folon','ted','echar','pchar']:
     assert(var[name] == None or (isinstance(var[name],list) and \
-      isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
-      'error,'+name+' must None or a list of 2 numbers'
+      isinstance(var[name][0],(int,float)) and \
+      isinstance(var[name][1],(int,float)))), logging.error(
+      name + ' must None or a list of 2 numbers')
     
   if(eTime == None): eTime = sTime+dt.timedelta(days=1)
   qryList = []
@@ -254,11 +257,11 @@ def readPoes(sTime,eTime=None,satnum=None,folat=None,folon=None,ted=None,echar=N
     poesList = []
     for rec in qry.sort('time'):
       poesList.append(poesRec(dbDict=rec))
-    print '\nreturning a list with',len(poesList),'records of poes data'
+    logging.info('nreturning a list with '+ len(poesList) + ' records of poes data')
     return poesList
   #if we didn't find anything on the mongodb
   else:
-    print '\ncould not find requested data in the mongodb'
+    logging.info('could not find requested data in the mongodb')
     return None
     #print 'we will look on the ftp server, but your conditions will be (mostly) ignored'
     
@@ -295,23 +298,26 @@ def readPoesFtp(sTime,eTime=None):
   from ftplib import FTP
   import datetime as dt
   
-  assert(isinstance(sTime,dt.datetime)),'error, sTime must be datetime'
+  assert(isinstance(sTime,dt.datetime)), logging.error(
+    'sTime must be datetime')
   if(eTime == None): eTime=sTime+dt.timedelta(days=1)
-  assert(isinstance(eTime,dt.datetime)),'error, eTime must be datetime'
-  assert(eTime >= sTime), 'error, end time greater than start time'
+  assert(isinstance(eTime,dt.datetime)), logging.error(
+    'eTime must be datetime')
+  assert(eTime >= sTime), logging.error(
+    'end time greater than start time')
   
   #connect to the server
   try: ftp = FTP('satdat.ngdc.noaa.gov')  
   except Exception,e:
-    print e
-    print 'problem connecting to NOAA server'
+    logging.exception(e)
+    logging.exception('problem connecting to NOAA server')
     return None
     
   #login as anonymous
   try: l=ftp.login()
   except Exception,e:
-    print e
-    print 'problem logging in to NOAA server'
+    logging.exception(e)
+    logging.exception('problem logging in to NOAA server')
     return None
     
   myPoes = []
@@ -321,8 +327,8 @@ def readPoesFtp(sTime,eTime=None):
     #go to the data directory
     try: ftp.cwd('/sem/poes/data/avg/txt/'+str(myTime.year))
     except Exception,e:
-      print e
-      print 'error getting to data directory'
+      logging.exception(e)
+      logging.exception('error getting to data directory')
       return None
     
     #list directory contents
@@ -334,14 +340,14 @@ def readPoesFtp(sTime,eTime=None):
       #chege to file directory
       ftp.cwd('/sem/poes/data/avg/txt/'+str(myTime.year)+'/'+dire)
       fname = 'poes_n'+satnum+'_'+myTime.strftime("%Y%m%d")+'.txt'
-      print 'poes: RETR '+fname
+      logging.info('poes: RETR ' + fname)
       #list to hold the lines
       lines = []
       #get the data
       try: ftp.retrlines('RETR '+fname,lines.append)
       except Exception,e:
-        print e
-        print 'error retrieving',fname
+        logging.exception(e)
+        logging.exception('error retrieving' + fname)
         
       #convert the ascii lines into a list of poesRec objects
       #skip first (header) line
@@ -381,10 +387,10 @@ def mapPoesMongo(sYear,eYear=None):
   import datetime as dt
   
   #check inputs
-  assert(isinstance(sYear,int)),'error, sYear must be int'
+  assert(isinstance(sYear,int)), logging.error('sYear must be int')
   if(eYear == None): eYear=sYear
-  assert(isinstance(eYear,int)),'error, sYear must be None or int'
-  assert(eYear >= sYear), 'error, end year greater than start year'
+  assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
+  assert(eYear >= sYear), logging.error('end year greater than start year')
   
   #get data connection
   mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
@@ -415,14 +421,14 @@ def mapPoesMongo(sYear,eYear=None):
       if(cnt == 0): mongoData.insert(tempRec)
       #if this is an existing record, update it
       elif(cnt == 1):
-        print 'foundone!!'
+        logging.debug('foundone!!')
         dbDict = qry.next()
         temp = dbDict['_id']
         dbDict = tempRec
         dbDict['_id'] = temp
         mongoData.save(dbDict)
       else:
-        print 'strange, there is more than 1 record for',rec.time
+        logging.info('strange, there is more than 1 record for ' + rec.time)
     del templist
     myTime += dt.timedelta(days=10)
     
@@ -465,24 +471,24 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 
 
     #check all the inputs for validity
-  assert(isinstance(startTime,datetime.datetime)), \
-    'error, sTime must be a datetime object'
+  assert(isinstance(startTime,datetime.datetime)), logging.error(
+    'sTime must be a datetime object')
   assert(endTime == None or isinstance(endTime,datetime.datetime)), \
-    'error, eTime must be either None or a datetime object'
+    logging.error('eTime must be either None or a datetime object')
   
   var = locals()
   
   assert(var['satNum'] == None or (isinstance(var['satNum'],list) )), \
-    'error, satNum must None or a list of satellite (integer) numbers'
+    logging.error('satNum must None or a list of satellite (integer) numbers')
   
   if satNum != None :
     assert( len(satNum) <= 5 ), \
-    'error, there are only 5 POES satellites in operation (atleast when I wrote this code)'
+    logging.error('there are only 5 POES satellites in operation (atleast when I wrote this code)')
   
   
   assert(var['folat'] == None or (isinstance(var['folat'],list) and \
     isinstance(var['folat'][0],(int,float)) and isinstance(var['folat'][1],(int,float)))), \
-    'error, folat must None or a list of 2 numbers'
+    logging.error('folat must None or a list of 2 numbers')
     
   # Check the hemisphere and get the appropriate folat
   folat = [ math.fabs( folat[0] ) * hemi, math.fabs( folat[1] ) * hemi ]
@@ -528,7 +534,7 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 
     # Check if the data is loaded...
     if currPoesList == None :
-      print 'No data found'
+      logging.warning('No data found')
       continue
       #return None
 
@@ -555,11 +561,11 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
 
         timePoesAll[sN].append(l.time)
       except Exception,e:
-        print e
-        print 'could not get parameter for time',l.time
-  
+        logging.exception(e)
+        logging.exception('could not get parameter for time' + l.time)
+
   if(not goodFlg): return None
-  
+
   latPoesAll = numpy.array( latPoesAll ) 
   lonPoesAll = numpy.array( lonPoesAll )
   tedPoesAll = numpy.array( tedPoesAll )
@@ -622,8 +628,8 @@ def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1,
   import models
 
   #check all the inputs for validity
-  assert(isinstance(startTime,datetime.datetime)), \
-    'error, sTime must be a datetime object'
+  assert(isinstance(startTime,datetime.datetime)), logging.error(
+    'sTime must be a datetime object')
     
   
   # Check the hemisphere and get the appropriate folat
@@ -655,7 +661,7 @@ def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1,
 
     # Check if the data is loaded...
     if currPoesList == None :
-      print 'No data found'
+      logging.warning('No data found')
       continue
 
     # Loop through the list and store the data into arrays    
@@ -828,13 +834,4 @@ def overlayPoesBnd( baseMapObj, axisHandle, startTime, coords = 'geo', hemi = 1,
     xPol, yPol = baseMapObj(allPlotLons, poPlotLats)
     bpltpoes = baseMapObj.plot( xPol,yPol, zorder = 7., color = 'r' )
     
-        
-  
-        
 
-
-
-
-    
-
-  
