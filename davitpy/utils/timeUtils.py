@@ -211,7 +211,7 @@ def datetimeToEpoch(my_date):
 
 def dateToDecYear(date):
     """Convert (`datetime <http://tinyurl.com/bl352yx>`_) object to decimal
-        year
+    year
 
     Parameters
     ----------

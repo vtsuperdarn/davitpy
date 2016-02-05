@@ -94,7 +94,6 @@ class mapObj(basemap.Basemap):
 
     dateTime :
 
-
     Returns
     -------
     map : a Basemap object (<http://tinyurl.com/d4rzmfo>)
@@ -486,7 +485,6 @@ def drawCB(fig, coll, cmap, norm, map_plot=False, pos=[0,0,1,1]):
 
     Example
     -------
-
 
     Written by AJ 20120820
 

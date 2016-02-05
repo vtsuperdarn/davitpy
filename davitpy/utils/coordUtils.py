@@ -35,13 +35,12 @@ import logging
 
 
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
-    """coordConv has been renamed coord_conv and dateTime has been
-        renamed date_time for PEP 8 compliance.  Please use those
-        from now on.  Also altitude is now optional.
-
-    .. note:: Deprecated in davitpy 0.3?
-              `coordConv` will be removed in davitpy 0.6, it is
-              replaced by `coord_conv` to comply with PEP8.
+    """
+    Notes
+    ----
+    coordConv has been renamed coord_conv and dateTime has been
+    renamed date_time for PEP 8 compliance.  Please use those
+    from now on.  Also altitude is now optional.
 
     """
     from davitpy.utils.coordUtils import coord_conv
@@ -55,7 +54,7 @@ def coordConv(lon, lat, altitude, start, end, dateTime=None):
 def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                end_altitude=None):
     """Convert between geographical, AACGM, and MLT coordinates.  
-        date_time must be set to use any AACGM systems.
+    date_time must be set to use any AACGM systems.
   
     Parameters
     ----------
@@ -96,10 +95,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     Notes
     -----
     A how-to for expansion of this function to handle new coordinate
-        systems is included in the code comments.
+    systems is included in the code comments.
 
-    original version written by Matt W., 2013-09,
-        based on code by...Sebastien?
+    original version written by Matt W., 2013-09, based on code by...Sebastien?
     brand new version by Matt W., 2014-08
 
     """
@@ -387,7 +385,7 @@ def planeRot(x, y, theta):
 
 def get_coord_dict():
     """A function to return the coordinate dictionary and a string
-        listing the possible coordinates for use.
+    listing the possible coordinates for use.
 
     Returns
     -------
