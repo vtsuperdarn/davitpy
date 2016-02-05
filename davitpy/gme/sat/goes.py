@@ -31,6 +31,8 @@
 	* :func:`gme.sat.find_flares`
 """
 from davitpy import rcParams
+import logging
+
 
 def read_goes(sTime,eTime=None,sat_nr=15):
     """Download GOES X-Ray Flux data from the NOAA FTP Site and return a dictionary containing the metadata and a dataframe.
@@ -102,7 +104,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         #Check to see if we already have a matcing file...
         local_files = glob.glob(os.path.join(data_dir,'g{sat_nr:02d}_xrs_1m_{year:d}{month:02d}*.nc'.format(year=myTime.year,month=myTime.month,sat_nr=sat_nr)))
         if len(local_files) > 0:
-            print 'Using locally cached file: {0}'.format(local_files[0])
+            logging.info('Using locally cached file: {0}'.format(local_files[0]))
             file_paths.append(local_files[0])
             continue
 
@@ -118,7 +120,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         file_paths.append(file_path)
 
         #Go retrieve the file...
-        print 'Downloading {0}...'.format(filename)
+        logging.info('Downloading {0}...'.format(filename))
         ftp.retrbinary('RETR {0}'.format(filename), open(file_path, 'wb').write)
 
     # Load data into memory. #######################################################
@@ -189,6 +191,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
     data_dict['orbit']  = df_orbit
 
     return data_dict
+
 
 def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,legendLoc=None,ax=None):
     """Plot GOES X-Ray Data.
@@ -271,6 +274,7 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     ax.set_title(title)
     return fig
 
+
 def __split_sci(value):
     """Split scientific notation into (coefficient,power).
     This is a private function that currently only works on scalars.
@@ -286,6 +290,7 @@ def __split_sci(value):
     s   = '{0:e}'.format(value)
     s   = s.split('e')
     return (float(s[0]),float(s[1]))
+
 
 def classify_flare(value):
     """Convert GOES X-Ray flux into a string flare classification.
@@ -329,6 +334,7 @@ def classify_flare(value):
     flare_class = '{0}{1:.1f}'.format(letter,coef)
     return flare_class
 
+
 def flare_value(flare_class):
     """Convert a string solar flare class into the lower bound in W/m**2 of the 
     1-8 Angstrom X-Ray Band for the GOES Spacecraft.
@@ -358,6 +364,7 @@ def flare_value(flare_class):
     coef        = float(flare_class[1:])
     value       = coef * 10.**power
     return value
+
 
 def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None):
     """Find flares of a minimum class in a GOES data dict created by read_goes().
@@ -454,6 +461,7 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
     flares['class'] = map(classify_flare,flares['B_AVG'])
 
     return flares
+
 
 if __name__ == '__main__':
     import os
