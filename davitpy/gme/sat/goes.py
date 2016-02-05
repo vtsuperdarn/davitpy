@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -14,47 +15,60 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-.. module:: goes
-   :synopsis: A module for working with GOES data.
+"""GOES module
 
-.. moduleauthor:: N.A. Frissell, 6 Sept 2014
+A module for working with GOES data.
 
-*********************
-**Module**: gme.sat.goes
-*********************
-**Functions**:
-	* :func:`gme.sat.read_goes`
-	* :func:`gme.sat.goes_plot`
-	* :func:`gme.sat.classify_flare`
-	* :func:`gme.sat.flare_value`
-	* :func:`gme.sat.find_flares`
+Module Author:: N.A. Frissell, 6 Sept 2014
+
+Functions
+--------------------------------------------------------
+read_goes       download GOES data
+goes_plot       plot GOES data
+classify_flare  convert GOES data to string classifier
+flare_value     convert string classifier to lower bound
+find_flares     find flares in a certain class
+--------------------------------------------------------
+
 """
 from davitpy import rcParams
 import logging
 
 
 def read_goes(sTime,eTime=None,sat_nr=15):
-    """Download GOES X-Ray Flux data from the NOAA FTP Site and return a dictionary containing the metadata and a dataframe.
+    """Download GOES X-Ray Flux data from the NOAA FTP Site and return a
+       dictionary containing the metadata and a dataframe.
 
-        * Data is downloaded from ftp://satdat.ngdc.noaa.gov/sem/goes/data/new_avg/2014/08/goes15/netcdf/
-        * Currently, 1-m averaged x-ray spectrum in two bands (0.5-4.0 A and 1.0-8.0 A).
-        * NOAA NetCDF files are cached in rcParams['DAVIT_TMPDIR']
+    Parameters
+    ----------
+    sTime : datetime.datetime
+        Starting datetime for data.
+    eTime : datetime.datetime
+        Ending datetime for data.  If None, eTime will be set to sTime
+        + 1 day.
+    sat_nr : int
+        GOES Satellite number.  Defaults to 15.
+
+    Returns
+    -------
+    Dictionary containing metadata, pandas dataframe with GOES data.
+
+    Notes
+    -----
+    Data is downloaded from
+    ftp://satdat.ngdc.noaa.gov/sem/goes/data/new_avg/2014/08/goes15/netcdf/
+
+    Currently, 1-m averaged x-ray spectrum in two bands
+    (0.5-4.0 A and 1.0-8.0 A).
+
+    NOAA NetCDF files are cached in rcParams['DAVIT_TMPDIR']
     
-    **Args**: 
-        * [**sTime**] (datetime.datetime): Starting datetime for data.
-        * [**eTime**] (datetime.datetime): Ending datetime for data.  If None, eTime will be set to sTime + 1 day.
-        * [**sat_nr**] (int): GOES Satellite number.  Defaults to 15.
-
-    **Returns**:
-      * Dictionary containing metadata, pandas dataframe with GOES data.
-
-    **Example**:
-      ::
-      
+    Example
+    -------
         goes_data = read_goes(datetime.datetime(2014,6,21))
       
     written by N.A. Frissell, 6 Sept 2014
+
     """
     import os
     import datetime
@@ -69,9 +83,17 @@ def read_goes(sTime,eTime=None,sat_nr=15):
 
     import calendar
 
+
     def add_months(sourcedate,months=1):
-        """
-        Add 1 month to a datetime object.
+        """Add 1 month to a datetime object.
+
+        Parameters
+        ----------
+        sourcedate : datetime
+
+        months : Optional[int]
+
+
         """
         month = sourcedate.month - 1 + months
         year = sourcedate.year + month / 12
@@ -196,21 +218,37 @@ def read_goes(sTime,eTime=None,sat_nr=15):
 def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,legendLoc=None,ax=None):
     """Plot GOES X-Ray Data.
 
-    **Args**:
-        * **goes_data**: data dictionary returned by read_goes()
-        * **[sTime]**: datetime.datetime object for start of plotting.
-        * **[eTime]**: datetime.datetime object for end of plotting.
-        * **[ymin]**: Y-Axis minimum limit
-        * **[ymax]**: Y-Axis maximum limit
-        * **[legendSize]**: Character size of the legend
+    Parameters
+    ----------
+    goes_data : dict
+        data dictionary returned by read_goes()
+    sTime : Optional[datetime.datetime]
+        object for start of plotting.
+    eTime : Optional[datetime.datetime]
+        object for end of plotting.
+    ymin : Optional[float]
+        Y-Axis minimum limit
+    ymax : Optional[float]
+        Y-Axis maximum limit
+    legendSize : Optional[int]
+        Character size of the legend
+    legendLoc : Optional[ ]
 
-    **Returns**:
-        * **fig**:      matplotlib figure object that was plotted to
+    ax : Optional[ ]
 
-    .. note::
-        If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
+
+    Returns
+    -------
+    fig : matplotlib.figure
+        matplotlib figure object that was plotted to
+
+    Notes
+    -----
+    If a matplotlib figure currently exists, it will be modified
+    by this routine.  If not, a new one will be created.
 
     Written by Nathaniel Frissell 2014 Sept 06
+
     """
     import datetime
     import matplotlib
@@ -279,13 +317,19 @@ def __split_sci(value):
     """Split scientific notation into (coefficient,power).
     This is a private function that currently only works on scalars.
 
-    **Args**:
-        * **value**: numerical value
+    Parameters
+    ----------
+    value :
+        numerical value
 
-    **Returns**:
-        * **(coefficient,power)**
+    Returns
+    -------
+    coefficient : float
+
+    power : float
 
     Written by Nathaniel Frissell 2014 Sept 07
+
     """
     s   = '{0:e}'.format(value)
     s   = s.split('e')
@@ -294,27 +338,33 @@ def __split_sci(value):
 
 def classify_flare(value):
     """Convert GOES X-Ray flux into a string flare classification.
-    You should use the 1-8 Angstrom band for classification (B_AVG in
-    the NOAA data files).
+    You should use the 1-8 Angstrom band for classification [1] 
+    (B_AVG in the NOAA data files).
 
     A 0.001 W/m**2 measurement in the 1-8 Angstrom band is classified as an X10 flare..
 
-    See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
-
     This function currently only works on scalars.
 
-    **Args**:
-        * **value**: numerical value of the GOES 1-8 Angstrom band X-Ray Flux in W/m^2.
+    Parameters
+    ----------
+    value :
+        numerical value of the GOES 1-8 Angstrom band X-Ray Flux in W/m^2.
 
-    **Returns**:
-        * **flare_class**: (string) class of solar flare
+    Returns
+    -------
+    flare_class : string
+        class of solar flare
 
-    **Example**:
-      ::
+    References
+    ----------
+    [1] http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
 
+    Example
+    -------
         flare_class = classify_flare(0.001)
 
     Written by Nathaniel Frissell 2014 Sept 07
+
     """
     coef, power = __split_sci(value)
 
@@ -336,27 +386,33 @@ def classify_flare(value):
 
 
 def flare_value(flare_class):
-    """Convert a string solar flare class into the lower bound in W/m**2 of the 
+    """Convert a string solar flare class [1] into the lower bound in W/m**2 of the 
     1-8 Angstrom X-Ray Band for the GOES Spacecraft.
 
     An 'X10' flare = 0.001 W/m**2.
 
-    See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
-
     This function currently only works on scalars.
 
-    **Args**:
-        * **flare_class**: (string) class of solar flare (e.g. 'X10')
+    Parameters
+    ----------
+    flare_class : string
+        class of solar flare (e.g. 'X10')
 
-    **Returns**:
-        * **value**: numerical value of the GOES 1-8 Angstrom band X-Ray Flux in W/m**2.
+    Returns
+    -------
+    value : float
+        numerical value of the GOES 1-8 Angstrom band X-Ray Flux in W/m**2.
 
-    **Example**:
-      ::
+    References
+    ----------
+    [1] See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
 
+    Example
+    -------
         value = flare_value('X10')
 
     Written by Nathaniel Frissell 2014 Sept 07
+
     """
     flare_dict  = {'A':-8, 'B':-7, 'C':-6, 'M':-5, 'X':-4} 
     letter      = flare_class[0]
@@ -370,31 +426,39 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
     """Find flares of a minimum class in a GOES data dict created by read_goes().
     This works with 1-minute averaged GOES data.
 
-    Classifications are based on the 1-8 Angstrom X-Ray Band for the GOES Spacecraft.
-    See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
+    Classifications are based on the 1-8 Angstrom X-Ray Band for the GOES Spacecraft.[1]
 
+    Parameters
+    ----------
+    goes_data : dict
+        GOES data dict created by read_goes()
+    window_minutes : Optional[int]
+        Window size to look for peaks in minutes.
+        I.E., if window_minutes=60, then no more than 1 flare will be found 
+        inside of a 60 minute window.
+    min_class : Optional[str]
+        Only flares >= to this class will be reported. Use a
+        format such as 'M2.3', 'X1', etc.
+    sTime : Optional[datetime.datetime]
+        Only report flares at or after this time.  If None, the earliest
+        available time in goes_data will be used.
+    eTime : Optional[datetime.datetime]
+        Only report flares before this time.  If None, the last
+        available time in goes_data will be used.
 
-    **Args**:
-        * **goes_data**: (dict) GOES data dict created by read_goes()
-        * **window_minutes**: (int) Window size to look for peaks in minutes.
-            I.E., if window_minutes=60, then no more than 1 flare will be found 
-            inside of a 60 minute window.
-        * **min_class**: (str) Only flares >= to this class will be reported. Use a
-            format such as 'M2.3', 'X1', etc.
-        * **sTime**: (datetime.datetime) Only report flares at or after this time.
-            If None, the earliest available time in goes_data will be used.
-        * **eTime**: (datetime.datetime) Only report flares before this time.
-            If None, the last available time in goes_data will be used.
+    Returns
+    -------
+    flares : Pandas dataframe listing:
+        * time of flares
+        * GOES 1-8 Angstrom band x-ray flux
+        * Classification of flare
 
-    **Returns**:
-        * **flares**: Pandas dataframe listing:
-            * time of flares
-            * GOES 1-8 Angstrom band x-ray flux
-            * Classification of flare
+    References
+    ----------
+    [1] See http://www.spaceweatherlive.com/en/help/the-classification-of-solar-flares
 
-    **Example**:
-      ::
-
+    Example
+    -------
         sTime       = datetime.datetime(2014,1,1)
         eTime       = datetime.datetime(2014,6,30)
         sat_nr      = 15 # GOES15
@@ -402,6 +466,7 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
         flares = find_flares(goes_data,window_minutes=60,min_class='X1')
 
     Written by Nathaniel Frissell 2014 Sept 09
+
     """
     import datetime
     import pandas as pd
