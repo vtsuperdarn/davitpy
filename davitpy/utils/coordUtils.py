@@ -35,7 +35,9 @@ import logging
 
 
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
-    """
+    """deprecated function, please use coord_conv
+
+
     Notes
     ----
     coordConv has been renamed coord_conv and dateTime has been
