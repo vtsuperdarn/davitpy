@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -13,22 +14,26 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-.. module:: poes
-   :synopsis: A module for reading, writing, and storing poes Data
+"""poes module
 
-.. moduleauthor:: AJ, 20130129
+A module for reading, writing, and storing poes data
 
-*********************
-**Module**: gme.sat.poes
-*********************
-**Classes**:
-  * :class:`poesRec`
-**Functions**:
-  * :func:`readPoes`
-  * :func:`readPoesFtp`
-  * :func:`mapPoesMongo`
-  * :func:`overlayPoesTed`
+Module Author:: AJ, 20130129
+
+Classes
+----------------------------
+poesRec     poes data record
+----------------------------
+
+Functions
+------------------------------------------
+readPoes        reading poes data
+readPoesFtp     get poes data via ftp
+mapPoesMongo    populate database from ftp
+overlayPoesTed  map poes ted data
+------------------------------------------
+
+
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
