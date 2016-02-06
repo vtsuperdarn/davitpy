@@ -49,6 +49,20 @@ class poesRec(gmeData):
     latest NOAA has uploaded is).  **The data are the 16-second
     averages**
 
+    Parameters
+    ----------
+    ftpLine : Optional[str]
+        an ASCII line from the FTP server. if this is provided, the
+        object is initialized from it.  header must be provided in
+        conjunction with this.  default=None
+    header : Optional[str]
+        the header from the ASCII FTP file.  default=None
+    dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided,
+        the object is initialized from it.  default = None
+    satnum : Optional[int]
+        the satellite nuber.  default=None
+
     Attributes
     ----------
     time : datetime
@@ -133,6 +147,8 @@ class poesRec(gmeData):
     -----
     If any of the members have a value of None, this means that they could not
     be read for that specific time
+
+    Belongs to class omniRec
    
     Methods
     -------
@@ -141,6 +157,11 @@ class poesRec(gmeData):
     Example
     -------
         emptyPoesObj = gme.sat.poesRec()
+
+    or
+
+        myPoesObj = poesRec(ftpLine=aftpLine)
+
     
     written by AJ, 20130131
 
@@ -196,34 +217,6 @@ class poesRec(gmeData):
   def __init__(self, ftpLine=None, dbDict=None, satnum=None, header=None):
     """the intialization fucntion for a class omniRec object.  
 
-    Parameters
-    ----------
-    ftpLine : Optional[str]
-        an ASCII line from the FTP server. if this is provided, the
-        object is initialized from it.  header must be provided in
-        conjunction with this.  default=None
-    header : Optional[str]
-        the header from the ASCII FTP file.  default=None
-    dbDict : Optional[dict]
-        a dictionary read from the mongodb.  if this is provided,
-        the object is initialized from it.  default = None
-    satnum : Optional[int]
-        the satellite nuber.  default=None
-
-    Returns
-    -------
-    Nothing.
-
-    Notes
-    -----
-    In general, users will not need to worry about this.
-
-    Belongs to class omniRec
-
-    Example
-    -------
-        myPoesObj = poesRec(ftpLine=aftpLine)
-      
     written by AJ, 20130131
 
     """
