@@ -40,132 +40,132 @@ import logging
 
 
 class poesRec(gmeData):
-    """a class to represent a record of poes data.
+  """a class to represent a record of poes data.
 
-    Extends class gmeBase.gmeData.  Insight on the class members can
-    be obtained from the NOAA NGDC site
-    <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>.  Note that
-    Poes data is available from 1998-present day (or whatever the
-    latest NOAA has uploaded is).  **The data are the 16-second
-    averages**
+  Extends class gmeBase.gmeData.  Insight on the class members can
+  be obtained from the NOAA NGDC site
+  <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>.  Note that
+  Poes data is available from 1998-present day (or whatever the
+  latest NOAA has uploaded is).  **The data are the 16-second
+  averages**
 
-    Parameters
-    ----------
-    ftpLine : Optional[str]
-        an ASCII line from the FTP server. if this is provided, the
-        object is initialized from it.  header must be provided in
-        conjunction with this.  default=None
-    header : Optional[str]
-        the header from the ASCII FTP file.  default=None
-    dbDict : Optional[dict]
-        a dictionary read from the mongodb.  if this is provided,
-        the object is initialized from it.  default = None
-    satnum : Optional[int]
-        the satellite nuber.  default=None
+  Parameters
+  ----------
+  ftpLine : Optional[str]
+      an ASCII line from the FTP server. if this is provided, the
+      object is initialized from it.  header must be provided in
+      conjunction with this.  default=None
+  header : Optional[str]
+      the header from the ASCII FTP file.  default=None
+  dbDict : Optional[dict]
+      a dictionary read from the mongodb.  if this is provided,
+      the object is initialized from it.  default = None
+  satnum : Optional[int]
+      the satellite nuber.  default=None
 
-    Attributes
-    ----------
-    time : datetime
-        an object identifying which time these data are for
-    info : str
-        information about where the data come from.  *Please be
-        courteous and give credit to data providers when credit is due.*
-    dataSet : str
-        the name of the data set
-    satnum : ind
-        the noaa satellite number
-    sslat : float
-        Geographic Latitude of sub-satellite point, degrees
-    sslon : float
-        Geographic Longitude of sub-satellite point, degrees
-    folat : float
-        Geographic Latitude of foot-of-field-line, degrees
-    folon : float
-        Geographic Longitude of foot-of-field-line, degrees
-    lval : float
-        L-value
-    mlt : float
-        Magnetic local time of foot-of-field-line, degrees
-    pas0 : float
-        MEPED-0 pitch angle at satellite, degrees
-    pas90 : float
-        MEPED-90 pitch angle at satellite, degrees
-    mep0e1 : float
-        MEPED-0 > 30 keV electrons, counts/sec
-    mep0e2 : float
-        MEPED-0 > 100 keV electrons, counts/sec
-    mep0e3 : float
-        MEPED-0 > 300 keV electrons, counts/sec
-    mep0p1 : float
-        MEPED-0 30 keV to 80 keV protons, counts/sec
-    mep0p2 : float
-        MEPED-0 80 keV to 240 keV protons, counts/sec
-    mep0p3 : float
-        240 kev to 800 keV protons, counts/sec
-    mep0p4 : float
-        MEPED-0 800 keV to 2500 keV protons, counts/sec
-    mep0p5 : float
-        MEPED-0 2500 keV to 6900 keV protons, counts/sec
-    mep0p6 : float
-        MEPED-0 > 6900 keV protons, counts/sec,
-    mep90e1 : float
-        MEPED-90 > 30 keV electrons, counts/sec,
-    mep90e2 : float
-        MEPED-90 > 100 keV electrons, counts/sec
-    mep90e3 : float
-        MEPED-90 > 300 keV electrons, counts/sec
-    mep90p1 : float
-        MEPED-90 30 keV to 80 keV protons, counts/sec
-    mep90p2 : float
-        MEPED-90 80 keV to 240 keV protons, counts/sec
-    mep90p3 : float
-        MEPED-90 240 kev to 800 keV protons, counts/sec,
-    mep90p4 : float
-        MEPED-90 800 keV to 2500 keV protons, counts/sec
-    mep90p5 : float
-        MEPED-90 2500 keV to 6900 keV protons, counts/sec
-    mep90p6 : float
-        MEPED-90 > 6900 keV protons, counts/sec
-    mepomp6 : float
-        MEPED omni-directional > 16 MeV protons, counts/sec
-    mepomp7 : float
-        MEPED omni-directional > 36 Mev protons, counts/sec
-    mepomp8 : float
-        MEPED omni-directional > 70 MeV protons, counts/sec
-    mepomp9 : float
-        MEPED omni-directional >= 140 MeV protons
-    ted : float
-        TED, Total Energy Detector Average, ergs/cm2/sec
-    echar : float
-        TED characteristic energy of electrons, eV
-    pchar : float
-        TED characteristic energy of protons, eV
-    econtr : float
-        TED electron contribution, Electron Energy/Total Energy
+  Attributes
+  ----------
+  time : datetime
+      an object identifying which time these data are for
+  info : str
+      information about where the data come from.  *Please be
+      courteous and give credit to data providers when credit is due.*
+  dataSet : str
+      the name of the data set
+  satnum : ind
+      the noaa satellite number
+  sslat : float
+      Geographic Latitude of sub-satellite point, degrees
+  sslon : float
+      Geographic Longitude of sub-satellite point, degrees
+  folat : float
+      Geographic Latitude of foot-of-field-line, degrees
+  folon : float
+      Geographic Longitude of foot-of-field-line, degrees
+  lval : float
+      L-value
+  mlt : float
+      Magnetic local time of foot-of-field-line, degrees
+  pas0 : float
+      MEPED-0 pitch angle at satellite, degrees
+  pas90 : float
+      MEPED-90 pitch angle at satellite, degrees
+  mep0e1 : float
+      MEPED-0 > 30 keV electrons, counts/sec
+  mep0e2 : float
+      MEPED-0 > 100 keV electrons, counts/sec
+  mep0e3 : float
+      MEPED-0 > 300 keV electrons, counts/sec
+  mep0p1 : float
+      MEPED-0 30 keV to 80 keV protons, counts/sec
+  mep0p2 : float
+      MEPED-0 80 keV to 240 keV protons, counts/sec
+  mep0p3 : float
+      240 kev to 800 keV protons, counts/sec
+  mep0p4 : float
+      MEPED-0 800 keV to 2500 keV protons, counts/sec
+  mep0p5 : float
+      MEPED-0 2500 keV to 6900 keV protons, counts/sec
+  mep0p6 : float
+      MEPED-0 > 6900 keV protons, counts/sec,
+  mep90e1 : float
+      MEPED-90 > 30 keV electrons, counts/sec,
+  mep90e2 : float
+      MEPED-90 > 100 keV electrons, counts/sec
+  mep90e3 : float
+      MEPED-90 > 300 keV electrons, counts/sec
+  mep90p1 : float
+      MEPED-90 30 keV to 80 keV protons, counts/sec
+  mep90p2 : float
+      MEPED-90 80 keV to 240 keV protons, counts/sec
+  mep90p3 : float
+      MEPED-90 240 kev to 800 keV protons, counts/sec,
+  mep90p4 : float
+      MEPED-90 800 keV to 2500 keV protons, counts/sec
+  mep90p5 : float
+      MEPED-90 2500 keV to 6900 keV protons, counts/sec
+  mep90p6 : float
+      MEPED-90 > 6900 keV protons, counts/sec
+  mepomp6 : float
+      MEPED omni-directional > 16 MeV protons, counts/sec
+  mepomp7 : float
+      MEPED omni-directional > 36 Mev protons, counts/sec
+  mepomp8 : float
+      MEPED omni-directional > 70 MeV protons, counts/sec
+  mepomp9 : float
+      MEPED omni-directional >= 140 MeV protons
+  ted : float
+      TED, Total Energy Detector Average, ergs/cm2/sec
+  echar : float
+      TED characteristic energy of electrons, eV
+  pchar : float
+      TED characteristic energy of protons, eV
+  econtr : float
+      TED electron contribution, Electron Energy/Total Energy
 
-    Notes
-    -----
-    If any of the members have a value of None, this means that they could not
-    be read for that specific time
+  Notes
+  -----
+  If any of the members have a value of None, this means that they could not
+  be read for that specific time
 
-    Belongs to class omniRec
-   
-    Methods
-    -------
-    parseFtp
+  Belongs to class omniRec
 
-    Example
-    -------
-        emptyPoesObj = gme.sat.poesRec()
+  Methods
+  -------
+  parseFtp
 
-    or
+  Example
+  -------
+      emptyPoesObj = gme.sat.poesRec()
 
-        myPoesObj = poesRec(ftpLine=aftpLine)
+  or
+
+      myPoesObj = poesRec(ftpLine=aftpLine)
 
     
-    written by AJ, 20130131
+  written by AJ, 20130131
 
-    """
+  """
 
 
   def parseFtp(self,line, header):
