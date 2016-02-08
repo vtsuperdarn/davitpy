@@ -144,85 +144,19 @@ def combBeams(scan):
 
     return outscan
 
-def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
-              channel=None, bmnum=None, cpid=None, src=None, infile=None,
-              nocache=False, local_dirfmt=None, local_fnamefmt=None,
-              local_dict=None, remote_dirfmt=None, remote_fnamefmt=None,
-              remote_dict=None, remote_site=None, username=None, password=None,
-              port=None, tmpdir=None):
-    """This function applies a boxcar filter to a fitacf file
+def fitFilter(infile, outfile, thresh=0.4):
+    """This function applies a boxcar filter to a fitacf file.  Currently
+    hardwired to load Blackstone on 1-5-2010.  The fix to this is stored in
+    0.5-release_fitexFilter_change branch in aburrell's fork.
 
     Parameters
     ------------
-    stime : (dt.datetime object)
-        Starting time of input file
-    rad : (str)
-        3 character radar id code
+    infile : (str)
+        The name of the input fitacf-format file
     outfile : (str)
         The name of the output file
     thresh : (float)
         The filter threshold for turning on a R-B cell.  (default=0.4)
-    infile : (str)
-        The name of the input fitacf-format file
-    etime : (datetime/NoneType)
-        The last time that you want to input data for.  If this is set to None,
-        it will be set to 1 day after sTime.  (default=None)
-    channel : (str/NoneType)
-        The 1-letter code for what channel you want data from, eg 'a','b',...
-        if this is set to None, data from ALL channels will be read.
-        (default=None)
-    bmnum : (int/NoneType)
-        The beam number which you want data for.  If this is set to None, data
-        from all beams will be read. (default=None)
-    cpid : (int)
-        The control program which you want data for.  If this is set to None,
-        data from all cp's will be read.  (default=None)
-    src : (str/NoneType)
-        The source of the data.  Valid inputs are 'local' 'sftp'.  If this is
-        set to None, it will try all possibilites sequentially.  (default=None)
-    infile : (str/NoneType)
-        The name of a specific file which you want to open.  (default=None)
-    nocache : (boolean)
-        Flag to indicate that you do not want to check first for cached files.
-        (default=False)
-    remote_site : (str/NoneType)
-        The remote data server's address.  If None, the rcParam value DB will be
-        used. (default=None)
-    port : (str/NoneType)
-        The port number to use for remote_site.  If None, the rcParam value
-        DB_PORT will be used. (default=None)
-    username : (str/NoneType)
-        Username for remote_site.  If None, the rcParam value DBREADUSER will
-        be used.
-    password : (str/bool/NoneType)
-        Password for remote_site. If password is set to True, the user is
-        prompted for the remote_site password.  If set to None, the rcParam
-        value DBREADPASS will be used (default=None)
-    remote_dirfmt : (str/NoneType)
-        The remote_site directory structure. Can include keywords to be
-        replaced by dictionary keys in remote_dict.  If None, the rcParam value
-        DAVIT_REMOTE_DIRFORMAT will be used. (default=None)
-        Ex) remote_dirfmt='/{year}/{month}'
-    remote_fnamefmt : (str/list/NoneType)
-        The remote_site file naming format. Can include keywords to be replaced
-        by dictionary keys in remote_dict. If None, the rcParam value
-        DAVIT_REMOTE_FNAMEFMT will be used.  (default=None)
-        Ex) remote_fnamefmt=['{date}.{radar}.{ftype}',
-                             '{date}.{channel}.{radar}.{ftype}']
-    local_dirfmt : (str/None)
-        The local directory structure. Can include keywords to be replaced by
-        dictionary keys in remote_dict. If None, the rcParam value
-        DAVIT_LOCAL_DIRFORMAT will be used. (default=None)
-        Ex) local_dirfmt='/{year}/{month}' 
-    local_fnamefmt : (str/list/NoneType)
-        The local file naming format. Can include keywords to be replaced by
-        dictionary keys in remote_dict. If None, the rcParam value
-        DAVIT_LOCAL_FNAMEFMT will be used. (default=None)
-        Ex) local_fnamefmt=['{date}.{radar}.{ftype}',
-                            '{date}.{channel}.{radar}.{ftype}']
-    tmpdir : (str/NoneType)
-        The directory in which to store temporary files. If None, the rcParam
-        value DAVIT_TMPDIR will be used. (default=None)
 
     Returns
     ---------
@@ -235,17 +169,7 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
     written by AJ, 20130402
     """
     from davitpy import pydarn
-    inp = pydarn.sdio.radDataOpen(stime, rad, eTime=etime, channel=channel,
-                                  bmnum=bmnum, cp=cpid, fileType='fitacf',
-                                  filtered=False, src=src, fileName=infile,
-                                  noCache=nocache, local_dirfmt=local_dirfmt,
-                                  local_fnamefmt=local_fnamefmt,
-                                  local_dict=local_dict,
-                                  remote_dirfmt=remote_dirfmt,
-                                  remote_fnamefmt=remote_fnamefmt,
-                                  remote_dict=remote_dict,
-                                  remote_site=remote_site, username=username,
-                                  password=password, port=port, tmpdir=tmpdir)
+    inp = pydarn.sdio.radDataOpen(dt.datetime(2010,5,1), 'bks', fileName=infile)
 
     outp = open(outfile, 'w')
 
