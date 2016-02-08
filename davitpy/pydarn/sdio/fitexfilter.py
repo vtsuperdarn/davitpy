@@ -62,12 +62,12 @@ class Gate(object):
     """
 
     def __init__(self, fit, i):
-    self.v = fit.v[i]
-    self.w_l = fit.w_l[i]
-    self.p_l = fit.p_l[i]
-    self.pwr0 = fit.pwr0[i]
-    self.elv = None if fit.elv is None else fit.elv[i]
-    self.phi0 = None if fit.phi0 is None else fit.phi0[i]
+        self.v = fit.v[i]
+        self.w_l = fit.w_l[i]
+        self.p_l = fit.p_l[i]
+        self.pwr0 = fit.pwr0[i]
+        self.elv = None if fit.elv is None else fit.elv[i]
+        self.phi0 = None if fit.phi0 is None else fit.phi0[i]
 
 def combBeams(scan):
     """This function combines all repeated beams within a scan into a
