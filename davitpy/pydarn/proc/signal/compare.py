@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from matplotlib import pyplot as mp
 import numpy as np
 from signalCommon import *
