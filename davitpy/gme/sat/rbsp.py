@@ -1,51 +1,88 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: gme.rbsp
-*********************
-This module handles RBSP foorpoint calculations and plotting
+"""Van Allen probe module
 
-**Class**:
-	* :class:`rbspFp`: FPs reading (or calculating) and plotting
+This module handles Van Allen probe (formerly RBSP) foorpoint
+calculations and plotting
+
+Class
+-------------------------------------------------
+rbspFp  FPs reading (or calculating) and plotting
+-------------------------------------------------
 
 """
 import logging
+
+
 ############################################################################
 # Foot Points (FPs) calculation and plotting
 ############################################################################
 class rbspFp(object):
     """This class reads FPs from the SuperDARN FPs database, or generate them if necessary
 
-    **Args**:
-        * **sTime**: start date/time to get FPs
-        * **[eTime]**: end date/time to get FPs (defaulst to 24 hours after `sTime`)
-        * **[hemisphere]**: limit FPs loading to a specific hemisphere
-        * **[spacecraft]**: limit FPs loading to a specific spacecraft
-        * **[L_shell_min]**: limit FPs loading to L-shell values greater than this
-        * **[L_shell_max]**: limit FPs loading to L-shell values lesser than this
-        * **[apogees_only]**: record foot-points (usefull if all you want are apogees)
-    **Example**:
-            # Get all the FPs for 1/Sept/2012 from 0 to 6 UT
-            from datetime import datetime
-            import rbsp
-            sTime = datetime(2012,9,1,0)
-            eTime = datetime(2012,9,1,6)
-            fps = rbsp.rbspFp(sTime, eTime)
-            # Pretty print the apogees in that period
-            print fps
-            # Plot them on a map
-            fps.map()
+    Parameters
+    ----------
+    sTime :
+        start date/time to get FPs
+    eTime : Optional[ ]
+        end date/time to get FPs (defaulst to 24 hours after `sTime`)
+    spacecraft : Optional[ ]
+        limit FPs loading to a specific spacecraft
+    L_shell_min :
+        limit FPs loading to L-shell values greater than this
+    L_shell_max : Optional[ ]
+        limit FPs loading to L-shell values lesser than this
+    apogees_only : Optional[ ]
+        record foot-points (usefull if all you want are apogees)
 
-    .. warning:: try not to request more than 24 hours at once, unless all you want are apogees.
+    Attributes
+    ----------
+    sTime :
+        start date/time to get FPs
+    eTime : Optional[ ]
+        end date/time to get FPs (defaulst to 24 hours after `sTime`)
+    L_shell_min :
+        limit FPs loading to L-shell values greater than this
+    L_shell_max : Optional[ ]
+        limit FPs loading to L-shell values lesser than this
+    spacecraft : Optional[ ]
+        limit FPs loading to a specific spacecraft
+
+    Methods
+    -------
+    map(hemisphere='north', boundinglat=35, spacecraft=None, legend=True, date=True, 
+        apogees=False)
+        Plot footpoints on a map
+    showISR(myMap, isr)
+        Overlay incoherent-scatter radar field-of-views on map
+    
+    Example
+    -------
+        # Get all the FPs for 1/Sept/2012 from 0 to 6 UT
+        from datetime import datetime
+        import rbsp
+        sTime = datetime(2012,9,1,0)
+        eTime = datetime(2012,9,1,6)
+        fps = rbsp.rbspFp(sTime, eTime)
+        # Pretty print the apogees in that period
+        print fps
+        # Plot them on a map
+        fps.map()
+
+    Notes
+    -----
+    Try not to request more than 24 hours at once, unless all you want are apogees.
 
     written by Sebastien de Larquier, 2013-03
+
     """
 
 
     def __init__(self, sTime, eTime=None, spacecraft=None, 
         L_shell_min=None, L_shell_max=None,  
         apogees_only=False):
+        """
+        """
         from datetime import datetime, timedelta
         from davitpy import rcParams
 
@@ -76,19 +113,32 @@ class rbspFp(object):
         apogees=False):
         """Plot FPs on a map
 
-        **Belongs to**: :class:`rbspFp`
+        Parameters
+        ----------
+        hemisphere : Optional[str]
+            plot FPs in this hemisphere ('north' or 'south')
+        boundinglat : Optional[int]
+            bounding latitude of map (absolute value)
+        spacecraft : Optional[char]
+            limit the plotting to one spacecraft ('a' or 'b')
+        legend : Optional[bool]
+            to show or not to show the legend
+        date : Optional[bool]
+            to show or not to show the date
+        apogees : Optional[bool]
+            to show or not to show the apogees
 
-        **Args**: 
-            * **[hemisphere]**: plot FPs in this hemisphere ('north' or 'south')
-            * **[boundinglat]**: bounding latitude of map (absolute value)
-            * **[spacecraft]**: limit the plotting to one spacecraft ('a' or 'b')
-            * **[legend]**: to show or not to show the legend
-            * **[date]**: to show or not to show the date
-            * **[apogees]**: to show or not to show the apogees
-            * **[isr]**: a list of ISRs to be plotted (codes include mho, sdt, eiscat, pfisr, risr)
-        **Returns**: 
-            * **myMap**: a mpl_toolkits.basemap.Basemap object
-        **Example**:
+        Returns
+        -------
+        myMap : mpl_toolkits.basemap.Basemap
+
+
+        Notes
+        -----
+        Belongs to class rbspFp
+
+        Example
+        -------
             # To plot 2 panels (1 per hemisphere)
             fig = figure(figsize=(11,8))
             subplot(121)
@@ -96,6 +146,7 @@ class rbspFp(object):
             subplot(122)
             fps.map(hemisphere='South')
             fig.tight_layout()
+
         """
         from mpl_toolkits.basemap import Basemap
         from pylab import gca
@@ -156,11 +207,17 @@ class rbspFp(object):
     def showISR(self, myMap, isr):
         """overlay ISR fovs on map
 
-        **Belongs to**: :class:`rbspFp`
+        Parameters
+        ----------
+        myMap : Basemap
 
-        **Args**: 
-            * **myMap**: Basemap object
-            * **isr**: a list of ISRs to be plotted (codes include mho, sdt, eiscat, pfisr, risr)
+        isr : list or str
+            a list of ISRs to be plotted (codes include mho, sdt, eiscat, pfisr, risr)
+
+        Notes
+        -----
+        Belongs to class rbspFp
+
         """
         if isinstance(isr, str): isr = [isr]
 
@@ -186,16 +243,22 @@ class rbspFp(object):
                 myMap.plot(x, y, 'g')
 
 
-
     def __getFpsFromDb(self):
         """Get FPs from DB
 
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        isSuccess : bool
+            True it worked, False otherwise
+
+        Notes
+        -----
         **Belongs to**: :class:`rbspFp`
 
-        **Args**: 
-        * **None**
-        **Returns**: 
-            * **isSuccess**: True it worked, False otherwise
         """
         import numpy as np
 
@@ -253,12 +316,20 @@ class rbspFp(object):
     def __dbConnect(self, dbName):
         """Try to establish a connection to remote db database
 
-        **Belongs to**: :class:`rbspFp`
+        Parameters
+        ----------
+        dbName
 
-        **Args**: 
-            * **None**
-        **Returns**:
-            * **dbConn**:  pymongo database object
+
+        Returns
+        -------
+        dbConn : pymongo database
+
+
+        Notes
+        -----
+        Belongs to class rbspFp
+
         """
         from pymongo import MongoClient
         import sys
@@ -280,11 +351,19 @@ class rbspFp(object):
     def __getOrbit(self):
         """Get orbit data from APL
 
-        **Belongs to**: :class:`rbspFp`
+        Parameters
+        ----------
+        None
 
-        **Args**: 
-            * **None**
-        **Returns
+        Returns
+        -------
+        orbit : 
+
+
+        Notes
+        -----
+        Belongs to class rbspFp
+
         """
         import urllib2, urllib
         from datetime import datetime
@@ -347,10 +426,19 @@ class rbspFp(object):
     def __getTrace(self, data):
         """Trace orbit to the ionosphere
 
-        **Belongs to**: :class:`rbspFp`
+        Parameters
+        ----------
+        data : dict
+            a dictionnary containing ephemeris (with keys 'lat', 'lon', 'alt', 'time')
 
-        **Args**: 
-            * **data**: a dictionnary containing ephemeris (with keys 'lat', 'lon', 'alt', 'time')
+        Returns
+        -------
+        Nothing
+
+        Notes
+        -----
+        Belongs to class rbspFp
+
         """
         import tsyganenko as ts
         import numpy as np
@@ -377,6 +465,18 @@ class rbspFp(object):
 
 
     def __repr__(self):
+        """Output formatting?
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        sOut : str
+
+
+        """
         sOut = 'Van Allen Probes (a.k.a. RBSP) ionospheric footpoints\n'
         sOut += '{:%Y-%b-%d at %H:%M UT} to {:%Y-%b-%d at %H:%M UT}\n'.format(self.sTime, self.eTime)
         sOut += '\t{} points\n'.format(len(self.times))
@@ -394,14 +494,23 @@ class rbspFp(object):
     def __textHighlighted(self, xy, text, zorder=None, color='k', fontsize=None):
         """Plot highlighted annotation (with a white lining)
 
-        **Belongs to**: :class:`rbspFp`
+        Parameters
+        ----------
+        xy :
+            position of point to annotate
+        text : str
+            text to show
+        zorder : Optional[ ]
+            text zorder
+        color : Optional[char]
+            text color
+         fontsize : Optional[ ]
+            text font size
 
-        **Args**: 
-            * **xy**: position of point to annotate
-            * **text**: text to show
-            * **[zorder]**: text zorder
-            * **[color]**: text color
-            * **[fontsize]**: text font size
+        Notes
+        -----
+        Belongs to class rbspFp
+
         """
         import matplotlib as mp
         from pylab import gca
