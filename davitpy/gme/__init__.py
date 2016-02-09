@@ -27,18 +27,20 @@ This includes the following submodules:
 	* **sat**: satellite data
     * **rbsp**: rbsp footpoints
 """
+import logging
+
 
 try: import base
 except Exception,e: 
-    print __file__+' -> gme.base: ', e
+    logging.exception(__file__ + ' -> gme.base: ' + e)
 
 try: import ind
 except Exception,e: 
-    print __file__+' -> gme.ind: ', e
+    logging.exception(__file__ + ' -> gme.ind: ' + e)
 
 try: import sat
 except Exception,e: 
-    print __file__+' -> gme.sat: ', e
+    logging.exception(__file__ + ' -> gme.sat: ' + e)
 
 #try: import ampere
 #except Exception,e: 
@@ -46,8 +48,8 @@ except Exception,e:
 
 try: import plotting
 except Exception,e: 
-    print __file__+' -> gme.plot: ', e
+    logging.exception(__file__ + ' -> gme.plot: ' + e)
 
 try: import isr
 except Exception, e:
-    print __file__+' -> isr: ', e
+    logging.exception(__file__ + ' -> isr: ' + e)
