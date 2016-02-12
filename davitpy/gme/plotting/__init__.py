@@ -1,15 +1,17 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: gme.plotting
-*********************
+plotting
+--------
+
 This subpackage contains various plotting routines for geomagnetic environment data.
 
-**Modules**:
-	* :mod:`gme.plotting.gmeplot`
+Modules
+---------------------------------------------
+gmeplot     reading, writing, storing Kp data
+---------------------------------------------
 
-*******************************
 """
 import logging
 
