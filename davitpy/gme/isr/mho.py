@@ -10,6 +10,8 @@ This module handles Millstone Hill ISR data
 	* :class:`mhoData`: Read Millstone Hill data, either locally if it can be found, or directly from Madrigal
 
 """
+import logging
+
 
 # constants
 user_fullname = 'Sebastien de Larquier'
@@ -66,10 +68,10 @@ class mhoData(object):
 		# If no local files, get it from madrigal
 		if getMad or not filePath:
 			if None in [user_fullname, user_email, user_affiliation]:
-				print 'Error: Please provide user_fullname, user_email, user_affiliation.'
+				logging.error('Please provide user_fullname, user_email, user_affiliation.')
 				return
 			filePath = self.getFileMad(user_fullname, user_email, user_affiliation)
-		print filePath
+		logging.info(filePath)
 
 		if filePath:
 			self.readData(filePath)
