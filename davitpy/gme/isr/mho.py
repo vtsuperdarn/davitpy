@@ -1,13 +1,14 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: gme.mho
-*********************
+"""Millstone Hill module
+
 This module handles Millstone Hill ISR data
 
-**Class**:
-	* :class:`mhoData`: Read Millstone Hill data, either locally if it can be found, or directly from Madrigal
+Classes
+-------------------------------------------
+mhoData     Millstone Hill data interaction
+-------------------------------------------
 
 """
 import logging
@@ -23,18 +24,39 @@ user_affiliation = 'Virginia Tech'
 class mhoData(object):
     """Read Millstone Hill data, either locally if it can be found, or directly from Madrigal
 
-    **Args**:
-        * **expDate** (datetime.datetime): experiment date
-        * **[endDate]** (datetime.datetime): end date/time to look for experiment files on Madrigal
-        * **[getMad]** (bool): force download from Madrigal (overwrite any matching local file)
-        * **[dataPath]** (str): path where the local data should be read/saved
-        * **[fileExt]** (str): file extension (i.e., 'g.002'). If None is provided, it will just look for the most recent available one
-        * **user_fullname** (str): required to download data from Madrigal (no registration needed)
-        * **user_email** (str): required to download data from Madrigal (no registration needed)
-        * **user_affiliation** (str): required to download data from Madrigal (no registration needed)
-    **Example**:
-        ::
+    Parameters
+    ----------
+    expDate : datetime.datetime
+        experiment date
+    endDate : Optional[datetime.datetime]
+        end date/time to look for experiment files on Madrigal
+    getMad : Optional[bool]
+        force download from Madrigal (overwrite any matching local file)
+    dataPath : Optional[str]
+        path where the local data should be read/saved
+    fileExt : Optional[str]
+        file extension (i.e., 'g.002'). If None is provided, it will just look for the most recent available one
+    user_fullname : Optional[str]
+        required to download data from Madrigal (no registration needed)
+    user_email : Optional[str]
+        required to download data from Madrigal (no registration needed)
+    user_affiliation : Optional[str]
+        required to download data from Madrigal (no registration needed)
 
+    Attributes
+    ----------
+    expDate : datetime.datetime
+        experiment date
+    endDate : datetime.datetime
+        end date/time to look for experiment files on Madrigal
+    dataPath : str
+        path where the local data should be read/saved
+    fileExt : str
+        file extension (i.e., 'g.002'). If None is provded, it will just
+        look for the most recent available one
+
+    Example
+    -------
             # Get data for November 17-18, 2010
             import datetime as dt
             user_fullname = 'Sebastien de Larquier'
@@ -48,10 +70,15 @@ class mhoData(object):
                  user_affiliation=user_affiliation )
 
     written by Sebastien de Larquier, 2013-03
+
     """
+
+
     def __init__(self, expDate, endDate=None, 
         dataPath=None, fileExt=None, getMad=False, 
         user_fullname=None, user_email=None, user_affiliation=None):
+        """
+        """
         self.expDate = expDate
         self.endDate = endDate
         self.dataPath = dataPath
@@ -78,7 +105,17 @@ class mhoData(object):
 
 
     def look(self):
-        """Returns radar pointing directions during selected experiment
+        """Find radar pointing directions during selected experiment
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        np.unique(pointing) :
+            Radar pointing directions during selected experiment
+
         """
         import numpy as np
 
@@ -90,8 +127,11 @@ class mhoData(object):
     def readData(self, filePath):
         """Read data from HDF5 file
 
-        **Args**:
-            * **filePath** (str): Path and name of HDF5 file
+        Parameters
+        ----------
+        filePath : str
+            Path and name of HDF5 file
+
         """
         import h5py as h5
         import matplotlib as mp
@@ -134,10 +174,15 @@ class mhoData(object):
     def getFileLocal(self):
         """Look for the file in the dataPath or current directory
 
-        **Belongs to**: :class:`mhoData`
+        Returns
+        -------
+        filePath : str
+            the path and name of the data file
 
-        **Returns**:
-        * **filePath**: the path and name of the data file
+        Notes
+        -----
+        Belongs to class mhoData
+
         """
         import os, glob, datetime
         import numpy as np
@@ -158,10 +203,16 @@ class mhoData(object):
     def getFileMad(self, user_fullname, user_email, user_affiliation):
         """Look for the data on Madrigal
 
-        **Belongs to**: :class:`mhoData`
+        Returns
+        -------
+        filePath : str
+            the path and name of the data file
 
-        **Returns**:
-        * **filePath**: the path and name of the data file
+        Notes
+        -----
+        Belongs to class mhoData
+
+
         """
         import madrigalWeb.madrigalWeb
         import os, h5py, numpy, datetime
@@ -262,4 +313,3 @@ class mhoData(object):
             datetime_ds = parent.create_dataset('datetime', data=dtime)
 
         return filePath
-
