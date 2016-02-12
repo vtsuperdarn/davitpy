@@ -24,6 +24,7 @@
 *********************
   * :func:`gme.plotting.plotGME`
 """
+import logging
 
 def __get_iterable(x):
   if isinstance(x, str):
@@ -184,7 +185,7 @@ def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,y
 	     , 'bmagavg':bmagavg, 'machnum':machnum, 'flowspeed':flowspeed}
     if parameter == None: parameter = 'bzm'
   
-  assert(not isinstance(parameter,list)),"error, parameter must not be a list, eg 'bzm'"
+  assert(not isinstance(parameter,list)), logging.error("parameter must not be a list, eg 'bzm'")
   
   parameter = __get_iterable(parameter)
   
@@ -192,7 +193,7 @@ def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,y
   if figure == None: figure = mp.figure()
   
   for param in parameter:
-    if data.has_key(param.lower()) == False: print param.lower()
+    if data.has_key(param.lower()) == False: logging.info(param.lower())
     if data.has_key(param.lower()) == False: continue
     mp.plot(times,data[param.lower()],label=param.upper())
   
