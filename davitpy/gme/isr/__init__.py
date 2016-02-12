@@ -10,6 +10,8 @@ This includes the following submodules:
     * **mho**: Millstone Hill Observatory data
 
 """
+import logging
+
 try: from mho import *
 except Exception, e:
-    print __file__+' -> gme.isr.mho: ', e
+    logging.exception(__file__+' -> gme.isr.mho: ' + e)
