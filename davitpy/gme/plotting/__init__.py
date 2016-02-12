@@ -11,7 +11,8 @@ This subpackage contains various plotting routines for geomagnetic environment d
 
 *******************************
 """
+import logging
 
 try: from gmeplot import *
 except Exception, e: 
-  print 'problem importing gme.plotting.gmeplot: ', e
+  logging.exception('problem importing gme.plotting.gmeplot: ' + e)
