@@ -1,13 +1,16 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: gme.isr
-*********************
+isr
+---
+
 This module handles Incoherent Scatter Radar data.
 
-This includes the following submodules:
-    * **mho**: Millstone Hill Observatory data
+Modules
+---------------------------------------
+mho     Millstone Hill Observatory data
+---------------------------------------
 
 """
 import logging
