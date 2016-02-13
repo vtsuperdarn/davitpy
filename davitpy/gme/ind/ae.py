@@ -14,21 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-.. module:: ae
-   :synopsis: A module for reading, writing, and storing ae Data
+"""AE module
 
-.. moduleauthor:: AJ, 20130131
+A module for reading, writing, and storing ae Data
 
-*********************
-**Module**: gme.ind.ae
-*********************
-**Classes**:
-	* :class:`gme.ind.ae.aeRec`
-**Functions**:
-	* :func:`gme.ind.ae.readAe`
-	* :func:`gme.ind.ae.gme.readAeWeb`
-	* :func:`gme.ind.ae.mapAeMongo`
+Functions
+----------------------------------------------------
+readAe      Read data from AE database
+readAeWeb   Read data from WDC Kyoto website
+mapAeMongo  Read data from WDC and store in database
+----------------------------------------------------
+
+Classes
+-------------------------
+aeRec   An AE data record
+-------------------------
+
+Module Author:: AJ, 20130131
+
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
