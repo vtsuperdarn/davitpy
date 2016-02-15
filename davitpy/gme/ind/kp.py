@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -13,69 +14,115 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""Kp module
+   
+A module for reading, writing, and storing kp Data
 
-"""
-.. module:: kp
-   :synopsis: A module for reading, writing, and storing kp Data
+Classes
+------------------------
+kpDay   a day of Kp data
+------------------------
 
-.. moduleauthor:: AJ, 20130123
+Functions
+-------------------------------------------------------
+readKp      read/fetch Kp data from various sources
+readKpFtp   read Kp data from ftp server
+mapKpMongo  read data from server and store to database
+-------------------------------------------------------
 
-*********************
-**Module**: gme.ind.kp
-*********************
-**Classes**:
-	* :class:`gme.ind.kp.kpDay`
-**Functions**:
-	* :func:`gme.ind.kp.readKp`
-	* :func:`gme.ind.kp.readKpFtp`
-	* :func:`gme.ind.kp.mapKpMongo`
+Module author:: AJ, 20130123
+
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
 
 class kpDay(gmeData):
-	"""a class to represent a day of kp data. Extends :class:`gme.base.gmeBase.gmeData`  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
+	"""a class to represent a day of kp data. Extends class gme.base.gmeBase.gmeData.
+    Insight on the class members can be obtained from the NOAA FTP site:
+    ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt
 	
-	**Members**: 
-		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which day these data are for
-		* **kp** (list): a list of the 8 3-hour kp values fora single day.  The values are in string form, e.g. '3-', '7+', etc.
-		* **kpSum** (int): the sum of the 8 3-hour kp averages
-		* **ap** (list): a list of the 8 3-hour ap values fora single day.
-		* **apMean** (int): the mean of the 8 3-hour ap averages
-		* **sunspot** (int): the international sunspot number
-		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
-	.. note::
-		If any of the members have a value of None, this means that they could not be read for that specific date
+    Parameters
+    ---------- 
+	ftpLine : Optional[str]
+        an ASCII line from the FTP server, must be provided in conjunction with
+        year.  if this is provided, the object is initialized from it.  default=None
+	year : Optional[int]
+        the year which the data are from.  this is needed because the FTP server
+        uses only 2 digits for their year.  default=None
+	dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided, the object is
+        initialized from it.  default=None
+
+	Attributes
+    ----------
+	time : datetime
+        an object identifying which day these data are for
+	kp : list
+        a list of the 8 3-hour kp values fora single day.  The values are in string
+        form, e.g. '3-', '7+', etc.
+	kpSum : int
+        the sum of the 8 3-hour kp averages
+	ap : list
+        a list of the 8 3-hour ap values fora single day.
+	apMean : int
+        the mean of the 8 3-hour ap averages
+	sunspot : int
+        the international sunspot number
+	info : str
+        information about where the data come from.  *Please be courteous and give
+        credit to data providers when credit is due.*
+
+	Notes
+    -----
+	If any of the members have a value of None, this means that they could not be read for that specific date
    
-	**Methods**:
-		* :func:`parseDb`
-		* :func:`toDbDict`
-		* :func:`parseFtp`
-	**Example**:
-		::
-		
+	Methods
+    -------
+	parseDb
+    toDbDict
+	parseFtp
+
+	Example
+    -------
 			emptyKpObj = gme.ind.kpDay()
+
+    or
+
+			myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
+
 		
 	written by AJ, 20130123
+
 	"""
-		
+	
 	def parseFtp(self,line,yr):
-		"""This method is used to convert a line of kp data read from the GFZ-Potsdam FTP site into a :class:`kpDay` object.  In general, users will not need to worry about this.
+		"""This method is used to convert a line of kp data read from the GFZ-Potsdam
+        FTP site into a :class:`kpDay` object.  In general, users will not need
+        to worry about this.
 		
-		**Belongs to**: :class:`gme.ind.kp.kpDay`
+		Parameters
+        ----------
+		line : str
+            the ASCII line from the FTP server
+		yr : int
+            the year which the data are from.  this is needed because the FTP server
+            uses only 2 digits for their year.  y2k much?
+
+		Returns
+        -------
+		Nothing.
+
+        Notes
+        -----
+		Belongs to class gme.ind.kp.kpDay
 		
-		**Args**: 
-			* **line** (str): the ASCII line from the FTP server
-			* **yr**: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year.  y2k much?
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
+		Example
+        -------
 				myKpDayObj.parseFtp(ftpLine,2009)
 			
 		written by AJ, 20130123
+
 		"""
 		import datetime as dt
 		
@@ -101,23 +148,10 @@ class kpDay(gmeData):
 		
 	def __init__(self, ftpLine=None, year=None, dbDict=None):
 		"""the intialization fucntion for a :class:`gme.ind.kp.kpDay` object.  In general, users will not need to worry about this.
-		
-		**Belongs to**: :class:`gme.ind.kp.kpDay`
-		
-		**Args**: 
-			* [**ftpLine**] (str): an ASCII line from the FTP server, must be provided in conjunction with year.  if this is provided, the object is initialized from it.  default=None
-			* [**year**]: (int) the year which the data are from.  this is needed because the FTP server uses only 2 digits for their year.  default=None
-			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default=None
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
 			
 		written by AJ, 20130123
+
 		"""
-		
 		#initialize the data
 		#note about where data came from
 		self.info = 'These data were downloaded from the GFZ-Potsdam.  *Please be courteous and give credit to data providers when credit is due.*'
@@ -131,34 +165,62 @@ class kpDay(gmeData):
 		if(ftpLine != None and year != None): self.parseFtp(ftpLine,year)
 		
 		if(dbDict != None): self.parseDb(dbDict)
-		
+
+
 	def __repr__(self):
 		import datetime as dt
 		myStr = 'Kp record FROM: '+str(self.time)+'\n'
 		for key,var in self.__dict__.iteritems():
 			myStr += key+' = '+str(var)+'\n'
 		return myStr
+
 		
 def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,sunspot=None):
-	"""This function reads kp data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the GFZ ftp server using :func:`gme.ind.kp.readKpFtp`
+	"""This function reads kp data.  First, it will try to get it from the mongodb,
+    and if it can't find it, it will look on the GFZ ftp server using 
+    gme.ind.kp.readKpFtp
 	
-	**Args**: 
-		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for.  if this is None, start time will be the earliest record found.  default=None
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be latest record found.  default=None
-		* [**kpMin**] (int or None): specify this to only return data from dates with a 3-hour kp value of minimum kpMin.  if this is none, it will be ignored.  default=None
-		* [**apMin**] (int or None): specify this to only return data from dates with a 3-hour ap value of minimum apMin.  if this is none, it will be ignored.  default=None
-		* [**kpSum**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with kpSum values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
-		* [**apMean**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with apMean values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
-		* [**sunspot**] (list or None): this must be a 2 element list of integers.  if this is specified, only dates with sunspot values in the range [a,b] will be returned.  if this is None, it will be ignored.  default=None
-	**Returns**:
-		* **kpList** (list or None): if data is found, a list of :class:`gme.ind.kp.kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.
-	**Example**:
-		::
-		
+    Parameters
+    ----------
+	sTime : Optional[datetime]
+        the earliest time you want data for.  if this is None, start time will
+        be the earliest record found.  default=None
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, end Time will be
+        latest record found.  default=None
+	kpMin : Optional[int]
+        specify this to only return data from dates with a 3-hour kp value of
+        minimum kpMin.  if this is none, it will be ignored.  default=None
+	apMin : Optional[int]
+        specify this to only return data from dates with a 3-hour ap value of
+        minimum apMin.  if this is none, it will be ignored.  default=None
+	kpSum : Optional[list]
+        this must be a 2 element list of integers.  if this is specified,
+        only dates with kpSum values in the range [a,b] will be returned.  if
+        this is None, it will be ignored.  default=None
+	apMean : Optional[list]
+        this must be a 2 element list of integers.  if this is specified, only
+        dates with apMean values in the range [a,b] will be returned.  if this
+        is None, it will be ignored.  default=None
+	sunspot : Optionl[list]
+        this must be a 2 element list of integers.  if this is specified, only
+        dates with sunspot values in the range [a,b] will be returned.  if
+        this is None, it will be ignored.  default=None
+
+	Returns
+    -------
+	kpList : list
+        if data is found, a list of class gme.ind.kp.kpDay objects matching
+        the input parameters is returned.  If not data is found, None is
+        returned.
+
+    Example
+    -------
 			import datetime as dt
 			kpList = gme.ind.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
 		
 	written by AJ, 20130123
+
 	"""
 	import datetime as dt
 	import davitpy.pydarn.sdio.dbUtils as db
@@ -235,23 +297,35 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 			return None
 	
 def readKpFtp(sTime, eTime=None):
-	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection.  This cannot read across year boundaries.
+	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous
+    FTP connection.  This cannot read across year boundaries.
 	
-	.. warning::
-		You should not be using this function.  use readKp instead.
-	
-	**Args**: 
-		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be the end of the year of sTime.  default=None
-	**Returns**:
-		* **kpList** (list or None): if data is found, a list of :class:`gme.ind.kp.kpDay` objects matching the input parameters is returned.  If not data is found, None is returned.  default=None
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sTime : datetime
+        the earliest time you want data for
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, eTime will be the
+        end of the year of sTime.  default=None
+
+	Returns
+    -------
+	kpList : list
+        if data is found, a list of class gme.ind.kp.kpDay objects matching the
+        input parameters is returned.  If not data is found, None is returned.
+        default=None
+
+	Notes
+    -----
+	You should not be using this function.  use readKp instead.
+
+	Example
+    -------
 			import datetime as dt
 			kpList = gme.ind.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
 			
 	written by AJ, 20130123
+
 	"""
 	from ftplib import FTP
 	import datetime as dt
@@ -303,24 +377,34 @@ def readKpFtp(sTime, eTime=None):
 		return myKp
 	else:
 		return None
+
 	
 def mapKpMongo(sYear,eYear=None):
-	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP connection and maps it to the mongodb.  
+	"""This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP
+    connection and maps it to the mongodb.  
 	
-	.. warning::
-		In general, nobody except the database admins will need to use this function
+	Parameters
+    ----------
+	sYear : int
+        the year to begin mapping data
+	eYear : Optional[int]
+        the end year for mapping data.  if this is None, eYear will
+        be sYear.  default=None
+
+	Returns
+    -------
+	Nothing.
+
+    Notes
+    -----
+	In general, nobody except the database admins will need to use this function
 	
-	**Args**: 
-		* **sYear** (int): the year to begin mapping data
-		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear.  default=None
-	**Returns**:
-		* Nothing.
-	**Example**:
-		::
-		
+	Example
+    -------
 			gme.ind.mapKpMongo(1985,eTime=1986)
 		
 	written by AJ, 20130123
+
 	"""
 	import davitpy.pydarn.sdio.dbUtils as db
         from davitpy import rcParams
@@ -362,4 +446,3 @@ def mapKpMongo(sYear,eYear=None):
 				mongoData.save(dbDict)
 			else:
 				logging.warning('strange, there is more than 1 record for' + rec.time)
-	
