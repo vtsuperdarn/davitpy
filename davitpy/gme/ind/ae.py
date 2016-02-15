@@ -46,6 +46,17 @@ class aeRec(gmeData):
     about dst can be found here:
     http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html_
 		
+	Parameters
+    ----------
+	webLine : Optional[str]
+       an ASCII line from the datafile from WDC. if this is provided,
+       the object is initialized from it.  default=None
+    dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided, the
+        object is initialized from it.  default = None
+    res : Optional[ ]
+
+
 	Attributes
     ----------
     time : datetime
@@ -70,7 +81,11 @@ class aeRec(gmeData):
     -----
 	If any of the members have a value of None, this means that they
     could not be read for that specific time
-   
+
+	In general, users will not need to worry about this.
+
+	Belongs to class gme.ind.ae.aeRec
+		
 	Methods
     -------
 	parseWeb
@@ -78,6 +93,11 @@ class aeRec(gmeData):
 	Example
     -------
 			emptyAeObj = gme.ind.aeRec()
+
+    or
+
+    		myAeObj = aeRec(webLine=awebLine)
+
 		
 	written by AJ, 20130131
 
@@ -120,33 +140,6 @@ class aeRec(gmeData):
 	def __init__(self, webLine=None, dbDict=None, res=None):
 		"""the intialization fucntion for a class gme.ind.ae.aeRec object.  
 		
-		Parameters
-        ----------
-		webLine : Optional[str]
-            an ASCII line from the datafile from WDC. if this is provided,
-            the object is initialized from it.  default=None
-		dbDict : Optional[dict]
-            a dictionary read from the mongodb.  if this is provided, the
-            object is initialized from it.  default = None
-        res : Optional[ ]
-
-
-		Returns
-        -------
-		Nothing
-
-		Notes
-        -----
-		In general, users will not need to worry about this.
-
-		Belongs to class gme.ind.ae.aeRec
-		
-		Example
-        -------
-				myAeObj = aeRec(webLine=awebLine)
-			
-		written by AJ, 20130131
-
 		"""
 		#note about where data came from
 		self.dataSet = 'AE'
