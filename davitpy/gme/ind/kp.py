@@ -30,8 +30,9 @@
 	* :func:`gme.ind.kp.readKpFtp`
 	* :func:`gme.ind.kp.mapKpMongo`
 """
-
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
 
 class kpDay(gmeData):
 	"""a class to represent a day of kp data. Extends :class:`gme.base.gmeBase.gmeData`  Insight on the class members can be obtained from `the NOAA FTP site <ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt>`_
@@ -91,11 +92,12 @@ class kpDay(gmeData):
 			#store the ap vals
 			self.ap.append(int(line[31+i*3:31+i*3+3]))
 		try: self.kpSum = int(line[28:31])
-		except: print 'problem assigning kpSum'
+		except: logging.exception('problem assigning kpSum')
 		try: self.apMean = int(line[55:58])
-		except: print 'problem assigning apMean'
+		except: logging.exception('problem assigning apMean')
 		try: self.sunspot = int(line[62:65])
-		except: print 'problem assigning sunspot'
+		except: logging.exception('problem assigning sunspot')
+
 		
 	def __init__(self, ftpLine=None, year=None, dbDict=None):
 		"""the intialization fucntion for a :class:`gme.ind.kp.kpDay` object.  In general, users will not need to worry about this.
@@ -163,22 +165,22 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
-		'error, sTime must be either None or a datetime object'
+		logging.error('sTime must be either None or a datetime object')
 	assert(eTime == None or isinstance(eTime,dt.datetime)), \
-		'error, eTime must be either None or a datetime object'
+		logging.error('eTime must be either None or a datetime object')
 	assert(kpMin == None or isinstance(kpMin,int)), \
-		'error, kpMin must be either None or an int'
+		logging.error('kpMin must be either None or an int')
 	assert(apMin == None or isinstance(apMin,int)), \
-		'error, apMin must be either None or an int'
+		logging.error('apMin must be either None or an int')
 	assert(kpSum == None or (isinstance(kpSum,list) and len(kpSum) == 2 and \
 		isinstance(kpSum[0], int) and isinstance(kpSum[1], int))), \
-		'error, kpSum must be either None or a 2 element list'
+		logging.error('kpSum must be either None or a 2 element list')
 	assert(apMean == None or (isinstance(apMean,list) and len(apMean) == 2and \
 		isinstance(apMean[0], int) and isinstance(apMean[1], int))), \
-		'error, apMean must be either None or a 2 element list'
+		logging.error('apMean must be either None or a 2 element list')
 	assert(sunspot == None or (isinstance(sunspot,list) and len(sunspot) == 2and \
 		isinstance(sunspot[0], int) and isinstance(sunspot[1], int))), \
-		'error, sunspot must be either None or a 2 element list'
+		logging.error('sunspot must be either None or a 2 element list')
 	
 	qryList = []
 	#if arguments are provided, query for those
@@ -206,15 +208,15 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 		kpList = []
 		for rec in qry.sort('time'):
 			kpList.append(kpDay(dbDict=rec))
-		print '\nreturning a list with',len(kpList),'days of kp data'
+		logging.info('\nreturning a list with',len(kpList),'days of kp data')
 		return kpList
 	#if we didn't find anything ont he mongodb
 	else:
-		print '\ncould not find requested data in the mongodb'
-		print 'we will look on the ftp server, but your conditions will be (mostly) ignored'
+		logging.warning('\ncould not find requested data in the mongodb')
+		logging.warning('we will look on the ftp server, but your conditions will be (mostly) ignored')
 		
 		if(sTime == None):
-			print 'start time for search set to 1980...'
+			logging.info('start time for search set to 1980...')
 			sTime = dt.datetime(1980,1,1)
 		
 		kpList = []
@@ -226,10 +228,10 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 				kpList.append(x)
 				
 		if(kpList != []):
-			print '\nreturning a list with',len(kpList),'days of kp data'
+			logging.info('\nreturning a list with ' + len(kpList) + ' days of kp data')
 			return kpList
 		else:
-			print '\n no data found on FTP server, returning None...'
+			logging.info('\n no data found on FTP server, returning None...')
 			return None
 	
 def readKpFtp(sTime, eTime=None):
@@ -256,40 +258,40 @@ def readKpFtp(sTime, eTime=None):
 	
 	sTime.replace(hour=0,minute=0,second=0,microsecond=0)
 	if(eTime == None): eTime=sTime
-	assert(eTime >= sTime), 'error, end time greater than start time'
+	assert(eTime >= sTime), logging.error('end time greater than start time')
 	if(eTime.year > sTime.year):
-		print 'you asked to read across a year bound'
-		print "we can't do this, so we will read until the end of the year"
+		logging.warning('you asked to read across a year bound')
+		logging.warning("we can't do this, so we will read until the end of the year")
 		eTime = dt.datetime(sTime.year,12,31)
-		print 'eTime =',eTime
+		logging.warning('eTime = ' + eTime)
 	eTime.replace(hour=0,minute=0,second=0,microsecond=0)
 	
 	#connect to the server
 	try: ftp = FTP('ftp.gfz-potsdam.de')
 	except Exception,e:
-		print e
-		print 'problem connecting to GFZ-Potsdam server'
+		logging.exception(e)
+		logging.exception('problem connecting to GFZ-Potsdam server')
 		
 	#login as anonymous
 	try: l=ftp.login()
 	except Exception,e:
-		print e
-		print 'problem logging in to GFZ-potsdam server'
+		logging.exception(e)
+		logging.exception('problem logging in to GFZ-potsdam server')
 	
 	#go to the kp directory
 	try: ftp.cwd('/pub/home/obs/kp-ap/wdc')
 	except Exception,e:
-		print e
-		print 'error getting to data directory'
+		logging.exception(e)
+		logging.exception('error getting to data directory')
 	
 	#list to hold the lines
 	lines = []
 	#get the data
-	print 'RETR kp'+str(sTime.year)+'.wdc'
+	logging.debug('RETR kp' + str(sTime.year) + '.wdc')
 	try:	ftp.retrlines('RETR kp'+str(sTime.year)+'.wdc',lines.append)
 	except Exception,e:
-		print e
-		print 'couldnt retrieve kp file'
+		logging.exception(e)
+		logging.exception('couldnt retrieve kp file')
 	
 	#convert the ascii lines into a list of kpDay objects
 	myKp = []
@@ -325,7 +327,7 @@ def mapKpMongo(sYear,eYear=None):
 	import datetime as dt
 	
 	if(eYear == None): eYear=sYear
-	assert(eYear >= sYear), 'error, end year greater than start year'
+	assert(eYear >= sYear), logging.error('end year greater than start year')
 	
 	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
 								dbAddress=rcParams['SDDB'],dbName='gme',collName='kp')
@@ -352,12 +354,12 @@ def mapKpMongo(sYear,eYear=None):
 			if(cnt == 0): mongoData.insert(tempRec)
 			#if this is an existing record, update it
 			elif(cnt == 1):
-				print 'foundone!!'
+				logging.debug('foundone!!')
 				dbDict = qry.next()
 				temp = dbDict['_id']
 				dbDict = tempRec
 				dbDict['_id'] = temp
 				mongoData.save(dbDict)
 			else:
-				print 'strange, there is more than 1 record for',rec.time
+				logging.warning('strange, there is more than 1 record for' + rec.time)
 	
