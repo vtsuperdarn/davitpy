@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -14,65 +15,104 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Dst module
+
+A module for reading, writing, and storing dst Data
+
+Classes
+-------------------------
+dstRec  a dst data record
+-------------------------
+
+Functions
+---------------------------------------
+readDst     read dst data from database
+readDstWeb  read dst data from website
+mapDstMongo store dst data to database
+---------------------------------------
+
+Moduleauthor:: AJ, 20130131
+
 """
-.. module:: dst
-   :synopsis: A module for reading, writing, and storing dst Data
-
-.. moduleauthor:: AJ, 20130131
-
-*********************
-**Module**: gme.ind.dst
-*********************
-**Classes**:
-	* :class:`gme.ind.dst.dstRec`
-**Functions**:
-	* :func:`gme.ind.dst.readDst`
-	* :func:`gme.ind.dst.readDstWeb`
-	* :func:`gme.ind.dst.mapDstMongo`
-"""
-
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
+
 class dstRec(gmeData):
-	"""a class to represent a record of dst data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that Dst data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html>`_
+	"""a class to represent a record of dst data.  Extends class
+    gme.base.gmeBase.gmeData. Note that Dst data is available from
+    1980-present day (or whatever the latest WDC has uploaded is).  **The
+    data are 1-hour values**.  Information about dst can be found here:
+    http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html
 		
-	**Members**: 
-		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
-		* **dataSet** (str): a string dicating the dataset this is from
-		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
-		* **dst** (float): the actual dst value
-	.. note::
-		If any of the members have a value of None, this means that they could not be read for that specific time
+	Parameters
+    ----------
+	webLine : Optional[str]
+        an ASCII line from the datafile from WDC. if this is provided, the
+        object is initialized from it.  default=None
+	dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided, the
+        object is initialized from it.  default = None
+
+	Attributes
+    ----------
+	time : datetime
+        an object identifying which time these data are for
+	dataSet : str
+        a string dicating the dataset this is from
+	info : str
+        information about where the data come from.  *Please be courteous
+        and give credit to data providers when credit is due.*
+	dst : float
+        the actual dst value
+
+	Notes
+    -----
+	If any of the members have a value of None, this means that they
+    could not be read for that specific time
    
-	**Methods**:
-		* :func:`parseWeb`
-	**Example**:
-		::
+	In general, users will not need to worry about this.
 		
+	Methods
+    -------
+	parseWeb
+
+	Example
+    -------
 			emptyDstObj = gme.ind.dstRec()
+
+    or
+
+            myDstObj = dstRec(webLine=awebLine)
 		
 	written by AJ, 20130131
 	"""
 	
+
 	def parseWeb(self,line):
 		"""This method is used to convert a line of dst data from the WDC to a dstRec object
 		
-		.. note::
-			In general, users will not need to worry about this.
+		Parameters
+        ----------
+		line : str
+            the ASCII line from the WDC data file
+
+		Returns
+        -------
+		Nothing
+
+		Notes
+        -----
+		In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`gme.ind.dst.dstRec`
+		Belongs to class gme.ind.dst.dstRec
 		
-		**Args**: 
-			* **line** (str): the ASCII line from the WDC data file
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
+		Example
+        -------
 				myDstObj.parseWeb(webLine)
 			
 		written by AJ, 20130131
+
 		"""
 		import datetime as dt
 		cols = line.split()
@@ -83,22 +123,8 @@ class dstRec(gmeData):
 	def __init__(self, webLine=None, dbDict=None):
 		"""the intialization fucntion for a :class:`gme.ind.dst.dstRec` object.  
 		
-		.. note::
-			In general, users will not need to worry about this.
-		
-		**Belongs to**: :class:`gme.ind.dst.dstRec`
-		
-		**Args**: 
-			* [**webLine**] (str): an ASCII line from the datafile from WDC. if this is provided, the object is initialized from it.  default=None
-			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default = None
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myDstObj = dstRec(webLine=awebLine)
-			
 		written by AJ, 20130131
+
 		"""
 		#note about where data came from
 		self.dataSet = 'Dst'
@@ -113,19 +139,32 @@ class dstRec(gmeData):
 def readDst(sTime=None,eTime=None,dst=None):
 	"""This function reads dst data from the mongodb.
 	
-	**Args**: 
-		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for, default=None
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
-		* [**dst**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with dst values in the range [a,b] will be returned.  default = None
-	**Returns**:
-		* **dstList** (list or None): if data is found, a list of :class:`gme.ind.dst.dstRec` objects matching the input parameters is returned.  If no data is found, None is returned.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sTime : Optional[datetime]
+        the earliest time you want data for, default=None
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, end Time will be
+        1 day after sTime.  default = None
+	dst : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with dst values in the range [a,b] will be
+        returned.  default = None
+
+	Returns
+    -------
+	dstList : list
+        if data is found, a list of class gme.ind.dst.dstRec objects matching
+        the input parameters is returned.  If no data is found, None is
+        returned.
+
+	Example
+    -------
 			import datetime as dt
 			dstList = gme.ind.readDst(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),dst=[-50,50])
 		
 	written by AJ, 20130131
+
 	"""
 	import datetime as dt
 	import davitpy.pydarn.sdio.dbUtils as db
@@ -166,25 +205,31 @@ def readDst(sTime=None,eTime=None,dst=None):
 	else:
 		logging.info('\ncould not find requested data in the mongodb')
 		return None
+
 			
 def readDstWeb(sTime,eTime=None):
 	"""This function reads dst data from the WDC kyoto website
 	
-	.. warning::
-		You should not use this. Use the general function :func:`readDst` instead.
+	Parameters
+    ----------
+	sTime : datetime
+        the earliest time you want data for
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, eTime will
+        be equal to sTime.  default = None
+
+	Notes
+    -----
+	You should not use this. Use the general function readDst instead.
 	
-	**Args**: 
-		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal to sTime.  default = None
-	**Example**:
-		::
-		
+	Example
+    -------
 			import datetime as dt
 			dstList = gme.ind.readDstWeb(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
 		
 	written by AJ, 20130131
+
 	"""
-	
 	import datetime as dt
 	import mechanize
 	
@@ -242,23 +287,32 @@ def readDstWeb(sTime,eTime=None):
 	if(dstList != []): return dstList
 	else: return None
 
+
 def mapDstMongo(sYear,eYear=None):
 	"""This function reads dst data from wdc and puts it in mongodb
 	
-	.. warning::
-		In general, nobody except the database admins will need to use this function
+	Parameters
+    ----------
+	sYear : int
+        the year to begin mapping data
+	eYear : Optional[int]
+        the end year for mapping data.  if this is None,
+        eYear will be sYear
+
+	Returns
+    -------
+	Nothing
+
+	Notes
+    -----
+	In general, nobody except the database admins will need to use this function
 	
-	**Args**: 
-		* **sYear** (int): the year to begin mapping data
-		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
-	**Returns**:
-		* Nothing.
-	**Example**:
-		::
-		
+	Example
+    -------
 			gme.ind.mapDstMongo(1997)
 		
 	written by AJ, 20130123
+
 	"""
 	import davitpy.pydarn.sdio.dbUtils as db
         from davitpy import rcParams
@@ -300,6 +354,3 @@ def mapDstMongo(sYear,eYear=None):
 			else:
 				logging.warning('strange, there is more than 1 DST record for ' + rec.time)
 		del templist
-		
-
-	
