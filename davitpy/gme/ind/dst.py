@@ -32,6 +32,8 @@
 """
 
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
 class dstRec(gmeData):
 	"""a class to represent a record of dst data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that Dst data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-hour values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html>`_
 		
@@ -129,13 +131,13 @@ def readDst(sTime=None,eTime=None,dst=None):
 	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
-	assert(sTime == None or isinstance(sTime,dt.datetime)), \
-		'error, sTime must be a datetime object'
-	assert(eTime == None or isinstance(eTime,dt.datetime)), \
-		'error, eTime must be either None or a datetime object'
+	assert(sTime == None or isinstance(sTime,dt.datetime)), logging.error(
+		'sTime must be a datetime object')
+	assert(eTime == None or isinstance(eTime,dt.datetime)), logging.error(
+		'eTime must be either None or a datetime object')
 	assert(dst == None or (isinstance(dst,list) and \
 		isinstance(dst[0],(int,float)) and isinstance(dst[1],(int,float)))), \
-		'error,dst must None or a list of 2 numbers'
+		logging.error('dst must None or a list of 2 numbers')
 		
 	if(eTime == None and sTime != None): eTime = sTime+dt.timedelta(days=1)
 	qryList = []
@@ -158,11 +160,11 @@ def readDst(sTime=None,eTime=None,dst=None):
 		dstList = []
 		for rec in qry.sort('time'):
 			dstList.append(dstRec(dbDict=rec))
-		print '\nreturning a list with',len(dstList),'records of dst data'
+		logging.info('\nreturning a list with' + len(dstList) + 'records of dst data')
 		return dstList
 	#if we didn't find anything on the mongodb
 	else:
-		print '\ncould not find requested data in the mongodb'
+		logging.info('\ncould not find requested data in the mongodb')
 		return None
 			
 def readDstWeb(sTime,eTime=None):
@@ -186,10 +188,10 @@ def readDstWeb(sTime,eTime=None):
 	import datetime as dt
 	import mechanize
 	
-	assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
+	assert(isinstance(sTime,dt.datetime)),logging.error('sTime must be a datetime object')
 	if(eTime == None): eTime = sTime
-	assert(isinstance(eTime,dt.datetime)),'error, eTime must be a datetime object'
-	assert(eTime >= sTime), 'error, eTime < eTime'
+	assert(isinstance(eTime,dt.datetime)),logging.error('eTime must be a datetime object')
+	assert(eTime >= sTime), logging.error('eTime < eTime')
 	
 	sCent = sTime.year/100
 	sTens = (sTime.year - sCent*100)/10
@@ -234,8 +236,8 @@ def readDstWeb(sTime,eTime=None):
 		cols=l.split()
 		try: dstList.append(dstRec(webLine=l))
 		except Exception,e:
-			print e
-			print 'problemm assigning initializing dst object'
+			logging.exception(e)
+			logging.exception('problemm assigning initializing dst object')
 		
 	if(dstList != []): return dstList
 	else: return None
@@ -263,10 +265,10 @@ def mapDstMongo(sYear,eYear=None):
 	import datetime as dt
 	
 	#check inputs
-	assert(isinstance(sYear,int)),'error, sYear must be int'
+	assert(isinstance(sYear,int)), logging.error('sYear must be int')
 	if(eYear == None): eYear=sYear
-	assert(isinstance(eYear,int)),'error, sYear must be None or int'
-	assert(eYear >= sYear), 'error, end year greater than start year'
+	assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
+	assert(eYear >= sYear), logging.error('end year greater than start year')
 	
 	#get data connection
 	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
@@ -282,21 +284,21 @@ def mapDstMongo(sYear,eYear=None):
 		for rec in templist:
 			#check if a duplicate record exists
 			qry = mongoData.find({'time':rec.time})
-			print rec.time
+			logging.debug(rec.time)
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
 			#if this is a new record, insert it
 			if(cnt == 0): mongoData.insert(tempRec)
 			#if this is an existing record, update it
 			elif(cnt == 1):
-				print 'foundone!!'
+				logging.debug('foundone!!')
 				dbDict = qry.next()
 				temp = dbDict['_id']
 				dbDict = tempRec
 				dbDict['_id'] = temp
 				mongoData.save(dbDict)
 			else:
-				print 'strange, there is more than 1 DST record for',rec.time
+				logging.warning('strange, there is more than 1 DST record for ' + rec.time)
 		del templist
 		
 
