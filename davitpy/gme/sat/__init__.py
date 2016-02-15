@@ -4,7 +4,6 @@
 """
 sat
 ---
-
 This subpackage contains various fucntions to read and write sattelite data
 
 Modules
