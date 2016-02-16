@@ -37,16 +37,16 @@ import logging
 
 def read_goes(sTime,eTime=None,sat_nr=15):
     """Download GOES X-Ray Flux data from the NOAA FTP Site and return a
-       dictionary containing the metadata and a dataframe.
+    dictionary containing the metadata and a dataframe.
 
     Parameters
     ----------
     sTime : datetime.datetime
         Starting datetime for data.
-    eTime : datetime.datetime
+    eTime : Optional[datetime.datetime]
         Ending datetime for data.  If None, eTime will be set to sTime
         + 1 day.
-    sat_nr : int
+    sat_nr : Optional[int]
         GOES Satellite number.  Defaults to 15.
 
     Returns
@@ -92,7 +92,6 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         sourcedate : datetime
 
         months : Optional[int]
-
 
         """
         month = sourcedate.month - 1 + months
@@ -233,9 +232,7 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     legendSize : Optional[int]
         Character size of the legend
     legendLoc : Optional[ ]
-
     ax : Optional[ ]
-
 
     Returns
     -------
@@ -325,8 +322,6 @@ def __split_sci(value):
     Returns
     -------
     coefficient : float
-
-    power : float
 
     Written by Nathaniel Frissell 2014 Sept 07
 

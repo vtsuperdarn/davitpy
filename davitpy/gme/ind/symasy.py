@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -13,67 +14,107 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""symasy module
+
+A module for reading, writing, and storing symasy Data
+
+Classes
+---------------------------------
+symAsyRec   a SYM/ASY data record
+---------------------------------
+
+Functions
+---------------------------------------------------------------
+readSymAsy      read sym/asy data from database
+readSymAsyWeb   read sym/asy data from website
+mapSymAsyMongo  read sym/asy from website and store to database
+---------------------------------------------------------------
+
+Module author: AJ, 20130131
 
 """
-.. module:: symasy
-   :synopsis: A module for reading, writing, and storing symasy Data
-
-.. moduleauthor:: AJ, 20130131
-
-*********************
-**Module**: gme.ind.symasy
-*********************
-**Classes**:
-	* :class:`gme.ind.symasy.symAsyRec`
-**Functions**:
-	* :func:`gme.ind.symasy.readSymAsy`
-	* :func:`gme.ind.symasy.readSymAsyWeb`
-	* :func:`gme.ind.symasy.mapSymAsyMongo`
-"""
-
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
 class symAsyRec(gmeData):
-	"""a class to represent a record of sym/asy data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
+	"""a class to represent a record of sym/asy data.  Extends class
+    gme.base.gmeBase.gmeData. Note that sym/asym data is available from 1980-present
+    day (or whatever the latest WDC has uploaded is).  **The data are 1-minute
+    values.**  More info on sym/asy can be found here:
+    http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf
 		
-	**Members**: 
-		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
-		* **dataSet** (str): a string indicating the dataset this is from
-		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
-		* **symh** (float): the symh value
-		* **symd** (float): the symd value
-		* **asyh** (float): the asyh value
-		* **asyd** (float): the asyd value
-	.. note::
-		If any of the members have a value of None, this means that they could not be read for that specific time
+	Parameters
+    ----------
+	webLine : Optional[str]
+        an ASCII line from the datafile from WDC. if this is provided, the object
+        is initialized from it.  default=None
+	dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided, the object is
+        initialized from it.  default = None
+
+	Attributes
+    ----------
+	time : datetime
+        an object identifying which time these data are for
+	dataSet : str
+        a string indicating the dataset this is from
+	info : str
+        information about where the data come from.  *Please be courteous and
+        give credit to data providers when credit is due.*
+	symh : float
+        the symh value
+	symd : float
+        the symd value
+	asyh : float
+        the asyh value
+	asyd : float
+        the asyd value
+
+	Methods
+    -------
+	parseWeb
+
+	Notes
+    -----
+	If any of the members have a value of None, this means that
+    they could not be read for that specific time
    
-	**Methods**:
-		* :func:`parseWeb`
-	**Example**:
-		::
-		
+    Example
+    -------
 			emptySymAsyObj = gme.ind.symAsyRec()
-		
+
+    or
+
+			myDstObj = symAsyRec(webLine=awebLine)
+
 	written by AJ, 20130131
+
 	"""
-	
 	def parseWeb(self,line):
-		"""This method is used to convert a line of sym/asy data from the WDC to a symAsyRec object
+		"""This method is used to convert a line of sym/asy data from
+        the WDC to a symAsyRec object
 		
-		.. note::
-			In general, users will not need to worry about this.
+		Parameters
+        ----------
+		line : str
+            the ASCII line from the WDC data file
+
+		Returns
+        -------
+		Nothing
+
+		Notes
+        -----
+		In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`gme.ind.symasy.symAsyRec`
-		
-		**Args**: 
-			* **line** (str): the ASCII line from the WDC data file
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
+		Belongs to class gme.ind.symasy.symAsyRec
+
+		Example
+        -------
 				mysymAsyObj.parseWeb(webLine)
 			
 		written by AJ, 20130131
+
 		"""
 		import datetime as dt
 		cols = line.split()
@@ -83,28 +124,9 @@ class symAsyRec(gmeData):
 		if(float(cols[4]) != 99999.0): self.asyh = float(cols[4])
 		if(float(cols[5]) != 99999.0): self.symd = float(cols[5])
 		if(float(cols[6]) != 99999.0): self.symh = float(cols[6])
+
 		
 	def __init__(self, webLine=None, dbDict=None):
-		"""the intialization fucntion for a :class:`gme.ind.symasy.symAsyRec` object.  
-		
-		.. note::
-			In general, users will not need to worry about this.
-		
-		**Belongs to**: :class:`gme.ind.symasy.symAsyRec`
-		
-		**Args**: 
-			* [**webLine**] (str): an ASCII line from the datafile from WDC. if this is provided, the object is initialized from it.  default=None
-			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default = None
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myDstObj = symAsyRec(webLine=awebLine)
-			
-		written by AJ, 20130131
-		"""
-		
 		#note about where data came from
 		self.dataSet = 'Sym/Asy'
 		self.time = None
@@ -118,40 +140,63 @@ class symAsyRec(gmeData):
 		#if we're initializing from an object, do it!
 		if(webLine != None): self.parseWeb(webLine)
 		if(dbDict != None): self.parseDb(dbDict)
+
 		
 def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 	"""This function reads sym/asy data from the mongodb.
 	
-	**Args**: 
-		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for, default=None
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
-		* [**symh**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with symh values in the range [a,b] will be returned.  default = None
-		* [**symd**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with symd values in the range [a,b] will be returned.  default = None
-		* [**asyh**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with asyh values in the range [a,b] will be returned.  default = None
-		* [**asyd**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with asyd values in the range [a,b] will be returned.  default = None
-	**Returns**:
-		* **symList** (list or None): if data is found, a list of :class:`gme.ind.symasy.symAsyRec` objects matching the input parameters is returned.  If no data is found, None is returned.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sTime : Optional[datetime]
+        the earliest time you want data for, default=None
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, end Time will
+        be 1 day after sTime.  default = None
+	symh : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with symh values in the range [a,b] will be
+        returned.  default = None
+	symd : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with symd values in the range [a,b] will be
+        returned.  default = None
+	asyh : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with asyh values in the range [a,b] will be
+        returned.  default = None
+	asyd : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with asyd values in the range [a,b] will be
+        returned.  default = None
+
+	Returns
+    -------
+	symList : list
+        if data is found, a list of class gme.ind.symasy.symAsyRec objects
+        matching the input parameters is returned.  If no data is found,
+        None is returned.
+
+	Example
+    -------
 			import datetime as dt
 			symList = gme.ind.readSymAsy(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),symh=[5,50],asyd=[-10,0])
 		
 	written by AJ, 20130131
+
 	"""
 	import datetime as dt
 	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
-		'error, sTime must be a datetime object'
+		logging.error('sTime must be a datetime object')
 	assert(eTime == None or isinstance(eTime,dt.datetime)), \
-		'error, eTime must be either None or a datetime object'
+		logging.error('eTime must be either None or a datetime object')
 	var = locals()
 	for name in ['symh','symd','asyh','asyd']:
 		assert(var[name] == None or (isinstance(var[name],list) and \
 			isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
-			'error,'+name+' must None or a list of 2 numbers'
+			logging.error(name + ' must None or a list of 2 numbers')
 			
 	if(eTime == None and sTime != None): eTime = sTime+dt.timedelta(days=1)
 	qryList = []
@@ -176,41 +221,47 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 		symList = []
 		for rec in qry.sort('time'):
 			symList.append(symAsyRec(dbDict=rec))
-		print '\nreturning a list with',len(symList),'records of sym/asy data'
+		logging.info('\nreturning a list with' + len(symList) + 'records of sym/asy data')
 		return symList
 	#if we didn't find anything on the mongodb
 	else:
-		print '\ncould not find requested data in the mongodb'
+		logging.info('\ncould not find requested data in the mongodb')
 		return None
-			
+
+
 def readSymAsyWeb(sTime,eTime=None):
 	"""This function reads sym/asy data from the WDC kyoto website
 	
 	.. warning::
-		You should not use this. Use the general function :func:`gme.ind.symasy.readSymAsy` instead.
+		You should not use this. Use the general function
+        gme.ind.symasy.readSymAsy instead.
 	
-	**Args**: 
-		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal 1 day after sTime.  This must not be more than 366 days after sTime.  default = None
-	**Example**:
-		::
-		
+    Parameters
+    ----------
+	sTime : datetime
+        the earliest time you want data for
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, eTime
+        will be equal 1 day after sTime.  This must not be more
+        than 366 days after sTime.  default = None
+
+	Example
+    -------
 			import datetime as dt
 			symList = gme.ind.readSymAsyWeb(dt.datetime(2011,1,1),eTime=dt.datetime(2011,1,5))
 		
 	written by AJ, 20130131
+
 	"""
-	
-	
 	import datetime as dt
 	import mechanize
 	
-	assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
+	assert(isinstance(sTime,dt.datetime)), logging.error('sTime must be a datetime object')
 	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
-	assert(isinstance(eTime,dt.datetime)),'error, eTime must be a datetime object'
-	assert(eTime >= sTime), 'error, eTime < eTime'
+	assert(isinstance(eTime,dt.datetime)), logging.error('eTime must be a datetime object')
+	assert(eTime >= sTime), logging.error('eTime < eTime')
 	delt = eTime-sTime
-	assert(delt.days <= 366), 'error, cant read more than 366 days'
+	assert(delt.days <= 366), logging.error('cant read more than 366 days')
 	
 	tens = (sTime.year)/10
 	year = sTime.year-tens*10
@@ -256,8 +307,8 @@ def readSymAsyWeb(sTime,eTime=None):
 		cols=l.split()
 		try: symList.append(symAsyRec(webLine=l))
 		except Exception,e:
-			print e
-			print 'problem initializing symAsy object'
+			logging.exception(e)
+			logging.exception('problem initializing symAsy object')
 		
 	if(symList != []): return symList
 	else: return None
@@ -266,30 +317,37 @@ def mapSymAsyMongo(sYear,eYear=None):
 	"""This function reads sym/asy data from wdc and puts it in mongodb
 	
 	.. warning::
-		In general, nobody except the database admins will need to use this function
+		In general, nobody except the database admins will need to
+        use this function
 	
-	**Args**: 
-		* **sYear** (int): the year to begin mapping data
-		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
-	**Returns**:
-		* Nothing.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sYear : int
+        the year to begin mapping data
+	eYear : Optional[int]
+        the end year for mapping data.  if this is None, eYear
+        will be sYear
+
+	Returns
+    -------
+	Nothing
+
+	Example
+    -------
 			gme.ind.mapSymAsyMongo(2001)
 		
 	written by AJ, 20130123
+
 	"""
-	
 	import davitpy.pydarn.sdio.dbUtils as db
         from davitpy import rcParams
 	import datetime as dt
 	
 	#check inputs
-	assert(isinstance(sYear,int)),'error, sYear must be int'
+	assert(isinstance(sYear,int)), logging.error('sYear must be int')
 	if(eYear == None): eYear=sYear
-	assert(isinstance(eYear,int)),'error, sYear must be None or int'
-	assert(eYear >= sYear), 'error, end year greater than start year'
+	assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
+	assert(eYear >= sYear), logging.error('end year greater than start year')
 	
 	#get data connection
 	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
@@ -309,22 +367,20 @@ def mapSymAsyMongo(sYear,eYear=None):
 		for rec in templist:
 			#check if a duplicate record exists
 			qry = mongoData.find({'time':rec.time})
-			print rec.time
+			logging.debug(rec.time)
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
 			#if this is a new record, insert it
 			if(cnt == 0): mongoData.insert(tempRec)
 			#if this is an existing record, update it
 			elif(cnt == 1):
-				print 'foundone!!'
+				logging.debug('found one!!')
 				dbDict = qry.next()
 				temp = dbDict['_id']
 				dbDict = tempRec
 				dbDict['_id'] = temp
 				mongoData.save(dbDict)
 			else:
-				print 'strange, there is more than 1 Sym/Asy record for',rec.time
+				logging.warning('strange, there is more than 1 Sym/Asy record for' + rec.time)
 		del templist
-	
 
-	

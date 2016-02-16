@@ -33,11 +33,9 @@ mapPoesMongo    populate database from ftp
 overlayPoesTed  map poes ted data
 ------------------------------------------
 
-
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
-
 
 class poesRec(gmeData):
   """a class to represent a record of poes data.
@@ -167,7 +165,6 @@ class poesRec(gmeData):
 
   """
 
-
   def parseFtp(self,line, header):
     """This method is used to convert a line of poes data read from
     the NOAA NGDC FTP site into a :class:`poesRec` object.
@@ -177,7 +174,6 @@ class poesRec(gmeData):
     line : str
         the ASCII line from the FTP server
     header :
-
 
     Returns
     -------
@@ -382,7 +378,7 @@ def readPoesFtp(sTime,eTime=None):
   ----------
   sTime : datetime
     the earliest time you want data for
-  eTime : datetime or None
+  eTime : Optional[datetime]
     the latest time you want data for.  if this is None, eTime will be equal
     1 day after sTime.  default = None
 
@@ -475,7 +471,7 @@ def readPoesFtp(sTime,eTime=None):
 
 def mapPoesMongo(sYear,eYear=None):
   """This function reads poes data from the NOAA NGDC FTP server via anonymous
-     FTP connection and maps it to the mongodb.  
+  FTP connection and maps it to the mongodb.  
 
   Parameters
   ----------
@@ -538,7 +534,7 @@ def mapPoesMongo(sYear,eYear=None):
       if(cnt == 0): mongoData.insert(tempRec)
       # if this is an existing record, update it
       elif(cnt == 1):
-        logging.debug('foundone!!')
+        logging.debug('found one!!')
         dbDict = qry.next()
         temp = dbDict['_id']
         dbDict = tempRec

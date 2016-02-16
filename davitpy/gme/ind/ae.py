@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -14,67 +15,117 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""AE module
+
+A module for reading, writing, and storing ae Data
+
+Functions
+----------------------------------------------------
+readAe      Read data from AE database
+readAeWeb   Read data from WDC Kyoto website
+mapAeMongo  Read data from WDC and store in database
+----------------------------------------------------
+
+Classes
+-------------------------
+aeRec   An AE data record
+-------------------------
+
+Module Author:: AJ, 20130131
+
 """
-.. module:: ae
-   :synopsis: A module for reading, writing, and storing ae Data
-
-.. moduleauthor:: AJ, 20130131
-
-*********************
-**Module**: gme.ind.ae
-*********************
-**Classes**:
-	* :class:`gme.ind.ae.aeRec`
-**Functions**:
-	* :func:`gme.ind.ae.readAe`
-	* :func:`gme.ind.ae.gme.readAeWeb`
-	* :func:`gme.ind.ae.mapAeMongo`
-"""
-
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
+
 class aeRec(gmeData):
-	"""a class to represent a record of ae data.  Extends :class:`gme.base.gmeBase.gmeData` . Note that Ae data is available from 1990-present day (or whatever the latest WDC has uploaded is).  **We have 1 hour and 1 minute values**.  Information about dst can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html>`_
+	"""a class to represent a record of ae data.  Extends class 
+    gme.base.gmeBase.gmeData. Note that Ae data is available
+    from 1990-present day (or whatever the latest WDC has uploaded
+    is).  **We have 1 hour and 1 minute values**.  Information
+    about dst can be found here:
+    http://wdc.kugi.kyoto-u.ac.jp/aedir/ae2/onAEindex.html_
 		
-	**Members**: 
-		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
-		* **dataSet** (:class:`gme.ind.dst.dstRec`)): a string dicating the dataset this is from
-		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
-		* **ae** (float): auroral electrojet
-		* **au** (float): auroral upper
-		* **ae** (float): auroral lower
-		* **ao** (float): mean of al and au
-		* **res** (int): the time resolution of the data in minutes
-	.. note::
-		If any of the members have a value of None, this means that they could not be read for that specific time
-   
-	**Methods**:
-		* :func:`parseWeb`
-	**Example**:
-		::
+	Parameters
+    ----------
+	webLine : Optional[str]
+       an ASCII line from the datafile from WDC. if this is provided,
+       the object is initialized from it.  default=None
+    dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided, the
+        object is initialized from it.  default = None
+    res : Optional[ ]
+
+
+	Attributes
+    ----------
+    time : datetime
+        an object identifying which time these data are for
+    dataSet : gme.ind.dst.dstRec
+        a string dicating the dataset this is from
+    info : str
+        information about where the data come from.  *Please be
+        courteous and give credit to data providers when credit is due.*
+	ae : float
+        auroral electrojet
+	au : float
+        auroral upper
+	al : float
+        auroral lower
+	ao : float
+        mean of al and au
+	res : int
+        the time resolution of the data in minutes
+
+	Notes
+    -----
+	If any of the members have a value of None, this means that they
+    could not be read for that specific time
+
+	In general, users will not need to worry about this.
+
+	Belongs to class gme.ind.ae.aeRec
 		
+	Methods
+    -------
+	parseWeb
+
+	Example
+    -------
 			emptyAeObj = gme.ind.aeRec()
+
+    or
+
+    		myAeObj = aeRec(webLine=awebLine)
+
 		
 	written by AJ, 20130131
+
 	"""
-	
 	def parseWeb(self,line):
 		"""This method is used to convert a line of ae data from the WDC to a aeRec object
 		
-		.. note::
-			In general, users will not need to worry about this.
+		Parameters
+        ----------
+		line : str
+            the ASCII line from the WDC data file
+
+		Returns
+        -------
+		Nothing
+
+		Notes
+        -----
+		In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`gme.ind.ae.aeRec`
+		Belongs to class gme.ind.ae.aeRec
 		
-		**Args**: 
-			* **line** (str): the ASCII line from the WDC data file
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
+		Example
+        -------
 				myAeObj.parseWeb(webLine)
 			
 		written by AJ, 20130131
+
 		"""
 		import datetime as dt
 		cols = line.split()
@@ -85,25 +136,10 @@ class aeRec(gmeData):
 		if(float(cols[5]) != 99999.0): self.al = float(cols[5])
 		if(float(cols[6]) != 99999.0): self.ao = float(cols[6])
 		
+
 	def __init__(self, webLine=None, dbDict=None, res=None):
-		"""the intialization fucntion for a :class:`gme.ind.ae.aeRec` object.  
+		"""the intialization fucntion for a class gme.ind.ae.aeRec object.  
 		
-		.. note::
-			In general, users will not need to worry about this.
-		
-		**Belongs to**: :class:`gme.ind.ae.aeRec`
-		
-		**Args**: 
-			* [**webLine**] (str): an ASCII line from the datafile from WDC. if this is provided, the object is initialized from it.  default=None
-			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default = None
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myAeObj = aeRec(webLine=awebLine)
-			
-		written by AJ, 20130131
 		"""
 		#note about where data came from
 		self.dataSet = 'AE'
@@ -118,42 +154,67 @@ class aeRec(gmeData):
 		#if we're initializing from an object, do it!
 		if(webLine != None): self.parseWeb(webLine)
 		if(dbDict != None): self.parseDb(dbDict)
+
 		
 def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
 	"""This function reads ae data from the mongodb.  **The data are 1-minute values**
 	
-	**Args**: 
-		* [**sTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for, default=None
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
-		* [**res**] (int): the time resolution desired in minutes.  Valid inputs are 1 and 60.  default = 60
-		* [**ae**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with ae values in the range [a,b] will be returned.  default = None
-		* [**al**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with al values in the range [a,b] will be returned.  default = None
-		* [**au**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with au values in the range [a,b] will be returned.  default = None
-		* [**ao**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with ao values in the range [a,b] will be returned.  default = None
-	**Returns**:
-		* **aeList** (list or None): if data is found, a list of :class:`gme.ind.ae.aeRec` objects matching the input parameters is returned.  If no data is found, None is returned.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sTime : Optional[datetime]
+        the earliest time you want data for, default=None
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, end Time will be
+        1 day after sTime.  default = None
+	res : Optional[int]
+        the time resolution desired in minutes.  Valid inputs are 1 and 60.
+        default = 60
+	ae : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with ae values in the range [a,b] will be
+        returned.  default = None
+	al : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with al values in the range [a,b] will be
+        returned.  default = None
+	au : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with au values in the range [a,b] will be
+        returned.  default = None
+	ao : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with ao values in the range [a,b] will be
+        returned.  default = None
+
+	Returns
+    -------
+	aeList : list
+        if data is found, a list of class gme.ind.ae.aeRec objects matching
+        the input parameters is returned.  If no data is found, None is
+        returned.
+
+	Example
+    -------
 			import datetime as dt
 			aeList = gme.ind.readAe(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),res=60,ao=[-50,50])
 		
 	written by AJ, 20130131
+
 	"""
 	import datetime as dt
 	import davitpy.pydarn.sdio.dbUtils as db
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
-		'error, sTime must be a datetime object'
+		logging.error('sTime must be a datetime object')
 	assert(eTime == None or isinstance(eTime,dt.datetime)), \
-		'error, eTime must be either None or a datetime object'
-	assert(res == 60 or res ==1), 'error, res must be 1 or 60'
+		logging.error('eTime must be either None or a datetime object')
+	assert(res == 60 or res ==1), logging.error('res must be 1 or 60')
 	var = locals()
 	for name in ['ae','al','au','ao']:
 		assert(var[name] == None or (isinstance(var[name],list) and \
 			isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
-			'error,'+name+' must None or a list of 2 numbers'
+			logging.error(name + ' must None or a list of 2 numbers')
 			
 	if(eTime == None and sTime != None): eTime = sTime+dt.timedelta(days=1)
 	qryList = []
@@ -179,41 +240,50 @@ def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
 		aeList = []
 		for rec in qry.sort('time'):
 			aeList.append(aeRec(dbDict=rec))
-		print '\nreturning a list with',len(aeList),'records of ae data'
+		logging.info('\nreturning a list with ' + len(aeList) + 'records of ae data')
 		return aeList
 	#if we didn't find anything on the mongodb
 	else:
-		print '\ncould not find requested data in the mongodb'
+		logging.info('\ncould not find requested data in the mongodb')
 		return None
-			
+
+
 def readAeWeb(sTime,eTime=None,res=60):
 	"""This function reads ae data from the WDC kyoto website
 	
-	.. warning::
-		You should not use this. Use the general function :func:`gme.ind.ae.readAe` instead.
+	Parameters
+    ----------
+	sTime : datetime
+        the earliest time you want data for
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, eTime will
+        be equal to sTime.  eTime must not be more than 366 days after
+        sTime.  default = None
+	res : Optional[int]
+        the time resolution desired, either 1 or 60 minutes.  default=60
+
+	Notes
+    -----
+	You should not use this. Use the general function gme.ind.ae.readAe instead.
 	
-	**Args**: 
-		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal to sTime.  eTime must not be more than 366 days after sTime.  default = None
-		* [**res**] (int): the time resolution desired, either 1 or 60 minutes.  default=60
-	**Example**:
-		::
-		
+	Example
+    -------
 			import datetime as dt
 			aeList = gme.ind.readAeWeb(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
 		
 	written by AJ, 20130131
+
 	"""
 	import datetime as dt
 	import mechanize
 	
-	assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
+	assert(isinstance(sTime,dt.datetime)),logging.error('sTime must be a datetime object')
 	if(eTime == None): eTime = sTime
-	assert(isinstance(eTime,dt.datetime)),'error, eTime must be a datetime object'
-	assert(eTime >= sTime), 'error, eTime < eTime'
-	assert(res == 1 or res == 60), 'error, res must be 1 or 60'
+	assert(isinstance(eTime,dt.datetime)),logging.error('eTime must be a datetime object')
+	assert(eTime >= sTime), logging.error('eTime < eTime')
+	assert(res == 1 or res == 60), logging.error('res must be 1 or 60')
 	delt = eTime-sTime
-	assert(delt.days <= 366), 'error, cant read more than 366 days'
+	assert(delt.days <= 366), logging.error('cant read more than 366 days')
 	
 	br = mechanize.Browser()
 	br.set_handle_robots(False)   # no robots
@@ -290,40 +360,49 @@ def readAeWeb(sTime,eTime=None,res=60):
 		cols=l.split()
 		try: aeList.append(aeRec(webLine=l,res=res))
 		except Exception,e:
-			print e
-			print 'problem assigning initializing ae object'
+			logging.exception(e)
+			logging.exception('problem assigning initializing ae object')
 		
 	if(aeList != []): return aeList
 	else: return None
 
+
 def mapAeMongo(sYear,eYear=None,res=60):
 	"""This function reads ae data from wdc and puts it in mongodb
 	
-	.. warning::
-		In general, nobody except the database admins will need to use this function
+	Parameters
+    ----------
+   	sYear : int
+        the year to begin mapping data
+	eYear : Optional[int]
+        the end year for mapping data.  if this is None, eYear will be sYear
+    res : Optional[int]
+        the time resolution desired.  either 1 or 60 minutes.  default=60.
+
+	Returns
+    -------
+	Nothing
+
+	Notes
+    -----
+	In general, nobody except the database admins will need to use this function
 	
-	**Args**: 
-		* **sYear** (int): the year to begin mapping data
-		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
-		* [**res**] (int): the time resolution desired.  either 1 or 60 minutes.  default=60.
-	**Returns**:
-		* Nothing.
-	**Example**:
-		::
-		
+	Example
+    -------
 			gme.ind.mapAeMongo(1997)
 		
 	written by AJ, 20130123
+
 	"""
 	import davitpy.pydarn.sdio.dbUtils as db
         from davitpy import rcParams
 	import datetime as dt
 	
 	#check inputs
-	assert(isinstance(sYear,int)),'error, sYear must be int'
+	assert(isinstance(sYear,int)),logging.error('sYear must be int')
 	if(eYear == None): eYear=sYear
-	assert(isinstance(eYear,int)),'error, sYear must be None or int'
-	assert(eYear >= sYear), 'error, end year less than than start year'
+	assert(isinstance(eYear,int)),logging.error('sYear must be None or int')
+	assert(eYear >= sYear), logging.error('end year less than than start year')
 	
 	#get data connection
 	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
@@ -344,22 +423,19 @@ def mapAeMongo(sYear,eYear=None,res=60):
 		for rec in templist:
 			#check if a duplicate record exists
 			qry = mongoData.find({'$and':[{'time': rec.time}, {'res': rec.res}]})
-			print rec.time
+			logging.debug(rec.time)
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
 			#if this is a new record, insert it
 			if(cnt == 0): mongoData.insert(tempRec)
 			#if this is an existing record, update it
 			elif(cnt == 1):
-				print 'foundone!!'
+				logging.debug('foundone!!')
 				dbDict = qry.next()
 				temp = dbDict['_id']
 				dbDict = tempRec
 				dbDict['_id'] = temp
 				mongoData.save(dbDict)
 			else:
-				print 'strange, there is more than 1 AE record for',rec.time
+			    logging.warning('strange, there is more than 1 AE record for ' + rec.time)
 		del templist
-	
-
-	

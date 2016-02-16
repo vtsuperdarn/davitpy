@@ -14,7 +14,6 @@ rbspFp  FPs reading (or calculating) and plotting
 """
 import logging
 
-
 ############################################################################
 # Foot Points (FPs) calculation and plotting
 ############################################################################
@@ -78,12 +77,9 @@ class rbspFp(object):
 
     """
 
-
     def __init__(self, sTime, eTime=None, spacecraft=None, 
         L_shell_min=None, L_shell_max=None,  
         apogees_only=False):
-        """
-        """
         from datetime import datetime, timedelta
         from davitpy import rcParams
 
@@ -132,7 +128,6 @@ class rbspFp(object):
         Returns
         -------
         myMap : mpl_toolkits.basemap.Basemap
-
 
         Notes
         -----
@@ -258,7 +253,7 @@ class rbspFp(object):
 
         Notes
         -----
-        **Belongs to**: :class:`rbspFp`
+        Belongs to class:`rbspFp`
 
         """
         import numpy as np
@@ -321,11 +316,9 @@ class rbspFp(object):
         ----------
         dbName
 
-
         Returns
         -------
         dbConn : pymongo database
-
 
         Notes
         -----
@@ -359,7 +352,6 @@ class rbspFp(object):
         Returns
         -------
         orbit : 
-
 
         Notes
         -----
@@ -475,7 +467,6 @@ class rbspFp(object):
         Returns
         -------
         sOut : str
-
 
         """
         sOut = 'Van Allen Probes (a.k.a. RBSP) ionospheric footpoints\n'
