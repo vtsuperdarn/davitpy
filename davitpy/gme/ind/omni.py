@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -13,89 +14,153 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""OMNI module
 
-"""
-.. module:: omni
-   :synopsis: A module for reading, writing, and storing omni Data
+A module for reading, writing, and storing OMNI data
 
-.. moduleauthor:: AJ, 20130128
+Classes
+--------------------------
+omniRec a omni data record
+--------------------------
 
-**Module**: gme.ind.omni
-*************************
-**Classes**:
-	* :class:`omniRec`
-**Functions**:
-	* :func:`readOmni`
-	* :func:`readOmniFtp`
-	* :func:`mapOmniMongo`
+Functions
+------------------------------------------------------
+readOmni        read/fetch omni data in various ways
+readOmniFtp     read omni data from NASA server
+mapOmniMongo    read omni data and store into database
+------------------------------------------------------
+
+Module author: AJ, 20130128
+
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
 class omniRec(gmeData):
-	"""a class to represent a record of omni data.  Extends :class:`gmeBase.gmeData`.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
-	
+	"""a class to represent a record of omni data.  Extends class gmeBase.gmeData.
+    Insight on the class members can be obtained from the NASA SPDF site:
+    ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt.  Note that
+    Omni data is available from 1995-present day (or whatever the latest NASA has
+    uploaded is), in 1 and 5 minute resolution.
+
 	.. warning::
-		AE,AL,AU,SYM/H,SYM/D,ASYM/H,and ASYM/D are included in the omni files and thus are read into this class.  I cannot verify the quality of these indices distributed with Omni data.  For quality assurance on these indices, use the functions in the gme.mag.indices module.
+		AE,AL,AU,SYM/H,SYM/D,ASYM/H,and ASYM/D are included in the omni files and
+        thus are read into this class.  I cannot verify the quality of these
+        indices distributed with Omni data.  For quality assurance on these
+        indices, use the functions in the gme.mag.indices module.
+
+	Parameters
+    ----------
+	ftpLine : Optional[str]
+        an ASCII line from the FTP server. if this is provided, the object is
+        initialized from it.  default=None
+	dbDict : Optional[dict]
+        a dictionary read from the mongodb.  if this is provided, the object
+        is initialized from it.  default = None
+	res : Optional[int]
+        the time resolution of the data.  default=None
+	
+	Attributes
+    ----------
+	time : datetime
+        an object identifying which time these data are for
+	dataSet : str
+        the name of the data set
+	res : int
+        the time resolution of the data, in minutes
+	timeshift : int
+        timeshift from ACE to bowshock
+	bMagAvg : float
+        average IMF B magnitude, nT
+	bx : float
+        IMF Bx, nT
+	bye : float
+        IMF By (GSE), nT
+	bze : float
+        IMF Bz (GSE), nT
+	bym : float
+        IMF By (GSM), nT
+	bzm : float
+        IMF Bz (GSM), nT
+	flowSpeed : float
+        plasma flow speed, km/s
+	vxe : float
+        velocity in x direction (GSE), km/s
+	vye : float
+        velocity in y direction (GSE), km/s
+	vze : float
+        velocity in z direction (GSE), km/s
+	np : float
+        proton density, n/cc
+	temp : float
+        temperature in K
+	pDyn : float
+        Flow pressure nPa
+    e : float
+        Electric field, mV/m
+	beta : float
+        Plasma Beta
+	machNum : float
+        Alfven mach number
+	ae : float
+        AE index, nT
+	al : float
+        AL index, nT
+	au : float
+        AU index, nT
+	symd : float
+        SYM/D index, nT
+	symh : float
+        SYM/H index, nT
+	asyd : float
+        ASY/D index, nT
+	asyh : float
+        ASY/H index, nT
+	info : str
+        information about where the data come from.  *Please be courteous and
+        give credit to data providers when credit is due.*
 		
-	**Members**: 
-		* **time** (`datetime <http://tinyurl.com/bl352yx>`_): an object identifying which time these data are for
-		* **dataSet** (str): the name of the data set
-		* **res** (int): the time resolution of the data, in minutes
-		* **timeshift** (int): timeshift from ACE to bowshock
-		* **bMagAvg** (float): average IMF B magnitude, nT
-		* **bx** (float): IMF Bx, nT
-		* **bye** (float): IMF By (GSE), nT
-		* **bze** (float): IMF Bz (GSE), nT
-		* **bym** (float): IMF By (GSM), nT
-		* **bzm** (float): IMF Bz (GSM), nT
-		* **flowSpeed** (float): plasma flow speed, km/s
-		* **vxe** (float): velocity in x direction (GSE), km/s
-		* **vye** (float): velocity in y direction (GSE), km/s
-		* **vze** (float): velocity in z direction (GSE), km/s
-		* **np** (float): proton density, n/cc
-		* **temp** (float): temperature in K
-		* **pDyn** (float): Flow pressure nPa
-		* **e** (float): Electric field, mV/m
-		* **beta** (float): Plasma Beta
-		* **machNum** (float): Alfven mach number
-		* **ae** (float): AE index, nT
-		* **al** (float): AL index, nT
-		* **au** (float): AU index, nT
-		* **symd** (float): SYM/D index, nT
-		* **symh** (float): SYM/H index, nT
-		* **asyd** (float): ASY/D index, nT
-		* **asyh** (float): ASY/H index, nT
-		* **info** (str): information about where the data come from.  *Please be courteous and give credit to data providers when credit is due.*
-		
-	.. note::
-		If any of the members have a value of None, this means that they could not be read for that specific time
-   
-	**Methods**:
-		* :func:`parseFtp`
-	**Example**:
-		::
-		
+	Methods
+    -------
+	parseFtp
+
+	Notes
+    -----
+	If any of the members have a value of None, this means that they could
+    not be read for that specific time
+
+	Example
+    -------
 			emptyOmniObj = gme.ind.omniRec()
+
+    or
+
+        	myOmniObj = omniRec(ftpLine=aftpLine)
 		
 	written by AJ, 20130128
 	"""
 		
 	def parseFtp(self,line):
-		"""This method is used to convert a line of omni data read from the NASA SPDF FTP site into a :class:`omniRec` object.
+		"""This method is used to convert a line of omni data read from the
+        NASA SPDF FTP site into a :class:`omniRec` object.
 		
-		.. note::
-			In general, users will not need to worry about this.
+		Parameters
+        ----------
+		line : str
+            the ASCII line from the FTP server
+
+		Returns
+        -------
+		Nothing
+
+		Notes
+        -----
+		In general, users will not need to worry about this.
 		
-		**Belongs to**: :class:`omniRec`
+		Belongs to class omniRec
 		
-		**Args**: 
-			* **line** (str): the ASCII line from the FTP server
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
+		Example
+        -------
 				myOmniObj.parseFtp(ftpLine)
 			
 		written by AJ, 20130123
@@ -126,26 +191,6 @@ class omniRec(gmeData):
 				logging.exception('problem assigning value to' + mappingdict[i])
 			
 	def __init__(self, ftpLine=None, res=None, dbDict=None):
-		"""the intialization fucntion for a :class:`omniRec` object.  
-		
-		.. note::
-			In general, users will not need to worry about this.
-		
-		**Belongs to**: :class:`omniRec`
-		
-		**Args**: 
-			* [**ftpLine**] (str): an ASCII line from the FTP server. if this is provided, the object is initialized from it.  default=None
-			* [**dbDict**] (dict): a dictionary read from the mongodb.  if this is provided, the object is initialized from it.  default = None
-			* [**res**] (int): the time resolution of the data.  default=None
-		**Returns**:
-			* Nothing.
-		**Example**:
-			::
-			
-				myOmniObj = omniRec(ftpLine=aftpLine)
-			
-		written by AJ, 20130128
-		"""
 		#initialize the attributes
 		#note about where data came from
 		self.dataSet = 'Omni'
@@ -180,32 +225,72 @@ class omniRec(gmeData):
 		if(dbDict != None): self.parseDb(dbDict)
 	
 def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,pDyn=None,ae=None,symh=None):
-	"""This function reads omni data.  First, it will try to get it from the mongodb, and if it can't find it, it will look on the NASA SPDF FTP server using :func:`readOmniFtp`
+	"""This function reads omni data.  First, it will try to get it from the
+    mongodb, and if it can't find it, it will look on the NASA SPDF FTP
+    server using readOmniFtp
 	
-	**Args**: 
-		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_ or None): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, end Time will be 1 day after sTime.  default = None
-		* [**res**] (int): the time reolution of data desired.  This can be either 1 or 5. default = 5
-		* [**bx**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bx values in the range [a,b] will be returned.  default = None
-		* [**bx**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bx values in the range [a,b] will be returned.  default = None
-		* [**bye**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bye values in the range [a,b] will be returned.  default = None
-		* [**bze**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bze values in the range [a,b] will be returned.  default = None
-		* [**bym**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bym values in the range [a,b] will be returned.  default = None
-		* [**bzm**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with bzm values in the range [a,b] will be returned.  default = None
-		* [**pDyn**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with pDyn values in the range [a,b] will be returned.  default = None
-		* [**ae**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with ae values in the range [a,b] will be returned.  default = None
-		* [**symh**] (list or None): if this is not None, it must be a 2-element list of numbers, [a,b].  In this case, only data with symh values in the range [a,b] will be returned.  default = None
-	**Returns**:
-		* **omniList** (list or None): if data is found, a list of :class:`omniRec` objects matching the input parameters is returned.  If no data is found, None is returned.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sTime : datetime
+        the earliest time you want data for
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, end Time will
+        be 1 day after sTime.  default = None
+	res : Optional[int]
+        the time reolution of data desired.  This can be either 1
+        or 5. default = 5
+	bx : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with bx values in the range [a,b] will be
+        returned.  default = None
+	bx : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with bx values in the range [a,b] will be
+        returned.  default = None
+	bye : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with bye values in the range [a,b] will be
+        returned.  default = None
+    bze : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with bze values in the range [a,b] will be
+        returned.  default = None
+	bym : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with bym values in the range [a,b] will be
+        returned.  default = None
+	bzm : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with bzm values in the range [a,b] will be
+        returned.  default = None
+	pDyn : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with pDyn values in the range [a,b] will be
+        returned.  default = None
+	ae : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with ae values in the range [a,b] will be
+        returned.  default = None
+	symh : Optional[list]
+        if this is not None, it must be a 2-element list of numbers, [a,b].
+        In this case, only data with symh values in the range [a,b] will be
+        returned.  default = None
+
+	Returns
+    -------
+	omniList : list
+        if data is found, a list of class omniRec objects matching the
+        input parameters is returned.  If no data is found, None is
+        returned.
+
+	Example
+    -------
 			import datetime as dt
 			omniList = gme.ind.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
 		
 	written by AJ, 20130128
+
 	"""
-	
 	import datetime as dt
 	import davitpy.pydarn.sdio.dbUtils as db
 	
@@ -261,28 +346,40 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 		else:
 			logging.info('\n no data found on FTP server, returning None...')
 			return None
+
 			
 def readOmniFtp(sTime,eTime=None,res=5):
-	"""This function reads omni data from the NASA SPDF server via anonymous FTP connection.
+	"""This function reads omni data from the NASA SPDF server via anonymous
+    FTP connection.
 	
 	.. warning::
 		You should not use this. Use the general function :func:`readOmni` instead.
 	
-	**Args**: 
-		* **sTime** (`datetime <http://tinyurl.com/bl352yx>`_): the earliest time you want data for
-		* [**eTime**] (`datetime <http://tinyurl.com/bl352yx>`_ or None): the latest time you want data for.  if this is None, eTime will be equal to sTime.  default = None
-		* [**res**] (int): the time resolution of the data you want.  Must be either 1 or 5.  default=5
-	**Returns**:
-		* **omniList** (list or None): if data is found, a list of :class:`omniRec` objects matching the input parameters is returned.  If no data is found, None is returned.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sTime : datetime
+        the earliest time you want data for
+	eTime : Optional[datetime]
+        the latest time you want data for.  if this is None, eTime will be
+        equal to sTime.  default = None
+    res : Optional[int]
+        the time resolution of the data you want.  Must be either 1 or 5.
+        default=5
+
+	Returns
+    -------
+	omniList : list
+        if data is found, a list of class omniRec objects matching the input
+        parameters is returned.  If no data is found, None is returned.
+
+	Example
+    -------
 			import datetime as dt
 			omniList = gme.ind.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
 		
 	written by AJ, 20130128
+
 	"""
-	
 	from ftplib import FTP
 	import datetime as dt
 	
@@ -336,25 +433,32 @@ def readOmniFtp(sTime,eTime=None,res=5):
 		return None
 		
 def mapOmniMongo(sYear,eYear=None,res=5):
-	"""This function reads omni data from the NASA SPDF FTP server via anonymous FTP connection and maps it to the mongodb.  
+	"""This function reads omni data from the NASA SPDF FTP server via
+    anonymous FTP connection and maps it to the mongodb.  
 	
 	.. warning::
 		In general, nobody except the database admins will need to use this function
 	
-	**Args**: 
-		* **sYear** (int): the year to begin mapping data
-		* [**eYear**] (int or None): the end year for mapping data.  if this is None, eYear will be sYear
-		* [**res**] (int): the time resolution for mapping data.  Can be either 1 or 5.  default=5
-	**Returns**:
-		* Nothing.
-	**Example**:
-		::
-		
+	Parameters
+    ----------
+	sYear : int
+        the year to begin mapping data
+	eYear : Optional[int]
+        the end year for mapping data.  if this is None, eYear will be sYear
+	res : Optional[int]
+        the time resolution for mapping data.  Can be either 1 or 5.  default=5
+
+	Returns
+    -------
+	Nothing
+
+	Example
+    -------
 			gme.ind.mapOmniMongo(1997,res=1)
 		
 	written by AJ, 20130123
+
 	"""
-	
 	import davitpy.pydarn.sdio.dbUtils as db
         from davitpy import rcParams
 	import datetime as dt
@@ -405,4 +509,3 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 					mongoData.save(dbDict)
 				else:
 					logging.warning('strange, there is more than 1 record for' + rec.time)
-
