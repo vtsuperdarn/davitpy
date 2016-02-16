@@ -30,8 +30,9 @@
 	* :func:`gme.ind.symasy.readSymAsyWeb`
 	* :func:`gme.ind.symasy.mapSymAsyMongo`
 """
-
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
 class symAsyRec(gmeData):
 	"""a class to represent a record of sym/asy data.  Extends :class:`gme.base.gmeBase.gmeData`. Note that sym/asym data is available from 1980-present day (or whatever the latest WDC has uploaded is).  **The data are 1-minute values.**  More info on sym/asy can be found `here <http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf>`_
 		
@@ -144,14 +145,14 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 	
 	#check all the inputs for validity
 	assert(sTime == None or isinstance(sTime,dt.datetime)), \
-		'error, sTime must be a datetime object'
+		logging.error('sTime must be a datetime object')
 	assert(eTime == None or isinstance(eTime,dt.datetime)), \
-		'error, eTime must be either None or a datetime object'
+		logging.error('eTime must be either None or a datetime object')
 	var = locals()
 	for name in ['symh','symd','asyh','asyd']:
 		assert(var[name] == None or (isinstance(var[name],list) and \
 			isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
-			'error,'+name+' must None or a list of 2 numbers'
+			logging.error(name + ' must None or a list of 2 numbers')
 			
 	if(eTime == None and sTime != None): eTime = sTime+dt.timedelta(days=1)
 	qryList = []
@@ -176,13 +177,14 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 		symList = []
 		for rec in qry.sort('time'):
 			symList.append(symAsyRec(dbDict=rec))
-		print '\nreturning a list with',len(symList),'records of sym/asy data'
+		logging.info('\nreturning a list with' + len(symList) + 'records of sym/asy data')
 		return symList
 	#if we didn't find anything on the mongodb
 	else:
-		print '\ncould not find requested data in the mongodb'
+		logging.info('\ncould not find requested data in the mongodb')
 		return None
-			
+
+
 def readSymAsyWeb(sTime,eTime=None):
 	"""This function reads sym/asy data from the WDC kyoto website
 	
@@ -205,12 +207,12 @@ def readSymAsyWeb(sTime,eTime=None):
 	import datetime as dt
 	import mechanize
 	
-	assert(isinstance(sTime,dt.datetime)),'error, sTime must be a datetime object'
+	assert(isinstance(sTime,dt.datetime)), logging.error('sTime must be a datetime object')
 	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
-	assert(isinstance(eTime,dt.datetime)),'error, eTime must be a datetime object'
-	assert(eTime >= sTime), 'error, eTime < eTime'
+	assert(isinstance(eTime,dt.datetime)), logging.error('eTime must be a datetime object')
+	assert(eTime >= sTime), logging.error('eTime < eTime')
 	delt = eTime-sTime
-	assert(delt.days <= 366), 'error, cant read more than 366 days'
+	assert(delt.days <= 366), logging.error('cant read more than 366 days')
 	
 	tens = (sTime.year)/10
 	year = sTime.year-tens*10
@@ -256,8 +258,8 @@ def readSymAsyWeb(sTime,eTime=None):
 		cols=l.split()
 		try: symList.append(symAsyRec(webLine=l))
 		except Exception,e:
-			print e
-			print 'problem initializing symAsy object'
+			logging.exception(e)
+			logging.exception('problem initializing symAsy object')
 		
 	if(symList != []): return symList
 	else: return None
@@ -286,10 +288,10 @@ def mapSymAsyMongo(sYear,eYear=None):
 	import datetime as dt
 	
 	#check inputs
-	assert(isinstance(sYear,int)),'error, sYear must be int'
+	assert(isinstance(sYear,int)), logging.error('sYear must be int')
 	if(eYear == None): eYear=sYear
-	assert(isinstance(eYear,int)),'error, sYear must be None or int'
-	assert(eYear >= sYear), 'error, end year greater than start year'
+	assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
+	assert(eYear >= sYear), logging.error('end year greater than start year')
 	
 	#get data connection
 	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
@@ -309,21 +311,21 @@ def mapSymAsyMongo(sYear,eYear=None):
 		for rec in templist:
 			#check if a duplicate record exists
 			qry = mongoData.find({'time':rec.time})
-			print rec.time
+			logging.debug(rec.time)
 			tempRec = rec.toDbDict()
 			cnt = qry.count()
 			#if this is a new record, insert it
 			if(cnt == 0): mongoData.insert(tempRec)
 			#if this is an existing record, update it
 			elif(cnt == 1):
-				print 'foundone!!'
+				logging.debug('found one!!')
 				dbDict = qry.next()
 				temp = dbDict['_id']
 				dbDict = tempRec
 				dbDict['_id'] = temp
 				mongoData.save(dbDict)
 			else:
-				print 'strange, there is more than 1 Sym/Asy record for',rec.time
+				logging.warning('strange, there is more than 1 Sym/Asy record for' + rec.time)
 		del templist
 	
 
