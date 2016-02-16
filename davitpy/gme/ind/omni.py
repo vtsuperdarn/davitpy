@@ -30,6 +30,8 @@
 	* :func:`mapOmniMongo`
 """
 from davitpy.gme.base.gmeBase import gmeData
+import logging
+
 class omniRec(gmeData):
 	"""a class to represent a record of omni data.  Extends :class:`gmeBase.gmeData`.  Insight on the class members can be obtained from `the NASA SPDF site <ftp://spdf.gsfc.nasa.gov/pub/data/omni/high_res_omni/hroformat.txt>`_.  note that Omni data is available from 1995-present day (or whatever the latest NASA has uploaded is), in 1 and 5 minute resolution.
 	
@@ -120,8 +122,8 @@ class omniRec(gmeData):
 			if(temp == ''): continue
 			try: setattr(self,mappingdict[i],float(cols[i]))
 			except Exception,e:
-				print e
-				print 'problem assigning value to',mappingdict[i]
+				logging.exception(e)
+				logging.exception('problem assigning value to' + mappingdict[i])
 			
 	def __init__(self, ftpLine=None, res=None, dbDict=None):
 		"""the intialization fucntion for a :class:`omniRec` object.  
@@ -209,16 +211,16 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 	
 	#check all the inputs for validity
 	assert(isinstance(sTime,dt.datetime)), \
-		'error, sTime must be a datetime object'
+		logging.error('sTime must be a datetime object')
 	assert(eTime == None or isinstance(eTime,dt.datetime)), \
-		'error, eTime must be either None or a datetime object'
-	assert(res==5 or res == 1), 'error, res must be either 1 or 5'
+		logging.error('eTime must be either None or a datetime object')
+	assert(res==5 or res == 1), logging.error('res must be either 1 or 5')
 	var = locals()
 	for name in ['bx','bye','bze','bym','bzm','pDyn','ae','symh']:
 		assert(var[name] == None or (isinstance(var[name],list) and \
 			isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
-			'error,'+name+' must None or a list of 2 numbers'
-		
+			logging.error(name + ' must None or a list of 2 numbers')
+
 	if(eTime == None): eTime = sTime+dt.timedelta(days=1)
 	qryList = []
 	#if arguments are provided, query for those
@@ -243,21 +245,21 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 		omniList = []
 		for rec in qry.sort('time'):
 			omniList.append(omniRec(dbDict=rec))
-		print '\nreturning a list with',len(omniList),'records of omni data'
+		logging.info('\nreturning a list with ' + len(omniList) + ' records of omni data')
 		return omniList
 	#if we didn't find anything on the mongodb
 	else:
-		print '\ncould not find requested data in the mongodb'
-		print 'we will look on the ftp server, but your conditions will be (mostly) ignored'
+		logging.info('\ncould not find requested data in the mongodb')
+		logging.info('we will look on the ftp server, but your conditions will be (mostly) ignored')
 		
 		#read from ftp server
 		omniList = readOmniFtp(sTime, eTime)
 		
 		if(omniList != None):
-			print '\nreturning a list with',len(omniList),'recs of omni data'
+			logging.info('\nreturning a list with ' + len(omniList) + ' recs of omni data')
 			return omniList
 		else:
-			print '\n no data found on FTP server, returning None...'
+			logging.info('\n no data found on FTP server, returning None...')
 			return None
 			
 def readOmniFtp(sTime,eTime=None,res=5):
@@ -284,29 +286,29 @@ def readOmniFtp(sTime,eTime=None,res=5):
 	from ftplib import FTP
 	import datetime as dt
 	
-	assert(isinstance(sTime,dt.datetime)),'error, sTime must be datetime'
+	assert(isinstance(sTime,dt.datetime)), logging.error('sTime must be datetime')
 	if(eTime == None): eTime=sTime
-	assert(isinstance(eTime,dt.datetime)),'error, eTime must be datetime'
-	assert(eTime >= sTime), 'error, end time greater than start time'
-	assert(res == 1 or res == 5), 'error, res must be 1 or 5'
+	assert(isinstance(eTime,dt.datetime)), logging.error('eTime must be datetime')
+	assert(eTime >= sTime), logging.error('end time greater than start time')
+	assert(res == 1 or res == 5), logging.error('res must be 1 or 5')
 	
 	#connect to the server
 	try: ftp = FTP('spdf.gsfc.nasa.gov')	
 	except Exception,e:
-		print e
-		print 'problem connecting to SPDF server'
+		logging.exception(e)
+		logging.exception('problem connecting to SPDF server')
 		
 	#login as anonymous
 	try: l=ftp.login()
 	except Exception,e:
-		print e
-		print 'problem logging in to SPDF server'
+		logging.exception(e)
+		logging.exception('problem logging in to SPDF server')
 	
 	#go to the omni directory
 	try: ftp.cwd('/pub/data/omni/high_res_omni/')
 	except Exception,e:
-		print e
-		print 'error getting to data directory'
+		logging.exception(e)
+		logging.exception('error getting to data directory')
 	
 	#list to hold the lines
 	lines = []
@@ -314,11 +316,11 @@ def readOmniFtp(sTime,eTime=None,res=5):
 	for yr in range(sTime.year,eTime.year+1):
 		if(res == 1): fname = 'omni_min'+str(yr)+'.asc'
 		else: fname = 'omni_5min'+str(yr)+'.asc'
-		print 'omni: RETR '+fname
+		logging.info('omni: RETR ' + fname)
 		try: ftp.retrlines('RETR '+fname,lines.append)
 		except Exception,e:
-			print e
-			print 'error retrieving',fname
+			logging.exception(e)
+			logging.exception('error retrieving' + fname)
 	
 	#convert the ascii lines into a list of omniRec objects
 	myOmni = []
@@ -358,11 +360,11 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 	import datetime as dt
 	
 	#check inputs
-	assert(res == 1 or res == 5),'error, res must be either 1 or 5'
-	assert(isinstance(sYear,int)),'error, sYear must be int'
+	assert(res == 1 or res == 5), logging.error('res must be either 1 or 5')
+	assert(isinstance(sYear,int)), logging.error('sYear must be int')
 	if(eYear == None): eYear=sYear
-	assert(isinstance(eYear,int)),'error, sYear must be None or int'
-	assert(eYear >= sYear), 'error, end year greater than start year'
+	assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
+	assert(eYear >= sYear), logging.error('end year greater than start year')
 	
 	#get data connection
 	mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
@@ -388,20 +390,19 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 			for rec in templist:
 				#check if a duplicate record exists
 				qry = mongoData.find({'$and':[{'time':rec.time},{'res':rec.res}]})
-				print rec.time
+				logging.debug(rec.time)
 				tempRec = rec.toDbDict()
 				cnt = qry.count()
 				#if this is a new record, insert it
 				if(cnt == 0): mongoData.insert(tempRec)
 				#if this is an existing record, update it
 				elif(cnt == 1):
-					print 'foundone!!'
+					logging.debug('found one!!')
 					dbDict = qry.next()
 					temp = dbDict['_id']
 					dbDict = tempRec
 					dbDict['_id'] = temp
 					mongoData.save(dbDict)
 				else:
-					print 'strange, there is more than 1 record for',rec.time
-	
-	
+					logging.warning('strange, there is more than 1 record for' + rec.time)
+
