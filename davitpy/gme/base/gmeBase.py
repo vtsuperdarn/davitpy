@@ -27,6 +27,7 @@
 **Classes**:
 	* :class:`gmeData`
 """
+import logging
 
 class gmeData:
 	"""a class to represent a a record of gme data.  Other classes will extend this class
@@ -83,8 +84,8 @@ class gmeData:
 				#assign the value to our object
 				try: setattr(self,attr,val)
 				except Exception,e:
-					print e
-					print 'problem assigning',attr
+					logging.exception(e)
+					logging.exception('problem assigning ' + attr)
 					
 	def toDbDict(self):
 		"""This method is used to convert a :class:`gmeData` object into a mongodb data dictionary.
