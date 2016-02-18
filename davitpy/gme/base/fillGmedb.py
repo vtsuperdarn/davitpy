@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 def fillGmeDb(time='recent'):
 	from davitpy import gme
         from davitpy import rcParams
@@ -59,38 +61,38 @@ def fillGmeDb(time='recent'):
 		
 	try: p0.start()
 	except Exception,e:
-		print e
-		print 'problem filling Omni db'
+		logging.exception(e)
+		logging.exeption('problem filling Omni db')
 		
 	try: p1.start()
 	except Exception,e:
-		print e
-		print 'problem filling Omni db'
+		logging.exception(e)
+		logging.exception('problem filling Omni db')
 		
 	try: p2.start()
 	except Exception,e:
-		print e
-		print 'problem filling Poes db'
+		logging.exception(e)
+		logging.exception('problem filling Poes db')
 		
 	try: p3.start()
 	except Exception,e:
-		print e
-		print 'problem filling Kp db'
+		logging.exception(e)
+		logging.exception('problem filling Kp db')
 		
 	try: p4.start()
 	except Exception,e:
-		print e
-		print 'problem filling Dst db'
+		logging.exception(e)
+		logging.exception('problem filling Dst db')
 		
 	try: p5.start()
 	except Exception,e:
-		print e
-		print 'problem filling AE db'
+		logging.exception(e)
+		logging.exception('problem filling AE db')
 		
 	try: p6.start()
 	except Exception,e:
-		print e
-		print 'problem filling AE db'
+		logging.exception(e)
+		logging.exception('problem filling AE db')
 		
 		
 	p0.join()
