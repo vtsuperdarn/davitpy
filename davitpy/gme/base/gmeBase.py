@@ -29,61 +29,61 @@ Module author:: AJ, 20130129
 import logging
 
 class gmeData:
-	"""a class to represent a a record of gme data.  Other classes will extend this class
-		
-	Attributes
+    """a class to represent a a record of gme data.  Other classes will extend this class
+
+    Attributes
     ----------
-	time : datetime
+    time : datetime
         an object identifying which time these data are for
-	dataSet : str
+    dataSet : str
         a string indicating the dataset
-	info : str
+    info : str
         information about where the data come from.  *Please be courteous and give
         credit to data providers when credit is due.*
 
-	Methods
+    Methods
     -------
-	parseDb
-	toDbDict
+    parseDb
+    toDbDict
 
-	Notes
+    Notes
     -----
-	If any of the members have a value of None, this means that they could not
+    If any of the members have a value of None, this means that they could not
     be read for that specific time
-   
-	Example
-    -------
-			emptyObj = gme.base.gmeData()
-		
-	written by AJ, 20130131
 
-	"""
+    Example
+    -------
+            emptyObj = gme.base.gmeData()
+
+    written by AJ, 20130131
+
+    """
 	def parseDb(self,dbDict):
-		"""This method is used to parse a dictionary of gme data from the mongodb
+        """This method is used to parse a dictionary of gme data from the mongodb
         into a :class:`gmeData` object.  
-		
-		Parameters
+
+        Parameters
         ----------
-		dbDict : dict
+        dbDict : dict
             the dictionary from the mongodb
 
-		Returns
+        Returns
         -------
-		Nothing
+        Nothing
 
-		Notes
+        Notes
         -----
-		In general, users will not need to use this.
-		
-		Belongs to class gmeData
-		
-		Example
-        -------
-				myObj.parseDb(mongoDbDict)
-			
-		written by AJ, 20130129
+        In general, users will not need to use this.
 
-		"""
+        Belongs to class gmeData
+
+        Example
+        -------
+                myObj.parseDb(mongoDbDict)
+
+        written by AJ, 20130129
+
+        """
 		#iterate over the mongo dict
 		for attr, val in dbDict.iteritems():
 			#check for mongo _id attribute
@@ -105,31 +105,31 @@ class gmeData:
 
 					
 	def toDbDict(self):
-		"""This method is used to convert a :class:`gmeData` object into a
+        """This method is used to convert a :class:`gmeData` object into a
         mongodb data dictionary.
 
-		Parameters
+        Parameters
         ----------
-		Nothing
+        Nothing
 
-		Returns
+        Returns
         -------
-		dbDict : dict
+        dbDict : dict
             a dictionary in the correct format for writing to the mongodb
 
-		Notes
+        Notes
         -----
-		In general, users will not need to worry about this
+        In general, users will not need to worry about this
 
-		Belongs to class gmeData
+        Belongs to class gmeData
 
-		Example
+        Example
         -------
-				mongoDbDict = myObj.todbDict()
+                mongoDbDict = myObj.todbDict()
 
-		written by AJ, 20130129
+        written by AJ, 20130129
 
-		"""
+        """
 		#initialize a new dictionary
 		dbDict = {}
 		#create dictionary entries for all out our attributes
