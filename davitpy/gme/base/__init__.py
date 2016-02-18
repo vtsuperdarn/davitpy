@@ -14,15 +14,16 @@ gmeBase     base class for gme data
 -----------------------------------------
 
 """
+import logging
 
 try: import gmeBase
-except Exception,e: print e
+except Exception,e: logging.exception(e)
 
 try: from gmeBase import *
-except Exception,e: print e
+except Exception,e: logging.exception(e)
 
 try: import fillGmedb
-except Exception,e: print e
+except Exception,e: logging.exception(e)
 
 try: from fillGmedb import *
-except Exception,e: print e
+except Exception,e: logging.exception(e)
