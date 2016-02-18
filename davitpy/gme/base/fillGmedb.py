@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -17,6 +18,23 @@
 import logging
 
 def fillGmeDb(time='recent'):
+    """ An overall function to make connections to source databases
+    and populate a local database
+
+    Parameters
+    ----------
+    time : Optional[str]
+        Either 'recent' or other.  If not recent, the database will
+        populated with data available back to 1995.  Default is 'recent'
+
+    Returns
+    -------
+    Nothing
+
+    Example
+    -------
+
+    """
 	from davitpy import gme
         from davitpy import rcParams
         import os
