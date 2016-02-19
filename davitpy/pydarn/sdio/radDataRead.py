@@ -90,7 +90,7 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
         DB_PORT will be used. (default=None)
     username : (str/NoneType)
         Username for remote_site.  If None, the rcParam value DBREADUSER will
-        be used.
+        be used. (default=None)
     password : (str/bool/NoneType)
         Password for remote_site. If password is set to True, the user is
         prompted for the remote_site password.  If set to None, the rcParam
