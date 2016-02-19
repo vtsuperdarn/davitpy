@@ -1,74 +1,72 @@
 # I/O module __init__.py
 """
-*******************************
-            IO
-*******************************
-This subpackage contains various I/O routines for DaViT-py
-DEV: functions/modules/classes with a * have not been developed yet
+This subpackage contains various input/output routines for DaViTpy
 
-This includes the following module(s):
-	DataTypes
-		defines the general data pointer
-	radDataTypes
-		defines the fundamental radar data types
-	radDataRead
-		contains the functions necessary for reading radar data
-	pygridIo
-		library for reading and writing pygrid files
-	dbUtils
-		general utilities for database maintenance
-	dbRead
-		library for reading records from the database
-
-
-*******************************
+Modules
+---------
+DataTypes
+    defines the general data pointer
+radDataTypes
+    defines the fundamental radar data types
+radDataRead
+    contains the functions necessary for reading radar data
+sdDataTypes
+    defines the map and grid data types
+sdDataRead
+    contains the functions to read the radar map and grid files
+fitexfilter
+    Contains filtering routines
+dbUtils
+    general utilities for database maintenance
+fetchUtils
+    routines to retrieve data files from local and remote locations
 """
-try:
-	import fetchUtils
-	from fetchUtils import *
-except: print 'problem importing fetchUtils'
+import logging
 
 try:
-	import DataTypes
-	from DataTypes import *
-except: print 'problem importing DataTypes'
+    import fetchUtils
+    from fetchUtils import *
+except Exception,e:
+    logging.critical('{:}\nproblem importing fetchUtils'.format(e))
 
 try:
-	import radDataTypes
-	from radDataTypes import *
-except: print 'problem importing radDataTypes'
-	
-try:
-	import radDataRead
-	from radDataRead import *
-except: print 'problem importing radDataRead'
+    import DataTypes
+    from DataTypes import *
+except Exception,e:
+    logging.critical('{:}\nproblem importing DataTypes'.format(e))
 
 try:
-	import sdDataTypes
-	from sdDataTypes import *
-except: print 'problem importing sdDataTypes'
-	
+    import radDataTypes
+    from radDataTypes import *
+except Exception,e:
+    logging.critical('{:}\nproblem importing radDataTypes'.format(e))
+
 try:
-	import sdDataRead
-	from sdDataRead import *
+    import radDataRead
+    from radDataRead import *
+except Exception,e:
+    logging.critical('{:}\nproblem importing radDataRead'.format(e))
+
+try:
+    import sdDataTypes
+    from sdDataTypes import *
+except Exception,e:
+    logging.critical('{:}\nproblem importing sdDataTypes'.format(e))
+
+try:
+    import sdDataRead
+    from sdDataRead import *
 except Exception,e: 
-	print e
-	print 'problem importing sdDataRead'
-	
-# try:
-# 	import pygridIo
-# 	from pygridIo import *
-# except: print 'problem importing pygridIo'
+    logging.critical('{:}\nproblem importing sdDataRead'.format(e))
 
 try:
-	import fitexfilter
-	from fitexfilter import *
-except Exception,e: 
-	print e
-	print 'problem importing fitexfilter'
-	
+    import fitexfilter
+    from fitexfilter import *
+except Exception,e:
+    logging.critical('{:}\nproblem importing fitexfilter'.format(e))
+
 try:
-	import dbUtils
-	from dbUtils import *
+    import dbUtils
+    from dbUtils import *
 except Exception,e: 
-	print 'problem importing dbUtils: ', e
+    logging.critical('{:}\nproblem importing dbUtils'.format(e))
