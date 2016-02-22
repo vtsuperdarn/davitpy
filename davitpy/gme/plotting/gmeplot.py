@@ -37,7 +37,8 @@ def __get_iterable(x):
     return x
 
 
-def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None):
+def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,
+            NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None):
   """Plot ground magnetic indicies, including AE, SYMH, ASYMH, and DST.
 
   Parameters
@@ -143,7 +144,8 @@ def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX
     ax.annotate(s,xy=(xpos,ypos),xycoords="axes fraction",horizontalalignment="left",fontsize='x-small')
 
 
-def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,yLabel=False,NoX=False,NoY=False,NoCredit=False):
+def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,
+             ymax=None,yLabel=False,NoX=False,NoY=False,NoCredit=False):
   """OMNI solar wind parameters, including interplanetary magnetic field and solar wind velocity.
 
   Parameters
