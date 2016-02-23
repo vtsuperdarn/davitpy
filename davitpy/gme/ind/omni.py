@@ -131,15 +131,15 @@ class omniRec(gmeData):
 
     Example
     -------
-            emptyOmniObj = gme.ind.omniRec()
+        emptyOmniObj = gme.ind.omniRec()
 
     or
 
-            myOmniObj = omniRec(ftpLine=aftpLine)
+        myOmniObj = omniRec(ftpLine=aftpLine)
         
     written by AJ, 20130128
+
     """
-        
     def parseFtp(self,line):
         """This method is used to convert a line of omni data read from the
         NASA SPDF FTP site into a :class:`omniRec` object.
@@ -161,9 +161,10 @@ class omniRec(gmeData):
         
         Example
         -------
-                myOmniObj.parseFtp(ftpLine)
+            myOmniObj.parseFtp(ftpLine)
             
         written by AJ, 20130123
+
         """
         import datetime as dt
         
@@ -285,8 +286,8 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
 
     Example
     -------
-            import datetime as dt
-            omniList = gme.ind.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
+        import datetime as dt
+        omniList = gme.ind.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
         
     written by AJ, 20130128
 
@@ -374,8 +375,8 @@ def readOmniFtp(sTime,eTime=None,res=5):
 
     Example
     -------
-            import datetime as dt
-            omniList = gme.ind.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
+        import datetime as dt
+        omniList = gme.ind.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
         
     written by AJ, 20130128
 
@@ -454,7 +455,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 
     Example
     -------
-            gme.ind.mapOmniMongo(1997,res=1)
+        gme.ind.mapOmniMongo(1997,res=1)
         
     written by AJ, 20130123
 

@@ -37,7 +37,6 @@ Moduleauthor:: AJ, 20130131
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
-
 class dstRec(gmeData):
     """a class to represent a record of dst data.  Extends class
     gme.base.gmeBase.gmeData. Note that Dst data is available from
@@ -79,11 +78,11 @@ class dstRec(gmeData):
 
     Example
     -------
-            emptyDstObj = gme.ind.dstRec()
+        emptyDstObj = gme.ind.dstRec()
 
     or
 
-            myDstObj = dstRec(webLine=awebLine)
+        myDstObj = dstRec(webLine=awebLine)
         
     written by AJ, 20130131
     """
@@ -109,7 +108,7 @@ class dstRec(gmeData):
         
         Example
         -------
-                myDstObj.parseWeb(webLine)
+            myDstObj.parseWeb(webLine)
             
         written by AJ, 20130131
 
@@ -160,8 +159,8 @@ def readDst(sTime=None,eTime=None,dst=None):
 
     Example
     -------
-            import datetime as dt
-            dstList = gme.ind.readDst(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),dst=[-50,50])
+        import datetime as dt
+        dstList = gme.ind.readDst(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),dst=[-50,50])
         
     written by AJ, 20130131
 
@@ -224,8 +223,8 @@ def readDstWeb(sTime,eTime=None):
     
     Example
     -------
-            import datetime as dt
-            dstList = gme.ind.readDstWeb(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
+        import datetime as dt
+        dstList = gme.ind.readDstWeb(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
         
     written by AJ, 20130131
 
@@ -309,7 +308,7 @@ def mapDstMongo(sYear,eYear=None):
     
     Example
     -------
-            gme.ind.mapDstMongo(1997)
+        gme.ind.mapDstMongo(1997)
         
     written by AJ, 20130123
 
