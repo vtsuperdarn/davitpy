@@ -1,26 +1,55 @@
+# -*- coding: utf-8 -*-
+"""models.aacgm
+
+Functions
+------------
+aacgmConv
+aacgmConvArr
+------------
+
 """
-*********************
-**Module**: models.aacgm
-*********************
-"""
+import logging
+
 try:
     from aacgm import mltFromEpoch
 except Exception, e:
-    print __file__+' -> aacgm: ', e
+    logging.exception(__file__ + ' -> aacgm: ' + e)
 
 try:
     from aacgm import mltFromYmdhms
 except Exception, e:
-    print __file__+' -> aacgm: ', e
+    logging.exception(__file__ + ' -> aacgm: ' + e)
 
 try:
     from aacgm import mltFromYrsec
 except Exception, e:
-    print __file__+' -> aacgm: ', e
+    logging.exception(__file__ + ' -> aacgm: ' + e)
 
 
 def aacgmConv(in_lat,in_lon,height,year,flg,coeff_prefix=None): 
+  """
 
+  Parameters
+  ----------
+  in_lat :
+
+  in_lon :
+
+  height :
+
+  year :
+
+  flg :
+
+  coeff_prefix : Optional[str]
+    location for aacgm coefficient files. Default (none) is to use
+    rcParams['AACGM_DAVITPY_DAT_PREFEX']
+
+  Returns
+  -------
+  direct_aacgmConv()
+
+  """
   from davitpy import rcParams
   from davitpy import models
   from aacgm import direct_aacgmConv
@@ -31,7 +60,29 @@ def aacgmConv(in_lat,in_lon,height,year,flg,coeff_prefix=None):
   return direct_aacgmConv(in_lat,in_lon,height,year,flg,coeff_prefix)
 
 def aacgmConvArr(in_lat_list,in_lon_list,height_list,year,flg,coeff_prefix=None): 
+  """
 
+  Parameters
+  ----------
+  in_lat_list :
+
+  in_lon_list :
+
+  height_list :
+
+  year :
+
+  flg :
+
+  coeff_prefix : Optional[str]
+    location for aacgm coefficient files. Default (none) is to use
+    rcParams['AACGM_DAVITPY_DAT_PREFEX']
+
+  Returns
+  -------
+  direct_aacgmConvArr()
+
+  """
   from davitpy import rcParams
   from davitpy import models
   from aacgm import direct_aacgmConvArr
@@ -40,5 +91,4 @@ def aacgmConvArr(in_lat_list,in_lon_list,height_list,year,flg,coeff_prefix=None)
     coeff_prefix = rcParams['AACGM_DAVITPY_DAT_PREFIX']
 
   return direct_aacgmConvArr(in_lat_list,in_lon_list,height_list,year,flg,coeff_prefix)
-
 
