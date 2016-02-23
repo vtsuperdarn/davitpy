@@ -85,17 +85,15 @@ class kpDay(gmeData):
 
     Example
     -------
-            emptyKpObj = gme.ind.kpDay()
+        emptyKpObj = gme.ind.kpDay()
 
     or
 
-            myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
-
+        myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
         
     written by AJ, 20130123
 
     """
-    
     def parseFtp(self,line,yr):
         """This method is used to convert a line of kp data read from the GFZ-Potsdam
         FTP site into a :class:`kpDay` object.  In general, users will not need
@@ -119,7 +117,7 @@ class kpDay(gmeData):
         
         Example
         -------
-                myKpDayObj.parseFtp(ftpLine,2009)
+            myKpDayObj.parseFtp(ftpLine,2009)
             
         written by AJ, 20130123
 
@@ -216,8 +214,8 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
 
     Example
     -------
-            import datetime as dt
-            kpList = gme.ind.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
+        import datetime as dt
+        kpList = gme.ind.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
         
     written by AJ, 20130123
 
@@ -321,8 +319,8 @@ def readKpFtp(sTime, eTime=None):
 
     Example
     -------
-            import datetime as dt
-            kpList = gme.ind.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
+        import datetime as dt
+        kpList = gme.ind.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
             
     written by AJ, 20130123
 
@@ -401,7 +399,7 @@ def mapKpMongo(sYear,eYear=None):
     
     Example
     -------
-            gme.ind.mapKpMongo(1985,eTime=1986)
+        gme.ind.mapKpMongo(1985,eTime=1986)
         
     written by AJ, 20130123
 

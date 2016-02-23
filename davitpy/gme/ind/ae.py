@@ -37,7 +37,6 @@ Module Author:: AJ, 20130131
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
-
 class aeRec(gmeData):
     """a class to represent a record of ae data.  Extends class 
     gme.base.gmeBase.gmeData. Note that Ae data is available
@@ -49,13 +48,12 @@ class aeRec(gmeData):
     Parameters
     ----------
     webLine : Optional[str]
-       an ASCII line from the datafile from WDC. if this is provided,
-       the object is initialized from it.  default=None
+        an ASCII line from the datafile from WDC. if this is provided,
+        the object is initialized from it.  default=None
     dbDict : Optional[dict]
         a dictionary read from the mongodb.  if this is provided, the
         object is initialized from it.  default = None
     res : Optional[ ]
-
 
     Attributes
     ----------
@@ -92,11 +90,11 @@ class aeRec(gmeData):
 
     Example
     -------
-            emptyAeObj = gme.ind.aeRec()
+        emptyAeObj = gme.ind.aeRec()
 
     or
 
-            myAeObj = aeRec(webLine=awebLine)
+        myAeObj = aeRec(webLine=awebLine)
 
         
     written by AJ, 20130131
@@ -139,7 +137,6 @@ class aeRec(gmeData):
 
     def __init__(self, webLine=None, dbDict=None, res=None):
         """the intialization fucntion for a class gme.ind.ae.aeRec object.  
-        
         """
         #note about where data came from
         self.dataSet = 'AE'
@@ -195,9 +192,9 @@ def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
 
     Example
     -------
-            import datetime as dt
-            aeList = gme.ind.readAe(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),res=60,ao=[-50,50])
-        
+        import datetime as dt
+        aeList = gme.ind.readAe(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),res=60,ao=[-50,50])
+    
     written by AJ, 20130131
 
     """
@@ -268,8 +265,8 @@ def readAeWeb(sTime,eTime=None,res=60):
     
     Example
     -------
-            import datetime as dt
-            aeList = gme.ind.readAeWeb(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
+        import datetime as dt
+        aeList = gme.ind.readAeWeb(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0))
         
     written by AJ, 20130131
 
@@ -389,7 +386,7 @@ def mapAeMongo(sYear,eYear=None,res=60):
     
     Example
     -------
-            gme.ind.mapAeMongo(1997)
+        gme.ind.mapAeMongo(1997)
         
     written by AJ, 20130123
 

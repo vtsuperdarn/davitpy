@@ -81,11 +81,11 @@ class symAsyRec(gmeData):
    
     Example
     -------
-            emptySymAsyObj = gme.ind.symAsyRec()
+        emptySymAsyObj = gme.ind.symAsyRec()
 
     or
 
-            myDstObj = symAsyRec(webLine=awebLine)
+        myDstObj = symAsyRec(webLine=awebLine)
 
     written by AJ, 20130131
 
@@ -111,7 +111,7 @@ class symAsyRec(gmeData):
 
         Example
         -------
-                mysymAsyObj.parseWeb(webLine)
+            mysymAsyObj.parseWeb(webLine)
             
         written by AJ, 20130131
 
@@ -178,8 +178,8 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 
     Example
     -------
-            import datetime as dt
-            symList = gme.ind.readSymAsy(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),symh=[5,50],asyd=[-10,0])
+        import datetime as dt
+        symList = gme.ind.readSymAsy(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),symh=[5,50],asyd=[-10,0])
         
     written by AJ, 20130131
 
@@ -247,8 +247,8 @@ def readSymAsyWeb(sTime,eTime=None):
 
     Example
     -------
-            import datetime as dt
-            symList = gme.ind.readSymAsyWeb(dt.datetime(2011,1,1),eTime=dt.datetime(2011,1,5))
+        import datetime as dt
+        symList = gme.ind.readSymAsyWeb(dt.datetime(2011,1,1),eTime=dt.datetime(2011,1,5))
         
     written by AJ, 20130131
 
@@ -334,7 +334,7 @@ def mapSymAsyMongo(sYear,eYear=None):
 
     Example
     -------
-            gme.ind.mapSymAsyMongo(2001)
+        gme.ind.mapSymAsyMongo(2001)
         
     written by AJ, 20130123
 
