@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
 # hwm_input.py, Angeline G. Burrell (AGB), UoL
 #
 # Comments: Routines to make it easier to provide input to HWM in python
 #-----------------------------------------------------------------------------
-'''
+"""
 hwm_input
 
 Author: Angeline G. Burrell (AGB)
@@ -21,13 +22,14 @@ format_hwm_input
 datetime_to_utsec
 datetime_to_iydsec
 datetime_to_slt
-'''
+"""
 
 # Import python packages
 import datetime as dt
+import logging
 
 def format_hwm_input(time, alt, lat, lon, ap=-1, path=None):
-    ''' Take input using keywords and return a set with correctly formatted
+    """ Take input using keywords and return a set with correctly formatted
     input for HWM14
 
     Parameters
@@ -50,7 +52,7 @@ def format_hwm_input(time, alt, lat, lon, ap=-1, path=None):
     hwm_set : (set or NoneType)
         Set containing used and unused inputs
         (iyd,sec,alt,lat,lon,slt,f107a,f107,ap,w)
-    '''
+    """
     iyd = datetime_to_iyd(time)
     sec = datetime_to_utsec(time)
 
@@ -63,6 +65,7 @@ def format_hwm_input(time, alt, lat, lon, ap=-1, path=None):
         try:
             path = "{:s}/davitpy/models/hwm/".format(rcParams['DAVITPY_PATH'])
         except Exception as e:
+            logging.exception(e)
             return None
 
     # These inputs are not used
@@ -76,7 +79,7 @@ def format_hwm_input(time, alt, lat, lon, ap=-1, path=None):
     return hwm_set
 
 def datetime_to_utsec(time):
-    ''' Calculate seconds of day from datetime
+    """ Calculate seconds of day from datetime
 
     Parameters
     -----------
@@ -87,14 +90,14 @@ def datetime_to_utsec(time):
     ----------
     sec_of_day : (float)
         Seconds of day
-    '''
+    """
 
     sec_of_day = (time.hour * 3600.0 + time.minute * 60.0 + time.second
                   + time.microsecond * 1.0e-6)
     return sec_of_day
 
 def datetime_to_iyd(time):
-    ''' Convert datetime to iyd input needed for hwm
+    """ Convert datetime to iyd input needed for hwm
 
     Parameters
     ------------
@@ -105,7 +108,7 @@ def datetime_to_iyd(time):
     ----------
     iyd : (int)
        integer combining year and day of year (YYDDD)
-    '''
+    """
 
     ttuple = time.timetuple()
     iyd = ttuple.tm_yday + (ttuple.tm_year
@@ -114,8 +117,7 @@ def datetime_to_iyd(time):
     return iyd
 
 def datetime_to_slt(time, glon):
-    '''
-    Compute local time from date and longitude.
+    """ Compute local time from date and longitude.
 
     Parameters:
     ------------
@@ -128,7 +130,7 @@ def datetime_to_slt(time, glon):
     --------
     lt : (float)
         Local time in hours
-    '''
+    """
     lt = datetime_to_utsec(time) / 3600.0 + glon / 15.0
 
     # Adjust to ensure that 0.0 <= lt < 24.0
