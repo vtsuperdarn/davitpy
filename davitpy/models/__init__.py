@@ -14,38 +14,40 @@
     * :mod:`models.raydarn`: SuperDARN ray tracing code coupled with IRI
 
 """
+import logging
+
 try:
     import tsyganenko
 except Exception, e:
-    print __file__+' -> models.tsyganenko: ', e
+    logging.exception(__file__ + ' -> models.tsyganenko: ' + e)
 
 try:
     import igrf
 except Exception, e:
-    print __file__+' -> models.igrf: ', e
+    logging.exception(__file__ + ' -> models.igrf: ' + e)
 
 try:
     import aacgm
 except Exception, e:
-    print __file__+' -> models.aacgm: ', e
+    logging.exception(__file__ + ' -> models.aacgm: ' + e)
 
 try:
     import iri
 except Exception, e:
-    print __file__+' -> models.iri: ', e
+    logging.exception(__file__ + ' -> models.iri: ' + e)
 
 try:
     import msis
 except Exception, e:
-    print __file__+' -> models.msis: ', e
+    logging.exception(__file__ + ' -> models.msis: ' + e)
 
 try:
     import hwm
 except Exception, e:
-    print __file__+' -> models.hwm: ', e
+    logging.exception(__file__ + ' -> models.hwm: ' + e)
 
 try:
     import raydarn
 except Exception, e:
-    print __file__+' -> models.raydarn: ', e
+    logging.exception(__file__ + ' -> models.raydarn: ' + e)
 
