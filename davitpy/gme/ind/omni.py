@@ -460,7 +460,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
 
     """
     import davitpy.pydarn.sdio.dbUtils as db
-        from davitpy import rcParams
+    from davitpy import rcParams
     import datetime as dt
     
     #check inputs

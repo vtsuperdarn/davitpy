@@ -407,7 +407,7 @@ def mapKpMongo(sYear,eYear=None):
 
     """
     import davitpy.pydarn.sdio.dbUtils as db
-        from davitpy import rcParams
+    from davitpy import rcParams
     import datetime as dt
     
     if(eYear == None): eYear=sYear
