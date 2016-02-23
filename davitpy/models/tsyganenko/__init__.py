@@ -17,6 +17,7 @@ This module contains the following module(s):
 """
 
 import tsygFort
+import logging
 
 class tsygTrace(object):
     def __init__(self, lat=None, lon=None, rho=None, filename=None, 
