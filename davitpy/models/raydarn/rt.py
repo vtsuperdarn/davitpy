@@ -55,8 +55,6 @@ class RtRun(object):
         F2 peak alitude [km] (default: use IRI)
     nmf2 : Optional[float]
         F2 peak electron density [log10(m^-3)] (default: use IRI)
-    debug : bool
-        print some diagnostics of the fortran run and output processing
     fext : Optional[str]
         output file id, max 10 character long (mostly used for multiple users environments, like a website)
     loadFrom : Optional[str]
@@ -119,7 +117,6 @@ class RtRun(object):
         elev=(5, 60, .1), azim=None, 
         hmf2=None, nmf2=None, 
         outDir=None, 
-        debug=False, 
         fext=None, 
         loadFrom=None, 
         edens_file=None,
@@ -195,7 +192,7 @@ class RtRun(object):
             inputFile = self._genInput()
             
             # Run the ray tracing
-            success = self._execute(nprocs, inputFile, debug=debug)
+            success = self._execute(nprocs, inputFile)
 
 
     def _genInput(self):
@@ -241,7 +238,7 @@ class RtRun(object):
         return fname
         
 
-    def _execute(self, nprocs, inputFileName, debug=False):
+    def _execute(self, nprocs, inputFileName):
         """Execute raytracing command
 
         Parameters
@@ -249,8 +246,6 @@ class RtRun(object):
         nprocs : int
             number of processes to use with MPI
         inputFilename :
-
-        debug : bool
 
         """
         import subprocess as subp
@@ -267,10 +262,15 @@ class RtRun(object):
         output = process.communicate()[0]
         exitCode = process.returncode
 
-        if debug or (exitCode != 0):
+        if (exitCode != 0):
             logging.debug('In:: {}'.format( command ))
             logging.debug('Exit code:: {}'.format( exitCode ))
             logging.debug('Returned:: \n' + output)
+
+        logging.debug('In:: {}'.format( command ))
+        logging.debug('Exit code:: {}'.format( exitCode ))
+        logging.debug('Returned:: \n' + output)
+
         
         if (exitCode != 0):
             raise Exception('Fortran execution error.')
@@ -279,15 +279,13 @@ class RtRun(object):
             return True
 
 
-    def readRays(self, saveToAscii=None, debug=False):
+    def readRays(self, saveToAscii=None):
         """Read rays.dat fortran output into dictionnary
 
         Parameters
         ----------
         saveToAscii : Optional[str]
             output content to text file
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -306,18 +304,16 @@ class RtRun(object):
         # Initialize rays output
         self.rays = Rays(fName, 
             site=self.site, radar=self.radar,
-            saveToAscii=saveToAscii, debug=debug)
+            saveToAscii=saveToAscii)
         # Remove Input file
 #        subp.call(['rm',fName])
 
 
-    def readEdens(self, debug=False):
+    def readEdens(self):
         """Read edens.dat fortran output
 
         Parameters
         ----------
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -335,19 +331,16 @@ class RtRun(object):
 
         # Initialize rays output
         self.ionos = Edens(fName, 
-            site=self.site, radar=self.radar,
-            debug=debug)
+            site=self.site, radar=self.radar)
         # Remove Input file
 #        subp.call(['rm',fName])
 
 
-    def readScatter(self, debug=False):
+    def readScatter(self):
         """Read iscat.dat and gscat.dat fortran output
 
         Parameters
         ----------
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -368,8 +361,7 @@ class RtRun(object):
 
         # Initialize rays output
         self.scatter = Scatter(gsName, isName, 
-            site=self.site, radar=self.radar,
-            debug=debug)
+            site=self.site, radar=self.radar)
         # Remove Input file
         # subp.call(['rm',isName])
         # subp.call(['rm',gsName])
@@ -439,8 +431,6 @@ class Edens(object):
         radar site object
     radar : Optional[pydarn.radar.radar]
         radar object
-    debug : bool
-        verbose mode
 
     Attributes
     ----------
@@ -458,8 +448,7 @@ class Edens(object):
 
     """
     def __init__(self, readFrom, 
-        site=None, radar=None, 
-        debug=False):
+        site=None, radar=None):
         self.readFrom = readFrom
         self.edens = {}
 
@@ -468,18 +457,16 @@ class Edens(object):
             self.name = radar.code[0].upper()
 
         # Read rays
-        self.readEdens(site=site, debug=debug)
+        self.readEdens(site=site)
 
 
-    def readEdens(self, site=None, debug=False):
+    def readEdens(self, site=None):
         """Read edens.dat fortran output
 
         Parameters
         ----------
         site : Optional[pydarn.radar.radStrict.site]
             site object of current radar
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -492,9 +479,8 @@ class Edens(object):
 
         # Read binary file
         with open(self.readFrom, 'rb') as f:
-            if debug:
-                logging.debug(self.readFrom + ' header: ')
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readFrom + ' header: ')
+            self.header = _readHeader(f)
             self.edens = {}
             while True:
                 bytes = f.read(2*4)
@@ -648,8 +634,6 @@ class Scatter(object):
         gscat.dat file to read the ground scatter from
     site : Optional[pydarn.radar.site]
         radar site object
-    debug : bool
-        verbose mode
 
     Attributes
     ----------
@@ -669,31 +653,28 @@ class Scatter(object):
 
     """
     def __init__(self, readGSFrom=None, readISFrom=None, 
-        site=None, radar=None, 
-        debug=False):
+        site=None, radar=None):
         self.readISFrom = readISFrom
         self.readGSFrom = readGSFrom
 
         # Read ground scatter
         if self.readGSFrom:
             self.gsc = {}
-            self.readGS(site=site, debug=debug)
+            self.readGS(site=site)
 
         # Read ionospheric scatter
         if self.readISFrom:
             self.isc = {}
-            self.readIS(site=site, debug=debug)
+            self.readIS(site=site)
 
 
-    def readGS(self, site=None, debug=False):
+    def readGS(self, site=None):
         """Read gscat.dat fortran output
 
         Parameters
         ----------
         site : Optional[pydarn.radar.radStrict.site]
             site object of current radar
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -706,9 +687,8 @@ class Scatter(object):
 
         with open(self.readGSFrom, 'rb') as f:
             # read header
-            if debug:
-                logging.debug(self.readGSFrom + ' header: ')
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readGSFrom + ' header: ')
+            self.header = _readHeader(f)
 
             scatter_list = []
 
@@ -761,15 +741,13 @@ class Scatter(object):
 
         self.gsc_df = pd.DataFrame(scatter_list)
 
-    def readIS(self, site=None, debug=False):
+    def readIS(self, site=None):
         """Read iscat.dat fortran output
 
         Parameters
         ----------
         site : Optional[pydarn.radar.radStrict.site]
             site object of current radar
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -782,9 +760,8 @@ class Scatter(object):
 
         with open(self.readISFrom, 'rb') as f:
             # read header
-            if debug:
-                logging.debug(self.readISFrom+' header: ')
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readISFrom+' header: ')
+            self.header = _readHeader(f)
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(4*4)
@@ -1009,8 +986,6 @@ class Rays(object):
         radar object
     saveToAscii : Optional[str]
         file name where to output ray positions
-    debug : bool
-        verbose mode
 
     Attributes
     ----------
@@ -1030,7 +1005,7 @@ class Rays(object):
     """
     def __init__(self, readFrom, 
         site=None, radar=None, 
-        saveToAscii=None, debug=False):
+        saveToAscii=None):
         self.readFrom = readFrom
         self.paths = {}
 
@@ -1039,22 +1014,20 @@ class Rays(object):
             self.name = radar.code[0].upper()
 
         # Read rays
-        self.readRays(site=site, debug=debug)
+        self.readRays(site=site)
 
         # If required, save to ascii
         if saveToAscii:
             self.writeToAscii(saveToAscii)
 
 
-    def readRays(self, site=None, debug=False):
+    def readRays(self, site=None):
         """Read rays.dat fortran output
 
         Parameters
         ----------
         site : Optional[pydarn.radar.radStrict.site]
             site object of current radar
-        debug : bool
-            print some i/o diagnostics
 
         Returns
         -------
@@ -1068,9 +1041,8 @@ class Rays(object):
         # Read binary file
         with open(self.readFrom, 'rb') as f:
             # read header
-            if debug:
-                logging.debug(self.readFrom+' header: ')
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readFrom+' header: ')
+            self.header = _readHeader(f)
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(4*4)
@@ -1328,15 +1300,13 @@ class Rays(object):
 #########################################################################
 # Misc.
 #########################################################################
-def _readHeader(fObj, debug=False):
+def _readHeader(fObj):
     """Read the header part of ray-tracing *.dat files
 
     Parameters
     ----------
     fObj :
         file object
-    debug : bool
-        print some i/o diagnostics
 
     Returns
     -------
@@ -1363,8 +1333,7 @@ def _readHeader(fObj, debug=False):
     header['outdir'] = unpack('250s', fObj.read(250))[0].strip()
     header['indir'] = unpack('250s', fObj.read(250))[0].strip()
     # Only print header if in debug mode
-    if debug:
-        for k, v in header.items(): logging.debug('{:10s} :: {}'.format(k,v))
+    for k, v in header.items(): logging.debug('{:10s} :: {}'.format(k,v))
     header.pop('fext'); header.pop('outdir')
     header.pop('indir')
 
