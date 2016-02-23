@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: models
-*********************
+"""models module
 
-**Modules**:
-    * :mod:`models.aacgm`: corrected geomagnetic model
-    * :mod:`models.tsyganenko`: T96
-    * :mod:`models.iri`: International Reference Ionosphere 2012
-    * :mod:`models.igrf`: International Geomagnetic Reference Field 2011
-    * :mod:`models.msis`: Neutral atmosphere model (NRLMSISE-00)
-    * :mod:`models.raydarn`: SuperDARN ray tracing code coupled with IRI
+Module with python wrappers to c and fortran codes for various models
+
+Modules
+----------------------------------------------------------
+aacgm       corrected geomagnetic model
+tsyganenko  T96
+iri         International Reference Ionosphere 2012
+igrf        International Geomagnetic Reference Field 2011
+msis        Neutral atmosphere model (NRLMSISE-00)
+raydarn     SuperDARN ray tracing code coupled with IRI
+----------------------------------------------------------
 
 """
 import logging
