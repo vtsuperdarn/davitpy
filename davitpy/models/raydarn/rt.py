@@ -1,8 +1,5 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-import numpy as np
-import pandas as pd
-
 """
 *********************
 **Module**: models.raydarn.rt
@@ -18,6 +15,10 @@ This module runs the raytracing code
 .. note:: The ray tracing requires mpi to run. You can adjust the number of processors, but be wise about it and do not assign more than you have
 
 """
+import numpy as np
+import pandas as pd
+import logging
+
 
 #########################################################################
 # Main object
@@ -105,12 +106,12 @@ class RtRun(object):
 
             # Set time interval
             if not sTime: 
-                print 'No start time. Using now.'
+                logging.warning('No start time. Using now.')
                 sTime = dt.datetime.utcnow()
             if not eTime:
                 eTime = sTime + dt.timedelta(minutes=1)
             if eTime > sTime + dt.timedelta(days=1):
-                print 'The time interval requested if too large. Reducing to 1 day.'
+                logging.warning('The time interval requested if too large. Reducing to 1 day.')
                 eTime = sTime + dt.timedelta(days=1)
             self.time = [sTime, eTime]
             self.dTime = dTime
@@ -202,9 +203,9 @@ class RtRun(object):
         exitCode = process.returncode
 
         if debug or (exitCode != 0):
-            print 'In:: {}'.format( command )
-            print 'Exit code:: {}'.format( exitCode )
-            print 'Returned:: \n', output
+            logging.debug('In:: {}'.format( command ))
+            logging.debug('Exit code:: {}'.format( exitCode ))
+            logging.debug('Returned:: \n' + output)
         
         if (exitCode != 0):
             raise Exception('Fortran execution error.')
@@ -228,7 +229,7 @@ class RtRun(object):
         # File name and path
         fName = path.join(self.outDir, 'rays.{}.dat'.format(self.fExt))
         if hasattr(self, 'rays') and not path.exists(fName):
-            print 'The file is gone, and it seems you may already have read it into memory...?'
+            logging.error('The file is gone, and it seems you may already have read it into memory...?')
             return
 
         # Initialize rays output
@@ -254,7 +255,7 @@ class RtRun(object):
         # File name and path
         fName = path.join(self.outDir, 'edens.{}.dat'.format(self.fExt))
         if hasattr(self, 'ionos') and not path.exists(fName):
-            print 'The file is gone, and it seems you may already have read it into memory...?'
+            logging.error('The file is gone, and it seems you may already have read it into memory...?')
             return
 
         # Initialize rays output
@@ -283,7 +284,7 @@ class RtRun(object):
         if hasattr(self, 'scatter') \
             and (not path.exists(isName) \
             or not path.exists(gsName)):
-            print 'The files are gone, and it seems you may already have read them into memory...?'
+            logging.error('The files are gone, and it seems you may already have read them into memory...?')
             return
 
         # Initialize rays output
@@ -380,7 +381,7 @@ class Edens(object):
         # Read binary file
         with open(self.readFrom, 'rb') as f:
             if debug:
-                print self.readFrom+' header: '
+                logging.debug(self.readFrom + ' header: ')
             self.header = _readHeader(f, debug=debug)
             self.edens = {}
             while True:
@@ -476,9 +477,9 @@ class Edens(object):
         if diffs.min() < dt.timedelta(minutes=1):
             time = keys[diffs.argmin()]
 
-        assert (time in self.edens.keys()), 'Unkown time %s' % time
+        assert (time in self.edens.keys()), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.edens[time].keys()), 'Unkown beam %s' % beam
+            assert (beam in self.edens[time].keys()), logging.error('Unkown beam %s' % beam)
         else:
             beam = self.edens[time].keys()[0]
 
@@ -550,7 +551,7 @@ class Scatter(object):
         with open(self.readGSFrom, 'rb') as f:
             # read header
             if debug:
-                print self.readGSFrom+' header: '
+                logging.debug(self.readGSFrom + ' header: ')
             self.header = _readHeader(f, debug=debug)
 
             scatter_list = []
@@ -620,7 +621,7 @@ class Scatter(object):
         with open(self.readISFrom, 'rb') as f:
             # read header
             if debug:
-                print self.readISFrom+' header: '
+                logging.debug(self.readISFrom+' header: ')
             self.header = _readHeader(f, debug=debug)
             # Then read ray data, one ray at a time
             while True:
@@ -720,9 +721,9 @@ class Scatter(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
-        assert (time in self.isc.keys() or time in self.gsc.keys()), 'Unkown time %s' % time
+        assert (time in self.isc.keys() or time in self.gsc.keys()), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.isc[time].keys()), 'Unkown beam %s' % beam
+            assert (beam in self.isc[time].keys()), logging.error('Unkown beam %s' % beam)
         else:
             beam = self.isc[time].keys()[0]
 
@@ -847,7 +848,7 @@ class Rays(object):
         with open(self.readFrom, 'rb') as f:
             # read header
             if debug:
-                print self.readFrom+' header: '
+                logging.debug(self.readFrom+' header: ')
             self.header = _readHeader(f, debug=debug)
             # Then read ray data, one ray at a time
             while True:
@@ -978,9 +979,9 @@ class Rays(object):
         if diffs.min() < dt.timedelta(minutes=1):
             time = keys[diffs.argmin()]
 
-        assert (time in self.paths.keys()), 'Unkown time %s' % time
+        assert (time in self.paths.keys()), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.paths[time].keys()), 'Unkown beam %s' % beam
+            assert (beam in self.paths[time].keys()), logging.error('Unkown beam %s' % beam)
         else:
             beam = self.paths[time].keys()[0]
         
@@ -1088,7 +1089,7 @@ def _readHeader(fObj, debug=False):
     header['indir'] = unpack('250s', fObj.read(250))[0].strip()
     # Only print header if in debug mode
     if debug:
-        for k, v in header.items(): print '{:10s} :: {}'.format(k,v)
+        for k, v in header.items(): logging.debug('{:10s} :: {}'.format(k,v))
     header.pop('fext'); header.pop('outdir')
     header.pop('indir')
 
