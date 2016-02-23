@@ -40,20 +40,21 @@ This module contains the following functions:
       * **T(2)** - temperature at ALT
   
 """
+import logging
 
 try: 
     from msisFort import *
 except Exception as e:
-    print __file__+' -> models.msis: ', e 
+    logging.exception(__file__ + ' -> models.msis: ' + e )
 
 def getF107Ap(mydatetime=None):
   """
-Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
+  Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
 
-* **INPUT**:
+  * **INPUT**:
   * mydatetime: python datetime object (defaults to last tabulated value)
 
-* **OUTPUT**:
+  * **OUTPUT**:
   * dictOut: a dictionnary containing:
     * datetime: the date and time as a python datetime object
     * f107: daily f10.7 flux for previous day
@@ -109,8 +110,8 @@ Obtain F107 and AP required for MSIS input from tabulated values in IRI data.
   elif mydatetime.date() <= tdate[-1]:
     dictOut['datetime'] = mydatetime
   else:
-    print 'Invalid date {}'.format(mydatetime)
-    print 'Date must be in range {} to {}'.format(tdate[0],tdate[-1])
+    logging.error('Invalid date {}'.format(mydatetime))
+    logging.error('Date must be in range {} to {}'.format(tdate[0],tdate[-1]))
     return
 
   # Find entry for date
