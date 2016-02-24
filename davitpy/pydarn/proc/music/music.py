@@ -69,6 +69,7 @@ import numpy as np
 import datetime 
 import time
 import copy
+import logging
 
 Re = 6378   #Earth radius
 
@@ -356,10 +357,10 @@ class musicDataObj(object):
             md          = self.metadata
             warn        = 'WARNING'
             if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
-            print warn + ':'
-            print '   Date time vector is not regularly sampled!'
-            print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
-            print '   Using average sampling period of ' + str(avg) + ' sec.'
+            logging.warning(warn + ':')
+            logging.warning('   Date time vector is not regularly sampled!')
+            logging.warning('   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.')
+            logging.warning('   Using average sampling period of ' + str(avg) + ' sec.')
             samplePeriod = avg
             import ipdb; ipdb.set_trace()
 
@@ -776,7 +777,7 @@ def defineLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,beamL
             currentData.metadata['timeLimits'] = timeLimits
 
     except:
-        print "Warning!  An error occured while defining limits.  No limits set.  Check your input values."
+        logging.warning("An error occured while defining limits.  No limits set.  Check your input values.")
 
 def checkDataQuality(dataObj,dataSet='active',max_off_time=10,sTime=None,eTime=None):
     """Mark the data set as bad (metadata['good_period'] = False) if the radar was not operational within the chosen time period
@@ -913,7 +914,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
             commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
             key = max(newData.history.keys())
             newData.history[key] = commentStr
-            print commentStr
+            logging.debug(commentStr)
 
         newData.setActive()
         return newData
@@ -1154,7 +1155,7 @@ class filter(object):
             if md.has_key('filter_numtaps'):
                 numtaps = md['filter_numtaps']
             else:
-                print 'WARNING: You must provide numtaps.'
+                logging.warning('You must provide numtaps.')
                 return
 
 
@@ -1173,7 +1174,7 @@ class filter(object):
             d = -1.*d #Needed to correct 180 deg phase shift.
 
         if cutoff_high == None and cutoff_low == None:
-            print "WARNING!! You must define cutoff frequencies!"
+            logging.warning("You must define cutoff frequencies!")
             return
     
         self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz,','Numtaps:',str(numtaps)])
@@ -1593,20 +1594,20 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
     nSigs       = np.size(maxEvalsInx)
 
     if cnt < 3:
-        print 'Not enough small eigenvalues!'
+        logging.warning('Not enough small eigenvalues!')
         import ipdb; ipdb.set_trace()
 
-    print 'K-Array: ' + str(nkx) + ' x ' + str(nky)
-    print 'Kx Max: ' + str(kxMax)
-    print 'Kx Res: ' + str(dkx)
-    print 'Ky Max: ' + str(kyMax)
-    print 'Ky Res: ' + str(dky)
-    print ''
-    print 'Signal Threshold:      ' + str(threshold)
-    print 'Number of Det Signals: ' + str(nSigs)
-    print 'Number of Noise Evals: ' + str(cnt)
+    logging.info('K-Array: ' + str(nkx) + ' x ' + str(nky))
+    logging.info('Kx Max: ' + str(kxMax))
+    logging.info('Kx Res: ' + str(dkx))
+    logging.info('Ky Max: ' + str(kyMax))
+    logging.info('Ky Res: ' + str(dky))
+    logging.info('')
+    logging.info('Signal Threshold:      ' + str(threshold))
+    logging.info('Number of Det Signals: ' + str(nSigs))
+    logging.info('Number of Noise Evals: ' + str(cnt))
 
-    print 'Starting kArr Calculation...'
+    logging.info('Starting kArr Calculation...')
     t0 = datetime.datetime.now()
     def vCalc(um,v):
         return np.dot( np.conj(um), v) * np.dot( np.conj(v), um)
@@ -1620,7 +1621,7 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
             um  = np.exp(1j*(kx*xm + ky*ym))
             kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
     t1 = datetime.datetime.now()
-    print 'Finished kArr Calculation.  Total time: ' + str(t1-t0)
+    logging.info('Finished kArr Calculation.  Total time: ' + str(t1-t0))
 
     currentData.karr  = kArr
     currentData.kxVec = kxVec
@@ -1716,8 +1717,8 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
             dc      = sigs[kk][5]
 
             if 1./dt <= 2.*f:
-                print 'WARNING: Nyquist Violation in f.'
-                print 'Signal #: %i' % kk
+                logging.warning('Nyquist Violation in f.')
+                logging.warning('Signal #: %i' % kk)
 
 #            if 1./dx <= 2.*kx/(2.*np.pi):
 #                print 'WARNING: Nyquist Violation in kx.'
