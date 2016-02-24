@@ -79,7 +79,7 @@ class gmeData:
 
         Example
         -------
-                myObj.parseDb(mongoDbDict)
+            myObj.parseDb(mongoDbDict)
 
         written by AJ, 20130129
 
@@ -125,7 +125,7 @@ class gmeData:
 
         Example
         -------
-                mongoDbDict = myObj.todbDict()
+            mongoDbDict = myObj.todbDict()
 
         written by AJ, 20130129
 

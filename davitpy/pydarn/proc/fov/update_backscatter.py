@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
 # update_backscatter.py, Angeline G. Burrell (AGB), UoL
 #
@@ -6,34 +7,33 @@
 #           and propagation path, determine the origin field-of-view, update
 #           the elevation.
 #-----------------------------------------------------------------------------
-'''
-update_backscatter
+"""update_backscatter
+
+Routines to update the groundscatter and elevation angle, as well as determine
+the virtual height, hop, and origin field-of-view for each backscatter point.
+
+Functions
+------------------------------------------------------------------------------
+assign_region               ionosphere region based on virtual height
+test_propagation            test propgation against reality
+select_alt_groups           determine altitude limits for range gate
+get_beam                    load beams from list or pointer
+calc_elv                    calculate elevation angle for scatter points
+calc_virtual_height         calculate virtual height from distance & elevation
+calc_distance               calculate slant range
+select_beam_groundscatter   filter to select groundscatter data
+calc_frac_points            calculate precentage of groundscatter
+update_bs_w_scan            update propagation parameters, 1 > beam
+update_beam_fit             update beam data
+update_backscatter          update propagation parameters, one beam
+beam_ut_struct_test         test for continuity in UT across beams
+------------------------------------------------------------------------------
 
 Author: Angeline G. Burrell (AGB)
 Date: January 15, 2015
 Inst: University of Leicester (UoL)
 
-Comments
-----------
-Routines to update the groundscatter and elevation angle, as well as determine
-the virtual height, hop, and origin field-of-view for each backscatter point.
-
-Contains
-----------
-assign_region
-test_propagation
-select_alt_groups
-get_beam
-calc_elv
-calc_virtual_height
-calc_distance
-select_beam_groundscatter
-calc_frac_points
-update_bs_w_scan
-update_beam_fit
-update_backscatter
-beam_ut_struct_test
-'''
+"""
 
 # Import python packages
 import numpy as np
@@ -49,7 +49,7 @@ import logging
 #---------------------------------------------------------------------------
 def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
                   region_hmin={"D":75.0,"E":115.0,"F":150.0}, case="upper"):
-    '''Assign an ionospheric region based on virtual height.
+    """Assign an ionospheric region based on virtual height.
 
     "D" (75 - 115 km)
     "E" (115 - 200 km) is detected at distances lass than 900 km
@@ -73,7 +73,8 @@ def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
     -----------
     region : (str)
         one (or zero) character string denoting region
-    '''
+
+    """
     region = ""
     rpad = {"D":0.0, "E":0.0, "F":1.0}
 
@@ -87,7 +88,7 @@ def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
 def test_propagation(hop, vheight, dist,
                      region_hmax={"D":115.0,"E":150.0,"F":900.0},
                      region_hmin={"D":75.0,"E":115.0,"F":150.0}):
-    '''Test the propagation path for realism.  Use the basic properties of HF
+    """Test the propagation path for realism.  Use the basic properties of HF
     radars.
     D-region (<= 115 km) is detected at distances less than 500 km
     E-region (115 - 150(or 200?) km) is detected at distances lass than X km
@@ -112,7 +113,8 @@ def test_propagation(hop, vheight, dist,
     -----------
     good : (boolian)
         True if the path is realistic, False if it is not
-    '''
+
+    """
     good = True
 
     if region_hmax.has_key("D") and vheight <= region_hmax["D"]:
@@ -132,7 +134,7 @@ def test_propagation(hop, vheight, dist,
 
 #---------------------------------------------------------------------------
 def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
-    '''Determine appropriate altitude limits for the data in this range gate
+    """Determine appropriate altitude limits for the data in this range gate
     box.  This is done by fitting a Gaussian curve to each of the occurance
     peaks and setting the range to +/-3 sigma from the mean.  Areas with points
     not encompassed by the fitted limits are constructed using the vh_box as
@@ -160,7 +162,7 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
         list of virtual height minima
     vh_maxs : (list)
         List of virtual height maxima
-    '''
+    """
     # Define local functions
     def gaussian(x, *p):
         A, mu, sigma = p
@@ -376,7 +378,7 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
 
 #---------------------------------------------------------------------------
 def get_beam(radar_beams, nbeams):
-    ''' Define a routine to load the beams from either a list/np.array or
+    """Define a routine to load the beams from either a list/np.array or
     pointer
 
     Parameters
@@ -392,7 +394,7 @@ def get_beam(radar_beams, nbeams):
         Beam containing radar data or None, if no data is available
     nbeams : (int)
         Number of beams retrieved from radar_beams, including this beam
-    '''
+    """
     import davitpy.pydarn.sdio as sdio
 
     if((isinstance(radar_beams, list) or isinstance(radar_beams, np.ndarray))
@@ -411,8 +413,7 @@ def get_beam(radar_beams, nbeams):
 def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
              asep=None, ecor=None, phi_sign=None, tdiff=None, del_chi=None,
              del_chif=0.0, alias=0.0, fov='front'):
-    '''
-    Calculate the elevation angle for observations along a beam at a radar
+    """Calculate the elevation angle for observations along a beam at a radar
 
     Parameters
     -----------
@@ -464,7 +465,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     phi_sign : (float or NoneType)
         Sign change determined by the relative location of the interferometer
         to the radar or None to calculate (default=None)
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     rn = "calc_elv"
@@ -472,32 +474,32 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     #-------------------------------------------------------------------------
     # Test input
     if not isinstance(beam, sdio.radDataTypes.beamData):
-        ('{:s} ERROR: the beam must be a beamData class'.format(rn))
+        logging.error('{:s} the beam must be a beamData class'.format(rn))
     assert(isinstance(phi0_attr, str) and hasattr(beam.fit, phi0_attr)), \
-        ('{:s} ERROR: the phase lag data is not in this beam'.format(rn))
+        logging.error('{:s} the phase lag data is not in this beam'.format(rn))
     assert(isinstance(hard, pyrad.site) or hard is None), \
-        ('{:s} ERROR: supply the hardware class or None'.format(rn))
+        logging.error('{:s} supply the hardware class or None'.format(rn))
     assert(isinstance(asep, float) or asep is None), \
-        ('{:s} ERROR: the asep should be a float or NoneType'.format(rn))
+        logging.error('{:s} the asep should be a float or NoneType'.format(rn))
     assert(isinstance(ecor, float) or ecor is None), \
-        ('{:s} ERROR: the ecor should be a float or NoneType'.format(rn))
+        logging.error('{:s} the ecor should be a float or NoneType'.format(rn))
     assert(isinstance(phi_sign, float) or phi_sign is None), \
-        ('{:s} ERROR: the phi_sign should be a float or NoneType'.format(rn))
+        logging.error('{:s} the phi_sign should be a float or NoneType'.format(rn))
     assert(isinstance(tdiff, float) or tdiff is None), \
-        ('{:s} ERROR: the tdiff should be a float or NoneType'.format(rn))
+        logging.error('{:s} the tdiff should be a float or NoneType'.format(rn))
     assert(isinstance(del_chi, float) or del_chi is None), \
-        ('{:s} ERROR: the del_chi should be a float or NoneType'.format(rn))
+        logging.error('{:s} the del_chi should be a float or NoneType'.format(rn))
     assert(isinstance(del_chif, float)), \
-        ('{:s} ERROR: the del_chif should be a float'.format(rn))
+        logging.error('{:s} the del_chif should be a float'.format(rn))
     assert(isinstance(alias, float)), \
-        ('{:s} ERROR: the alias number should be a float'.format(rn))
+        logging.error('{:s} the alias number should be a float'.format(rn))
     assert(isinstance(fov, str) and (fov.find("front") >= 0 or
                                      fov.find("back") >= 0)), \
-        ('{:s} ERROR: the field-of-view must be "front" or "back"'.format(rn))
+        logging.error('{:s} the field-of-view must be "front" or "back"'.format(rn))
 
     # Only use this if the interferometer data was stored during this scan
     assert(beam.prm.xcf == 1), \
-        ('{:s} ERROR: no interferometer data at this time'.format(rn))
+        logging.error('{:s} no interferometer data at this time'.format(rn))
 
     # Load the phase lag data
     phi0 = getattr(beam.fit, phi0_attr)
@@ -505,7 +507,7 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     # This method cannot be applied at Goose Bay or any other radar/beam that
     # does not include phi0 in their FIT output
     assert(phi0 is not None), \
-        ('{:s} ERROR: phi0 missing from rad {:d} beam {:d}'.format(rn,
+        logging.error('{:s} phi0 missing from rad {:d} beam {:d}'.format(rn,
                                                                    beam.stid,
                                                                    beam.bmnum))
 
@@ -623,8 +625,7 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
                         dist_attr="slist", dist_units=None, logfile=None,
                         log_level=logging.WARNING):
-    '''
-    Calculate the virtual height for a specified backscatter distance and
+    """Calculate the virtual height for a specified backscatter distance and
     elevation angle.  Specifying a single earth radius introduces additional
     error into the resulting heights.  If the terrestrial radius at the radar
     location is used, this error is on the order of 0.01-0.1 km (much smaller
@@ -665,7 +666,8 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         An array of floats of the same size as the myBeam.fit.slist list,
         containing the new elevation angles for each range gate or NaN if an
         elevation angle could not be calculated
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     rn = "calc_virtual_height"
 
@@ -769,8 +771,7 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
 #----------------------------------------------------------------------------
 def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
                   logfile=None, log_level=logging.WARNING):
-    '''
-    A routine to calculate distance in either meters or kilometers along the
+    """A routine to calculate distance in either meters or kilometers along the
     slant path from the radar to the first ionospheric reflection/refraction
     point using the range gate and a propagation path specified by the hop
     number.  Currently only simple propagation paths (same ionospheric region)
@@ -810,7 +811,8 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
         containing the distance along the slant path from the radar to the first
         ionospheric reflection/refraction point given the specified propagation
         path for for each range gate. Returns None upon input error.
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     rn = "calc_distance"
 
@@ -873,8 +875,7 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
 def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
                               max_p=5.0, max_v=30.0, max_w=90.0, gs_tol=.5,
                               nmin=5):
-    '''
-    A routine to select groundscatter data.  Currently uses a range gate
+    """A routine to select groundscatter data.  Currently uses a range gate
     limit where all data beyond the maximum range gate is rejected, all
     data with 0.5 hop distances closer than 160 km are rejected, and all points
     closer than the minimum range gate that have a power greater than the
@@ -921,55 +922,55 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
         input beam (eg slist, p_l, etc.)
 
     If there is an input error, exits with an exception
-    '''
+    """
+
     import davitpy.pydarn.sdio as sdio
     rn = "select_beam_groundscatter"
 
     #---------------------
     # Check input
-    estr = "{:s} ERROR: ".format(rn)
+    estr = "{:s} ".format(rn)
     assert isinstance(beam, sdio.radDataTypes.beamData), \
-        ("{:s}beam is not a beamData object".format(estr))
+        logging.error("{:s}beam is not a beamData object".format(estr))
     assert((isinstance(dist, list) or isinstance(dist, np.ndarray))
            and len(dist) == len(beam.fit.slist)), \
-        ("{:s}distance list does not match this beam".format(estr))
+        logging.error("{:s}distance list does not match this beam".format(estr))
     if isinstance(min_rg, float):
         min_rg = int(min_rg)
     assert isinstance(min_rg, int), \
-        ("{:s} ERROR: min_rg is not an integer".format(rn))
+        logging.error("{:s} min_rg is not an integer".format(rn))
     if isinstance(max_rg, float):
         max_rg = int(max_rg)
     assert isinstance(max_rg, int), \
-        ("{:s} ERROR: max_rg is not an integer".format(rn))
+        logging.error("{:s} max_rg is not an integer".format(rn))
     if isinstance(rg_box, float):
         rg_box = int(rg_box)
     assert(isinstance(rg_box, int) and rg_box > 0), \
-        ("{:s} ERROR: rg_box is not a positive integer".format(rn))
+        logging.error("{:s} rg_box is not a positive integer".format(rn))
     if isinstance(max_p, int):
         max_p = float(max_p)
     assert isinstance(max_p, float), \
-        ("{:s} ERROR: maximum power is not a float".format(rn))
+        logging.error("{:s} maximum power is not a float".format(rn))
     if isinstance(max_v, int):
         max_v = float(max_v)
     assert isinstance(max_v, float), \
-        ("{:s} ERROR: maximum velocity is not a float".format(rn))
+        logging.error("{:s} maximum velocity is not a float".format(rn))
     if isinstance(max_w, int):
         max_w = float(max_w)
     assert isinstance(max_w, float), \
-        ("{:s} ERROR: maximum spectral width is not a float".format(rn))
+        logging.error("{:s} maximum spectral width is not a float".format(rn))
     assert(isinstance(gs_tol, float) and gs_tol >= 0.0 and gs_tol <= 1.0), \
-        ("{:s} ERROR: gs_tol is not a positive fraction".format(rn))
+        logging.error("{:s} gs_tol is not a positive fraction".format(rn))
     if isinstance(nmin, float):
         nmin = int(nmin)
     assert(isinstance(nmin, int) and nmin > 0), \
-        ("{:s} ERROR: rg_box is not a positive integer".format(rn))
+        logging.error("{:s} rg_box is not a positive integer".format(rn))
 
     #--------------------------------------------------------------------
     # Identify all instances that are flagged as ground scatter and have
     # appropriate power fits based on their location
     def isgroundscatter(rg, dist, p_l, p_s, sd_gflg):
-        '''
-        A routine to apply the logic that states whether or not a point is
+        """A routine to apply the logic that states whether or not a point is
         groundscatter or not, rejecting groundscatter points that are
         ambiguous
 
@@ -990,7 +991,8 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
         ---------
         gflg : (boolean)
             New groundscatter flag
-        '''
+
+        """
         gflg = False
 
         # To be groundscatter, the point must have been identified by the
@@ -1034,8 +1036,7 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
 #----------------------------------------------------------------------
 def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
                      dat_min=None, dat_max=None):
-    '''
-    Calculate the fraction of points within a certain distance about a
+    """Calculate the fraction of points within a certain distance about a
     specified range gate are groundscatter.
 
     Parameters
@@ -1068,28 +1069,29 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
         Total number of observations in the specified box.
 
     If there is an input error, exits with an exception
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     rn = "calc_frac_points"
 
     #----------------
     # Check input
     assert isinstance(beam, sdio.radDataTypes.beamData), \
-        ("{:s} ERROR: beam is not a beamData object".format(rn))
+        logging.error("{:s} beam is not a beamData object".format(rn))
     assert isinstance(dat_attr, str) and hasattr(beam.fit, dat_attr), \
-        ("{:s} ERROR: beam does not contain attribute {:}".format(rn, dat_attr))
+        logging.error("{:s} beam does not contain attribute {:}".format(rn, dat_attr))
     assert(isinstance(dat_index, list) and isinstance(dat_index[0], int)), \
-        ("{:s} ERROR: dat_index is not a list of integers".format(rn))
+        logging.error("{:s} dat_index is not a list of integers".format(rn))
     assert(box > 0), ("{:s} ERROR: box is not positive".format(rn))
     assert(isinstance(dat_min, type(box)) or dat_min is None), \
-        ("{:s} ERROR: dat_min is of a different type is suspect".format(rn))
+        logging.error("{:s} dat_min is of a different type is suspect".format(rn))
     assert(isinstance(dat_max, type(box)) or dat_max is None), \
-        ("{:s} ERROR: dat_max is of a different type is suspect".format(rn))
+        logging.error("{:s} dat_max is of a different type is suspect".format(rn))
 
     # Get the data list and ensure there is a value to search about
     data = getattr(beam.fit, dat_attr)
     assert isinstance(central_index, int) and central_index < len(data), \
-        ("{:s} ERROR: no value for central_index in {:s}".format(rn, dat_attr))
+        logging.error("{:s} no value for central_index in {:s}".format(rn, dat_attr))
 
     #-------------------------------------------------------------------------
     # Set evaluation variables, restraining range gate box to realistic values
@@ -1133,8 +1135,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                      vh_box=[50.0,50.0,50.0,150.0], max_hop=3.0, tdiff=None,
                      tdiff_e=None, ptest=True, strict_gs=False, logfile=None,
                      log_level=logging.WARNING, step=6):
-    '''
-    Updates the propagation path, elevation, backscatter type, structure flag,
+    """Updates the propagation path, elevation, backscatter type, structure flag,
     and origin field-of-view (FoV) for all backscatter observations in each
     beam for a scan of data.  A full scan is not necessary, but if the number
     of beams is less than the specified minimum, a less rigerous evaluation
@@ -1222,7 +1223,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                                   (1=ground, 0=ionospheric, -1=indeterminate)
         beam.prm.tdiff : added : tdiff used in elevation (microsec)
         beam.prm.tdiff_e : possibly added : tdiff error (microsec)
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
 
@@ -1934,8 +1936,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                     region_hmin={"D":75.0,"E":115.0,"F":150.0}, max_hop=3.0,
                     ptest=True, strict_gs=False, logfile=None,
                     log_level=logging.WARNING):
-    '''
-    Update the beam.fit and beam.prm class, updating and adding attributes
+    """Update the beam.fit and beam.prm class, updating and adding attributes
     needed for common data analysis
 
     Parameters
@@ -1997,7 +1998,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         Ionospheric regions for the front "front" and rear "back" FoV
     hard : (class `pydarn.radar.radStruct.site`)
         Radar hardware data for this scan
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     import davitpy.utils.geoPack as geo
@@ -2263,8 +2265,7 @@ def update_backscatter(rad_bms, min_pnts=3,
                        tdiff_e=list(), tdiff_time=list(), ptest=True,
                        strict_gs=False, logfile=None,
                        log_level=logging.WARNING, step=6):
-    '''
-    Updates the propagation path, elevation, backscatter type, and origin
+    """Updates the propagation path, elevation, backscatter type, and origin
     field-of-view (FoV) for all backscatter observations in each beam.  Scans
     of data are used to determine the origin field-of-view (FoV), but a full
     scan is not necessary, but if the number of beams is less than the specified
@@ -2358,7 +2359,8 @@ def update_backscatter(rad_bms, min_pnts=3,
         beam.prm.tdiff_e : possibly added : tdiff error (microsec)
 
     If the input is incorrect, exits with an exception
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     rn = "update_backscatter"
@@ -2378,44 +2380,44 @@ def update_backscatter(rad_bms, min_pnts=3,
 
     #----------------------------------
     # Test input
-    estr = '{:s} ERROR: '.format(rn)
+    estr = '{:s} '.format(rn)
     assert(((isinstance(rad_bms, list) or isinstance(rad_bms, np.ndarray)) and
             isinstance(rad_bms[0], sdio.radDataTypes.beamData)) or
             isinstance(rad_bms, sdio.radDataTypes.radDataPtr)), \
-        '{:s}need a list/array of beams or a radar data pointer'.format(estr)
+        logging.error('{:s}need a list/array of beams or a radar data pointer'.format(estr))
     if isinstance(min_pnts, float):
         min_pnts = int(min_pnts)
     assert(isinstance(min_pnts, int) and min_pnts >= 0), \
-        '{:s}unknown point minimum [{:}]'.format(estr, min_pnts)
+        logging.error('{:s}unknown point minimum [{:}]'.format(estr, min_pnts))
     assert isinstance(region_hmin, dict) and min(region_hmin.values()) >= 0.0, \
-        '{:s}unknown minimum virtual heights [{:}]'.format(estr, region_hmin)
+        logging.error('{:s}unknown minimum virtual heights [{:}]'.format(estr, region_hmin))
     assert isinstance(region_hmax, dict), \
-        '{:s}unknown maximum virtual heights [{:}]'.format(estr, region_hmax)
+        logging.error('{:s}unknown maximum virtual heights [{:}]'.format(estr, region_hmax))
     assert((isinstance(rg_box, list) or isinstance(rg_box, np.ndarray))
            and min(rg_box) >= 1.0), \
-        '{:s}range gate box is too small [{:}]'.format(estr, rg_box)
+        logging.error('{:s}range gate box is too small [{:}]'.format(estr, rg_box))
     assert((isinstance(vh_box, list) or isinstance(vh_box, np.ndarray))
             and min(vh_box) >= 0.0), \
-        '{:s}virtual height box is too small [{:}]'.format(estr, vh_box)
+        logging.error('{:s}virtual height box is too small [{:}]'.format(estr, vh_box))
     assert((isinstance(max_rg, list) or isinstance(max_rg, np.ndarray))
            and min(max_rg) >= 0), \
-        '{:s}maximum range gate box is too small [{:}]'.format(estr, max_rg)
+        logging.error('{:s}maximum range gate box is too small [{:}]'.format(estr, max_rg))
     if isinstance(max_hop, int):
         max_hop = float(max_hop)
     assert isinstance(max_hop, float) and max_hop >= 0.5, \
-        '{:s}hop limits are unrealistic [{:}]'.format(estr, max_hop)
+        logging.error('{:s}hop limits are unrealistic [{:}]'.format(estr, max_hop))
     assert isinstance(ut_box, dt.timedelta) and ut_box.total_seconds() > 0.0, \
-        '{:s}UT box must be a positive datetime.timdelta object'.format(estr)
+        logging.error('{:s}UT box must be a positive datetime.timdelta object'.format(estr))
     assert(isinstance(tdiff, list) or isinstance(tdiff, np.ndarray)), \
-        '{:s}tdiff must be a list [{:}]'.format(estr, tdiff)
+        logging.error('{:s}tdiff must be a list [{:}]'.format(estr, tdiff))
     assert isinstance(tdiff_e, list) or isinstance(tdiff_e, np.ndarray), \
-        '{:s}tdiff error values must be in a list [{:}]'.format(estr, tdiff_e)
+        logging.error('{:s}tdiff error values must be in a list [{:}]'.format(estr, tdiff_e))
     assert((isinstance(tdiff_time, list) or isinstance(tdiff_time, np.ndarray))
            and len(tdiff_time) == len(tdiff)), \
-        '{:s}tdiff times must be in a list [{:}]'.format(estr, tdiff_time)
+        logging.error('{:s}tdiff times must be in a list [{:}]'.format(estr, tdiff_time))
     if isinstance(step, float):
         step = int(step)
-    assert isinstance(step, int), '{:s}step flag must be an int'.format(estr)
+    assert isinstance(step, int), logging.error('{:s}step flag must be an int'.format(estr))
 
     #-----------------------------------------------------------------------
     # Define local routines
@@ -2527,7 +2529,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                         reg_attr="region", hop_attr="hop", fov_attr="fovflg",
                         restrict_attr=[], restrict_lim=[], logfile=None,
                         log_level=logging.WARNING, step=6):
-    ''' Routine to test for field-of-view (FoV) and structure continuity in UT
+    """Routine to test for field-of-view (FoV) and structure continuity in UT
     across each beam. Hop (or groundscatter flag) will be used to seperate
     structure types. 
 
@@ -2579,7 +2581,8 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     beams : (dict)
         Dictionary containing lists of beams with updated FoV flags seperated
         by beam number.  The beam numbers are the dictionary keys
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     rn = "beam_ut_struct_test"

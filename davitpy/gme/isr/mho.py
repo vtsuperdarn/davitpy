@@ -13,7 +13,6 @@ mhoData     Millstone Hill data interaction
 """
 import logging
 
-
 # constants
 user_fullname = 'Sebastien de Larquier'
 user_email = 'sdelarquier@vt.edu'
@@ -54,31 +53,29 @@ class mhoData(object):
     fileExt : str
         file extension (i.e., 'g.002'). If None is provded, it will just
         look for the most recent available one
+    mhoCipher : dict
 
     Example
     -------
-            # Get data for November 17-18, 2010
-            import datetime as dt
-            user_fullname = 'Sebastien de Larquier'
-            user_email = 'sdelarquier@vt.edu'
-            user_affiliation = 'Virginia Tech'
-            date = dt.datetime(2010,11,17,20)
-            edate = dt.datetime(2010,11,18,13)
-            data = mhoData( date, endDate=edate, 
-                 user_fullname=user_fullname, 
-                 user_email=user_email, 
-                 user_affiliation=user_affiliation )
+        # Get data for November 17-18, 2010
+        import datetime as dt
+        user_fullname = 'Sebastien de Larquier'
+        user_email = 'sdelarquier@vt.edu'
+        user_affiliation = 'Virginia Tech'
+        date = dt.datetime(2010,11,17,20)
+        edate = dt.datetime(2010,11,18,13)
+        data = mhoData( date, endDate=edate, 
+             user_fullname=user_fullname, 
+             user_email=user_email, 
+             user_affiliation=user_affiliation )
 
     written by Sebastien de Larquier, 2013-03
 
     """
 
-
     def __init__(self, expDate, endDate=None, 
         dataPath=None, fileExt=None, getMad=False, 
         user_fullname=None, user_email=None, user_affiliation=None):
-        """
-        """
         self.expDate = expDate
         self.endDate = endDate
         self.dataPath = dataPath
@@ -211,7 +208,6 @@ class mhoData(object):
         Notes
         -----
         Belongs to class mhoData
-
 
         """
         import madrigalWeb.madrigalWeb

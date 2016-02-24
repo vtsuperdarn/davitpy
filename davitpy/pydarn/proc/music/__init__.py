@@ -1,10 +1,8 @@
-# Waver module __init__.py
-"""
-*******************************
-            WAVER
-*******************************
-This subpackage contains various utilities for WAVER,
-the SuperDARN Wave Analysis Software Package.
+# -*- coding: utf-8 -*-
+# music module __init__.py
+"""Music module
+This subpackage contains various utilities for MUSIC
+the SuperDARN Music package.
 
 DEV: functions/modules/classes with a * have not been developed yet
 

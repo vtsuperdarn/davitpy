@@ -1,23 +1,27 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-import numpy as np
-import pandas as pd
+"""Ray-tracing raydarn module
 
-"""
-*********************
-**Module**: models.raydarn.rt
-*********************
 This module runs the raytracing code
 
-**Classes**:
-    * :class:`models.raydarn.rt.RtRun`: run the code
-    * :class:`models.raydarn.rt.Scatter`: store and process modeled backscatter
-    * :class:`models.raydarn.rt.Edens`: store and process electron density profiles
-    * :class:`models.raydarn.rt.Rays`: store and process individual rays
+Classes
+-------------------------------------------------------
+rt.RtRun    run the code
+rt.Scatter  store and process modeled backscatter
+rt.Edens    store and process electron density profiles
+rt.Rays     store and process individual rays
+-------------------------------------------------------
 
-.. note:: The ray tracing requires mpi to run. You can adjust the number of processors, but be wise about it and do not assign more than you have
+Notes
+-----
+The ray tracing requires mpi to run. You can adjust the number of processors, but
+be wise about it and do not assign more than you have
 
 """
+import numpy as np
+import pandas as pd
+import logging
+
 
 #########################################################################
 # Main object
@@ -25,39 +29,85 @@ This module runs the raytracing code
 class RtRun(object):
     """This class runs the raytracing code and processes the output
 
-    **Args**: 
-        * [**sTime**] (datetime.datetime): start time UT
-        * [**eTime**] (datetime.datetime): end time UT (if not provided run for a single time sTime)
-        * [**rCode**] (str): radar 3-letter code
-        * [**radarObj**] (:class:`pydarn.radar.radar`): radar object (overrides rCode)
-        * [**dTime**] (float): time step in Hours
-        * [**freq**] (float): operating frequency [MHz]
-        * [**beam**] (int): beam number (if None run all beams)
-        * [**nhops**] (int): number of hops
-        * [**elev**] (tuple): (start elevation, end elevation, step elevation) [degrees]
-        * [**azim**] (tuple): (start azimuth, end azimuth, step azimuth) [degrees East] (overrides beam specification)
-        * [**hmf2**] (float): F2 peak alitude [km] (default: use IRI)
-        * [**nmf2**] (float): F2 peak electron density [log10(m^-3)] (default: use IRI)
-        * [**debug**] (bool): print some diagnostics of the fortran run and output processing
-        * [**fext**] (str): output file id, max 10 character long (mostly used for multiple users environments, like a website)
-        * [**loadFrom**] (str): file name where a pickled instance of RtRun was saved (supersedes all other args)
-        * [**nprocs**] (int): number of processes to use with MPI
-    **Methods**:
-        * :func:`RtRun.readRays`
-        * :func:`RtRun.readEdens`
-        * :func:`RtRun.readScatter`
-        * :func:`RtRun.save`
-        * :func:`RtRun.load`
+    Parameters
+    ----------
+    sTime : Optional[datetime.datetime]
+        start time UT
+    eTime : Optional[datetime.datetime]
+        end time UT (if not provided run for a single time sTime)
+    rCode : Optional[str]
+        radar 3-letter code
+    radarObj Optional[pydarn.radar.radar]
+        radar object (overrides rCode)
+    dTime : Optional[float]
+        time step in Hours
+    freq : Optional[float]
+        operating frequency [MHz]
+    beam : Optional[int]
+        beam number (if None run all beams)
+    nhops : Optional[int]
+        number of hops
+    elev : Optional[tuple]
+        (start elevation, end elevation, step elevation) [degrees]
+    azim : Optional[tuple]
+        (start azimuth, end azimuth, step azimuth) [degrees East] (overrides beam specification)
+    hmf2 : Optional[float]
+        F2 peak alitude [km] (default: use IRI)
+    nmf2 : Optional[float]
+        F2 peak electron density [log10(m^-3)] (default: use IRI)
+    fext : Optional[str]
+        output file id, max 10 character long (mostly used for multiple users environments, like a website)
+    loadFrom : Optional[str]
+        file name where a pickled instance of RtRun was saved (supersedes all other args)
+    nprocs : Optional[int]
+        number of processes to use with MPI
 
-    **Example**:
-        ::
+    Attributes
+    ----------
+    radar :
 
-            # Run a 2-hour ray trace from Blackstone on a random day
-            sTime = dt.datetime(2012, 11, 18, 5)
-            eTime = sTime + dt.timedelta(hours=2)
-            radar = 'bks'
-            # Save the results to your /tmp directory
-            rto = raydarn.RtRun(sTime, eTime, rCode=radar, outDir='/tmp')
+    site :
+
+    azim :
+
+    beam :
+
+    elev :
+
+    time : list
+
+    dTime : float
+
+    freq : float
+
+    nhops : int
+
+    hmf2 : float
+
+    nmf2 : float
+
+    outDir :
+
+    fExt : 
+
+    edens_file :
+
+    Methods
+    -------
+    RtRun.readRays
+    RtRun.readEdens
+    RtRun.readScatter
+    RtRun.save
+    RtRun.load
+
+    Example
+    -------
+        # Run a 2-hour ray trace from Blackstone on a random day
+        sTime = dt.datetime(2012, 11, 18, 5)
+        eTime = sTime + dt.timedelta(hours=2)
+        radar = 'bks'
+        # Save the results to your /tmp directory
+        rto = raydarn.RtRun(sTime, eTime, rCode=radar, outDir='/tmp')
 
     """
     def __init__(self, sTime=None, eTime=None, 
@@ -67,7 +117,6 @@ class RtRun(object):
         elev=(5, 60, .1), azim=None, 
         hmf2=None, nmf2=None, 
         outDir=None, 
-        debug=False, 
         fext=None, 
         loadFrom=None, 
         edens_file=None,
@@ -105,12 +154,12 @@ class RtRun(object):
 
             # Set time interval
             if not sTime: 
-                print 'No start time. Using now.'
+                logging.warning('No start time. Using now.')
                 sTime = dt.datetime.utcnow()
             if not eTime:
                 eTime = sTime + dt.timedelta(minutes=1)
             if eTime > sTime + dt.timedelta(days=1):
-                print 'The time interval requested if too large. Reducing to 1 day.'
+                logging.warning('The time interval requested if too large. Reducing to 1 day.')
                 eTime = sTime + dt.timedelta(days=1)
             self.time = [sTime, eTime]
             self.dTime = dTime
@@ -143,11 +192,16 @@ class RtRun(object):
             inputFile = self._genInput()
             
             # Run the ray tracing
-            success = self._execute(nprocs, inputFile, debug=debug)
+            success = self._execute(nprocs, inputFile)
 
 
     def _genInput(self):
         """Generate input file
+
+        Returns
+        -------
+        fname
+
         """
         from os import path
 
@@ -184,8 +238,15 @@ class RtRun(object):
         return fname
         
 
-    def _execute(self, nprocs, inputFileName, debug=False):
+    def _execute(self, nprocs, inputFileName):
         """Execute raytracing command
+
+        Parameters
+        ----------
+        nprocs : int
+            number of processes to use with MPI
+        inputFilename :
+
         """
         import subprocess as subp
         from os import path
@@ -201,10 +262,15 @@ class RtRun(object):
         output = process.communicate()[0]
         exitCode = process.returncode
 
-        if debug or (exitCode != 0):
-            print 'In:: {}'.format( command )
-            print 'Exit code:: {}'.format( exitCode )
-            print 'Returned:: \n', output
+        if (exitCode != 0):
+            logging.debug('In:: {}'.format( command ))
+            logging.debug('Exit code:: {}'.format( exitCode ))
+            logging.debug('Returned:: \n' + output)
+
+        logging.debug('In:: {}'.format( command ))
+        logging.debug('Exit code:: {}'.format( exitCode ))
+        logging.debug('Returned:: \n' + output)
+
         
         if (exitCode != 0):
             raise Exception('Fortran execution error.')
@@ -213,14 +279,18 @@ class RtRun(object):
             return True
 
 
-    def readRays(self, saveToAscii=None, debug=False):
+    def readRays(self, saveToAscii=None):
         """Read rays.dat fortran output into dictionnary
 
-        **Args**:
-            * [**saveToAscii**] (str): output content to text file
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Add a new member to :class:`rt.RtRun`: **rays**, of type :class:`rt.rays`
+        Parameters
+        ----------
+        saveToAscii : Optional[str]
+            output content to text file
+
+        Returns
+        -------
+        Add a new member to class rt.RtRun *rays*, of type class rt.rays
+
         """
         import subprocess as subp
         from os import path
@@ -228,25 +298,27 @@ class RtRun(object):
         # File name and path
         fName = path.join(self.outDir, 'rays.{}.dat'.format(self.fExt))
         if hasattr(self, 'rays') and not path.exists(fName):
-            print 'The file is gone, and it seems you may already have read it into memory...?'
+            logging.error('The file is gone, and it seems you may already have read it into memory...?')
             return
 
         # Initialize rays output
         self.rays = Rays(fName, 
             site=self.site, radar=self.radar,
-            saveToAscii=saveToAscii, debug=debug)
+            saveToAscii=saveToAscii)
         # Remove Input file
 #        subp.call(['rm',fName])
 
 
-    def readEdens(self, debug=False):
+    def readEdens(self):
         """Read edens.dat fortran output
 
-        **Args**:
-            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Add a new member to :class:`rt.RtRun`: **rays**, of type :class:`rt.rays`
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Add a new member to class rt.RtRun *rays*, of type class rt.rays
+
         """
         import subprocess as subp
         from os import path
@@ -254,25 +326,26 @@ class RtRun(object):
         # File name and path
         fName = path.join(self.outDir, 'edens.{}.dat'.format(self.fExt))
         if hasattr(self, 'ionos') and not path.exists(fName):
-            print 'The file is gone, and it seems you may already have read it into memory...?'
+            logging.error('The file is gone, and it seems you may already have read it into memory...?')
             return
 
         # Initialize rays output
         self.ionos = Edens(fName, 
-            site=self.site, radar=self.radar,
-            debug=debug)
+            site=self.site, radar=self.radar)
         # Remove Input file
 #        subp.call(['rm',fName])
 
 
-    def readScatter(self, debug=False):
+    def readScatter(self):
         """Read iscat.dat and gscat.dat fortran output
 
-        **Args**:
-            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Add a new member to :class:`rt.RtRun`: **rays**, of type :class:`rt.rays`
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Add a new member to class rt.RtRun *rays*, of type class rt.rays
+
         """
         import subprocess as subp
         from os import path
@@ -283,20 +356,24 @@ class RtRun(object):
         if hasattr(self, 'scatter') \
             and (not path.exists(isName) \
             or not path.exists(gsName)):
-            print 'The files are gone, and it seems you may already have read them into memory...?'
+            logging.error('The files are gone, and it seems you may already have read them into memory...?')
             return
 
         # Initialize rays output
         self.scatter = Scatter(gsName, isName, 
-            site=self.site, radar=self.radar,
-            debug=debug)
+            site=self.site, radar=self.radar)
         # Remove Input file
         # subp.call(['rm',isName])
         # subp.call(['rm',gsName])
 
 
     def save(self, filename):
-        """Save :class:`rt.RtRun` to a file
+        """Save class rt.RtRun to a file
+
+        Parameters
+        ----------
+        filename : str
+
         """
         import cPickle as pickle
 
@@ -305,7 +382,12 @@ class RtRun(object):
 
 
     def load(self, filename):
-        """Load :class:`rt.RtRun` from a file
+        """Load class rt.RtRun from a file
+
+        Parameters
+        ----------
+        filename : str
+
         """
         import cPickle as pickle
 
@@ -324,8 +406,8 @@ class RtRun(object):
 
 
     def clean(self):
-        '''Clean-up files
-        '''
+        """Clean-up files
+        """
         import subprocess as subp
         from os import path
 
@@ -341,18 +423,32 @@ class RtRun(object):
 class Edens(object):
     """Store and process electron density profiles after ray tracing
 
-    **Args**:
-        * **readFrom** (str): edens.dat file to read the rays from
-        * [**site**] (:class:`pydarn.radar.site): radar site object
-        * [**radar**] (:class:`pydarn.radar.radar): radar object
-        * [**debug**] (bool): verbose mode
-    **Methods**:
-        * :func:`Edens.readEdens`
-        * :func:`Edens.plot`
+    Parameters
+    ----------
+    readFrom : str
+        edens.dat file to read the rays from
+    site : Optional[pydarn.radar.site]
+        radar site object
+    radar : Optional[pydarn.radar.radar]
+        radar object
+
+    Attributes
+    ----------
+    readFrom : str
+
+    edens :
+
+    name : str
+
+
+    Methods
+    -------
+    Edens.readEdens
+    Edens.plot
+
     """
     def __init__(self, readFrom, 
-        site=None, radar=None, 
-        debug=False):
+        site=None, radar=None):
         self.readFrom = readFrom
         self.edens = {}
 
@@ -361,17 +457,21 @@ class Edens(object):
             self.name = radar.code[0].upper()
 
         # Read rays
-        self.readEdens(site=site, debug=debug)
+        self.readEdens(site=site)
 
 
-    def readEdens(self, site=None, debug=False):
+    def readEdens(self, site=None):
         """Read edens.dat fortran output
 
-        **Args**:
-            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Populate member edens :class:`rt.Edens`
+        Parameters
+        ----------
+        site : Optional[pydarn.radar.radStrict.site]
+            site object of current radar
+
+        Returns
+        -------
+        Populate member edens class rt.Edens
+
         """
         from struct import unpack
         import datetime as dt
@@ -379,9 +479,8 @@ class Edens(object):
 
         # Read binary file
         with open(self.readFrom, 'rb') as f:
-            if debug:
-                print self.readFrom+' header: '
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readFrom + ' header: ')
+            self.header = _readHeader(f)
             self.edens = {}
             while True:
                 bytes = f.read(2*4)
@@ -416,38 +515,58 @@ class Edens(object):
         nel_rasterize=False):
         """Plot electron density profile
         
-        **Args**: 
-            * **time** (datetime.datetime): time of profile
-            * [**beam**]: beam number
-            * [**maxground**]: maximum ground range [km]
-            * [**maxalt**]: highest altitude limit [km]
-            * [**nel_cmap**]: color map name for electron density index coloring
-            * [**nel_lim**]: electron density index plotting limits
-            * [**rect**]: subplot spcification
-            * [**fig**]: A pylab.figure object (default to gcf)
-            * [**ax**]: Existing main axes
-            * [**aax**]: Existing auxialary axes
-            * [**title**]: Show default title
-            * [**plot_colorbar**]: Plot a colorbar
-            * [**nel_rasterize**]: Rasterize the electron density plot
-                (make your pdf files more managable)
-        **Returns**:
-            * **ax**: matplotlib.axes object containing formatting
-            * **aax**: matplotlib.axes object containing data
-            * **cbax**: matplotlib.axes object containing colorbar
-        **Example**:
-            ::
+        Parameters
+        ----------
+        time : datetime.datetime
+            time of profile
+        beam : Optional[ ]
+            beam number
+        maxground : Optional[int]
+            maximum ground range [km]
+        maxalt : Optional[int]
+            highest altitude limit [km]
+        nel_cmap : Optional[str]
+            color map name for electron density index coloring
+        nel_lim : Optional[list, int]
+            electron density index plotting limits
+        title : Optional[bool]
+            Show default title
+        fig : Optional[pylab.figure]
+            object (default to gcf)
+        rect : Optional[int]
+            subplot spcification
+        ax : Optional[ ]
+            Existing main axes
+        aax : Optional[ ]
+            Existing auxialary axes
+        plot_colorbar : Optional[bool]
+            Plot a colorbar
+        nel_rasterize : Optional[bool]
+            Rasterize the electron density plot
+            (make your pdf files more managable)
 
-                # Show electron density profile
-                import datetime as dt
-                from models import raydarn
-                sTime = dt.datetime(2012, 11, 18, 5)
-                rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
-                rto.readEdens() # read electron density into memory
-                ax, aax, cbax = rto.ionos.plot(sTime, title=True)
-                ax.grid()
-                
+        Returns
+        -------
+        ax : matplotlib.axes
+            object containing formatting
+        aax : matplotlib.axes 
+            object containing data
+        cbax : matplotlib.axes
+            object containing colorbar
+
+        Example
+        -------
+            # Show electron density profile
+            import datetime as dt
+            from models import raydarn
+            sTime = dt.datetime(2012, 11, 18, 5)
+            rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
+            rto.readEdens() # read electron density into memory
+            ax, aax, cbax = rto.ionos.plot(sTime, title=True)
+            ax.grid()
+
         written by Sebastien, 2013-04
+
         """
         import datetime as dt
         from davitpy.utils import plotUtils
@@ -476,9 +595,9 @@ class Edens(object):
         if diffs.min() < dt.timedelta(minutes=1):
             time = keys[diffs.argmin()]
 
-        assert (time in self.edens.keys()), 'Unkown time %s' % time
+        assert (time in self.edens.keys()), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.edens[time].keys()), 'Unkown beam %s' % beam
+            assert (beam in self.edens[time].keys()), logging.error('Unkown beam %s' % beam)
         else:
             beam = self.edens[time].keys()[0]
 
@@ -507,41 +626,60 @@ class Edens(object):
 class Scatter(object):
     """Stores and process ground and ionospheric scatter
 
-    **Args**:
-        * **readISFrom** (str): iscat.dat file to read the ionospheric scatter from
-        * **readGSFrom** (str): gscat.dat file to read the ground scatter from
-        * [**site**] (:class:`pydarn.radar.site): radar site object
-        * [**debug**] (bool): verbose mode
-    **Methods**:
-        * :func:`Scatter.readGS`
-        * :func:`Scatter.readIS`
-        * :func:`Scatter.plot`
+    Parameters
+    ----------
+    readISFrom : Optional[str]
+        iscat.dat file to read the ionospheric scatter from
+    readGSFrom : Optional[str]
+        gscat.dat file to read the ground scatter from
+    site : Optional[pydarn.radar.site]
+        radar site object
+
+    Attributes
+    ----------
+    readISFrom : str
+        iscat.dat file to read the ionospheric scatter from
+    readGSFrom : str
+        gscat.dat file to read the ground scatter from
+    gsc :
+
+    isc :
+
+    Methods
+    -------
+    Scatter.readGS
+    Scatter.readIS
+    Scatter.plot
+
     """
     def __init__(self, readGSFrom=None, readISFrom=None, 
-        site=None, radar=None, 
-        debug=False):
+        site=None, radar=None):
         self.readISFrom = readISFrom
         self.readGSFrom = readGSFrom
 
         # Read ground scatter
         if self.readGSFrom:
             self.gsc = {}
-            self.readGS(site=site, debug=debug)
+            self.readGS(site=site)
 
         # Read ionospheric scatter
         if self.readISFrom:
             self.isc = {}
-            self.readIS(site=site, debug=debug)
+            self.readIS(site=site)
 
 
-    def readGS(self, site=None, debug=False):
+    def readGS(self, site=None):
         """Read gscat.dat fortran output
 
-        **Args**:
-            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Populate member isc :class:`rt.Scatter`
+        Parameters
+        ----------
+        site : Optional[pydarn.radar.radStrict.site]
+            site object of current radar
+
+        Returns
+        -------
+        Populate member isc class rt.Scatter
+
         """
         from struct import unpack
         import datetime as dt
@@ -549,9 +687,8 @@ class Scatter(object):
 
         with open(self.readGSFrom, 'rb') as f:
             # read header
-            if debug:
-                print self.readGSFrom+' header: '
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readGSFrom + ' header: ')
+            self.header = _readHeader(f)
 
             scatter_list = []
 
@@ -604,14 +741,18 @@ class Scatter(object):
 
         self.gsc_df = pd.DataFrame(scatter_list)
 
-    def readIS(self, site=None, debug=False):
+    def readIS(self, site=None):
         """Read iscat.dat fortran output
 
-        **Args**:
-            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Populate member isc :class:`rt.Scatter`
+        Parameters
+        ----------
+        site : Optional[pydarn.radar.radStrict.site]
+            site object of current radar
+
+        Returns
+        -------
+        Populate member isc class rt.Scatter
+
         """
         from struct import unpack
         import datetime as dt
@@ -619,9 +760,8 @@ class Scatter(object):
 
         with open(self.readISFrom, 'rb') as f:
             # read header
-            if debug:
-                print self.readISFrom+' header: '
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readISFrom+' header: ')
+            self.header = _readHeader(f)
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(4*4)
@@ -670,39 +810,61 @@ class Scatter(object):
         fig=None, rect=111, ax=None, aax=None, zorder=4):
         """Plot scatter on ground/altitude profile
         
-        **Args**: 
-            * **time** (datetime.datetime): time of profile
-            * [**beam**]: beam number
-            * [**iscat**] (bool): show ionospheric scatter
-            * [**gscat**] (bool): show ground scatter
-            * [**maxground**]: maximum ground range [km]
-            * [**maxalt**]: highest altitude limit [km]
-            * [**rect**]: subplot spcification
-            * [**fig**]: A pylab.figure object (default to gcf)
-            * [**ax**]: Existing main axes
-            * [**aax**]: Existing auxialary axes
-            * [**title**]: Show default title
-            * [**weighted**] (bool): plot ionospheric scatter relative strength (based on background density and range)
-            * [**cmap**]: colormap used for weighted ionospheric scatter
-        **Returns**:
-            * **ax**: matplotlib.axes object containing formatting
-            * **aax**: matplotlib.axes object containing data
-            * **cbax**: matplotlib.axes object containing colorbar
-        **Example**:
-            ::
+        Parameters
+        ----------
+        time : datetime.datetime
+            time of profile
+        beam : Optional[ ]
+            beam number
+        maxground : Optional[int]
+            maximum ground range [km]
+        maxalt : Optional[int]
+            highest altitude limit [km]
+        iscat : Optional[bool]
+            show ionospheric scatter
+        gscat : Optional[bool]
+            show ground scatter
+        title : Optional[bool]
+            Show default title
+        weighted : Optional[bool]
+            plot ionospheric scatter relative strength (based on background density and range)
+        cmap : Optional[str]
+            colormap used for weighted ionospheric scatter
+        fig : Optional[pylab.figure]
+            object (default to gcf)
+        rect : Optional[int]
+            subplot spcification
+        ax : Optional[ ]
+            Existing main axes
+        aax : Optional[ ]
+            Existing auxialary axes
+        zorder : Optional[int]
 
-                # Show ionospheric scatter
-                import datetime as dt
-                from models import raydarn
-                sTime = dt.datetime(2012, 11, 18, 5)
-                rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
-                rto.readRays() # read rays into memory
-                ax, aax, cbax = rto.rays.plot(sTime, title=True)
-                rto.readScatter() # read scatter into memory
-                rto.scatter.plot(sTime, ax=ax, aax=aax)
-                ax.grid()
-                
+
+        Returns
+        -------
+        ax : matplotlib.axes
+            object containing formatting
+        aax : matplotlib.axes
+            object containing data
+        cbax : matplotlib.axes
+            object containing colorbar
+
+        Example
+        -------
+            # Show ionospheric scatter
+            import datetime as dt
+            from models import raydarn
+            sTime = dt.datetime(2012, 11, 18, 5)
+            rto = raydarn.RtRun(sTime, rCode='bks', beam=12)
+            rto.readRays() # read rays into memory
+            ax, aax, cbax = rto.rays.plot(sTime, title=True)
+            rto.readScatter() # read scatter into memory
+            rto.scatter.plot(sTime, ax=ax, aax=aax)
+            ax.grid()
+
         written by Sebastien, 2013-04
+
         """
         from davitpy.utils import plotUtils
         from matplotlib.collections import LineCollection
@@ -720,9 +882,9 @@ class Scatter(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
-        assert (time in self.isc.keys() or time in self.gsc.keys()), 'Unkown time %s' % time
+        assert (time in self.isc.keys() or time in self.gsc.keys()), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.isc[time].keys()), 'Unkown beam %s' % beam
+            assert (beam in self.isc[time].keys()), logging.error('Unkown beam %s' % beam)
         else:
             beam = self.isc[time].keys()[0]
 
@@ -773,6 +935,19 @@ class Scatter(object):
         return ax, aax, cbax
 
     def gate_scatter(self,beam,fov):
+        """
+
+        Parameters
+        ----------
+        beam :
+
+        fov :
+
+        Returns
+        -------
+        lag_power
+
+        """
         #Add a 0 at the beginning to get the range gate numbering right.
 #        beam_inx    = np.where(beam == fov.beams)[0][0]
 #        ranges      = [0]+fov.slantRFull[beam_inx,:].tolist() 
@@ -801,20 +976,36 @@ class Scatter(object):
 class Rays(object):
     """Store and process individual rays after ray tracing
 
-    **Args**:
-        * **readFrom** (str): rays.dat file to read the rays from
-        * [**site**] (:class:`pydarn.radar.site): radar site object
-        * [**radar**] (:class:`pydarn.radar.radar): radar object
-        * [**saveToAscii**] (str): file name where to output ray positions
-        * [**debug**] (bool): verbose mode
-    **Methods**:
-        * :func:`Rays.readRays`
-        * :func:`Rays.writeToAscii`
-        * :func:`Rays.plot`
+    Parameters
+    ----------
+    readFrom : str
+        rays.dat file to read the rays from
+    site : Optional[pydarn.radar.site]
+        radar site object
+    radar : Optional[ pydarn.radar.radar]
+        radar object
+    saveToAscii : Optional[str]
+        file name where to output ray positions
+
+    Attributes
+    ----------
+    readFrom : str
+        rays.dat file to read the rays from
+    paths :
+
+    name : str
+
+
+    Methods
+    -------
+    Rays.readRays
+    Rays.writeToAscii
+    Rays.plot
+
     """
     def __init__(self, readFrom, 
         site=None, radar=None, 
-        saveToAscii=None, debug=False):
+        saveToAscii=None):
         self.readFrom = readFrom
         self.paths = {}
 
@@ -823,21 +1014,25 @@ class Rays(object):
             self.name = radar.code[0].upper()
 
         # Read rays
-        self.readRays(site=site, debug=debug)
+        self.readRays(site=site)
 
         # If required, save to ascii
         if saveToAscii:
             self.writeToAscii(saveToAscii)
 
 
-    def readRays(self, site=None, debug=False):
+    def readRays(self, site=None):
         """Read rays.dat fortran output
 
-        **Args**:
-            * [**site**] (pydarn.radar.radStrict.site): site object of current radar
-            * [**debug**] (bool): print some i/o diagnostics
-        **Returns**:
-            * Populate member paths :class:`rt.Rays`
+        Parameters
+        ----------
+        site : Optional[pydarn.radar.radStrict.site]
+            site object of current radar
+
+        Returns
+        -------
+        Populate member paths class rt.Rays
+
         """
         from struct import unpack
         import datetime as dt
@@ -846,9 +1041,8 @@ class Rays(object):
         # Read binary file
         with open(self.readFrom, 'rb') as f:
             # read header
-            if debug:
-                print self.readFrom+' header: '
-            self.header = _readHeader(f, debug=debug)
+            logging.debug(self.readFrom+' header: ')
+            self.header = _readHeader(f)
             # Then read ray data, one ray at a time
             while True:
                 bytes = f.read(4*4)
@@ -884,6 +1078,12 @@ class Rays(object):
 
     def writeToAscii(self, fname):
         """Save rays to ASCII file (limited use)
+
+        Parameters
+        ----------
+        fname : str
+            filename to save to
+
         """
 
         with open(fname, 'w') as f:
@@ -918,38 +1118,63 @@ class Rays(object):
         fig=None, rect=111, ax=None, aax=None):
         """Plot ray paths
         
-        **Args**: 
-            * **time** (datetime.datetime): time of rays
-            * [**beam**]: beam number
-            * [**maxground**]: maximum ground range [km]
-            * [**maxalt**]: highest altitude limit [km]
-            * [**step**]: step between each plotted ray (in number of ray steps)
-            * [**showrefract**]: show refractive index along ray paths (supersedes raycolor)
-            * [**nr_cmap**]: color map name for refractive index coloring
-            * [**nr_lim**]: refractive index plotting limits
-            * [**raycolor**]: color of ray paths
-            * [**rect**]: subplot spcification
-            * [**fig**]: A pylab.figure object (default to gcf)
-            * [**title**]: Show default title
-            * [**ax**]: Existing main axes
-            * [**aax**]: Existing auxialary axes
-        **Returns**:
-            * **ax**: matplotlib.axes object containing formatting
-            * **aax**: matplotlib.axes object containing data
-            * **cbax**: matplotlib.axes object containing colorbar
-        **Example**:
-            ::
+        Parameters
+        ----------
+        time : datetime.datetime
+            time of rays
+        beam: Optional[ ]
+            beam number
+        maxground : Optional[int]
+            maximum ground range [km]
+        maxalt : Optional[int]
+            highest altitude limit [km]
+        step : Optional[int]
+            step between each plotted ray (in number of ray steps)
+        showrefract : Optional[bool]
+            show refractive index along ray paths (supersedes raycolor)
+        nr_cmap : Optional[str]
+            color map name for refractive index coloring
+        nr_lim : Optional[list, float]
+            refractive index plotting limits
+        raycolor : Optional[float]
+            color of ray paths
+        title : Optional[bool]
+            Show default title
+        zorder : Optional[int]
 
-                # Show ray paths with colored refractive index along path
-                import datetime as dt
-                from davitpy.models import raydarn
-                sTime = dt.datetime(2012, 11, 18, 5)
-                rto = raydarn.RtRun(sTime, rCode='bks', beam=12, title=True)
-                rto.readRays() # read rays into memory
-                ax, aax, cbax = rto.rays.plot(sTime, step=10, showrefract=True, nr_lim=[.85,1])
-                ax.grid()
-                
+        alpha : Optional[int]
+
+        fig : Optional[pylab.figure]
+            object (default to gcf)
+        rect : Optional[int]
+            subplot spcification
+        ax : Optional[ ]
+            Existing main axes
+        aax : Optional[ ]
+            Existing auxialary axes
+
+        Returns
+        -------
+        ax : matplotlib.axes
+            object containing formatting
+        aax : matplotlib.axes
+            object containing data
+        cbax : matplotlib.axes
+            object containing colorbar
+
+        Example
+        -------
+            # Show ray paths with colored refractive index along path
+            import datetime as dt
+            from davitpy.models import raydarn
+            sTime = dt.datetime(2012, 11, 18, 5)
+            rto = raydarn.RtRun(sTime, rCode='bks', beam=12, title=True)
+            rto.readRays() # read rays into memory
+            ax, aax, cbax = rto.rays.plot(sTime, step=10, showrefract=True, nr_lim=[.85,1])
+            ax.grid()
+
         written by Sebastien, 2013-04
+
         """
         import datetime as dt
         from davitpy.utils import plotUtils
@@ -978,9 +1203,9 @@ class Rays(object):
         if diffs.min() < dt.timedelta(minutes=1):
             time = keys[diffs.argmin()]
 
-        assert (time in self.paths.keys()), 'Unkown time %s' % time
+        assert (time in self.paths.keys()), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.paths[time].keys()), 'Unkown beam %s' % beam
+            assert (beam in self.paths[time].keys()), logging.error('Unkown beam %s' % beam)
         else:
             beam = self.paths[time].keys()[0]
         
@@ -1017,19 +1242,35 @@ class Rays(object):
             **kwargs):
             """Plot ray paths
             
-            **Args**: 
-                * [**markers**]: range markers. Defaults to every 250 km
-                * All other keywords are borrowed from :func:`matplotlib.pyplot.scatter`
-            **Returns**:
-                * **coll**: a collection of range markers
-            **Example**:
-                ::
+            Parameters
+            ----------
+            markers : Optional[ ]
+                range markers. Defaults to every 250 km
+            color : Optional[float]
 
-                    # Add range markers to an existing ray plot
-                    ax, aax, cbax = rto.rays.plot(sTime, step=10)
-                    rto.rays.showRange()
-                    
+            s : Optional[int]
+
+            zorder : Optional[int]
+
+            **kwargs :
+
+            Returns
+            -------
+            coll :
+                a collection of range markers
+
+            Notes
+            -----
+            Parameters other than markers are borrowed from matplotlib.pyplot.scatter
+
+            Example
+            -------
+                # Add range markers to an existing ray plot
+                ax, aax, cbax = rto.rays.plot(sTime, step=10)
+                rto.rays.showRange()
+
             written by Sebastien, 2013-04
+
             """
 
             if not markers:
@@ -1059,14 +1300,19 @@ class Rays(object):
 #########################################################################
 # Misc.
 #########################################################################
-def _readHeader(fObj, debug=False):
+def _readHeader(fObj):
     """Read the header part of ray-tracing *.dat files
 
-    **Args**:
-        * **fObj**: file object
-        * [**debug**] (bool): print some i/o diagnostics
-    **Returns**:
-        * **header**: a dictionary of header values
+    Parameters
+    ----------
+    fObj :
+        file object
+
+    Returns
+    -------
+    header : dict
+        a dictionary of header values
+
     """
     from struct import unpack
     import datetime as dt
@@ -1087,8 +1333,7 @@ def _readHeader(fObj, debug=False):
     header['outdir'] = unpack('250s', fObj.read(250))[0].strip()
     header['indir'] = unpack('250s', fObj.read(250))[0].strip()
     # Only print header if in debug mode
-    if debug:
-        for k, v in header.items(): print '{:10s} :: {}'.format(k,v)
+    for k, v in header.items(): logging.debug('{:10s} :: {}'.format(k,v))
     header.pop('fext'); header.pop('outdir')
     header.pop('indir')
 
@@ -1098,13 +1343,22 @@ def _readHeader(fObj, debug=False):
 def _getTitle(time, beam, header, name):
     """Create a title for ground/altitude plots
 
-    **Args**:
-        * **time** (datetime.datetime): time shown in plot
-        * **beam**: beam shown in plot
-        * **header** (dict): header of fortran uotput file
-        * **name** (str): radar name
-    **Returns**:
-        * **title** (str): a title string
+    Parameters
+    ----------
+    time : datetime.datetime
+        time shown in plot
+    beam :
+        beam shown in plot
+    header : dict
+        header of fortran uotput file
+    name : str
+        radar name
+
+    Returns
+    -------
+    title : str
+        a title string
+
     """
     from numpy import floor, round
 

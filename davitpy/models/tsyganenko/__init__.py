@@ -1,80 +1,108 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: models.tsyganenko
-*********************
+"""tsyganenko module
 
 This modules containes the following object(s):
 
-    * :class:`models.tsyganenko.tsygTrace`: Wraps fortran subroutines in one convenient class
-  
-This module contains the following module(s):
+Classes
+-------------------------------------------------------------
+tsygTrace   Wraps fortran subroutines in one convenient class
+-------------------------------------------------------------
 
-    * :mod:`models.tsyganenko.tsygFort`: Fortran subroutines
- 
-*******************************
+Module
+-------------------------------
+tsygFort    Fortran subroutines
+-------------------------------
+
 """
 
 import tsygFort
+import logging
 
 class tsygTrace(object):
+    """models.tsyganenko.trace
+
+    Trace magnetic field line(s) from point(s)
+
+    Parameters
+    ----------
+    lat : Optional[ ]
+        latitude [degrees]
+    lon : Optional[ ]
+        longitude [degrees]
+    rho : Optional[ ]
+        distance from center of the Earth [km]
+    filename : Optional[ ]
+        load a trace object directly from a file
+    coords : Optional[str]
+        coordinates used for start point ['geo']
+    datetime : Optional[datetime]
+        a python datetime object
+    vswgse : Optional[list, float]
+        solar wind velocity in GSE coordinates [m/s, m/s, m/s]
+    pdyn : Optional[float]
+        solar wind dynamic pressure [nPa]
+    dst : Optional[flaot]
+        Dst index [nT]
+    byimf : Optional[float]
+        IMF By [nT]
+    bzimf : Optional[float]
+        IMF Bz [nT]
+    lmax : Optional[int]
+        maximum number of points to trace
+    rmax : Optional[float]
+        upper trace boundary in Re
+    rmin : Optional[float]
+        lower trace boundary in Re
+    dsmax : Optional[float]
+        maximum tracing step size
+    err : Optional[float]
+        tracing step tolerance
+
+    Returns
+    -------
+    Elements of this object:
+    lat[N/S]H :
+        latitude of the trace footpoint in Northern/Southern hemispher
+    lon[N/S]H :
+        longitude of the trace footpoint in Northern/Southern hemispher
+    rho[N/S]H :
+        distance of the trace footpoint in Northern/Southern hemispher
+
+    Examples
+    --------
+        from numpy import arange, zeros, ones
+        import tsyganenko
+        # trace a series of points
+        lats = arange(10, 90, 10)
+        lons = zeros(len(lats))
+        rhos = 6372.*ones(len(lats))
+        trace = tsyganenko.tsygTrace(lats, lons, rhos)
+        # Print the results nicely
+        print trace
+        # Plot the traced field lines
+        ax = trace.plot()
+        # Or generate a 3d view of the traced field lines
+        ax = trace.plot3d()
+        # Save your trace to a file for later use
+        trace.save('trace.dat')
+        # And when you want to re-use the saved trace
+        trace = tsyganenko.tsygTrace(filename='trace.dat')
+
+    Notes
+    -----
+    **FUNCTION**: trace(lat, lon, rho, coords='geo', datetime=None,
+         vswgse=[-400.,0.,0.], Pdyn=2., Dst=-5., ByIMF=0., BzIMF=-5.
+         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001)
+
+    Written by Sebastien 2012-10
+
+    """
     def __init__(self, lat=None, lon=None, rho=None, filename=None, 
         coords='geo', datetime=None,
         vswgse=[-400.,0.,0.], pdyn=2., dst=-5., byimf=0., bzimf=-5.,
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
-        """
-|   **PACKAGE**: models.tsyganenko.trace
-|   **FUNCTION**: trace(lat, lon, rho, coords='geo', datetime=None,
-|        vswgse=[-400.,0.,0.], Pdyn=2., Dst=-5., ByIMF=0., BzIMF=-5.
-|        lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001)
-|   **PURPOSE**: trace magnetic field line(s) from point(s)
-|
-|   **INPUTS**:
-|       **lat**: latitude [degrees]
-|       **lon**: longitude [degrees]
-|       **rho**: distance from center of the Earth [km]
-|       **filename**: load a trace object directly from a file
-|       **[coords]**: coordinates used for start point ['geo']
-|       **[datetime]**: a python datetime object
-|       **[vswgse]**: solar wind velocity in GSE coordinates [m/s, m/s, m/s]
-|       **[pdyn]**: solar wind dynamic pressure [nPa]
-|       **[dst]**: Dst index [nT]
-|       **[byimf]**: IMF By [nT]
-|       **[bzimf]**: IMF Bz [nT]
-|       **[lmax]**: maximum number of points to trace
-|       **[rmax]**: upper trace boundary in Re
-|       **[rmin]**: lower trace boundary in Re
-|       **[dsmax]**: maximum tracing step size
-|       **[err]**: tracing step tolerance
-|
-|   **OUTPUTS**:
-|       Elements of this object:
-|       **.lat[N/S]H**: latitude of the trace footpoint in Northern/Southern hemispher
-|       **.lon[N/S]H**: longitude of the trace footpoint in Northern/Southern hemispher
-|       **.rho[N/S]H**: distance of the trace footpoint in Northern/Southern hemispher
-|
-|   **EXAMPLES**:
-from numpy import arange, zeros, ones
-import tsyganenko
-# trace a series of points
-lats = arange(10, 90, 10)
-lons = zeros(len(lats))
-rhos = 6372.*ones(len(lats))
-trace = tsyganenko.tsygTrace(lats, lons, rhos)
-# Print the results nicely
-print trace
-# Plot the traced field lines
-ax = trace.plot()
-# Or generate a 3d view of the traced field lines
-ax = trace.plot3d()
-# Save your trace to a file for later use
-trace.save('trace.dat')
-# And when you want to re-use the saved trace
-trace = tsyganenko.tsygTrace(filename='trace.dat')
-|
-|   Written by Sebastien 2012-10
-        """
         from datetime import datetime as pydt
 
         assert (None not in [lat, lon, rho]) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
@@ -103,10 +131,9 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
 
 
     def __test_valid__(self):
-        """
-|   Test the validity of input arguments to the tsygTrace class and trace method
-|
-|   Written by Sebastien 2012-10
+        """Test the validity of input arguments to the tsygTrace class and trace method
+
+        Written by Sebastien 2012-10
         """
         assert (len(self.vswgse) == 3), 'vswgse must have 3 elements'
         assert (self.coords.lower() == 'geo'), '{}: this coordinae system is not supported'.format(self.coords.lower())
@@ -137,13 +164,47 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
     def trace(self, lat=None, lon=None, rho=None, coords=None, datetime=None,
         vswgse=None, pdyn=None, dst=None, byimf=None, bzimf=None,
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
+        """See tsygTrace for a description of each parameter
+        Any unspecified parameter default to the one stored in the object
+        Unspecified lmax, rmax, rmin, dsmax, err has a set default value
+
+        Parameters
+        ----------
+        lat : Optional[ ]
+            latitude [degrees]
+        lon : Optional[ ]
+            longitude [degrees]
+        rho : Optional[ ]
+            distance from center of the Earth [km]
+        coords : Optional[str]
+            coordinates used for start point ['geo']
+        datetime : Optional[datetime]
+            a python datetime object
+        vswgse : Optional[list, float]
+            solar wind velocity in GSE coordinates [m/s, m/s, m/s]
+        pdyn : Optional[float]
+            solar wind dynamic pressure [nPa]
+        dst : Optional[flaot]
+            Dst index [nT]
+        byimf : Optional[float]
+            IMF By [nT]
+        bzimf : Optional[float]
+            IMF Bz [nT]
+        lmax : Optional[int]
+            maximum number of points to trace
+        rmax : Optional[float]
+            upper trace boundary in Re
+        rmin : Optional[float]
+            lower trace boundary in Re
+        dsmax : Optional[float]
+            maximum tracing step size
+        err : Optional[float]
+            tracing step tolerance
+
+        Written by Sebastien 2012-10
+
         """
-|   See tsygTrace for a description of each parameter
-|   Any unspecified parameter default to the one stored in the object
-|   Unspecified lmax, rmax, rmin, dsmax, err has a set default value
-|
-|   Written by Sebastien 2012-10
-        """
+
         from numpy import radians, degrees, zeros
 
         # Store existing values of class attributes in case something is wrong
@@ -280,10 +341,9 @@ trace = tsyganenko.tsygTrace(filename='trace.dat')
 
 
     def __str__(self):
-        """
-|   Print object information in a nice way
-|
-|   Written by Sebastien 2012-10
+        """Print object information in a nice way
+
+        Written by Sebastien 2012-10
         """
         # Declare print format
         outstr =    '''
@@ -317,10 +377,15 @@ bzimf={:3.0f}                       [nT]
 
 
     def save(self, filename):
-        """
-|   Save trace information to a file
-|
-|   Written by Sebastien 2012-10
+        """Save trace information to a file
+
+        Parameters
+        ----------
+        filename : str
+
+
+        Written by Sebastien 2012-10
+
         """
         import cPickle as pickle
 
@@ -329,10 +394,13 @@ bzimf={:3.0f}                       [nT]
 
 
     def load(self, filename):
-        """
-|   load trace information from a file
-|
-|   Written by Sebastien 2012-10
+        """load trace information from a file
+
+        Parameters
+        ----------
+        filename : str
+
+        Written by Sebastien 2012-10
         """
         import cPickle as pickle
 
@@ -344,23 +412,32 @@ bzimf={:3.0f}                       [nT]
 
     def plot(self, proj='xz', color='b', onlyPts=None, showPts=False, 
         showEarth=True, disp=True, **kwargs):
-        """
-|   Generate a 2D plot of the trace projected onto a given plane
-|   Graphic keywords apply to the plot method for the field lines
-|   
-|   **INPUTS**:
-|       **plane**: the projection plane in GSW coordinates
-|       **onlyPts**: if the trace countains multiple point, only show the specified indices (list)
-|       **showEarth**: Toggle Earth disk visibility on/off
-|       **showPts**: Toggle start points visibility on/off
-|       **disp**: invoke pylab.show()
-|       **color**: field line color
-|       **kwargs**: see matplotlib.axes.Axes.plot
-|   
-|   **OUTPUTS**:
-|       **ax**: matplotlib axes object
-|
-|   Written by Sebastien 2012-10
+        """Generate a 2D plot of the trace projected onto a given plane
+        Graphic keywords apply to the plot method for the field lines
+
+        Parameters
+        ----------
+        proj : Optional[str]
+            the projection plane in GSW coordinates
+        color : Optional[char]
+            field line color
+        onlyPts : Optional[ ]
+            if the trace countains multiple point, only show the specified indices (list)
+        showEarth : Optional[bool]
+            Toggle Earth disk visibility on/off
+        showPts : Optional[bool]
+            Toggle start points visibility on/off
+        disp : Optional[bool]
+            invoke pylab.show()
+        **kwargs :
+            see matplotlib.axes.Axes.plot
+
+        Returns
+        -------
+        ax : matplotlib axes object
+
+        Written by Sebastien 2012-10
+
         """
         from pylab import gcf, gca, show
         from matplotlib.patches import Circle
@@ -449,25 +526,37 @@ bzimf={:3.0f}                       [nT]
 
     def plot3d(self, onlyPts=None, showEarth=True, showPts=False, disp=True, 
         xyzlim=None, zorder=1, linewidth=2, color='b', **kwargs):
-        """
-|   Generate a 3D plot of the trace
-|   Graphic keywords apply to the plot3d method for the field lines
-|   
-|   **INPUTS**:
-|       **onlyPts**: if the trace countains multiple point, only show the specified indices (list)
-|       **showEarth**: Toggle Earth sphere visibility on/off
-|       **showPts**: Toggle start points visibility on/off
-|       **disp**: invoke pylab.show()
-|       **xyzlim**: 3D axis limits
-|       **zorder**: 3D layers ordering
-|       **linewidth**: field line width
-|       **color**: field line color
-|       **kwargs**: see mpl_toolkits.mplot3d.axes3d.Axes3D.plot3D
-|   
-|   **OUTPUTS**:
-|       **ax**: matplotlib axes object
-|
-|   Written by Sebastien 2012-10
+        """Generate a 3D plot of the trace
+        Graphic keywords apply to the plot3d method for the field lines
+
+        Parameters
+        ----------
+        onlyPts : Optional[ ]
+            if the trace countains multiple point, only show the specified indices (list)
+        showEarth : Optional[bool]
+            Toggle Earth sphere visibility on/off
+        showPts : Optional[bool]
+            Toggle start points visibility on/off
+        disp : Optional[bool]
+            invoke pylab.show()
+        xyzlim : Optional[ ]
+            3D axis limits
+        zorder : Optional[int]
+            3D layers ordering
+        linewidth : Optional[int]
+            field line width
+        color : Optional[char]
+            field line color
+        **kwargs :
+            see mpl_toolkits.mplot3d.axes3d.Axes3D.plot3D
+
+        Returns
+        -------
+        ax :  matplotlib axes
+            axes object
+
+        Written by Sebastien 2012-10
+
         """
         from mpl_toolkits.mplot3d import proj3d
         from numpy import pi, linspace, outer, ones, size, cos, sin, radians

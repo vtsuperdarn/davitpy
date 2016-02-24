@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
 # test_update_backscatter.py, Angeline G. Burrell (AGB), UoL
 #
@@ -6,33 +7,32 @@
 #           the routines in update_backscatter that determine the origin
 #           field-of-view (FoV) for radar backscatter
 #-----------------------------------------------------------------------------
-'''
-test_update_backscatter
+"""test_update_backscatter
+
+Scripts to create plots and calculate statistics that test the routines in
+update_backscatter that determine the origin field-of-view (FoV) for radar
+backscatter
+
+Functions
+-------------------------------------------------------------
+add_colorbar                add to existing figure
+get_sorted_legend_labels    sort by hop and region
+get_fractional_hop_labels   hop decimal to fraction
+plot_yeoman_plate1          Yeoman(2001) based plot
+plot_milan_figure9          Milan(1997) based plot
+plot_storm_figures          plot E-region scatter
+plot_single_column          plot subplots
+load_test_beams             data for a test period
+plot_scan_and_beam          plot attribute for front/rear FoV
+plot_meteor_figure          compare HWM14 with LoS velocity
+plot_map                    plot a FoV map
+-------------------------------------------------------------
 
 Author: Angeline G. Burrell (AGB)
 Date: August 12, 2015
 Inst: University of Leicester (UoL)
 
-Comments
-----------
-Scripts to create plots and calculate statistics that test the routines in
-update_backscatter that determine the origin field-of-view (FoV) for radar
-backscatter
-
-Contains
-----------
-add_colorbar
-get_sorted_legend_labels
-get_fractional_hop_labels
-plot_yeoman_plate1
-plot_milan_figure9
-plot_storm_figures
-plot_single_column
-load_test_beams
-plot_scan_and_beam
-plot_meteor_figure
-plot_map
-'''
+"""
 
 # Import python packages
 import os
@@ -79,7 +79,7 @@ mm = {"region":{"D":"d", "E":"o", "F":"^", "all":"|"},
 def add_colorbar(figure_handle, contour_handle, zmin, zmax, zinc=6, name=None,
                  units=None, orient="vertical", scale="linear", width=1,
                  loc=[0.9,0.1,0.03,0.8]):
-    ''' Add a colorbar to an existing figure
+    """Add a colorbar to an existing figure
 
     Parameters
     --------
@@ -112,8 +112,8 @@ def add_colorbar(figure_handle, contour_handle, zmin, zmax, zinc=6, name=None,
         handle to the colorbar axis
     cb : (pointer)
         handle to the colorbar
-    '''
 
+    """
     # Set the z range and output the colorbar
     w  = np.linspace(zmin, zmax, zinc, endpoint=True)
     ax2 = figure_handle.add_axes(loc)
@@ -159,7 +159,7 @@ def add_colorbar(figure_handle, contour_handle, zmin, zmax, zinc=6, name=None,
 
 #--------------------------------------------------------------------------
 def get_sorted_legend_labels(ax, marker_key="reg"):
-    '''Sort legend labels by hop and region
+    """Sort legend labels by hop and region
 
     Parameters
     -----------
@@ -174,7 +174,8 @@ def get_sorted_legend_labels(ax, marker_key="reg"):
         ordered list of marker handles
     labels : (list)
         ordered list of marker labels
-    '''
+
+    """
     handles, labels = ax.get_legend_handles_labels()
 
     try:
@@ -187,7 +188,7 @@ def get_sorted_legend_labels(ax, marker_key="reg"):
 
 #--------------------------------------------------------------------------
 def get_fractional_hop_labels(legend_labels):
-    '''Change decimal hop labels to traditional fractions
+    """Change decimal hop labels to traditional fractions
 
     Parameters
     -----------
@@ -198,7 +199,8 @@ def get_fractional_hop_labels(legend_labels):
     --------
     legend_labels : (list)
         List of strings containing fracitonal hops
-    '''
+
+    """
     for i,ll in enumerate(legend_labels):
         ll = ll.replace("0.5", r"$\frac{1}{2}$")
         ll = ll.replace(".5", r"$\frac{1}{2}$")
@@ -227,7 +229,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
                        strict_gs=True, draw=True, label_type="frac",
                        beams=dict()):
-    '''Plot based on Plate 1  in Yeoman et al (2001) Radio Science, 36, 801-813.
+    """Plot based on Plate 1  in Yeoman et al (2001) Radio Science, 36, 801-813.
 
 
     Parameters
@@ -345,7 +347,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-    '''
+
+    """
     import davitpy.pydarn.radar as pyrad
     rn = "plot_yeoman_plate1"
 
@@ -525,7 +528,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
                        strict_gs=True, draw=True, label_type="frac",
                        beams=dict()):
-    '''Plot based on Figure 9 in Milan et al (1997) Annales Geophysicae, 15,
+    """Plot based on Figure 9 in Milan et al (1997) Annales Geophysicae, 15,
     29-39.
 
     Parameters
@@ -632,7 +635,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-    '''
+
+    """
     rn = "plot_milan_figure9"
 
     # Load and process the desired data
@@ -648,7 +652,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                            strict_gs=strict_gs, beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
-        print "ERROR! can't find radar [", rad, "] in data:", dout[0].keys()
+        logging.error("can't find radar [" + rad + "] in data:" + dout[0].keys())
         return(dout[0], dout[1], dout[2], beams)
 
     # Recast the data as numpy arrays
@@ -720,7 +724,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
                        strict_gs=True, draw=True, label_type="frac",
                        beams=dict()):
-    '''Plot showing a period of time where E-region scatter past over the
+    """Plot showing a period of time where E-region scatter past over the
     radar at pyk.
 
     Parameters
@@ -836,7 +840,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-    '''
+
+    """
     import davitpy.pydarn.radar as pyrad
     rn = "plot_storm_figure"
 
@@ -966,7 +971,7 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
                        ylabels=["All","Front","Rear","Unassigned"],
                        titles=["","","",""], plot_title="", label_type="frac",
                        acolor="w", draw=True):
-    '''Plot single column of subplots with all data in the first row using one
+    """Plot single column of subplots with all data in the first row using one
     type of data in the z-axis, and a second type of data in the z-axis for the
     final rows, which plot only data belonging to the front, rear, and no field-
     of-view
@@ -1033,7 +1038,8 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
         Figure handle
     ax : (dict)
         Dictionary of axis handles
-    '''
+
+    """
     import davitpy.pydarn.radar as pyrad
     rn = "plot_single_column"
 
@@ -1178,7 +1184,7 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                     ut_box=dt.timedelta(minutes=20.0),tdiff=list(),
                     tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
                     strict_gs=True, beams=dict()):
-    '''Load data for a test period, updating the beams to include origin field-
+    """Load data for a test period, updating the beams to include origin field-
     of-view data and returning dictionaries of lists with time, range,
     and intensity data for a specified radar/beam combination.
 
@@ -1272,7 +1278,8 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
 
     rn = "load_test_beams"
@@ -1386,7 +1393,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                        tinc=mdates.MinuteLocator(interval=15),
                        yinc=ticker.MultipleLocator(15), zinc=6, plot_title="",
                        label_type="frac", make_plot=True, draw=True):
-    '''Plot a specified attribute (elevation angle or virtual height) for the
+    """Plot a specified attribute (elevation angle or virtual height) for the
     front and rear field-of-view, using a scan of beams and a single beam for
     a longer period of time.
 
@@ -1460,7 +1467,8 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
         List of axis handles
     cb : (set)
         Output from colorbar
-    '''
+
+    """
     import davitpy.pydarn.radar as pyrad
     rn = "plot_scan_and_beam"
 
@@ -1788,7 +1796,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
                        strict_gs=True, draw=True, beams=dict()):
-    '''Plot comparing HWM14 neutral winds with the line-of-site velocity
+    """Plot comparing HWM14 neutral winds with the line-of-site velocity
     for two beams at Saskatoon
 
     Parameters
@@ -1886,7 +1894,8 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-    '''
+
+    """
     import davitpy.pydarn.plotting as plotting
     import davitpy.pydarn.radar as pyrad
     import davitpy.pydarn.sdio as sdio
@@ -1897,9 +1906,17 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     #-------------------------------------------------------------------------
     # Define local routines
     def ismeteor(p, verr, werr):
-        '''
-        Gareth's threshold test for meteor scatter (Chisham and Freeman 2013)
-        '''
+        """Gareth's threshold test for meteor scatter (Chisham and Freeman 2013)
+
+        Parameters
+        ----------
+        p :
+
+        verr :
+
+        werr :
+
+        """
         # Initialize output
         good = False
 
@@ -1924,7 +1941,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         return good
 
     def dec2001ap(bm_time):
-        ''' Look up Ap using time.  Only available for December 2001.
+        """Look up Ap using time.  Only available for December 2001.
         Data from: ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/
 
         Parameters
@@ -1935,7 +1952,8 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         Returns
         ---------
         bm_ap : (float)
-        '''
+
+        """
         ap_times = [dt.datetime(2001,12,1) + dt.timedelta(hours=i)
                     for i in range(744)]
         ap_vals = [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
@@ -2190,7 +2208,7 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
              alt_attr="vheight", dat_attr="v", fov_attr="fovflg", dmax=500.0,
              dmin=-500.0, dcolor=ccenter, lat_label=True, lon_label=True,
              gscatter=True, draw=True):
-    '''Plot a fov map
+    """Plot a fov map
 
     Parameters
     -----------
@@ -2252,7 +2270,8 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
         Dictionary of fields-of-view
     hard : ( or NoneType)
         Hardware data (default=None)
-    '''
+
+    """
     import davitpy.pydarn.plotting as plotting
     import davitpy.pydarn.radar as pyrad
     rn = "plot_map"
