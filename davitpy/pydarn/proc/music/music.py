@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -14,57 +15,60 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""music processing module
+
+A module for running the MUltiple SIgnal Classification (MUSIC) algorithm for the detection of
+MSTIDs and wave-like structures in SuperDARN data.
+
+For usage examples, please see the iPython notebooks included in the docs folder of the DaViTPy distribution.
+
+References
+----------
+See Samson et al. [1990] and Bristow et al. [1994] for details regarding the MUSIC algorithm and SuperDARN-observed MSTIDs.
+
+Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
+    using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319-331, doi:10.1029/93JA01470.
+
+Samson, J. C., R. A. Greenwald, J. M. Ruohoniemi, A. Frey, and K. B. Baker (1990), Goose Bay radar observations of Earth-reflected,
+    atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693-7709, doi:10.1029/JA095iA06p07693.
+
+Module author:: Nathaniel A. Frissell, Fall 2013
+
+Functions
+--------------------------------------------------------------------------------------------------------------------------
+getDataSet                  get music data object from music array object
+stringify_signal            convert dictionary to a string
+stringify_signal_list       convert list of dictionaries into strings
+beamInterpolation           interpolate music array object along beams
+defineLimits                set limits for chosen data set
+checkDataQuality            mark data as bad base on radar operations
+applyLimits                 remove data outside of limits
+determineRelativePosition   find center of cell in music array object
+timeInterpolation           interpolate music array object along time
+filterTimes                 calculate time range for data set
+detrend                     linear detrend of music array/data object
+nan_to_num                  convert undefined numbers to finite numbers
+windowData                  apply window to music array object
+calculateFFT                calculate spectrum of an object
+calculateDlm                calculate the cross-spectral matrix of a musicArray/musicDataObj object.
+calculateKarr               calculate the two-dimensional horizontal wavenumber array of a musicArray/musicDataObj object.
+simulator                   insert a simulated MSTID into the processing chain.
+scale_karr                  scale/normalize kArr for plotting and signal detection.
+detectSignals               detect local maxima of signals
+add_signal                  add signal to detected signal list
+del_signal                  remove signal from detected signal list
+--------------------------------------------------------------------------------------------------------------------------
+
+Classes
+-----------------------------------------------------------
+emptyObj        create an empty object
+SigDetect       information about detected signals
+musicDataObj    basic container for holding MUSIC data.
+musicArray      container object for holding musicDataObj's
+filter          a filter object for VT sig/siStruct objects
+-----------------------------------------------------------
+
 """
-.. module:: music
-    :synopsis: A module for running the MUltiple SIgnal Classification (MUSIC) algorithm for the detection of
-    MSTIDs and wave-like structures in SuperDARN data.
-
-    For usage examples, please see the iPython notebooks included in the docs folder of the DaViTPy distribution.
-
-    See Samson et al. [1990] and Bristow et al. [1994] for details regarding the MUSIC algorithm and SuperDARN-observed MSTIDs.
-
-    **References**:
-        Bristow, W. A., R. A. Greenwald, and J. C. Samson (1994), Identification of high-latitude acoustic gravity wave sources
-            using the Goose Bay HF Radar, J. Geophys. Res., 99(A1), 319-331, doi:10.1029/93JA01470.
-
-        Samson, J. C., R. A. Greenwald, J. M. Ruohoniemi, A. Frey, and K. B. Baker (1990), Goose Bay radar observations of Earth-reflected,
-            atmospheric gravity waves in the high-latitude ionosphere, J. Geophys. Res., 95(A6), 7693-7709, doi:10.1029/JA095iA06p07693.
-
-.. moduleauthor:: Nathaniel A. Frissell, Fall 2013
-
-*********************
-**Module**: pydarn.proc.muic
-*********************
-**Functions**:
-    * :func:`pydarn.proc.music.getDataSet`
-    * :func:`pydarn.proc.music.stringify_signal`
-    * :func:`pydarn.proc.music.stringify_signal_list`
-    * :func:`pydarn.proc.music.beamInterpolation`
-    * :func:`pydarn.proc.music.defineLimits`
-    * :func:`pydarn.proc.music.applyLimits`
-    * :func:`pydarn.proc.music.determineRelativePosition`
-    * :func:`pydarn.proc.music.timeInterpolation`
-    * :func:`pydarn.proc.music.filterTimes`
-    * :func:`pydarn.proc.music.detrend`
-    * :func:`pydarn.proc.music.nan_to_num`
-    * :func:`pydarn.proc.music.windowData`
-    * :func:`pydarn.proc.music.calculateFFT`
-    * :func:`pydarn.proc.music.calculateDlm`: Calculate the cross-spectral matrix of a musicArray/musicDataObj object.
-    * :func:`pydarn.proc.music.calculateKarr`: Calculate the two-dimensional horizontal wavenumber array of a musicArray/musicDataObj object.
-    * :func:`pydarn.proc.music.simulator`: Insert a simulated MSTID into the processing chain.
-    * :func:`pydarn.proc.music.scale_karr`: Scale/normalize kArr for plotting and signal detection.
-    * :func:`pydarn.proc.music.detectSignals`
-    * :func:`pydarn.proc.music.add_signal`
-    * :func:`pydarn.proc.music.del_signal`
-
-**Classes**:
-    * :class:`pydarn.proc.music.emptyObj`
-    * :class:`pydarn.proc.music.SigDetect`
-    * :class:`pydarn.proc.music.musicDataObj`: Basic container for holding MUSIC data.
-    * :class:`pydarn.proc.music.musicArray`: Container object for holding musicDataObj's.
-    * :class:`pydarn.proc.music.filter`
-"""
-
 import numpy as np
 import datetime 
 import time
@@ -80,13 +84,19 @@ def getDataSet(dataObj,dataSet='active'):
     found, the last attribute of a sorted list will be returned.  If no attributes are found which contain the specified
     string, the 'active' dataSet is returned.
 
-    **Args**:
-        * **dataObj**:  musicArray object
-        * [**dataSet**]:  which dataSet in the musicArray object to process
-    **Returns**:
-        * **currentData**: musicDataObj object
+    Parameters
+    ----------
+    dataObj :  musicArray
+
+    dataSet :  Optional[ ]
+        which dataSet in the musicArray object to process
+
+    Returns
+    -------
+    currentData : musicDataObj object
 
     Written by Nathaniel A. Frissell, Fall 2013
+
     """
     lst = dir(dataObj)
     if dataSet not in lst:
@@ -112,11 +122,15 @@ class emptyObj(object):
 def stringify_signal(sig):
     """Method to convert a signal information dictionary into a string.
 
-    **Args**:
-        * **sig** (dict): Information about a detected signal.
+    Parameters
+    ----------
+    sig : dict
+        Information about a detected signal.
 
-    **Returns**:
-      * **sigInfo** (str): String representation of the signal information.
+    Returns
+    -------
+    sigInfo : str
+        String representation of the signal information.
 
     Written by Nathaniel A. Frissell, Fall 2013
     """
