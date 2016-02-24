@@ -469,37 +469,36 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
-    rn = "calc_elv"
 
     #-------------------------------------------------------------------------
     # Test input
     if not isinstance(beam, sdio.radDataTypes.beamData):
-        logging.error('{:s} the beam must be a beamData class'.format(rn))
+        logging.error('the beam must be a beamData class')
     assert(isinstance(phi0_attr, str) and hasattr(beam.fit, phi0_attr)), \
-        logging.error('{:s} the phase lag data is not in this beam'.format(rn))
+        logging.error('the phase lag data is not in this beam')
     assert(isinstance(hard, pyrad.site) or hard is None), \
-        logging.error('{:s} supply the hardware class or None'.format(rn))
+        logging.error('supply the hardware class or None')
     assert(isinstance(asep, float) or asep is None), \
-        logging.error('{:s} the asep should be a float or NoneType'.format(rn))
+        logging.error('the asep should be a float or NoneType')
     assert(isinstance(ecor, float) or ecor is None), \
-        logging.error('{:s} the ecor should be a float or NoneType'.format(rn))
+        logging.error('the ecor should be a float or NoneType')
     assert(isinstance(phi_sign, float) or phi_sign is None), \
-        logging.error('{:s} the phi_sign should be a float or NoneType'.format(rn))
+        logging.error('the phi_sign should be a float or NoneType')
     assert(isinstance(tdiff, float) or tdiff is None), \
-        logging.error('{:s} the tdiff should be a float or NoneType'.format(rn))
+        logging.error('the tdiff should be a float or NoneType')
     assert(isinstance(del_chi, float) or del_chi is None), \
-        logging.error('{:s} the del_chi should be a float or NoneType'.format(rn))
+        logging.error('the del_chi should be a float or NoneType')
     assert(isinstance(del_chif, float)), \
-        logging.error('{:s} the del_chif should be a float'.format(rn))
+        logging.error('the del_chif should be a float')
     assert(isinstance(alias, float)), \
-        logging.error('{:s} the alias number should be a float'.format(rn))
+        logging.error('the alias number should be a float')
     assert(isinstance(fov, str) and (fov.find("front") >= 0 or
                                      fov.find("back") >= 0)), \
-        logging.error('{:s} the field-of-view must be "front" or "back"'.format(rn))
+        logging.error('the field-of-view must be "front" or "back"')
 
     # Only use this if the interferometer data was stored during this scan
     assert(beam.prm.xcf == 1), \
-        logging.error('{:s} no interferometer data at this time'.format(rn))
+        logging.error('no interferometer data at this time')
 
     # Load the phase lag data
     phi0 = getattr(beam.fit, phi0_attr)
@@ -507,9 +506,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     # This method cannot be applied at Goose Bay or any other radar/beam that
     # does not include phi0 in their FIT output
     assert(phi0 is not None), \
-        logging.error('{:s} phi0 missing from rad {:d} beam {:d}'.format(rn,
-                                                                   beam.stid,
-                                                                   beam.bmnum))
+        logging.error('phi0 missing from rad {:d} beam {:d}'.format(beam.stid,
+                                                                    beam.bmnum))
 
     # If possible, load the phase lag error data (not required to run)
     if hasattr(beam.fit, phi0_e_attr):
@@ -601,8 +599,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
             #--------------------------
             # Evaluate the phase shift
             if phi_temp > max(chimax, chimin):
-                estr = "{:s} BUG ERROR: can't fix phase shift for ".format(rn)
-                estr = "{:s}beam {:d} [{:f} ".format(estr, beam.bmnum, phi_temp)
+                estr = "BUG ERROR: can't fix phase shift for beam "
+                estr = "{:s}{:d} [{:f} ".format(estr, beam.bmnum, phi_temp)
                 estr = "{:s}not between {:f},{:f} ".format(estr, chimin, chimax)
                 estr = "{:s}on {:} at range gate {:d}".format(estr, beam.time,
                                                               beam.fit.slist[i])
@@ -623,8 +621,7 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 
 #---------------------------------------------------------------------------
 def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
-                        dist_attr="slist", dist_units=None, logfile=None,
-                        log_level=logging.WARNING):
+                        dist_attr="slist", dist_units=None):
     """Calculate the virtual height for a specified backscatter distance and
     elevation angle.  Specifying a single earth radius introduces additional
     error into the resulting heights.  If the terrestrial radius at the radar
@@ -654,11 +651,6 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         Units of the slant distance to backscatter location data.  May supply
         "km", "m", or None.  None indicates that the distance is in range gate
         bins. (default=None)
-    logfile : (str or NoneType)
-        Name of file to hold the log output or None for stdout. (default=None)
-    log_level : (int)
-        Level of output to report.  Flag values explained in logging module.
-        (default=logging.WARNING)
     
     Returns
     --------
@@ -669,31 +661,15 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
 
     """
     import davitpy.pydarn.sdio as sdio
-    rn = "calc_virtual_height"
-
-    #---------------------------------
-    # Initialize the log output
-    if isinstance(logfile, str):
-        try:
-            logging.basicConfig(filename=logfile, level=log_level)
-        except:
-            print "{:s} WARNING: can't open logfile [{:s}]".format(rn, logfile)
-    else:
-        try:
-            logging.basicConfig(level=log_level)
-        except:
-            print "{:s} WARNING: unknown log level [{:}]".format(rn, log_level)
 
     #---------------------------------
     # Check the input
     if not isinstance(beam, sdio.radDataTypes.beamData):
-        estr = '{:s} ERROR: the beam must be a beamData class'.format(rn)
-        logging.error(estr)
+        logging.error('the beam must be a beamData class')
         return None
 
     if not isinstance(radius, float):
-        estr = '{:s} ERROR: the radius must be a float'.format(rn)
-        logging.error(estr)
+        logging.error('the radius must be a float')
         return None
 
     #---------------------------------
@@ -703,12 +679,10 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
             elv = getattr(beam.fit, elv_attr)
 
             if elv is None:
-                logging.error('{:s} ERROR: no elevation available'.format(rn))
+                logging.error('no elevation available')
                 return None
         except:
-            estr = '{:s} ERROR: no elevation attribute [{:s}]'.format(rn,
-                                                                      elv_attr)
-            logging.error(estr)
+            logging.error('no elevation attribute [{:s}]'.format(elv_attr))
             return None
 
     #---------------------------------
@@ -718,24 +692,18 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
             dist = getattr(beam.fit, dist_attr)
 
             if dist is None:
-                estr = '{:s} ERROR: no range/distance data availalbe'.format(rn)
-                logging.error(estr)
+                logging.error('no range/distance data availalbe')
                 return None
 
             if len(dist) != len(elv):
-                estr = '{:s} ERROR: different number of range and '.format(rn)
-                estr = '{:s}elevation points'.format(estr)
-                logging.error(estr)
+                logging.error('different number of range and elevation points')
                 return None
         except:
-            estr = '{:s} ERROR: no range attribute [{:s}]'.format(rn, dist_attr)
-            logging.error(estr)
+            logging.error('no range attribute [{:s}]'.format(dist_attr))
             return None
 
     if len(dist) == 0 or len(elv) == 0 or len(elv) != len(dist):
-        estr = "{:s} ERROR: unable to load matching elevation and ".format(rn)
-        estr = "{:s}distance lists".format(estr)
-        logging.error(estr)
+        logging.error("unable to load matching elevation and distance lists")
         return None
 
     #---------------------------------------------------------------------
@@ -748,8 +716,7 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         # Convert from meters to km
         dist = [d / 1000.0 for d in dist]
     elif dist_units is not "km":
-        estr = '{:s} ERROR: unknown range unit [{:s}]'.format(rn, dist_units)
-        logging.error(estr)
+        logging.error('unknown range unit [{:s}]'.format(dist_units))
         return None
 
     #-----------------------------------------------------------------------
@@ -769,8 +736,7 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
     return height
 
 #----------------------------------------------------------------------------
-def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
-                  logfile=None, log_level=logging.WARNING):
+def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5):
     """A routine to calculate distance in either meters or kilometers along the
     slant path from the radar to the first ionospheric reflection/refraction
     point using the range gate and a propagation path specified by the hop
@@ -798,11 +764,6 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
     hop : (float)
         Specifies the hop location of the range gate.  Nominally, range gates
         are located at 0.5 hop (assumes ionospheric scatter).  (default=0.5)
-    logfile : (str or NoneType)
-        Name of file to hold the log output or None for stdout. (default=None)
-    log_level : (int)
-        Level of output to report.  Flag values explained in logging module.
-        (default=logging.WARNING)
     
     Returns
     --------
@@ -814,33 +775,18 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
 
     """
     import davitpy.pydarn.sdio as sdio
-    rn = "calc_distance"
-
-    #---------------------------------
-    # Initialize the log output
-    if isinstance(logfile, str):
-        try:
-            logging.basicConfig(filename=logfile, level=log_level)
-        except:
-            print "{:s} WARNING: can't open logfile [{:s}]".format(rn, logfile)
-    else:
-        try:
-            logging.basicConfig(level=log_level)
-        except:
-            print "{:s} WARNING: unknown log level [{:}]".format(rn, log_level)
 
     #---------------------------------
     # Check the input
     estr = None
     if not isinstance(beam, sdio.radDataTypes.beamData):
-        estr = '{:s} ERROR: the beam must be a beamData class'.format(rn)
+        estr = 'the beam must be a beamData class'
     elif not isinstance(rg_attr, str) or not hasattr(beam.fit, rg_attr):
-        estr = '{:s} ERROR: no range gate attribute [{:}]'.format(rn, rg_attr)
+        estr = 'no range gate attribute [{:}]'.format(rg_attr)
     elif dist_units is not "km" and dist_units is not "m":
-        estr = '{:s} ERROR: unknown units for distance [{:}]'.format(rn,
-                                                                     dist_units)
+        estr = 'unknown units for distance [{:}]'.format(dist_units)
     elif not isinstance(hop, float) and hop > 0.0 and hop % 0.5 == 0.0:
-        estr = '{:s} ERROR: unknown hop number [{:}]'.format(rn, hop)
+        estr = 'unknown hop number [{:}]'.format(hop)
 
     else:
         # Load the range gate data
@@ -848,9 +794,9 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
             rg = getattr(beam.fit, rg_attr)
 
             if not isinstance(rg, list) or len(rg) == 0:
-                estr = '{:s} ERROR: unable to load range gate'.format(rn)
+                estr = 'unable to load range gate'
         except:
-            estr = '{:s} ERROR: unable to load range gate'.format(rn)
+            estr = 'unable to load range gate'
 
     #---------------------------------------------------------
     # Convert from range gates to distance or exit with error
@@ -923,48 +869,45 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
 
     If there is an input error, exits with an exception
     """
-
     import davitpy.pydarn.sdio as sdio
-    rn = "select_beam_groundscatter"
 
     #---------------------
     # Check input
-    estr = "{:s} ".format(rn)
     assert isinstance(beam, sdio.radDataTypes.beamData), \
-        logging.error("{:s}beam is not a beamData object".format(estr))
+        logging.error("beam is not a beamData object")
     assert((isinstance(dist, list) or isinstance(dist, np.ndarray))
            and len(dist) == len(beam.fit.slist)), \
-        logging.error("{:s}distance list does not match this beam".format(estr))
+        logging.error("distance list does not match this beam")
     if isinstance(min_rg, float):
         min_rg = int(min_rg)
     assert isinstance(min_rg, int), \
-        logging.error("{:s} min_rg is not an integer".format(rn))
+        logging.error("min_rg is not an integer")
     if isinstance(max_rg, float):
         max_rg = int(max_rg)
     assert isinstance(max_rg, int), \
-        logging.error("{:s} max_rg is not an integer".format(rn))
+        logging.error("max_rg is not an integer")
     if isinstance(rg_box, float):
         rg_box = int(rg_box)
     assert(isinstance(rg_box, int) and rg_box > 0), \
-        logging.error("{:s} rg_box is not a positive integer".format(rn))
+        logging.error("rg_box is not a positive integer")
     if isinstance(max_p, int):
         max_p = float(max_p)
     assert isinstance(max_p, float), \
-        logging.error("{:s} maximum power is not a float".format(rn))
+        logging.error("maximum power is not a float")
     if isinstance(max_v, int):
         max_v = float(max_v)
     assert isinstance(max_v, float), \
-        logging.error("{:s} maximum velocity is not a float".format(rn))
+        logging.error("maximum velocity is not a float")
     if isinstance(max_w, int):
         max_w = float(max_w)
     assert isinstance(max_w, float), \
-        logging.error("{:s} maximum spectral width is not a float".format(rn))
+        logging.error("maximum spectral width is not a float")
     assert(isinstance(gs_tol, float) and gs_tol >= 0.0 and gs_tol <= 1.0), \
-        logging.error("{:s} gs_tol is not a positive fraction".format(rn))
+        logging.error("gs_tol is not a positive fraction")
     if isinstance(nmin, float):
         nmin = int(nmin)
     assert(isinstance(nmin, int) and nmin > 0), \
-        logging.error("{:s} rg_box is not a positive integer".format(rn))
+        logging.error("rg_box is not a positive integer")
 
     #--------------------------------------------------------------------
     # Identify all instances that are flagged as ground scatter and have
@@ -1072,26 +1015,25 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
 
     """
     import davitpy.pydarn.sdio as sdio
-    rn = "calc_frac_points"
 
     #----------------
     # Check input
     assert isinstance(beam, sdio.radDataTypes.beamData), \
-        logging.error("{:s} beam is not a beamData object".format(rn))
+        logging.error("beam is not a beamData object")
     assert isinstance(dat_attr, str) and hasattr(beam.fit, dat_attr), \
-        logging.error("{:s} beam does not contain attribute {:}".format(rn, dat_attr))
+        logging.error("beam does not contain attribute {:}".format(dat_attr))
     assert(isinstance(dat_index, list) and isinstance(dat_index[0], int)), \
-        logging.error("{:s} dat_index is not a list of integers".format(rn))
-    assert(box > 0), ("{:s} ERROR: box is not positive".format(rn))
+        logging.error("dat_index is not a list of integers")
+    assert(box > 0), logging.error("box is not positive")
     assert(isinstance(dat_min, type(box)) or dat_min is None), \
-        logging.error("{:s} dat_min is of a different type is suspect".format(rn))
+        logging.error("dat_min is of a different type is suspect")
     assert(isinstance(dat_max, type(box)) or dat_max is None), \
-        logging.error("{:s} dat_max is of a different type is suspect".format(rn))
+        logging.error("dat_max is of a different type is suspect")
 
     # Get the data list and ensure there is a value to search about
     data = getattr(beam.fit, dat_attr)
     assert isinstance(central_index, int) and central_index < len(data), \
-        logging.error("{:s} no value for central_index in {:s}".format(rn, dat_attr))
+        logging.error("no value for central_index in {:s}".format(dat_attr))
 
     #-------------------------------------------------------------------------
     # Set evaluation variables, restraining range gate box to realistic values
@@ -1133,13 +1075,12 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                      region_hmin={"D":75.0,"E":115.0,"F":150.0},
                      rg_box=[2,5,10,20], rg_max=[5,25,40,76],
                      vh_box=[50.0,50.0,50.0,150.0], max_hop=3.0, tdiff=None,
-                     tdiff_e=None, ptest=True, strict_gs=False, logfile=None,
-                     log_level=logging.WARNING, step=6):
-    """Updates the propagation path, elevation, backscatter type, structure flag,
-    and origin field-of-view (FoV) for all backscatter observations in each
-    beam for a scan of data.  A full scan is not necessary, but if the number
-    of beams is less than the specified minimum, a less rigerous evaluation
-    method is used.
+                     tdiff_e=None, ptest=True, strict_gs=False, step=6):
+    """Updates the propagation path, elevation, backscatter type, structure
+    flag, and origin field-of-view (FoV) for all backscatter observations in
+    each beam for a scan of data.  A full scan is not necessary, but if the
+    number of beams is less than the specified minimum, a less rigerous
+    evaluation method is used.
 
     Parameters
     -------------
@@ -1177,11 +1118,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         Perform test to see if propagation modes are realistic? (default=True)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=False)
-    logfile : (str or NoneType)
-        Print warnings to a logfile or stdout.  (default=None for stdout)
-    log_level : (int)
-        Integer denoting the level of logging info to include.  Best to use
-        the logging module level flags.  (default=logging.WARNING or 30)
     step : (int)
         Integer denoting the number of processing steps to perform.  This should
         always be set to 6 (or greater) unless one wishes to reproduce the
@@ -1228,7 +1164,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
 
-    rn = "update_bs_w_scan"
     max_std = 3.0 # This is the maximum standard deviation in degrees.
     max_score = 3.0 # This is the maximum z-score.  z = (x - mean(X)) / std(X)
     fov_frac = 2.0 / 3.0
@@ -1236,80 +1171,57 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     near_rg = -1
 
     #----------------------------------
-    # Initialize the log output
-    if isinstance(logfile, str):
-        try:
-            logging.basicConfig(filename=logfile, level=log_level)
-        except:
-            print "{:s} WARNING: can't open logfile [{:s}]".format(rn, logfile)
-    else:
-        try:
-            logging.basicConfig(level=log_level)
-        except:
-            print "{:s} WARNING: unknown log level [{:}]".format(rn, log_level)
-
-    #----------------------------------
     # Test input
-    estr = '{:s} ERROR: '.format(rn)
-
     if not isinstance(hard, pyrad.radStruct.site):
-        estr = '{:s}need a hardware site structure to load data'.format(estr)
-        logging.error(estr)
+        logging.error('need a hardware site structure to load data')
         return None
 
     if(not ((isinstance(scan, list) or isinstance(scan, np.ndarray)) and
             len(scan) > 0 and len(scan) <= hard.maxbeam and
             isinstance(scan[0], sdio.radDataTypes.beamData))
        and not isinstance(scan, sdio.radDataTypes.radDataPtr)):
-        estr = '{:s}need a list of beams or a radar data '.format(estr)
-        estr = '{:s}pointer with [1-{:d}] '.format(estr, hard.maxbeam)
-        estr = '{:s}beams: length={:d}'.format(estr, len(scan))
+        estr = 'need a list of beams or a radar data pointer with [1-'
+        estr = '{:s}{:d}] beams: length={:d}'.format(estr, hard.maxbeam,
+                                                     len(scan))
         logging.error(estr)
         return None
 
     if isinstance(min_pnts, float):
         min_pnts = int(min_pnts)
     if not isinstance(min_pnts, int) or min_pnts < 0:
-        estr = '{:s}unknown point minimum [{:}]]n'.format(estr, min_pnts)
-        logging.error(estr)
+        logging.error('unknown point minimum [{:}]'.format(min_pnts))
         return None
 
     if not isinstance(region_hmin, dict) or min(region_hmin.values()) < 0.0:
-        estr = '{:s}unknown minimum virtual heights [{:}]'.format(estr,
-                                                                  region_hmin)
+        estr = 'unknown minimum virtual heights [{:}]'.format(region_hmin)
         logging.error(estr)
         return None
 
     if not isinstance(region_hmax, dict):
-        estr = '{:s}unknown maximum virtual heights [{:}]'.format(estr,
-                                                                  region_hmax)
+        estr = 'unknown maximum virtual heights [{:}]'.format(region_hmax)
         logging.error(estr)
         return None
 
     if((not isinstance(rg_box, list) and not isinstance(rg_box, np.ndarray))
        or min(rg_box) < 1.0):
-        estr = '{:s}bad FoV range gate box[{:}]'.format(estr, rg_box)
-        logging.error(estr)
+        logging.error('bad FoV range gate box[{:}]'.format(rg_box))
         return None
 
     if((not isinstance(vh_box, list) and not isinstance(vh_box, np.ndarray))
        or min(vh_box) < 0.0):
-        estr = '{:s}bad FoV virtual height box [{:}]'.format(estr, vh_box)
-        logging.error(estr)
+        logging.error('bad FoV virtual height box [{:}]'.format(vh_box))
         return None
 
     if isinstance(tdiff, int):
         tdiff = float(tdiff)
     if not isinstance(tdiff, float) and tdiff is not None:
-        estr = '{:s}tdiff must be a float'.format(estr)
-        logging.error(estr)
+        logging.error('tdiff must be a float')
         return None
 
     if isinstance(tdiff_e, int):
         tdiff_e = float(tdiff_e)
     if not isinstance(tdiff_e, float) and tdiff_e is not None:
-        estr = '{:s}tdiff error values must be a float'.format(estr)
-        logging.error(estr)
+        logging.error('tdiff error values must be a float')
         return None
 
     #-------------------------------------------------------------------------
@@ -1346,8 +1258,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
             try:
                 beams[bnum] = scan.readRec()
             except:
-                estr = "{:s} INFO: empty data pointer".format(rn)
-                logging.info(estr)
+                logging.info("empty data pointer")
                 scan = None
 
         bnum += 1
@@ -1361,8 +1272,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
              nhard) = update_beam_fit(beams[bnum-1], hard=hard, tdiff=tdiff,
                                       tdiff_e=tdiff_e, region_hmax=region_hmax,
                                       region_hmin=region_hmin, max_hop=max_hop,
-                                      ptest=ptest, strict_gs=strict_gs,
-                                      logfile=logfile, log_level=log_level)
+                                      ptest=ptest, strict_gs=strict_gs)
 
             if e is None or nhard is None:
                 beams[bnum-1] = None
@@ -1381,8 +1291,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                     hops[ff][bnum-1] = hh[ff]
                     regions[ff][bnum-1] = rr[ff]
     if bnum == 0:
-        estr = "{:s} ERROR: unable to update any beams in this scan".format(rn)
-        logging.error(estr)
+        logging.error("unable to update any beams in this scan")
         return None
 
     if bnum < len(beams):
@@ -1392,9 +1301,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     # To determine the FoV, evaluate the elevation variations across all beams 
     # for a range gate and virtual height band, considering each propagation
     # path (region and hop) seperately.
-    if hasattr(beams[0], "scan_time"):
-        rn = "{:s} at {:}".format(rn, beams[0].scan_time)
-
     min_inc = 0.5 * min(rg_box)
     min_rg = int(min_inc)
     max_rg = hard.maxgate if hard.maxgate < max(rg_max) else max(rg_max)
@@ -1423,9 +1329,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
             ilim += 1
 
         if ilim >= len(rg_max):
-            estr = "{:s} ADVISEMENT: range gate [{:d}] is above ".format(rn, r)
-            estr = "{:s}the allowed maximum [{:d}]".format(estr, rg_max[-1])
-            logging.info(estr)
+            estr = "range gate [{:d}] is above the allowed maximum [".format(r)
+            logging.info("{:s}{:d}]".format(estr, rg_max[-1]))
             continue
 
         width = np.floor(0.5 * rg_box[ilim])
@@ -1496,12 +1401,10 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                          if fhop == hop and rgreg[fov[ff]][it] == reg]
 
                 if len(itest) < min_pnts:
-                    estr = "{:s} ADVISEMENT: insufficient ".format(rn)
-                    estr = "{:s}points to determine virtual ".format(estr)
-                    estr = "{:s}height limits in the ".format(estr)
-                    estr = "{:s}{:s} field-of-view ".format(estr, fov[ff])
-                    estr = "{:s}for propagation path [{:s}".format(estr, pp)
-                    estr = "{:s}] at range gate [{:d}]".format(estr, r)
+                    estr = "insufficient points to determine virtual height "
+                    estr = "{:s}limits in the {:s} field-".format(estr, fov[ff])
+                    estr = "{:s}of-view for propagation path [".format(estr)
+                    estr = "{:s}{:s}] at range gate [{:d}]".format(estr, pp, r)
                     logging.info(estr)
                 else:
                     # Establish the virtual height windows
@@ -1527,12 +1430,10 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 
                         # See if there are enough beams at this height
                         if len(list(set(vbm))) < min_pnts:
-                            estr = "{:s} ADVISEMENT: ".format(rn)
-                            estr = "{:s}insufficient beams to ".format(estr)
-                            estr = "{:s}evaluate {:s}".format(estr, fov[ff])
-                            estr = "{:s} field-of-view between".format(estr)
-                            estr = "{:s} [{:.0f}-".format(estr, vmin)
-                            estr = "{:s}{:.0f} km] ".format(estr, vmaxs[iv])
+                            estr = "insufficient beams to evaluate "
+                            estr = "{:s}{:s} field-of-".format(estr, fov[ff])
+                            estr = "{:s}view between [{:.0f}".format(estr, vmin)
+                            estr = "{:s}{-:.0f} km] ".format(estr, vmaxs[iv])
                             estr = "{:s}at range gate {:d}".format(estr, r)
                             logging.info(estr)
                         else:
@@ -1597,10 +1498,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     inc_rg_box = 3.0
     for bi in range(bnum):
         if step < 3:
-            estr = "{:s} ADVISEMENT: not testing backscatter ".format(rn)
-            estr = "{:s}unassigned after performing scan ".format(estr)
-            estr = "{:s}evaluation".format(estr)
-            logging.info(estr)
+            estr = "not testing backscatter unassigned after performing scan "
+            logging.info("{:s}evaluation".format(estr))
             break
 
         lelv = {"front":np.array(elvs["front"][bi]),
@@ -1631,10 +1530,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                     fovscore[bi][si] = 0.0
                 else:
                     if step < 4:
-                        estr = "{:s} ADVISEMENT: not assigning ".format(rn)
-                        estr = "{:s}backscatter by testing the ".format(estr)
-                        estr = "{:s}single beam variations".format(estr)
-                        logging.info(estr)
+                        estr = "not assigning backscatter by testing the single"
+                        logging.info("{:s} beam variations".format(estr))
                         continue
 
                     # Examine the surrounding observations along the beam using
@@ -1647,9 +1544,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                         ilim += 1
 
                     if ilim >= len(rg_max):
-                        estr = "{:s} ADVISEMENT: no guidelines prov".format(rn)
-                        estr = "{:s}ided for range gate [{:d}]".format(estr, rg)
-                        logging.info(estr)
+                        estr = "no guidelines provided for range gate ["
+                        logging.info("{:s}{:d}]".format(estr, rg))
                         continue
 
                     rg_half = (0.5 * (rg_box[ilim] + inc_rg_box))
@@ -1684,9 +1580,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                             # If there are not enough points to perform a
                             # comparison continue without assigning a FoV flag
                             if not np.isnan(ihop) and len(ireg) == 1:
-                                estr = "{:s} ADVISEMENT: not enough ".format(rn)
-                                estr = "{:s}points to do single-".format(estr)
-                                estr = "{:s}beam test for the ".format(estr)
+                                estr = "not enough points to do single-beam "
+                                estr = "{:s}est for the ".format(estr)
                                 estr = "{:s}{:s} field-of".format(estr, fov[ff])
                                 estr = "{:s}-view for hop [".format(estr)
                                 estr = "{:s}{:.1f}{:s}".format(estr, ihop, ireg)
@@ -1739,9 +1634,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     # assigned to the opposite FoV.
     for r in np.arange(min_rg, max_rg + 1):
         if step < 5:
-            estr = "{:s} ADVISEMENT: not testing backscatter ".format(rn)
-            estr = "{:s}assignments with azimuthal continuity".format(estr)
-            logging.info(estr)
+            estr = "not testing backscatter assignments with azimuthal "
+            logging.info("{:s}continuity".format(estr))
             break
 
         # Initialize the hop-dependent data
@@ -1876,8 +1770,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                     fovflg[bi][si] = 0
                 fovpast[bi][si] = 0
 
-                estr = "{:s} ADVISEMENT: field-of-view is not ".format(rn)
-                estr = "{:s}consistent with the observed ".format(estr)
+                estr = "field-of-view is not consistent with the observed "
                 estr = "{:s}structure at hop [{:.1f}".format(estr, ihop)
                 estr = "{:s}{:s}] beam [".format(estr, ireg)
                 estr = "{:s}{:d}] range gate [".format(estr, beams[bi].bmnum)
@@ -1934,8 +1827,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                     region_hmax={"D":115.0,"E":150.0,"F":900.0},
                     region_hmin={"D":75.0,"E":115.0,"F":150.0}, max_hop=3.0,
-                    ptest=True, strict_gs=False, logfile=None,
-                    log_level=logging.WARNING):
+                    ptest=True, strict_gs=False):
     """Update the beam.fit and beam.prm class, updating and adding attributes
     needed for common data analysis
 
@@ -1963,11 +1855,6 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         Perform test to see if propagation modes are realistic? (default=True)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=False)
-    logfile : (str or NoneType)
-        Print warnings to a logfile or stdout.  (default=None for stdout)
-    log_level : (int)
-        Integer denoting the level of logging info to include.  Best to use
-        the logging module level flags.  (default=logging.WARNING or 30)
 
     Returns
     ---------
@@ -2004,64 +1891,42 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
     import davitpy.pydarn.radar as pyrad
     import davitpy.utils.geoPack as geo
 
-    rn = "update_beam_fit"
     asep = None
     ecor = None
     phi_sign = None
 
     #----------------------------------
-    # Initialize the log output
-    if isinstance(logfile, str):
-        try:
-            logging.basicConfig(filename=logfile, level=log_level)
-        except:
-            print "{:s} WARNING: can't open logfile [{:s}]".format(rn, logfile)
-    else:
-        try:
-            logging.basicConfig(level=log_level)
-        except:
-            print "{:s} WARNING: unknown log level [{:}]".format(rn, log_level)
-
-    #----------------------------------
     # Test input
-    estr = '{:s} ERROR: '.format(rn)
-
     if not isinstance(region_hmin, dict) or min(region_hmin.values()) < 0.0:
-        estr = '{:s}unknown minimum virtual heights [{:}]'.format(estr,
-                                                                  region_hmin)
+        estr = 'unknown minimum virtual heights [{:}]'.format(region_hmin)
         logging.error(estr)
         return beam, None, None, None, None, None, None, None
 
     if not isinstance(region_hmax, dict):
-        estr = '{:s}unknown maximum virtual heights [{:}]'.format(estr,
-                                                                  region_hmax)
+        estr = 'unknown maximum virtual heights [{:}]'.format(region_hmax)
         logging.error(estr)
         return beam, None, None, None, None, None, None, None
  
     if isinstance(max_hop, int):
         max_hop = float(max_hop)
     if not isinstance(max_hop, float) or max_hop < 0.5:
-        estr = '{:s}maximum hop must be a float greater than 0.5'.format(estr)
-        logging.error(estr)
+        logging.error('maximum hop must be a float greater than 0.5')
         return beam, None, None, None, None, None, None, None
 
     if isinstance(tdiff, int):
         tdiff = float(tdiff)
     if not isinstance(tdiff, float) and tdiff is not None:
-        estr = '{:s}tdiff must be a float or NoneType'.format(estr)
-        logging.error(estr)
+        logging.error('tdiff must be a float or NoneType')
         return beam, None, None, None, None, None, None, None
 
     if isinstance(tdiff_e, int):
         tdiff_e = float(tdiff_e)
     if not isinstance(tdiff_e, float) and tdiff_e is not None:
-        estr = '{:s}tdiff error must be a float or NoneType'.format(estr)
-        logging.error(estr)
+        logging.error('tdiff error must be a float or NoneType')
         return beam, None, None, None, None, None, None, None
 
     if beam is None or beam.fit.slist is None or len(beam.fit.slist) <= 0:
-        estr = "{:s} WARNING: no fit data in beam at {:}".format(rn, beam.time)
-        logging.warning(estr)
+        logging.warning("no fit data in beam at {:}".format(beam.time))
         return beam, None, None, None, None, None, None, None
 
     #-----------------------------------
@@ -2085,10 +1950,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         try:
             hard = pyrad.site(radId=beam.stid, dt=beam.time)
         except:
-            estr = "{:s} WARNING: unable to load hardware data".format(rn)
-            estr = "{:s} for radar {:d} at {:}".format(estr, beam.stid,
-                                                               beam.time)
-            logging.warning(estr)
+            estr = "can't load hardware data for radar {:d}".format(beam.stid)
+            logging.warning("{:s} at {:}".format(estr, beam.time))
             return beam, elvs, elv_errs, vheights, vherrs, None, None, None
 
     # Use the geodetic/geocentric conversion to get the terrestrial radius at
@@ -2096,7 +1959,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
     (lat, lon, radius) = geo.geodToGeoc(hard.geolat, hard.geolon, False)
 
     # Calculate the 0.5 hop distance and initialize the hop list
-    dlist = calc_distance(beam, logfile=logfile, log_level=log_level)
+    dlist = calc_distance(beam)
     dist = {'front':np.array(dlist), "back":np.array(dlist)}
     # Update the groundscatter flag (both distances are the same)
     gflg = select_beam_groundscatter(beam, dist['front'], max_rg=hard.maxgate)
@@ -2154,23 +2017,19 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                                   phi_sign=phi_sign, tdiff=beam.prm.tdiff,
                                   alias=1.0, fov=ff)
         except:
-            estr = "{:s} ADVISEMENT: can't get elevation for beam ".format(rn)
-            estr = "{:s}{:d} at {:}".format(estr, beam.bmnum, beam.time)
+            estr = "can't get elevation for beam {:d} at {:}".format(beam.bmnum,
+                                                                     beam.time)
             logging.info(estr)
             elvs[ff] = None
 
         if elvs[ff] is not None:
             # Get the virtual height
             vheights[ff] = calc_virtual_height(beam, radius, elv=elvs[ff],
-                                               dist=dist[ff], dist_units="km",
-                                               logfile=logfile,
-                                               log_level=log_level)
+                                               dist=dist[ff], dist_units="km")
             vheights_aliased[ff] = calc_virtual_height(beam, radius,
                                                        elv=elvs_aliased[ff],
                                                        dist=dist[ff],
-                                                       dist_units="km",
-                                                       logfile=logfile,
-                                                       log_level=log_level)
+                                                       dist_units="km")
 
             # Test the virtual height
             for i,vh in enumerate(vheights[ff]):
@@ -2197,9 +2056,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                         dd = dlist[i] * 0.5 / hop
                         vh = calc_virtual_height(beam, radius,
                                                  elv=[elvs[ff][i]], dist=[dd],
-                                                 dist_units="km",
-                                                 logfile=logfile,
-                                                 log_level=log_level)[0]
+                                                 dist_units="km")[0]
 
                     # Test the distance and hop to ensure that this
                     # mode is realistic
@@ -2221,9 +2078,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                             hop += 1.0
                             dd = dlist[i] * 0.5 / hop
                             vh = calc_virtual_height(beam, radius, elv=[ea],
-                                                     dist=[dd], dist_units="km",
-                                                     logfile=logfile,
-                                                     log_level=log_level)[0]
+                                                     dist=[dd],
+                                                     dist_units="km")[0]
                         
                         if vh >= min(region_hmin.values()):
                             ghop = test_propagation(hop, vh, dd,
@@ -2263,8 +2119,7 @@ def update_backscatter(rad_bms, min_pnts=3,
                        max_rg=[5,25,40,76], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
                        tdiff_e=list(), tdiff_time=list(), ptest=True,
-                       strict_gs=False, logfile=None,
-                       log_level=logging.WARNING, step=6):
+                       strict_gs=False, step=6):
     """Updates the propagation path, elevation, backscatter type, and origin
     field-of-view (FoV) for all backscatter observations in each beam.  Scans
     of data are used to determine the origin field-of-view (FoV), but a full
@@ -2310,11 +2165,6 @@ def update_backscatter(rad_bms, min_pnts=3,
         Test to see if a propagation path is realistic (default=True)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=False)
-    logfile : (str or NoneType)
-        Print warnings to a logfile or stdout.  (default=None for stdout)
-    log_level : (int)
-        Integer denoting the level of logging info to include.  Best to use
-        the logging module level flags.  (default=logging.WARNING or 30)
     step : (int)
         Integer denoting the number of processing steps to perform.  This should
         always be set to 6 (or greater) unless one wishes to reproduce the
@@ -2363,61 +2213,47 @@ def update_backscatter(rad_bms, min_pnts=3,
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
-    rn = "update_backscatter"
-
-    #----------------------------------
-    # Initialize the log output
-    if isinstance(logfile, str):
-        try:
-            logging.basicConfig(filename=logfile, level=log_level)
-        except:
-            print "{:s} WARNING: can't open logfile [{:s}]".format(rn, logfile)
-    else:
-        try:
-            logging.basicConfig(level=log_level)
-        except:
-            print "{:s} WARNING: unknown log level [{:}]".format(rn, log_level)
 
     #----------------------------------
     # Test input
-    estr = '{:s} '.format(rn)
     assert(((isinstance(rad_bms, list) or isinstance(rad_bms, np.ndarray)) and
             isinstance(rad_bms[0], sdio.radDataTypes.beamData)) or
             isinstance(rad_bms, sdio.radDataTypes.radDataPtr)), \
-        logging.error('{:s}need a list/array of beams or a radar data pointer'.format(estr))
+        logging.error('need a list/array of beams or a radar data pointer')
     if isinstance(min_pnts, float):
         min_pnts = int(min_pnts)
     assert(isinstance(min_pnts, int) and min_pnts >= 0), \
-        logging.error('{:s}unknown point minimum [{:}]'.format(estr, min_pnts))
+        logging.error('unknown point minimum [{:}]'.format(min_pnts))
     assert isinstance(region_hmin, dict) and min(region_hmin.values()) >= 0.0, \
-        logging.error('{:s}unknown minimum virtual heights [{:}]'.format(estr, region_hmin))
+        logging.error('unknown min virtual heights [{:}]'.format(region_hmin))
     assert isinstance(region_hmax, dict), \
-        logging.error('{:s}unknown maximum virtual heights [{:}]'.format(estr, region_hmax))
+        logging.error('unknown max virtual heights [{:}]'.format(region_hmax))
     assert((isinstance(rg_box, list) or isinstance(rg_box, np.ndarray))
            and min(rg_box) >= 1.0), \
-        logging.error('{:s}range gate box is too small [{:}]'.format(estr, rg_box))
+        logging.error('range gate box is too small [{:}]'.format(rg_box))
     assert((isinstance(vh_box, list) or isinstance(vh_box, np.ndarray))
             and min(vh_box) >= 0.0), \
-        logging.error('{:s}virtual height box is too small [{:}]'.format(estr, vh_box))
+        logging.error('virtual height box is too small [{:}]'.format(vh_box))
     assert((isinstance(max_rg, list) or isinstance(max_rg, np.ndarray))
            and min(max_rg) >= 0), \
-        logging.error('{:s}maximum range gate box is too small [{:}]'.format(estr, max_rg))
+        logging.error('max range gate box is too small [{:}]'.format(max_rg))
     if isinstance(max_hop, int):
         max_hop = float(max_hop)
     assert isinstance(max_hop, float) and max_hop >= 0.5, \
-        logging.error('{:s}hop limits are unrealistic [{:}]'.format(estr, max_hop))
+        logging.error('hop limits are unrealistic [{:}]'.format(max_hop))
     assert isinstance(ut_box, dt.timedelta) and ut_box.total_seconds() > 0.0, \
-        logging.error('{:s}UT box must be a positive datetime.timdelta object'.format(estr))
+        logging.error('UT box must be a positive datetime.timdelta object')
     assert(isinstance(tdiff, list) or isinstance(tdiff, np.ndarray)), \
-        logging.error('{:s}tdiff must be a list [{:}]'.format(estr, tdiff))
+        logging.error('tdiff must be a list [{:}]'.format(tdiff))
     assert isinstance(tdiff_e, list) or isinstance(tdiff_e, np.ndarray), \
-        logging.error('{:s}tdiff error values must be in a list [{:}]'.format(estr, tdiff_e))
+        logging.error('tdiff error values must be in a list [{:}]'.format( \
+                                                                    tdiff_e))
     assert((isinstance(tdiff_time, list) or isinstance(tdiff_time, np.ndarray))
            and len(tdiff_time) == len(tdiff)), \
-        logging.error('{:s}tdiff times must be in a list [{:}]'.format(estr, tdiff_time))
+        logging.error('tdiff times must be in a list [{:}]'.format(tdiff_time))
     if isinstance(step, float):
         step = int(step)
-    assert isinstance(step, int), logging.error('{:s}step flag must be an int'.format(estr))
+    assert isinstance(step, int), logging.error('step flag must be an int')
 
     #-----------------------------------------------------------------------
     # Define local routines
@@ -2443,7 +2279,7 @@ def update_backscatter(rad_bms, min_pnts=3,
     try:
         hard = pyrad.site(radId=bm.stid, dt=bm.time)
     except:
-        estr = "{:s} ERROR: no data available in input rad structure".format(rn)
+        estr = "no data available in input rad structure"
         logging.error(estr)
         return None
 
@@ -2493,15 +2329,12 @@ def update_backscatter(rad_bms, min_pnts=3,
                                          tdiff=get_tdiff(tdiff,st),
                                          tdiff_e=get_tdiff(tdiff_e,st),
                                          ptest=ptest, strict_gs=strict_gs,
-                                         logfile=logfile,  log_level=log_level,
                                          step=step)
 
                     if b is not None:
                         beams.extend(list(b))
                     else:
-                        estr = "{:s} ADVISEMENT: unable to update ".format(rn)
-                        estr = "{:s}scan at {:}".format(estr, st)
-                        logging.info(estr)
+                        logging.info("unable to update scan at {:}".format(st))
 
                 bm.scan_time = bm.time
                 scan[0] = bm
@@ -2519,16 +2352,14 @@ def update_backscatter(rad_bms, min_pnts=3,
     beam_dict = beam_ut_struct_test(beams, frg_box=np.array(rg_box)+inc_rg_box,
                                     max_rg=max_rg, ut_box=ut_box,
                                     reg_attr="region", hop_attr="hop",
-                                    fov_attr="fovflg", logfile=logfile,
-                                    log_level=log_level, step=step)
+                                    fov_attr="fovflg", step=step)
 
     return(beam_dict)
 
 def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                         max_rg=[5,25,40,76], ut_box=dt.timedelta(minutes=20.0),
                         reg_attr="region", hop_attr="hop", fov_attr="fovflg",
-                        restrict_attr=[], restrict_lim=[], logfile=None,
-                        log_level=logging.WARNING, step=6):
+                        restrict_attr=[], restrict_lim=[], step=6):
     """Routine to test for field-of-view (FoV) and structure continuity in UT
     across each beam. Hop (or groundscatter flag) will be used to seperate
     structure types. 
@@ -2563,11 +2394,6 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
         List containing two-element lists with the minimum and maximum values
         of the restriction limits for the attributes contained in restrict_attr.
         (default=[])
-    logfile : (str or NoneType)
-        Print warnings to a logfile or stdout.  (default=None for stdout)
-    log_level : (int)
-        Integer denoting the level of logging info to include.  Best to use
-        the logging module level flags.  (default=logging.WARNING or 30)
     step : (int)
         Integer denoting the number of processing steps to perform.  This should
         always be set to 6 (or greater) unless one wishes to reproduce the
@@ -2585,7 +2411,6 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
-    rn = "beam_ut_struct_test"
     fov_frac = 2.0 / 3.0
     near_rg = -1
 
@@ -2594,92 +2419,67 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     beams = dict()
 
     #----------------------------------
-    # Initialize the log output
-    if isinstance(logfile, str):
-        try:
-            logging.basicConfig(filename=logfile, level=log_level)
-        except:
-            print "{:s} WARNING: can't open logfile [{:s}]".format(rn, logfile)
-    else:
-        try:
-            logging.basicConfig(level=log_level)
-        except:
-            print "{:s} WARNING: unknown log level [{:}]".format(rn, log_level)
-
-    #----------------------------------
     # Test input
-    estr = '{:s} ERROR: '.format(rn)
-
     if(not isinstance(rad_bms, list) and
        not isinstance(rad_bms, sdio.radDataTypes.radDataPtr)):
-        estr = '{:s}need a list of beams or a radar data pointer'.format(estr)
-        logging.error(estr)
+        logging.error('need a list of beams or a radar data pointer')
         return beams
 
     if(isinstance(rad_bms, list) and
        (len(rad_bms) <= 0 or not isinstance(rad_bms[0],
                                             sdio.radDataTypes.beamData))):
-        estr = '{:s}list must contain at least one beam'.format(estr)
-        logging.error(estr)
+        logging.error('list must contain at least one beam')
         return beams
 
     if isinstance(min_frac, int):
         min_frac = float(min_frac)
     if not isinstance(min_frac, float) or min_frac <= 0.0 or min_frac > 1.0:
-        estr = '{:s}unrealistic minimum FoV fraction [{:}]'.format(estr,
-                                                                   min_frac)
+        estr = 'unrealistic minimum FoV fraction [{:}]'.format(min_frac)
         logging.error(estr)
         return beams
 
     if((not isinstance(frg_box, list) and not isinstance(frg_box, np.ndarray))
        or len(frg_box) <= 0):
-        estr = '{:s}unrealistic FoV range gate box [{:}]'.format(estr, frg_box)
+        estr = 'unrealistic FoV range gate box [{:}]'.format(frg_box)
         logging.error(estr)
         return beams
 
     if((not isinstance(max_rg, list) and not isinstance(max_rg, np.ndarray))
        or len(max_rg) <= 0):
-        estr = '{:s}unrealistic maximum range gate box [{:}]'.format(estr,
-                                                                     max_rg)
+        estr = 'unrealistic maximum range gate box [{:}]'.format(max_rg)
         logging.error(estr)
         return beams
 
     if not isinstance(ut_box, dt.timedelta) or ut_box.total_seconds() <= 0.0:
-        estr = '{:s}unrealistic UT box [{:}]'.format(estr, ut_box)
-        logging.error(estr)
+        logging.error('unrealistic UT box [{:}]'.format(ut_box))
         return beams
 
     if not isinstance(restrict_attr, list):
-        estr = '{:s}provide more restricting attributes in a list'.format(estr)
-        logging.error(estr)
+        logging.error('provide more restricting attributes in a list')
         return beams
 
     if not isinstance(restrict_lim, list):
-        estr = '{:s}provide more restricting limits in a list'.format(estr)
-        logging.error(estr)
+        logging.error('provide more restricting limits in a list')
         return beams
 
     if isinstance(step, float):
         step = int(step)
     if not isinstance(step, int):
-        estr = '{:s}unrealistic step flag [{:}]'.format(estr, step)
-        logging.error(estr)
+        logging.error('unrealistic step flag [{:}]'.format(step))
         return beams
 
     if not isinstance(reg_attr, str) or len(reg_attr) <= 0:
-        estr = '{:s}badly formated region attribute [{:}]'.format(estr,
-                                                                  reg_attr)
+        estr = 'badly formated region attribute [{:}]'.format(reg_attr)
         logging.error(estr)
         return beams
 
     if not isinstance(hop_attr, str) or len(reg_attr) <= 0:
-        estr = '{:s}badly formated hop attribute [{:}]'.format(estr, hop_attr)
+        estr = 'badly formated hop attribute [{:}]'.format(hop_attr)
         logging.error(estr)
         return beams
 
     if not isinstance(fov_attr, str) or len(reg_attr) <= 0:
-        estr = '{:s}badly formated FoV flag attribute [{:}]'.format(estr,
-                                                                    fov_attr)
+        estr = 'badly formated FoV flag attribute [{:}]'.format(fov_attr)
         logging.error(estr)
         return beams
 
@@ -2692,8 +2492,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     try:
         hard = pyrad.site(radId=bm.stid, dt=bm.time)
     except:
-        estr = "{:s} ERROR: no data available in input rad structure".format(rn)
-        logging.error(estr)
+        logging.error("no data available in input rad structure")
         return(beams)
 
     while bm is not None:
@@ -2716,8 +2515,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     # Test the step flag and see if the temporal continuity test should be
     # performed
     if step < 6:
-        estr = "{:s} ADVISEMENT: not testing backscatter ".format(rn)
-        estr = "{:s}assignments with temporal continuity".format(estr)
+        estr = "not testing backscatter assignments with temporal continuity"
         logging.info(estr)
         return(beams)
 
@@ -2859,8 +2657,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                                 # There are not enough points in this range
                                 # gate and UT box to evaluate the
                                 # backscatter structures at this hop
-                                estr = "{:s} ADVISEMENT: unable to ".format(rn)
-                                estr = "{:s}evaluate beam [".format(estr)
+                                estr = "unable to evaluate beam ["
                                 estr = "{:s}{:d}] at [".format(estr, bnum)
                                 estr = "{:s}{:}".format(estr,
                                                         beams[bnum][bis].time)
@@ -2873,9 +2670,8 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                                 estr = "{:s}] at hop [{:s}]".format(estr, ihop)
                                 logging.info(estr)
                             elif float(len(hr)) / max_pnts > 1.0:
-                                estr = "{:s} ERROR: maximum number ".format(rn)
-                                estr = "{:s}of points exceeded for".format(estr)
-                                estr = "{:s} beam [{:d}] ".format(estr, bnum)
+                                estr = "maximum number of points exceeded for "
+                                estr = "{:s}beam [{:d}] ".format(estr, bnum)
                                 estr = "{:s}between range gates ".format(estr)
                                 estr = "{:s}[{:d}-{:d}".format(estr, rmin, rmax)
                                 estr = "{:s}] at [{:}".format(estr, \
