@@ -648,7 +648,7 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                            strict_gs=strict_gs, beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
-        print "ERROR! can't find radar [", rad, "] in data:", dout[0].keys()
+        logging.error("can't find radar [" + rad + "] in data:" + dout[0].keys())
         return(dout[0], dout[1], dout[2], beams)
 
     # Recast the data as numpy arrays
