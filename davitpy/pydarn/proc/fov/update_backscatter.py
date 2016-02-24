@@ -472,32 +472,32 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     #-------------------------------------------------------------------------
     # Test input
     if not isinstance(beam, sdio.radDataTypes.beamData):
-        ('{:s} ERROR: the beam must be a beamData class'.format(rn))
+        logging.error('{:s} the beam must be a beamData class'.format(rn))
     assert(isinstance(phi0_attr, str) and hasattr(beam.fit, phi0_attr)), \
-        ('{:s} ERROR: the phase lag data is not in this beam'.format(rn))
+        logging.error('{:s} the phase lag data is not in this beam'.format(rn))
     assert(isinstance(hard, pyrad.site) or hard is None), \
-        ('{:s} ERROR: supply the hardware class or None'.format(rn))
+        logging.error('{:s} supply the hardware class or None'.format(rn))
     assert(isinstance(asep, float) or asep is None), \
-        ('{:s} ERROR: the asep should be a float or NoneType'.format(rn))
+        logging.error('{:s} the asep should be a float or NoneType'.format(rn))
     assert(isinstance(ecor, float) or ecor is None), \
-        ('{:s} ERROR: the ecor should be a float or NoneType'.format(rn))
+        logging.error('{:s} the ecor should be a float or NoneType'.format(rn))
     assert(isinstance(phi_sign, float) or phi_sign is None), \
-        ('{:s} ERROR: the phi_sign should be a float or NoneType'.format(rn))
+        logging.error('{:s} the phi_sign should be a float or NoneType'.format(rn))
     assert(isinstance(tdiff, float) or tdiff is None), \
-        ('{:s} ERROR: the tdiff should be a float or NoneType'.format(rn))
+        logging.error('{:s} the tdiff should be a float or NoneType'.format(rn))
     assert(isinstance(del_chi, float) or del_chi is None), \
-        ('{:s} ERROR: the del_chi should be a float or NoneType'.format(rn))
+        logging.error('{:s} the del_chi should be a float or NoneType'.format(rn))
     assert(isinstance(del_chif, float)), \
-        ('{:s} ERROR: the del_chif should be a float'.format(rn))
+        logging.error('{:s} the del_chif should be a float'.format(rn))
     assert(isinstance(alias, float)), \
-        ('{:s} ERROR: the alias number should be a float'.format(rn))
+        logging.error('{:s} the alias number should be a float'.format(rn))
     assert(isinstance(fov, str) and (fov.find("front") >= 0 or
                                      fov.find("back") >= 0)), \
-        ('{:s} ERROR: the field-of-view must be "front" or "back"'.format(rn))
+        logging.error('{:s} the field-of-view must be "front" or "back"'.format(rn))
 
     # Only use this if the interferometer data was stored during this scan
     assert(beam.prm.xcf == 1), \
-        ('{:s} ERROR: no interferometer data at this time'.format(rn))
+        logging.error('{:s} no interferometer data at this time'.format(rn))
 
     # Load the phase lag data
     phi0 = getattr(beam.fit, phi0_attr)
@@ -505,7 +505,7 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     # This method cannot be applied at Goose Bay or any other radar/beam that
     # does not include phi0 in their FIT output
     assert(phi0 is not None), \
-        ('{:s} ERROR: phi0 missing from rad {:d} beam {:d}'.format(rn,
+        logging.error('{:s} phi0 missing from rad {:d} beam {:d}'.format(rn,
                                                                    beam.stid,
                                                                    beam.bmnum))
 
@@ -927,42 +927,42 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
 
     #---------------------
     # Check input
-    estr = "{:s} ERROR: ".format(rn)
+    estr = "{:s} ".format(rn)
     assert isinstance(beam, sdio.radDataTypes.beamData), \
-        ("{:s}beam is not a beamData object".format(estr))
+        logging.error("{:s}beam is not a beamData object".format(estr))
     assert((isinstance(dist, list) or isinstance(dist, np.ndarray))
            and len(dist) == len(beam.fit.slist)), \
-        ("{:s}distance list does not match this beam".format(estr))
+        logging.error("{:s}distance list does not match this beam".format(estr))
     if isinstance(min_rg, float):
         min_rg = int(min_rg)
     assert isinstance(min_rg, int), \
-        ("{:s} ERROR: min_rg is not an integer".format(rn))
+        logging.error("{:s} min_rg is not an integer".format(rn))
     if isinstance(max_rg, float):
         max_rg = int(max_rg)
     assert isinstance(max_rg, int), \
-        ("{:s} ERROR: max_rg is not an integer".format(rn))
+        logging.error("{:s} max_rg is not an integer".format(rn))
     if isinstance(rg_box, float):
         rg_box = int(rg_box)
     assert(isinstance(rg_box, int) and rg_box > 0), \
-        ("{:s} ERROR: rg_box is not a positive integer".format(rn))
+        logging.error("{:s} rg_box is not a positive integer".format(rn))
     if isinstance(max_p, int):
         max_p = float(max_p)
     assert isinstance(max_p, float), \
-        ("{:s} ERROR: maximum power is not a float".format(rn))
+        logging.error("{:s} maximum power is not a float".format(rn))
     if isinstance(max_v, int):
         max_v = float(max_v)
     assert isinstance(max_v, float), \
-        ("{:s} ERROR: maximum velocity is not a float".format(rn))
+        logging.error("{:s} maximum velocity is not a float".format(rn))
     if isinstance(max_w, int):
         max_w = float(max_w)
     assert isinstance(max_w, float), \
-        ("{:s} ERROR: maximum spectral width is not a float".format(rn))
+        logging.error("{:s} maximum spectral width is not a float".format(rn))
     assert(isinstance(gs_tol, float) and gs_tol >= 0.0 and gs_tol <= 1.0), \
-        ("{:s} ERROR: gs_tol is not a positive fraction".format(rn))
+        logging.error("{:s} gs_tol is not a positive fraction".format(rn))
     if isinstance(nmin, float):
         nmin = int(nmin)
     assert(isinstance(nmin, int) and nmin > 0), \
-        ("{:s} ERROR: rg_box is not a positive integer".format(rn))
+        logging.error("{:s} rg_box is not a positive integer".format(rn))
 
     #--------------------------------------------------------------------
     # Identify all instances that are flagged as ground scatter and have
@@ -1075,21 +1075,21 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
     #----------------
     # Check input
     assert isinstance(beam, sdio.radDataTypes.beamData), \
-        ("{:s} ERROR: beam is not a beamData object".format(rn))
+        logging.error("{:s} beam is not a beamData object".format(rn))
     assert isinstance(dat_attr, str) and hasattr(beam.fit, dat_attr), \
-        ("{:s} ERROR: beam does not contain attribute {:}".format(rn, dat_attr))
+        logging.error("{:s} beam does not contain attribute {:}".format(rn, dat_attr))
     assert(isinstance(dat_index, list) and isinstance(dat_index[0], int)), \
-        ("{:s} ERROR: dat_index is not a list of integers".format(rn))
+        logging.error("{:s} dat_index is not a list of integers".format(rn))
     assert(box > 0), ("{:s} ERROR: box is not positive".format(rn))
     assert(isinstance(dat_min, type(box)) or dat_min is None), \
-        ("{:s} ERROR: dat_min is of a different type is suspect".format(rn))
+        logging.error("{:s} dat_min is of a different type is suspect".format(rn))
     assert(isinstance(dat_max, type(box)) or dat_max is None), \
-        ("{:s} ERROR: dat_max is of a different type is suspect".format(rn))
+        logging.error("{:s} dat_max is of a different type is suspect".format(rn))
 
     # Get the data list and ensure there is a value to search about
     data = getattr(beam.fit, dat_attr)
     assert isinstance(central_index, int) and central_index < len(data), \
-        ("{:s} ERROR: no value for central_index in {:s}".format(rn, dat_attr))
+        logging.error("{:s} no value for central_index in {:s}".format(rn, dat_attr))
 
     #-------------------------------------------------------------------------
     # Set evaluation variables, restraining range gate box to realistic values
@@ -2378,44 +2378,44 @@ def update_backscatter(rad_bms, min_pnts=3,
 
     #----------------------------------
     # Test input
-    estr = '{:s} ERROR: '.format(rn)
+    estr = '{:s} '.format(rn)
     assert(((isinstance(rad_bms, list) or isinstance(rad_bms, np.ndarray)) and
             isinstance(rad_bms[0], sdio.radDataTypes.beamData)) or
             isinstance(rad_bms, sdio.radDataTypes.radDataPtr)), \
-        '{:s}need a list/array of beams or a radar data pointer'.format(estr)
+        logging.error('{:s}need a list/array of beams or a radar data pointer'.format(estr))
     if isinstance(min_pnts, float):
         min_pnts = int(min_pnts)
     assert(isinstance(min_pnts, int) and min_pnts >= 0), \
-        '{:s}unknown point minimum [{:}]'.format(estr, min_pnts)
+        logging.error('{:s}unknown point minimum [{:}]'.format(estr, min_pnts))
     assert isinstance(region_hmin, dict) and min(region_hmin.values()) >= 0.0, \
-        '{:s}unknown minimum virtual heights [{:}]'.format(estr, region_hmin)
+        logging.error('{:s}unknown minimum virtual heights [{:}]'.format(estr, region_hmin))
     assert isinstance(region_hmax, dict), \
-        '{:s}unknown maximum virtual heights [{:}]'.format(estr, region_hmax)
+        logging.error('{:s}unknown maximum virtual heights [{:}]'.format(estr, region_hmax))
     assert((isinstance(rg_box, list) or isinstance(rg_box, np.ndarray))
            and min(rg_box) >= 1.0), \
-        '{:s}range gate box is too small [{:}]'.format(estr, rg_box)
+        logging.error('{:s}range gate box is too small [{:}]'.format(estr, rg_box))
     assert((isinstance(vh_box, list) or isinstance(vh_box, np.ndarray))
             and min(vh_box) >= 0.0), \
-        '{:s}virtual height box is too small [{:}]'.format(estr, vh_box)
+        logging.error('{:s}virtual height box is too small [{:}]'.format(estr, vh_box))
     assert((isinstance(max_rg, list) or isinstance(max_rg, np.ndarray))
            and min(max_rg) >= 0), \
-        '{:s}maximum range gate box is too small [{:}]'.format(estr, max_rg)
+        logging.error('{:s}maximum range gate box is too small [{:}]'.format(estr, max_rg))
     if isinstance(max_hop, int):
         max_hop = float(max_hop)
     assert isinstance(max_hop, float) and max_hop >= 0.5, \
-        '{:s}hop limits are unrealistic [{:}]'.format(estr, max_hop)
+        logging.error('{:s}hop limits are unrealistic [{:}]'.format(estr, max_hop))
     assert isinstance(ut_box, dt.timedelta) and ut_box.total_seconds() > 0.0, \
-        '{:s}UT box must be a positive datetime.timdelta object'.format(estr)
+        logging.error('{:s}UT box must be a positive datetime.timdelta object'.format(estr))
     assert(isinstance(tdiff, list) or isinstance(tdiff, np.ndarray)), \
-        '{:s}tdiff must be a list [{:}]'.format(estr, tdiff)
+        logging.error('{:s}tdiff must be a list [{:}]'.format(estr, tdiff))
     assert isinstance(tdiff_e, list) or isinstance(tdiff_e, np.ndarray), \
-        '{:s}tdiff error values must be in a list [{:}]'.format(estr, tdiff_e)
+        logging.error('{:s}tdiff error values must be in a list [{:}]'.format(estr, tdiff_e))
     assert((isinstance(tdiff_time, list) or isinstance(tdiff_time, np.ndarray))
            and len(tdiff_time) == len(tdiff)), \
-        '{:s}tdiff times must be in a list [{:}]'.format(estr, tdiff_time)
+        logging.error('{:s}tdiff times must be in a list [{:}]'.format(estr, tdiff_time))
     if isinstance(step, float):
         step = int(step)
-    assert isinstance(step, int), '{:s}step flag must be an int'.format(estr)
+    assert isinstance(step, int), logging.error('{:s}step flag must be an int'.format(estr))
 
     #-----------------------------------------------------------------------
     # Define local routines
