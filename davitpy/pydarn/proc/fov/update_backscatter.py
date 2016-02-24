@@ -1272,8 +1272,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
              nhard) = update_beam_fit(beams[bnum-1], hard=hard, tdiff=tdiff,
                                       tdiff_e=tdiff_e, region_hmax=region_hmax,
                                       region_hmin=region_hmin, max_hop=max_hop,
-                                      ptest=ptest, strict_gs=strict_gs,
-                                      logfile=logfile, log_level=log_level)
+                                      ptest=ptest, strict_gs=strict_gs)
 
             if e is None or nhard is None:
                 beams[bnum-1] = None
@@ -1960,7 +1959,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
     (lat, lon, radius) = geo.geodToGeoc(hard.geolat, hard.geolon, False)
 
     # Calculate the 0.5 hop distance and initialize the hop list
-    dlist = calc_distance(beam, logfile=logfile, log_level=log_level)
+    dlist = calc_distance(beam)
     dist = {'front':np.array(dlist), "back":np.array(dlist)}
     # Update the groundscatter flag (both distances are the same)
     gflg = select_beam_groundscatter(beam, dist['front'], max_rg=hard.maxgate)
@@ -2026,15 +2025,11 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         if elvs[ff] is not None:
             # Get the virtual height
             vheights[ff] = calc_virtual_height(beam, radius, elv=elvs[ff],
-                                               dist=dist[ff], dist_units="km",
-                                               logfile=logfile,
-                                               log_level=log_level)
+                                               dist=dist[ff], dist_units="km")
             vheights_aliased[ff] = calc_virtual_height(beam, radius,
                                                        elv=elvs_aliased[ff],
                                                        dist=dist[ff],
-                                                       dist_units="km",
-                                                       logfile=logfile,
-                                                       log_level=log_level)
+                                                       dist_units="km")
 
             # Test the virtual height
             for i,vh in enumerate(vheights[ff]):
@@ -2061,9 +2056,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                         dd = dlist[i] * 0.5 / hop
                         vh = calc_virtual_height(beam, radius,
                                                  elv=[elvs[ff][i]], dist=[dd],
-                                                 dist_units="km",
-                                                 logfile=logfile,
-                                                 log_level=log_level)[0]
+                                                 dist_units="km")[0]
 
                     # Test the distance and hop to ensure that this
                     # mode is realistic
@@ -2085,9 +2078,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                             hop += 1.0
                             dd = dlist[i] * 0.5 / hop
                             vh = calc_virtual_height(beam, radius, elv=[ea],
-                                                     dist=[dd], dist_units="km",
-                                                     logfile=logfile,
-                                                     log_level=log_level)[0]
+                                                     dist=[dd],
+                                                     dist_units="km")[0]
                         
                         if vh >= min(region_hmin.values()):
                             ghop = test_propagation(hop, vh, dd,
@@ -2337,7 +2329,6 @@ def update_backscatter(rad_bms, min_pnts=3,
                                          tdiff=get_tdiff(tdiff,st),
                                          tdiff_e=get_tdiff(tdiff_e,st),
                                          ptest=ptest, strict_gs=strict_gs,
-                                         logfile=logfile,  log_level=log_level,
                                          step=step)
 
                     if b is not None:
@@ -2361,8 +2352,7 @@ def update_backscatter(rad_bms, min_pnts=3,
     beam_dict = beam_ut_struct_test(beams, frg_box=np.array(rg_box)+inc_rg_box,
                                     max_rg=max_rg, ut_box=ut_box,
                                     reg_attr="region", hop_attr="hop",
-                                    fov_attr="fovflg", logfile=logfile,
-                                    log_level=log_level, step=step)
+                                    fov_attr="fovflg", step=step)
 
     return(beam_dict)
 
