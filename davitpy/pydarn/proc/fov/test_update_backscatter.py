@@ -637,7 +637,6 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
         beams with the data used to create the plots
 
     """
-    rn = "plot_milan_figure9"
 
     # Load and process the desired data
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
@@ -843,7 +842,6 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
 
     """
     import davitpy.pydarn.radar as pyrad
-    rn = "plot_storm_figure"
 
     # Load and process the desired data
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
@@ -1041,7 +1039,6 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
 
     """
     import davitpy.pydarn.radar as pyrad
-    rn = "plot_single_column"
 
     # Initialize the subplots
     xpos = {7:1.1, 6:1.0, 5:0.9, 4:0.8, 3:0.7, 2:0.5, 1:0.0}
@@ -1281,8 +1278,6 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
 
     """
     import davitpy.pydarn.sdio as sdio
-
-    rn = "load_test_beams"
 
     # Define local routines
     def range_gate_limits(rg_limits, rg):
@@ -1901,8 +1896,6 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     import davitpy.pydarn.sdio as sdio
     import davitpy.models.hwm as hwm
 
-    rn = "plot_meteor_figure"
-
     #-------------------------------------------------------------------------
     # Define local routines
     def ismeteor(p, verr, werr):
@@ -2274,7 +2267,7 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
     """
     import davitpy.pydarn.plotting as plotting
     import davitpy.pydarn.radar as pyrad
-    rn = "plot_map"
+
     fov_dir = {1:"front", -1:"back"}
 
     # Load the radar location data, if necessary
