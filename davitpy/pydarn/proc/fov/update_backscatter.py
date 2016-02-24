@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
 # update_backscatter.py, Angeline G. Burrell (AGB), UoL
 #
@@ -6,34 +7,33 @@
 #           and propagation path, determine the origin field-of-view, update
 #           the elevation.
 #-----------------------------------------------------------------------------
-'''
-update_backscatter
+"""update_backscatter
+
+Routines to update the groundscatter and elevation angle, as well as determine
+the virtual height, hop, and origin field-of-view for each backscatter point.
+
+Functions
+------------------------------------------------------------------------------
+assign_region               ionosphere region based on virtual height
+test_propagation            test propgation against reality
+select_alt_groups           determine altitude limits for range gate
+get_beam                    load beams from list or pointer
+calc_elv                    calculate elevation angle for scatter points
+calc_virtual_height         calculate virtual height from distance & elevation
+calc_distance               calculate slant range
+select_beam_groundscatter   filter to select groundscatter data
+calc_frac_points            calculate precentage of groundscatter
+update_bs_w_scan            update propagation parameters, 1 > beam
+update_beam_fit             update beam data
+update_backscatter          update propagation parameters, one beam
+beam_ut_struct_test         test for continuity in UT across beams
+------------------------------------------------------------------------------
 
 Author: Angeline G. Burrell (AGB)
 Date: January 15, 2015
 Inst: University of Leicester (UoL)
 
-Comments
-----------
-Routines to update the groundscatter and elevation angle, as well as determine
-the virtual height, hop, and origin field-of-view for each backscatter point.
-
-Contains
-----------
-assign_region
-test_propagation
-select_alt_groups
-get_beam
-calc_elv
-calc_virtual_height
-calc_distance
-select_beam_groundscatter
-calc_frac_points
-update_bs_w_scan
-update_beam_fit
-update_backscatter
-beam_ut_struct_test
-'''
+"""
 
 # Import python packages
 import numpy as np
@@ -49,7 +49,7 @@ import logging
 #---------------------------------------------------------------------------
 def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
                   region_hmin={"D":75.0,"E":115.0,"F":150.0}, case="upper"):
-    '''Assign an ionospheric region based on virtual height.
+    """Assign an ionospheric region based on virtual height.
 
     "D" (75 - 115 km)
     "E" (115 - 200 km) is detected at distances lass than 900 km
@@ -73,7 +73,8 @@ def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
     -----------
     region : (str)
         one (or zero) character string denoting region
-    '''
+
+    """
     region = ""
     rpad = {"D":0.0, "E":0.0, "F":1.0}
 
@@ -87,7 +88,7 @@ def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
 def test_propagation(hop, vheight, dist,
                      region_hmax={"D":115.0,"E":150.0,"F":900.0},
                      region_hmin={"D":75.0,"E":115.0,"F":150.0}):
-    '''Test the propagation path for realism.  Use the basic properties of HF
+    """Test the propagation path for realism.  Use the basic properties of HF
     radars.
     D-region (<= 115 km) is detected at distances less than 500 km
     E-region (115 - 150(or 200?) km) is detected at distances lass than X km
@@ -112,7 +113,8 @@ def test_propagation(hop, vheight, dist,
     -----------
     good : (boolian)
         True if the path is realistic, False if it is not
-    '''
+
+    """
     good = True
 
     if region_hmax.has_key("D") and vheight <= region_hmax["D"]:
@@ -132,7 +134,7 @@ def test_propagation(hop, vheight, dist,
 
 #---------------------------------------------------------------------------
 def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
-    '''Determine appropriate altitude limits for the data in this range gate
+    """Determine appropriate altitude limits for the data in this range gate
     box.  This is done by fitting a Gaussian curve to each of the occurance
     peaks and setting the range to +/-3 sigma from the mean.  Areas with points
     not encompassed by the fitted limits are constructed using the vh_box as
@@ -160,7 +162,7 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
         list of virtual height minima
     vh_maxs : (list)
         List of virtual height maxima
-    '''
+    """
     # Define local functions
     def gaussian(x, *p):
         A, mu, sigma = p
@@ -376,7 +378,7 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
 
 #---------------------------------------------------------------------------
 def get_beam(radar_beams, nbeams):
-    ''' Define a routine to load the beams from either a list/np.array or
+    """Define a routine to load the beams from either a list/np.array or
     pointer
 
     Parameters
@@ -392,7 +394,7 @@ def get_beam(radar_beams, nbeams):
         Beam containing radar data or None, if no data is available
     nbeams : (int)
         Number of beams retrieved from radar_beams, including this beam
-    '''
+    """
     import davitpy.pydarn.sdio as sdio
 
     if((isinstance(radar_beams, list) or isinstance(radar_beams, np.ndarray))
@@ -411,8 +413,7 @@ def get_beam(radar_beams, nbeams):
 def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
              asep=None, ecor=None, phi_sign=None, tdiff=None, del_chi=None,
              del_chif=0.0, alias=0.0, fov='front'):
-    '''
-    Calculate the elevation angle for observations along a beam at a radar
+    """Calculate the elevation angle for observations along a beam at a radar
 
     Parameters
     -----------
@@ -464,7 +465,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     phi_sign : (float or NoneType)
         Sign change determined by the relative location of the interferometer
         to the radar or None to calculate (default=None)
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     rn = "calc_elv"
@@ -623,8 +625,7 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
                         dist_attr="slist", dist_units=None, logfile=None,
                         log_level=logging.WARNING):
-    '''
-    Calculate the virtual height for a specified backscatter distance and
+    """Calculate the virtual height for a specified backscatter distance and
     elevation angle.  Specifying a single earth radius introduces additional
     error into the resulting heights.  If the terrestrial radius at the radar
     location is used, this error is on the order of 0.01-0.1 km (much smaller
@@ -665,7 +666,8 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         An array of floats of the same size as the myBeam.fit.slist list,
         containing the new elevation angles for each range gate or NaN if an
         elevation angle could not be calculated
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     rn = "calc_virtual_height"
 
@@ -769,8 +771,7 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
 #----------------------------------------------------------------------------
 def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
                   logfile=None, log_level=logging.WARNING):
-    '''
-    A routine to calculate distance in either meters or kilometers along the
+    """A routine to calculate distance in either meters or kilometers along the
     slant path from the radar to the first ionospheric reflection/refraction
     point using the range gate and a propagation path specified by the hop
     number.  Currently only simple propagation paths (same ionospheric region)
@@ -810,7 +811,8 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
         containing the distance along the slant path from the radar to the first
         ionospheric reflection/refraction point given the specified propagation
         path for for each range gate. Returns None upon input error.
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     rn = "calc_distance"
 
@@ -873,8 +875,7 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5,
 def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
                               max_p=5.0, max_v=30.0, max_w=90.0, gs_tol=.5,
                               nmin=5):
-    '''
-    A routine to select groundscatter data.  Currently uses a range gate
+    """A routine to select groundscatter data.  Currently uses a range gate
     limit where all data beyond the maximum range gate is rejected, all
     data with 0.5 hop distances closer than 160 km are rejected, and all points
     closer than the minimum range gate that have a power greater than the
@@ -921,7 +922,8 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
         input beam (eg slist, p_l, etc.)
 
     If there is an input error, exits with an exception
-    '''
+    """
+
     import davitpy.pydarn.sdio as sdio
     rn = "select_beam_groundscatter"
 
@@ -968,8 +970,7 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
     # Identify all instances that are flagged as ground scatter and have
     # appropriate power fits based on their location
     def isgroundscatter(rg, dist, p_l, p_s, sd_gflg):
-        '''
-        A routine to apply the logic that states whether or not a point is
+        """A routine to apply the logic that states whether or not a point is
         groundscatter or not, rejecting groundscatter points that are
         ambiguous
 
@@ -990,7 +991,8 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
         ---------
         gflg : (boolean)
             New groundscatter flag
-        '''
+
+        """
         gflg = False
 
         # To be groundscatter, the point must have been identified by the
@@ -1034,8 +1036,7 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
 #----------------------------------------------------------------------
 def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
                      dat_min=None, dat_max=None):
-    '''
-    Calculate the fraction of points within a certain distance about a
+    """Calculate the fraction of points within a certain distance about a
     specified range gate are groundscatter.
 
     Parameters
@@ -1068,7 +1069,8 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
         Total number of observations in the specified box.
 
     If there is an input error, exits with an exception
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     rn = "calc_frac_points"
 
@@ -1133,8 +1135,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                      vh_box=[50.0,50.0,50.0,150.0], max_hop=3.0, tdiff=None,
                      tdiff_e=None, ptest=True, strict_gs=False, logfile=None,
                      log_level=logging.WARNING, step=6):
-    '''
-    Updates the propagation path, elevation, backscatter type, structure flag,
+    """Updates the propagation path, elevation, backscatter type, structure flag,
     and origin field-of-view (FoV) for all backscatter observations in each
     beam for a scan of data.  A full scan is not necessary, but if the number
     of beams is less than the specified minimum, a less rigerous evaluation
@@ -1222,7 +1223,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                                   (1=ground, 0=ionospheric, -1=indeterminate)
         beam.prm.tdiff : added : tdiff used in elevation (microsec)
         beam.prm.tdiff_e : possibly added : tdiff error (microsec)
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
 
@@ -1934,8 +1936,7 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                     region_hmin={"D":75.0,"E":115.0,"F":150.0}, max_hop=3.0,
                     ptest=True, strict_gs=False, logfile=None,
                     log_level=logging.WARNING):
-    '''
-    Update the beam.fit and beam.prm class, updating and adding attributes
+    """Update the beam.fit and beam.prm class, updating and adding attributes
     needed for common data analysis
 
     Parameters
@@ -1997,7 +1998,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         Ionospheric regions for the front "front" and rear "back" FoV
     hard : (class `pydarn.radar.radStruct.site`)
         Radar hardware data for this scan
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     import davitpy.utils.geoPack as geo
@@ -2263,8 +2265,7 @@ def update_backscatter(rad_bms, min_pnts=3,
                        tdiff_e=list(), tdiff_time=list(), ptest=True,
                        strict_gs=False, logfile=None,
                        log_level=logging.WARNING, step=6):
-    '''
-    Updates the propagation path, elevation, backscatter type, and origin
+    """Updates the propagation path, elevation, backscatter type, and origin
     field-of-view (FoV) for all backscatter observations in each beam.  Scans
     of data are used to determine the origin field-of-view (FoV), but a full
     scan is not necessary, but if the number of beams is less than the specified
@@ -2358,7 +2359,8 @@ def update_backscatter(rad_bms, min_pnts=3,
         beam.prm.tdiff_e : possibly added : tdiff error (microsec)
 
     If the input is incorrect, exits with an exception
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     rn = "update_backscatter"
@@ -2527,7 +2529,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                         reg_attr="region", hop_attr="hop", fov_attr="fovflg",
                         restrict_attr=[], restrict_lim=[], logfile=None,
                         log_level=logging.WARNING, step=6):
-    ''' Routine to test for field-of-view (FoV) and structure continuity in UT
+    """Routine to test for field-of-view (FoV) and structure continuity in UT
     across each beam. Hop (or groundscatter flag) will be used to seperate
     structure types. 
 
@@ -2579,7 +2581,8 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     beams : (dict)
         Dictionary containing lists of beams with updated FoV flags seperated
         by beam number.  The beam numbers are the dictionary keys
-    '''
+
+    """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     rn = "beam_ut_struct_test"
