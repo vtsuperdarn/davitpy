@@ -18,7 +18,12 @@ def globalMetaData():
 
 def globalMetaData_add(**metadata):
     """Add an item to the glob (global metadata) dictionary.
-    :**metadata : keywords and values to be added to the glob dictionary.
+
+    Parameters
+    ---------
+    metadata : dict
+        keywords and values to be added to the glob dictionary.
+
     """
     global glob
     glob = dict(glob.items() + metadata.items())
@@ -26,7 +31,12 @@ def globalMetaData_add(**metadata):
 
 def globalMetaData_del(keys):
     """Delete an item from the glob (global metadata) dictionary.
-    :param keys: List of keys to be deleted.
+
+    Parameters
+    ---------
+    keys : list
+        List of keys to be deleted.
+
     """
     global glob
     for key in keys:
@@ -48,10 +58,27 @@ class sig(object):
     def __init__(self, dtv, data, comment='Signal Object Created', **metadata):
         """Define a vtsd sig object.
 
-        :param dtv: datetime.datetime list
-        :param data: raw data
-        :param ylabel: Y-Label String for data
-        :returns: sig object
+        Parameters
+        ---------
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        comment : str
+            info message
+        metadata : dict
+            keywords and values
+
+        Attributes
+        ----------
+        metadata : dict 
+        raw
+        active
+
+        Returns
+        -------
+        sig object
+
         """
         defaults = {}
         defaults['ylabel'] = 'Untitled Y-Axis'
@@ -81,13 +108,33 @@ class sigStruct(sig):
         self.parent = parent
         """Define a vtsd sigStruct object.
 
-    :param dtv: datetime.datetime list
-    :param data: raw data
-    :param id: A serial number uniquely identifying this signal in the
-    : processing chain.
-    :param **metadata: keywords sent to matplot lib, etc.
-    :returns: sig object
-    """
+        Parameters
+        ---------
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        id : int
+            A serial number uniquely identifying this signal in the
+            processing chain.
+        metadata : dict
+            keywords sent to matplot lib, etc.
+
+        Attributes
+        ----------
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        metadata : dict
+            keywords and values sent to matplot lib, etc.
+        history : dict
+
+        Returns
+        -------
+        sigStruct object
+
+        """
         self.dtv = np.array(dtv)
         self.data = np.array(data)
         self.metadata = {}
@@ -97,14 +144,22 @@ class sigStruct(sig):
         self.history = {datetime.datetime.now(): comment}
 
     def copy(self, newsig, comment):
-        """Copy a vtsig object.  This deep copies data and metadata,
+        """Copy a vtsig object. This deep copies data and metadata,
         updates the serial number, and logs a comment in the history.
         Methods such as plot are kept as a reference.
-        :param newsig: A string with the name for the new signal.
-        :param comment: A string comment describing the new signal.
-        :returns: sig object
-        """
 
+        Parameters
+        ---------
+        newsig : str
+            A string with the name for the new signal.
+        comment : str
+            A string comment describing the new signal.
+
+        Returns
+        -------
+        sig object
+
+        """
         if hasattr(self.parent, newsig):
             xx = 0
             ok = False
@@ -132,14 +187,25 @@ class sigStruct(sig):
         This deep copies data and metadata, updates the serial number,
         and logs a comment in the history.
         Methods such as plot are kept as a reference.
-        :param newsig: A string with the name for the new signal.
-        :paran dtv: A new datetime.datetime array.
-        :param data: A new data array.
-        :param comment: A string comment describing the new signal.
-        :returns: sig object
 
-        :**kwargs:
-          appendTitle: String that will be appended to plot's title.
+        Parameters
+        ---------
+        newsig : str
+            A string with the name for the new signal.
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        comment : str
+            A string comment describing the new signal.
+        **kwargs
+            appendTitle : str
+                String that will be appended to plot's title.
+
+        Returns
+        -------
+        sig object
+
         """
         newobj = self.copy(newsig, comment)
         newobj.dtv = dtv
@@ -160,8 +226,17 @@ class sigStruct(sig):
 
     def nyquistFrequency(self, dtv=None):
         """Calculate the Nyquist frequency of a vt sigStruct signal.
-        :param dtv: List of datetime.datetime to use instead of self.dtv.
-        :returns: nyq: Nyquist frequency of the signal in Hz.
+
+        Parameters
+        ---------
+        dtv : Optional[list]
+            datetime.datetime list
+
+        Returns
+        -------
+        nyq : float
+            Nyquist frequency of the signal in Hz.
+
         """
         dt = self.samplePeriod(dtv=dtv)
         nyq = 1. / (2 * dt)
@@ -169,10 +244,18 @@ class sigStruct(sig):
 
     def samplePeriod(self, dtv=None):
         """Calculate the sample period of a vt sigStruct signal.
-        :param dtv: List of datetime.datetime to use instead of self.dtv.
-        :returns: samplePeriod: sample period of signal in seconds.
-        """
 
+        Parameters
+        ---------
+        dtv : Optional[list]
+            datetime.datetime list
+
+        Returns
+        -------
+        samplePeriod
+            sample period of signal in seconds.
+
+        """
         if dtv is None:
             dtv = self.dtv
 
@@ -201,7 +284,12 @@ class sigStruct(sig):
 
     def updateValidTimes(self, times):
         """Update the metadata block times that a signal is valid for.
-        :param: times: List of times between which the signal is valid.
+
+        Parameters
+        ---------
+        times : list
+            List of times between which the signal is valid.
+
         """
         if self.metadata.has_key('validTimes'):
             if self.metadata['validTimes'][0] < times[0]:
@@ -303,8 +391,13 @@ class sigStruct(sig):
         """Returns the time window for which to calculate the FFT times for
         a given signal. This will look in the for the signal's metadata object
         and return the most restrictive range of metadata['validTimes']
-        and metadata['fftTimes'] ranges. :returns : None or 2-element list of
-        datetime.dateime where the FFT should be taken.
+        and metadata['fftTimes'] ranges. 
+        
+        Returns
+        -------
+        None or 2-element list of datetime.dateime where the FFT should
+        be taken.
+
         """
         md = self.getAllMetaData()
         start = []
@@ -327,8 +420,13 @@ class sigStruct(sig):
     def getFftInx(self):
         """Returns indices of the signal for the time range over which
         the FFT is going to be taken. Uses time range from getFftTimes().
-        :returns inx: list of indices of the signal for the time range over
-        which the FFT is going to be taken.
+
+        Returns
+        -------
+        inx : list
+            list of indices of the signal for the time range over
+            which the FFT is going to be taken.
+
         """
 
         valid = self.getFftTimes()
@@ -343,7 +441,11 @@ class sigStruct(sig):
         """Returns the time window for which the signal is valid.
         This will look in the for the signal's metadata object and return the
         range of metadata['validTimes'].
-        :returns : None or 2-element list of datetime.dateime.
+
+        Returns
+        -------
+        None or 2-element list of datetime.dateime.
+
         """
 
         md = self.getAllMetaData()
@@ -357,8 +459,12 @@ class sigStruct(sig):
     def getValidInx(self):
         """Returns indices of the signal for the time range over which
         the signal is valid. Uses time range from getValidTimes().
-        :returns inx: list of indices of the signal for the time range
-        over which the signal is valid.
+
+        Returns
+        inx : list
+            list of indices of the signal for the time range
+            over which the signal is valid.
+
         """
 
         valid = self.getValidTimes()
