@@ -88,7 +88,7 @@ def getDataSet(dataObj,dataSet='active'):
     ----------
     dataObj :  musicArray
 
-    dataSet :  Optional[ ]
+    dataSet :  Optional[str]
         which dataSet in the musicArray object to process
 
     Returns
@@ -222,7 +222,7 @@ class SigDetect(object):
     """Class to hold information about detected signals.
 
     Methods
-    ---------
+    -------
     string
     reorder
 
@@ -279,6 +279,18 @@ class musicDataObj(object):
         reference to parent musicArray object
     **metadata
         keywords sent to matplot lib, etc.
+
+    Attributes
+    ----------
+    time : numpy.array of datetime.datetime
+        numpy array of times corresponding to data
+    data : numpy.array
+        3-dimensional array of data
+    fov : Optional[pydarn.radar.radFov.fov]
+        Radar field-of-view object.
+    metadata : dict
+        keywords sent to matplot lib, etc.
+    history : dict 
 
     Methods
     ---------
@@ -375,7 +387,7 @@ class musicDataObj(object):
 
         Parameters
         ----------
-        timeVec : [list of datetime.datetime]
+        timeVec : Optional[list of datetime.datetime]
             List of datetime.datetime to use instead of self.time.
 
         Returns
@@ -420,6 +432,8 @@ class musicDataObj(object):
             Two-element array defining the maximum and minumum slant ranges to use. [km]
         gateLimits : Optional[iterable]
             Two-element array defining the maximum and minumum gates to use.
+        timeLimits :  Optional[]
+
         newDataSetName : Optional[str]
             Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
         comment : Optional[str]
@@ -514,6 +528,12 @@ class musicArray(object):
         If False, truncate the array to the maximum dimensions that there is actually data.
         False will save space without throwing out any data, but sometimes it is easier to work
         with the full-size array.
+
+    Attributes
+    ----------
+    messages : list
+
+    prm : 
 
     Methods
     -------
@@ -1199,12 +1219,6 @@ class filter(object):
       'filter_cutoff_high'  --> cutoff_high
       'filter_numtaps'      --> cutoff_numtaps
 
-    Methods
-    -------
-    plotTransferFunction
-    plotImpulseResponse
-    filter
-
     Parameters
     ----------
     dataObj : musicArray
@@ -1258,6 +1272,25 @@ class filter(object):
             nyq` (the Nyquist rate) if the first passband ends at
             `nyq` (i.e the filter is a single band highpass filter);
             center of first passband otherwise.
+
+    Attributes
+    ----------
+    comment : str
+
+    cutoff_low : float, 1D array_like or None
+        High pass cutoff frequency of filter (expressed in the same units as `nyq`)
+        OR an array of cutoff frequencies (that is, band edges).
+    cutoff_high : float, 1D array_like, or None
+        Like cutoff_low, but this is the low pass cutoff frequency of the filter.
+    nyq : float
+        the Nyquist rate
+    ir : 
+
+    Methods
+    -------
+    plotTransferFunction
+    plotImpulseResponse
+    filter
 
     Written by Nathaniel A. Frissell, Fall 2013
 
@@ -2037,7 +2070,7 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     threshold : Optional[float]
         Scaled input data must be above this value to be detected.  A higher number
         will reduce the number of signals detected.
-    neighborhood : Optional[int,int]
+    neighborhood : Optional[tuple]
         Local region in which to search for peaks at every point in the image/array.
         (10,10) will search a 10x10 pixel area.
 
