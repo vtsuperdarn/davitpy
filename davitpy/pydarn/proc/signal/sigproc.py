@@ -10,11 +10,20 @@ from signalCommon import *
 
 def dtvToSeconds(dtv, start=None):
     """Convert a datetime.datetime iterable to a numpy array of seconds from start.
-    :param start: datatime.datetime.  If None, then start = dtv[0].
-    :param dtv: datetime.datetime iterable to convert.
-    :returns sec: numpy.array of seconds from dtv[0].
-    """
 
+    Parameters
+    ---------
+    dtv : list
+        datetime.datetime iterable to convert.
+    start : Optional[datatime.datetime]
+        If None, then start = dtv[0].
+
+    Returns
+    -------
+    sec : numpy.array
+        numpy.array of seconds from dtv[0].
+
+    """
     if start is None:
         start = dtv[0]
     npDtv = np.array(dtv)
@@ -26,17 +35,25 @@ def dtvToSeconds(dtv, start=None):
 def interpolate(vtsig, start=None, stop=None, samplePeriod=None,
                 newSigName='interpolated'):
     """Interpolates signal onto a regular grid.
-    :param vtsig: VT sig/sigStruct object to be interpolated
-    :param start: datetime.datetime to start the new grid.
-      If not set, vtsig.getValidTimes()[0] is used.
-    :param stop: datetime.datetime to end the new grid.
-      If not set, vtsig.getValidTimes()[1] is used.
-    :param samplePeriod: Time resolution of the new grid in seconds.
-      If not set, 0.1*vtsig.samplePeriod() is used.
-    :param newSigName: String name of the attribute of the newly created signal.
+
+    Parameters
+    ---------
+    vtsig : VT sig/sigStruct object
+        VT sig/sigStruct object to be interpolated. If not set,
+        vtsig.getValidTimes()[0] is used.
+    start : Optional[datatime.datetime]
+        datetime.datetime to start the new grid.
+    stop : Optional[datatime.datetime]
+        datetime.datetime to end the new grid.
+        If not set, vtsig.getValidTimes()[1] is used.
+    samplePeriod : Optional[float]
+        Time resolution of the new grid in seconds.
+        If not set, 0.1*vtsig.samplePeriod() is used.
+    newSigName : Optional[str]
+        String name of the attribute of the newly created signal.
+
     """
     sigobj = prepForProc(vtsig)
-
     valid = sigobj.getValidTimes()
     if start is None:
         start = valid[0]
@@ -73,9 +90,13 @@ def commonDtv(siglist):
     """Takes a list of vt sig/sigStruct objects and interpolates them all to
     a common datetime.datetime grid. The most restrictive range of validtimes and
     the highest time resolution is used.
-    :params siglist: list of vt sig/sigStruct objects
-    """
 
+    Parameters
+    ---------
+    siglist: list
+        list of vt sig/sigStruct objects
+
+    """
     sl = []
     start = []
     stop = []
@@ -104,9 +125,11 @@ def commonDtv(siglist):
 def detrend(vtsig):
     """Linearly detrend a vtsig object.
 
-    :param vtsig: vtsig object
-    """
+    Parameters
+    ---------
+    vtsig : vtsig object
 
+    """
     sigobj = prepForProc(vtsig)
     vtsig = sigobj.parent
 
@@ -142,7 +165,9 @@ def detrend(vtsig):
 
 class filter(object):
 
-    def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True, newSigName='filtered'):
+    def __init__(self, vtsig, numtaps=None, cutoff_low=None, cutoff_high=None,
+                 width=None, window='blackman', pass_zero=True, scale=True,
+                 newSigName='filtered'):
         """Filter a VT sig/sigStruct object and define a FIR filter object.
         If only cutoff_low is defined, this is a high pass filter.
         If only cutoff_high is defined, this is a low pass filter.
@@ -150,58 +175,62 @@ class filter(object):
 
         Uses scipy.signal.firwin()
         High pass and band pass filters inspired by Matti Pastell's page:
-          http://mpastell.com/2010/01/18/fir-with-scipy/
+            http://mpastell.com/2010/01/18/fir-with-scipy/
 
-        Metadata keys:
-          'filter_cutoff_low' --> cutoff_low
-          'filter_cutoff_high' --> cutoff_high
-          'filter_cutoff_numtaps' --> cutoff_numtaps
+        Metadata keys
+            'filter_cutoff_low' --> cutoff_low
+            'filter_cutoff_high' --> cutoff_high
+            'filter_cutoff_numtaps' --> cutoff_numtaps
 
-        numtaps : int
-          Length of the filter (number of coefficients, i.e. the filter
-          order + 1).  `numtaps` must be even if a passband includes the
-          Nyquist frequency.
-
-        cutoff_low: float or 1D array_like
+        Parameters
+        ----------
+        vtsig : vtsig object
+        numtaps : Optional[int]
+            Length of the filter (number of coefficients, i.e. the filter
+            order + 1).  `numtaps` must be even if a passband includes the
+            Nyquist frequency.
+        cutoff_low : Optional[float or 1D array_like]
             High pass cutoff frequency of filter (expressed in the same units as `nyq`)
             OR an array of cutoff frequencies (that is, band edges). In the
             latter case, the frequencies in `cutoff` should be positive and
             monotonically increasing between 0 and `nyq`.  The values 0 and
             `nyq` must not be included in `cutoff`.
-
-        cutoff_high: float or 1D array_like
+        cutoff_high : Optional[float or 1D array_like]
             Like cutoff_low, but this is the low pass cutoff frequency of the filter.
-
-        width : float or None
+        width : Optional[float or None]
             If `width` is not None, then assume it is the approximate width
             of the transition region (expressed in the same units as `nyq`)
             for use in Kaiser FIR filter design.  In this case, the `window`
             argument is ignored.
-
-        window : string or tuple of string and parameter values
+        window : Optional[string or tuple of string and parameter values]
             Desired window to use. See `scipy.signal.get_window` for a list
             of windows and required parameters.
-
-        pass_zero : bool
+        pass_zero : Optional[bool]
             If True, the gain at the frequency 0 (i.e. the "DC gain") is 1.
             Otherwise the DC gain is 0.
-
-        scale : bool
+        scale : Optional[bool]
             Set to True to scale the coefficients so that the frequency
             response is exactly unity at a certain frequency.
             That frequency is either:
-                      0 (DC) if the first passband starts at 0 (i.e. pass_zero is True);
-                      `nyq` (the Nyquist rate) if the first passband ends at
-                          `nyq` (i.e the filter is a single band highpass filter);
-                      center of first passband otherwise.
+                0 (DC) if the first passband starts at 0 (i.e. pass_zero is True);
+                `nyq` (the Nyquist rate) if the first passband ends at
+                `nyq` (i.e the filter is a single band highpass filter);
+                center of first passband otherwise.
+        newSigName : Optional[str]
 
+        Attributes
+        ----------
+        comment : str
         nyq : float
             Nyquist frequency.  Each frequency in `cutoff` must be between 0
             and `nyq`.
+        ir
 
-        :returns: filter object
+        Returns
+        -------
+        filter object
+
         """
-
         sigObj = prepForProc(vtsig)
         nyq = sigObj.nyquistFrequency()
 
@@ -251,21 +280,33 @@ class filter(object):
     def __str__(self):
         return self.comment
 
-    def plotTransferFunction(self, xmin=0, xmax=None, ymin_mag=-150, ymax_mag=5, ymin_phase=None, ymax_phase=None, worN=None):
+    def plotTransferFunction(self, xmin=0, xmax=None, ymin_mag=-150,
+                             ymax_mag=5, ymin_phase=None, ymax_phase=None,
+                             worN=None):
         """Plot the frequency and phase response of the filter object.
 
-        :param xmin: Minimum value for x-axis.
-        :param xmax: Maximum value for x-axis.
-        :param ymin_mag: Minimum value for y-axis for the frequency response plot.
-        :param ymax_mag: Maximum value for y-axis for the frequency response plot.
-        :param ymin_phase: Minimum value for y-axis for the phase response plot.
-        :param ymax_phase: Maximum value for y-axis for the phase response plot.
-        :param worN: worN : {None, int}, optional
+        Parameters
+        ----------
+        xmin : Optional[int or float]
+            Minimum value for x-axis.
+        xmax : Optional[int or float]
+            Maximum value for x-axis.
+        ymin_mag : Optional[int or float]
+            Minimum value for y-axis for the frequency response plot.
+        ymax_mag : Optional[int or float]
+            Maximum value for y-axis for the frequency response plot.
+        ymin_phase : Optional[int or float]
+            Minimum value for y-axis for the phase response plot.
+        ymax_phase : Optional[int or float]
+            Maximum value for y-axis for the phase response plot.
+        worN : Optional[None or int]
             passed to scipy.signal.freqz()
             If None, then compute at 512 frequencies around the unit circle.
-            If the len(filter) > 512, then compute at len(filter) frequencies around the unit circle.
+            If the len(filter) > 512, then compute at len(filter) frequencie
+            s around the unit circle.
             If a single integer, the compute at that many frequencies.
             Otherwise, compute the response at frequencies given in worN
+
         """
         if worN is None:
             if len(self.ir) > 512:
@@ -317,15 +358,25 @@ class filter(object):
         mp.show()
 
     # Plot step and impulse response
-    def plotImpulseResponse(self, xmin=None, xmax=None, ymin_imp=None, ymax_imp=None, ymin_step=None, ymax_step=None):
+    def plotImpulseResponse(self, xmin=None, xmax=None, ymin_imp=None,
+                            ymax_imp=None, ymin_step=None, ymax_step=None):
         """Plot the frequency and phase response of the filter object.
 
-        :param xmin: Minimum value for x-axis.
-        :param xmax: Maximum value for x-axis.
-        :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-        :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-        :param ymin_step: Minimum value for y-axis for the step response plot.
-        :param ymax_step: Maximum value for y-axis for the step response plot.
+        Parameters
+        ----------
+        xmin : Optional[int or float]
+            Minimum value for x-axis.
+        xmax : Optional[int or float]
+            Maximum value for x-axis.
+        ymin_imp : Optional[int or float]
+            Minimum value for y-axis for the impulse response plot.
+        ymax_imp : Optional[int or float]
+            Maximum value for y-axis for the impulse response plot.
+        ymin_step : Optional[int or float]
+            Minimum value for y-axis for the step response plot.
+        ymax_step : Optional[int or float]
+            Maximum value for y-axis for the step response plot.
+
         """
         #  def plotImpulseResponse(b,a=1):
         l = len(self.ir)
@@ -351,14 +402,12 @@ class filter(object):
     def filter(self, vtsig, newSigName='filtered'):
         """Apply the filter to a vtsig object.
 
-        :param vtsig: vtsig object
-        :param xmax: Maximum value for x-axis.
-        :param ymin_imp: Minimum value for y-axis for the impulse response plot.
-        :param ymax_imp: Maximum value for y-axis for the impulse response plot.
-        :param ymin_step: Minimum value for y-axis for the step response plot.
-        :param ymax_step: Maximum value for y-axis for the step response plot.
-        """
+        Parameters
+        ----------
+        vtsig: vtsig object
+        newSigName : Optional[str]
 
+        """
         sigobj = prepForProc(vtsig)
         vtsig = sigobj.parent
 
