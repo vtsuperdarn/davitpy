@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 import copy
 import datetime
-
 from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
@@ -15,8 +15,26 @@ class xcor(object):
     def __init__(self, sig0, sig1, mode='full', comment=None, **metadata):
         """Define a vtsd sig cross correlation object.
 
-        :param sigList: List of 2 vt sig/sigStruct objects to cross-correlate.
-        :returns: sig object
+        Parameters
+        ---------
+        sig0
+        sig1
+        mode : Optional[str]
+        comment : Optional[str]
+        metadata : dict
+
+        Attributes
+        ----------
+        norm0
+        norm1
+        metadata
+        xcor
+        active
+
+        Returns
+        -------
+        xcor object
+
         """
         sig0 = prepForProc(sig0)
         sig1 = prepForProc(sig1)
@@ -69,13 +87,34 @@ class xcorStruct(xcor):
         self.parent = parent
         """Define a vtsd sigStruct object.
 
-    :param dtv: datetime.datetime list
-    :param data: raw data
-    :param id: A serial number uniquely identifying this signal in the
-    : processing chain.
-    :param **metadata: keywords sent to matplot lib, etc.
-    :returns: sig object
-    """
+        Parameters
+        ---------
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        comment : Optional[str]
+            info message
+        parent : Optional[int]
+        metadata : dict
+            keywords sent to matplot lib, etc.
+
+        Attributes
+        ----------
+        parent : int
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        metadata : dict
+            keywords sent to matplot lib, etc.
+        history : dict
+
+        Returns
+        -------
+        xcorStruct object
+
+        """
         self.dtv = np.array(dtv)
         self.data = np.array(data)
         self.metadata = {}
@@ -88,11 +127,19 @@ class xcorStruct(xcor):
         """Copy a vtsig object. This deep copies data and metadata,
         updates the serial number, and logs a comment in the history.
         Methods such as plot are kept as a reference.
-        :param newsig: A string with the name for the new signal.
-        :param comment: A string comment describing the new signal.
-        :returns: sig object
-        """
 
+        Parameters
+        ---------
+        newsig : str
+            A string with the name for the new signal.
+        comment :  str
+            A string comment describing the new signal.
+
+        Returns
+        -------
+        xcorStruct object
+
+        """
         if hasattr(self.parent, newsig):
             xx = 0
             ok = False
@@ -120,14 +167,25 @@ class xcorStruct(xcor):
         This deep copies data and metadata, updates the serial number,
         and logs a comment in the history.  Methods such as plot are kept
         as a reference.
-        :param newsig: A string with the name for the new signal.
-        :paran dtv: A new datetime.datetime array.
-        :param data: A new data array.
-        :param comment: A string comment describing the new signal.
-        :returns: sig object
 
-        :**kwargs:
-          appendTitle: String that will be appended to plot's title.
+        Parameters
+        ---------
+        newsig : str
+            A string with the name for the new signal.
+        dtv : list
+            datetime.datetime list
+        data : list
+            raw data
+        comment : str
+            A string comment describing the new signal.
+        kwargs
+            appendTitle : str 
+                String that will be appended to plot's title.
+
+        Returns
+        -------
+        xcorStruct object
+
         """
         newobj = self.copy(newsig, comment)
         newobj.dtv = dtv
@@ -148,8 +206,17 @@ class xcorStruct(xcor):
 
     def nyquistFrequency(self, dtv=None):
         """Calculate the Nyquist frequency of a vt sigStruct signal.
-        :param dtv: List of datetime.datetime to use instead of self.dtv.
-        :returns: nyq: Nyquist frequency of the signal in Hz.
+
+        Parameters
+        ---------
+        dtv : Optional[list]
+            datetime.datetime list
+
+        Returns
+        -------
+        nyq : float
+            Nyquist frequency of the signal in Hz.
+
         """
         dt = self.samplePeriod(dtv=dtv)
         nyq = 1. / (2 * dt)
@@ -157,10 +224,18 @@ class xcorStruct(xcor):
 
     def samplePeriod(self, dtv=None):
         """Calculate the sample period of a vt sigStruct signal.
-        :param dtv: List of datetime.datetime to use instead of self.dtv.
-        :returns: samplePeriod: sample period of signal in seconds.
-        """
 
+        Parameters
+        ---------
+        dtv : Optional[list]
+            datetime.datetime list
+
+        Returns
+        -------
+        samplePeriod : int or float
+            sample period of signal in seconds.
+
+        """
         if dtv is None:
             dtv = self.dtv
 
@@ -188,7 +263,12 @@ class xcorStruct(xcor):
 
     def updateValidTimes(self, times):
         """Update the metadata block times that a signal is valid for.
-        :param: times: List of times between which the signal is valid.
+
+        Parameters
+        ---------
+        times : list
+            List of times between which the signal is valid.
+
         """
         if self.metadata.has_key('validTimes'):
             if self.metadata['validTimes'][0] < times[0]:
@@ -276,7 +356,11 @@ class xcorStruct(xcor):
         """Returns the time window for which to calculate the FFT times for a given signal.
         This will look in the for the signal's metadata object and return the most restrictive 
         range of metadata['validTimes'] and metadata['fftTimes'] ranges.
-        :returns : None or 2-element list of datetime.dateime where the FFT should be taken.
+
+        Returns
+        -------
+        None or 2-element list of datetime.dateime where the FFT should be taken.
+
         """
         md = self.getAllMetaData()
         start = []
@@ -297,11 +381,16 @@ class xcorStruct(xcor):
             return [start[0], end[0]]
 
     def getFftInx(self):
-        """Returns indices of the signal for the time range over which the FFT is going to be taken.
-        Uses time range from getFftTimes().
-        :returns inx: list of indices of the signal for the time range over which the FFT is going to be taken.
-        """
+        """Returns indices of the signal for the time range over which the FFT
+        is going to be taken. Uses time range from getFftTimes().
 
+        Returns
+        -------
+        inx : list
+            list of indices of the signal for the time range over which
+            the FFT is going to be taken.
+
+        """
         valid = self.getFftTimes()
         if valid is None:
             inx = range(len(self.dtv))
@@ -314,9 +403,12 @@ class xcorStruct(xcor):
         """Returns the time window for which the signal is valid.
         This will look in the for the signal's metadata object and return the 
         range of metadata['validTimes'].
-        :returns : None or 2-element list of datetime.dateime.
-        """
 
+        Returns
+        -------
+        None or 2-element list of datetime.dateime.
+
+        """
         md = self.getAllMetaData()
         if md.has_key('validTimes'):
             valid = md['validTimes']
@@ -328,10 +420,14 @@ class xcorStruct(xcor):
     def getValidInx(self):
         """Returns indices of the signal for the time range over which
         the signal is valid. Uses time range from getValidTimes().
-        :returns inx: list of indices of the signal for the time range over which 
-        the signal is valid.
-        """
 
+        Returns
+        -------
+        inx : list
+            list of indices of the signal for the time range over which
+            the signal is valid.
+
+        """
         valid = self.getValidTimes()
         if valid is None:
             inx = range(len(self.dtv))
