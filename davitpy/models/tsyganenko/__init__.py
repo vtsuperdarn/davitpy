@@ -60,6 +60,29 @@ class tsygTrace(object):
     err : Optional[float]
         tracing step tolerance
 
+    Attributes
+    ----------
+    lat :
+        latitude [degrees]
+    lon :
+        longitude [degrees]
+    rho :
+        distance from center of the Earth [km]
+    coords : str
+        coordinates used for start point ['geo']
+    vswgse : list
+        solar wind velocity in GSE coordinates [m/s, m/s, m/s]
+    pdyn : float
+        solar wind dynamic pressure [nPa]
+    dst : flaot
+        Dst index [nT]
+    byimf : float
+        IMF By [nT]
+    bzimf : float
+        IMF Bz [nT]
+    datetime : Optional[datetime]
+        a python datetime object
+
     Returns
     -------
     Elements of this object:
@@ -382,7 +405,6 @@ bzimf={:3.0f}                       [nT]
         Parameters
         ----------
         filename : str
-
 
         Written by Sebastien 2012-10
 

@@ -37,7 +37,7 @@ class RtRun(object):
         end time UT (if not provided run for a single time sTime)
     rCode : Optional[str]
         radar 3-letter code
-    radarObj Optional[pydarn.radar.radar]
+    radarObj : Optional[pydarn.radar.radar]
         radar object (overrides rCode)
     dTime : Optional[float]
         time step in Hours
@@ -89,6 +89,8 @@ class RtRun(object):
     outDir :
 
     fExt : 
+
+    davitpy_path : str
 
     edens_file :
 
@@ -245,7 +247,7 @@ class RtRun(object):
         ----------
         nprocs : int
             number of processes to use with MPI
-        inputFilename :
+        inputFilename : str
 
         """
         import subprocess as subp
@@ -314,6 +316,7 @@ class RtRun(object):
 
         Parameters
         ----------
+        None
 
         Returns
         -------
@@ -341,6 +344,7 @@ class RtRun(object):
 
         Parameters
         ----------
+        None
 
         Returns
         -------
@@ -436,10 +440,9 @@ class Edens(object):
     ----------
     readFrom : str
 
-    edens :
+    edens : dict
 
     name : str
-
 
     Methods
     -------
@@ -634,6 +637,8 @@ class Scatter(object):
         gscat.dat file to read the ground scatter from
     site : Optional[pydarn.radar.site]
         radar site object
+    radar : Optional[pydarn.radar.radar]
+        radar object
 
     Attributes
     ----------

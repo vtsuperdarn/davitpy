@@ -34,22 +34,22 @@ def format_hwm_input(time, alt, lat, lon, ap=-1, path=None):
 
     Parameters
     -------------
-    time : (datetime)
+    time : datetime.datetime
         UT as a datetime object
-    alt : (float)
+    alt : float
         Altitude in km (lower limit at 0 km)
-    lat : (float)
+    lat : float
         Geographic latitude in degrees North
-    lon : (float)
+    lon : float
         Geographic longitude in degrees East
-    ap : (float)
+    ap : Optional[float]
         Ap index or -1 to produce undisturbed winds (default=-1.0)
-    path : (str or NoneType)
+    path : Optional[str or NoneType]
         Path to HWM data files
 
     Returns
     -----------
-    hwm_set : (set or NoneType)
+    hwm_set : set or NoneType
         Set containing used and unused inputs
         (iyd,sec,alt,lat,lon,slt,f107a,f107,ap,w)
     """
@@ -83,12 +83,12 @@ def datetime_to_utsec(time):
 
     Parameters
     -----------
-    time : (datetime)
+    time : datetime.datetime
         datetime object
 
     Returns
     ----------
-    sec_of_day : (float)
+    sec_of_day : float
         Seconds of day
     """
 
@@ -101,13 +101,13 @@ def datetime_to_iyd(time):
 
     Parameters
     ------------
-    time : (datetime)
+    time : datetime.datetime
         datetime object
 
     Returns
     ----------
-    iyd : (int)
-       integer combining year and day of year (YYDDD)
+    iyd : int
+        integer combining year and day of year (YYDDD)
     """
 
     ttuple = time.timetuple()
@@ -121,14 +121,14 @@ def datetime_to_slt(time, glon):
 
     Parameters:
     ------------
-    time : (datetime)
+    time : datetime.datetime
         datetime objects
-    glon : (float)
+    glon : float
         geographic longitude in degrees.
 
     Output:
     --------
-    lt : (float)
+    lt : float
         Local time in hours
     """
     lt = datetime_to_utsec(time) / 3600.0 + glon / 15.0
