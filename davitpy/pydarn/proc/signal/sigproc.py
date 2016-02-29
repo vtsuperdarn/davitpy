@@ -6,6 +6,7 @@ import numpy as np
 import scipy as sp
 import scipy.signal
 from signalCommon import *
+import logging
 
 
 def dtvToSeconds(dtv, start=None):
@@ -88,8 +89,8 @@ def interpolate(vtsig, start=None, stop=None, samplePeriod=None,
 
 def commonDtv(siglist):
     """Takes a list of vt sig/sigStruct objects and interpolates them all to
-    a common datetime.datetime grid. The most restrictive range of validtimes and
-    the highest time resolution is used.
+    a common datetime.datetime grid. The most restrictive range of validtimes
+    and the highest time resolution is used.
 
     Parameters
     ---------
@@ -170,8 +171,8 @@ class filter(object):
                  newSigName='filtered'):
         """Filter a VT sig/sigStruct object and define a FIR filter object.
         If only cutoff_low is defined, this is a high pass filter.
-        If only cutoff_high is defined, this is a low pass filter.
-        If both cutoff_low and cutoff_high is defined, this is a band pass filter.
+        If only cutoff_high is defined, this is a low pass filter. If both
+        cutoff_low and cutoff_high is defined, this is a band pass filter.
 
         Uses scipy.signal.firwin()
         High pass and band pass filters inspired by Matti Pastell's page:
@@ -190,13 +191,14 @@ class filter(object):
             order + 1).  `numtaps` must be even if a passband includes the
             Nyquist frequency.
         cutoff_low : Optional[float or 1D array_like]
-            High pass cutoff frequency of filter (expressed in the same units as `nyq`)
-            OR an array of cutoff frequencies (that is, band edges). In the
-            latter case, the frequencies in `cutoff` should be positive and
-            monotonically increasing between 0 and `nyq`.  The values 0 and
+            High pass cutoff frequency of filter (expressed in the same units
+            as `nyq`) OR an array of cutoff frequencies (that is, band edges).
+            In the latter case, the frequencies in `cutoff` should be positive
+            and monotonically increasing between 0 and `nyq`.  The values 0 and
             `nyq` must not be included in `cutoff`.
         cutoff_high : Optional[float or 1D array_like]
-            Like cutoff_low, but this is the low pass cutoff frequency of the filter.
+            Like cutoff_low, but this is the low pass cutoff frequency of
+            the filter.
         width : Optional[float or None]
             If `width` is not None, then assume it is the approximate width
             of the transition region (expressed in the same units as `nyq`)
@@ -212,8 +214,8 @@ class filter(object):
             Set to True to scale the coefficients so that the frequency
             response is exactly unity at a certain frequency.
             That frequency is either:
-                0 (DC) if the first passband starts at 0 (i.e. pass_zero is True);
-                `nyq` (the Nyquist rate) if the first passband ends at
+                0 (DC) if the first passband starts at 0 (i.e. pass_zero is
+                True); `nyq` (the Nyquist rate) if the first passband ends at
                 `nyq` (i.e the filter is a single band highpass filter);
                 center of first passband otherwise.
         newSigName : Optional[str]
@@ -248,17 +250,19 @@ class filter(object):
             if md.has_key('filter_numtaps'):
                 numtaps = md['filter_numtaps']
             else:
-                print 'WARNING: You must provide numtaps.'
+                logging.warning('WARNING: You must provide numtaps.')
                 return
 
         if cutoff_high is not None:  # Low pass
-            lp = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high, width=width,
-                                  window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+            lp = sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_high,
+                                  width=width, window=window,
+                                  pass_zero=pass_zero, scale=scale, nyq=nyq)
             d = lp
 
         if cutoff_low is not None:  # High pass
-            hp = -sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_low, width=width,
-                                   window=window, pass_zero=pass_zero, scale=scale, nyq=nyq)
+            hp = -sp.signal.firwin(numtaps=numtaps, cutoff=cutoff_low,
+                                   width=width, window=window,
+                                   pass_zero=pass_zero, scale=scale, nyq=nyq)
             hp[numtaps / 2] = hp[numtaps / 2] + 1
             d = hp
 
@@ -267,11 +271,13 @@ class filter(object):
             d[numtaps / 2] = d[numtaps / 2] + 1
 
         if cutoff_high is None and cutoff_low is None:
-            print "WARNING!! You must define cutoff frequencies!"
+            logging.warning("WARNING!! You must define cutoff frequencies!")
             return
 
-        self.comment = ' '.join(['Filter:', window + ',', 'Nyquist:', str(
-            nyq), 'Hz,', 'Cuttoff:', '[' + str(cutoff_low) + ', ' + str(cutoff_high) + ']', 'Hz'])
+        self.comment = ' '.join(['Filter:', window +
+                                 ',', 'Nyquist:', str(nyq),
+                                 'Hz,', 'Cuttoff:', '[' + str(cutoff_low) +
+                                 ', ' + str(cutoff_high) + ']', 'Hz'])
         self.nyq = nyq
         self.ir = d
 
@@ -437,7 +443,8 @@ class filter(object):
         newsigobj.data = copy.copy(filt_data)
         newsigobj.dtv = copy.copy(sigobj.dtv)
 
-        # Clear out ymin and ymax from metadata; make sure meta data block exists.
+        # Clear out ymin and ymax from metadata;
+        # make sure meta data block exists.
         # If not, create it.
         if hasattr(newsigobj, 'metadata'):
             delMeta = ['ymin', 'ymax']
