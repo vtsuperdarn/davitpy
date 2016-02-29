@@ -22,7 +22,7 @@ def globalMetaData_add(**metadata):
 
     Parameters
     ---------
-    metadata : dict
+    **metadata : dict
         keywords and values to be added to the glob dictionary.
 
     """
@@ -67,7 +67,7 @@ class sig(object):
             raw data
         comment : str
             info message
-        metadata : dict
+        **metadata : dict
             keywords and values
 
         Attributes
@@ -115,10 +115,11 @@ class sigStruct(sig):
             datetime.datetime list
         data : list
             raw data
-        id : int
-            A serial number uniquely identifying this signal in the
-            processing chain.
-        metadata : dict
+        comment : Optional[ ]
+
+        parent : Optional[int]
+
+        **metadata : dict
             keywords sent to matplot lib, etc.
 
         Attributes
@@ -134,6 +135,13 @@ class sigStruct(sig):
         Returns
         -------
         sigStruct object
+
+        Notes
+        -----
+        Old parameter definition:
+        id : int
+            A serial number uniquely identifying this signal in the
+            processing chain.
 
         """
         self.dtv = np.array(dtv)
