@@ -5,6 +5,7 @@ from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
 from signalCommon import *
+import logging
 
 # Create a system for handling metadata that applies to all signals.
 glob = {}
@@ -71,7 +72,7 @@ class sig(object):
 
         Attributes
         ----------
-        metadata : dict 
+        metadata : dict
         raw
         active
 
@@ -273,11 +274,12 @@ class sigStruct(sig):
             warn = 'WARNING'
             if md.has_key('title'):
                 warn = ' '.join([warn, 'FOR', '"' + md['title'] + '"'])
-            print warn + ':'
-            print '   Date time vector is not regularly sampled!'
-            print '   Maximum difference in sampling rates is ' +\
-                str(maxDt) + ' sec.'
-            print '   Using average sampling period of ' + str(avg) + ' sec.'
+            logging.warning(warn + ':\n' +\
+                            '   Date time vector is not regularly sampled!\n' +\
+                            '   Maximum difference in sampling rates is ' +\
+                            str(maxDt) + ' sec.' +\
+                            '   Using average sampling period of ' + \
+                            str(avg) + ' sec.')
             samplePeriod = avg
 
         return samplePeriod
@@ -391,8 +393,8 @@ class sigStruct(sig):
         """Returns the time window for which to calculate the FFT times for
         a given signal. This will look in the for the signal's metadata object
         and return the most restrictive range of metadata['validTimes']
-        and metadata['fftTimes'] ranges. 
-        
+        and metadata['fftTimes'] ranges.
+
         Returns
         -------
         None or 2-element list of datetime.dateime where the FFT should

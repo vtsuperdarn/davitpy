@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def sigObjCheck(vtsig):
     """Determines if the called signal is a vt sig or a vt sigStruct object.
 
@@ -16,6 +17,7 @@ def sigObjCheck(vtsig):
     else:
         sigobj = vtsig.active
     return sigobj
+
 
 def prepForProc(vtsig):
     """Determines if the called signal is a vt sig or a vt sigStruct object.
