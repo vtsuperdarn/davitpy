@@ -4,10 +4,10 @@ import datetime
 from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
-
 from signalCommon import *
+import logging
 
-# Cross Correlation Objects Start Here ###################################
+# Cross Correlation Objects Start Here
 
 
 class xcor(object):
@@ -179,7 +179,7 @@ class xcorStruct(xcor):
         comment : str
             A string comment describing the new signal.
         kwargs
-            appendTitle : str 
+            appendTitle : str
                 String that will be appended to plot's title.
 
         Returns
@@ -253,10 +253,12 @@ class xcorStruct(xcor):
             warn = 'WARNING'
             if md.has_key('title'):
                 warn = ' '.join([warn, 'FOR', '"' + md['title'] + '"'])
-            print warn + ':'
-            print '   Date time vector is not regularly sampled!'
-            print '   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.'
-            print '   Using average sampling period of ' + str(avg) + ' sec.'
+            logging.warning(warn + ':\n' +
+                            '   Date time vector is not regularly sampled!\n' +
+                            '   Maximum difference in sampling rates is ' +
+                            str(maxDt) + ' sec.\n' +
+                            '   Using average sampling period of ' + str(avg) +
+                            ' sec.')
             samplePeriod = avg
 
         return samplePeriod
@@ -320,7 +322,7 @@ class xcorStruct(xcor):
         return newsig
 
     def plot(self):
-        #from matplotlib import pyplot as mp
+        # from matplotlib import pyplot as mp
 
         # Metadata of "processed" signal overrides defaults.
         md = self.getAllMetaData()
@@ -353,13 +355,15 @@ class xcorStruct(xcor):
         mp.annotate(s, xy=(1.01, 0.95), xycoords="axes fraction", rotation=90)
 
     def getFftTimes(self):
-        """Returns the time window for which to calculate the FFT times for a given signal.
-        This will look in the for the signal's metadata object and return the most restrictive 
-        range of metadata['validTimes'] and metadata['fftTimes'] ranges.
+        """Returns the time window for which to calculate the FFT times for
+        a given signal. This will look in the for the signal's metadata object
+        and return the most restrictive range of metadata['validTimes'] and
+        metadata['fftTimes'] ranges.
 
         Returns
         -------
-        None or 2-element list of datetime.dateime where the FFT should be taken.
+        None or 2-element list of datetime.dateime where the FFT should
+        be taken.
 
         """
         md = self.getAllMetaData()
@@ -401,7 +405,7 @@ class xcorStruct(xcor):
 
     def getValidTimes(self):
         """Returns the time window for which the signal is valid.
-        This will look in the for the signal's metadata object and return the 
+        This will look in the for the signal's metadata object and return the
         range of metadata['validTimes'].
 
         Returns
