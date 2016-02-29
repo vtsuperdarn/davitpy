@@ -274,11 +274,11 @@ class sigStruct(sig):
             warn = 'WARNING'
             if md.has_key('title'):
                 warn = ' '.join([warn, 'FOR', '"' + md['title'] + '"'])
-            logging.warning(warn + ':\n' +\
-                            '   Date time vector is not regularly sampled!\n' +\
-                            '   Maximum difference in sampling rates is ' +\
-                            str(maxDt) + ' sec.' +\
-                            '   Using average sampling period of ' + \
+            logging.warning(warn + ':\n' +
+                            '   Date time vector is not regularly sampled!\n' +
+                            '   Maximum difference in sampling rates is ' +
+                            str(maxDt) + ' sec.' +
+                            '   Using average sampling period of ' +
                             str(avg) + ' sec.')
             samplePeriod = avg
 
@@ -302,7 +302,7 @@ class sigStruct(sig):
             self.metadata['validTimes'] = times
 
     def getAllMetaData(self):
-        return dict(globalMetaData().items() +\
+        return dict(globalMetaData().items() +
                     self.parent.metadata.items() + self.metadata.items())
 
     def setMetaData(self, **metadata):
