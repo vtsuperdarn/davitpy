@@ -13,7 +13,7 @@ class oplot(object):
         sigList : list
             A list of vt sig or sigStruct objects.
             If a sig object is provided, then the sig.active is used.
-        metadata
+        **metadata
             keywords sent to matplot lib, etc.
 
         Attributes
@@ -38,7 +38,7 @@ class oplot(object):
 
         Parameters
         ----------
-        metadata
+        **metadata
             keywords sent to matplot lib, etc.
 
         """
@@ -185,7 +185,7 @@ class oplotfft(object):
         sigList : list
             A list of vt sig or sigStruct objects.
             If a sig object is provided, then the sig.active is used.
-        metadata
+        **metadata
             keywords sent to matplot lib, etc.
 
         Attributes
@@ -210,7 +210,7 @@ class oplotfft(object):
 
         Parameters
         ----------
-        metadata
+        **metadata
             keywords sent to matplot lib, etc.
 
         """
