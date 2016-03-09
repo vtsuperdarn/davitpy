@@ -270,7 +270,7 @@ class radDataPtr():
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:} files with".format(ftype)
-                    estr = " radcode: {:} channel: {:}".format(estr, radcode,
+                    estr = "{:} radcode: {:} channel: {:}".format(estr, radcode,
                                                                self.channel)
                     logging.info(estr)
 
@@ -437,6 +437,7 @@ class radDataPtr():
                         break
 
                     # Now fetch the files
+                    print self.sTime,self.eTime
                     temp = futils.fetch_remote_files(self.sTime, self.eTime,
                                                      'sftp', remote_site,
                                                      remote_dirfmt, remote_dict,
