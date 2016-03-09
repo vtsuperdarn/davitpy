@@ -668,10 +668,10 @@ class sdDataPtr():
             self.close()
             self.__ptr = None
 
-            inds = np.where(np.array(stimes) >= stime &
-                            np.array(stimes) <= etime)
-            inde = np.where(np.array(etimes) >= stime &
-                            np.array(etimes) <= etime)
+            inds = np.where((np.array(stimes) >= stime) &
+                            (np.array(stimes) <= etime))
+            inde = np.where((np.array(etimes) >= stime) &
+                            (np.array(etimes) <= etime))
 
             if np.size(inds) > 0 or np.size(inde) > 0:
                 valid.append(True)
@@ -1081,7 +1081,7 @@ if __name__=="__main__":
         os.remove(expected_path)
     vtptr = sdDataPtr(stime, hemi, eTime=etime, fileType='mapex', src=src,
                       noCache=True)
-    if os.path.isfile(expected_path):
+    if 1==1:#os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
         print "Expected File Size:", expected_filesize 
@@ -1133,7 +1133,7 @@ if __name__=="__main__":
         os.remove(expected_path)
     localptr = sdDataPtr(stime, hemi, eTime=etime, src=src, fileType='mapex',
                          noCache=True)
-    if os.path.isfile(expected_path):
+    if 1==1:#os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
         print "Expected File Size:", expected_filesize 
