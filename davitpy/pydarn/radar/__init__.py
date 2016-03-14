@@ -1,43 +1,51 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: pydarn.radar
-*********************
-This subpackage contains various radar information/routines for DaViT-py
+Subpackage
+----------
+pydarn.radar
+    This subpackage contains various radar information/routines for DaViT-py
 
-**Modules**:
-    * :mod:`pydarn.radar.radFov`: radar fields-of-view calculations
-    * :mod:`pydarn.radar.radInfo`: radar information
-    * :mod:`pydarn.radar.radUtils`: misc. radar parameters (cpid...)
+Modules
+-------
+pydarn.radar.radFov
+    radar fields-of-view calculations
+pydarn.radar.radInfo
+    radar information
+pydarn.radar.radUtils
+    misc. radar parameters (cpid...)
+
 """
 
+import logging
 
 try:
     from radFov import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radFov: ', e
+    logging.exception(__file__+' -> pydarn.radar.radFov: ', e)
 
 try:
     from radUtils import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radUtils: ', e
+    logging.exception(__file__+' -> pydarn.radar.radUtils: ', e)
 
 try:
     from radInfoIo import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radInfoIo: ', e
+    logging.exception(__file__+' -> pydarn.radar.radInfoIo: ', e)
 
 try:
     from radStruct import *
 except Exception as e:
-    print __file__+' -> pydarn.radar.radStruct: ', e
+    logging.exception(__file__+' -> pydarn.radar.radStruct: ', e)
 
 
 ####################################
 # Update local HDF5
 ####################################
-import os.path, time
+import os.path
+import time
 import davitpy
 try:
     dirn = davitpy.rcParams['DAVIT_TMPDIR']
@@ -45,7 +53,7 @@ try:
     if not os.path.exists(d):
         os.makedirs(d)
 except:
-    dirn=os.environ['HOME']
+    dirn = os.environ['HOME']
 filn = os.path.join(dirn, '.radars.sqlite')
 ctime = time.time()
 # Update if not there or unreadable

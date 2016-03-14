@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -13,9 +14,17 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+dmapio
+------
+
+Module for interfacing with dmapio c code
+
+"""
+import logging
 
 try:
     from dmapio import *
 except Exception, e:
-    print __file__+' -> dmapio: ', e
+    logging.exception(__file__+' -> dmapio: ' + e)
 

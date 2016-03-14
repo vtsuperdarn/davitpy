@@ -1,25 +1,56 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: models.hwm
-*********************
+"""Horizontal wind model module
 
-**Modules**:
-    * :mod:`hwm07`: fortran subroutines
+Modules
+---------------------------
+hwm14   fortran subroutines
+---------------------------
   
-*********************
 """
+import logging
 
-def hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,data_file_path=None):
+def hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path=None):
+    """
 
+    Parameters
+    ----------
+    iyd :
+
+    sec :
+
+    alt :
+
+    glat :
+
+    glon :
+
+    stl :
+
+    f107a :
+
+    f107 :
+
+    ap :
+
+    path : Optional[str]
+        location for davitpy installation.  Default is rcParams' 'DAVITPY_PATH'
+        value.
+
+    """
     try:
-        from hwm07 import hwm07
+        from hwm14 import hwm14
     except Exception as e:
-        print __file__+' -> models.hwm.hwm07: ', e
+        logging.exception(__file__ + ' -> models.hwm.hwm14: ' + e)
 
-    if data_file_path is None:
-      from davitpy import rcParams
-      data_file_path = rcParams['DAVITPY_PATH']
+    if path is None:
+        from davitpy import rcParams
+        try:
+            path = "{:s}/davitpy/models/hwm/".format(rcParams['DAVITPY_PATH'])
+        except Exception as e:
+            logging.exception(__file__ + ' -> models.hwm.hwm14: ' + e)
 
-    return hwm07(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,data_file_path)
+    return hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path)
+
+import hwm_input

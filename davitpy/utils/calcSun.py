@@ -1,76 +1,76 @@
-# UTILS/calcSun
-"""
-*********************
-**Module**: utils.calcSun
-*********************
-This subpackage contains def to calculate sunrise/sunset
+# -*- coding: utf-8 -*-
+"""The calcSun module
 
-This includes the following defs:
-    * :func:`utils.calcSun.getJD`: 
-        calculate the julian date from a python datetime object
-    * :func:`utils.calcSun.calcTimeJulianCent`: 
-        convert Julian Day to centuries since J2000.0.
-    * :func:`utils.calcSun.calcGeomMeanLongSun`: 
-        calculate the Geometric Mean Longitude of the Sun (in degrees)
-    * :func:`utils.calcSun.calcGeomMeanAnomalySun`: 
-        calculate the Geometric Mean Anomaly of the Sun (in degrees)
-    * :func:`utils.calcSun.calcEccentricityEarthOrbit`: 
-        calculate the eccentricity of earth's orbit (unitless)
-    * :func:`utils.calcSun.calcSunEqOfCenter`: 
-        calculate the equation of center for the sun (in degrees)
-    * :func:`utils.calcSun.calcSunTrueLong`: 
-        calculate the true longitude of the sun (in degrees)
-    * :func:`utils.calcSun.calcSunTrueAnomaly`: 
-        calculate the true anamoly of the sun (in degrees)
-    * :func:`utils.calcSun.calcSunRadVector`: 
-        calculate the distance to the sun in AU (in degrees)
-    * :func:`utils.calcSun.calcSunApparentLong`: 
-        calculate the apparent longitude of the sun (in degrees)
-    * :func:`utils.calcSun.calcMeanObliquityOfEcliptic`: 
-        calculate the mean obliquity of the ecliptic (in degrees)
-    * :func:`utils.calcSun.calcObliquityCorrection`: 
-        calculate the corrected obliquity of the ecliptic (in degrees)
-    * :func:`utils.calcSun.calcSunRtAscension`: 
-        calculate the right ascension of the sun (in degrees)
-    * :func:`utils.calcSun.calcSunDeclination`: 
-        calculate the declination of the sun (in degrees)
-    * :func:`utils.calcSun.calcEquationOfTime`: 
-        calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)
-    * :func:`utils.calcSun.calcHourAngleSunrise`: 
-        calculate the hour angle of the sun at sunrise for the latitude (in radians)
-    * :func:`utils.calcSun.calcAzEl`: 
-        calculate sun azimuth and zenith angle
-    * :func:`utils.calcSun.calcSolNoonUTC`: 
-        calculate time of solar noon the given day at the given location on earth (in minutes since 0 UTC)
-    * :func:`utils.calcSun.calcSolNoon`: 
-        calculate time of solar noon the given day at the given location on earth (in minutes)
-    * :func:`utils.calcSun.calcSunRiseSetUTC`: 
-        calculate sunrise/sunset the given day at the given location on earth (in minutes since 0 UTC)
-    * :func:`utils.calcSun.calcSunRiseSet`: 
-        calculate sunrise/sunset the given day at the given location on earth (in minutes)
-    * :func:`utils.calcSun.calcTerminator`: 
-        calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
-        note that for plotting only, basemap has a built-in terminator
+This subpackage contains methods for various solar calculations
 
+Methods
+----------------------------------------------------------------------------
+getJD                       calculate the julian date from a python datetime
+                            object
+JulianCent                  convert Julian Day to centuries since J2000.0.
+calcGeomMeanLongSun         calculate the Geometric Mean Longitude of the Sun
+                            (in degrees)
+calcGeomMeanAnomalySun      calculate the Geometric Mean Anomaly of the Sun
+                            (in degrees)
+calcEccentricityEarthOrbit  calculate the eccentricity of earth's orbit
+                            (unitless)
+calcSunEqOfCenter           calculate the equation of center for the sun
+                            (in degrees)
+calcSunTrueLong             calculate the true longitude of the sun (in
+                            degrees)
+calcSunTrueAnomaly          calculate the true anamoly of the sun (in
+                            degrees)
+calcSunRadVector            calculate the distance to the sun in AU (in
+                            degrees)
+calcSunApparentLong         calculate the apparent longitude of the sun (in
+                            degrees)
+calcMeanObliquityOfEcliptic calculate the mean obliquity of the ecliptic (in
+                            degrees)
+calcObliquityCorrection     calculate the corrected obliquity of the ecliptic
+                            (in degrees)
+calcSunRtAscension          calculate the right ascension of the sun (in
+                            degrees)
+calcSunDeclination          calculate the declination of the sun (in degrees)
+calcEquationOfTime          calculate the difference between true solar time
+                            and mean solar time (output: equation of time in
+                            minutes of time)
+calcHourAngleSunrise        calculate the hour angle of the sun at sunrise
+                            for the latitude (in radians)
+calcAzEl                    calculate sun azimuth and zenith angle
+calcSolNoonUTC              calculate time of solar noon the given day at the
+                            given location on earth (in minutes since 0 UTC)
+calcSolNoon                 calculate time of solar noon the given day at the
+                            given location on earth (in minutes)
+calcSunRiseSetUTC           calculate sunrise/sunset the given day at the
+                            given location on earth (in minutes since 0 UTC)
+calcSunRiseSet              calculate sunrise/sunset the given day at the
+                            given location on earth (in minutes)
+calcTerminator              calculate terminator position and solar zenith
+                            angle for a given julian date-time within
+                            latitude/longitude limits note that for plotting
+                            only, basemap has a built-in terminator
+--------------------------- -------------------------------------------------
+
+Note
+----
 Source: http://www.esrl.noaa.gov/gmd/grad/solcalc/
 Translated to Python by Sebastien de Larquier
 
-*******************************
 """
+
 import math
 import numpy
 
+
 def calcTimeJulianCent( jd ):
-    """
-Convert Julian Day to centuries since J2000.0.
+    """Convert Julian Day to centuries since J2000.0.
     """
     T = (jd - 2451545.0)/36525.0
     return T
 
 
 def calcGeomMeanLongSun( t ):
-    """
-Calculate the Geometric Mean Longitude of the Sun (in degrees)
+    """Calculate the Geometric Mean Longitude of the Sun (in degrees)
     """
     L0 = 280.46646 + t * ( 36000.76983 + t*0.0003032 )
     while L0 > 360.0:
@@ -81,24 +81,21 @@ Calculate the Geometric Mean Longitude of the Sun (in degrees)
 
 
 def calcGeomMeanAnomalySun( t ):
-    """
-Calculate the Geometric Mean Anomaly of the Sun (in degrees)
+    """Calculate the Geometric Mean Anomaly of the Sun (in degrees)
     """
     M = 357.52911 + t * ( 35999.05029 - 0.0001537 * t)
     return M # in degrees
 
 
 def calcEccentricityEarthOrbit( t ):
-    """
-Calculate the eccentricity of earth's orbit (unitless)
+    """Calculate the eccentricity of earth's orbit (unitless)
     """
     e = 0.016708634 - t * ( 0.000042037 + 0.0000001267 * t)
     return e # unitless
 
 
 def calcSunEqOfCenter( t ):
-    """
-Calculate the equation of center for the sun (in degrees)
+    """Calculate the equation of center for the sun (in degrees)
     """
     mrad = numpy.radians(calcGeomMeanAnomalySun(t))
     sinm = numpy.sin(mrad)
@@ -109,8 +106,7 @@ Calculate the equation of center for the sun (in degrees)
 
 
 def calcSunTrueLong( t ):
-    """
-Calculate the true longitude of the sun (in degrees)
+    """Calculate the true longitude of the sun (in degrees)
     """
     l0 = calcGeomMeanLongSun(t)
     c = calcSunEqOfCenter(t)
@@ -119,8 +115,7 @@ Calculate the true longitude of the sun (in degrees)
 
 
 def calcSunTrueAnomaly( t ):
-    """
-Calculate the true anamoly of the sun (in degrees)
+    """Calculate the true anamoly of the sun (in degrees)
     """
     m = calcGeomMeanAnomalySun(t)
     c = calcSunEqOfCenter(t)
@@ -129,8 +124,7 @@ Calculate the true anamoly of the sun (in degrees)
 
 
 def calcSunRadVector( t ):
-    """
-Calculate the distance to the sun in AU (in degrees)
+    """Calculate the distance to the sun in AU (in degrees)
     """
     v = calcSunTrueAnomaly(t)
     e = calcEccentricityEarthOrbit(t)
@@ -139,8 +133,7 @@ Calculate the distance to the sun in AU (in degrees)
 
 
 def calcSunApparentLong( t ):
-    """
-Calculate the apparent longitude of the sun (in degrees)
+    """Calculate the apparent longitude of the sun (in degrees)
     """
     o = calcSunTrueLong(t)
     omega = 125.04 - 1934.136 * t
@@ -149,8 +142,7 @@ Calculate the apparent longitude of the sun (in degrees)
 
 
 def calcMeanObliquityOfEcliptic( t ):
-    """
-Calculate the mean obliquity of the ecliptic (in degrees)
+    """Calculate the mean obliquity of the ecliptic (in degrees)
     """
     seconds = 21.448 - t*(46.8150 + t*(0.00059 - t*(0.001813)))
     e0 = 23.0 + (26.0 + (seconds/60.0))/60.0
@@ -158,8 +150,7 @@ Calculate the mean obliquity of the ecliptic (in degrees)
 
 
 def calcObliquityCorrection( t ):
-    """
-Calculate the corrected obliquity of the ecliptic (in degrees)
+    """Calculate the corrected obliquity of the ecliptic (in degrees)
     """
     e0 = calcMeanObliquityOfEcliptic(t)
     omega = 125.04 - 1934.136 * t
@@ -168,8 +159,7 @@ Calculate the corrected obliquity of the ecliptic (in degrees)
 
 
 def calcSunRtAscension( t ):
-    """
-Calculate the right ascension of the sun (in degrees)
+    """Calculate the right ascension of the sun (in degrees)
     """
     e = calcObliquityCorrection(t)
     SunLong = calcSunApparentLong(t)
@@ -180,8 +170,7 @@ Calculate the right ascension of the sun (in degrees)
 
 
 def calcSunDeclination( t ):
-    """
-Calculate the declination of the sun (in degrees)
+    """Calculate the declination of the sun (in degrees)
     """
     e = calcObliquityCorrection(t)
     SunLong = calcSunApparentLong(t)
@@ -191,8 +180,7 @@ Calculate the declination of the sun (in degrees)
 
 
 def calcEquationOfTime( t ):
-    """
-Calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)  
+    """Calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)  
     """
     epsilon = calcObliquityCorrection(t)
     l0 = calcGeomMeanLongSun(t)
@@ -212,8 +200,7 @@ Calculate the difference between true solar time and mean solar time (output: eq
 
 
 def calcHourAngleSunrise( lat, solarDec ):
-    """
-Calculate the hour angle of the sun at sunrise for the latitude (in radians)
+    """Calculate the hour angle of the sun at sunrise for the latitude (in radians)
     """
     latRad = numpy.radians(lat)
     sdRad  = numpy.radians(solarDec)
@@ -223,8 +210,7 @@ Calculate the hour angle of the sun at sunrise for the latitude (in radians)
 
 
 def calcAzEl( t, localtime, latitude, longitude, zone ):
-    """
-Calculate sun azimuth and zenith angle
+    """Calculate sun azimuth and zenith angle
     """
     eqTime = calcEquationOfTime(t)
     theta  = calcSunDeclination(t)
@@ -287,8 +273,7 @@ Calculate sun azimuth and zenith angle
 
 
 def calcSolNoonUTC( jd, longitude ):
-    """
-Calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)
+    """Calculate time of solar noon the given day at the given location on earth (in minute since 0 UTC)
     """
     tnoon = calcTimeJulianCent(jd)
     eqTime = calcEquationOfTime(tnoon)
@@ -297,8 +282,7 @@ Calculate time of solar noon the given day at the given location on earth (in mi
 
 
 def calcSolNoon( jd, longitude, timezone, dst ):
-    """
-Calculate time of solar noon the given day at the given location on earth (in minute)
+    """Calculate time of solar noon the given day at the given location on earth (in minute)
     """
     timeUTC    = calcSolNoonUTC(jd, longitude)
     newTimeUTC = calcSolNoonUTC(jd + timeUTC/1440.0, longitude)
@@ -309,8 +293,7 @@ Calculate time of solar noon the given day at the given location on earth (in mi
 
 
 def calcSunRiseSetUTC( jd, latitude, longitude ):
-    """
-Calculate sunrise/sunset the given day at the given location on earth (in minute since 0 UTC)
+    """Calculate sunrise/sunset the given day at the given location on earth (in minute since 0 UTC)
     """
     t = calcTimeJulianCent(jd)
     eqTime = calcEquationOfTime(t)
@@ -327,8 +310,7 @@ Calculate sunrise/sunset the given day at the given location on earth (in minute
 
 
 def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
-    """
-Calculate sunrise/sunset the given day at the given location on earth (in minutes)
+    """Calculate sunrise/sunset the given day at the given location on earth (in minutes)
     """
     rtimeUTC, stimeUTC = calcSunRiseSetUTC(jd, latitude, longitude)
     # calculate local sunrise time (in minutes)
@@ -356,9 +338,8 @@ Calculate sunrise/sunset the given day at the given location on earth (in minute
 
 
 def calcTerminator( date, latitudes, longitudes ):
-    """
-Calculate terminator position and solar zenith angle for a given julian date-time within latitude/longitude limits
-Note that for plotting only, basemap has a built-in terminator
+    """Calculate terminator position and solar zenith angle for a given julian date-time 
+    within latitude/longitude limits Note that for plotting only, basemap has a built-in terminator
     """
     jd = getJD(date)
     t = calcTimeJulianCent(jd)
@@ -386,10 +367,10 @@ Note that for plotting only, basemap has a built-in terminator
     return lats, lons, zen, numpy.array(term)
 
 
-def getJD( date ):
+def getJD(date):
+    """Calculate the julian date from a python datetime object.
     """
-Calculate julian date for given day, month and year
-    """
+
     from dateutil.relativedelta import relativedelta
     
     if date.month < 2: 

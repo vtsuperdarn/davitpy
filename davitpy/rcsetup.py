@@ -1,28 +1,58 @@
-"""
+# -*- coding: utf-8 -*-
+"""The rcsetup module.
+
 The rcsetup module contains the default values and the validation code for
-customization using matplotlib's rc settings.
+customization using davitpy's rc settings.
 
 Each rc setting is assigned a default value and a function used to validate
 any attempted changes to that setting. The default values and validation
 functions are defined in the rcsetup module, and are used to construct the
 rcParams global object which stores the settings and is referenced throughout
-matplotlib.
+davitpy.
 
-These default values should be consistent with the default matplotlibrc file
-that actually reflects the values given here. Any additions or deletions to the
-parameter set listed here should also be visited to the
-:file:`matplotlibrc.template` in matplotlib's root source directory.
+These default values should be consistent with the default davitpyrc file
+that actually reflects the values given here. Any additions or deletions to
+the parameter set listed here should also be visited to the :file:`davitpyrc`
+in davitpy's root source directory.
+
 """
-import six
 
+
+import six
 import os
 import warnings
 
-#from davitpy import get_data_path
 
 class ValidateInStrings(object):
+    """Class used to validate strings in rcParams.
+
+    This class builds a validator that can be used to check whether a string
+    is a valid option with :func:`davitpy.rcParams.validate`.
+
+    Example
+    -------
+    Build a validator for the "swallow" option.
+
+    >>> validate_swallows = ValidateInStrings('swallow',
+                                              ['african','european'],
+                                              ignorecase=True)
+
+    """
+
+
     def __init__(self, key, valid, ignorecase=False):
-        'valid is a list of legal strings'
+        """Initialize the ValidInStrings validator.
+
+        Parameters
+        ----------
+        key : str
+            The option in rcParams being validated.
+        valid : List[str]
+            A list of "legal" values for `key`.
+        ignorecase : Optional[bool]
+            Specifies is case-sensitive validator.
+
+        """
         self.key = key
         self.ignorecase = ignorecase
 
@@ -32,6 +62,7 @@ class ValidateInStrings(object):
             else:
                 return s
         self.valid = dict([(func(k), k) for k in valid])
+
 
     def __call__(self, s):
         if self.ignorecase:
@@ -89,12 +120,14 @@ def validate_float(s):
     except ValueError:
         raise ValueError('Could not convert "%s" to float' % s)
 
+
 def validate_string(s):
     """convert s to string or raise"""
     try:
         return str(s)
     except ValueError:
         raise ValueError('Could not convert "%s" to string' % s)
+
 
 def validate_float_or_None(s):
     """convert s to float or raise"""
@@ -115,7 +148,7 @@ def validate_int(s):
 
 
 _seq_err_msg = ('You must supply exactly {n:d} values, you provided '
-                   '{num:d} values: {s}')
+                '{num:d} values: {s}')
 
 _str_err_msg = ('You must supply exactly {n:d} comma-separated values, '
                 'you provided '
@@ -123,6 +156,7 @@ _str_err_msg = ('You must supply exactly {n:d} comma-separated values, '
 
 
 class validate_nseq_float(object):
+
     def __init__(self, n):
         self.n = n
 
@@ -144,6 +178,7 @@ class validate_nseq_float(object):
 
 
 class validate_nseq_int(object):
+
     def __init__(self, n):
         self.n = n
 
@@ -180,19 +215,20 @@ validate_verbose = ValidateInStrings(
     ['silent', 'helpful', 'debug', 'debug-annoying'])
 
 
-#determine install location of aacgm coefficients
+# determine install location of aacgm coefficients
 #aacgm_coeffs_dir = os.path.join(get_data_path(),'tables/aacgm/aacgm_coeffs')
 path = os.path.split(os.path.dirname(__file__))[0]
-aacgm_coeffs_dir = os.path.join(path,'tables/aacgm/')
+aacgm_coeffs_dir = os.path.join(path, 'tables/aacgm/')
 
 if not os.path.exists(aacgm_coeffs_dir):
-  print "WARNING, location of aacgm coefficients could not be determined!"
-  print aacgm_coeffs_dir
+    print "WARNING, location of aacgm coefficients could not be determined!"
+    print aacgm_coeffs_dir
 
 
 # a map from key -> value, converter
 defaultParams = {
-    'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir+'aacgm_coeffs',validate_string],
+    'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir + 'aacgm_coeffs',
+                                 validate_string],
     'DAVITPY_PATH':             [path, validate_path_exists],
 
     # the verbosity setting for logging
@@ -200,31 +236,37 @@ defaultParams = {
     #'verbose.fileo': ['sys.stdout', six.text_type],
 
     # sftp address and user info for data fetching
-    'DB':			['sd-data.ece.vt.edu',validate_string],
-    'DBREADUSER':		['sd_dbread',validate_string],
-    'DBREADPASS':		['5d',validate_string],
-    'DB_PORT':			['22',validate_string],
-    # database 
-    'SDDB':			['sd-work9.ece.vt.edu:27017',validate_string],
-    'DBWRITEUSER':		['',validate_string],
-    'DBWRITEPASS':		['',validate_string],
+    'DB':			['sd-data.ece.vt.edu', validate_string],
+    'DBREADUSER':		['sd_dbread', validate_string],
+    'DBREADPASS':		['5d', validate_string],
+    'DB_PORT':			['22', validate_string],
+    # database
+    'SDDB':			['sd-work9.ece.vt.edu:27017', validate_string],
+    'SDBREADUSER':		['sd_dbread', validate_string],
+    'SDBREADPASS':		['5d', validate_string],
+    'DBWRITEUSER':		['', validate_string],
+    'DBWRITEPASS':		['', validate_string],
     # temporary directory
-    'DAVIT_TMPDIR':		['/tmp/sd/',validate_string],
+    'DAVIT_TMPDIR':		['/tmp/sd/', validate_string],
     # radar data file fetching
-    'DAVIT_REMOTE_DIRFORMAT':	['data/{year}/{ftype}/{radar}/',validate_string],
-    'DAVIT_REMOTE_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}',validate_string],
-    'DAVIT_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{radar}/',validate_string],
-    'DAVIT_LOCAL_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}',validate_string],
-    'DAVIT_REMOTE_TIMEINC':	['2',validate_string],
-    'DAVIT_LOCAL_TIMEINC':	['2',validate_string],
+    'DAVIT_REMOTE_DIRFORMAT':	['data/{year}/{ftype}/{radar}/',
+                               validate_string],
+    'DAVIT_REMOTE_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}', validate_string],
+    'DAVIT_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{radar}/',
+                              validate_string],
+    'DAVIT_LOCAL_FNAMEFMT':	['{date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}', validate_string],
+    'DAVIT_REMOTE_TIMEINC':	['2', validate_string],
+    'DAVIT_LOCAL_TIMEINC':	['2', validate_string],
     # map file fetching
-    'DAVIT_SD_REMOTE_DIRFORMAT':['data/{year}/{ftype}/{hemi}/',validate_string],
-    'DAVIT_SD_REMOTE_FNAMEFMT':	['{date}.{hemi}.{ftype}',validate_string],
-    'DAVIT_SD_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{hemi}/',validate_string],
-    'DAVIT_SD_LOCAL_FNAMEFMT':	['{date}.{hemi}.{ftype}',validate_string],
-    'DAVIT_SD_REMOTE_TIMEINC':	['24',validate_string],
-    'DAVIT_SD_LOCAL_TIMEINC':	['24',validate_string]
-    }
+    'DAVIT_SD_REMOTE_DIRFORMAT': ['data/{year}/{ftype}/{hemi}/', validate_string],
+    'DAVIT_SD_REMOTE_FNAMEFMT':	['{date}.{hemi}.{ftype}', validate_string],
+    'DAVIT_SD_LOCAL_DIRFORMAT':	['/sd-data/{year}/{ftype}/{hemi}/',
+                                 validate_string],
+    'DAVIT_SD_LOCAL_FNAMEFMT':	['{date}.{hemi}.{ftype}', validate_string],
+    'DAVIT_SD_REMOTE_TIMEINC':	['24', validate_string],
+    'DAVIT_SD_LOCAL_TIMEINC':	['24', validate_string],
+    'verbosity':                ['helpful',validate_verbose]
+}
 
 
 if __name__ == '__main__':
@@ -233,4 +275,3 @@ if __name__ == '__main__':
     for key in rc:
         if not rc[key][1](rc[key][0]) == rc[key][0]:
             print("%s: %s != %s" % (key, rc[key][1](rc[key][0]), rc[key][0]))
-

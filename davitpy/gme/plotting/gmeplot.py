@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -13,17 +14,21 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""gme plotting module
 
+A module for reading, writing, and storing kp Data
+
+Functions
+----------------------------------
+plotGME     plot ground indicies
+plotOMNI    plot solar wind params
+----------------------------------
+
+Module Author: Nathaniel Frissell
 
 """
-.. module:: gmeplot
-   :synopsis: A module for reading, writing, and storing kp Data
-.. moduleauthor:: Nathaniel Frissell
-*********************
-**Module**: gme.plotting.gmeplot
-*********************
-  * :func:`gme.plotting.plotGME`
-"""
+import logging
+
 
 def __get_iterable(x):
   if isinstance(x, str):
@@ -32,34 +37,49 @@ def __get_iterable(x):
     return x
 
 
-def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None):
-  """plot ground magnetic indicies, including AE, SYMH, ASYMH, and DST.
+def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,
+            NoX=False,NoY=False,NoCredit=False,NoLegend=False,legendSize=None):
+  """Plot ground magnetic indicies, including AE, SYMH, ASYMH, and DST.
 
-  **Args**:
-    * **gmiList**: gmiList object returned from ae.readAe(), symAsy.readSymAsy(), or dst.readDst()
-    * **[parameter]**: List of parameters to plot. Valid values are: 
+  Parameters
+  ----------
+  gmiList : gmiList object
+        returned from ae.readAe(), symAsy.readSymAsy(), or dst.readDst()
+  parameter : Optional[list]
+        List of parameters to plot. Valid values are: 
+            aeList:     ['ae', 'al', 'au', 'ao'] (Defaults to 'ae')
+            symAsyList: ['symh', 'symd', 'asymh', 'asymd'] (Defaults to 'symh')
+            dstList:    ['dst']
+  sTime : Optional[datetime.datetime]
+        Start of plotting.  If not given, earliest data availble from aeList is used.
+  eTime : Optional[datetime.datetime]
+        End of plotting.  If not given, latest data availble from aeList is used.
+  ymin : Optional[ ]
+        Y-Axis minimum limit
+  ymax : Optional[ ]
+        Y-Axis maximum limit
+  NoX : Optional[bool]
+        Suppress X-Axis Titles and Ticks
+  NoY : Optional[bool]
+        Suppress Y-Axis Titles and Ticks
+  NoCredit : Optional[bool]
+        Suppress printing source of data on plot
+  NoLegend : Optional[bool]
+        Suppress a legend if more than one parameter is plotted
+  legendSize : Optional[ ]
+        Character size of the legend
 
-      * aeList:     ['ae', 'al', 'au', 'ao'] (Defaults to 'ae')
-      * symAsyList: ['symh', 'symd', 'asymh', 'asymd'] (Defaults to 'symh')
-      * dstList:    ['dst']
+  Returns
+  -------
+  Nothing.
 
-    * **[sTime]**: datetime.datetime object for start of plotting.  If not given, earliest data availble from aeList is used.
-    * **[eTime]**: datetime.datetime object for end of plotting.  If not given, latest data availble from aeList is used.
-    * **[ymin]**: Y-Axis minimum limit
-    * **[ymax]**: Y-Axis maximum limit
-    * **[NoX]**:  Suppress X-Axis Titles and Ticks
-    * **[NoY]**:  Suppress Y-Axis Titles and Ticks
-    * **[NoCredit]**: Suppress printing source of data on plot
-    * **[NoLegend]**: Suppress a legend if more than one parameter is plotted
-    * **[legendSize]**: Character size of the legend
-
-  **Returns**:
-    * Nothing.
-
-  .. note::
-    If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
+  Notes
+  -----
+  If a matplotlib figure currently exists, it will be modified by this routine.  If not, a
+  new one will be created.
 
   Written by Nathaniel Frissell 20130216
+
   """
   #import pydarn,numpy,math,matplotlib,calendar,datetime,utils,pylab
   import matplotlib.pyplot as mp
@@ -124,31 +144,46 @@ def plotGME(gmiList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,NoX
     ax.annotate(s,xy=(xpos,ypos),xycoords="axes fraction",horizontalalignment="left",fontsize='x-small')
 
 
-def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,yLabel=False,NoX=False,NoY=False,NoCredit=False):
+def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,
+             ymax=None,yLabel=False,NoX=False,NoY=False,NoCredit=False):
   """OMNI solar wind parameters, including interplanetary magnetic field and solar wind velocity.
 
-  **Args**:
-    * **omniList**: omniList object returned from ind.readOmni()
-    * **[parameter]**: List of parameters to plot. Valid values are: 
+  Parameters
+  ----------
+  omniList : omniList
+        object returned from ind.readOmni()
+  parameter : Optional[list]
+        List of parameters to plot. Valid values are: 
+            omniList:     ['ae', 'al', 'au', 'bx', 'bye', 'bze', 'bym', 'bzm', 'vxe', 'vye', 'vze',
+                           'symh', 'symd', 'asyh', 'asyd', 'np', 'e', 'pdyn', 'temp', 'beta',
+                           'bmagavg', 'machnum', 'flowspeed'] (Defaults to 'bzm')
+  sTime : Optional[datetime.datetime]
+        Start of plotting.  If not given, earliest data availble from omniList is used.
+  eTime : Optional[datetime.datetime]
+        End of plotting.  If not given, latest data availble from omniList is used.
+  ymin : Optional[ ]
+        Y-Axis minimum limit
+  ymax : Optional[ ]
+        Y-Axis maximum limit
+  yLabel : Optional[bool]
+        Custom Y-Axis Title
+  NoX : Optional[bool]
+        Suppress X-Axis Titles and Ticks
+  NoY : Optional[bool]
+        Suppress Y-Axis Titles and Ticks
+  NoCredit : Optional[bool]
+        Suppress printing source of data on plot
 
-      * omniList:     ['ae', 'al', 'au', 'bx', 'bye', 'bze', 'bym', 'bzm', 'vxe', 'vye', 'vze', 'symh', 'symd', 'asyh', 'asyd', 'np', 'e', 'pdyn', 'temp', 'beta', 'bmagavg', 'machnum', 'flowspeed'] (Defaults to 'bzm')
+  Returns
+  -------
+  Nothing.
 
-    * **[sTime]**: datetime.datetime object for start of plotting.  If not given, earliest data availble from omniList is used.
-    * **[eTime]**: datetime.datetime object for end of plotting.  If not given, latest data availble from omniList is used.
-    * **[ymin]**: Y-Axis minimum limit
-    * **[ymax]**: Y-Axis maximum limit
-    * **[yLabel]**: Custom Y-Axis Title
-    * **[NoX]**:  Suppress X-Axis Titles and Ticks
-    * **[NoY]**:  Suppress Y-Axis Titles and Ticks
-    * **[NoCredit]**: Suppress printing source of data on plot
-
-  **Returns**:
-    * Nothing.
-
-  .. note::
-    If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
+  Notes
+  -----
+  If a matplotlib figure currently exists, it will be modified by this routine.  If not, a new one will be created.
 
   Written by Evan Thomas 20131001
+
   """
   import matplotlib.pyplot as mp
   import matplotlib.dates as md
@@ -184,7 +219,7 @@ def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,y
 	     , 'bmagavg':bmagavg, 'machnum':machnum, 'flowspeed':flowspeed}
     if parameter == None: parameter = 'bzm'
   
-  assert(not isinstance(parameter,list)),"error, parameter must not be a list, eg 'bzm'"
+  assert(not isinstance(parameter,list)), logging.error("parameter must not be a list, eg 'bzm'")
   
   parameter = __get_iterable(parameter)
   
@@ -192,7 +227,7 @@ def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,ymax=None,y
   if figure == None: figure = mp.figure()
   
   for param in parameter:
-    if data.has_key(param.lower()) == False: print param.lower()
+    if data.has_key(param.lower()) == False: logging.info(param.lower())
     if data.has_key(param.lower()) == False: continue
     mp.plot(times,data[param.lower()],label=param.upper())
   
