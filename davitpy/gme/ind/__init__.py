@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -17,37 +18,44 @@
 # ind module __init__.py
 """
 ind
-****
+---
+
 This subpackage contains various fucntions to read and write Geomagnetic Indices
 
-This includes the following modules:
+Modules
+----------------------------
+ae      AE data
+dst     Dst data
+kp      Kp data
+omni    OMNI data (from ACE)
+symasy  SYM/ASY data
+----------------------------
 
-	* **kp**
-	* **omni**
 """
+import logging
 
 try: import kp
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 try: from kp import *
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 
 try: import omni
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 try: from omni import *
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 
 
 try: import dst
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 try: from dst import *
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 
 try: import ae
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 try: from ae import *
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 
 try: import symasy
-except Exception, e: print e
+except Exception, e: logging.exception(e)
 try: from symasy import *
-except Exception, e: print e
+except Exception, e: logging.exception(e)

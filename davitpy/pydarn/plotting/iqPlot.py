@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 # 
@@ -14,52 +15,58 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-.. module:: iqPlot
-   :synopsis: A module for generating plotting IQ voltage data
+"""Plotting iq data
 
-.. moduleauthor:: ASR, 20141225
+A module for generating plotting IQ voltage data
 
-*********************
-**Module**: pydarn.plotting.iqPlot
-*********************
-**Functions**:
-  * :func:`pydarn.plotting.iqPlot.plot_iq`
+Module author: ASR, 20141225
+
+Functions
+---------
+plot_iq
+
 """
+import logging
+
 
 def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, tx_pulse=True, int_data=False):
+    """Create an rti plot for a secified radar and time period.
 
-    """create an rti plot for a secified radar and time period
+    Parameters
+    ----------
+    myBeam : beamData object from pydarn.sdio.radDataTypes
+        Data that you would like to plot.
+    sequences : Optional[list of ints or None]
+        Defines which sequences of voltage data to plot. Default is
+        None which plots all.
+    mag_phase : Optional[boolean]
+        Specifies whether magnitude and phase should be plotted
+        instead of real and imaginary.  Default is false.
+    scale : Optional[None or float]
+        Specifies the scaling to use on real, imaginary, or
+        magnitude axes. Default is None which auto-scales.
+    user_ax : Optional[matplotlib axis object]
+        Default is None.
+    tx_pulse : Optional[boolean]
+        Specifies whether or not to plot Tx pulses.  Default is true.
+    int_data : Optional[boolean]
+        Specifies whether or not to plot voltage samples from the
+        interferometer array (checks beamData.prm.xcf). Default
+        is false.
 
-    **Args**:
-        * **myBeam** : a beamData object from pydarn.sdio.radDataTypes
-        * **[sequences]**: (list of ints or None) Defines which sequences
-                           of voltage data to plot. Default is None which
-                           plots all.
-        * **[mag_phase]**: (boolean) Specifies whether magnitude and 
-                           phase should be plotted instead of real and 
-                           imaginary.
-        * **[scale]**: (None or float) Specifies the scaling to use on 
-                       real, imaginary, or magnitude axes. Default is 
-                       None which auto-scales.
-        * **[user_ax]**: a matplotlib axis object
-        * **[tx_pulse]**: (boolean) Specifies whether or not to plot Tx 
-                          pulses
-        * **[int_data]**: (boolean) Specifies whether or not to plot 
-                          voltage samples from the interferometer array 
-                          (checks beamData.prm.xcf)
+    Returns
+    -------
+    Nothing
 
-    **Returns**:
-        Nothing.
+    Example
+    -------
+        from datetime import datetime
+        myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
+                                        'kap',fileType='iqdat')
+        pydarn.plotting.iqPlot.plot_iq(myBeam)
 
-    **Example**:
-        ::
-            from datetime import datetime
-            myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), \
-                                            'kap',fileType='iqdat')
-            pydarn.plotting.iqPlot.plot_iq(myBeam)
+    Written by ASR 20141225
 
-        Written by ASR 20141225
     """
 
     from matplotlib import pyplot
@@ -90,7 +97,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     # check input
 
     if ((int_data) and (myBeam.prm.xcf == 0)):
-        print "No interferometer data available."
+        logging.info("No interferometer data available.")
         return
 
     # default to plotting all sequences
@@ -98,10 +105,10 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
         sequences = range(0,seqnum)
 
     # figure out when the tx pulses went out
-    #number of ranges per tau
+    # number of ranges per tau
     tp_in_tau = tau/tp
 
-    #determine which samples overlap with tx pulses
+    # determine which samples overlap with tx pulses
     tx_times=[p*tp_in_tau for p in ptab]
     blanked_samples=[]
     for tx in tx_times:
@@ -118,13 +125,13 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     else:
         figheight = .82/len_seq
 
-    #plot the iq data for each of the requested pulse sequences
+    # plot the iq data for each of the requested pulse sequences
     for s,seq in enumerate(sequences):
 
-        #calculate the positions of the data axis and colorbar axis 
-        #for the current parameter and then add them to the figure
+        # calculate the positions of the data axis and colorbar axis 
+        # for the current parameter and then add them to the figure
         pos = [.1,figtop-figheight*(s+1)+.05,.8,figheight]#-.04]
-        #cpos = [.86,figtop-figheight*(p+1)+.05,.03,figheight-.04]    
+        # cpos = [.86,figtop-figheight*(p+1)+.05,.03,figheight-.04]    
         if user_ax is None:
             ax = fig.add_axes(pos)
         else:
