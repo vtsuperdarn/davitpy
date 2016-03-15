@@ -366,6 +366,7 @@ class rbspFp(object):
         """
         import urllib2, urllib
         from datetime import datetime
+        import time
 
         logging.info('Get orbit from JHU/APL')
 
@@ -386,25 +387,50 @@ class rbspFp(object):
                 'scraft': []}
         for sc in scraft:
             logging.info('Get orbit of spacecraft {} from APL'.format(sc))
+            # Convert input spacecraft to what the URL will want to see
+            if sc == 'a':
+                webcraft = "RBSP_A"
+            elif sc == 'b':
+                webcraft = "RBSP_B"
+            else:
+                logging.error('sc is: ' + sc)
+                logging.error('Error in spacecraft name.  Danger Will Robinson')
+            # Convert sTime, eTime to an epoch time
+            sEpoch = time.mktime(sTime.timetuple())
+            eEpoch = time.mktime(eTime.timetuple())
+            # Calculate the length od data we want in seconds
+            extent = eEpoch - sEpoch
 
-            params = urllib.urlencode({'sDay': str( self.sTime.day ),
-                                        'sMonth': str( self.sTime.month ),
-                                        'sYear': str( self.sTime.year ),
-                                        'sHour': str( self.sTime.hour ),
-                                        'sMinute': str( self.sTime.minute ),
-                                        'eDay': str( self.eTime.day ),
-                                        'eMonth': str( self.eTime.month ),
-                                        'eYear': str( self.eTime.year ),
-                                        'eHour': str( self.eTime.hour ),
-                                        'eMinute': str( self.eTime.minute ),
-                                        'Cadence': str( Cadence ),
-                                        'mode': str( cmode ),
-                                        'scraft': sc,
-                                        'header': header,
-                                        'getASCII': 'Get ASCII Output'})
-            f = urllib2.urlopen("http://athena.jhuapl.edu/LT_Position_Calc", params)
+#            params = urllib.urlencode({'sDay': str( self.sTime.day ),
+#                                        'sMonth': str( self.sTime.month ),
+#                                        'sYear': str( self.sTime.year ),
+#                                        'sHour': str( self.sTime.hour ),
+#                                        'sMinute': str( self.sTime.minute ),
+#                                        'eDay': str( self.eTime.day ),
+#                                        'eMonth': str( self.eTime.month ),
+#                                        'eYear': str( self.eTime.year ),
+#                                        'eHour': str( self.eTime.hour ),
+#                                        'eMinute': str( self.eTime.minute ),
+#                                        'Cadence': str( Cadence ),
+#                                        'mode': str( cmode ),
+#                                        'scraft': sc,
+#                                        'header': header,
+#                                        'getASCII': 'Get ASCII Output'})
+#            f = urllib2.urlopen("http://athena.jhuapl.edu/LT_Position_Calc", params)
             # f = urllib2.urlopen("http://athena.jhuapl.edu/orbit_pos", params)
+            rbspbase = "http://rbspgway.jhuapl.edu/rTools/orbitlist/lib/php/orbitlist.php?cli="
+            # Add on calculated variables. Here the [:-2] drop the last two digits
+            # from the time which are ".0"
+            rbspbase += cmode + "%20" + webcraft + "%20" + str(sEpoch)[:-2] + "%20" + str(extent)[:-2]
+
+            logging.debug('Looking for new data at: ' + rbspbase)
+            f = urllib2.urlopen(rbspbase)
+
             out = f.read().splitlines()
+            for line in out:
+                print line
+            print "THIS IS THE END OF THE TEST!"
+            sys.exit()
             f.close()
 
             st = out.index('<pre>')+1
