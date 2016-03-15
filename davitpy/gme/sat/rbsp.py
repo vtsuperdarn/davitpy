@@ -13,6 +13,7 @@ rbspFp  FPs reading (or calculating) and plotting
 
 """
 import logging
+import sys
 
 ############################################################################
 # Foot Points (FPs) calculation and plotting
@@ -102,6 +103,8 @@ class rbspFp(object):
         self.L_shell_min = L_shell_min
         self.L_shell_max = L_shell_max
         self._apogees_only = apogees_only
+
+        orbit = self.__getOrbit()
 
         # Connect to DB
         isDb = self.__getFpsFromDb()
@@ -357,7 +360,17 @@ class rbspFp(object):
 
         Returns
         -------
-        orbit : 
+        orbit : list of dict
+            The orbit information about each spacecraft requested.  Here the dictionary
+            values are:
+            date : a datetime object of the year, month, day
+            time : a datetime object of the year, month, day, hour, minute
+            alt  : a float of the altitude of the spacecraft
+            lat  : a float of the footprint longitude of the spacecraft
+            lon  : a float of the footprint latitude of the spacecraft
+            kind : a string of either a forecasted or final value
+            scraft : a string of the spacecraft letter (a or b)
+            
 
         Notes
         -----
@@ -380,11 +393,14 @@ class rbspFp(object):
         except:
             scraft = (self._spacecraft)
 
-        orbit = {'time': [], 
-                'alt': [],
-                'lat': [],
-                'lon': [],
-                'scraft': []}
+        orbit = {'date': [],
+                 'time': [], 
+                 'alt': [],
+                 'lat': [],
+                 'lon': [],
+                 'kind': [],
+                 'scraft': []}
+
         for sc in scraft:
             logging.info('Get orbit of spacecraft {} from APL'.format(sc))
             # Convert input spacecraft to what the URL will want to see
@@ -396,28 +412,11 @@ class rbspFp(object):
                 logging.error('sc is: ' + sc)
                 logging.error('Error in spacecraft name.  Danger Will Robinson')
             # Convert sTime, eTime to an epoch time
-            sEpoch = time.mktime(sTime.timetuple())
-            eEpoch = time.mktime(eTime.timetuple())
+            sEpoch = time.mktime(self.sTime.timetuple())
+            eEpoch = time.mktime(self.eTime.timetuple())
             # Calculate the length od data we want in seconds
             extent = eEpoch - sEpoch
 
-#            params = urllib.urlencode({'sDay': str( self.sTime.day ),
-#                                        'sMonth': str( self.sTime.month ),
-#                                        'sYear': str( self.sTime.year ),
-#                                        'sHour': str( self.sTime.hour ),
-#                                        'sMinute': str( self.sTime.minute ),
-#                                        'eDay': str( self.eTime.day ),
-#                                        'eMonth': str( self.eTime.month ),
-#                                        'eYear': str( self.eTime.year ),
-#                                        'eHour': str( self.eTime.hour ),
-#                                        'eMinute': str( self.eTime.minute ),
-#                                        'Cadence': str( Cadence ),
-#                                        'mode': str( cmode ),
-#                                        'scraft': sc,
-#                                        'header': header,
-#                                        'getASCII': 'Get ASCII Output'})
-#            f = urllib2.urlopen("http://athena.jhuapl.edu/LT_Position_Calc", params)
-            # f = urllib2.urlopen("http://athena.jhuapl.edu/orbit_pos", params)
             rbspbase = "http://rbspgway.jhuapl.edu/rTools/orbitlist/lib/php/orbitlist.php?cli="
             # Add on calculated variables. Here the [:-2] drop the last two digits
             # from the time which are ".0"
@@ -426,26 +425,36 @@ class rbspFp(object):
             logging.debug('Looking for new data at: ' + rbspbase)
             f = urllib2.urlopen(rbspbase)
 
+            # Read the file into a varible
             out = f.read().splitlines()
-            for line in out:
-                print line
-            print "THIS IS THE END OF THE TEST!"
-            sys.exit()
+            # Close the file
             f.close()
 
-            st = out.index('<pre>')+1
-            ed = out.index('</pre>')
-            header = out[st].split()
-            lines = out[st+1:ed]
-            for i,l in enumerate(lines):
+            # Loop through all of the lines in the data we got from the JHU/APL website
+            for i,l in enumerate(out):
+                # Filter the data by the Cadence that we specified earlier, usually every 5 minutes
+                if i % Cadence != 0:
+                    continue
+                # If we've got the right cadence, append the data on here.
                 row = l.split()
+                print l
                 cTime = datetime(	int(row[0]), int(row[1]), int(row[2]), 
                                     int(row[3]), int(row[4]), int(row[5])	)
+                orbit['date'].append( cTime.date() )
                 orbit['time'].append( cTime )
                 orbit['alt'].append( float(row[6]) )
                 orbit['lat'].append( float(row[7]) )
                 orbit['lon'].append( float(row[8]) )
+                if cTime > datetime.utcnow():
+                    orbit['kind'].append( 'forecast' )
+                else:
+                    orbit['kind'].append( 'final' )
                 orbit['scraft'].append( sc )
+
+            print "THIS IS THE END OF THE TEST!"
+            sys.exit()
+
+
 
         return orbit
 
