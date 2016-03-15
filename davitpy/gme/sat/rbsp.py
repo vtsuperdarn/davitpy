@@ -27,7 +27,8 @@ class rbspFp(object):
     eTime : Optional[ ]
         end date/time to get FPs (defaulst to 24 hours after `sTime`)
     spacecraft : Optional[ ]
-        limit FPs loading to a specific spacecraft
+        limit FPs loading to a specific spacecraft, a or b.  If None, then both
+        spacecraft will be loaded.
     L_shell_min :
         limit FPs loading to L-shell values greater than this
     L_shell_max : Optional[ ]
@@ -82,6 +83,11 @@ class rbspFp(object):
         apogees_only=False):
         from datetime import datetime, timedelta
         from davitpy import rcParams
+
+        # Check inputs
+        assert(spacecraft is None or spacecraft == 'a'
+               or spacecraft == 'b'), \
+            logging.error('spacecraft must be a, b, or None')
 
         # MongoDB server
         self._db_user = rcParams['SDBREADUSER']
@@ -379,6 +385,8 @@ class rbspFp(object):
                 'lon': [],
                 'scraft': []}
         for sc in scraft:
+            logging.info('Get orbit of spacecraft {} from APL'.format(sc))
+
             params = urllib.urlencode({'sDay': str( self.sTime.day ),
                                         'sMonth': str( self.sTime.month ),
                                         'sYear': str( self.sTime.year ),
