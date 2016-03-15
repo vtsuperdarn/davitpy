@@ -171,7 +171,7 @@ class rbspFp(object):
 
         # Generate map and background
         myMap = Basemap(projection=projection, lon_0=270,
-                        boundinglat=sgn*boundinglat, ax=ax)
+                        boundinglat=sgn * boundinglat, ax=ax)
         myMap.fillcontinents(color='.8')
         myMap.drawmeridians(range(0, 360, 20), alpha=0.5)
         myMap.drawparallels(range(-80, 81, 20), alpha=0.5)
@@ -249,7 +249,7 @@ class rbspFp(object):
                 myMap.scatter(x, y, zorder=6, s=20, facecolors='k')
                 if isinstance(x, list):
                     x, y = x[0], y[0]
-                myMap.ax.text(x*1.04, y*0.96, el['code'].upper())
+                myMap.ax.text(x * 1.04, y * 0.96, el['code'].upper())
                 x, y = myMap(el['fov']['lon'], el['fov']['lat'])
                 myMap.plot(x, y, 'g')
 
@@ -344,17 +344,17 @@ class rbspFp(object):
 
         try:
             conn = MongoClient('mongodb://{}:{}@{}/{}'.format(self._db_user,
-                                                              self._db_pswd, 
+                                                              self._db_pswd,
                                                               self._db_host,
                                                               dbName))
 
             dba = conn[dbName]
         except:
-            logging.error('Could not connect to remote DB: ' + sys.exc_info()[0])
+            logging.error('Could not connect to remote DB: ' +
+                          sys.exc_info()[0])
             return False
 
         return dba
-
 
     def __getOrbit(self):
         """Get orbit data from APL
@@ -366,8 +366,8 @@ class rbspFp(object):
         Returns
         -------
         orbit : list of dict
-            The orbit information about each spacecraft requested.  Here the dictionary
-            values are:
+            The orbit information about each spacecraft requested.  Here the
+            dictionary values are:
             date : a datetime object of the year, month, day
             time : a datetime object of the year, month, day, hour, minute
             alt  : a float of the altitude of the spacecraft
@@ -375,14 +375,15 @@ class rbspFp(object):
             lon  : a float of the footprint latitude of the spacecraft
             kind : a string of either a forecasted or final value
             scraft : a string of the spacecraft letter (a or b)
-            
+
 
         Notes
         -----
         Belongs to class rbspFp
 
         """
-        import urllib2, urllib
+        import urllib2
+        import urllib
         from datetime import datetime
         import time
 
@@ -398,7 +399,7 @@ class rbspFp(object):
             scraft = (self._spacecraft)
 
         orbit = {'date': [],
-                 'time': [], 
+                 'time': [],
                  'alt': [],
                  'lat': [],
                  'lon': [],
@@ -414,17 +415,20 @@ class rbspFp(object):
                 webcraft = "RBSP_B"
             else:
                 logging.error('sc is: ' + sc)
-                logging.error('Error in spacecraft name.  Danger Will Robinson')
+                logging.error('Error in spacecraft name.  ' +
+                              'Danger Will Robinson')
             # Convert sTime, eTime to an epoch time
             sEpoch = time.mktime(self.sTime.timetuple())
             eEpoch = time.mktime(self.eTime.timetuple())
             # Calculate the length od data we want in seconds
             extent = eEpoch - sEpoch
 
-            rbspbase = "http://rbspgway.jhuapl.edu/rTools/orbitlist/lib/php/orbitlist.php?cli="
-            # Add on calculated variables. Here the [:-2] drop the last two digits
-            # from the time which are ".0"
-            rbspbase += cmode + "%20" + webcraft + "%20" + str(sEpoch)[:-2] + "%20" + str(extent)[:-2]
+            rbspbase = "http://rbspgway.jhuapl.edu/rTools/orbitlist/lib/php/"
+            rbspbase += "orbitlist.php?cli="
+            # Add on calculated variables. Here the [:-2] drop the last
+            # two digits from the time which are ".0"
+            rbspbase += cmode + "%20" + webcraft + "%20" + str(sEpoch)[:-2]
+            rbspbase += "%20" + str(extent)[:-2]
 
             logging.debug('Looking for new data at: ' + rbspbase)
             f = urllib2.urlopen(rbspbase)
@@ -434,15 +438,17 @@ class rbspFp(object):
             # Close the file
             f.close()
 
-            # Loop through all of the lines in the data we got from the JHU/APL website
-            for i,l in enumerate(out):
-                # Filter the data by the Cadence that we specified earlier, usually every 5 minutes
+            # Loop through all of the lines in the data we got from the
+            # JHU/APL website
+            for i, l in enumerate(out):
+                # Filter the data by the Cadence that we specified earlier,
+                # usually every 5 minutes
                 if i % Cadence != 0:
                     continue
                 # If we've got the right cadence, append the data on here.
                 row = l.split()
                 print l
-                cTime = datetime(int(row[0]), int(row[1]), int(row[2]), 
+                cTime = datetime(int(row[0]), int(row[1]), int(row[2]),
                                  int(row[3]), int(row[4]), int(row[5]))
                 orbit['date'].append(cTime.date())
                 orbit['time'].append(cTime)
@@ -457,14 +463,14 @@ class rbspFp(object):
 
         return orbit
 
-
     def __getTrace(self, data):
         """Trace orbit to the ionosphere
 
         Parameters
         ----------
         data : dict
-            a dictionnary containing ephemeris (with keys 'lat', 'lon', 'alt', 'time')
+            a dictionnary containing ephemeris (with keys 'lat', 'lon', 'alt',
+            'time')
 
         Returns
         -------
@@ -484,8 +490,9 @@ class rbspFp(object):
             logging.info('Read tracing results...')
         except:
             logging.info('Tracing...')
-            trace = ts.tsygTrace(data['lat'], data['lon'], data['alt'], datetime=data['time'], rmin=1.047)
-            trace.save( fname )
+            trace = ts.tsygTrace(data['lat'], data['lon'], data['alt'],
+                                 datetime=data['time'], rmin=1.047)
+            trace.save(fname)
 
         self.lonNH = trace.lonNH
         self.latNH = trace.latNH
@@ -494,10 +501,11 @@ class rbspFp(object):
         self.times = trace.datetime
 
         # Mark apogees
-        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & np.r_[trace.rho[:-1] > trace.rho[1:], True]
+        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] &
+        np.r_[trace.rho[:-1] > trace.rho[1:], True]
+
         mins[0] = mins[-1] = False
         self.apogees = np.where(mins)[0]
-
 
     def __repr__(self):
         """Output formatting?
@@ -512,20 +520,26 @@ class rbspFp(object):
 
         """
         sOut = 'Van Allen Probes (a.k.a. RBSP) ionospheric footpoints\n'
-        sOut += '{:%Y-%b-%d at %H:%M UT} to {:%Y-%b-%d at %H:%M UT}\n'.format(self.sTime, self.eTime)
+        sOut += '{:%Y-%b-%d at %H:%M UT} to {:%Y-%b-%d at %H:%M UT}\n'.
+        format(self.sTime, self.eTime)
+
         sOut += '\t{} points\n'.format(len(self.times))
         sOut += '\t{} apogee(s):\n'.format(len(self.apogees))
 
         if len(self.apogees) > 0:
             for i in self.apogees:
-                sOut += '\t\t{:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i], self.scraft[i].upper(), 
-                                                                                                self.latNH[i], self.lonNH[i], 
-                                                                                                self.latSH[i], self.lonSH[i])
+                sOut += '\t\t{:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' +
+                '\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i],
+                                                    self.scraft[i].upper(),
+                                                    self.latNH[i],
+                                                    self.lonNH[i],
+                                                    self.latSH[i],
+                                                    self.lonSH[i])
 
         return sOut
 
-
-    def __textHighlighted(self, xy, text, zorder=None, color='k', fontsize=None):
+    def __textHighlighted(self, xy, text, zorder=None, color='k',
+                          fontsize=None):
         """Plot highlighted annotation (with a white lining)
 
         Parameters
@@ -551,14 +565,17 @@ class rbspFp(object):
 
         ax = gca()
 
-        text_path = mp.text.TextPath( (0,0), text, size=fontsize)
+        text_path = mp.text.TextPath((0, 0), text, size=fontsize)
 
-        p1 = mp.patches.PathPatch(text_path, ec="w", lw=2, fc="w", alpha=0.7, zorder=zorder, 
-                            transform=mp.transforms.IdentityTransform())
-        p2 = mp.patches.PathPatch(text_path, ec="none", fc=color, zorder=zorder, 
-                            transform=mp.transforms.IdentityTransform())
+        p1 = mp.patches.PathPatch(text_path, ec="w", lw=2, fc="w", alpha=0.7,
+                                  zorder=zorder,
+                                  transform=mp.transforms.IdentityTransform())
+        p2 = mp.patches.PathPatch(text_path, ec="none", fc=color,
+                                  zorder=zorder,
+                                  transform=mp.transforms.IdentityTransform())
 
-        offsetbox2 = mp.offsetbox.AuxTransformBox(mp.transforms.IdentityTransform())
+        offsetbox2 = mp.offsetbox.AuxTransformBox(mp.transforms.
+                                                  IdentityTransform())
         offsetbox2.add_artist(p1)
         offsetbox2.add_artist(p2)
 
@@ -566,17 +583,18 @@ class rbspFp(object):
         disp2ax = ax.transAxes.inverted().transform
         data2disp = ax.transData.transform
         disp2data = ax.transData.inverted().transform
-        xyA = disp2ax( data2disp( xy ) )
+        xyA = disp2ax(data2disp(xy))
         frac = 0.5
-        scatC = (-frac*(xyA[0]-0.5)+xyA[0], -frac*(xyA[1]-0.5)+xyA[1])
-        scatC = disp2data( ax2disp( scatC ) )
-        ab = mp.offsetbox.AnnotationBbox( offsetbox2, xy,
-                xybox=(scatC[0], scatC[1]), 
-                boxcoords="data",
-                box_alignment=(.5,.5),
-                arrowprops=dict(arrowstyle="-|>", 
-                facecolor='none'),
-                frameon=False )
+        scatC = (-frac * (xyA[0] - 0.5) + xyA[0],
+                 -frac * (xyA[1] - 0.5) + xyA[1])
+        scatC = disp2data(ax2disp(scatC))
+        ab = mp.offsetbox.AnnotationBbox(offsetbox2, xy,
+                                         xybox=(scatC[0], scatC[1]),
+                                         boxcoords="data",
+                                         box_alignment=(.5, .5),
+                                         arrowprops=dict(arrowstyle="-|>",
+                                                         facecolor='none'),
+                                         frameon=False)
 
         ax.add_artist(ab)
 ############################################################################
