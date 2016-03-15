@@ -13,7 +13,6 @@ rbspFp  FPs reading (or calculating) and plotting
 
 """
 import logging
-import sys
 
 ############################################################################
 # Foot Points (FPs) calculation and plotting
@@ -449,11 +448,6 @@ class rbspFp(object):
                 else:
                     orbit['kind'].append( 'final' )
                 orbit['scraft'].append( sc )
-
-            print "THIS IS THE END OF THE TEST!"
-            sys.exit()
-
-
 
         return orbit
 
