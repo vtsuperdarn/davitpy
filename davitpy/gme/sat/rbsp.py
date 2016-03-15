@@ -383,7 +383,6 @@ class rbspFp(object):
 
         logging.info('Get orbit from JHU/APL')
 
-        header = 'on'
         cmode = 'geo'
         Cadence = 5
 
