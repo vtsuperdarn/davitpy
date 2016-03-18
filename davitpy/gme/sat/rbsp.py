@@ -445,7 +445,6 @@ class rbspFp(object):
                     continue
                 # If we've got the right cadence, append the data on here.
                 row = l.split()
-                print l
                 cTime = datetime(int(row[0]), int(row[1]), int(row[2]),
                                  int(row[3]), int(row[4]), int(row[5]))
                 orbit['date'].append(cTime.date())
