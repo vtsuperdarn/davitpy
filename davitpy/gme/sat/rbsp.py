@@ -598,3 +598,16 @@ class rbspFp(object):
 
         ax.add_artist(ab)
 ############################################################################
+if __name__ == '__main__':
+    # Create a test of this code
+    import datetime
+    import davitpy
+
+
+    sTime = datetime.datetime(2015, 10, 12, 0, 0)
+    eTime = datetime.datetime(2015, 10, 12, 6, 0)
+    spacecraft = 'a'
+
+    footprint = rbspFp(sTime, eTime=eTime, spacecraft=spacecraft)
+    orbit = self_getOrbit()
+    
