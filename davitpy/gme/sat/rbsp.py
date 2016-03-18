@@ -105,8 +105,6 @@ class rbspFp(object):
         self.L_shell_max = L_shell_max
         self._apogees_only = apogees_only
 
-        orbit = self.__getOrbit()
-
         # Connect to DB
         isDb = self.__getFpsFromDb()
         if not isDb:
