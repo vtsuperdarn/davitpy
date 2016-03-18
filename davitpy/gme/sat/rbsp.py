@@ -499,7 +499,7 @@ class rbspFp(object):
         self.times = trace.datetime
 
         # Mark apogees
-        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] &
+        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
         np.r_[trace.rho[:-1] > trace.rho[1:], True]
 
         mins[0] = mins[-1] = False
@@ -518,7 +518,7 @@ class rbspFp(object):
 
         """
         sOut = 'Van Allen Probes (a.k.a. RBSP) ionospheric footpoints\n'
-        sOut += '{:%Y-%b-%d at %H:%M UT} to {:%Y-%b-%d at %H:%M UT}\n'.
+        sOut += '{:%Y-%b-%d at %H:%M UT} to {:%Y-%b-%d at %H:%M UT}\n'. \
         format(self.sTime, self.eTime)
 
         sOut += '\t{} points\n'.format(len(self.times))
@@ -526,7 +526,7 @@ class rbspFp(object):
 
         if len(self.apogees) > 0:
             for i in self.apogees:
-                sOut += '\t\t{:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' +
+                sOut += '\t\t{:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' + \
                 '\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i],
                                                     self.scraft[i].upper(),
                                                     self.latNH[i],
