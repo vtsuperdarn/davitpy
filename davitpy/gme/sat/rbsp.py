@@ -526,13 +526,7 @@ class rbspFp(object):
 
         if len(self.apogees) > 0:
             for i in self.apogees:
-                print type(self.times[i])
-                print type(self.scraft[i].upper())
-                print type(self.latNH[i])
-                print type(self.lonNH[i])
-                print type(self.latSH[i])
-                print type(self.lonSH[i])
-                sOut += '\t\t {:%H:%M} UT, { }: ({:6.2f} N, {:6.2f} E)' + \
+                sOut += '\t\t {:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' + \
                 '\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i], \
                                                     self.scraft[i].upper(), \
                                                     self.latNH[i], \
