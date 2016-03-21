@@ -478,7 +478,8 @@ class rbspFp(object):
         Belongs to class rbspFp
 
         """
-        import tsyganenko as ts
+#        import tsyganenko as ts
+        import davitpy.models.tsyganenko as ts
         import numpy as np
 
         fname = 'trace.{:%Y%m%d}.{:%Y%m%d}.dat'.format(self.sTime, self.eTime)
@@ -525,12 +526,18 @@ class rbspFp(object):
 
         if len(self.apogees) > 0:
             for i in self.apogees:
-                sOut += '\t\t{:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' + \
-                '\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i],
-                                                    self.scraft[i].upper(),
-                                                    self.latNH[i],
-                                                    self.lonNH[i],
-                                                    self.latSH[i],
+                print type(self.times[i])
+                print type(self.scraft[i].upper())
+                print type(self.latNH[i])
+                print type(self.lonNH[i])
+                print type(self.latSH[i])
+                print type(self.lonSH[i])
+                sOut += '\t\t {:%H:%M} UT, { }: ({:6.2f} N, {:6.2f} E)' + \
+                '\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i], \
+                                                    self.scraft[i].upper(), \
+                                                    self.latNH[i], \
+                                                    self.lonNH[i], \
+                                                    self.latSH[i], \
                                                     self.lonSH[i])
 
         return sOut
@@ -596,15 +603,29 @@ class rbspFp(object):
         ax.add_artist(ab)
 ############################################################################
 if __name__ == '__main__':
+        # Get all the FPs for 1/Sept/2012 from 0 to 6 UT
+        from datetime import datetime
+        import rbsp
+        sTime = datetime(2012,9,1,0)
+        eTime = datetime(2012,9,1,6)
+        fps = rbsp.rbspFp(sTime, eTime)
+        # Pretty print the apogees in that period
+        print fps
+        # Plot them on a map
+#        fps.map()
+
+
     # Create a test of this code
-    import datetime
-    import davitpy
+#    import datetime
+#    import davitpy
 
 
-    sTime = datetime.datetime(2015, 10, 12, 0, 0)
-    eTime = datetime.datetime(2015, 10, 12, 6, 0)
-    spacecraft = 'a'
+#    sTime = datetime.datetime(2015, 10, 12, 0, 0)
+#    eTime = datetime.datetime(2015, 10, 12, 6, 0)
+#    spacecraft = 'a'
 
-    footprint = rbspFp(sTime, eTime=eTime, spacecraft=spacecraft)
-    orbit = self_getOrbit()
+#    footprint = rbspFp(sTime, eTime=eTime, spacecraft=spacecraft)
+#    orbit = footprint.__getOrbit()
+
+#    print orbit
     
