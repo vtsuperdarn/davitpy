@@ -597,29 +597,27 @@ class rbspFp(object):
         ax.add_artist(ab)
 ############################################################################
 if __name__ == '__main__':
+        # Start of a unit test for rbsp.py.  This does not use
+
         # Get all the FPs for 1/Sept/2012 from 0 to 6 UT
         from datetime import datetime
         import rbsp
+
+        print ""
+        print "Testing footprint collection and apogee calculation..."
+        print ""
+        print "Expected results for orbits on September 1, 2012 between"
+        print "00:00 and 06:00 utc:"
+        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
+        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
+        print ""
+        print "Calculated results:"
+        print ""
         sTime = datetime(2012,9,1,0)
         eTime = datetime(2012,9,1,6)
         fps = rbsp.rbspFp(sTime, eTime)
         # Pretty print the apogees in that period
         print fps
         # Plot them on a map
-#        fps.map()
-
-
-    # Create a test of this code
-#    import datetime
-#    import davitpy
-
-
-#    sTime = datetime.datetime(2015, 10, 12, 0, 0)
-#    eTime = datetime.datetime(2015, 10, 12, 6, 0)
-#    spacecraft = 'a'
-
-#    footprint = rbspFp(sTime, eTime=eTime, spacecraft=spacecraft)
-#    orbit = footprint.__getOrbit()
-
-#    print orbit
+        fps.map()
     
