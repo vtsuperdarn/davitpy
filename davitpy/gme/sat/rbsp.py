@@ -500,7 +500,7 @@ class rbspFp(object):
 
         # Mark apogees
         mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
-        np.r_[trace.rho[:-1] > trace.rho[1:], True]
+            np.r_[trace.rho[:-1] > trace.rho[1:], True]
 
         mins[0] = mins[-1] = False
         self.apogees = np.where(mins)[0]
@@ -519,7 +519,7 @@ class rbspFp(object):
         """
         sOut = 'Van Allen Probes (a.k.a. RBSP) ionospheric footpoints\n'
         sOut += '{:%Y-%b-%d at %H:%M UT} to {:%Y-%b-%d at %H:%M UT}\n'. \
-        format(self.sTime, self.eTime)
+            format(self.sTime, self.eTime)
 
         sOut += '\t{} points\n'.format(len(self.times))
         sOut += '\t{} apogee(s):\n'.format(len(self.apogees))
@@ -527,12 +527,10 @@ class rbspFp(object):
         if len(self.apogees) > 0:
             for i in self.apogees:
                 sOut += '\t\t {:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' \
-                '\t({:6.2f} N, {:6.2f} E)\n'.format(self.times[i], \
-                                                    self.scraft[i].upper(), \
-                                                    self.latNH[i], \
-                                                    self.lonNH[i], \
-                                                    self.latSH[i], \
-                                                    self.lonSH[i])
+                    '\t({:6.2f} N, {:6.2f} E)\n'. \
+                    format(self.times[i], self.scraft[i].upper(),
+                           self.latNH[i], self.lonNH[i], self.latSH[i],
+                           self.lonSH[i])
 
         return sOut
 
@@ -613,11 +611,10 @@ if __name__ == '__main__':
         print ""
         print "Calculated results:"
         print ""
-        sTime = datetime(2012,9,1,0)
-        eTime = datetime(2012,9,1,6)
+        sTime = datetime(2012, 9, 1, 0)
+        eTime = datetime(2012, 9, 1, 6)
         fps = rbsp.rbspFp(sTime, eTime)
         # Pretty print the apogees in that period
         print fps
         # Plot them on a map
         fps.map()
-    
