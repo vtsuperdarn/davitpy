@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -42,9 +42,10 @@ import datetime as dt
 from davitpy import utils
 import logging
 
+
 class Gate(object):
     """A class to represent a single range gate
-  
+
     Parameters
     ------------
     v : (float)
@@ -68,6 +69,7 @@ class Gate(object):
         self.pwr0 = fit.pwr0[i]
         self.elv = None if fit.elv is None else fit.elv[i]
         self.phi0 = None if fit.phi0 is None else fit.phi0[i]
+
 
 def combBeams(scan):
     """This function combines all repeated beams within a scan into a
@@ -112,11 +114,11 @@ def combBeams(scan):
                 if b.bmnum == i:
                     beams.append(b)
 
-            nrang = max(beams, key= lambda x:x.prm.nrang)
+            nrang = max(beams, key=lambda x: x.prm.nrang)
 
             # initialize a new beam object
             beam.copyData(beams[0])
-            for key,val in beam.fit.__dict__.iteritems(): 
+            for key, val in beam.fit.__dict__.iteritems():
                 setattr(beam.fit, key, [])
             beam.prm.nrang = nrang
 
@@ -143,6 +145,7 @@ def combBeams(scan):
     sorted(outscan, key=lambda beam: beam.bmnum)
 
     return outscan
+
 
 def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
               channel=None, bmnum=None, cpid=None, src=None, nocache=False,
@@ -186,8 +189,8 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
         Flag to indicate that you do not want to check first for cached files.
         (default=False)
     remote_site : (str/NoneType)
-        The remote data server's address.  If None, the rcParam value DB will be
-        used. (default=None)
+        The remote data server's address.  If None, the rcParam value DB will
+        be used. (default=None)
     port : (str/NoneType)
         The port number to use for remote_site.  If None, the rcParam value
         DB_PORT will be used. (default=None)
@@ -213,7 +216,7 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
         The local directory structure. Can include keywords to be replaced by
         dictionary keys in remote_dict. If None, the rcParam value
         DAVIT_LOCAL_DIRFORMAT will be used. (default=None)
-        Ex) local_dirfmt='/{year}/{month}' 
+        Ex) local_dirfmt='/{year}/{month}'
     local_fnamefmt : (str/list/NoneType)
         The local file naming format. Can include keywords to be replaced by
         dictionary keys in remote_dict. If None, the rcParam value
@@ -306,7 +309,7 @@ def doFilter(scans, thresh=.4):
 
     scans = []
     for s in scans:
-        if s == None:
+        if s is None:
             scans.append(None)
         else:
             scans.append(combBeams(s))
@@ -315,38 +318,39 @@ def doFilter(scans, thresh=.4):
 
     # define the weigths array
     w = [[[0.0 for i in range(3)] for j in range(3)] for k in range(3)]
-    for i in range(0,3):
-        for j in range(0,3):
-            for k in range(0,3):
+    for i in range(0, 3):
+        for j in range(0, 3):
+            for k in range(0, 3):
                 tplus = 1 if k == 0 else 0
                 rplus = 1 if i == 0 else 0
                 bmplus = 1 if j == 0 else 0
                 centplus = 1 if i == 0 and j == 0 and k == 0 else 0
 
-                w[(i+1)%3][(j+1)%3][(k+1)%3] = 1+tplus+rplus+bmplus+centplus
+                w[(i + 1) % 3][(j + 1) % 3][(k + 1) % 3] = 1 + tplus + \
+                    rplus + bmplus + centplus
 
     for b in scans[1]:
         bmnum = b.bmnum
         # make a new beam
         beam = pydarn.sdio.beamData()
         beam.copyData(b)
-        for key,val in beam.fit.__dict__.iteritems(): 
-            setattr(beam.fit,key,[])
+        for key, val in beam.fit.__dict__.iteritems():
+            setattr(beam.fit, key, [])
 
-        for r in range(0,b.prm.nrang):
+        for r in range(0, b.prm.nrang):
             # boxcar to hold the gates
             box = [[[None for j in range(3)] for k in range(3)]
                    for n in range(3)]
 
             # iterate through time
-            for j in range(0,3):
+            for j in range(0, 3):
                 # iterate through beam
-                for k in range(-1,2):
+                for k in range(-1, 2):
                     # iterate through gate
-                    for n in range(-1,2):
+                    for n in range(-1, 2):
                         # get the scan we are working on
                         s = scans[j]
-                        if s == None:
+                        if s is None:
                             continue
 
                         # get the beam we are working on
@@ -354,7 +358,7 @@ def doFilter(scans, thresh=.4):
                         for bm in s:
                             if bm.bmnum == bmnum + k:
                                 tbm = bm
-                        if tbm == None:
+                        if tbm is None:
                             continue
 
                         # check if target gate number is in the beam
@@ -373,13 +377,13 @@ def doFilter(scans, thresh=.4):
             phi0 = list()
             pwr0 = list()
             # iterate through time
-            for j in range(0,3):
+            for j in range(0, 3):
                 # iterate through beam
-                for k in range(0,3):
+                for k in range(0, 3):
                     # iterate through gate
-                    for n in range(0,3):
+                    for n in range(0, 3):
                         bx = box[j][k][n]
-                        if bx == None:
+                        if bx is None:
                             continue
                         wt = w[j][k][n]
                         tot += wt
@@ -415,19 +419,3 @@ def doFilter(scans, thresh=.4):
         outscan.append(beam)
 
     return outscan
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
