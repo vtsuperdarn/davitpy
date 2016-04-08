@@ -92,19 +92,16 @@ def combBeams(scan):
     outscan = []
     # sort the scan by beam number
     sorted(scan, key=lambda beam: beam.bmnum)
-    print "Sorted scan by beam number"
 
     # see if any beam number repeat
     bcnt = np.zeros(50)
     for b in scan:
         bcnt[b.bmnum] += 1.
-    print "Filtered any repeated beams"
 
     # save any single beams:
     for b in scan:
         if bcnt[b.bmnum] == 1:
             outscan.append(b)
-    print "Saved all the single beams"
 
     # average any repeat beams
     for i in range(len(bcnt)):
