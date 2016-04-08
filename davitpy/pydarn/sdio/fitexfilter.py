@@ -165,8 +165,8 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
         The name of the output file
     thresh : (float)
         The filter threshold for turning on a R-B cell.  (default=0.4)
-    infile : (str)
-        The name of the input fitacf-format file
+    infile : (str/NoneType)
+        The name of a specific file which you want to open.  (default=None)
     etime : (datetime/NoneType)
         The last time that you want to input data for.  If this is set to None,
         it will be set to 1 day after sTime.  (default=None)
@@ -183,8 +183,6 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
     src : (str/NoneType)
         The source of the data.  Valid inputs are 'local' 'sftp'.  If this is
         set to None, it will try all possibilites sequentially.  (default=None)
-    infile : (str/NoneType)
-        The name of a specific file which you want to open.  (default=None)
     nocache : (boolean)
         Flag to indicate that you do not want to check first for cached files.
         (default=False)
