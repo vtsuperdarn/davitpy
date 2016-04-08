@@ -92,20 +92,24 @@ def combBeams(scan):
     outscan = []
     # sort the scan by beam number
     sorted(scan, key=lambda beam: beam.bmnum)
+    print "Sorted scan by beam number"
 
     # see if any beam number repeat
     bcnt = np.zeros(50)
     for b in scan:
         bcnt[b.bmnum] += 1.
+    print "Filtered any repeated beams"
 
     # save any single beams:
     for b in scan:
         if bcnt[b.bmnum] == 1:
             outscan.append(b)
+    print "Saved all the single beams"
 
     # average any repeat beams
     for i in range(len(bcnt)):
         beams = []
+        print "Averaging beam repeats"
         # check for more than one
         if bcnt[i] > 1:
             beam = pydarn.sdio.beamData()
@@ -113,6 +117,7 @@ def combBeams(scan):
                 # append it to beams list
                 if b.bmnum == i:
                     beams.append(b)
+            print "Appending beams"
 
             nrang = max(beams, key=lambda x: x.prm.nrang)
 
@@ -123,6 +128,7 @@ def combBeams(scan):
             beam.prm.nrang = nrang
 
             for j in range(nrang):
+                print "Doing things on range"
                 cnt = 0.0
                 pos = float(bcnt[i])
                 for b in beams:
@@ -131,6 +137,7 @@ def combBeams(scan):
                 if cnt / pos > .5:
                     beam.fit.slist.append(j)
                     beam.fit.qflg = 1
+                    print "Doing things more than half?"
                     for key in beam.fit.__dict__.iterkeys():
                         if key == 'qflg' or key == 'gflg' or key == 'slist':
                             continue
@@ -305,7 +312,7 @@ def doFilter(scans, thresh=.4):
     """
     from davitpy import pydarn
 
-    scans = []
+#    scans = []
     for s in scans:
         if s is None:
             scans.append(None)
@@ -313,6 +320,10 @@ def doFilter(scans, thresh=.4):
             scans.append(combBeams(s))
 
     outscan = pydarn.sdio.scanData()
+
+    print "SCANS ARE:"
+    print scans
+
 
     # define the weigths array
     w = [[[0.0 for i in range(3)] for j in range(3)] for k in range(3)]
