@@ -106,7 +106,6 @@ def combBeams(scan):
     # average any repeat beams
     for i in range(len(bcnt)):
         beams = []
-        print "Averaging beam repeats"
         # check for more than one
         if bcnt[i] > 1:
             beam = pydarn.sdio.beamData()
@@ -114,7 +113,6 @@ def combBeams(scan):
                 # append it to beams list
                 if b.bmnum == i:
                     beams.append(b)
-            print "Appending beams"
 
             nrang = max(beams, key=lambda x: x.prm.nrang)
 
@@ -125,7 +123,6 @@ def combBeams(scan):
             beam.prm.nrang = nrang
 
             for j in range(nrang):
-                print "Doing things on range"
                 cnt = 0.0
                 pos = float(bcnt[i])
                 for b in beams:
@@ -134,7 +131,6 @@ def combBeams(scan):
                 if cnt / pos > .5:
                     beam.fit.slist.append(j)
                     beam.fit.qflg = 1
-                    print "Doing things more than half?"
                     for key in beam.fit.__dict__.iterkeys():
                         if key == 'qflg' or key == 'gflg' or key == 'slist':
                             continue
@@ -147,7 +143,6 @@ def combBeams(scan):
             outscan.append(beam)
 
     sorted(outscan, key=lambda beam: beam.bmnum)
-
     return outscan
 
 
@@ -269,7 +264,7 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
 
         for b in tsc:
             logging.info("processing: {:}".format(b))
-            pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
+#            pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
 
         sc = pydarn.sdio.radDataReadScan(inp)
         scans[0] = scans[1]
@@ -280,7 +275,7 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
     logging.info("current at time: {:}".format(tsc.time))
 
     for b in tsc:
-        pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
+#        pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
 
     outp.close()
     return
@@ -309,18 +304,29 @@ def doFilter(scans, thresh=.4):
     """
     from davitpy import pydarn
 
+# Why is the variable that was just passed in being wiped out???
+# -KTS 20160411
 #    scans = []
-    for s in scans:
-        if s is None:
+    scanIndex = len(scans)
+    for i in range(0, scanIndex-1):
+        if scans[i] is None:
             scans.append(None)
         else:
-            scans.append(combBeams(s))
+            scans.append(combBeams(scans[i]))
+
+# Unsure of why the loop is setup this way as the loop
+# appends an item onto the end of the list each time it
+# is run, so the loop never, ever ends.  Replaced it
+# with the loop above. -KTS 20160411
+
+#    for s in scans:
+#        if s is None:
+#            scans.append(None)
+#        else:
+#            scans.append(combBeams(s))
+
 
     outscan = pydarn.sdio.scanData()
-
-    print "SCANS ARE:"
-    print scans
-
 
     # define the weigths array
     w = [[[0.0 for i in range(3)] for j in range(3)] for k in range(3)]
