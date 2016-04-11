@@ -235,6 +235,9 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
     written by AJ, 20130402
     """
     from davitpy import pydarn
+
+    logging.warning("THIS FUNCTION HAS FALLEN INTO DISREPAIR, USE AT YOUR OWN RISK...")
+
     inp = pydarn.sdio.radDataOpen(stime, rad, eTime=etime, channel=channel,
                                   bmnum=bmnum, cp=cpid, fileType='fitacf',
                                   filtered=False, src=src, fileName=infile,
