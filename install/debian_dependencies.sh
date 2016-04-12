@@ -14,6 +14,7 @@ apt-get install -y python-imaging
 apt-get install -y mpich2
 apt-get install -y gfortran
 apt-get install -y libhdf5-serial-dev
+apt-get install -y libfreetype6-dev 
 apt-get install -y python-matplotlib
 pip install --upgrade matplotlib
 apt-get install -y python-mpltoolkits.basemap
