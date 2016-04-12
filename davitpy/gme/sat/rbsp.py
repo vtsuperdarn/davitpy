@@ -116,6 +116,7 @@ class rbspFp(object):
             logging.info("JHU/APL website")
             orbit = self.__getOrbit()
             trace = self.__getTrace(orbit)
+            
             self.scraft = orbit['scraft']
 
     def map(self, hemisphere='north', boundinglat=35,
@@ -498,18 +499,32 @@ class rbspFp(object):
                                  datetime=data['time'], rmin=1.047)
             trace.save(fname)
 
-        self.lonNH = trace.lonNH
-        self.latNH = trace.latNH
-        self.lonSH = trace.lonSH
-        self.latSH = trace.latSH
-        self.times = trace.datetime
-
         # Mark apogees
         mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
             np.r_[trace.rho[:-1] > trace.rho[1:], True]
 
         mins[0] = mins[-1] = False
-        self.apogees = np.where(mins)[0]
+
+        self.lonNH = trace.lonNH
+        self.latNH = trace.latNH
+        self.lonSH = trace.lonSH
+        self.latSH = trace.latSH
+        # Times when the satellite is at apogee
+        self.time = trace.datetime[mins]
+        ntime = len(self.time)
+
+
+        for i in range(ntime):
+            # Apogee or not
+            if trace.datetime[i] in time:
+                isAp = True
+                self.apogees.append(i)
+            else:
+                False
+            
+        
+
+#        self.apogees = np.where(mins)[0]
 
     def __repr__(self):
         """Output formatting?
