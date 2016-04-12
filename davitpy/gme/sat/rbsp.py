@@ -37,6 +37,9 @@ class rbspFp(object):
         limit FPs loading to L-shell values lesser than this
     apogees_only : Optional[ ]
         record foot-points (usefull if all you want are apogees)
+    force_web_read : Optional[ ]
+        force the information to be read from the JHU/APL website instead of
+        using the Virginia Tech database.  Default is false.
 
     Attributes
     ----------
@@ -83,7 +86,7 @@ class rbspFp(object):
 
     def __init__(self, sTime, eTime=None, spacecraft=None,
                  L_shell_min=None, L_shell_max=None,
-                 apogees_only=False):
+                 apogees_only=False, force_web_read=False):
         from datetime import datetime, timedelta
         from davitpy import rcParams
 
@@ -107,7 +110,10 @@ class rbspFp(object):
 
         # Connect to DB
         isDb = self.__getFpsFromDb()
-        if not isDb:
+
+        if not isDb or force_web_read:
+            logging.info("Information is either not in the database or forcing read from")
+            logging.info("JHU/APL website")
             orbit = self.__getOrbit()
             trace = self.__getTrace(orbit)
             self.scraft = orbit['scraft']
