@@ -488,6 +488,7 @@ class rbspFp(object):
 #        import tsyganenko as ts
         import davitpy.models.tsyganenko as ts
         import numpy as np
+        import datetime
 
         fname = 'trace.{:%Y%m%d}.{:%Y%m%d}.dat'.format(self.sTime, self.eTime)
         try:
@@ -500,8 +501,16 @@ class rbspFp(object):
             trace.save(fname)
 
         # Mark apogees
-        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
-            np.r_[trace.rho[:-1] > trace.rho[1:], True]
+
+#        for rho in trace.rho:
+#            print "loops"
+#            print rho
+        print trace.rho
+
+###### THIS LINE ISN'T WORKING CORRECTLY???? #######
+        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & np.r_[trace.rho[:-1] > trace.rho[1:], True]
+#        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
+#            np.r_[trace.rho[:-1] > trace.rho[1:], True]
 
         mins[0] = mins[-1] = False
 
@@ -510,6 +519,8 @@ class rbspFp(object):
         self.lonSH = trace.lonSH
         self.latSH = trace.latSH
         # Times when the satellite is at apogee
+        print mins
+        print trace.datetime
         self.time = trace.datetime[mins]
         ntime = len(self.time)
 
@@ -625,16 +636,16 @@ if __name__ == '__main__':
         print ""
         print "Testing footprint collection and apogee calculation..."
         print ""
-        print "Expected results for orbits on September 1, 2012 between"
-        print "00:00 and 06:00 utc:"
-        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
-        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
-        print ""
+#        print "Expected results for orbits on September 1, 2012 between"
+#        print "00:00 and 06:00 utc:"
+#        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
+#        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
+#        print ""
         print "Calculated results:"
         print ""
-        sTime = datetime(2012, 9, 1, 0)
-        eTime = datetime(2012, 9, 1, 6)
-        fps = rbsp.rbspFp(sTime, eTime)
+        sTime = datetime(2013, 4, 28, 0)
+        eTime = datetime(2013, 4, 28, 12)
+        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
         # Pretty print the apogees in that period
         print fps
         # Plot them on a map
