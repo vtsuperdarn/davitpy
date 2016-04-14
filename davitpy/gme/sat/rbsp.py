@@ -500,17 +500,13 @@ class rbspFp(object):
                                  datetime=data['time'], rmin=1.047)
             trace.save(fname)
 
+
+        # Convert trace.rho to a numpy.ndarray type
+        trace.rho = np.asarray(trace.rho)
+
         # Mark apogees
-
-#        for rho in trace.rho:
-#            print "loops"
-#            print rho
-        print trace.rho
-
-###### THIS LINE ISN'T WORKING CORRECTLY???? #######
-        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & np.r_[trace.rho[:-1] > trace.rho[1:], True]
-#        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
-#            np.r_[trace.rho[:-1] > trace.rho[1:], True]
+        mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
+            np.r_[trace.rho[:-1] > trace.rho[1:], True]
 
         mins[0] = mins[-1] = False
 
@@ -518,24 +514,13 @@ class rbspFp(object):
         self.latNH = trace.latNH
         self.lonSH = trace.lonSH
         self.latSH = trace.latSH
+
+        # Convert trace.datetime to a numpy.ndarray type
+        trace.datetime = np.asarray(trace.datetime)        
         # Times when the satellite is at apogee
-        print mins
-        print trace.datetime
-        self.time = trace.datetime[mins]
-        ntime = len(self.time)
+        self.times = trace.datetime[mins]
 
-
-        for i in range(ntime):
-            # Apogee or not
-            if trace.datetime[i] in time:
-                isAp = True
-                self.apogees.append(i)
-            else:
-                False
-            
-        
-
-#        self.apogees = np.where(mins)[0]
+        self.apogees = np.where(mins)[0]
 
     def __repr__(self):
         """Output formatting?
@@ -557,7 +542,7 @@ class rbspFp(object):
         sOut += '\t{} apogee(s):\n'.format(len(self.apogees))
 
         if len(self.apogees) > 0:
-            for i in self.apogees:
+            for i in range(len(self.apogees)):
                 sOut += '\t\t {:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' \
                     '\t({:6.2f} N, {:6.2f} E)\n'. \
                     format(self.times[i], self.scraft[i].upper(),
@@ -641,11 +626,12 @@ if __name__ == '__main__':
 #        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
 #        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
 #        print ""
-        print "Calculated results:"
-        print ""
-        sTime = datetime(2013, 4, 28, 0)
-        eTime = datetime(2013, 4, 28, 12)
-        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
+#        print "Calculated results:"
+#        print ""
+        sTime = datetime(2016, 7, 1, 0)
+        eTime = datetime(2016, 7, 1, 12)
+#        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
+        fps = rbsp.rbspFp(sTime, eTime)
         # Pretty print the apogees in that period
         print fps
         # Plot them on a map
