@@ -427,6 +427,7 @@ class rbspFp(object):
             eEpoch = time.mktime(self.eTime.timetuple())
             # Calculate the length od data we want in seconds
             extent = eEpoch - sEpoch
+            logging.debug('Looking for {} seconds of data'.format(extent))
 
             rbspbase = "http://rbspgway.jhuapl.edu/rTools/orbitlist/lib/php/"
             rbspbase += "orbitlist.php?cli="
@@ -621,18 +622,17 @@ if __name__ == '__main__':
         print ""
         print "Testing footprint collection and apogee calculation..."
         print ""
-#        print "Expected results for orbits on September 1, 2012 between"
-#        print "00:00 and 06:00 utc:"
-#        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
-#        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
-#        print ""
-#        print "Calculated results:"
-#        print ""
-        sTime = datetime(2016, 7, 1, 0)
-        eTime = datetime(2016, 7, 1, 12)
-#        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
-        fps = rbsp.rbspFp(sTime, eTime)
+        print "Calculated results:"
+        print ""
+        sTime = datetime(2016, 6, 28, 0)
+        eTime = datetime(2016, 6, 28, 12)
+        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
+#        fps = rbsp.rbspFp(sTime, eTime)
+        print ""
+        print "Expected results for orbits on July 1, 2016 between"
+        print "00:00 and 12:00 utc:"
+        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
+        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
+        print ""
         # Pretty print the apogees in that period
         print fps
-        # Plot them on a map
-        fps.map()
