@@ -90,6 +90,9 @@ class rbspFp(object):
         from datetime import datetime, timedelta
         from davitpy import rcParams
 
+        # Initialize to false so that it's set true later
+        isDb = False
+
         # Check inputs
         assert(spacecraft is None or spacecraft == 'a' or spacecraft == 'b'), \
             logging.error('spacecraft must be a, b, or None')
@@ -109,7 +112,8 @@ class rbspFp(object):
         self._apogees_only = apogees_only
 
         # Connect to DB
-        isDb = self.__getFpsFromDb()
+        if not force_web_read:
+            isDb = self.__getFpsFromDb()
 
         if not isDb or force_web_read:
             logging.info("Information is either not in the database or forcing read from")
@@ -326,6 +330,8 @@ class rbspFp(object):
         self.apogees = np.array(self.apogees)
         self.L = np.array(self.L)
 
+#        print self.times
+
         return True
 
     def __dbConnect(self, dbName):
@@ -519,7 +525,8 @@ class rbspFp(object):
         # Convert trace.datetime to a numpy.ndarray type
         trace.datetime = np.asarray(trace.datetime)        
         # Times when the satellite is at apogee
-        self.times = trace.datetime[mins]
+#        self.times = trace.datetime[mins]
+        self.times = trace.datetime
 
         self.apogees = np.where(mins)[0]
 
@@ -542,8 +549,12 @@ class rbspFp(object):
         sOut += '\t{} points\n'.format(len(self.times))
         sOut += '\t{} apogee(s):\n'.format(len(self.apogees))
 
+#        print self.apogees
+#        print self.times
         if len(self.apogees) > 0:
-            for i in range(len(self.apogees)):
+            for i in self.apogees:
+#                print self.times[i]
+#                print i
                 sOut += '\t\t {:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' \
                     '\t({:6.2f} N, {:6.2f} E)\n'. \
                     format(self.times[i], self.scraft[i].upper(),
@@ -622,17 +633,17 @@ if __name__ == '__main__':
         print ""
         print "Testing footprint collection and apogee calculation..."
         print ""
-        print "Calculated results:"
-        print ""
-        sTime = datetime(2016, 6, 28, 0)
-        eTime = datetime(2016, 6, 28, 12)
+        sTime = datetime(2016, 6, 30, 0)
+        eTime = datetime(2016, 6, 30, 12)
         fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
 #        fps = rbsp.rbspFp(sTime, eTime)
         print ""
-        print "Expected results for orbits on July 1, 2016 between"
-        print "00:00 and 12:00 utc:"
-        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
-        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
+        print "Calculated results:"
         print ""
         # Pretty print the apogees in that period
         print fps
+#        print "Expected results for orbits on  between"
+#        print "00:00 and 12:00 utc:"
+#        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
+#        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
+        print ""
