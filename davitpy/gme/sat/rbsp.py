@@ -119,7 +119,7 @@ class rbspFp(object):
             logging.info("Information is either not in the database or forcing read from")
             logging.info("JHU/APL website")
             orbit = self.__getOrbit()
-            trace = self.__getTrace(orbit)
+            trace = self.__getTrace(orbit,force_web_read)
             
             self.scraft = orbit['scraft']
 
@@ -477,7 +477,7 @@ class rbspFp(object):
 
         return orbit
 
-    def __getTrace(self, data):
+    def __getTrace(self, data, force_web_read=False):
         """Trace orbit to the ionosphere
 
         Parameters
@@ -485,6 +485,10 @@ class rbspFp(object):
         data : dict
             a dictionnary containing ephemeris (with keys 'lat', 'lon', 'alt',
             'time')
+        force_web_read : Optional[bool]
+            Force the code to retrace the lines based on the orbit data
+            recently gathered from the JHU/APL website and not the VT
+            database.
 
         Returns
         -------
@@ -501,15 +505,19 @@ class rbspFp(object):
         import datetime
 
         fname = 'trace.{:%Y%m%d}.{:%Y%m%d}.dat'.format(self.sTime, self.eTime)
-        try:
-            trace = ts.tsygTrace(filename=fname)
-            logging.info('Read tracing results...')
-        except:
+        if not force_web_read:
+            try:
+                trace = ts.tsygTrace(filename=fname)
+                logging.info('Read tracing results...')
+            except:
+                logging.info('Tracing...')
+                trace = ts.tsygTrace(data['lat'], data['lon'], data['alt'],
+                                     datetime=data['time'], rmin=1.047)
+                trace.save(fname)
+        else:
             logging.info('Tracing...')
             trace = ts.tsygTrace(data['lat'], data['lon'], data['alt'],
                                  datetime=data['time'], rmin=1.047)
-            trace.save(fname)
-
 
         # Convert trace.rho to a numpy.ndarray type
         trace.rho = np.asarray(trace.rho)
@@ -518,7 +526,10 @@ class rbspFp(object):
         mins = np.r_[True, trace.rho[1:] >= trace.rho[:-1]] & \
             np.r_[trace.rho[:-1] > trace.rho[1:], True]
 
-        mins[0] = mins[-1] = False
+        # Mark the first, middle and last ones as false.  Here the
+        # middle represents when the array transitions from one
+        # spacecraft to another one.
+        mins[0] = mins[len(mins)/2] = mins[-1] = False
 
         self.lonNH = trace.lonNH
         self.latNH = trace.latNH
@@ -555,6 +566,7 @@ class rbspFp(object):
 #        print self.apogees
 #        print self.times
         if len(self.apogees) > 0:
+            # In the future sort apgogees by time?
             for i in self.apogees:
 #                print self.times[i]
 #                print i
@@ -636,17 +648,17 @@ if __name__ == '__main__':
         print ""
         print "Testing footprint collection and apogee calculation..."
         print ""
-        sTime = datetime(2016, 6, 30, 0)
-        eTime = datetime(2016, 6, 30, 12)
-        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
-#        fps = rbsp.rbspFp(sTime, eTime)
+        sTime = datetime(2016, 7, 2, 0)
+        eTime = datetime(2016, 7, 2, 12)
+#        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
+        fps = rbsp.rbspFp(sTime, eTime)
         print ""
         print "Calculated results:"
         print ""
         # Pretty print the apogees in that period
         print fps
-#        print "Expected results for orbits on  between"
-#        print "00:00 and 12:00 utc:"
-#        print "    01:45 UT, A: ( 68.47 N, 94.93 E)     (-51.43 N, 106.23 E)"
-#        print "    01:55 UT, B: ( 68.44 N, 92.27 E)     (-51.56 N, 104.03 E)"
+        print "Expected results for orbits on July 2, 2016  between"
+        print "00:00 and 12:00 utc:"
+        print "    01:45 UT,            106.23 E)"
+        print "    01:55                         "
         print ""
