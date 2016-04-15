@@ -396,7 +396,8 @@ class rbspFp(object):
         import urllib2
         import urllib
         from datetime import datetime
-        import time
+#        import time
+        import calendar
 
         logging.info('Get orbit from JHU/APL')
 
@@ -429,8 +430,8 @@ class rbspFp(object):
                 logging.error('Error in spacecraft name.  ' +
                               'Danger Will Robinson')
             # Convert sTime, eTime to an epoch time
-            sEpoch = time.mktime(self.sTime.timetuple())
-            eEpoch = time.mktime(self.eTime.timetuple())
+            sEpoch = calendar.timegm(self.sTime.timetuple())
+            eEpoch = calendar.timegm(self.eTime.timetuple())
             # Calculate the length od data we want in seconds
             extent = eEpoch - sEpoch
             logging.debug('Looking for {} seconds of data'.format(extent))
