@@ -440,8 +440,10 @@ class rbspFp(object):
             rbspbase += "orbitlist.php?cli="
             # Add on calculated variables. Here the [:-2] drop the last
             # two digits from the time which are ".0"
-            rbspbase += cmode + "%20" + webcraft + "%20" + str(sEpoch)[:-2]
-            rbspbase += "%20" + str(extent)[:-2]
+#            rbspbase += cmode + "%20" + webcraft + "%20" + str(sEpoch)[:-2]
+#            rbspbase += "%20" + str(extent)[:-2]
+            rbspbase += cmode + "%20" + webcraft + "%20" + str(sEpoch)
+            rbspbase += "%20" + str(extent)
 
             logging.debug('Looking for new data at: ' + rbspbase)
             f = urllib2.urlopen(rbspbase)
