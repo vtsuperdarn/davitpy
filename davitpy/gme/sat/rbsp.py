@@ -116,11 +116,11 @@ class rbspFp(object):
             isDb = self.__getFpsFromDb()
 
         if not isDb or force_web_read:
-            logging.info("Information is either not in the database or forcing read from")
-            logging.info("JHU/APL website")
+            logging.info("Information is either not in the database or")
+            logging.info("forcing read from JHU/APL website")
             orbit = self.__getOrbit()
-            trace = self.__getTrace(orbit,force_web_read)
-            
+            trace = self.__getTrace(orbit, force_web_read)
+
             self.scraft = orbit['scraft']
 
     def map(self, hemisphere='north', boundinglat=35,
@@ -537,9 +537,8 @@ class rbspFp(object):
         self.latSH = trace.latSH
 
         # Convert trace.datetime to a numpy.ndarray type
-        trace.datetime = np.asarray(trace.datetime)        
-        # Times when the satellite is at apogee
-#        self.times = trace.datetime[mins]
+        trace.datetime = np.asarray(trace.datetime)
+        # Store all of the datetimes in times
         self.times = trace.datetime
 
         self.apogees = np.where(mins)[0]
@@ -563,13 +562,9 @@ class rbspFp(object):
         sOut += '\t{} points\n'.format(len(self.times))
         sOut += '\t{} apogee(s):\n'.format(len(self.apogees))
 
-#        print self.apogees
-#        print self.times
         if len(self.apogees) > 0:
             # In the future sort apgogees by time?
             for i in self.apogees:
-#                print self.times[i]
-#                print i
                 sOut += '\t\t {:%H:%M} UT, {}: ({:6.2f} N, {:6.2f} E)' \
                     '\t({:6.2f} N, {:6.2f} E)\n'. \
                     format(self.times[i], self.scraft[i].upper(),
@@ -660,7 +655,7 @@ if __name__ == '__main__':
         print "Expected results for orbits on June 2, 2016  between"
         print "00:00 and 12:00 utc:"
         print "    07:45 UT, B: ( 57.82 N, 314.19 E)      (-72.89 N, 351.06 E)"
-        print "    08:45 UT, A: ( 56.43 N, 307.07 E)      (-74.73 N, 337.82 E)"        
+        print "    08:45 UT, A: ( 56.43 N, 307.07 E)      (-74.73 N, 337.82 E)"
         raw_input("Enter to continue on to another example")
 
         print ""
