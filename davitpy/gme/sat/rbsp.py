@@ -648,8 +648,8 @@ if __name__ == '__main__':
         print ""
         print "Testing footprint collection and apogee calculation..."
         print ""
-        sTime = datetime(2016, 7, 2, 0)
-        eTime = datetime(2016, 7, 2, 12)
+        sTime = datetime(2016, 6, 2, 0)
+        eTime = datetime(2016, 6, 2, 12)
 #        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
         fps = rbsp.rbspFp(sTime, eTime)
         print ""
@@ -657,8 +657,26 @@ if __name__ == '__main__':
         print ""
         # Pretty print the apogees in that period
         print fps
+        print "Expected results for orbits on June 2, 2016  between"
+        print "00:00 and 12:00 utc:"
+        print "    07:45 UT, B: ( 57.82 N, 314.19 E)      (-72.89 N, 351.06 E)"
+        print "    08:45 UT, A: ( 56.43 N, 307.07 E)      (-74.73 N, 337.82 E)"        
+        raw_input("Enter to continue on to another example")
+
+        print ""
+        print "Forcing a re-read from the JHU/APL website"
+        sTime = datetime(2016, 7, 2, 0)
+        eTime = datetime(2016, 7, 2, 12)
+        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
+#        fps = rbsp.rbspFp(sTime, eTime)
+        print ""
+        print "Calculated results:"
+        print ""
+        # Pretty print the apogees in that period
+        print fps
         print "Expected results for orbits on July 2, 2016  between"
         print "00:00 and 12:00 utc:"
-        print "    01:45 UT,            106.23 E)"
-        print "    01:55                         "
+        print "    04:50 UT, A: ( 62.90 N, 350.35 E)      (-63.47 N,  30.53 E)"
+        print "    11:55 UT, A: ( 52.75 N, 244.64 E)      (-60.94 N, 206.49 E)"
+        print "    02:55 UT, B: ( 64.70 N,  16.63 E)      (-58.19 N,  51.03 E)"
         print ""
