@@ -236,7 +236,8 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
     """
     from davitpy import pydarn
 
-    logging.warning("THIS FUNCTION HAS FALLEN INTO DISREPAIR, USE AT YOUR OWN RISK...")
+    logging.warning("THIS FUNCTION HAS FALLEN INTO DISREPAIR, "
+                    "USE AT YOUR OWN RISK...")
 
     inp = pydarn.sdio.radDataOpen(stime, rad, eTime=etime, channel=channel,
                                   bmnum=bmnum, cp=cpid, fileType='fitacf',
@@ -272,10 +273,11 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
                 pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
             except Exception, e:
                 logging.exception(e)
-                logging.exception("Unable to write output file since")
-                logging.exception("pydarn.dmapio.writeFitRec does not exist")
+                logging.exception("Unable to write output file since "
+                                  "pydarn.dmapio.writeFitRec does not exist")
                 # Close the output file
                 outp.close()
+                return
 
         sc = pydarn.sdio.radDataReadScan(inp)
         scans[0] = scans[1]
@@ -291,10 +293,11 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
             pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
         except Exception, e:
             logging.exception(e)
-            logging.exception("Unable to write output file since")
-            logging.exception("pydarn.dmapio.writeFitRec does not exist")
+            logging.exception("Unable to write output file since "
+                              "pydarn.dmapio.writeFitRec does not exist")
             # Close the output file
             outp.close()
+            return
 
 
     outp.close()
