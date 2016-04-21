@@ -136,8 +136,8 @@ class sdDataPtr():
 
     Written by AJ 20130607
     """
-    def __init__(self, sTime=None, hemi=None, eTime=None, src=None,
-                 fileName=None, fileType=None, noCache=False, local_dirfmt=None,
+    def __init__(self, sTime=None, hemi, eTime=None, src=None,
+                 fileName=None, fileType, noCache=False, local_dirfmt=None,
                  local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                  remote_fnamefmt=None, remote_dict=None, remote_site=None,
                  username=None, password=None, port=None, tmpdir=None):
