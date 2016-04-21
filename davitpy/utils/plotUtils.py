@@ -197,7 +197,7 @@ class mapObj(basemap.Basemap):
                                      height=height, **kwargs)
 
         if ax is not None:
-            mapObj.ax = ax
+            self.ax = ax
 
         if draw:
           self.draw()
