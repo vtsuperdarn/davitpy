@@ -40,16 +40,64 @@ alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',
 class sdDataPtr():
     """A class which contains a pipeline to a data source
 
+    Parameters
+    ----------
+    sTime : Optional[datetime]
+        start time of the request
+    hemi : str
+        hemisphere of data interested in
+    eTime : Optional[datetime]
+        end time of the request
+    src : Optional[str]
+        source of files: local of sftp
+    fileName : Optional[str]
+        name of the file opened
+    fileType : str
+        the type of file: 'grd', 'grdex', 'map', or 'mapex'
+    noCache : Optional[bool]
+        true to not use cached files, regenerate tmp files
+    local_dirfmt : Optional[str]
+        format of the local directory structure. Default: rcParams'
+        'DAVIT_SD_LOCAL_DIRFORMAT' value.
+    local_fnamefmt : Optional[str]
+        format of the local filenames.  Default: rcParams'
+        'DAVIT_SD_LOCAL_FNAMEFMT' value.
+    local_dict : Optional[dict]
+        dictionary of the hemisphere and file type. Default: use
+        the values given for hemi and fileType.
+    remote_dirfmt : Optional[str]
+        format of the remote directory structure.  Default: rcParams'
+        'DAVIT_SD_REMOTE_DIRFORMAT' value.
+    remote_fnamefmt : Optional[str]
+        format of the remote filenames.  Default: rcParams'
+        'DAVIT_SD_REMOTE_FNAMEFMT' value.
+    remote_dict : Optional[dict]
+        dictionary of the hemisphere and file type. Default: use
+        the values given for hemi and fileType.
+    username : Optional[str]
+        username to use for an sftp connection.  Default: rcParams'
+        'DBREADUSER' value.
+    password : Optional[str]
+        password to use for an sftp connection.  Default: rcParams'
+        'DBREADPASS' value.
+    port : Optional[int]
+        port to use for an sftp connection.  Deafult: rcParams'
+        'DB_PORT' value.
+    tmpdir : Optional[str]
+        directory to download and source files from locally.  Default:
+        rcParams' 'DAVIT_TMPDIR' value.
+    
+
     Attributes
     -----------
     sTime : (datetime)
         start time of the request
     eTime : (datetime)
         end time of the request
-    hemi : (str)
-        station id of the request
-    fType : (str)
-        the file type, 'grid', 'map'
+    hemi : str
+        hemisphere of data interested in
+    fType : str
+        the file type, 'grd', 'map', 'grdex' or 'mapex'
     recordIndex : (dict)
         look up dictionary for file offsets for scan times
 
@@ -59,7 +107,7 @@ class sdDataPtr():
         the data pointer (different depending on mongodo or dmap)
     fd : (int)
         the file descriptor 
-    filename : (str)
+    fileName : (str)
         name of the file opened
     nocache : (bool)
         do not use cached files, regenerate tmp files 
