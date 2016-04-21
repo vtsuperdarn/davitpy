@@ -194,7 +194,13 @@ class sdDataPtr():
             arr = [fileType]
     
         # a temporary directory to store a temporary file
-        tmpdir = '/tmp/sd/' # THIS NEEDS TO BE FIXED, ISSUE 214
+        if tmpdir is None:
+            try:
+                tmpdir = davitpy.rcParams['DAVIT_TMPDIR']
+            except:
+                logging.warning("Unable to set temporary directory with "
+                                "rcParams. Using extra default of /tmp/sd/")
+                tmpdir = '/tmp/sd/'
         d = os.path.dirname(tmpdir)
         if not os.path.exists(d):
             os.makedirs(d)
