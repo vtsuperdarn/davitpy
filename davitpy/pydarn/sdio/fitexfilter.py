@@ -269,8 +269,9 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
         for b in tsc:
             logging.info("processing: {:}".format(b))
             try:
-                # This currently does not exist.  Did it exist at one time???  -KTS
-                pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
+                # This currently does not exist. -KTS
+                pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time),
+                                          outp)
             except Exception, e:
                 logging.exception(e)
                 logging.exception("Unable to write output file since "
@@ -289,7 +290,7 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
 
     for b in tsc:
         try:
-            # This currently does not exist.  Did it exist at one time???  -KTS
+            # This currently does not exist. -KTS
             pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
         except Exception, e:
             logging.exception(e)
@@ -298,7 +299,6 @@ def fitFilter(stime, rad, outfile, thresh=0.4, infile=None, etime=None,
             # Close the output file
             outp.close()
             return
-
 
     outp.close()
     return
@@ -347,7 +347,6 @@ def doFilter(scans, thresh=.4):
 #            scans.append(None)
 #        else:
 #            scans.append(combBeams(s))
-
 
     outscan = pydarn.sdio.scanData()
 
