@@ -46,14 +46,15 @@ class sdDataPtr():
         start time of the request
     hemi : str
         hemisphere of data interested in
+    fileType : str
+        the type of file: 'grd', 'grdex', 'map', or 'mapex'
     eTime : Optional[datetime]
-        end time of the request
+        end time of the request.  If none, then a full day is
+        requested.
     src : Optional[str]
         source of files: local of sftp
     fileName : Optional[str]
         name of the file opened
-    fileType : str
-        the type of file: 'grd', 'grdex', 'map', or 'mapex'
     noCache : Optional[bool]
         true to not use cached files, regenerate tmp files
     local_dirfmt : Optional[str]
@@ -136,8 +137,8 @@ class sdDataPtr():
 
     Written by AJ 20130607
     """
-    def __init__(self, sTime=None, hemi, eTime=None, src=None,
-                 fileName=None, fileType, noCache=False, local_dirfmt=None,
+    def __init__(self, sTime, hemi, fileType, eTime=None, src=None,
+                 fileName=None, noCache=False, local_dirfmt=None,
                  local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                  remote_fnamefmt=None, remote_dict=None, remote_site=None,
                  username=None, password=None, port=None, tmpdir=None):
