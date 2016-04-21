@@ -42,7 +42,7 @@ class sdDataPtr():
 
     Parameters
     ----------
-    sTime : Optional[datetime]
+    sTime : datetime
         start time of the request
     hemi : str
         hemisphere of data interested in
