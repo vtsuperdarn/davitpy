@@ -47,7 +47,7 @@ def iri_sub(jf, jmag, alati, along, iyyyy, mmdd, dhour, heibeg, heiend,
     try:
         from iri import iri_sub
     except Exception as e:
-        logging.exception(__file__ + ' -> models.iri.iri_sub: ' + e)
+        logging.exception(__file__ + ' -> models.iri.iri_sub: ' + str(e))
 
     if data_file_path is None:
         from davitpy import rcParams
