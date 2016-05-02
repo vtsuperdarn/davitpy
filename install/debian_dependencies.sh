@@ -16,6 +16,8 @@ apt-get install -y gfortran
 apt-get install -y libhdf5-serial-dev
 apt-get install -y libfreetype6-dev 
 apt-get install -y python-matplotlib
+apt-get install -y libffi-dev
+apt-get install -y libssl-dev
 pip install --upgrade matplotlib
 pip install --upgrade ipython
 apt-get install -y ipython-notebook
@@ -35,6 +37,7 @@ pip install --upgrade scikit-image
 apt-get install -y libnetcdf-dev
 pip install --upgrade netcdf4
 pip install --upgrade pyproj
+pip install --upgrade cryptography
 
 #install basemap
 cd /tmp
