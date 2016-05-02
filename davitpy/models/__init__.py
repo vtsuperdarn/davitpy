@@ -21,35 +21,35 @@ import logging
 try:
     import tsyganenko
 except Exception, e:
-    logging.exception(__file__ + ' -> models.tsyganenko: ' + e)
+    logging.exception(__file__ + ' -> models.tsyganenko: ' + str(e))
 
 try:
     import igrf
 except Exception, e:
-    logging.exception(__file__ + ' -> models.igrf: ' + e)
+    logging.exception(__file__ + ' -> models.igrf: ' + str(e))
 
 try:
     import aacgm
 except Exception, e:
-    logging.exception(__file__ + ' -> models.aacgm: ' + e)
+    logging.exception(__file__ + ' -> models.aacgm: ' + str(e))
 
 try:
     import iri
 except Exception, e:
-    logging.exception(__file__ + ' -> models.iri: ' + e)
+    logging.exception(__file__ + ' -> models.iri: ' + str(e))
 
 try:
     import msis
 except Exception, e:
-    logging.exception(__file__ + ' -> models.msis: ' + e)
+    logging.exception(__file__ + ' -> models.msis: ' + str(e))
 
 try:
     import hwm
 except Exception, e:
-    logging.exception(__file__ + ' -> models.hwm: ' + e)
+    logging.exception(__file__ + ' -> models.hwm: ' + str(e))
 
 try:
     import raydarn
 except Exception, e:
-    logging.exception(__file__ + ' -> models.raydarn: ' + e)
+    logging.exception(__file__ + ' -> models.raydarn: ' + str(e))
 
