@@ -615,19 +615,19 @@ rcParams = rc_params()
 try:
     from davitpy import pydarn
 except Exception, e:
-    logging.exception('problem importing pydarn: ' + e)
+    logging.exception('problem importing pydarn: ' + str(e))
 
 try:
     from davitpy import gme
 except Exception, e:
-    logging.exception('problem importing gme: ' + e)
+    logging.exception('problem importing gme: ' + str(e))
 
 try:
     from davitpy import utils
 except Exception, e:
-    logging.exception('problem importing utils: ' + e)
+    logging.exception('problem importing utils: ' + str(e))
 
 try:
     from davitpy import models
 except Exception, e:
-    logging.exception('problem importing models: ' + e)
+    logging.exception('problem importing models: ' + str(e))
