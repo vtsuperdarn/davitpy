@@ -17,13 +17,11 @@ apt-get install -y libhdf5-serial-dev
 apt-get install -y libfreetype6-dev 
 apt-get install -y python-matplotlib
 pip install --upgrade matplotlib
-apt-get install -y python-mpltoolkits.basemap
 pip install --upgrade ipython
 apt-get install -y ipython-notebook
 pip install --upgrade jupyter
 pip install --upgrade numpy
 apt-get install -y python-scipy
-pip install --upgrade basemap
 pip install --upgrade h5py
 pip install --upgrade tornado
 pip install --upgrade paramiko
@@ -36,4 +34,17 @@ pip install --upgrade pandas
 pip install --upgrade scikit-image
 apt-get install -y libnetcdf-dev
 pip install --upgrade netcdf4
+pip install --upgrade pyproj
 
+#install basemap
+cd /tmp
+git clone https://github.com/matplotlib/basemap.git
+cd basemap/geos-3.3.3
+export GEOS_DIR=/usr/local
+./configure --prefix=$GEOS_DIR
+make
+make check
+make install
+ldconfig
+cd ..
+python setup.py install
