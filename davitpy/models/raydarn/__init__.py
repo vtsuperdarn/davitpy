@@ -15,4 +15,4 @@ import logging
 
 try: from rt import *
 except Exception, e:
-    logging.exception(__file__ + ' -> models.raydarn.rt: ' + e)
+    logging.exception(__file__ + ' -> models.raydarn.rt: ' + str(e))

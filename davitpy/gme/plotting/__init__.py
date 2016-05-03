@@ -17,4 +17,4 @@ import logging
 
 try: from gmeplot import *
 except Exception, e: 
-  logging.exception('problem importing gme.plotting.gmeplot: ' + e)
+  logging.exception('problem importing gme.plotting.gmeplot: ' + str(e))
