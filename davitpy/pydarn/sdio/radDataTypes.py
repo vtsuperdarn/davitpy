@@ -643,16 +643,16 @@ class radDataPtr():
         orig_beam = self.bmnum
         self.bmnum = None
 
-        if self.__ptr is None:
-            estr = 'Self.__ptr is None.  There is probably no data available '
+        if len(self.file_list) == 0 :
+            estr = 'File list is empty. There is no data available '
             logging.error('{:s}for your selected time.'.format(estr))
             self.bmnum = orig_beam
             return None
 
-        if self.__ptr.closed:
-            logging.error('Your file pointer is closed')
-            self.bmnum = orig_beam
-            return None
+        #if self.__ptr.closed:
+        #    logging.error('Your file pointer is closed')
+        #    self.bmnum = orig_beam
+        #    return None
 
         myScan = list()
 
@@ -676,7 +676,7 @@ class radDataPtr():
         # get the rest of the beams in the scan
         while True:
             # get current offset (in case we have to revert) and next beam
-            offset = pydarn.dmapio.getDmapOffset(self.__fd)
+            #offset = pydarn.dmapio.getDmapOffset(self.__fd)
             myBeam = self.readRec()
             if myBeam is None:
                 # no more data
@@ -693,7 +693,7 @@ class radDataPtr():
             if myBeam.prm.scan and myBeam.bmnum == firstBeamNum:
                 # if start of (next) scan revert offset to start of scan and
                 # break out of loop
-                pydarn.dmapio.setDmapOffset(self.__fd, offset)
+                #pydarn.dmapio.setDmapOffset(self.__fd, offset)
                 break
             else:
                 # append beam to current scan
