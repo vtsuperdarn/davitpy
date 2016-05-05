@@ -130,12 +130,17 @@ class radDataPtr():
         self.fBeam = None
         self.recordIndex = None
         self.scanStartIndex = None
-        self.__filename = fileName 
+        self.file_index = None
+        self.record_index = None
+        self.records = None
+        self.file_list = None
+        self.__filename = None 
         self.__filtered = filtered
         self.__nocache = noCache
         self.__src = src
         self.__fd = None
         self.__ptr =  None
+
 
         # check inputs
         estr = "fileType must be one of: rawacf, fitacf, fitex, lmfit, iqdat"
@@ -189,7 +194,6 @@ class radDataPtr():
         d = os.path.dirname(tmpdir)
         if not os.path.exists(d):
             os.makedirs(d)
-
         cached = False
 
         # FIRST, check if a specific filename was given
@@ -199,8 +203,8 @@ class radDataPtr():
                     estr = 'problem reading {:s} :file does '.format(fileName)
                     logging.error("{:s}not exist".format(estr))
                     return None
-                outname = tmpdir + \
-                          str(int(utils.datetimeToEpoch(dt.datetime.now())))
+                dirpath = os.path.dirname(fileName)
+                outname = tmpdir + fileName.replace(dirpath,'').replace('/','')
                 if(string.find(fileName,'.bz2') != -1):
                     outname = string.replace(fileName,'.bz2','')
                     logging.debug('bunzip2 -c '+fileName+' > '+outname+'\n')
@@ -478,58 +482,26 @@ class radDataPtr():
         # check if we have found files
         if len(filelist) != 0:
             # concatenate the files into a single file
-            if not cached:
-                logging.info('Concatenating all the files in to one')
-                # choose a temp file name with time span info for cacheing
-                if (self.channel is None):
-                    tmpName = '%s%s.%s.%s.%s.%s.%s' % \
-                              (tmpdir, self.sTime.strftime("%Y%m%d"),
-                               self.sTime.strftime("%H%M%S"),
-                               self.eTime.strftime("%Y%m%d"),
-                               self.eTime.strftime("%H%M%S"), radcode, fileType)
-                else:
-                    tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % \
-                              (tmpdir, self.sTime.strftime("%Y%m%d"),
-                               self.sTime.strftime("%H%M%S"),
-                               self.eTime.strftime("%Y%m%d"),
-                               self.eTime.strftime("%H%M%S"),
-                               radcode, self.channel, fileType)
-                logging.debug('cat ' + string.join(filelist) + ' > ' + tmpName)
-                os.system('cat ' + string.join(filelist) + ' > ' + tmpName)
-                for filename in filelist:
-                    logging.debug('rm ' + filename)
-                    os.system('rm ' + filename)
-            else:
-                tmpName = filelist[0]
-                self.fType = fileType
-                self.dType = 'dmap'
+            self.file_list = filelist
+            self.file_index = 0
+            self.fType = fileType
+            self.dType = 'dmap'
 
-            # filter(if desired) and open the file
-            if not filtered:
-                self.__filename=tmpName
-                self.open()
-            else:
-                if not fileType+'f' in tmpName:
-                    try:
-                        fTmpName = tmpName + 'f'
-                        command = 'fitexfilter ' + tmpName + ' > ' + fTmpName
-                        logging.debug("performing: {:s}".format(command))
-                        os.system(command)
-                    except Exception, e:
-                        estr = 'problem filtering file, using unfiltered'
-                        logging.warning(estr)
-                        fTmpName = tmpName
-                else:
-                    fTmpName = tmpName
-                try:
-                    self.__filename=fTmpName
-                    self.open()
-                except Exception, e:
-                    logging.exception('problem opening file')
-                    logging.exception(e)
-
-        if(self.__ptr != None):
-            if(self.dType == None): self.dType = 'dmap'
+            # filter (if desired) and set current file to first in the list
+            if filtered:
+                for i in range(len(self.file_list)):
+                    tmpName = self.file_list[i]
+                    if not fileType+'f' in tmpName:
+                        try:
+                            fTmpName = tmpName + 'f'
+                            command = 'fitexfilter ' + tmpName + ' > ' + fTmpName
+                            logging.debug("performing: {:s}".format(command))
+                            os.system(command)
+                            self.file_list[i] = fTmpName
+                        except Exception, e:
+                            estr = 'problem filtering file, using unfiltered'
+                            logging.warning(estr)
+            self.__filename = self.file_list[self.file_index]
         else:
             logging.error('Sorry, we could not find any data for you :(')
 
@@ -778,58 +750,75 @@ class radDataPtr():
         from davitpy.pydarn.sdio.radDataTypes import radDataPtr, beamData, \
             fitData, prmData, rawData, iqData, alpha
         from davitpy import pydarn
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
         import datetime as dt
+        import calendar
 
         # check input
-        if(self.__ptr == None):
+        if(len(self.file_list) == 0):
             logging.error('Your pointer does not point to any data')
             return None
-        if self.__ptr.closed:
-            logging.error('Your file pointer is closed')
-            return None
+
         myBeam = beamData()
-        # do this until we reach the requested start time
-        # and have a parameter match
-        while(1):
-            offset=pydarn.dmapio.getDmapOffset(self.__fd)
-            dfile = pydarn.dmapio.readDmapRec(self.__fd)
-            # check for valid data
-            if(dfile == None or
-               dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
-                # if we dont have valid data, clean up, get out
+
+        # First we have to read the whole file
+        #Read from the first file in the list of files
+        if (self.records is None):
+            print "here"
+            self.record_index = -1
+            self.file_index = 0
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+            
+        # If we've already read from a file but have reached the end of the
+        #records in that file, read from the next file in the list
+        elif (self.record_index == len(self.records) - 1):
+            # If we've reached the end of the last file, return None
+            if (self.file_index == len(self.file_list) - 1):
                 logging.info('reached end of data')
-                #self.close()
                 return None
-            # check that we're in the time window, and that we have a 
-            # match for the desired params
-            # if dfile['channel'] < 2: channel = 'a'  THIS CHECK IS BAD.
-            # 'channel' in a dmap file specifies STEREO operation or not.
-            #else: channel = alpha[dfile['channel']-1]
-            if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
-               dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and
-               (self.stid == None or self.stid == dfile['stid']) and
+            self.file_index += 1
+            self.record_index = -1
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+
+        dfile = self.records[self.record_index + 1]
+        temp = calendar.timegm(dt.datetime(dfile['time.yr'],dfile['time.mo'],
+                        dfile['time.dy'],dfile['time.hr'],dfile['time.mt'],
+                        dfile['time.sc']).timetuple())
+        dfile['time'] = temp + dfile['time.us'] / 1000000.0
+
+        if(dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
+            logging.info('reached end of data')
+            return None
+        else:
+            self.record_index += 1
+
+        if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
+           dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and
+           (self.stid == None or self.stid == dfile['stid']) and
                #(self.channel == None or self.channel == channel) and
                # ASR removed because of bad check as above.
-               (self.bmnum == None or self.bmnum == dfile['bmnum']) and
-               (self.cp == None or self.cp == dfile['cp'])):
+            (self.bmnum == None or self.bmnum == dfile['bmnum']) and
+           (self.cp == None or self.cp == dfile['cp'])):
                 # fill the beamdata object
-                myBeam.updateValsFromDict(dfile)
-                myBeam.recordDict = dfile
-                myBeam.fType = self.fType
-                myBeam.fPtr = self
-                myBeam.offset = offset
-                # file prm object
-                myBeam.prm.updateValsFromDict(dfile)
-                if myBeam.fType == "rawacf":
-                    myBeam.rawacf.updateValsFromDict(dfile)
-                if myBeam.fType == "iqdat":
-                    myBeam.iqdat.updateValsFromDict(dfile)
-                if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or
-                   myBeam.fType == 'lmfit'):
-                    myBeam.fit.updateValsFromDict(dfile)
-                if myBeam.fit.slist == None:
-                    myBeam.fit.slist = []
-                return myBeam
+            myBeam.updateValsFromDict(dfile)
+            myBeam.recordDict = dfile
+            myBeam.fType = self.fType
+            myBeam.fPtr = self
+            myBeam.offset = None
+            # file prm object
+            myBeam.prm.updateValsFromDict(dfile)
+            if myBeam.fType == "rawacf":
+                myBeam.rawacf.updateValsFromDict(dfile)
+            if myBeam.fType == "iqdat":
+                myBeam.iqdat.updateValsFromDict(dfile)
+            if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or
+               myBeam.fType == 'lmfit'):
+                myBeam.fit.updateValsFromDict(dfile)
+            if myBeam.fit.slist is None:
+                myBeam.fit.slist = []
+            return myBeam
 
     def close(self):
         """close associated dmap file."""
