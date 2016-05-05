@@ -35,24 +35,20 @@ import logging
 
 try: import base
 except Exception,e: 
-    logging.exception(__file__ + ' -> gme.base: ' + e)
+    logging.exception(__file__ + ' -> gme.base: ' + str(e))
 
 try: import ind
 except Exception,e: 
-    logging.exception(__file__ + ' -> gme.ind: ' + e)
+    logging.exception(__file__ + ' -> gme.ind: ' + str(e))
 
 try: import sat
 except Exception,e: 
-    logging.exception(__file__ + ' -> gme.sat: ' + e)
-
-#try: import ampere
-#except Exception,e: 
-#    print __file__+' -> gme.ampere: ', e
+    logging.exception(__file__ + ' -> gme.sat: ' + str(e))
 
 try: import plotting
 except Exception,e: 
-    logging.exception(__file__ + ' -> gme.plot: ' + e)
+    logging.exception(__file__ + ' -> gme.plot: ' + str(e))
 
 try: import isr
 except Exception, e:
-    logging.exception(__file__ + ' -> isr: ' + e)
+    logging.exception(__file__ + ' -> isr: ' + str(e))

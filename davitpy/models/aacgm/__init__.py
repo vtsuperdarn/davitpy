@@ -13,17 +13,17 @@ import logging
 try:
     from aacgm import mltFromEpoch
 except Exception, e:
-    logging.exception(__file__ + ' -> aacgm: ' + e)
+    logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
 try:
     from aacgm import mltFromYmdhms
 except Exception, e:
-    logging.exception(__file__ + ' -> aacgm: ' + e)
+    logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
 try:
     from aacgm import mltFromYrsec
 except Exception, e:
-    logging.exception(__file__ + ' -> aacgm: ' + e)
+    logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
 
 def aacgmConv(in_lat, in_lon, height, year, flg, coeff_prefix=None):

@@ -71,7 +71,7 @@ import logging
 try:
     from msisFort import *
 except Exception as e:
-    logging.exception(__file__ + ' -> models.msis: ' + e)
+    logging.exception(__file__ + ' -> models.msis: ' + str(e))
 
 
 def getF107Ap(mydatetime=None):
