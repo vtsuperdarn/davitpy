@@ -27,7 +27,6 @@ Classes
 --------
 radDataPtr
 radBaseData
-scanData
 beamData
 prmData
 fitData
@@ -617,7 +616,7 @@ class radDataPtr():
 
         Returns
         -------
-        myScan : :class:`~pydarn.sdio.radDataTypes.scanData` or None
+        myScan : :list or None
             A sequence of beams (``None`` when no more data are available)
 
         Notes
@@ -634,7 +633,6 @@ class radDataPtr():
         :func:`~pydarn.sdio.radDataRead.radDataOpen`.
         Also, if no channel was specified, it will only read channel 'a'.
         """
-        from davitpy.pydarn.sdio import scanData
         from davitpy import pydarn
 
         if None in [firstBeam, useEvery] and firstBeam is not useEvery:
@@ -656,7 +654,7 @@ class radDataPtr():
             self.bmnum = orig_beam
             return None
 
-        myScan = scanData()
+        myScan = list()
 
         # get first beam in the scan
         myBeam = self.readRec()
@@ -1083,26 +1081,6 @@ class radBaseData():
       #else:
         #myStr += key+' = '+str(var)+'\n'
     #return myStr
-    
-class scanData(list):
-    """a class to contain a radar scan.  Extends list.
-    Just a list of :class:`pydarn.sdio.radDataTypes.beamData` objects
-  
-    Attributes
-    ----------
-    None
-
-    Example
-    --------
-    ::
-
-    myBeam = pydarn.sdio.scanData()
-
-    Written by AJ 20121130
-    """
-
-    def __init__(self):
-        pass
   
 class beamData(radBaseData):
     """a class to contain the data from a radar beam sounding,
