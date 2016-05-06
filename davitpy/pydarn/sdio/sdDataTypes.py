@@ -431,7 +431,9 @@ class sdDataPtr():
 
         # check if we have found files
         if len(filelist) != 0:
-            tmpname = filelist[0]
+            self.file_list = filelist
+            self.file_index = 0
+            self.record_index = -1
             self.fType = fileType
             self.dType = 'dmap'
 
@@ -470,14 +472,14 @@ class sdDataPtr():
             dfile = myBeam.recordDict
             rectime = dt.datetime.utcfromtimestamp(dfile['time'])
             recordDict[rectime] = (self.record_index,self.file_index)
+            myBeam = self.readRec()
 
         # reset back to before building the index 
         self.recordIndex = recordDict
         self.offsetSeek(starting_record_offset, starting_file_offset)
-        self.scanStartIndex = scanStartDict
-        return recordDict, scanStartDict
+        return recordDict
 
-    def offsetSeek(self, offset, force=False):
+    def offsetSeek(self, record_index,file_index):
         """seek the record offset and file index. 
         """
         self.record_index = record_index

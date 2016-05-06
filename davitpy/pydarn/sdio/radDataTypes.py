@@ -215,7 +215,7 @@ class radDataPtr():
                 logging.info('performing: {:s}'.format(command))
                 os.system(command)
                 filelist.append(outname)
-                
+
             except Exception, e:
                 logging.exception(e)
                 logging.exception('problem reading file', fileName)
@@ -435,6 +435,7 @@ class radDataPtr():
             # concatenate the files into a single file
             self.file_list = filelist
             self.file_index = 0
+            self.record_index = -1
             self.fType = fileType
             self.dType = 'dmap'
 
