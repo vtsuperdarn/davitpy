@@ -193,7 +193,6 @@ class radDataPtr():
         d = os.path.dirname(tmpdir)
         if not os.path.exists(d):
             os.makedirs(d)
-        cached = False
 
         # FIRST, check if a specific filename was given
         if fileName != None:
@@ -222,56 +221,8 @@ class radDataPtr():
                 logging.exception('problem reading file', fileName)
                 return None
 
-        # Next, check for a cached file
-        if fileName == None and not noCache:
-            try:
-                if self.channel is None:
-                    gl = glob.glob("%s????????.??????.????????.??????.%s.%s" %
-                                   (tmpdir, radcode, fileType))
-                    for f in gl:
-                        try:
-                            ff = string.replace(f, tmpdir, '')
-                            # check time span of file
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[13:15]))
-                            t2 = dt.datetime(int(ff[16:20]), int(ff[20:22]),
-                                             int(ff[22:24]), int(ff[25:27]),
-                                             int(ff[27:29]), int(ff[29:31]))
-                            #check if file covers our timespan
-                            if t1 <= self.sTime and t2 >= self.eTime:
-                                cached = True
-                                filelist.append(f)
-                                logging.info('Found cached file: %s' % f)
-                                break
-                        except Exception,e:
-                            logging.exception(e)
-                else:
-                    gl = glob.glob("%s????????.??????.????????.??????.%s.%s.%s"
-                                   % (tmpdir, radcode, self.channel, fileType))
-                    for f in gl:
-                        try:
-                            ff = string.replace(f,tmpdir,'')
-                            # check time span of file
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[13:15]))
-                            t2 = dt.datetime(int(ff[16:20]), int(ff[20:22]),
-                                             int(ff[22:24]), int(ff[25:27]),
-                                             int(ff[27:29]), int(ff[29:31]))
-                            # check if file covers our timespan
-                            if t1 <= self.sTime and t2 >= self.eTime:
-                                cached = True
-                                filelist.append(f)
-                                logging.info('Found cached file: %s' % f)
-                                break
-                        except Exception, e:
-                            logging.exception(e)
-            except Exception,e:
-                logging.exception(e)
-
         # Next, LOOK LOCALLY FOR FILES
-        if not cached and (src == None or src == 'local') and fileName == None:
+        if (src == None or src == 'local') and fileName == None:
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:} files with".format(ftype)
@@ -449,7 +400,8 @@ class radDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port,
+                                                     check_cache=(not noCache))
 
                     # check to see if the files actually have data between
                     # stime and etime
