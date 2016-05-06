@@ -24,49 +24,41 @@ fetchUtils
 import logging
 
 try:
-    import fetchUtils
     from fetchUtils import *
 except Exception,e:
-    logging.critical('{:}\nproblem importing fetchUtils'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.fetchUtils: ', str(e))
 
 try:
-    import DataTypes
     from DataTypes import *
 except Exception,e:
-    logging.critical('{:}\nproblem importing DataTypes'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.DataTypes: ', str(e))
 
 try:
-    import radDataTypes
     from radDataTypes import *
 except Exception,e:
-    logging.critical('{:}\nproblem importing radDataTypes'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.radDataTypes: ', str(e))
 
 try:
-    import radDataRead
     from radDataRead import *
 except Exception,e:
-    logging.critical('{:}\nproblem importing radDataRead'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.radDataRead: ', str(e))
 
 try:
-    import sdDataTypes
     from sdDataTypes import *
 except Exception,e:
-    logging.critical('{:}\nproblem importing sdDataTypes'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.sdDataTypes: ', str(e))
 
 try:
-    import sdDataRead
     from sdDataRead import *
 except Exception,e: 
-    logging.critical('{:}\nproblem importing sdDataRead'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.sdDataRead: ', str(e))
 
 try:
-    import fitexfilter
     from fitexfilter import *
 except Exception,e:
-    logging.critical('{:}\nproblem importing fitexfilter'.format(e))
+    logging.exception(__file__+' -> pydarn.sdio.fitexfilter: ', str(e))
 
 try:
-    import dbUtils
     from dbUtils import *
-except Exception,e: 
-    logging.critical('{:}\nproblem importing dbUtils'.format(e))
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.dbUtils: ', str(e))

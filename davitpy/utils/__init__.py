@@ -31,27 +31,27 @@ import logging
 try:
     from plotUtils import *
 except Exception, e:
-    logging.exception(__file__ + ' -> utils.plotUtils: ' + e)
+    logging.exception(__file__ + ' -> utils.plotUtils: ' + str(e))
 
 try:
     from geoPack import *
 except Exception, e:
-    logging.exception(__file__ + ' -> utils.geoPack: ' + e)
+    logging.exception(__file__ + ' -> utils.geoPack: ' + str(e))
 
 try:
     from timeUtils import *
 except Exception, e:
-    logging.exception(__file__ + ' -> utils.timeUtils: ' + e)
+    logging.exception(__file__ + ' -> utils.timeUtils: ' + str(e))
 
 try:
     from calcSun import *
 except Exception, e:
-    logging.exception(__file__ + ' -> utils.calcSun: ' + e)
+    logging.exception(__file__ + ' -> utils.calcSun: ' + str(e))
 
 try:
     from coordUtils import *
 except Exception, e:
-    logging.exception(__file__ + ' -> utils.coordUtils: ' + e)
+    logging.exception(__file__ + ' -> utils.coordUtils: ' + str(e))
 
 
 # Define a few general-use constants

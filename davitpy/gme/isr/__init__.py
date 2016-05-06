@@ -17,4 +17,4 @@ import logging
 
 try: from mho import *
 except Exception, e:
-    logging.exception(__file__+' -> gme.isr.mho: ' + e)
+    logging.exception(__file__+' -> gme.isr.mho: ' + str(e))

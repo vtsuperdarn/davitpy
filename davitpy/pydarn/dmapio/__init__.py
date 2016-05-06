@@ -26,5 +26,5 @@ import logging
 try:
     from pydmap import *
 except Exception, e:
-    logging.exception(__file__+' -> dmapio: ' + e)
+    logging.exception(__file__+' -> dmapio: ' + str(e))
 
