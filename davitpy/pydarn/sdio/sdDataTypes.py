@@ -494,9 +494,6 @@ class sdDataPtr():
             my_str = "{:s}{:s} = {:s}\n".format(my_str, key, str(var))
         return my_str
 
-    def __del__(self):
-        self.close()
-
     def __iter__(self):
         return self
 
@@ -507,81 +504,48 @@ class sdDataPtr():
         else:
             return beam
 
-    def open(self):
-        """open the associated dmap filename."""
-        import os
-        self.__fd = os.open(self.__filename, os.O_RDONLY)
-        self.__ptr = os.fdopen(self.__fd)
-
     def createIndex(self):
         import datetime as dt
         import davitpy.pydarn.dmapio as dmapio
 
         recordDict = {}
-        starting_offset = self.offsetTell()
+        starting_record_offset, starting_file_offset = self.offsetTell()
 
         # rewind back to start of file
         self.rewind()
-        while 1:
-            # read the next record from the dmap file
-            offset = dmapio.getDmapOffset(self.__fd)
-            dfile = dmapio.readDmapRec(self.__fd)
-            if dfile is None:
-                # if we dont have valid data, clean up, get out
-                logging.info('reached end of data')
-                break
-            else:
-                try:
-                    dtime = dt.datetime(dfile['start.year'],
-                                        dfile['start.month'],
-                                        dfile['start.day'],
-                                        dfile['start.hour'],
-                                        dfile['start.minute'],
-                                        int(dfile['start.second']))
-                    dfile['time'] = (dtime -
-                                     dt.datetime(1970, 1, 1)).total_seconds()
-                except Exception,e:
-                    logging.warning(e)
-                    logging.warning('problem reading time from file')
-                    break
+        myBeam = self.readRec()
+        while(myBeam is not None):
 
-                dfile_utc = dt.datetime.utcfromtimestamp(dfile['time'])
-                if dfile_utc >= self.sTime and dfile_utc <= self.eTime: 
-                    rectime = dt.datetime.utcfromtimestamp(dfile['time'])
-                    recordDict[rectime] = offset
+            dfile = myBeam.recordDict
+            rectime = dt.datetime.utcfromtimestamp(dfile['time'])
+            recordDict[rectime] = (self.record_index,self.file_index)
 
         # reset back to before building the index 
         self.recordIndex = recordDict
-        self.offsetSeek(starting_offset)
-        return recordDict
+        self.offsetSeek(starting_record_offset, starting_file_offset)
+        self.scanStartIndex = scanStartDict
+        return recordDict, scanStartDict
 
     def offsetSeek(self, offset, force=False):
-        """jump to dmap record at supplied byte offset.
-           Require offset to be in record index list unless forced. 
+        """seek the record offset and file index. 
         """
-        from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
-
-        if force:
-            return dmapio.setDmapOffset(self.__fd, offset)
-        else:
-            if self.recordIndex is None:        
-                self.createIndex()
-
-            if offset in self.recordIndex.values():
-                return setDmapOffset(self.__fd, offset)
-            else:
-                return getDmapOffset(self.__fd)
+        self.record_index = record_index
+        self.file_index = file_index
+        if (file_index is not self.file_index):
+            self.records = None
+        self.__filename = self.file_list[self.file_index]
 
     def offsetTell(self):
-        """jump to dmap record at supplied byte offset. 
+        """tell the record offset and file index. 
         """
-        from davitpy.pydarn.dmapio import getDmapOffset
-        return getDmapOffset(self.__fd)
+        return self.record_index, self.file_index
   
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset 
-        return setDmapOffset(self.__fd, 0)
+        self.__filename = self.file_list[0]
+        self.file_index = 0
+        self.record_index = -1
+        self.records = None
   
     def readRec(self):
         """A function to read a single record of radar data from a radDataPtr
@@ -593,23 +557,39 @@ class sdDataPtr():
             An object filled with the specified type of data.  Will return None
             when there is no more data in the pointer to read.
         """
-        import davitpy.pydarn.dmapio as dmapio
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
         import datetime as dt
+        import calendar
 
         # check input
-        if self.__ptr == None:
-            logging.error('the pointer does not point to any data')
+        if(len(self.file_list) == 0):
+            logging.error('Your pointer does not point to any data')
             return None
 
-        if self.__ptr.closed:
-            logging.error('the file pointer is closed')
-            return None
-  
+        # First we have to read the whole file
+        #Read from the first file in the list of files
+        if (self.records is None):
+            self.record_index = -1
+            self.file_index = 0
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+            
+        # If we've already read from a file but have reached the end of the
+        #records in that file, read from the next file in the list
+        elif (self.record_index == len(self.records) - 1):
+            # If we've reached the end of the last file, return None
+            if (self.file_index == len(self.file_list) - 1):
+                logging.info('reached end of data')
+                return None
+            self.file_index += 1
+            self.record_index = -1
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+
         # do this until we reach the requested start time
         # and have a parameter match
         while 1:
-            offset = dmapio.getDmapOffset(self.__fd)
-            dfile = dmapio.readDmapRec(self.__fd)
+            dfile = self.records[self.record_index + 1]
             # check for valid data
             try:
                 dtime = dt.datetime(dfile['start.year'], dfile['start.month'],
@@ -646,17 +626,12 @@ class sdDataPtr():
                 mydata.recordDict = dfile
                 mydata.fType = self.fType
                 mydata.fPtr = self
-                mydata.offset = offset
-  
+                mydata.offset = None
+                self.record_index += 1
                 return mydata
 
-    def close(self):
-        """close associated dmap file."""
-        import os
+            self.record_index += 1
 
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd = None
 
     def __validate_fetched(self, filelist, stime, etime):
         """ This function checks if the files in filelist contain data
@@ -683,45 +658,35 @@ class sdDataPtr():
 
         import datetime as dt
         import numpy as np
-        from davitpy.pydarn.dmapio import readDmapRec
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
+        import calendar
 
         valid = []
 
         for f in filelist:
-            logging.info('Checking file: {:s}'.format(f))
+            logging.debug('Checking file: ' + f)
             stimes = []
             etimes = []
 
-            # Open the file and create a file pointer
-            self.__filename = f
-            self.open()
+            records = parse_dmap_format_from_file(f)
 
             # Iterate through the file and grab the start time for beam
             # integration and calculate the end time from intt.sc and intt.us
-            while 1:
-                # read the next record from the dmap file
-                dfile = readDmapRec(self.__fd)
-                if(dfile is None):
-                    break
-                else:
-                    temp = dt.datetime(int(dfile['start.year']),
-                                       int(dfile['start.month']),
-                                       int(dfile['start.day']),
-                                       int(dfile['start.hour']),
-                                       int(dfile['start.minute']),
-                                       int(dfile['start.second']))
-                    stimes.append(temp)
-                    temp = dt.datetime(int(dfile['end.year']),
-                                       int(dfile['end.month']),
-                                       int(dfile['end.day']),
-                                       int(dfile['end.hour']),
-                                       int(dfile['end.minute']),
-                                       int(dfile['end.second']))
-                    etimes.append(temp)
-
-            # Close the file and clean up
-            self.close()
-            self.__ptr = None
+            for dfile in records:
+                temp = dt.datetime(int(dfile['start.year']),
+                                   int(dfile['start.month']),
+                                   int(dfile['start.day']),
+                                   int(dfile['start.hour']),
+                                   int(dfile['start.minute']),
+                                   int(dfile['start.second']))
+                stimes.append(temp)
+                temp = dt.datetime(int(dfile['end.year']),
+                                   int(dfile['end.month']),
+                                   int(dfile['end.day']),
+                                   int(dfile['end.hour']),
+                                   int(dfile['end.minute']),
+                                   int(dfile['end.second']))
+                etimes.append(temp)
 
             inds = np.where((np.array(stimes) >= stime) &
                             (np.array(stimes) <= etime))
