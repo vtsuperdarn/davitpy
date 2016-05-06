@@ -487,8 +487,7 @@ class radDataPtr():
         self.rewind()
         myBeam = self.readRec()
         while(myBeam is not None):
-            print myBeam.time,self.record_index,self.file_index
-            # read the next record from the dmap file
+
             dfile = myBeam.recordDict
             rectime = dt.datetime.utcfromtimestamp(dfile['time'])
             recordDict[rectime] = (self.record_index,self.file_index)
@@ -768,7 +767,6 @@ class radDataPtr():
         # This method will need some modification for it to work with
         # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
         # specific code will need to be modified (readDmapRec).
-        import os
         import datetime as dt
         import numpy as np
         from davitpy.pydarn.dmapio import parse_dmap_format_from_file
