@@ -697,56 +697,57 @@ class radDataPtr():
             self.file_index = 0
             self.__filename = self.file_list[self.file_index]
             self.records = parse_dmap_format_from_file(self.__filename)
-            
-        # If we've already read from a file but have reached the end of the
-        #records in that file, read from the next file in the list
-        elif (self.record_index == len(self.records) - 1):
-            # If we've reached the end of the last file, return None
-            if (self.file_index == len(self.file_list) - 1):
+
+        while (1):            
+            # If we've already read from a file but have reached the end of the
+            #records in that file, read from the next file in the list
+            if (self.record_index == len(self.records) - 1):
+                # If we've reached the end of the last file, return None
+                if (self.file_index == len(self.file_list) - 1):
+                    logging.info('reached end of data')
+                    return None
+                self.file_index += 1
+                self.record_index = -1
+                self.__filename = self.file_list[self.file_index]
+                self.records = parse_dmap_format_from_file(self.__filename)
+
+            dfile = self.records[self.record_index + 1]
+            temp = calendar.timegm(dt.datetime(dfile['time.yr'],dfile['time.mo'],
+                            dfile['time.dy'],dfile['time.hr'],dfile['time.mt'],
+                            dfile['time.sc']).timetuple())
+            dfile['time'] = temp + dfile['time.us'] / 1000000.0
+
+            if(dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
                 logging.info('reached end of data')
                 return None
-            self.file_index += 1
-            self.record_index = -1
-            self.__filename = self.file_list[self.file_index]
-            self.records = parse_dmap_format_from_file(self.__filename)
+            else:
+                self.record_index += 1
 
-        dfile = self.records[self.record_index + 1]
-        temp = calendar.timegm(dt.datetime(dfile['time.yr'],dfile['time.mo'],
-                        dfile['time.dy'],dfile['time.hr'],dfile['time.mt'],
-                        dfile['time.sc']).timetuple())
-        dfile['time'] = temp + dfile['time.us'] / 1000000.0
-
-        if(dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
-            logging.info('reached end of data')
-            return None
-        else:
-            self.record_index += 1
-
-        if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
-           dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and
-           (self.stid == None or self.stid == dfile['stid']) and
-               #(self.channel == None or self.channel == channel) and
-               # ASR removed because of bad check as above.
-            (self.bmnum == None or self.bmnum == dfile['bmnum']) and
-           (self.cp == None or self.cp == dfile['cp'])):
-                # fill the beamdata object
-            myBeam.updateValsFromDict(dfile)
-            myBeam.recordDict = dfile
-            myBeam.fType = self.fType
-            myBeam.fPtr = self
-            myBeam.offset = None
-            # file prm object
-            myBeam.prm.updateValsFromDict(dfile)
-            if myBeam.fType == "rawacf":
-                myBeam.rawacf.updateValsFromDict(dfile)
-            if myBeam.fType == "iqdat":
-                myBeam.iqdat.updateValsFromDict(dfile)
-            if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or
-               myBeam.fType == 'lmfit'):
-                myBeam.fit.updateValsFromDict(dfile)
-            if myBeam.fit.slist is None:
-                myBeam.fit.slist = []
-            return myBeam
+            if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
+               dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and
+               (self.stid == None or self.stid == dfile['stid']) and
+                   #(self.channel == None or self.channel == channel) and
+                   # ASR removed because of bad check as above.
+                (self.bmnum == None or self.bmnum == dfile['bmnum']) and
+               (self.cp == None or self.cp == dfile['cp'])):
+                    # fill the beamdata object
+                myBeam.updateValsFromDict(dfile)
+                myBeam.recordDict = dfile
+                myBeam.fType = self.fType
+                myBeam.fPtr = self
+                myBeam.offset = None
+                # file prm object
+                myBeam.prm.updateValsFromDict(dfile)
+                if myBeam.fType == "rawacf":
+                    myBeam.rawacf.updateValsFromDict(dfile)
+                if myBeam.fType == "iqdat":
+                    myBeam.iqdat.updateValsFromDict(dfile)
+                if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or
+                   myBeam.fType == 'lmfit'):
+                    myBeam.fit.updateValsFromDict(dfile)
+                if myBeam.fit.slist is None:
+                    myBeam.fit.slist = []
+                return myBeam
 
     def __validate_fetched(self,filelist,stime,etime):
         """ This function checks if the files in filelist contain data
