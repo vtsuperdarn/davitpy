@@ -1029,11 +1029,19 @@ if __name__=="__main__":
     channel = None
     stime = dt.datetime(2012, 7, 10)
     etime = dt.datetime(2012, 7, 11, 2)
-    expected_filename = "20120710.000000.20120711.020000.north.mapex"
-    expected_path = os.path.join(tmpdir, expected_filename)
-    expected_filesize = 32975826
-    expected_md5sum = "1b0e78cb339e875cc17f82e240ef360f"
-    print "Expected File:", expected_path
+    expected_filelist = ["20120710.north.mapex",
+                         "20120711.north.mapex"]
+    expected_path = list()
+    for f in expected_filelist:
+        expected_path.append(os.path.join(tmpdir, f))
+
+    expected_filesize = [15354490,17654420]
+    expected_md5sum = ["5cfd70290550b958f3a8bedc2e330cd6",
+                       "2a996504e594f15218ef0b2cfdd37ca5"]
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
 
     print "\nRunning sftp grab example for sdDataPtr."
     print "Environment variables used:"
@@ -1050,21 +1058,20 @@ if __name__=="__main__":
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
     src = 'sftp'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
     vtptr = sdDataPtr(stime, hemi, eTime=etime, fileType='mapex', src=src,
                       noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records from the remote sftp server:"
     try:
         ptr = vtptr
@@ -1081,14 +1088,13 @@ if __name__=="__main__":
         print mydata.recordDict['time']
         print "What is the current offset:"
         print ptr.offsetTell()
-        print "Try to seek to offset 4, shouldn't work:"
-        print ptr.offsetSeek(4)
+        print "Try to seek to record offset 20 and file index 1:"
+        print ptr.offsetSeek(20,1)
         print "What is the current offset:"
         print ptr.offsetTell()
     except:
         print "record read failed for some reason"
 
-    ptr.close()
     del vtptr
 
     print "\nRunning local grab example for sdDataPtr."
@@ -1101,22 +1107,27 @@ if __name__=="__main__":
         davitpy.rcParams['DAVIT_SD_LOCAL_TIMEINC']
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
+
     src = 'local'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
+
     localptr = sdDataPtr(stime, hemi, eTime=etime, src=src, fileType='mapex',
                          noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records:"
     try:
         ptr = localptr
@@ -1131,8 +1142,13 @@ if __name__=="__main__":
         print "Should now be back at beginning:"
         mydata = ptr.readRec()
         print mydata.recordDict['time']
+        print "What is the current offset:"
+        print ptr.offsetTell()
+        print "Try to seek to record offset 20 and file index 1:"
+        print ptr.offsetSeek(20,1)
+        print "What is the current offset:"
+        print ptr.offsetTell()
     except:
         print "record read failed for some reason"
-    ptr.close()
 
     del localptr
