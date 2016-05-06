@@ -158,7 +158,11 @@ class sdDataPtr():
         self.fType = fileType
         self.dType = None
         self.recordIndex = None
-        self.__filename = fileName 
+        self.file_index = None
+        self.record_index = None
+        self.records = None
+        self.file_list = None
+        self.__filename = None 
         self.__nocache  = noCache
         self.__src = src
         self.__fd = None
@@ -206,18 +210,15 @@ class sdDataPtr():
         if not os.path.exists(d):
             os.makedirs(d)
 
-        cached = False
-
         # First, check if a specific filename was given
         if fileName != None:
             try:
                 if not os.path.isfile(fileName):
-                    estr = 'problem reading [{:}]: file does '.format(fileName)
-                    logging.error('{:s}not exist'.format(estr))
+                    estr = 'problem reading {:s} :file does '.format(fileName)
+                    logging.error("{:s}not exist".format(estr))
                     return None
-
-                epoch = int(datetimeToEpoch(dt.datetime.now()))
-                outname = "{:s}{:d}".format(tmpdir, epoch)
+                dirpath = os.path.dirname(fileName)
+                outname = tmpdir + fileName.replace(dirpath,'').replace('/','')
                 if(string.find(fileName, '.bz2') != -1):
                     outname = string.replace(fileName, '.bz2', '')
                     command = 'bunzip2 -c {:s} > {:s}'.format(fileName, outname)
@@ -236,39 +237,13 @@ class sdDataPtr():
                 logging.error('problem reading file [{:s}]'.format(fileName))
                 return None
 
-        # Next, check for a cached file
-        if fileName == None and not noCache:
-            try:
-                if not cached:
-                    command = "{:s}????????.??????.????????.????".format(tmpdir)
-                    command = "{:s}??.{:s}.{:s}".format(command, hemi, fileType)
-                    for f in glob.glob(command):
-                        try:
-                            ff = string.replace(f, tmpdir, '')
-                            # check time span of file
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[13:15]))
-                            t2 = dt.datetime(int(ff[16:20]), int(ff[20:22]),
-                                             int(ff[22:24]), int(ff[25:27]),
-                                             int(ff[27:29]), int(ff[29:31]))
-                            # check if file covers our timespan
-                            if t1 <= self.sTime and t2 >= self.eTime:
-                                cached = True
-                                filelist.append(f)
-                                logging.info('Found cached file {:s}'.format(f))
-                                break
-                        except Exception, e:
-                            logging.warning(e)
-            except Exception, e:
-                logging.warning(e)
-  
         # Next, LOOK LOCALLY FOR FILES
-        if not cached and (src == None or src == 'local') and fileName == None:
+        if (src == None or src == 'local') and fileName == None:
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:s} files ".format(ftype)
                     estr = "{:s}with hemi: {:s}".format(estr, hemi)
+
                     logging.info(estr)
 
                     # If the following aren't already, in the near future
@@ -422,7 +397,8 @@ class sdDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port,
+                                                     check_cache=(not noCache))
 
                     # check to see if the files actually have data between
                     # stime and etime
@@ -455,36 +431,11 @@ class sdDataPtr():
 
         # check if we have found files
         if len(filelist) != 0:
-            # concatenate the files into a single file
-            if not cached:
-                logging.info('Concatenating all the files in to one')
-                # choose a temp file name with time span info for cacheing
-                tmpname = '{:s}{:s}.{:s}'.format(tmpdir,
-                                                 self.sTime.strftime("%Y%m%d"),
-                                                 self.sTime.strftime("%H%M%S"))
-                tmpname = '{:s}.{:s}.{:s}'.format(tmpname,
-                                                  self.eTime.strftime("%Y%m%d"),
-                                                  self.eTime.strftime("%H%M%S"))
-                tmpname = '{:s}.{:s}.{:s}'.format(tmpname, hemi, fileType)
-                command = "cat {:s} > {:s}".format(string.join(filelist),
-                                                   tmpname)
-                logging.info("performing: {:s}".format(command))
-                os.system(command)
-                for filename in filelist:
-                    command = "rm {:s}".format(filename)
-                    logging.info("performing: {:s}".format(command))
-                    os.system(command)
-            else:
-                tmpname = filelist[0]
-                self.fType = fileType
-                self.dType = 'dmap'
+            tmpname = filelist[0]
+            self.fType = fileType
+            self.dType = 'dmap'
 
-            self.__filename = tmpname
-            self.open()
-
-        if self.__ptr != None:
-            if self.dType == None:
-                self.dType = 'dmap'
+            self.__filename = self.file_list[self.file_index]
         else:
             logging.info('Sorry, we could not find any data for you :(')
 
