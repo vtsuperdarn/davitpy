@@ -197,25 +197,25 @@ class radDataPtr():
         # FIRST, check if a specific filename was given
         if fileName != None:
             try:
-                if(not os.path.isfile(fileName)):
+                if not os.path.isfile(fileName):
                     estr = 'problem reading {:s} :file does '.format(fileName)
                     logging.error("{:s}not exist".format(estr))
                     return None
                 dirpath = os.path.dirname(fileName)
                 outname = tmpdir + fileName.replace(dirpath,'').replace('/','')
-                if(string.find(fileName,'.bz2') != -1):
-                    outname = string.replace(fileName,'.bz2','')
-                    logging.debug('bunzip2 -c '+fileName+' > '+outname+'\n')
-                    os.system('bunzip2 -c '+fileName+' > '+outname)
+                if(string.find(fileName, '.bz2') != -1):
+                    outname = string.replace(fileName, '.bz2', '')
+                    command = 'bunzip2 -c {:s} > {:s}'.format(fileName, outname)
                 elif(string.find(fileName,'.gz') != -1):
-                    outname = string.replace(fileName,'.gz','')
-                    logging.debug('gunzip -c '+fileName+' > '+outname+'\n')
-                    os.system('gunzip -c '+fileName+' > '+outname)
+                    outname = string.replace(fileName, '.gz', '')
+                    command = 'gunzip -c {:s} > {:s}'.format(fileName, outname)
                 else:
-                    os.system('cp '+fileName+' '+outname)
-                    logging.debug('cp '+fileName+' '+outname)
+                    command = 'cp {:s} {:s}'.format(fileName, outname)
+
+                logging.info('performing: {:s}'.format(command))
+                os.system(command)
                 filelist.append(outname)
-                self.dType = 'dmap'
+                
             except Exception, e:
                 logging.exception(e)
                 logging.exception('problem reading file', fileName)
