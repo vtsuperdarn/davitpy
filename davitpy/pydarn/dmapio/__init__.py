@@ -24,7 +24,7 @@ Module for interfacing with dmapio c code
 import logging
 
 try:
-    from dmapio import *
+    from pydmap import *
 except Exception, e:
     logging.exception(__file__+' -> dmapio: ' + str(e))
 

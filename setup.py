@@ -72,8 +72,8 @@ tsyg = Extension('tsygFort',
 #############################################################################
 # C extensions
 #############################################################################
-dmap = Extension("dmapio",
-                 sources=glob.glob('davitpy/pydarn/dmapio/rst/src/*.c'),)
+#dmap = Extension("dmapio",
+#                 sources=glob.glob('davitpy/pydarn/dmapio/rst/src/*.c'),)
 aacgm = Extension("aacgm",
                   sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
@@ -131,7 +131,7 @@ setup(name='davitpy',
       packages=find_packages(),
       long_description=read('README.md'),
       zip_safe=False,
-      ext_modules=[dmap,aacgm,tsyg,hwm,checkhwm,msis,checkmsis,igrf,iri],
+      ext_modules=[aacgm, tsyg, hwm, msis, igrf, iri],
       package_data={
         'davitpy.models.iri': ['*.dat', '*.asc'],
         'davitpy.models.hwm': ['*.dat']

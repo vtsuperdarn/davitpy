@@ -27,7 +27,6 @@ Classes
 --------
 radDataPtr
 radBaseData
-scanData
 beamData
 prmData
 fitData
@@ -130,12 +129,17 @@ class radDataPtr():
         self.fBeam = None
         self.recordIndex = None
         self.scanStartIndex = None
-        self.__filename = fileName 
+        self.file_index = None
+        self.record_index = None
+        self.records = None
+        self.file_list = None
+        self.__filename = None 
         self.__filtered = filtered
         self.__nocache = noCache
         self.__src = src
         self.__fd = None
         self.__ptr =  None
+
 
         # check inputs
         estr = "fileType must be one of: rawacf, fitacf, fitex, lmfit, iqdat"
@@ -190,85 +194,35 @@ class radDataPtr():
         if not os.path.exists(d):
             os.makedirs(d)
 
-        cached = False
-
         # FIRST, check if a specific filename was given
         if fileName != None:
             try:
-                if(not os.path.isfile(fileName)):
+                if not os.path.isfile(fileName):
                     estr = 'problem reading {:s} :file does '.format(fileName)
                     logging.error("{:s}not exist".format(estr))
                     return None
-                outname = tmpdir + \
-                          str(int(utils.datetimeToEpoch(dt.datetime.now())))
-                if(string.find(fileName,'.bz2') != -1):
-                    outname = string.replace(fileName,'.bz2','')
-                    logging.debug('bunzip2 -c '+fileName+' > '+outname+'\n')
-                    os.system('bunzip2 -c '+fileName+' > '+outname)
+                dirpath = os.path.dirname(fileName)
+                outname = tmpdir + fileName.replace(dirpath,'').replace('/','')
+                if(string.find(fileName, '.bz2') != -1):
+                    outname = string.replace(fileName, '.bz2', '')
+                    command = 'bunzip2 -c {:s} > {:s}'.format(fileName, outname)
                 elif(string.find(fileName,'.gz') != -1):
-                    outname = string.replace(fileName,'.gz','')
-                    logging.debug('gunzip -c '+fileName+' > '+outname+'\n')
-                    os.system('gunzip -c '+fileName+' > '+outname)
+                    outname = string.replace(fileName, '.gz', '')
+                    command = 'gunzip -c {:s} > {:s}'.format(fileName, outname)
                 else:
-                    os.system('cp '+fileName+' '+outname)
-                    logging.debug('cp '+fileName+' '+outname)
+                    command = 'cp {:s} {:s}'.format(fileName, outname)
+
+                logging.info('performing: {:s}'.format(command))
+                os.system(command)
                 filelist.append(outname)
-                self.dType = 'dmap'
+
             except Exception, e:
                 logging.exception(e)
                 logging.exception('problem reading file', fileName)
                 return None
 
-        # Next, check for a cached file
-        if fileName == None and not noCache:
-            try:
-                if self.channel is None:
-                    gl = glob.glob("%s????????.??????.????????.??????.%s.%s" %
-                                   (tmpdir, radcode, fileType))
-                    for f in gl:
-                        try:
-                            ff = string.replace(f, tmpdir, '')
-                            # check time span of file
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[13:15]))
-                            t2 = dt.datetime(int(ff[16:20]), int(ff[20:22]),
-                                             int(ff[22:24]), int(ff[25:27]),
-                                             int(ff[27:29]), int(ff[29:31]))
-                            #check if file covers our timespan
-                            if t1 <= self.sTime and t2 >= self.eTime:
-                                cached = True
-                                filelist.append(f)
-                                logging.info('Found cached file: %s' % f)
-                                break
-                        except Exception,e:
-                            logging.exception(e)
-                else:
-                    gl = glob.glob("%s????????.??????.????????.??????.%s.%s.%s"
-                                   % (tmpdir, radcode, self.channel, fileType))
-                    for f in gl:
-                        try:
-                            ff = string.replace(f,tmpdir,'')
-                            # check time span of file
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[13:15]))
-                            t2 = dt.datetime(int(ff[16:20]), int(ff[20:22]),
-                                             int(ff[22:24]), int(ff[25:27]),
-                                             int(ff[27:29]), int(ff[29:31]))
-                            # check if file covers our timespan
-                            if t1 <= self.sTime and t2 >= self.eTime:
-                                cached = True
-                                filelist.append(f)
-                                logging.info('Found cached file: %s' % f)
-                                break
-                        except Exception, e:
-                            logging.exception(e)
-            except Exception,e:
-                logging.exception(e)
-
         # Next, LOOK LOCALLY FOR FILES
-        if not cached and (src == None or src == 'local') and fileName == None:
+        if (src == None or src == 'local') and fileName == None:
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:} files with".format(ftype)
@@ -446,7 +400,8 @@ class radDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port,
+                                                     check_cache=(not noCache))
 
                     # check to see if the files actually have data between
                     # stime and etime
@@ -478,58 +433,27 @@ class radDataPtr():
         # check if we have found files
         if len(filelist) != 0:
             # concatenate the files into a single file
-            if not cached:
-                logging.info('Concatenating all the files in to one')
-                # choose a temp file name with time span info for cacheing
-                if (self.channel is None):
-                    tmpName = '%s%s.%s.%s.%s.%s.%s' % \
-                              (tmpdir, self.sTime.strftime("%Y%m%d"),
-                               self.sTime.strftime("%H%M%S"),
-                               self.eTime.strftime("%Y%m%d"),
-                               self.eTime.strftime("%H%M%S"), radcode, fileType)
-                else:
-                    tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % \
-                              (tmpdir, self.sTime.strftime("%Y%m%d"),
-                               self.sTime.strftime("%H%M%S"),
-                               self.eTime.strftime("%Y%m%d"),
-                               self.eTime.strftime("%H%M%S"),
-                               radcode, self.channel, fileType)
-                logging.debug('cat ' + string.join(filelist) + ' > ' + tmpName)
-                os.system('cat ' + string.join(filelist) + ' > ' + tmpName)
-                for filename in filelist:
-                    logging.debug('rm ' + filename)
-                    os.system('rm ' + filename)
-            else:
-                tmpName = filelist[0]
-                self.fType = fileType
-                self.dType = 'dmap'
+            self.file_list = filelist
+            self.file_index = 0
+            self.record_index = -1
+            self.fType = fileType
+            self.dType = 'dmap'
 
-            # filter(if desired) and open the file
-            if not filtered:
-                self.__filename=tmpName
-                self.open()
-            else:
-                if not fileType+'f' in tmpName:
-                    try:
-                        fTmpName = tmpName + 'f'
-                        command = 'fitexfilter ' + tmpName + ' > ' + fTmpName
-                        logging.debug("performing: {:s}".format(command))
-                        os.system(command)
-                    except Exception, e:
-                        estr = 'problem filtering file, using unfiltered'
-                        logging.warning(estr)
-                        fTmpName = tmpName
-                else:
-                    fTmpName = tmpName
-                try:
-                    self.__filename=fTmpName
-                    self.open()
-                except Exception, e:
-                    logging.exception('problem opening file')
-                    logging.exception(e)
-
-        if(self.__ptr != None):
-            if(self.dType == None): self.dType = 'dmap'
+            # filter (if desired) and set current file to first in the list
+            if filtered:
+                for i in range(len(self.file_list)):
+                    tmpName = self.file_list[i]
+                    if not fileType+'f' in tmpName:
+                        try:
+                            fTmpName = tmpName + 'f'
+                            command = 'fitexfilter ' + tmpName + ' > ' + fTmpName
+                            logging.debug("performing: {:s}".format(command))
+                            os.system(command)
+                            self.file_list[i] = fTmpName
+                        except Exception, e:
+                            estr = 'problem filtering file, using unfiltered'
+                            logging.warning(estr)
+            self.__filename = self.file_list[self.file_index]
         else:
             logging.error('Sorry, we could not find any data for you :(')
 
@@ -541,10 +465,7 @@ class radDataPtr():
                 myStr += '%s = %s \n' % (key,'object')
             else:
                 myStr += '%s = %s \n' % (key,var)
-        return myStr
-
-    def __del__(self):
-        self.close() 
+        return myStr 
 
     def __iter__(self):
         return self
@@ -556,68 +477,50 @@ class radDataPtr():
         else:
             return beam
 
-    def open(self):
-        """open the associated dmap filename."""
-        import os
-        self.__fd = os.open(self.__filename,os.O_RDONLY)
-        self.__ptr = os.fdopen(self.__fd)
-
     def createIndex(self):
         import datetime as dt
-        from davitpy.pydarn.dmapio import getDmapOffset, readDmapRec
-        from davitpy.pydarn.dmapio import setDmapOffset
 
         recordDict = {}
         scanStartDict = {}
-        starting_offset = self.offsetTell()
+        starting_record_offset, starting_file_offset = self.offsetTell()
 
         # rewind back to start of file
         self.rewind()
-        while(1):
-            # read the next record from the dmap file
-            offset= getDmapOffset(self.__fd)
-            dfile = readDmapRec(self.__fd)
-            if(dfile is None):
-                #if we dont have valid data, clean up, get out
-                logging.info('reached end of data')
-                break
-            else:
-                if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
-                   dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
-                    rectime = dt.datetime.utcfromtimestamp(dfile['time'])
-                    recordDict[rectime] = offset
-                    if dfile['scan'] == 1: scanStartDict[rectime] = offset
+        myBeam = self.readRec()
+        while(myBeam is not None):
+
+            dfile = myBeam.recordDict
+            rectime = dt.datetime.utcfromtimestamp(dfile['time'])
+            recordDict[rectime] = (self.record_index,self.file_index)
+            if dfile['scan'] == 1:
+                scanStartDict[rectime] = (self.record_index,self.file_index)
+            myBeam = self.readRec()
         # reset back to before building the index 
         self.recordIndex = recordDict
-        self.offsetSeek(starting_offset)
+        self.offsetSeek(starting_record_offset, starting_file_offset)
         self.scanStartIndex = scanStartDict
         return recordDict, scanStartDict
 
-    def offsetSeek(self,offset,force=False):
-        """jump to dmap record at supplied byte offset.
-        Require offset to be in record index list unless forced. 
+    def offsetSeek(self,record_index,file_index):
+        """seek the record offset and file index. 
         """
-        from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
-        if force:
-            return setDmapOffset(self.__fd, offset)
-        else:
-            if self.recordIndex is None:        
-                self.createIndex()
-            if offset in self.recordIndex.values():
-                return setDmapOffset(self.__fd,offset)
-            else:
-                return getDmapOffset(self.__fd)
+        self.record_index = record_index
+        self.file_index = file_index
+        if (file_index is not self.file_index):
+            self.records = None
+        self.__filename = self.file_list[self.file_index]
 
     def offsetTell(self):
-        """jump to dmap record at supplied byte offset. 
+        """tell the record offset and file index. 
         """
-        from davitpy.pydarn.dmapio import getDmapOffset
-        return getDmapOffset(self.__fd)
+        return self.record_index, self.file_index
 
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset 
-        return setDmapOffset(self.__fd,0)
+        self.__filename = self.file_list[0]
+        self.file_index = 0
+        self.record_index = -1
+        self.records = None
 
     def readScan(self, firstBeam=None, useEvery=None, warnNonStandard=True,
                  showBeams=False):
@@ -645,7 +548,7 @@ class radDataPtr():
 
         Returns
         -------
-        myScan : :class:`~pydarn.sdio.radDataTypes.scanData` or None
+        myScan : :list or None
             A sequence of beams (``None`` when no more data are available)
 
         Notes
@@ -662,7 +565,6 @@ class radDataPtr():
         :func:`~pydarn.sdio.radDataRead.radDataOpen`.
         Also, if no channel was specified, it will only read channel 'a'.
         """
-        from davitpy.pydarn.sdio import scanData
         from davitpy import pydarn
 
         if None in [firstBeam, useEvery] and firstBeam is not useEvery:
@@ -673,18 +575,18 @@ class radDataPtr():
         orig_beam = self.bmnum
         self.bmnum = None
 
-        if self.__ptr is None:
-            estr = 'Self.__ptr is None.  There is probably no data available '
+        if len(self.file_list) == 0 :
+            estr = 'File list is empty. There is no data available '
             logging.error('{:s}for your selected time.'.format(estr))
             self.bmnum = orig_beam
             return None
 
-        if self.__ptr.closed:
-            logging.error('Your file pointer is closed')
-            self.bmnum = orig_beam
-            return None
+        #if self.__ptr.closed:
+        #    logging.error('Your file pointer is closed')
+        #    self.bmnum = orig_beam
+        #    return None
 
-        myScan = scanData()
+        myScan = list()
 
         # get first beam in the scan
         myBeam = self.readRec()
@@ -706,7 +608,7 @@ class radDataPtr():
         # get the rest of the beams in the scan
         while True:
             # get current offset (in case we have to revert) and next beam
-            offset = pydarn.dmapio.getDmapOffset(self.__fd)
+            #offset = pydarn.dmapio.getDmapOffset(self.__fd)
             myBeam = self.readRec()
             if myBeam is None:
                 # no more data
@@ -723,7 +625,6 @@ class radDataPtr():
             if myBeam.prm.scan and myBeam.bmnum == firstBeamNum:
                 # if start of (next) scan revert offset to start of scan and
                 # break out of loop
-                pydarn.dmapio.setDmapOffset(self.__fd, offset)
                 break
             else:
                 # append beam to current scan
@@ -778,46 +679,63 @@ class radDataPtr():
         from davitpy.pydarn.sdio.radDataTypes import radDataPtr, beamData, \
             fitData, prmData, rawData, iqData, alpha
         from davitpy import pydarn
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
         import datetime as dt
+        import calendar
 
         # check input
-        if(self.__ptr == None):
+        if(len(self.file_list) == 0):
             logging.error('Your pointer does not point to any data')
             return None
-        if self.__ptr.closed:
-            logging.error('Your file pointer is closed')
-            return None
+
         myBeam = beamData()
-        # do this until we reach the requested start time
-        # and have a parameter match
-        while(1):
-            offset=pydarn.dmapio.getDmapOffset(self.__fd)
-            dfile = pydarn.dmapio.readDmapRec(self.__fd)
-            # check for valid data
-            if(dfile == None or
-               dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
-                # if we dont have valid data, clean up, get out
+
+        # First we have to read the whole file
+        #Read from the first file in the list of files
+        if (self.records is None):
+            self.record_index = -1
+            self.file_index = 0
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+
+        while (1):            
+            # If we've already read from a file but have reached the end of the
+            #records in that file, read from the next file in the list
+            if (self.record_index == len(self.records) - 1):
+                # If we've reached the end of the last file, return None
+                if (self.file_index == len(self.file_list) - 1):
+                    logging.info('reached end of data')
+                    return None
+                self.file_index += 1
+                self.record_index = -1
+                self.__filename = self.file_list[self.file_index]
+                self.records = parse_dmap_format_from_file(self.__filename)
+
+            dfile = self.records[self.record_index + 1]
+            temp = calendar.timegm(dt.datetime(dfile['time.yr'],dfile['time.mo'],
+                            dfile['time.dy'],dfile['time.hr'],dfile['time.mt'],
+                            dfile['time.sc']).timetuple())
+            dfile['time'] = temp + dfile['time.us'] / 1000000.0
+
+            if(dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
                 logging.info('reached end of data')
-                #self.close()
                 return None
-            # check that we're in the time window, and that we have a 
-            # match for the desired params
-            # if dfile['channel'] < 2: channel = 'a'  THIS CHECK IS BAD.
-            # 'channel' in a dmap file specifies STEREO operation or not.
-            #else: channel = alpha[dfile['channel']-1]
+            else:
+                self.record_index += 1
+
             if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and
                (self.stid == None or self.stid == dfile['stid']) and
-               #(self.channel == None or self.channel == channel) and
-               # ASR removed because of bad check as above.
-               (self.bmnum == None or self.bmnum == dfile['bmnum']) and
+                   #(self.channel == None or self.channel == channel) and
+                   # ASR removed because of bad check as above.
+                (self.bmnum == None or self.bmnum == dfile['bmnum']) and
                (self.cp == None or self.cp == dfile['cp'])):
-                # fill the beamdata object
+                    # fill the beamdata object
                 myBeam.updateValsFromDict(dfile)
                 myBeam.recordDict = dfile
                 myBeam.fType = self.fType
                 myBeam.fPtr = self
-                myBeam.offset = offset
+                myBeam.offset = None
                 # file prm object
                 myBeam.prm.updateValsFromDict(dfile)
                 if myBeam.fType == "rawacf":
@@ -827,17 +745,9 @@ class radDataPtr():
                 if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or
                    myBeam.fType == 'lmfit'):
                     myBeam.fit.updateValsFromDict(dfile)
-                if myBeam.fit.slist == None:
+                if myBeam.fit.slist is None:
                     myBeam.fit.slist = []
                 return myBeam
-
-    def close(self):
-        """close associated dmap file."""
-        import os
-
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd = None
 
     def __validate_fetched(self,filelist,stime,etime):
         """ This function checks if the files in filelist contain data
@@ -859,10 +769,10 @@ class radDataPtr():
         # This method will need some modification for it to work with
         # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
         # specific code will need to be modified (readDmapRec).
-        import os
         import datetime as dt
         import numpy as np
-        from davitpy.pydarn.dmapio import readDmapRec
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
+        import calendar
 
         valid = []
 
@@ -871,25 +781,17 @@ class radDataPtr():
             stimes = []
             etimes = []
 
-            # Open the file and create a file pointer
-            self.__filename = f
-            self.open()
-
             # Iterate through the file and grab the start time for beam
             # integration and calculate the end time from intt.sc and intt.us
-            while(1):
-                # read the next record from the dmap file
-                dfile = readDmapRec(self.__fd)
-                if(dfile is None):
-                    break
-                else:
-                    temp = dt.datetime.utcfromtimestamp(dfile['time'])
-                    stimes.append(temp)
-                    sec = dfile['intt.sc'] + dfile['intt.us'] / (10. ** 6)
-                    etimes.append(temp + dt.timedelta(seconds=sec))
-            # Close the file and clean up
-            self.close()
-            self.__ptr = None
+            records = parse_dmap_format_from_file(f)
+            # read the next record from the dmap file
+            for dfile in records:
+                temp = dt.datetime(dfile['time.yr'],dfile['time.mo'],
+                                   dfile['time.dy'],dfile['time.hr'],
+                                   dfile['time.mt'],dfile['time.sc'])
+                stimes.append(temp)
+                sec = dfile['intt.sc'] + dfile['intt.us'] / (10. ** 6)
+                etimes.append(temp + dt.timedelta(seconds=sec))
 
             inds = np.where((np.array(stimes) >= stime) &
                             (np.array(stimes) <= etime))
@@ -1094,26 +996,6 @@ class radBaseData():
       #else:
         #myStr += key+' = '+str(var)+'\n'
     #return myStr
-    
-class scanData(list):
-    """a class to contain a radar scan.  Extends list.
-    Just a list of :class:`pydarn.sdio.radDataTypes.beamData` objects
-  
-    Attributes
-    ----------
-    None
-
-    Example
-    --------
-    ::
-
-    myBeam = pydarn.sdio.scanData()
-
-    Written by AJ 20121130
-    """
-
-    def __init__(self):
-        pass
   
 class beamData(radBaseData):
     """a class to contain the data from a radar beam sounding,
@@ -1503,11 +1385,21 @@ if __name__=="__main__":
     filtered = False
     sTime = datetime.datetime(2012, 11, 1, 0, 0)
     eTime = datetime.datetime(2012, 11, 1, 4, 2)
-    expected_filename = "20121101.000000.20121101.040200.fhe.fitacf"
-    expected_path = os.path.join(tmpdir, expected_filename)
-    expected_filesize = 19377805
-    expected_md5sum = "cfd48945be0fd5bf82119da9a4a66994"
-    print "Expected File: " + expected_path
+    expected_filelist = ["20121101.0000.03.fhe.fitacf",
+                         "20121101.0201.00.fhe.fitacf",
+                         "20121101.0401.00.fhe.fitacf"]
+    expected_path = list()
+    for f in expected_filelist:
+        expected_path.append(os.path.join(tmpdir, f))
+
+    expected_filesize = [6750912,6546567,6080326]
+    expected_md5sum = ["930267fda137973b13a64cdecc1310f4",
+                       "cd6546291482483aac76585cb486f6c9",
+                       "af5528b5e82a4291e2d972cca0a30f3b"]
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
 
     print "\nRunning sftp grab example for radDataPtr."
     print "Environment variables used:"
@@ -1522,22 +1414,22 @@ if __name__=="__main__":
     print "  DAVIT_REMOTE_TIMEINC: " + davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
     print "  DAVIT_TMPDIR: " + davitpy.rcParams['DAVIT_TMPDIR']
     src = 'sftp'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
+
     VTptr = radDataPtr(sTime, rad, eTime=eTime, channel=channel, bmnum=None,
                        cp=None, fileType=fileType, filtered=filtered, src=src,
                        noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records from the remote sftp server:"
     try:
         ptr = VTptr
@@ -1545,49 +1437,44 @@ if __name__=="__main__":
         print beam.time
         beam = ptr.readRec()
         print beam.time
-        print "Close pointer"
-        ptr.close()
-        print "reopen pointer"
-        ptr.open()
+        ptr.rewind()
         print "Should now be back at beginning:"
         beam = ptr.readRec()
         print beam.time
         print "What is the current offset:"
         print ptr.offsetTell()
-        print "Try to seek to offset 4, shouldn't work:"
-        print ptr.offsetSeek(4)
+        print "Try to seek to record offset 100 in file 1:"
+        print ptr.offsetSeek(100,1)
         print "What is the current offset:"
         print ptr.offsetTell()
     except:
         print "record read failed for some reason"
 
-    ptr.close()
     del VTptr
 
     print "\nRunning local grab example for radDataPtr."
     print "Environment variables used:"
     print "  DAVIT_LOCAL_DIRFORMAT:", davitpy.rcParams['DAVIT_LOCAL_DIRFORMAT']
     print "  DAVIT_LOCAL_FNAMEFMT:", davitpy.rcParams['DAVIT_LOCAL_FNAMEFMT']
-    print "  DAVIT_LOCAL_TIMEINC:", davitpy.rcParams['DAVIT_LOCAL_TIMEINC']
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
     src='local'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
+
     localptr = radDataPtr(sTime, rad, eTime=eTime, channel=channel, bmnum=None,
                           cp=None, fileType=fileType, filtered=filtered,
                           src=src, noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ",md5sum
-        print "Expected Md5sum:",expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records:"
     try:
         ptr = localptr
@@ -1595,16 +1482,18 @@ if __name__=="__main__":
         print beam.time
         beam = ptr.readRec()
         print beam.time
-        print "Close pointer"
-        ptr.close()
-        print "reopen pointer"
-        ptr.open()
+        ptr.rewind()
         print "Should now be back at beginning:"
         beam = ptr.readRec()
         print beam.time
+        print "What is the current offset:"
+        print ptr.offsetTell()
+        print "Try to seek to record offset 100 in file 1:"
+        print ptr.offsetSeek(100,1)
+        print "What is the current offset:"
+        print ptr.offsetTell()
     except:
         print "record read failed for some reason"
-    ptr.close()
   
     del localptr
 
@@ -1616,11 +1505,19 @@ if __name__=="__main__":
     filtered = False
     sTime = datetime.datetime(2014, 6, 24, 0, 0)
     eTime = datetime.datetime(2014, 6, 24, 2, 2)
-    expected_filename = "20140624.000000.20140624.020200.kod.c.fitex"
-    expected_path = os.path.join(tmpdir, expected_filename)
-    expected_filesize = 16148989
-    expected_md5sum = "ae7b4a7c8fea56af9639c39bea1453f2"
-    print "Expected File:", expected_path
+    expected_filelist = ["20140624.0000.06.kod.c.fitex",
+                         "20140624.0200.06.kod.c.fitex"]
+    expected_path = list()
+    for f in expected_filelist:
+        expected_path.append(os.path.join(tmpdir, f))
+
+    expected_filesize = [8558470,7590519]
+    expected_md5sum = ["caef88b627faf3fc9b652e502a8676d1",
+                       "59cf9cbf46facdea0274f4cea256fa74"]
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
 
     print "\nRunning sftp grab example for radDataPtr."
     print "Environment variables used:"
@@ -1634,22 +1531,22 @@ if __name__=="__main__":
     print "  DAVIT_REMOTE_TIMEINC:", davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
     src = 'sftp'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
+
     VTptr = radDataPtr(sTime, rad, eTime=eTime, channel=channel, bmnum=None,
                        cp=None, fileType=fileType, filtered=filtered, src=src,
                        noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records from the remote sftp server:"
     try:
         ptr = VTptr
@@ -1657,23 +1554,19 @@ if __name__=="__main__":
         print beam.time
         beam = ptr.readRec()
         print beam.time
-        print "Close pointer"
-        ptr.close()
-        print "reopen pointer"
-        ptr.open()
+        ptr.rewind()
         print "Should now be back at beginning:"
         beam = ptr.readRec()
         print beam.time
         print "What is the current offset:"
         print ptr.offsetTell()
-        print "Try to seek to offset 4, shouldn't work:"
-        print ptr.offsetSeek(4)
+        print "Try to seek to record offset 100 in file 1:"
+        print ptr.offsetSeek(100,1)
         print "What is the current offset:"
         print ptr.offsetTell()
     except:
         print "record read failed for some reason"
 
-    ptr.close()
     del VTptr
 
     print "\nRunning sftp grab example for testing the channel option for all"
@@ -1683,11 +1576,23 @@ if __name__=="__main__":
     filtered = False
     sTime = datetime.datetime(2014, 6, 24, 0, 0)
     eTime = datetime.datetime(2014, 6, 24, 2, 2)
-    expected_filename = "20140624.000000.20140624.020200.kod.all.fitex"
-    expected_path = os.path.join(tmpdir, expected_filename)
-    expected_filesize = 31822045
-    expected_md5sum = "493bd0c937b6135cc608d0518d929077"
-    print "Expected File:", expected_path
+    expected_filelist = ["20140624.0000.06.kod.c.fitex",
+                         "20140624.0001.00.kod.d.fitex",
+                         "20140624.0200.06.kod.c.fitex",
+                         "20140624.0201.00.kod.d.fitex"]
+    expected_path = list()
+    for f in expected_filelist:
+        expected_path.append(os.path.join(tmpdir, f))
+
+    expected_filesize = [8558470,8369016,7590519,7304040]
+    expected_md5sum = ["caef88b627faf3fc9b652e502a8676d1",
+                       "a47dd8ec0c522be613dddd585780a1f5",
+                       "59cf9cbf46facdea0274f4cea256fa74",
+                       "80dfa7cdf5b3f47a9ded649b39a99fc3"]
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
 
     print "\nRunning sftp grab example for radDataPtr."
     print "Environment variables used:"
@@ -1701,22 +1606,22 @@ if __name__=="__main__":
     print "  DAVIT_REMOTE_TIMEINC:", davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
     src = 'sftp'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
+
     VTptr = radDataPtr(sTime, rad, eTime=eTime, channel=channel, bmnum=None,
                        cp=None, fileType=fileType, filtered=filtered, src=src,
                        noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records from the remote sftp server:"
     try:
         ptr = VTptr
@@ -1724,22 +1629,18 @@ if __name__=="__main__":
         print beam.time
         beam = ptr.readRec()
         print beam.time
-        print "Close pointer"
-        ptr.close()
-        print "reopen pointer"
-        ptr.open()
+        ptr.rewind()
         print "Should now be back at beginning:"
         beam = ptr.readRec()
         print beam.time
         print "What is the current offset:"
         print ptr.offsetTell()
-        print "Try to seek to offset 4, shouldn't work:"
-        print ptr.offsetSeek(4)
+        print "Try to seek to record offset 100 in file 1:"
+        print ptr.offsetSeek(100,1)
         print "What is the current offset:"
         print ptr.offsetTell()
     except:
         print "record read failed for some reason"
 
-    ptr.close()
     del VTptr
 

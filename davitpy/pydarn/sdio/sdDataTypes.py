@@ -158,7 +158,11 @@ class sdDataPtr():
         self.fType = fileType
         self.dType = None
         self.recordIndex = None
-        self.__filename = fileName 
+        self.file_index = None
+        self.record_index = None
+        self.records = None
+        self.file_list = None
+        self.__filename = None 
         self.__nocache  = noCache
         self.__src = src
         self.__fd = None
@@ -206,18 +210,15 @@ class sdDataPtr():
         if not os.path.exists(d):
             os.makedirs(d)
 
-        cached = False
-
         # First, check if a specific filename was given
         if fileName != None:
             try:
                 if not os.path.isfile(fileName):
-                    estr = 'problem reading [{:}]: file does '.format(fileName)
-                    logging.error('{:s}not exist'.format(estr))
+                    estr = 'problem reading {:s} :file does '.format(fileName)
+                    logging.error("{:s}not exist".format(estr))
                     return None
-
-                epoch = int(datetimeToEpoch(dt.datetime.now()))
-                outname = "{:s}{:d}".format(tmpdir, epoch)
+                dirpath = os.path.dirname(fileName)
+                outname = tmpdir + fileName.replace(dirpath,'').replace('/','')
                 if(string.find(fileName, '.bz2') != -1):
                     outname = string.replace(fileName, '.bz2', '')
                     command = 'bunzip2 -c {:s} > {:s}'.format(fileName, outname)
@@ -236,39 +237,13 @@ class sdDataPtr():
                 logging.error('problem reading file [{:s}]'.format(fileName))
                 return None
 
-        # Next, check for a cached file
-        if fileName == None and not noCache:
-            try:
-                if not cached:
-                    command = "{:s}????????.??????.????????.????".format(tmpdir)
-                    command = "{:s}??.{:s}.{:s}".format(command, hemi, fileType)
-                    for f in glob.glob(command):
-                        try:
-                            ff = string.replace(f, tmpdir, '')
-                            # check time span of file
-                            t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
-                                             int(ff[6:8]), int(ff[9:11]),
-                                             int(ff[11:13]), int(ff[13:15]))
-                            t2 = dt.datetime(int(ff[16:20]), int(ff[20:22]),
-                                             int(ff[22:24]), int(ff[25:27]),
-                                             int(ff[27:29]), int(ff[29:31]))
-                            # check if file covers our timespan
-                            if t1 <= self.sTime and t2 >= self.eTime:
-                                cached = True
-                                filelist.append(f)
-                                logging.info('Found cached file {:s}'.format(f))
-                                break
-                        except Exception, e:
-                            logging.warning(e)
-            except Exception, e:
-                logging.warning(e)
-  
         # Next, LOOK LOCALLY FOR FILES
-        if not cached and (src == None or src == 'local') and fileName == None:
+        if (src == None or src == 'local') and fileName == None:
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:s} files ".format(ftype)
                     estr = "{:s}with hemi: {:s}".format(estr, hemi)
+
                     logging.info(estr)
 
                     # If the following aren't already, in the near future
@@ -422,7 +397,8 @@ class sdDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port,
+                                                     check_cache=(not noCache))
 
                     # check to see if the files actually have data between
                     # stime and etime
@@ -455,36 +431,13 @@ class sdDataPtr():
 
         # check if we have found files
         if len(filelist) != 0:
-            # concatenate the files into a single file
-            if not cached:
-                logging.info('Concatenating all the files in to one')
-                # choose a temp file name with time span info for cacheing
-                tmpname = '{:s}{:s}.{:s}'.format(tmpdir,
-                                                 self.sTime.strftime("%Y%m%d"),
-                                                 self.sTime.strftime("%H%M%S"))
-                tmpname = '{:s}.{:s}.{:s}'.format(tmpname,
-                                                  self.eTime.strftime("%Y%m%d"),
-                                                  self.eTime.strftime("%H%M%S"))
-                tmpname = '{:s}.{:s}.{:s}'.format(tmpname, hemi, fileType)
-                command = "cat {:s} > {:s}".format(string.join(filelist),
-                                                   tmpname)
-                logging.info("performing: {:s}".format(command))
-                os.system(command)
-                for filename in filelist:
-                    command = "rm {:s}".format(filename)
-                    logging.info("performing: {:s}".format(command))
-                    os.system(command)
-            else:
-                tmpname = filelist[0]
-                self.fType = fileType
-                self.dType = 'dmap'
+            self.file_list = filelist
+            self.file_index = 0
+            self.record_index = -1
+            self.fType = fileType
+            self.dType = 'dmap'
 
-            self.__filename = tmpname
-            self.open()
-
-        if self.__ptr != None:
-            if self.dType == None:
-                self.dType = 'dmap'
+            self.__filename = self.file_list[self.file_index]
         else:
             logging.info('Sorry, we could not find any data for you :(')
 
@@ -493,9 +446,6 @@ class sdDataPtr():
         for key,var in self.__dict__.iteritems():
             my_str = "{:s}{:s} = {:s}\n".format(my_str, key, str(var))
         return my_str
-
-    def __del__(self):
-        self.close()
 
     def __iter__(self):
         return self
@@ -507,81 +457,48 @@ class sdDataPtr():
         else:
             return beam
 
-    def open(self):
-        """open the associated dmap filename."""
-        import os
-        self.__fd = os.open(self.__filename, os.O_RDONLY)
-        self.__ptr = os.fdopen(self.__fd)
-
     def createIndex(self):
         import datetime as dt
         import davitpy.pydarn.dmapio as dmapio
 
         recordDict = {}
-        starting_offset = self.offsetTell()
+        starting_record_offset, starting_file_offset = self.offsetTell()
 
         # rewind back to start of file
         self.rewind()
-        while 1:
-            # read the next record from the dmap file
-            offset = dmapio.getDmapOffset(self.__fd)
-            dfile = dmapio.readDmapRec(self.__fd)
-            if dfile is None:
-                # if we dont have valid data, clean up, get out
-                logging.info('reached end of data')
-                break
-            else:
-                try:
-                    dtime = dt.datetime(dfile['start.year'],
-                                        dfile['start.month'],
-                                        dfile['start.day'],
-                                        dfile['start.hour'],
-                                        dfile['start.minute'],
-                                        int(dfile['start.second']))
-                    dfile['time'] = (dtime -
-                                     dt.datetime(1970, 1, 1)).total_seconds()
-                except Exception,e:
-                    logging.warning(e)
-                    logging.warning('problem reading time from file')
-                    break
+        myBeam = self.readRec()
+        while(myBeam is not None):
 
-                dfile_utc = dt.datetime.utcfromtimestamp(dfile['time'])
-                if dfile_utc >= self.sTime and dfile_utc <= self.eTime: 
-                    rectime = dt.datetime.utcfromtimestamp(dfile['time'])
-                    recordDict[rectime] = offset
+            dfile = myBeam.recordDict
+            rectime = dt.datetime.utcfromtimestamp(dfile['time'])
+            recordDict[rectime] = (self.record_index,self.file_index)
+            myBeam = self.readRec()
 
         # reset back to before building the index 
         self.recordIndex = recordDict
-        self.offsetSeek(starting_offset)
+        self.offsetSeek(starting_record_offset, starting_file_offset)
         return recordDict
 
-    def offsetSeek(self, offset, force=False):
-        """jump to dmap record at supplied byte offset.
-           Require offset to be in record index list unless forced. 
+    def offsetSeek(self, record_index,file_index):
+        """seek the record offset and file index. 
         """
-        from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
-
-        if force:
-            return dmapio.setDmapOffset(self.__fd, offset)
-        else:
-            if self.recordIndex is None:        
-                self.createIndex()
-
-            if offset in self.recordIndex.values():
-                return setDmapOffset(self.__fd, offset)
-            else:
-                return getDmapOffset(self.__fd)
+        self.record_index = record_index
+        self.file_index = file_index
+        if (file_index is not self.file_index):
+            self.records = None
+        self.__filename = self.file_list[self.file_index]
 
     def offsetTell(self):
-        """jump to dmap record at supplied byte offset. 
+        """tell the record offset and file index. 
         """
-        from davitpy.pydarn.dmapio import getDmapOffset
-        return getDmapOffset(self.__fd)
+        return self.record_index, self.file_index
   
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset 
-        return setDmapOffset(self.__fd, 0)
+        self.__filename = self.file_list[0]
+        self.file_index = 0
+        self.record_index = -1
+        self.records = None
   
     def readRec(self):
         """A function to read a single record of radar data from a radDataPtr
@@ -593,23 +510,39 @@ class sdDataPtr():
             An object filled with the specified type of data.  Will return None
             when there is no more data in the pointer to read.
         """
-        import davitpy.pydarn.dmapio as dmapio
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
         import datetime as dt
+        import calendar
 
         # check input
-        if self.__ptr == None:
-            logging.error('the pointer does not point to any data')
+        if(len(self.file_list) == 0):
+            logging.error('Your pointer does not point to any data')
             return None
 
-        if self.__ptr.closed:
-            logging.error('the file pointer is closed')
-            return None
-  
+        # First we have to read the whole file
+        #Read from the first file in the list of files
+        if (self.records is None):
+            self.record_index = -1
+            self.file_index = 0
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+            
+        # If we've already read from a file but have reached the end of the
+        #records in that file, read from the next file in the list
+        elif (self.record_index == len(self.records) - 1):
+            # If we've reached the end of the last file, return None
+            if (self.file_index == len(self.file_list) - 1):
+                logging.info('reached end of data')
+                return None
+            self.file_index += 1
+            self.record_index = -1
+            self.__filename = self.file_list[self.file_index]
+            self.records = parse_dmap_format_from_file(self.__filename)
+
         # do this until we reach the requested start time
         # and have a parameter match
         while 1:
-            offset = dmapio.getDmapOffset(self.__fd)
-            dfile = dmapio.readDmapRec(self.__fd)
+            dfile = self.records[self.record_index + 1]
             # check for valid data
             try:
                 dtime = dt.datetime(dfile['start.year'], dfile['start.month'],
@@ -646,17 +579,12 @@ class sdDataPtr():
                 mydata.recordDict = dfile
                 mydata.fType = self.fType
                 mydata.fPtr = self
-                mydata.offset = offset
-  
+                mydata.offset = None
+                self.record_index += 1
                 return mydata
 
-    def close(self):
-        """close associated dmap file."""
-        import os
+            self.record_index += 1
 
-        if self.__ptr is not None:
-            self.__ptr.close()
-            self.__fd = None
 
     def __validate_fetched(self, filelist, stime, etime):
         """ This function checks if the files in filelist contain data
@@ -683,45 +611,35 @@ class sdDataPtr():
 
         import datetime as dt
         import numpy as np
-        from davitpy.pydarn.dmapio import readDmapRec
+        from davitpy.pydarn.dmapio import parse_dmap_format_from_file
+        import calendar
 
         valid = []
 
         for f in filelist:
-            logging.info('Checking file: {:s}'.format(f))
+            logging.debug('Checking file: ' + f)
             stimes = []
             etimes = []
 
-            # Open the file and create a file pointer
-            self.__filename = f
-            self.open()
+            records = parse_dmap_format_from_file(f)
 
             # Iterate through the file and grab the start time for beam
             # integration and calculate the end time from intt.sc and intt.us
-            while 1:
-                # read the next record from the dmap file
-                dfile = readDmapRec(self.__fd)
-                if(dfile is None):
-                    break
-                else:
-                    temp = dt.datetime(int(dfile['start.year']),
-                                       int(dfile['start.month']),
-                                       int(dfile['start.day']),
-                                       int(dfile['start.hour']),
-                                       int(dfile['start.minute']),
-                                       int(dfile['start.second']))
-                    stimes.append(temp)
-                    temp = dt.datetime(int(dfile['end.year']),
-                                       int(dfile['end.month']),
-                                       int(dfile['end.day']),
-                                       int(dfile['end.hour']),
-                                       int(dfile['end.minute']),
-                                       int(dfile['end.second']))
-                    etimes.append(temp)
-
-            # Close the file and clean up
-            self.close()
-            self.__ptr = None
+            for dfile in records:
+                temp = dt.datetime(int(dfile['start.year']),
+                                   int(dfile['start.month']),
+                                   int(dfile['start.day']),
+                                   int(dfile['start.hour']),
+                                   int(dfile['start.minute']),
+                                   int(dfile['start.second']))
+                stimes.append(temp)
+                temp = dt.datetime(int(dfile['end.year']),
+                                   int(dfile['end.month']),
+                                   int(dfile['end.day']),
+                                   int(dfile['end.hour']),
+                                   int(dfile['end.minute']),
+                                   int(dfile['end.second']))
+                etimes.append(temp)
 
             inds = np.where((np.array(stimes) >= stime) &
                             (np.array(stimes) <= etime))
@@ -1111,11 +1029,19 @@ if __name__=="__main__":
     channel = None
     stime = dt.datetime(2012, 7, 10)
     etime = dt.datetime(2012, 7, 11, 2)
-    expected_filename = "20120710.000000.20120711.020000.north.mapex"
-    expected_path = os.path.join(tmpdir, expected_filename)
-    expected_filesize = 32975826
-    expected_md5sum = "1b0e78cb339e875cc17f82e240ef360f"
-    print "Expected File:", expected_path
+    expected_filelist = ["20120710.north.mapex",
+                         "20120711.north.mapex"]
+    expected_path = list()
+    for f in expected_filelist:
+        expected_path.append(os.path.join(tmpdir, f))
+
+    expected_filesize = [15354490,17654420]
+    expected_md5sum = ["5cfd70290550b958f3a8bedc2e330cd6",
+                       "2a996504e594f15218ef0b2cfdd37ca5"]
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
 
     print "\nRunning sftp grab example for sdDataPtr."
     print "Environment variables used:"
@@ -1132,21 +1058,20 @@ if __name__=="__main__":
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
     src = 'sftp'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
     vtptr = sdDataPtr(stime, hemi, eTime=etime, fileType='mapex', src=src,
                       noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records from the remote sftp server:"
     try:
         ptr = vtptr
@@ -1163,14 +1088,13 @@ if __name__=="__main__":
         print mydata.recordDict['time']
         print "What is the current offset:"
         print ptr.offsetTell()
-        print "Try to seek to offset 4, shouldn't work:"
-        print ptr.offsetSeek(4)
+        print "Try to seek to record offset 20 and file index 1:"
+        print ptr.offsetSeek(20,1)
         print "What is the current offset:"
         print ptr.offsetTell()
     except:
         print "record read failed for some reason"
 
-    ptr.close()
     del vtptr
 
     print "\nRunning local grab example for sdDataPtr."
@@ -1183,22 +1107,27 @@ if __name__=="__main__":
         davitpy.rcParams['DAVIT_SD_LOCAL_TIMEINC']
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
+    for path in expected_path:
+        print "Expected File: " + path
+        if os.path.isfile(path):
+            os.remove(path)
+
     src = 'local'
-    if os.path.isfile(expected_path):
-        os.remove(expected_path)
+
     localptr = sdDataPtr(stime, hemi, eTime=etime, src=src, fileType='mapex',
                          noCache=True)
-    if os.path.isfile(expected_path):
-        statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
-        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
-        if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
-    else:
-        print "Error: Failed to create expected cache file"
+    for i,path in enumerate(expected_path):
+        if os.path.isfile(path):
+            statinfo = os.stat(path)
+            print "Actual File Size:  ", statinfo.st_size
+            print "Expected File Size:", expected_filesize[i]
+            md5sum=hashlib.md5(open(path).read()).hexdigest()
+            print "Actual Md5sum:  ", md5sum
+            print "Expected Md5sum:", expected_md5sum[i]
+            if expected_md5sum[i] != md5sum:
+                print "Error: Downloaded dmap file has unexpected md5sum."
+        else:
+            print "Error: Failed to obtain expected file"
     print "Let's read two records:"
     try:
         ptr = localptr
@@ -1213,8 +1142,13 @@ if __name__=="__main__":
         print "Should now be back at beginning:"
         mydata = ptr.readRec()
         print mydata.recordDict['time']
+        print "What is the current offset:"
+        print ptr.offsetTell()
+        print "Try to seek to record offset 20 and file index 1:"
+        print ptr.offsetSeek(20,1)
+        print "What is the current offset:"
+        print ptr.offsetTell()
     except:
         print "record read failed for some reason"
-    ptr.close()
 
     del localptr
