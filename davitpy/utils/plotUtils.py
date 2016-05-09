@@ -1,45 +1,109 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-.. module:: plotUtils
-   :synopsis: Plotting utilities (maps, colormaps, ...)
-*********************
-**Module**: utils.plotUtils
-*********************
-Basic plotting tools
+"""plotUtils module
 
-**Functions**:
-    * :func:`utils.plotUtils.mapObj`: Create empty map
-    * :func:`utils.plotUtils.genCmap`: generate a custom colormap
-    * :func:`utils.plotUtils.drawCB`: draw a colorbar
-    * :func:`utils.plotUtils.curvedEarthAxes`: Plot axes in (R, Theta)
-                                               coordinates with lower
-                                               limit at R = Earth radius
-    * :func:`utils.plotUtils.addColorbar`: Colorbar for
-                                           :func:`curvedEarthAxes`
+Plotting utilities (maps, colormaps, ...)
+
+Functions
+--------------------------------------------------------------
+genCmap         generate a custom colormap
+drawCB          draw a colorbar
+curvedEarthAxes Plot axes in (R, Theta) coordinates with lower
+                limit at R = Earth radius
+addColorbar     Colorbar for `curvedEarthAxes`
+textHighlighted highlighted annotation (with white lining)
+--------------------------------------------------------------
+
+Classes
+--------------------------------
+mapObj          Create empty map
+--------------------------------
 
 """
 from mpl_toolkits import basemap
-
-##########################################################################
-##########################################################################
+import logging
 
 
 class mapObj(basemap.Basemap):
-    """
-    This class wraps arround :class:`mpl_toolkits.basemap.Basemap`
-    (<http://tinyurl.com/d4rzmfo>)
-  
-    **Members**:
-        * **coords** (str): map coordinate system.  Anything handled by
-            utils.coordUtils is acceptable (see get_coord_dict)
-        * all members of :class:`mpl_toolkits.basemap.Basemap`
-          (<http://tinyurl.com/d4rzmfo>)
-    **Methods**:
-        * all methods of :class:`mpl_toolkits.basemap.Basemap`
-          (<http://tinyurl.com/d4rzmfo>)
-    **Example**:
-        ::
+    """Create empty map
+
+    Parameters
+    ----------
+    ax : Optional[matplotlib.axes._subplots.AxesSubplot]
+        Subplot axis to associate with this map (default=None)
+    datetime : Optional[datetime.datetime]
+        new format for providing the time that is added to the mapObj
+        class as the attribute "datetime".  This is needed
+        when plotting in MLT.  If not provided, (and not
+        provided in dateTime) the current time will be
+        used (default=None)
+    coords : Optional[str]
+        plotting coordinates. (default='geo')
+    projection : Optional[str]
+        map projection. (default='stere')
+    resolution : Optional[char]
+        map resolution. c=crude, i=inter. (default='c')
+    dateTime : Optional[datetime.datetime]
+        old format for providing the time that is added to the mapObj
+        class as the attribute "dateTime".  This is needed when plotting
+        in MLT.  If not provided, (and not provided in datetime) the
+        current time will be used. (default=None)
+    lon_0 : Optional[float]
+        center meridian (default is -70E)
+    lat_0 : Optional[float]
+        center latitude (default is -90E)
+    boundinglat : Optional[float]
+        bounding latitude (default is +/-20)
+    width : Optional[float]
+        width in m from the (lat_0, lon_0) center
+    height : Optional[float]
+        height in m from the (lat_0, lon_0) center
+    draw : Optional[bool]
+        set to "False" to skip initial drawing of map
+    fillContinents : Optional[float]
+        continent color. Default=0.8 is 'grey'
+    fillOceans : Optional[char]
+        ocean color. Default='None' provides no filling
+    fillLakes : Optional[char]
+        lake color. Default='None' provides no filling
+    fill_alpha : Optional[float]
+        Specifies transparency for continents and lakes.
+        Default=.5 provides 50% transparency.
+    coastLineWidth : Optional[float]
+        Line width for coastlines. Default=0.0
+    coastLineColor : Optional[char]
+        Line color for coastlines. Default=None
+    grid : Optional[bool]
+        show/hide parallels and meridians grid (default=True)
+    gridLabels : Optional[bool]
+        label parallels and meridians (default=True)
+    showCoords : Optional[bool]
+        display coordinate system name in upper right
+        corner (default=True)
+    **kwargs : 
+        See <http://tinyurl.com/d4rzmfo> for more keywords
+
+    Attributes
+    ----------
+    lat_0 : float
+
+    lon_0 : float
+
+    datetime :
+
+    dateTime :
+
+    Returns
+    -------
+    map : a Basemap object (<http://tinyurl.com/d4rzmfo>)
+        with an additional attribute that specifies the datetime
+
+    Examples
+    --------
+        myMap = mapObj(lat_0=50, lon_0=-95, width=111e3*60, height=111e3*60)
+
+    Another example is:
 
         # Create the map
         myMap = utils.mapObj(boundinglat=30, coords='mag')
@@ -53,9 +117,16 @@ class mapObj(basemap.Basemap):
         # ...and plot
         myMap.scatter(x, y, zorder=2, color='g')
 
-    .. note:: Once the map is created, all plotting calls will be assumed to
+    Notes
+    -----
+    Once the map is created, all plotting calls will be assumed to
     already be in the map's declared coordinate system given by **coords**.
+
+
+    written by Sebastien, 2013-02
+
     """
+
 
     def __init__(self, ax=None, datetime=None, coords='geo', projection='stere',
                  resolution='c', dateTime=None, lat_0=None, lon_0=None,
@@ -63,56 +134,10 @@ class mapObj(basemap.Basemap):
                  fillContinents='.8', fillOceans='None', fillLakes=None,
                  fill_alpha=.5, coastLineWidth=0., coastLineColor=None,
                  grid=True, gridLabels=True, showCoords=True, **kwargs):
+        """This class wraps arround :class:`mpl_toolkits.basemap.Basemap`
+        (<http://tinyurl.com/d4rzmfo>)
+  
         """
-        Create empty map
-
-        **Args**:
-            * **[ax]** (matplotlib.axes._subplots.AxesSubplot or NoneType):
-                Subplot axis to associate with this map (default=None)
-            * **[datetime]** (datetime.datetime or NoneType): new format for
-                             providing the time that is added to the mapObj
-                             class as the attribute "datetime".  This is needed
-                             when plotting in MLT.  If not provided, (and not
-                             provided in dateTime) the current time will be
-                             used (default=None)
-            * **[coords]**: plotting coordinates. (default='geo')
-            * **[projection]**: map projection. (default='stere')
-            * **[resolution]**: map resolution. c=crude, i=inter. (default='c')
-            * **[dateTime]** (datetime.datetime or NoneType): old format for
-                             providing the time that is added to the mapObj
-                             class as the attribute "dateTime".  This is needed
-                             when plotting in MLT.  If not provided, (and not
-                             provided in datetime) the current time will be
-                             used. (default=None)
-            * **[lon_0]**: center meridian (default is -70E)
-            * **[lat_0]**: center latitude (default is -90E)
-            * **[boundinglat]**: bounding latitude (default is +/-20)
-            * **[width]**: width in m from the (lat_0, lon_0) center
-            * **[height]**: height in m from the (lat_0, lon_0) center
-            * **[draw]**: set to "False" to skip initial drawing of map
-            * **[fillContinents]**: continent color. Default=0.8 is 'grey'
-            * **[fillOceans]**: ocean color. Default='None' provides no filling
-            * **[fillLakes]**: lake color. Default='None' provides no filling
-            * **[fill_alpha]**: Specifies transparency for continents and lakes.
-                                Default=.5 provides 50% transparency.
-            * **[coastLineWidth]**: Line width for coastlines. Default=0.0
-            * **[coastLineColor]**: Line color for coastlines. Default=None
-            * **[grid]**: show/hide parallels and meridians grid (default=True)
-            * **[gridLabels]**: label parallels and meridians (default=True)
-            * **[showCoords]**: display coordinate system name in upper right
-                                corner (default=True)
-            * **[kwargs]**: See <http://tinyurl.com/d4rzmfo> for more keywords
-        **Returns**:
-            * **map**: a Basemap object (<http://tinyurl.com/d4rzmfo>) with
-                       an additional attribute that specifies the datetime
-        **Example**:
-            ::
-
-            myMap = mapObj(lat_0=50, lon_0=-95, width=111e3*60, height=111e3*60)
-
-        written by Sebastien, 2013-02
-        """
-        
         import math
         from copy import deepcopy
         import datetime as dt
@@ -132,25 +157,25 @@ class mapObj(basemap.Basemap):
         self._coordsDict, self._coords_string = get_coord_dict()
 
         if datetime is None and dateTime is None:
-          print "Warning, datetime/dateTime not specified, using current time."
+          logging.warning("datetime/dateTime not specified, using current time.")
           datetime = dt.datetime.utcnow()
           dateTime = datetime
         elif datetime is None and dateTime is not None:
-          print "Warning, setting datetime to dateTime"
+          logging.warning("setting datetime to dateTime")
           datetime = dateTime
         elif datetime is not None and dateTime is None:
-          print "Warning, setting dateTime to datetime"
+          logging.warning("setting dateTime to datetime")
           dateTime = datetime
         else:
           assert(datetime == dateTime),\
-                  "Cannot set datetime and dateTime to different times!"
+                  logging.error("Cannot set datetime and dateTime to different times!")
         self.datetime = datetime
         self.dateTime = dateTime
     
         # Still a good idea to check whether coords are possible, because
         # there may be no call to coord_conv within this init.
         assert(coords in self._coordsDict),\
-                "coords set to " + coords + ",\n" + self.coords_string
+                logging.error("coords set to " + coords + ",\n" + self.coords_string)
     
         # Add an extra member to the Basemap class.
         self.coords = coords
@@ -287,36 +312,41 @@ class mapObj(basemap.Basemap):
         return out
 
 
-##########################################################################
-##########################################################################
 def genCmap(param, scale, colors='lasse', lowGray=False):
-    """
-    Generates a colormap and returns the necessary components to use it
+    """Generates a colormap and returns the necessary components to use it
 
-    **Args**:
-        * **param** (str): the parameter being plotted ('velocity' and 'phi0'
-            are special cases, anything else gets the same color scale)
-        * **scale** (list): a list with the [min,max] values of the color scale
-        * **[colors]** (str): a string indicating which colorbar to use, valid
-            inputs are 'lasse', 'aj'.  default = 'lasse'
-        * **[lowGray]** (boolean): a flag indicating whether to plot low
-            velocities (|v| < 15 m/s) in gray.  default = False
+    Parameters
+    ----------
+    param : str
+        the parameter being plotted ('velocity' and 'phi0' are special cases,
+        anything else gets the same color scale)
+    scale : list
+        a list with the [min,max] values of the color scale
+    colors : Optional[str]
+        a string indicating which colorbar to use, valid inputs are 
+        'lasse', 'aj'.  default = 'lasse'
+    lowGray : Optional[boolean]
+        a flag indicating whether to plot low velocities (|v| < 15 m/s) in
+        gray.  default = False
 
-    **Returns**:
-        * **cmap** (`matplotlib.colors.ListedColormap <http://matplotlib.org/api/colors_api.html?highlight=listedcolormap#matplotlib.colors.ListedColormap>`_):
-            the colormap generated.  This then gets passed to the mpl plotting
-            function (e.g. scatter, plot, LineCollection, etc.)
-        * **norm** (`matplotlib.colors.BoundaryNorm <http://matplotlib.org/api/colors_api.html?highlight=matplotlib.colors.boundarynorm#matplotlib.colors.BoundaryNorm>`_):
-            the colormap index.  This then gets passed to the mpl plotting
-            function (e.g. scatter, plot, LineCollection, etc.)
-        * **bounds** (list): the boundaries of each of the colormap segments.
-            This can be used to manually label the colorbar, for example.
+    Returns
+    -------
+    cmap : matplotlib.colors.ListedColormap
+        the colormap generated.  This then gets passed to the mpl plotting
+        function (e.g. scatter, plot, LineCollection, etc.)
+    norm : matplotlib.colors.BoundaryNorm
+        the colormap index.  This then gets passed to the mpl plotting
+        function (e.g. scatter, plot, LineCollection, etc.)
+    bounds : list
+        the boundaries of each of the colormap segments.  This can be used
+        to manually label the colorbar, for example.
 
-    **Example**:
-        ::
-
+    Example
+    -------
         cmap,norm,bounds = genCmap('velocity', [-200,200], colors='aj', lowGray=True)
+
     Written by AJ 20120820
+
     """
     import matplotlib,numpy
     import matplotlib.pyplot as plot
@@ -426,32 +456,38 @@ def genCmap(param, scale, colors='lasse', lowGray=False):
 
     return cmap,norm,bounds
 
-################################################################################
-################################################################################
+
 def drawCB(fig, coll, cmap, norm, map_plot=False, pos=[0,0,1,1]):
-    """
-    manually draws a colorbar on a figure.  This can be used in lieu of the
-    standard mpl colorbar function if you need the colorbar in a specific
+    """manually draws a colorbar on a figure.  This can be used in lieu of
+    the standard mpl colorbar function if you need the colorbar in a specific
     location.  See :func:`pydarn.plotting.rti.plotRti` for an example of its
     use.
 
-    **Args**:
-        * **fig** (`matplotlib.figure.Figure <http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure>`_):
-            the figure being drawn on.
-        * **coll** (`matplotlib.collections.Collection <http://matplotlib.org/api/collections_api.html?highlight=collection#matplotlib.collections.Collection>`_:
-            the collection using this colorbar
-        * **cmap** (`matplotlib.colors.ListedColormap <http://matplotlib.org/api/colors_api.html?highlight=listedcolormap#matplotlib.colors.ListedColormap>`_): the colormap being used
-        * **norm** (`matplotlib.colors.BoundaryNorm <http://matplotlib.org/api/colors_api.html?highlight=matplotlib.colors.boundarynorm#matplotlib.colors.BoundaryNorm>`_): the colormap index being used
-        * **[map_plot]** (boolean): a flag indicating the we are drawing the colorbar on a figure with a map plot
-        * **[pos]** (list): the position of the colorbar.  format = [left,bottom,width,height]
-    **Returns**:
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        the figure being drawn on.
+    coll : matplotlib.collections.Collection
+        the collection using this colorbar
+    cmap : matplotlib.colors.ListedColormap
+        the colormap being used
+    norm : matplotlib.colors.BoundaryNorm
+        the colormap index being used
+    map_plot : Optional[bool]
+        a flag indicating the we are drawing the colorbar on a figure with
+        a map plot
+    pos : Optional[list]
+        the position of the colorbar.  format = [left,bottom,width,height]
 
-    **Example**:
-        ::
+    Returns
+    -------
+    cb
 
-        cmap,norm,bounds = genCmap('velocity', [-200,200], colors='aj', lowGray=True)
+    Example
+    -------
 
     Written by AJ 20120820
+
     """
     import matplotlib,numpy
     import matplotlib.pyplot as plot
@@ -488,21 +524,38 @@ def drawCB(fig, coll, cmap, norm, map_plot=False, pos=[0,0,1,1]):
 ################################################################################
 def curvedEarthAxes(rect=111, fig=None, minground=0., maxground=2000, minalt=0,
                     maxalt=500, Re=6371., nyticks=5, nxticks=4):
-    """ Create curved axes in ground-range and altitude
+    """Create curved axes in ground-range and altitude
 
-    **Args**:
-        * [**rect**]: subplot spcification
-        * [**fig**]: A pylab.figure object (default to gcf)
-        * [**maxground**]: maximum ground range [km]
-        * [**minalt**]: lowest altitude limit [km]
-        * [**maxalt**]: highest altitude limit [km]
-        * [**Re**]: Earth radius
-    **Returns**:
-        * **ax**: matplotlib.axes object containing formatting
-        * **aax**: matplotlib.axes object containing data
-    **Example**:
-        ::
+    Parameters
+    ----------
+    rect : Optional[int]
+        subplot spcification
+    fig : Optional[pylab.figure object]
+        (default to gcf)
+    minground : Optional[float]
 
+    maxground : Optional[int]
+        maximum ground range [km]
+    minalt : Optional[int]
+        lowest altitude limit [km]
+    maxalt : Optional[int]
+        highest altitude limit [km]
+    Re : Optional[float] 
+        Earth radius in kilometers
+    nyticks : Optional[int]
+        Number of y axis tick marks; default is 5
+    nxticks : Optional[int]
+        Number of x axis tick marks; deafult is 4
+
+    Returns
+    -------
+    ax : matplotlib.axes object
+        containing formatting
+    aax : matplotlib.axes object
+        containing data
+
+    Example
+    -------
         import numpy as np
         from utils import plotUtils
         ax, aax = plotUtils.curvedEarthAxes()
@@ -514,6 +567,7 @@ def curvedEarthAxes(rect=111, fig=None, minground=0., maxground=2000, minalt=0,
         ax.grid()
 
     written by Sebastien, 2013-04
+
     """
     from matplotlib.transforms import Affine2D, Transform
     import mpl_toolkits.axisartist.floating_axes as floating_axes
@@ -583,21 +637,27 @@ def curvedEarthAxes(rect=111, fig=None, minground=0., maxground=2000, minalt=0,
     return ax1, aux_ax
 
 
-##########################################################################
-##########################################################################
 def addColorbar(mappable, ax):
     """ Append colorbar to axes
 
-    **Args**:
-        * **mappable**: a mappable object
-        * **ax**: an axes object
-    **Returns**:
-        * **cbax**: colorbar axes object
+    Parameters
+    ----------
+    mappable :
+        a mappable object
+    ax :
+        an axes object
 
-    .. note:: This is mostly useful for axes created with
-              :func:`curvedEarthAxes`.
+    Returns
+    -------
+    cbax :
+        colorbar axes object
+
+    Notes
+    -----
+    This is mostly useful for axes created with :func:`curvedEarthAxes`.
 
     written by Sebastien, 2013-04
+
     """
     from mpl_toolkits.axes_grid1 import SubplotDivider, LocatableAxes, Size
     import matplotlib.pyplot as plt 
@@ -630,26 +690,50 @@ def addColorbar(mappable, ax):
 
     return cbax
 
-################################################################################
-################################################################################
+
 def textHighlighted(xy, text, ax=None, color='k', fontsize=None, xytext=(0,0),
                     zorder=None, text_alignment=(0,0), xycoords='data', 
                     textcoords='offset points', **kwargs):
-    """ Plot highlighted annotation (with a white lining)
+    """Plot highlighted annotation (with a white lining)
     
-    **Belongs to**: :class:`rbspFp`
+    Parameters
+    ----------
+    xy :
+        position of point to annotate
+    text : str
+        text to show
+    ax : Optional[ ]
 
-    **Args**:
-        * **xy**: position of point to annotate
-        * **text**: text to show
-        * **[xytext]**: text position
-        * **[zorder]**: text zorder
-        * **[color]**: text color
-        * **[fontsize]**: text font size
-        * **[xycoords]**: xy coordinate (see `matplotlib.pyplot.annotate<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.annotate>`)
-        * **[textcoords]**: text coordinate (see `matplotlib.pyplot.annotate<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.annotate>`)
+    color : Optional[char]
+        text color; deafult is 'k'
+    fontsize : Optional [ ]
+        text font size; default is None
+    xytext : Optional[ ]
+        text position; default is (0, 0)
+    zorder :
+        text zorder; default is None
+    text_alignment : Optional[ ]
+
+    xycoords : Optional[ ]
+        xy coordinate[1]; default is 'data'
+    textcoords : Optional[ ]
+        text coordinate[2]; default is 'offset points'
+    **kwargs :
+
+
+    Notes
+    -----
+    Belongs to class rbspFp.
+
+    References
+    ----------
+    [1] see `matplotlib.pyplot.annotate
+        <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.annotate>`)
+    [2] see `matplotlib.pyplot.annotate
+        <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.annotate>`)
+
+
     """
-
     import matplotlib as mp
     from pylab import gca
 

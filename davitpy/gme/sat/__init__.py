@@ -1,23 +1,29 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
-*********************
-**Module**: gme.sat
-*********************
+sat
+---
 This subpackage contains various fucntions to read and write sattelite data
 
-This includes the following modules:
-	* **poes**
-    * **rbsp**
+Modules
+------------------------------------------
+goes    NOAA's GOES satellites
+poes    NOAA/EUMETSAT's POES satellites
+rbsp    NASA's Van Allen probes (ex. RBSP)
+------------------------------------------
+
 """
+import logging
+
 try: from goes import *
 except Exception, e:
-    print __file__+' -> gme.sat.goes: ', e
+    logging.exception(__file__ + ' -> gme.sat.goes: ' + str(e))
 
 try: from poes import *
 except Exception, e:
-    print __file__+' -> gme.sat.poes: ', e
+    logging.exception(__file__ + ' -> gme.sat.poes: ' + str(e))
 
 try: from rbsp import *
 except Exception, e:
-    print __file__+' -> gme.sat.rbsp: ', e
+    logging.exception(__file__+' -> gme.sat.rbsp: ' + str(e))

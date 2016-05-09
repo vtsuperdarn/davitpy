@@ -1,51 +1,55 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: models
-*********************
+"""models module
 
-**Modules**:
-    * :mod:`models.aacgm`: corrected geomagnetic model
-    * :mod:`models.tsyganenko`: T96
-    * :mod:`models.iri`: International Reference Ionosphere 2012
-    * :mod:`models.igrf`: International Geomagnetic Reference Field 2011
-    * :mod:`models.msis`: Neutral atmosphere model (NRLMSISE-00)
-    * :mod:`models.raydarn`: SuperDARN ray tracing code coupled with IRI
+Module with python wrappers to c and fortran codes for various models
+
+Modules
+----------------------------------------------------------
+aacgm       corrected geomagnetic model
+tsyganenko  T96
+iri         International Reference Ionosphere 2012
+igrf        International Geomagnetic Reference Field 2011
+msis        Neutral atmosphere model (NRLMSISE-00)
+raydarn     SuperDARN ray tracing code coupled with IRI
+----------------------------------------------------------
 
 """
+import logging
+
 try:
     import tsyganenko
 except Exception, e:
-    print __file__+' -> models.tsyganenko: ', e
+    logging.exception(__file__ + ' -> models.tsyganenko: ' + str(e))
 
 try:
     import igrf
 except Exception, e:
-    print __file__+' -> models.igrf: ', e
+    logging.exception(__file__ + ' -> models.igrf: ' + str(e))
 
 try:
     import aacgm
 except Exception, e:
-    print __file__+' -> models.aacgm: ', e
+    logging.exception(__file__ + ' -> models.aacgm: ' + str(e))
 
 try:
     import iri
 except Exception, e:
-    print __file__+' -> models.iri: ', e
+    logging.exception(__file__ + ' -> models.iri: ' + str(e))
 
 try:
     import msis
 except Exception, e:
-    print __file__+' -> models.msis: ', e
+    logging.exception(__file__ + ' -> models.msis: ' + str(e))
 
 try:
     import hwm
 except Exception, e:
-    print __file__+' -> models.hwm: ', e
+    logging.exception(__file__ + ' -> models.hwm: ' + str(e))
 
 try:
     import raydarn
 except Exception, e:
-    print __file__+' -> models.raydarn: ', e
+    logging.exception(__file__ + ' -> models.raydarn: ' + str(e))
 

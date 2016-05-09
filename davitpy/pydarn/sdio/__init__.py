@@ -1,74 +1,64 @@
 # I/O module __init__.py
 """
-*******************************
-            IO
-*******************************
-This subpackage contains various I/O routines for DaViT-py
-DEV: functions/modules/classes with a * have not been developed yet
+This subpackage contains various input/output routines for DaViTpy
 
-This includes the following module(s):
-	DataTypes
-		defines the general data pointer
-	radDataTypes
-		defines the fundamental radar data types
-	radDataRead
-		contains the functions necessary for reading radar data
-	pygridIo
-		library for reading and writing pygrid files
-	dbUtils
-		general utilities for database maintenance
-	dbRead
-		library for reading records from the database
-
-
-*******************************
+Modules
+---------
+DataTypes
+    defines the general data pointer
+radDataTypes
+    defines the fundamental radar data types
+radDataRead
+    contains the functions necessary for reading radar data
+sdDataTypes
+    defines the map and grid data types
+sdDataRead
+    contains the functions to read the radar map and grid files
+fitexfilter
+    Contains filtering routines
+dbUtils
+    general utilities for database maintenance
+fetchUtils
+    routines to retrieve data files from local and remote locations
 """
-try:
-	import fetchUtils
-	from fetchUtils import *
-except: print 'problem importing fetchUtils'
+import logging
 
 try:
-	import DataTypes
-	from DataTypes import *
-except: print 'problem importing DataTypes'
+    from fetchUtils import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.fetchUtils: ', str(e))
 
 try:
-	import radDataTypes
-	from radDataTypes import *
-except: print 'problem importing radDataTypes'
-	
-try:
-	import radDataRead
-	from radDataRead import *
-except: print 'problem importing radDataRead'
+    from DataTypes import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.DataTypes: ', str(e))
 
 try:
-	import sdDataTypes
-	from sdDataTypes import *
-except: print 'problem importing sdDataTypes'
-	
+    from radDataTypes import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.radDataTypes: ', str(e))
+
 try:
-	import sdDataRead
-	from sdDataRead import *
+    from radDataRead import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.radDataRead: ', str(e))
+
+try:
+    from sdDataTypes import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.sdDataTypes: ', str(e))
+
+try:
+    from sdDataRead import *
 except Exception,e: 
-	print e
-	print 'problem importing sdDataRead'
-	
-# try:
-# 	import pygridIo
-# 	from pygridIo import *
-# except: print 'problem importing pygridIo'
+    logging.exception(__file__+' -> pydarn.sdio.sdDataRead: ', str(e))
 
 try:
-	import fitexfilter
-	from fitexfilter import *
-except Exception,e: 
-	print e
-	print 'problem importing fitexfilter'
-	
+    from fitexfilter import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.fitexfilter: ', str(e))
+
 try:
-	import dbUtils
-	from dbUtils import *
-except Exception,e: 
-	print 'problem importing dbUtils: ', e
+    from dbUtils import *
+except Exception,e:
+    logging.exception(__file__+' -> pydarn.sdio.dbUtils: ', str(e))
