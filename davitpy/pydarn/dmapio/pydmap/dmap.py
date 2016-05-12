@@ -458,7 +458,7 @@ class RawDmapRead(object):
 			#print (data,data_type)
 			self.cursor = self.cursor + self.get_num_bytes(data_type_fmt)
 		elif data_type_fmt is not 's':
-			data = struct.unpack_from(data_type_fmt,self.dmap_bytearr,self.cursor)
+			data = struct.unpack_from(data_type_fmt,buffer(self.dmap_bytearr),self.cursor)
 			#print(data,data_type)
 			self.cursor = self.cursor + self.get_num_bytes(data_type_fmt)
 		else:
@@ -471,7 +471,7 @@ class RawDmapRead(object):
 					raise DmapDataError(message)
 
 			char_count = '{0}s'.format(byte_counter)
-			data = struct.unpack_from(char_count,self.dmap_bytearr,self.cursor)
+			data = struct.unpack_from(char_count,buffer(self.dmap_bytearr),self.cursor)
 			self.cursor = self.cursor + byte_counter + 1
 
 
