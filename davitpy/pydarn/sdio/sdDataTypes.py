@@ -457,6 +457,14 @@ class sdDataPtr():
         else:
             return beam
 
+    def open(self):
+        print "The open() method does nothing! It's being deprecated."
+        pass
+
+    def close(self):
+        print "The close() method does nothing! It's being deprecated."
+        pass
+
     def createIndex(self):
         import datetime as dt
         import davitpy.pydarn.dmapio as dmapio
