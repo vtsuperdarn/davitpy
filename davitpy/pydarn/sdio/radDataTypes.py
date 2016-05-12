@@ -469,6 +469,13 @@ class radDataPtr():
 
     def __iter__(self):
         return self
+    def open(self):
+        print "The open() method does nothing! It's being deprecated."
+        pass
+
+    def close(self):
+        print "The close() method does nothing! It's being deprecated."
+        pass
 
     def next(self):
         beam = self.readRec()
