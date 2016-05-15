@@ -22,6 +22,7 @@ pip install -U pip
 
 #Now install the python package dependencies dependencies
 apt-get install -y python-imaging
+apt-get install -y python-gi-cairo  #needed in Ubuntu 16.04
 apt-get install -y mpich2
 apt-get install -y gfortran
 apt-get install -y libhdf5-serial-dev
