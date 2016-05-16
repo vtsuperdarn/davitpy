@@ -141,6 +141,7 @@ class mapObj(basemap.Basemap):
         import math
         from copy import deepcopy
         import datetime as dt
+        from matplotlib import pyplot
 
         from davitpy.utils import coord_conv, get_coord_dict
 
@@ -192,12 +193,12 @@ class mapObj(basemap.Basemap):
 
         # Initialize map with original Basemap
         super(mapObj, self).__init__(projection=projection,
-                                     resolution=resolution, lat_0=self.lat_0,
-                                     lon_0=self.lon_0, width=width,
-                                     height=height, **kwargs)
+                                     resolution=resolution,lat_0=self.lat_0,
+                                     lon_0=self.lon_0,width=width,
+                                     height=height,ax=ax,**kwargs)
 
-        if ax is not None:
-            mapObj.ax = ax
+        if self.ax is None:
+            self.ax = pyplot.gca()
 
         if draw:
           self.draw()
