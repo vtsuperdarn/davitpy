@@ -127,9 +127,9 @@ subroutine checkhwm14(path)
   print '(a6,3(a12,a10))', 'glon', 'mer','zon', 'mer','zon', 'mer','zon'
   do ilon = -180, 180, 20
     glon = float(ilon)
-    call hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,qw)
+    call hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,apqt,datapath,qw)
     call dwm07(iyd,sec,alt,glat,glon,ap,dw)
-    call hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,w)
+    call hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,datapath,w)
     print '(f6.0,3(f12.3,f10.3))', glon, qw, dw, w
   end do
   print *

@@ -45,7 +45,7 @@ class TestHWM(unittest.TestCase):
             expected=myfile.read().replace('\n',' ')
 
         # Capture the output of the checkhwm14 function.
-        with open('test.txt','w') as f:
+        with open(tempfile,'w') as f:
             with stdchannel_redirected(sys.stdout, f):
                 checkhwm14()
 

@@ -131,7 +131,7 @@ setup(name='davitpy',
       packages=find_packages(),
       long_description=read('README.md'),
       zip_safe=False,
-      ext_modules=[aacgm, tsyg, hwm, msis, igrf, iri],
+      ext_modules=[aacgm,tsyg,hwm,checkhwm,msis,checkmsis,igrf,iri],
       package_data={
         'davitpy.models.iri': ['*.dat', '*.asc'],
         'davitpy.models.hwm': ['*.dat']
