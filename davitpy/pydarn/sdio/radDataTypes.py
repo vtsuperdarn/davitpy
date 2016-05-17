@@ -938,8 +938,7 @@ class radBaseData():
                         for j in range(self.parent.prm.mplgs):
                             samp = []
                             for k in range(2):
-                                aa = (i * self.parent.prm.mplgs + j) * 2 + k
-                                samp.append(aDict[attr][aa])
+                                samp.append(aDict[attr][i][j][k])
                             rec.append(samp)
                         getattr(self, attr).append(rec)
                 else:
