@@ -705,6 +705,8 @@ class radDataPtr():
             self.__filename = self.file_list[self.file_index]
             self.records = parse_dmap_format_from_file(self.__filename)
 
+        sTime_secs = (self.sTime - dt.datetime(1970, 1, 1)).total_seconds()
+        eTime_secs = (self.eTime - dt.datetime(1970, 1, 1)).total_seconds()
         while (1):            
             # If we've already read from a file but have reached the end of the
             #records in that file, read from the next file in the list
@@ -719,19 +721,18 @@ class radDataPtr():
                 self.records = parse_dmap_format_from_file(self.__filename)
 
             dfile = self.records[self.record_index + 1]
-            temp = calendar.timegm(dt.datetime(dfile['time.yr'],dfile['time.mo'],
-                            dfile['time.dy'],dfile['time.hr'],dfile['time.mt'],
-                            dfile['time.sc']).timetuple())
-            dfile['time'] = temp + dfile['time.us'] / 1000000.0
+            temp = dt.datetime(dfile['time.yr'],dfile['time.mo'],
+                               dfile['time.dy'],dfile['time.hr'],dfile['time.mt'])
+            temp = temp + dt.timedelta(seconds=dfile['time.sc']+dfile['time.us']/10.0e6)
+            dfile['time'] = (temp - dt.datetime(1970, 1, 1)).total_seconds()
 
-            if(dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
+            if(dfile['time'] > eTime_secs):
                 logging.info('reached end of data')
                 return None
             else:
                 self.record_index += 1
 
-            if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
-               dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime and
+            if(dfile['time'] >= sTime_secs and dfile['time'] <= eTime_secs and
                (self.stid == None or self.stid == dfile['stid']) and
                    #(self.channel == None or self.channel == channel) and
                    # ASR removed because of bad check as above.
