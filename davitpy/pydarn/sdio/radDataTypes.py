@@ -181,10 +181,12 @@ class radDataPtr():
         # a temporary directory to store a temporary file
         if tmpdir is None:
             try:
-                tmpDir = davitpy.rcParams['DAVIT_TMPDIR']
+                tmpdir = davitpy.rcParams['DAVIT_TMPDIR']
             except:
-                tmpDir = '/tmp/sd/'
-        d = os.path.dirname(tmpDir)
+                logging.warning("Unable to set temporary directory with "
+                                "rcParams. Using extra default of /tmp/sd/")
+                tmpdir = '/tmp/sd/'
+        d = os.path.dirname(tmpdir)
         if not os.path.exists(d):
             os.makedirs(d)
 
@@ -197,7 +199,7 @@ class radDataPtr():
                     estr = 'problem reading {:s} :file does '.format(fileName)
                     logging.error("{:s}not exist".format(estr))
                     return None
-                outname = tmpDir + \
+                outname = tmpdir + \
                           str(int(utils.datetimeToEpoch(dt.datetime.now())))
                 if(string.find(fileName,'.bz2') != -1):
                     outname = string.replace(fileName,'.bz2','')
@@ -222,10 +224,10 @@ class radDataPtr():
             try:
                 if self.channel is None:
                     gl = glob.glob("%s????????.??????.????????.??????.%s.%s" %
-                                   (tmpDir, radcode, fileType))
+                                   (tmpdir, radcode, fileType))
                     for f in gl:
                         try:
-                            ff = string.replace(f, tmpDir, '')
+                            ff = string.replace(f, tmpdir, '')
                             # check time span of file
                             t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
                                              int(ff[6:8]), int(ff[9:11]),
@@ -243,10 +245,10 @@ class radDataPtr():
                             logging.exception(e)
                 else:
                     gl = glob.glob("%s????????.??????.????????.??????.%s.%s.%s"
-                                   % (tmpDir, radcode, self.channel, fileType))
+                                   % (tmpdir, radcode, self.channel, fileType))
                     for f in gl:
                         try:
-                            ff = string.replace(f,tmpDir,'')
+                            ff = string.replace(f,tmpdir,'')
                             # check time span of file
                             t1 = dt.datetime(int(ff[0:4]), int(ff[4:6]),
                                              int(ff[6:8]), int(ff[9:11]),
@@ -307,7 +309,7 @@ class radDataPtr():
                             logging.exception("{:s}{:}".format(estr,
                                                                local_fnamefmt))
 
-                    outdir = tmpDir
+                    outdir = tmpdir
 
                     # check to see if channel was specified and only use
                     # fnamefmts with channel in them
@@ -424,7 +426,7 @@ class radDataPtr():
                             estr = 'default: {:s}'.format(estr, str(port))
                             logging.warning(estr)
 
-                    outdir = tmpDir
+                    outdir = tmpdir
 
                     # check to see if channel was specified and only use
                     # fnamefmts with channel in them
@@ -481,13 +483,13 @@ class radDataPtr():
                 # choose a temp file name with time span info for cacheing
                 if (self.channel is None):
                     tmpName = '%s%s.%s.%s.%s.%s.%s' % \
-                              (tmpDir, self.sTime.strftime("%Y%m%d"),
+                              (tmpdir, self.sTime.strftime("%Y%m%d"),
                                self.sTime.strftime("%H%M%S"),
                                self.eTime.strftime("%Y%m%d"),
                                self.eTime.strftime("%H%M%S"), radcode, fileType)
                 else:
                     tmpName = '%s%s.%s.%s.%s.%s.%s.%s' % \
-                              (tmpDir, self.sTime.strftime("%Y%m%d"),
+                              (tmpdir, self.sTime.strftime("%Y%m%d"),
                                self.sTime.strftime("%H%M%S"),
                                self.eTime.strftime("%Y%m%d"),
                                self.eTime.strftime("%H%M%S"),
@@ -1491,9 +1493,9 @@ if __name__=="__main__":
     import davitpy
 
     try:
-        tmpDir = davitpy.rcParams['DAVIT_TMPDIR']
+        tmpdir = davitpy.rcParams['DAVIT_TMPDIR']
     except:
-        tmpDir = '/tmp/sd/'
+        tmpdir = '/tmp/sd/'
 
     rad = 'fhe'
     channel = None
@@ -1502,7 +1504,7 @@ if __name__=="__main__":
     sTime = datetime.datetime(2012, 11, 1, 0, 0)
     eTime = datetime.datetime(2012, 11, 1, 4, 2)
     expected_filename = "20121101.000000.20121101.040200.fhe.fitacf"
-    expected_path = os.path.join(tmpDir, expected_filename)
+    expected_path = os.path.join(tmpdir, expected_filename)
     expected_filesize = 19377805
     expected_md5sum = "cfd48945be0fd5bf82119da9a4a66994"
     print "Expected File: " + expected_path
@@ -1615,7 +1617,7 @@ if __name__=="__main__":
     sTime = datetime.datetime(2014, 6, 24, 0, 0)
     eTime = datetime.datetime(2014, 6, 24, 2, 2)
     expected_filename = "20140624.000000.20140624.020200.kod.c.fitex"
-    expected_path = os.path.join(tmpDir, expected_filename)
+    expected_path = os.path.join(tmpdir, expected_filename)
     expected_filesize = 16148989
     expected_md5sum = "ae7b4a7c8fea56af9639c39bea1453f2"
     print "Expected File:", expected_path
@@ -1682,7 +1684,7 @@ if __name__=="__main__":
     sTime = datetime.datetime(2014, 6, 24, 0, 0)
     eTime = datetime.datetime(2014, 6, 24, 2, 2)
     expected_filename = "20140624.000000.20140624.020200.kod.all.fitex"
-    expected_path = os.path.join(tmpDir, expected_filename)
+    expected_path = os.path.join(tmpdir, expected_filename)
     expected_filesize = 31822045
     expected_md5sum = "493bd0c937b6135cc608d0518d929077"
     print "Expected File:", expected_path
