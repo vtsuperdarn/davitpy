@@ -2,12 +2,17 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
 """
+Module
+------
+pydarn.radar.radUtils
 
 Functions
 ---------
-getCpName     get the name of a control program from cp id number
-getParamDict  Get information about a parameter, including units, default
-              ranges, and axis labels.
+getCpName
+    get the name of a control program from cp id number
+getParamDict
+    Get information about a parameter, including units,
+    default ranges, and axis labels.
 
 """
 import logging

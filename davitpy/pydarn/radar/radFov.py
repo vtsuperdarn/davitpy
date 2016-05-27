@@ -1,25 +1,31 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""This module handles generating field-of-view projctions
+"""
+Module
+------
+pydarn.radar.radFov
+    This module handles generating field-of-view projctions
 
 Classes
-------------------------------------------------------------------------------
-fov   field of view position
-------------------------------------------------------------------------------
+-------
+pydarn.radar.radFov.fov
+    field of view position
 
 Functions
-------------------------------------------------------------------------------
-slantRange    Calculate slant range
-calcAzOffBore Calculate off-array-normal azimuth
-calcFieldPnt  Calculate field point projection
-------------------------------------------------------------------------------
+---------
+pydarn.radar.radFov.slantRange
+    Calculate slant range
+pydarn.radar.radFov.calcAzOffBore
+    Calculate off-array-normal azimuth
+pydarn.radar.radFov.calcFieldPnt
+    Calculate field point projection
 
 References
-------------------------------------------------------------------------------
+----------
 Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
-------------------------------------------------------------------------------
+
 """
 import numpy as np
 import logging
