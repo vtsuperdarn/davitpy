@@ -124,7 +124,7 @@ def getDbConn(username=davitpy.rcParams['SDBREADUSER'],
     if(sconn != None):
         # connect to the database, testing for errors
         try:
-            dbConn = getattr(sconn, dbName)
+            dbconn = getattr(sconn, dbName)
         except:
             logging.error('error connecting to database {}'.format(dbName))
 
