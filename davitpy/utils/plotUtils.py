@@ -220,13 +220,14 @@ class mapObj(basemap.Basemap):
         if self._grid:
           parallels = np.arange(-80.,81.,20.)
           out = self.drawparallels(parallels, color='.6', zorder=10)
+          # Set format of meridian labels.
+          if self.coords == "mlt":
+            lonfmt = lambda x: "%02g"%(x*24./360.)
+          else:
+            lonfmt = "%g"
           # label parallels on map
           if self._gridLabels: 
             lablon = int(self.llcrnrlon/10)*10
-            if self.coords == "mlt":
-              lonfmt = lambda x: "%02g"%(x*24./360.)
-            else:
-              lonfmt = "%g"
             rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
             x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
             for ix,iy,ip in zip(x,y,parallels):
@@ -247,7 +248,8 @@ class mapObj(basemap.Basemap):
           else: 
             merLabels = [False,False,False,False]
           # draw meridians
-          out = self.drawmeridians(meridians, labels=merLabels, color='.6', zorder=10)
+          out = self.drawmeridians(meridians, labels=merLabels, 
+                                   fmt=lonfmt, color='.6', zorder=10)
       
     def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
         from copy import deepcopy
