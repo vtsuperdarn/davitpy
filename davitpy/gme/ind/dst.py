@@ -198,7 +198,7 @@ def readDst(sTime=None,eTime=None,dst=None):
         dstList = []
         for rec in qry.sort('time'):
             dstList.append(dstRec(dbDict=rec))
-        logging.info('\nreturning a list with' + len(dstList) + 'records of dst data')
+        logging.info('\nreturning a list with ' + str(len(dstList)) + ' records of dst data')
         return dstList
     #if we didn't find anything on the mongodb
     else:
