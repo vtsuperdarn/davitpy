@@ -337,20 +337,19 @@ def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
     return rtimeLocal, stimeLocal
 
 
-def calcTerminator( date, latitudes, longitudes ):
+def calcTerminator( date, latitudes, longitudes,nlats=50,nlons=50 ):
     """Calculate terminator position and solar zenith angle for a given julian date-time 
     within latitude/longitude limits Note that for plotting only, basemap has a built-in terminator
     """
     jd = getJD(date)
     t = calcTimeJulianCent(jd)
     ut = ( jd - (int(jd - 0.5) + 0.5) )*1440.
-    npoints = 50
-    zen = numpy.zeros((npoints,npoints))
-    lats = numpy.linspace(latitudes[0], latitudes[1], num=npoints)
-    lons = numpy.linspace(longitudes[0], longitudes[1], num=npoints)
+    zen  = numpy.zeros((nlats,nlons))
+    lats = numpy.linspace(latitudes[0],  latitudes[1],  num=nlats)
+    lons = numpy.linspace(longitudes[0], longitudes[1], num=nlons)
     term = []
-    for ilat in range(1,npoints+1):
-        for ilon in range(npoints):
+    for ilat in range(1,nlats+1):
+        for ilon in range(nlons):
             az,el = calcAzEl(t, ut, lats[-ilat], lons[ilon], 0.) 
             zen[-ilat,ilon] = el
         a = (90 - zen[-ilat,:])
