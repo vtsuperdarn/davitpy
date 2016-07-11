@@ -696,14 +696,14 @@ class musicArray(object):
             return
 
         #Figure out what size arrays we need and initialize the arrays...
-        nrTimes = np.max(dataListArray[:,scanInx]) + 1
+        nrTimes = int(np.max(dataListArray[:,scanInx]) + 1)
 
         if full_array:
-            nrBeams = fov.beams.max() + 1
-            nrGates = fov.gates.max() + 1
+            nrBeams = int(fov.beams.max() + 1)
+            nrGates = int(fov.gates.max() + 1)
         else:
-            nrBeams = np.max(dataListArray[:,beamInx]) + 1
-            nrGates = np.max(dataListArray[:,gateInx]) + 1
+            nrBeams = int(np.max(dataListArray[:,beamInx]) + 1)
+            nrGates = int(np.max(dataListArray[:,gateInx]) + 1)
 
         #Make sure the FOV is the same size as the data array.
         if len(fov.beams) != nrBeams:
@@ -728,7 +728,7 @@ class musicArray(object):
         dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
         dataArray[:]  = np.nan
         for inx in range(len(dataListArray)):
-          dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
+            dataArray[int(dataListArray[inx,scanInx]),int(dataListArray[inx,beamInx]),int(dataListArray[inx,gateInx])] = dataListArray[inx,dataInx]
 
         #Make metadata block to hold information about the processing.
         metadata = {}

@@ -554,7 +554,7 @@ class musicRTI(object):
         **kwArgs):
 
         from scipy import stats
-        from rti import plotFreq,plotNoise
+        from rti import plot_freq,plot_nave,plot_skynoise,plot_searchnoise
 
         if axis is None:
             from matplotlib import pyplot as plt
@@ -882,12 +882,23 @@ class musicRTI(object):
             curr_xlim   = axis.get_xlim()
             curr_xticks = axis.get_xticks()
 
-            pos[1] = pos[1] + pos[3]
-            pos[3] = super_plot_hgt
-            plotFreq(fig,dataObject.prm.time,dataObject.prm.tfreq,dataObject.prm.nave,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
+            pos[1]      = pos[1] + pos[3]
+            pos[3]      = super_plot_hgt
+            freq_pos    = pos[:]
 
-            pos[1] = pos[1] + super_plot_hgt
-            plotNoise(fig,dataObject.prm.time,dataObject.prm.noisesky,dataObject.prm.noisesearch,pos=pos,xlim=curr_xlim,xticks=curr_xticks)
+            pos[1]      = pos[1] + super_plot_hgt
+            noise_pos   = pos[:]
+
+            skynoise_ax = fig.add_axes(noise_pos, label='sky')
+            searchnoise_ax = fig.add_axes(noise_pos, label='search', frameon=False)
+            freq_ax = fig.add_axes(freq_pos, label='freq')
+            nave_ax = fig.add_axes(freq_pos, label='nave', frameon=False)
+#            cpid_ax = fig.add_axes(cpid_pos)
+            plot_freq(freq_ax,dataObject.prm.time,dataObject.prm.tfreq,xlim=curr_xlim,xticks=curr_xticks)
+            plot_nave(nave_ax,dataObject.prm.time,dataObject.prm.nave,xlim=curr_xlim,xticks=curr_xticks)
+
+            plot_skynoise(skynoise_ax,dataObject.prm.time,dataObject.prm.noisesky,xlim=curr_xlim,xticks=curr_xticks)
+            plot_searchnoise(searchnoise_ax,dataObject.prm.time,dataObject.prm.noisesearch,xlim=curr_xlim,xticks=curr_xticks)
 
         # Put a title on the RTI Plot. #################################################
         if plot_title:
