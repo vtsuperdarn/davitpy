@@ -8,3 +8,5 @@ field-of-view (FoV) of SuperDARN backscatter.
 """
 import update_backscatter
 import test_update_backscatter
+import calc_elevation
+import calc_height
