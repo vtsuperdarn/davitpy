@@ -16,6 +16,12 @@ pydarn.radar.radInfo
 pydarn.radar.radUtils
     misc. radar parameters (cpid...)
 
+Submodules
+-----------
+tdiff
+    Contains routines to estimate the hardware tdiff value for a specified
+    radar and frequency band
+
 """
 
 import logging
@@ -39,6 +45,11 @@ try:
     from radStruct import *
 except Exception as e:
     logging.exception(__file__+' -> pydarn.radar.radStruct: ', str(e))
+
+try:
+    import tdiff
+except Exception, e:
+    logging.exception('problem importing tdiff: ' + str(e))
 
 
 ####################################
