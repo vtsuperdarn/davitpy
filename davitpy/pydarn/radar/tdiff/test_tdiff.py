@@ -9,7 +9,9 @@
 
 Functions
 -------------------------------------------------------------------------------
-
+test_simplex               Test the rigorous_simplex routine in simplex.py
+han_heater_field_line_lat  Trace basic field-lines for HAN-heater combos
+test_calc_tdiff            Test calc_tdiff for an example from the RS article
 -------------------------------------------------------------------------------
 
 References

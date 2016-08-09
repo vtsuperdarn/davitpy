@@ -207,8 +207,8 @@ class radFreqBands(object):
         '''
         ostr = "Radar transmission frequency bands:\n"
         # Add radar name
-        ostr = "{:s}\tCode: {:s}\tID: {:d}\n".format(ostr, self.rad_code,
-                                                     self.stid)
+        ostr = "{:s}\tCode: {:}\tID: {:}\n".format(ostr, self.rad_code,
+                                                   self.stid)
         # Add number of frequency bands
         ostr = "{:s}\tNumber of frequency bands spanning ".format(ostr)
         ostr = "{:s}{:.3f}-{:.3f} ".format(ostr, min(self.tmins) * 1.0e-3,
