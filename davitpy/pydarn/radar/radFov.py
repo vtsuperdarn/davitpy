@@ -361,9 +361,9 @@ class fov(object):
                         slant_range_center[ib, ig] = \
                             gsMapSlantRange(srang_center[ig], altitude=None,
                                             elevation=None)
-                        slant_range_full[ib, ig] = gsMapSlantRange(srang_edge[ig],
-                                                                   altitude=None,
-                                                                   elevation=None)
+                        slant_range_full[ib, ig] = \
+                            gsMapSlantRange(srang_edge[ig], altitude=None,
+                                            elevation=None)
                         srang_center[ig] = slant_range_center[ib, ig]
                         srang_edge[ig] = slant_range_full[ib, ig]
 
@@ -406,25 +406,23 @@ class fov(object):
         self.beams = beams[:-1]
         self.gates = gates[:-1]
         self.coords = coords
+        self.fov_dir = fov_dir
+        self.model = model
 
     # *************************************************************
     def __str__(self):
-        outstring = 'latCenter: {} \
-                     \nlonCenter: {} \
-                     \nlatFull: {} \
-                     \nlonFull: {} \
-                     \nslantRCenter: {} \
-                     \nslantRFull: {} \
-                     \nbeams: {} \
-                     \ngates: {} \
-                     \ncoords: {}'.format(np.shape(self.latCenter),
-                                          np.shape(self.lonCenter),
-                                          np.shape(self.latFull),
-                                          np.shape(self.lonFull),
-                                          np.shape(self.slantRCenter),
-                                          np.shape(self.slantRFull),
-                                          np.shape(self.beams),
-                                          np.shape(self.gates), self.coords)
+        outstring = 'latCenter: {}\nlonCenter: {}\nlatFull: {}\nlonFull: {} \
+                     \nslantRCenter: {}\nslantRFull: {}\nbeams: {} \
+                     \ngates: {} \ncoords: {} \nfield of view: {}\
+                     \nmodel: {}'.format(np.shape(self.latCenter),
+                                         np.shape(self.lonCenter),
+                                         np.shape(self.latFull),
+                                         np.shape(self.lonFull),
+                                         np.shape(self.slantRCenter),
+                                         np.shape(self.slantRFull),
+                                         np.shape(self.beams),
+                                         np.shape(self.gates), self.coords,
+                                         self.fov_dir, self.model)
         return outstring
 
 
@@ -547,13 +545,13 @@ def calcFieldPnt(tGeoLat, tGeoLon, tAlt, boreSight, boreOffset, slantRange,
         # Using no models simply means tracing based on trustworthy elevation
         # or altitude
         if not altitude:
-            altitude = np.sqrt(Re ** 2 + slantRange ** 2 + 2. * slantRange * Re *
+            altitude = np.sqrt(Re**2 + slantRange**2 + 2. * slantRange * Re *
                                np.sin(np.radians(elevation))) - Re
         if not elevation:
             if(slantRange < altitude):
                 altitude = slantRange - 10
-            elevation = np.degrees(asin(((Re + altitude) ** 2 - (Re + tAlt) ** 2 -
-                                         slantRange ** 2) /
+            elevation = np.degrees(asin(((Re + altitude)**2 - (Re + tAlt)**2 -
+                                         slantRange**2) /
                                         (2. * (Re + tAlt) * slantRange)))
         # The tracing is done by calcDistPnt
         dict = geoPack.calcDistPnt(tGeoLat, tGeoLon, tAlt, dist=slantRange,

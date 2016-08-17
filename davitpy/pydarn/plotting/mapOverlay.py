@@ -203,9 +203,11 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     model : Optional[str]
         'IS for ionopsheric scatter projection model (default), 'GS' for
         ground scatter projection model, None if you are really
-        confident in your elevation or altitude values
+        confident in your elevation or altitude values.  fov object will over
+        write this choice.
     fov_dir : Optional[str] 
-        Field of view direction ('front' or 'back'). Default='front'
+        Field of view direction ('front' or 'back'). Value in fov object will
+        overwrite this choice.  Default='front'
     zorder : Optional[int]
         The overlay order number
     lineColor : Optional[str]
@@ -290,7 +292,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # iterates through radars to be plotted
     for ir in xrange(nradars):
         # Get field of view coordinates
-        if(fovObj is None):
+        if fovObj is None:
             rad = network_obj.getRadarBy(rad_input['vals'][ir],
                                          rad_input['meth'])
             if not rad:
@@ -312,6 +314,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             rad_fov = fovObj
             egate = len(fovObj.gates)
             ebeam = len(fovObj.beams)
+            model = fovObj.model
+            fov_dir = fovObj.fov_dir
 
         if rangeLimits is not None:
             sgate = rangeLimits[0]
