@@ -69,15 +69,14 @@ def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
                     plot_terminator=plotTerminator)
 
 
-
 def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
-                    params=['power','velocity','width'], scales=[], channel=None,
-                    coords='gate', colors='lasse', yrng=-1, gsct=False,
-                    low_gray=False, show=True, filtered=False,
-                    fileName=None, txfreq_lims=None, myFile=None,
-                    xtick_size=9, ytick_size=9,
-                    xticks=None, axvlines=None,
-                    plot_terminator=False):
+             params=['power', 'velocity', 'width'], scales=[], channel=None,
+             coords='gate', colors='lasse', yrng=-1, gsct=False,
+             low_gray=False, show=True, filtered=False,
+             fileName=None, txfreq_lims=None, myFile=None,
+             xtick_size=9, ytick_size=9,
+             xticks=None, axvlines=None,
+             plot_terminator=False):
 
     """ Create an rti plot for a specified radar and time period.
 
@@ -190,11 +189,13 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     #Time how long this is going to take
     timing_start = datetime.now()
 
-    #NOTE TO DEVS: List of available params. Can be simply expanded 
+    #NOTE TO DEVS: List of available params. Can be simply expanded
     #as more parameters are added to SuperDARN data set (like index
     #of refraction)
-    available_params = ['power','velocity','width','elevation','phi0','velocity_error']
-    default_scales = [[0,30],[-200,200],[0,150],[0,50],[-np.pi, np.pi],[0,200]]
+    available_params = ['power', 'velocity', 'width', 'elevation', 'phi0',
+                        'velocity_error']
+    default_scales = [[0, 30], [-200, 200], [0, 150], [0, 50],
+                      [-np.pi, np.pi], [0, 200]]
 
     available_text = 'Allowable parameters are '
     for p in available_params:
@@ -234,12 +235,15 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
             yrng[0] <= yrng[1])), (
         logging.error('yrng must equal -1 or be a list with the 2nd element '
                       'larger than the first'))
-    assert((colors == 'lasse' or colors == 'aj')) or isinstance(colors,list), (
-        logging.error("Valid inputs for color are 'lasse' and 'aj' or a list of matplotlib colormaps"))
+    assert((colors == 'lasse' or
+            colors == 'aj')) or isinstance(colors, list), (
+        logging.error("Valid inputs for color are 'lasse' and 'aj' or a list "
+                      "of matplotlib colormaps"))
 
-    assert( (isinstance(txfreq_lims,list) and len(txfreq_lims)==2) or
-            isinstance(txfreq_lims,type(None))), (
-        logging.error("txfreq_lims must be a list with the start and end frequencies") )
+    assert((isinstance(txfreq_lims, list) and len(txfreq_lims) == 2) or
+           isinstance(txfreq_lims, type(None))), (
+        logging.error("txfreq_lims must be a list with the start and "
+                      "end frequencies"))
 
     # Assign any default color scale parameter limits.
     tscales = []
@@ -260,7 +264,6 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                           "than ending frequency!"))
         tband = txfreq_lims
 
-
     # Open the file if a pointer was not given to us
     # if fileName is specified then it will be read.
     if not myFile:
@@ -278,12 +281,14 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
 
     # Make sure that we will only plot data for the time range specified
     # by sTime and eTime.
-    if myFile.sTime <= sTime and myFile.eTime > sTime and myFile.eTime >= eTime:
+    if (myFile.sTime <= sTime and myFile.eTime > sTime and
+            myFile.eTime >= eTime):
         myFile.sTime = sTime
         myFile.eTime = eTime
     else:
         # If the times range is not covered by the file, warn the user.
-        logging.warning('Data not available in myFile for the whole of sTime to eTime!')
+        logging.warning('Data not available in myFile for the whole of '
+                        'sTime to eTime!')
 
     # Finally we can start reading the data file
     myBeam = myFile.readRec()
@@ -298,8 +303,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     # band else continue on to the next range of frequencies
     if len(data_dict['freq']) == 0:
         logging.error('No data found in frequency range ' +
-                        str(tbands[0]) + ' kHz to ' +
-                        str(tbands[1]) + ' kHz')
+                      str(tbands[0]) + ' kHz to ' +
+                      str(tbands[1]) + ' kHz')
         return None
 
     # Create a figure.
@@ -325,16 +330,16 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                   data_dict['nsky'])
     # Plot the search noise.
     plot_searchnoise(searchnoise_ax, data_dict['times'],
-                        data_dict['nsch'])
+                     data_dict['nsch'])
     # plot the frequency bar.
     plot_freq(freq_ax, data_dict['times'],
-                data_dict['freq'])
+              data_dict['freq'])
     # Plot the nave data.
     plot_nave(nave_ax, data_dict['times'],
-                data_dict['nave'])
+              data_dict['nave'])
     # Plot the cpid bar
     plot_cpid(cpid_ax, data_dict['times'],
-                data_dict['cpid'], data_dict['mode'])
+              data_dict['cpid'], data_dict['mode'])
 
     # Plot each of the parameter panels.
     figtop = .77
@@ -349,7 +354,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
         # Use draw_axes to create and set formatting of the axes to
         # plot to.
         pos = [.1, figtop - figheight * (p + 1) + .02, .76,
-                figheight - .02]
+               figheight - .02]
         ax = draw_axes(rti_fig, data_dict['times'], rad,
                        data_dict['cpid'], bmnum,
                        data_dict['nrang'],
@@ -370,7 +375,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
 
         # Generate the color map.
 
-        if colors in ['aj','lasse']:
+        if colors in ['aj', 'lasse']:
             cmap, norm, bounds = utils.plotUtils.genCmap(params[p], scales[p],
                                                          colors=colors,
                                                          lowGray=low_gray)
@@ -380,8 +385,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
             cmap = cm.get_cmap(colors[p])
 
         # Plot the data to the axis object.
-        pcoll = rti_panel(ax,data_dict,pArr,gsct,rad,bmnum,coords,cmap,norm,
-                          plot_terminator=plot_terminator)
+        pcoll = rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
+                          norm, plot_terminator=plot_terminator)
 
         # Set xaxis formatting depending on amount of data plotted.
         if ((eTime - sTime) <= timedelta(days=1)) and \
@@ -395,9 +400,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
         # Draw the colorbar.
         cb = utils.drawCB(rti_fig, pcoll, cmap, norm, map_plot=0,
                           pos=[pos[0] + pos[2] + .02, pos[1], 0.02,
-                          pos[3]])
+                               pos[3]])
 
-        if colors in ['aj','lasse']:
+        if colors in ['aj', 'lasse']:
             # Label the colorbar.
             l = []
             # Define the colorbar labels.
@@ -483,7 +488,7 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
 
     Returns
     -------
-    ax : 
+    ax :
         an axes object
 
     Example
@@ -496,8 +501,8 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
     """
 
     from davitpy import pydarn
-    from matplotlib.ticker import MultipleLocator,FormatStrFormatter
-    from matplotlib.dates import SecondLocator,DateFormatter,date2num
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    from matplotlib.dates import SecondLocator, DateFormatter, date2num
     from matplotlib.lines import Line2D
     import numpy as np
 
@@ -667,7 +672,7 @@ def plot_cpid(ax, times, cpid, mode):
 
     Parameters
     ----------
-    ax : 
+    ax :
         a MPL axis object to plot to
     times : list
         a list of the times of the beam soundings
@@ -709,7 +714,7 @@ def plot_cpid(ax, times, cpid, mode):
     # Label the CPIDs.
     for i in range(0, len(times)):
         if(cpid[i] != oldCpid):
-            ax.plot_date([date2num(times[i]),date2num(times[i])],
+            ax.plot_date([date2num(times[i]), date2num(times[i])],
                          [0, 1], fmt='k-', tz=None, xdate=True, ydate=False)
             oldCpid = cpid[i]
             s = ' ' + pydarn.radar.radUtils.getCpName(oldCpid)
@@ -892,9 +897,9 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
              va='center', size=8.5, rotation='vertical')
 
     l = Line2D([pos[0] + pos[2] + .07, pos[0] + pos[2] + .07],
-                     [pos[1] + .01, pos[1] + pos[3] - .01],
-                     transform=fig.transFigure, clip_on=False, ls=':',
-                     color='k', lw=1.5)
+               [pos[1] + .01, pos[1] + pos[3] - .01],
+               transform=fig.transFigure, clip_on=False, ls=':',
+               color='k', lw=1.5)
     ax.add_line(l)
     ax.set_xticklabels([' '])
     # use only 2 major yticks
@@ -1107,7 +1112,7 @@ def read_data(myPtr, bmnum, params, tbands):
         if(myBeam.time > myPtr.eTime): break
         if(myBeam.bmnum == bmnum and (myPtr.sTime <= myBeam.time)):
             if (myBeam.prm.tfreq >= tbands[0] and
-                myBeam.prm.tfreq <= tbands[1]):
+                    myBeam.prm.tfreq <= tbands[1]):
                 data['times'].append(myBeam.time)
                 data['cpid'].append(myBeam.cp)
                 data['nave'].append(myBeam.prm.nave)
@@ -1231,8 +1236,8 @@ def rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
         y = np.linspace(0, rmax, rmax + 1)
     elif(coords == 'rng'):
         y = np.linspace(data_dict['frang'][0],
-                           rmax * data_dict['rsep'][0],
-                           rmax + 1)
+                        rmax * data_dict['rsep'][0],
+                        rmax + 1)
     else:
         y = myFov.latFull[bmnum]
 
