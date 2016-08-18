@@ -667,7 +667,7 @@ def plot_cpid(ax, times, cpid, mode):
 
     Parameters
     ----------
-    ax : 
+    ax :
         a MPL axis object to plot to
     times : list
         a list of the times of the beam soundings
