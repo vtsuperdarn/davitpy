@@ -23,7 +23,6 @@ Module author: AJ, 20130123
 
 Functions
 --------------------------------------------------
-plotRti             deprecated rti code
 plot_rti            range-time-intensity plot
 plot_freq           TX frequency data
 plot_searchnoise    noise panel
@@ -39,34 +38,6 @@ daynight_terminator calculate day/night terminator
 
 """
 import logging
-
-
-def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
-            params=['velocity', 'power', 'width'], scales=[], channel=None,
-            coords='gate', colors='lasse', yrng=-1, gsct=False, lowGray=False,
-            show=True, filtered=False, fileName=None, tFreqBands=[],
-            myFile=None, xtick_size=9, ytick_size=9, xticks=None,
-            axvlines=None, plotTerminator=False):
-
-    """ Wrapper for plot_rti.
-
-    .. note:: Deprecated in davitpy 0.3?
-              `plotRti` will be removed in davitpy 0.6, it is replaced by
-              `plot_rti` because we liked that name better.
-
-    """
-    logging.warning("Warning: This function is being deprecated. Use"
-                    " plot_rti instead.")
-    logging.warning("Calling plot_rti.")
-
-    return plot_rti(sTime, rad, eTime=eTime, bmnum=bmnum, fileType=fileType,
-                    params=params, scales=scales, channel=channel,
-                    coords=coords, colors=colors, yrng=yrng, gsct=gsct,
-                    low_gray=lowGray, show=show, filtered=filtered,
-                    fileName=fileName, txfreq_lims=tFreqBands, myFile=myFile,
-                    xtick_size=xtick_size, ytick_size=ytick_size,
-                    xticks=xticks, axvlines=axvlines,
-                    plot_terminator=plotTerminator)
 
 
 def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
@@ -127,10 +98,6 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     show : Optional[boolean]
         a flag indicating whether to display the figure on the screen.
         This can cause problems over ssh.  default = True
-    retfig : Optional[boolean]
-        a flag indicating that you want the figure to be returned from
-        the function.  Only the last figure in the list of frequency bands
-        will be returned.  default = False
     filtered : Optional[boolean]
         a flag indicating whether to boxcar filter the data.  default:
         False (no filter)
@@ -303,8 +270,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     # band else continue on to the next range of frequencies
     if len(data_dict['freq']) == 0:
         logging.error('No data found in frequency range ' +
-                      str(tbands[0]) + ' kHz to ' +
-                      str(tbands[1]) + ' kHz')
+                      str(tband[0]) + ' kHz to ' +
+                      str(tband[1]) + ' kHz')
         return None
 
     # Create a figure.
@@ -420,10 +387,14 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                     continue
                 l.append(str(int(bounds[i])))
             cb.ax.set_yticklabels(l)
+        else:
+            # Turn off the edges that are drawn by drawCB unless we are 
+            # doing 'aj' or 'lasse' colors
+            cb.dividers.set_visible(False)
 
-            # Set colorbar ticklabel size.
-            for t in cb.ax.get_yticklabels():
-                t.set_fontsize(9)
+        # Set colorbar ticklabel size.
+        for t in cb.ax.get_yticklabels():
+            t.set_fontsize(9)
 
         # Set colorbar label.
         if(params[p] == 'velocity'):
@@ -439,7 +410,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     if show:
         rti_fig.show()
 
-    logging.info('plotting took:', datetime.now() - timing_start)
+    logging.info('plotting took:' + str(datetime.now() - timing_start))
 
     return rti_fig
 
@@ -1200,7 +1171,7 @@ def rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
     """
     from davitpy import pydarn
     import matplotlib
-    from matplotlib.dates import date2num
+    from matplotlib.dates import date2num, num2date
     import numpy as np
 
     # Initialize things.
