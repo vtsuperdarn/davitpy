@@ -23,7 +23,6 @@ Module author: AJ, 20130123
 
 Functions
 --------------------------------------------------
-plotRti             deprecated rti code
 plot_rti            range-time-intensity plot
 plot_freq           TX frequency data
 plot_searchnoise    noise panel
@@ -388,10 +387,14 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                     continue
                 l.append(str(int(bounds[i])))
             cb.ax.set_yticklabels(l)
+        else:
+            # Turn off the edges that are drawn by drawCB unless we are 
+            # doing 'aj' or 'lasse' colors
+            cb.dividers.set_visible(False)
 
-            # Set colorbar ticklabel size.
-            for t in cb.ax.get_yticklabels():
-                t.set_fontsize(9)
+        # Set colorbar ticklabel size.
+        for t in cb.ax.get_yticklabels():
+            t.set_fontsize(9)
 
         # Set colorbar label.
         if(params[p] == 'velocity'):
@@ -407,7 +410,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     if show:
         rti_fig.show()
 
-    logging.info('plotting took:', datetime.now() - timing_start)
+    logging.info('plotting took:' + str(datetime.now() - timing_start))
 
     return rti_fig
 
