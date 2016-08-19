@@ -271,8 +271,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     # band else continue on to the next range of frequencies
     if len(data_dict['freq']) == 0:
         logging.error('No data found in frequency range ' +
-                      str(tbands[0]) + ' kHz to ' +
-                      str(tbands[1]) + ' kHz')
+                      str(tband[0]) + ' kHz to ' +
+                      str(tband[1]) + ' kHz')
         return None
 
     # Create a figure.
