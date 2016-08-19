@@ -153,12 +153,12 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     from matplotlib.dates import DateFormatter
     import matplotlib.cm as cm
 
-    #Time how long this is going to take
+    # Time how long this is going to take
     timing_start = datetime.now()
 
-    #NOTE TO DEVS: List of available params. Can be simply expanded
-    #as more parameters are added to SuperDARN data set (like index
-    #of refraction)
+    # NOTE TO DEVS: List of available params. Can be simply expanded
+    # as more parameters are added to SuperDARN data set (like index
+    # of refraction)
     available_params = ['power', 'velocity', 'width', 'elevation', 'phi0',
                         'velocity_error']
     default_scales = [[0, 30], [-200, 200], [0, 150], [0, 50],
@@ -169,7 +169,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
         available_text = available_text + p + ', '
     available_text = available_text[:-2]
 
-    #Check the inputs
+    # Check the inputs
     assert(isinstance(sTime, datetime)), logging.error(
         'sTime must be a datetime object')
     assert(isinstance(rad, str) and len(rad) == 3), logging.error(
@@ -388,7 +388,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                 l.append(str(int(bounds[i])))
             cb.ax.set_yticklabels(l)
         else:
-            # Turn off the edges that are drawn by drawCB unless we are 
+            # Turn off the edges that are drawn by drawCB unless we are
             # doing 'aj' or 'lasse' colors
             cb.dividers.set_visible(False)
 
@@ -695,9 +695,11 @@ def plot_cpid(ax, times, cpid, mode):
                 # Clear the current axis
                 ax.cla()
                 # Kick out error messages
-                ax.text(times[i], .5, 'CPID change error; see logging', ha='left', va='center', size=10)
-                logging.error('CPID is changing too frequently to be legibly printed. '
-                              'Please consider using radDataOpen cp param. CPIDs found: ' +
+                ax.text(times[i], .5, 'CPID change error; see logging',
+                        ha='left', va='center', size=10)
+                logging.error('CPID is changing too frequently to be '
+                              'legibly printed. Please consider using '
+                              'radDataOpen cp param. CPIDs found: ' +
                               str(list(set(cpid))))
                 break
             ax.plot_date([date2num(times[i]), date2num(times[i])],
