@@ -677,7 +677,9 @@ def plot_cpid(ax, times, cpid, mode):
     times : list
         a list of the times of the beam soundings
     cpid : list
-        a list of the cpids of th beam soundings
+        a list of the cpids of the beam soundings.  If the cpid
+        changes more than 20 times, then an error will be thrown
+        since the panel may be unreadable.
     mode : list
         a list of the ifmode param
 
@@ -711,9 +713,22 @@ def plot_cpid(ax, times, cpid, mode):
     ax.plot_date(date2num(times), np.arange(len(times)),
                  fmt='w', tz=None, xdate=True, ydate=False, alpha=0.0)
 
+    # Initialize CPID change counter
+    cpid_change = 0
     # Label the CPIDs.
     for i in range(0, len(times)):
         if(cpid[i] != oldCpid):
+            cpid_change += 1
+            # If the cpid is changing too much, it won't be readible
+            if (cpid_change > 20):
+                # Clear the current axis
+                ax.cla()
+                # Kick out error messages
+                ax.text(times[i], .5, 'CPID change error; see logging', ha='left', va='center', size=10)
+                logging.error('CPID is changing too frequently to be legibly printed. '
+                              'Please consider using radDataOpen cp param. CPIDs found: ' +
+                              str(list(set(cpid))))
+                break
             ax.plot_date([date2num(times[i]), date2num(times[i])],
                          [0, 1], fmt='k-', tz=None, xdate=True, ydate=False)
             oldCpid = cpid[i]
