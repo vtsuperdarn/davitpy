@@ -127,10 +127,6 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     show : Optional[boolean]
         a flag indicating whether to display the figure on the screen.
         This can cause problems over ssh.  default = True
-    retfig : Optional[boolean]
-        a flag indicating that you want the figure to be returned from
-        the function.  Only the last figure in the list of frequency bands
-        will be returned.  default = False
     filtered : Optional[boolean]
         a flag indicating whether to boxcar filter the data.  default:
         False (no filter)
