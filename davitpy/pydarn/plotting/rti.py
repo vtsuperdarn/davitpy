@@ -41,34 +41,6 @@ daynight_terminator calculate day/night terminator
 import logging
 
 
-def plotRti(sTime, rad, eTime=None, bmnum=7, fileType='fitex',
-            params=['velocity', 'power', 'width'], scales=[], channel=None,
-            coords='gate', colors='lasse', yrng=-1, gsct=False, lowGray=False,
-            show=True, filtered=False, fileName=None, tFreqBands=[],
-            myFile=None, xtick_size=9, ytick_size=9, xticks=None,
-            axvlines=None, plotTerminator=False):
-
-    """ Wrapper for plot_rti.
-
-    .. note:: Deprecated in davitpy 0.3?
-              `plotRti` will be removed in davitpy 0.6, it is replaced by
-              `plot_rti` because we liked that name better.
-
-    """
-    logging.warning("Warning: This function is being deprecated. Use"
-                    " plot_rti instead.")
-    logging.warning("Calling plot_rti.")
-
-    return plot_rti(sTime, rad, eTime=eTime, bmnum=bmnum, fileType=fileType,
-                    params=params, scales=scales, channel=channel,
-                    coords=coords, colors=colors, yrng=yrng, gsct=gsct,
-                    low_gray=lowGray, show=show, filtered=filtered,
-                    fileName=fileName, txfreq_lims=tFreqBands, myFile=myFile,
-                    xtick_size=xtick_size, ytick_size=ytick_size,
-                    xticks=xticks, axvlines=axvlines,
-                    plot_terminator=plotTerminator)
-
-
 def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
              params=['power', 'velocity', 'width'], scales=[], channel=None,
              coords='gate', colors='lasse', yrng=-1, gsct=False,
