@@ -1153,7 +1153,7 @@ def rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
     """
     from davitpy import pydarn
     import matplotlib
-    from matplotlib.dates import date2num
+    from matplotlib.dates import date2num, num2date
     import numpy as np
 
     # Initialize things.
