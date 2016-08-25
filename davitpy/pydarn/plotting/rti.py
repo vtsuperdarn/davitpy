@@ -47,7 +47,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
              fileName=None, txfreq_lims=None, myFile=None,
              xtick_size=9, ytick_size=9,
              xticks=None, axvlines=None,
-             plot_terminator=False):
+             plot_terminator=False, cpidchange_lims=20):
 
     """ Create an rti plot for a specified radar and time period.
 
@@ -123,6 +123,10 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
         marking the plot
     plot_terminator : Optional[boolean]
         Overlay the day/night terminator.
+    cpidchange_lims : Optional[int]
+        Input the limit on the amount of CPID changes for the CPID
+        panel.  Default is 20.
+
 
     Returns
     -------
@@ -135,7 +139,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                                      eTime=dt.datetime(2013,3,16,14,30),
                                      bmnum=12, fileType='fitacf',
                                      scales=[[-500,500],[],[]], coords='geo',
-                                     colors='aj', filtered=True, show=True)
+                                     colors='aj', filtered=True, show=True,
+                                     cpidchange_lims=2)
 
     Written by AJ 20121002
     Modified by Matt W. 20130715
@@ -211,6 +216,9 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
            isinstance(txfreq_lims, type(None))), (
         logging.error("txfreq_lims must be a list with the start and "
                       "end frequencies"))
+    assert((isinstance(cpidchange_lims, int) and cpidchange_lims > 0)), (
+        logging.error("cpidchange_lims must be an integer and greater "
+                      "than zero"))
 
     # Assign any default color scale parameter limits.
     tscales = []
@@ -306,7 +314,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
               data_dict['nave'])
     # Plot the cpid bar
     plot_cpid(cpid_ax, data_dict['times'],
-              data_dict['cpid'], data_dict['mode'])
+              data_dict['cpid'], data_dict['mode'],
+              cpidchange_lims)
 
     # Plot each of the parameter panels.
     figtop = .77
@@ -638,7 +647,7 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     fig.text(xmax, .95, 'Beam ' + str(beam), weight=550, ha='right')
 
 
-def plot_cpid(ax, times, cpid, mode):
+def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
     """Plots control program ID (cpid) panel at position pos.
 
     Parameters
@@ -648,11 +657,12 @@ def plot_cpid(ax, times, cpid, mode):
     times : list
         a list of the times of the beam soundings
     cpid : list
-        a list of the cpids of the beam soundings.  If the cpid
-        changes more than 20 times, then an error will be thrown
-        since the panel may be unreadable.
+        a list of the cpids of the beam soundings.
     mode : list
         a list of the ifmode param
+    cpidchange_lims : int
+        Limit on the number of times the cpid can change
+
 
     Returns
     -------
@@ -660,7 +670,7 @@ def plot_cpid(ax, times, cpid, mode):
 
     Example
     -------
-        plot_cpid(ax,times,cpid,mode)
+        plot_cpid(ax,times,cpid,mode, cpidchange_lims=10)
 
     Written by AJ 20121002
     Modified by ASR 20150916
@@ -691,7 +701,7 @@ def plot_cpid(ax, times, cpid, mode):
         if(cpid[i] != oldCpid):
             cpid_change += 1
             # If the cpid is changing too much, it won't be readible
-            if (cpid_change > 20):
+            if (cpid_change >= cpidchange_lims):
                 # Clear the current axis
                 ax.cla()
                 # Kick out error messages
