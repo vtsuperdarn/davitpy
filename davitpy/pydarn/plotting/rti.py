@@ -705,7 +705,7 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
                 # Clear the current axis
                 ax.cla()
                 # Kick out error messages
-                ax.text(times[i], .5, 'CPID change error; see logging',
+                ax.text(times[0], .5, 'CPID change error; see logging',
                         ha='left', va='center', size=10)
                 logging.error('CPID is changing too frequently to be '
                               'legibly printed. Please consider using '
