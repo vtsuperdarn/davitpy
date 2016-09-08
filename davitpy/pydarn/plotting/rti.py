@@ -680,6 +680,7 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
     from matplotlib.ticker import MultipleLocator
     from matplotlib.dates import SecondLocator
     from matplotlib.dates import date2num
+    from datetime import timedelta
     import numpy as np
     oldCpid = -9999999
 
@@ -705,7 +706,9 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
                 # Clear the current axis
                 ax.cla()
                 # Kick out error messages
-                ax.text(times[0], .5, 'CPID change error; see logging',
+                diff_time = (times[-1]-time[0]).total_seconds()/2.
+                cpid_time = times[0] + timedelta(seconds=diff_time)
+                ax.text(cpid_time, .5, 'CPID change error; see logging',
                         ha='left', va='center', size=10)
                 logging.error('CPID is changing too frequently to be '
                               'legibly printed. Please consider using '
