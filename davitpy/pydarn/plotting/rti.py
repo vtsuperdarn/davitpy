@@ -709,7 +709,7 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
                 diff_time = (times[-1]-time[0]).total_seconds()/2.
                 cpid_time = times[0] + timedelta(seconds=diff_time)
                 ax.text(cpid_time, .5, 'CPID change error; see logging',
-                        ha='left', va='center', size=10)
+                        ha='center', va='center', size=10)
                 logging.error('CPID is changing too frequently to be '
                               'legibly printed. Please consider using '
                               'radDataOpen cp param. CPIDs found: ' +
