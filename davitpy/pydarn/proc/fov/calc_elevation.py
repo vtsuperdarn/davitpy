@@ -541,7 +541,160 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 
 
 #---------------------------------------------------------------------------
-def calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
+def calc_elv_list(phi0, phi0_e, fovflg, bm_az, tfreq, interfer_offset,
+                  tdiff, alias=0.0):
+    '''Calculate the elevation angle in radians for a single radar
+
+    Parameters
+    -----------
+    phi0 : (list of floats)
+        List of phase lags in radians
+    phi0_e : (list of floats or None)
+        List of phase lag errors in radians
+    fovflg : (list of ints)
+        List of field-of-view flags where 1 indicates the front, -1 the rear
+    bm_az : (list of floats)
+        Azimuthal angle between the beam and the radar boresite at zero
+        elevation (radians)
+    tfreq : (list of floats)
+        Transmission frequency (kHz)
+    interfer_offset : (list or numpy.ndarray of floats)
+        Offset of the midpoints of the interferometer and main array (meters),
+        where [0] is X, [1] is Y, and [2] is Z.
+    tdiff : (float)
+        The relative time delay of the signal paths from the interferometer
+        array to the receiver and the main array to the reciver (microsec)
+    alias : (float)
+        Amount to offset the acceptable phase shifts by.  The default phase
+        shift range starts at the calculated max - 2 pi, any (positive) alias
+        will remove 2 pi from the minimum allowable phase shift. (default=0.0)
+    
+    Returns
+    --------
+    elv : (list)
+        A list of floats containing the new elevation angles for each phi0 in
+        radians or NaN if an elevation angle could not be calculated
+    '''
+    #-------------------------------------------------------------------------
+    # Initialize output
+    elv = list()
+
+    #-------------------------------------------------------------------------
+    # Test input
+    if not isinstance(phi0, list) and not isinstance(phi0, np.ndarray):
+        logging.error("the phase lag must be a list or numpy array")
+        return elv
+
+    if((not isinstance(phi0_e, list) and not isinstance(phi0_e, np.ndarray))
+       or phi0_e is None):
+        estr = "the phase lag error has been discarded, it is not a list or "
+        logging.warn("{:s} numpy array".format(estr))
+        phi0_e = [1.0 for p in phi0]
+
+    if(not isinstance(fovflg, list) and not isinstance(fovflg, np.ndarray)):
+        logging.error("the FoV flag must be a list or numpy array")
+        return elv
+
+    if len(phi0) == 0 or len(phi0_e) != len(phi0) or len(fovflg) != len(phi0):
+        logging.error("the input lists are empty or are not the same size")
+        return elv
+
+    if not isinstance(interfer_offset, list) or len(interfer_offset) != 3:
+        logging.error("the elevation correction must be a float")
+        return elv
+
+    if isinstance(tdiff, int):
+        tdiff = float(tdiff)
+    elif not isinstance(tdiff, float):
+        logging.error("the TDIFF must be a float")
+        return elv
+
+    if isinstance(alias, int):
+        alias = float(alias)
+    elif not isinstance(alias, float):
+        logging.error("the alias must be a float")
+        return elv
+    
+    #-------------------------------------------------------------------------
+    # Calculate the elevation for each value of phi0
+    for i,p0 in enumerate(phi0):
+        #---------------------------------------------------------------------
+        # Use only data where the angular drift between signals is not
+        # identically zero with an error of zero, since this could either be a
+        # sloppy flag denoting no data or an actual measurement.
+        if p0 != 0.0 or phi0_e[i] != 0.0 and abs(fovflg[i]) == 1:
+            # Calculate the frequency based values
+            #
+            # k is the wavenumber in radians per meter
+            k = 2.0 * np.pi * tfreq[i] * 1.0e3 / scicon.c
+
+            # Calculate the phase shift due to the radar cables
+            del_chi = -np.pi * tfreq[i] * tdiff * 2.0e-3
+
+            # Calculate geometry parameters
+            sin_az = np.sin(bm_az[i])
+            cos_az = np.cos(bm_az[i])
+            az_sign = 1.0 if interfer_offset[1] > 0.0 else -1.0
+
+            # Find the elevation angle with the maximum phase lag
+            el_max = np.arcsin(az_sign * interfer_offset[2] * cos_az /
+                               np.sqrt(interfer_offset[1]**2 +
+                                       interfer_offset[2]**2))
+            if el_max < 0.0:
+                el_max = 0.0
+
+            cos_max = np.cos(el_max)
+            sin_max = np.sin(el_max)
+
+            # Find the maximum possible phase shift
+            chimax = k * (interfer_offset[0] * sin_az + interfer_offset[1] *
+                          np.sqrt(cos_max**2- sin_az**2)
+                          + interfer_offset[2] * sin_max)
+            chimin = chimax - (alias + 1.0) * az_sign * 2.0 * np.pi
+    
+            # Find the right phase.  This method works for both front and
+            # back lobe calculations.
+            phi_temp = (fovflg[i] * (p0 - del_chi)) % (2.0 * np.pi)
+
+            # Ensure that phi_temp falls within the proper limits
+            while phi_temp > max(chimax, chimin):
+                phi_temp += az_sign * 2.0 * np.pi
+
+            while abs(phi_temp) < abs(chimin):
+                phi_temp += az_sign * 2.0 * np.pi
+
+            #--------------------------
+            # Evaluate the phase shift
+            if phi_temp > max(chimax, chimin):
+                estr = "BUG: can't fix phase shift [{:f} ".format(phi_temp)
+                estr = "{:s}not between {:f},".format(estr, chimin)
+                estr = "{:s}{:f}] for index [{:d}]".format(estr, chimax, i)
+                logging.critical(estr)
+                elv.append(np.nan)
+            else:
+                # Calcualte the elevation angle and set if realistic
+                cos_theta = phi_temp / k - interfer_offset[0] * sin_az
+                yz_sum2 = interfer_offset[1]**2 + interfer_offset[2]**2
+                sin_delta = (cos_theta * interfer_offset[2] +
+                             np.sqrt((cos_theta * interfer_offset[2])**2 -
+                                     yz_sum2 * (cos_theta**2 -
+                                                (interfer_offset[1] *
+                                                 cos_az)**2))) / yz_sum2
+
+                if sin_delta <= 1.0:
+                    new_elv = np.arcsin(sin_delta)
+                    elv.append(new_elv)
+                else:
+                    elv.append(np.nan)
+        else:
+            # Pad the elevation and phase ambiguity arrays if insufficient data
+            # is available to calculate the elevation
+            elv.append(np.nan)
+
+    return elv
+
+#---------------------------------------------------------------------------
+def old_calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
                   tdiff, alias=0.0):
     '''Calculate the elevation angle in radians for a single radar
 
