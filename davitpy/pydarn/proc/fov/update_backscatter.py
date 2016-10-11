@@ -18,8 +18,6 @@ assign_region               ionosphere region based on virtual height
 test_propagation            test propgation against reality
 select_alt_groups           determine altitude limits for range gate
 get_beam                    load beams from list or pointer
-calc_elv                    calculate elevation angle for scatter points
-calc_virtual_height         calculate virtual height from distance & elevation
 calc_distance               calculate slant range
 select_beam_groundscatter   filter to select groundscatter data
 calc_frac_points            calculate precentage of groundscatter
@@ -867,10 +865,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 
     #----------------------------------
     # Test input
-    if not isinstance(hard, pyrad.radStruct.site):
-        logging.error('need a hardware site structure to load data')
-        return None
-
     if(not ((isinstance(scan, list) or isinstance(scan, np.ndarray)) and
             len(scan) > 0 and len(scan) <= hard.maxbeam and
             isinstance(scan[0], sdio.radDataTypes.beamData))

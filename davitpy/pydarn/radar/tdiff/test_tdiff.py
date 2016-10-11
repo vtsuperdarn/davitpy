@@ -244,15 +244,12 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
     ref_err = max(abs(han_heater_field_line_lat(np.array([ref_alt - 10.0,
                                                           ref_alt + 10.0]),
                                                 heater="tromso") - ref_lat))
-    asep = np.sqrt(np.dot(hard.interfer, hard.interfer))
-    phi_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
-    ecor = phi_sign * hard.phidiff * np.arcsin(hard.interfer[2] / asep)
     ttol = 1.0e-4
     fovflg = [1 for i in sdata["phi0"]]
-    cos_phi = [np.cos(np.radians(hard.beamToAzim(b) - hard.boresite))
-               for b in sdata['bmnum']]
-    lat_args = (hard, asep, phi_sign, ecor, sdata["phi0"], sdata["phi0e"],
-                fovflg, cos_phi, sdata["tfreq"], sdata['bmnum'], sdata['dist']) 
+    bm_az = [np.radians(hard.beamToAzim(b) - hard.boresite)
+             for b in sdata['bmnum']]
+    lat_args = (hard, sdata["phi0"], sdata["phi0e"], fovflg, bm_az,
+                sdata["tfreq"], sdata['dist']) 
 
     # Estimate tdiff
     tout = pyrad.tdiff.calc_tdiff.calc_tdiff(hard.tdiff, ref_lat, ref_err,
