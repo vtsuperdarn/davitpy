@@ -25,8 +25,8 @@ A.G. Burrell et al. (2016) submitted to Radio Science doi:xxx
 import numpy as np
 
 #---------------------------------------------------------------------------
-def lat_distribution(tdiff, ref_lat, hard, asep, phi_sign, ecor, phi0, phi0e,
-                     fovflg, cos_phi, tfreq, bmnum, dist):
+def lat_distribution(tdiff, ref_lat, hard, phi0, phi0e, fovflg, bm_az, tfreq,
+                    dist):
     '''Returns the squared sum of the difference between the mean and the
     specified latitude and the standard deviation of the backscatter latitudes
 
@@ -38,24 +38,17 @@ def lat_distribution(tdiff, ref_lat, hard, asep, phi_sign, ecor, phi0, phi0e,
         reference latitude in degrees
     hard : (class davitpy.pydarn.radar.radStruct.site)
         radar hardware data
-    asep : (float)
-        antenna seperation in m
-    phi_sign : (float)
-        states whether or not the interferometer is in front of the radar
-    ecor : (float)
-        correction to elevation angle based on interferometer alt
     phi0 : (list)
         phase lags in radians
     phi0e : (list)
         phase lag errors in radians
     fovflg : (list)
         field-of-view flags
-    cos_phi : (list)
-        cos of azimuthal angles
+    bm_az : (list)
+        Azimuthal angle between the beam and the radar boresite at zero
+        elevation (radians)
     tfreq : (list)
         transmission frequencies in kHz
-    bmnum : (list)
-        beam number
     dist : (list)
         slant distance from radar to ionospheric reflection point in km
 
@@ -70,6 +63,7 @@ def lat_distribution(tdiff, ref_lat, hard, asep, phi_sign, ecor, phi0, phi0e,
     '''
     import davitpy.utils.geoPack as geo
     import davitpy.pydarn.proc.fov.calc_elevation as celv
+    import davitpy.pydarn.radar.radFov as rfov
     # Ensure that TDIFF is a single number and not a list or array element
     try:
         len(tdiff)
@@ -83,11 +77,16 @@ def lat_distribution(tdiff, ref_lat, hard, asep, phi_sign, ecor, phi0, phi0e,
     # Calculate the elevation and latitude
     try:
         # elevation is in radians
-        elv = np.array(celv.calc_elv_list(phi0, phi0e, fovflg, cos_phi, tfreq,
-                                          asep, ecor, phi_sign, tdiff)) 
+        elv = np.array(celv.calc_elv_list(phi0, phi0e, fovflg, bm_az, tfreq,
+                                          hard.interfer, tdiff))
+        # Correction to boresight azimuth due to elevation angle
+        fov_dir = {1:"front", -1:"back"}
+        az = np.array([np.degrees(bm_az[i]) +
+                       rfov.calcAzOffBore(e, hard.boresite, fov_dir[fovflg[i]])
+                       for i,e in enumerate(elv)])
+        # Calculate location
         loc = geo.calcDistPnt(hard.geolat, hard.geolon, hard.alt,
-                              az=hard.beamToAzim(np.array(bmnum)),
-                              el=np.degrees(elv), dist=np.array(dist))
+                              az=az, el=np.degrees(elv), dist=np.array(dist))
         lat = loc['distLat'][~np.isnan(loc['distLat'])] # Remove nan
 
         #--------------------------------------------------------------------
