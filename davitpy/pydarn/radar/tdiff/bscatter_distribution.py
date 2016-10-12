@@ -79,14 +79,16 @@ def lat_distribution(tdiff, ref_lat, hard, phi0, phi0e, fovflg, bm_az, tfreq,
         # elevation is in radians
         elv = np.array(celv.calc_elv_list(phi0, phi0e, fovflg, bm_az, tfreq,
                                           hard.interfer, tdiff))
+        elv = np.degrees(elv)
         # Correction to boresight azimuth due to elevation angle
         fov_dir = {1:"front", -1:"back"}
-        az = np.array([np.degrees(bm_az[i]) +
-                       rfov.calcAzOffBore(e, hard.boresite, fov_dir[fovflg[i]])
+        az = np.array([rfov.calcAzOffBore(e, np.degrees(bm_az[i]),
+                                          fov_dir[fovflg[i]]) + hard.boresite
                        for i,e in enumerate(elv)])
+
         # Calculate location
         loc = geo.calcDistPnt(hard.geolat, hard.geolon, hard.alt,
-                              az=az, el=np.degrees(elv), dist=np.array(dist))
+                              az=az, el=elv, dist=np.array(dist))
         lat = loc['distLat'][~np.isnan(loc['distLat'])] # Remove nan
 
         #--------------------------------------------------------------------
