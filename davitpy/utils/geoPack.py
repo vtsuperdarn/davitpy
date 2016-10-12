@@ -360,9 +360,9 @@ def calcDistPnt(origLat, origLon, origAlt, dist=None, el=None, az=None,
     dist : Optional[float]
         distance to point [km]
     el : Optional[float]
-        azimuth [degree]
-    az : Optional[float]
         elevation [degree]
+    az : Optional[float]
+        azimuth [degree]
     distLat : Optional[float]
         latitude [degree] of distant point
     distLon : Optional[float]
