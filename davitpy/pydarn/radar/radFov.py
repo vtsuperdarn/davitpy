@@ -491,8 +491,7 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
     boresight
         boresight azimuth [degree, E]
     beam_off
-        beam azimuthal offset from boresight [degree], or zero if using beam
-        azimuth in boresight
+        beam azimuthal offset from boresight [degree]
     slant_range
         slant range [km]
     adjusted_sr : Optional(bool)
@@ -528,16 +527,17 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
     Returns
     ---------
     geo_dict['geoLat'] : (float or np.ndarray)
-        Field point latitude(s) in degrees
+        Field point latitude(s) in degrees or np.nan if error
     geo_dict['geoLon'] : (float or np.ndarray)
-        Field point longitude(s) in degrees
+        Field point longitude(s) in degrees or np.nan if error
     """
     from davitpy.utils import Re, geoPack
     import davitpy.utils.model_vheight as vhm
 
     # Only geo is implemented.
-    assert(coords == "geo"), \
-        "Only geographic (geo) is implemented in calcFieldPnt."
+    if coords != "geo":
+        logging.error("Only geographic (geo) is implemented in calcFieldPnt.")
+        return np.nan, np.nan
 
     # Use model to get altitude if desired
     xalt = np.nan
@@ -562,8 +562,9 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             # altitude based on years of backscatter data at SAS.  Performs
             # significantly better than the standard model for ionospheric
             # backscatter, not tested on groundscatter
-            assert not adjusted_sr, \
+            if adjusted_sr:
                 logging.error("Chisham model needs total slant range")
+                return np.nan, np.nan
             
             # Use Chisham model to calculate virtual height
             cmodel = None if model == "C" else model
@@ -578,10 +579,14 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             if hop > 0.5:
                 calt = float(xalt)
 
-    elif elevation is None:
-        assert hop is not None or not adjusted_sr, \
+    elif elevation is None or np.isnan(elevation):
+        if hop is None or adjusted_sr:
             logging.error("Total slant range and hop needed with measurements")
-
+            return np.nan, np.nan
+        if altitude is None or np.isnan(altitude):
+            logging.error("No observations supplied")
+            return np.nan, np.nan
+        
         # Adjust slant range if there is groundscatter and the location
         # desired is the ionospheric reflection point
         asr = slant_range
@@ -674,8 +679,13 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
         # it gives you the proper projection by simple geometric considerations)
         # Using no models simply means tracing based on trustworthy elevation
         # or altitude
-        assert hop is not None or not adjusted_sr, \
+        if hop is None or adjusted_sr:
             logging.error("Hop and total slant range needed with measurements")
+            return np.nan, np.nan
+        
+        if np.isnan(elevation):
+            logging.error("No observations provided")
+            return np.nan, np.nan
         
         shop = hop - 0.5 if hop == np.floor(hop) and gs_loc == "I" else hop
         asr = slant_range
@@ -683,8 +693,9 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             asr *= 1.0 - 1.0 / (2.0 * hop)
 
         # The tracing is done by calcDistPnt
+        boff = calcAzOffBore(elevation, beam_off, fov_dir=fov_dir)
         geo_dict = geoPack.calcDistPnt(tr_glat, tr_glon, tr_alt, dist=asr,
-                                       el=elevation, az=boresight + beam_off)
+                                       el=elevation, az=boresight + boff)
 
         return geo_dict['distLat'], geo_dict['distLon']
 
