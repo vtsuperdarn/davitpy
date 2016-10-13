@@ -630,15 +630,15 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     if ((eTime is not None) and
         (((eTime - sTime) > timedelta(days=1)) or
          (eTime.day != sTime.day))):
-        title_text = str(sTime.day) + '/' \
-            + calendar.month_name[sTime.month][:3] + '/' \
-            + str(sTime.year) + ' - ' + str(eTime.day) + '/' \
-            + calendar.month_name[eTime.month][:3] + '/' \
+        title_text = str(sTime.day) + ' ' \
+            + calendar.month_name[sTime.month][:3] + ' ' \
+            + str(sTime.year) + ' - ' + str(eTime.day) + ' ' \
+            + calendar.month_name[eTime.month][:3] + ' ' \
             + str(eTime.year)
 
     else:
-        title_text = str(sTime.day) + '/' \
-            + calendar.month_name[sTime.month][:3] + '/' \
+        title_text = str(sTime.day) + ' ' \
+            + calendar.month_name[sTime.month][:3] + ' ' \
             + str(sTime.year)
 
     # Plot the secondary title.
