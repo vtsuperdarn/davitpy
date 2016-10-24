@@ -35,6 +35,7 @@ import logging
 rad_band_num = {
     'ade':[0,1,2,3,4,5,6,7,8],
     'adw':[0,1,2,3,4,5,6,7,8],
+    'bks':[0],
     'cly':[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,
            25,26],
     'han': [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],
@@ -54,6 +55,7 @@ rad_band_num = {
 rad_min = {
     'ade':[10400, 10900, 12000, 13000, 14500, 15000, 16000, 17000, 18000],
     'adw':[10400, 10900, 12000, 13000, 14500, 15000, 16000, 17000, 18000],
+    'bks':[10210],
     'cly':[8000, 8500, 9000, 9500, 10000, 10500, 11000, 11500, 12000, 12500,
            13000, 13469, 13929, 14500, 15040, 15500, 16000, 16500, 17000, 17500,
            18000, 18500, 19000, 19500, 20040, 20500],
@@ -82,6 +84,7 @@ rad_min = {
 rad_max = {
     'ade':[10700, 11200, 12300, 13300, 14800, 15300, 16300, 17300, 18300],
     'adw':[10700, 11200, 12300, 13300, 14800, 15300, 16300, 17300, 18300],
+    'bks':[10710],
     'cly':[8500, 9000, 9500, 10000, 10500, 11000, 11500, 12000, 12500, 13000,
            13469, 13929, 14500, 15040, 15500, 16000, 16500, 17000, 17500, 18000,
            18500, 19000, 19500, 20040, 20500, 21000],
@@ -109,8 +112,8 @@ rad_max = {
 
 # Allow use of both 3-letter code and numerical IDs
 id_to_code = {
-    5:'sas', 6:'pgr', 8:'sto', 9:'pyk', 10:'han', 20:'mcm', 64:'inv', 65:'rkn',
-    209:'ade', 208:'adw',}
+    5:'sas', 6:'pgr', 8:'sto', 9:'pyk', 10:'han', 20:'mcm', 33:'bks', 64:'inv',
+    65:'rkn', 209:'ade', 208:'adw',}
 
 #-----------------------------------------------------------------------------
 class radFreqBands(object):
@@ -154,7 +157,7 @@ class radFreqBands(object):
 
             if rad is not None:
                 for stid in id_to_code.keys():
-                    if id_to_code[stid] is rad.lower():
+                    if id_to_code[stid] == rad.lower():
                         self.stid = stid
                         break
                     
@@ -210,16 +213,21 @@ class radFreqBands(object):
         ostr = "{:s}\tCode: {:}\tID: {:}\n".format(ostr, self.rad_code,
                                                    self.stid)
         # Add number of frequency bands
-        ostr = "{:s}\tNumber of frequency bands spanning ".format(ostr)
-        ostr = "{:s}{:.3f}-{:.3f} ".format(ostr, min(self.tmins) * 1.0e-3,
-                                           1.0e-3 * max(self.tmaxs))
-        ostr = "{:s}MHz: {:d}\n".format(ostr, len(self.tbands))
-        # Add the frequency bands
-        ostr = "{:s}\t\tBand Min_Freq-Max_Freq (MHz)\n".format(ostr)
-        for i,mm in enumerate(self.tmins):
-            ostr = "{:s}\t\t{:02d} {:.3f}-{:.3f}\n".format(ostr, self.tbands[i],
-                                                           mm * 1.0e-3, 1.0e-3 *
-                                                           self.tmaxs[i])
+        if len(self.tbands) == 0:
+            ostr = "{:s}\tNo frequency bands".format(ostr)
+        else:
+            ostr = "{:s}\tNumber of frequency bands spanning ".format(ostr)
+            ostr = "{:s}{:.3f}-{:.3f} ".format(ostr, min(self.tmins) * 1.0e-3,
+                                               1.0e-3 * max(self.tmaxs))
+            ostr = "{:s}MHz: {:d}\n".format(ostr, len(self.tbands))
+            # Add the frequency bands
+            ostr = "{:s}\t\tBand Min_Freq-Max_Freq (MHz)\n".format(ostr)
+            for i,mm in enumerate(self.tmins):
+                ostr = "{:s}\t\t{:02d} {:.3f}-{:.3f}\n".format(ostr,
+                                                               self.tbands[i],
+                                                               mm * 1.0e-3,
+                                                               1.0e-3 *
+                                                               self.tmaxs[i])
         return ostr
 
     #--------------------------------------------------------------------------

@@ -27,9 +27,10 @@ import logging
 
 #---------------------------------------------------------------------------
 def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
-                        dist_attr="slist", dist_units=None):
-    """Calculate the virtual height for a specified backscatter distance and
-    elevation angle.
+                        dist_attr="slist", dist_units=None, dist_adjust=False,
+                        hop=list(), hop_attr="hop", model=None, max_vh=400.0):
+    """Calculate the virtual height for a specified slant range using
+    elevation or a model
 
     Parameters
     -----------
@@ -37,23 +38,43 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         Data for a single radar and beam along all range gates at a given time
     radius : (float)
         Earth radius in km
-    elv : (list or numpy.array())
+    elv : (list or numpy.ndarray)
         List containing elevation in degrees, or nothing to load the
         elevation from the beam (default=list())
     elv_attr : (string)
         Name of beam attribute containing the elevation (default="elv")
-    dist : (list or numpy.array())
+    dist : (list or numpy.ndarray)
         List containing the slant distance from the radar to the reflection
         location of the backscatter, or nothing to load the distance from the
         beam. (default=list())
     dist_attr : (str)
-        Name of beam attribute containing the slant distance.  Be aware that if
-        the default is used, all heights returned will be for .5 hop propogation
-        paths.  (default="slist")
+        Name of beam attribute containing the slant distance.  (default="slist")
     dist_units : (string or NoneType)
         Units of the slant distance to backscatter location data.  May supply
         "km", "m", or None.  None indicates that the distance is in range gate
         bins. (default=None)
+    dist_adjust : (bool)
+        Denotes whether or not the slant distance has been adjusted for hop.
+        (default=False)
+    hop : (list or numpy.ndarray)
+        List containing the hop for each point.  If empty, will assume 0.5-hop
+        (default=list())
+    hop_attr : (string)
+        Name of beam attribute containing the hop (default="hop")
+    model : (str or NoneType)
+        Calculate virtual height using elevation (None) or model? (default=None)
+        Available models
+        ----------------
+        IS : for standard ionopsheric scatter projection model (ignores hop)
+        GS : for standard ground scatter projection model (ignores hop)
+        S : for standard projection model (uses hop)
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1-1/2-hop ionospheric projection model
+        C : for Chisham projection model (ionospheric only, ignores hop,
+            requires only total measured slant range)
+    max_vh : (float)
+        Maximum height for longer slant ranges in Standard model (default=400)
     
     Returns
     --------
@@ -68,8 +89,13 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
     resulting heights.  If the terrestrial radius at the radar location is used,
     this error is on the order of 0.01-0.1 km (much smaller than the difference
     between the real and virtual height).
+
+    The available models are only 
     """
     import davitpy.pydarn.sdio as sdio
+    import davitpy.utils.model_vheight as vhm
+    s_model = ["S", "IS", "GS"]
+    c_model = ["C", "F1", "F3", "E1"]
 
     #---------------------------------
     # Check the input
@@ -81,39 +107,85 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
         logging.error('the radius must be a float')
         return None
 
-    #---------------------------------
-    # Load elevation
-    if len(elv) == 0 or (len(dist) > 0 and len(elv) != len(dist)):
-        try:
-            elv = getattr(beam.fit, elv_attr)
-
-            if elv is None:
-                logging.error('no elevation available')
-                return None
-        except:
-            logging.error('no elevation attribute [{:s}]'.format(elv_attr))
-            return None
-
+    if not (model is None or model in s_model or model in c_model):
+        logging.error('unknown model [{:}]'.format(model))
+        return None
+ 
     #---------------------------------
     # Load the slant range/distance
-    if len(dist) == 0 or len(dist) != len(elv):
+    if len(dist) == 0 or (len(elv) > 0 and len(elv) != len(dist)):
         try:
             dist = getattr(beam.fit, dist_attr)
 
             if dist is None:
                 logging.error('no range/distance data available')
                 return None
-
-            if len(dist) != len(elv):
-                logging.error('different number of range and elevation points')
-                return None
         except:
             logging.error('no range attribute [{:s}]'.format(dist_attr))
             return None
+        
+    if len(dist) == 0:
+        logging.error("unable to calculate h' without slant range")
+        return None
 
-    if len(dist) == 0 or len(elv) == 0 or len(elv) != len(dist):
+    #---------------------------------
+    # Load elevation
+    if not model in c_model:
+        estr = None
+        if len(elv) == 0 or  len(elv) != len(dist):
+            try:
+                elv = getattr(beam.fit, elv_attr)
+
+                if model is None:
+                    if elv is None:
+                        logging.error('no elevation available')
+                        return None
+                    elif len(dist) != len(elv):
+                        logging.error('unequal distance and elevation arrays')
+                        return None
+                else:
+                    if elv is None:
+                        estr = 'no elevation available'
+                    elif len(dist) != len(elv):
+                        estr = 'unequal distance and elevation arrays'
+            except:
+                estr = 'no elevation attribute [{:s}]'.format(elv_attr)
+                if model is None:
+                    logging.error(estr)
+                    return None
+
+        if estr is not None:
+            logging.warn(estr)
+            elv = [None for d in dist]
+    
+    if model is None and (len(elv) == 0 or len(elv) != len(dist)):
         logging.error("unable to load matching elevation and distance lists")
         return None
+
+    #---------------------------------
+    # Load hop
+    if len(hop) == 0 or (len(dist) > 0 and len(hop) != len(dist)):
+        estr = None
+        try:
+            hop = getattr(beam.fit, hop_attr)
+
+            if hop is None:
+                estr = 'no hop available'
+        except:
+            estr = 'no hop attribute [{:s}]'.format(hop_attr)
+
+        if estr is not None:
+            logging.warn(estr)
+
+            if model in c_model:
+                hop = [None for d in dist]
+            else:
+                hop = [0.5 for d in dist]
+
+    #---------------------------------------------------------------------
+    # If the hop attribute was actually the groundscatter flag, adjust
+    if hop_attr == "gflg":
+        hop = [1.0 if gg == 1 else 0.5 for gg in hop]
 
     #---------------------------------------------------------------------
     # Ensure that the range/distance (and error) are in km
@@ -133,11 +205,26 @@ def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
     height = np.empty(shape=(len(dist),), dtype=float) * np.nan
 
     for i,d in enumerate(dist):
-        if not np.isnan(elv[i]):
+        if model in s_model:
+            # Calculate height using standard model
+            hh = hop[i]
+            if model != "S":
+                hh = 0.5 if model == "IS" else 1.0
+                
+            height[i] = vhm.standard_vhm(d, adjusted_sr=dist_adjust,
+                                         max_vh=max_vh, hop=hh, elv=elv[i])
+        elif model in c_model:
+            # Calculate height using Chisham model
+            cm = None if model == "C" else model
+            height[i] = vhm.chisham_vhm(d, vhmtype=cm, hop_output=False)
+        elif model is None and not np.isnan(elv[i]):
             # Calculate height by assuming a spherical earth and solving the
             # law of cosines for an obtuse triangle with sides radius,
             # radius + height, and distance, where the angle between the side of
             # length distance and radius + height is equal to 90 deg - elevation
+            if not dist_adjust:
+                d /= hop[i] * 2.0
+            
             hsqrt = np.sqrt(d**2 + radius**2 + 2.0 * d * radius
                             * np.sin(np.radians(elv[i])))
             height[i] = hsqrt - radius

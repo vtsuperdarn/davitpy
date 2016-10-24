@@ -28,8 +28,7 @@ import logging
 
 #---------------------------------------------------------------------------
 def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
-             asep=None, ecor=None, phi_sign=None, tdiff=None, del_chi=None,
-             del_chif=0.0, alias=0.0, fov='front'):
+             tdiff=None, alias=0.0, fov='front'):
     """Calculate the elevation angle for observations along a beam at a radar
 
     Parameters
@@ -38,23 +37,10 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         Data for a single radar and beam along all range gates at a given time
     hard : (class `pydarn.radar.radStruct.site` or NoneType)
         Radar hardware data or None to load here (default=None)
-    asep : (float or NoneType)
-        Antenna separation in meters or None to calculate (default=None)
-    ecor : (float or NoneType)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer or None to calculate (default=None)
-    phi_sign : (float or NoneType)
-        Sign change determined by the relative location of the interferometer
-        to the radar or None to calculate (default=None)
     tdiff : (float or NoneType)
         The relative time delay of the signal paths from the interferometer
         array to the receiver and the main array to the reciver (microsec) or
         None to use the value supplied by the hardware file (default=None)
-    del_chi : (float or NoneType)
-        The total phase shift caused by the cables and the filter in radians.
-        If None, will be calculated. (default=None)
-    del_chif : (float)
-        Additional phase shift in radians (default=0.0)
     alias : (float)
         Amount to offset the acceptable phase shifts by.  The default phase
         shift range starts at the calculated max - 2 pi, any (positive) alias
@@ -74,14 +60,6 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         alias the elevation angles
     hard : (class `pydarn.radar.radStruct.site` or NoneType)
         Radar hardware data or None to load here (default=None)
-    asep : (float or NoneType)
-        Antenna separation in meters or None to calculate (default=None)
-    ecor : (float or NoneType)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer or None to calculate (default=None)
-    phi_sign : (float or NoneType)
-        Sign change determined by the relative location of the interferometer
-        to the radar or None to calculate (default=None)
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
@@ -94,18 +72,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         logging.error('the phase lag data is not in this beam')
     assert isinstance(hard, pyrad.site) or hard is None, \
         logging.error('supply the hardware class or None')
-    assert isinstance(asep, float) or asep is None, \
-        logging.error('the asep should be a float or NoneType')
-    assert isinstance(ecor, float) or ecor is None, \
-        logging.error('the ecor should be a float or NoneType')
-    assert isinstance(phi_sign, float) or phi_sign is None, \
-        logging.error('the phi_sign should be a float or NoneType')
     assert isinstance(tdiff, float) or tdiff is None, \
         logging.error('the tdiff should be a float or NoneType')
-    assert isinstance(del_chi, float) or del_chi is None, \
-        logging.error('the del_chi should be a float or NoneType')
-    assert isinstance(del_chif, float), \
-        logging.error('the del_chif should be a float')
     assert isinstance(alias, float), \
         logging.error('the alias number should be a float')
     assert(isinstance(fov, str) and (fov.find("front") >= 0 or
@@ -152,34 +120,36 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     if tdiff is None:
         tdiff = hard.tdiff
 
-    # If desired, calculate the radar specific variables
-    if asep is None or ecor is None or phi_sign is None:
-        # Calculate the elevation angle correction due to differences in
-        # altitude between the interferometer and the radar and determine
-        # whether the interferometer is in front or behind the radar
-        asep = np.sqrt(np.dot(hard.interfer, hard.interfer)) # meters
-        phi_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
-        ecor = phi_sign * hard.phidiff * np.arcsin(hard.interfer[2] / asep)
-
     #-------------------------------------------------------------------------
     # Calculate the beam-specific variables
     #
     # Phi is the beam direction off the radar boresite assuming an elevation
     # angle of zero.  This is calculated by the hardware routine 'beamToAzim'
     # located in pydarn.radar.radStruct
-    cos_phi = np.cos(np.radians(hard.beamToAzim(beam.bmnum) - hard.boresite))
+    bm_az = np.radians(hard.beamToAzim(beam.bmnum) - hard.boresite)
+    cos_az = np.cos(bm_az)
+    sin_az = np.sin(bm_az)
+    az_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
+
+    # Find the elevation angle with the maximum phase lag
+    el_max = np.arcsin(az_sign * hard.interfer[2] * cos_az /
+                       np.sqrt(hard.interfer[1]**2 + hard.interfer[2]**2))
+    if el_max < 0.0:
+        el_max = 0.0
+
+    cos_max = np.cos(el_max)
+    sin_max = np.sin(el_max)
 
     # k is the wavenumber in radians per meter
     k = 2.0 * np.pi * beam.prm.tfreq * 1.0e3 / scicon.c
 
-    # Calculate the phase shift due to the radar cables and any additional
-    # amount (due to the radar mode, etc.) unless a phase shift was supplied
-    if del_chi is None:
-        del_chi = -np.pi * beam.prm.tfreq * tdiff * 2.0e-3 - del_chif
+    # Calculate the phase shift due to the radar cables
+    del_chi = -np.pi * beam.prm.tfreq * tdiff * 2.0e-3
 
     # Find the maximum possible phase shift
-    chimax = phi_sign * k * asep * cos_phi
-    chimin = chimax - (alias + 1.0) * phi_sign * 2.0 * np.pi
+    chimax = k * (hard.interfer[0] * sin_az + hard.interfer[1] *
+                  np.sqrt(cos_max**2- sin_az**2) + hard.interfer[2] * sin_max)
+    chimin = chimax - (alias + 1.0) * az_sign * 2.0 * np.pi
     
     #-------------------------------------------------------------------------
     # Calculate the elevation for each value of phi0
@@ -205,12 +175,12 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 
             # Ensure that phi_temp falls within the proper limits
             while phi_temp > max(chimax, chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
-                amb_temp += phi_sign
+                phi_temp += az_sign * 2.0 * np.pi
+                amb_temp += az_sign
 
             while abs(phi_temp) < abs(chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
-                amb_temp += phi_sign
+                phi_temp += az_sign * 2.0 * np.pi
+                amb_temp += az_sign
 
             #--------------------------
             # Evaluate the phase shift
@@ -223,23 +193,24 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
                 logging.critical(estr)
             else:
                 # Calcualte the elevation angle and set if realistic
-                cos_theta = phi_temp / (k * asep)
-                sin2_delta = cos_phi**2 - cos_theta**2
+                cos_theta = phi_temp / k - hard.interfer[0] * sin_az
+                yz_sum2 = hard.interfer[1]**2 + hard.interfer[2]**2
+                sin_delta = (cos_theta * hard.interfer[2] +
+                             np.sqrt((cos_theta * hard.interfer[2])**2 -
+                                     yz_sum2 * (cos_theta**2 -
+                                                (hard.interfer[1] *
+                                                 cos_az)**2))) / yz_sum2
 
-                if sin2_delta >= 0.0:
-                    sin_delta = np.sqrt(sin2_delta)
-                    if sin_delta <= 1.0:
-                        new_elv = np.degrees(np.arcsin(sin_delta) + ecor)
-                        elv[i] = new_elv
-                        phase_amb[i] = int(amb_temp)
+                if sin_delta <= 1.0:
+                    elv[i] = np.degrees(np.arcsin(sin_delta))
+                    phase_amb[i] = int(amb_temp)
 
-    return elv, phase_amb, hard, asep, ecor, phi_sign
+    return elv, phase_amb, hard
 
 #---------------------------------------------------------------------------
 def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
-                   asep=None, ecor=None, phi_sign=None, bmaz_e=0.0,
-                   boresite_e=0.0, ix_e=0.0, iy_e=0.0, iz_e=0.0, tdiff=None,
-                   tdiff_e=0.0, alias=0.0, fov='front'):
+                   bmaz_e=0.0, boresite_e=0.0, ix_e=0.0, iy_e=0.0, iz_e=0.0,
+                   tdiff=None, tdiff_e=0.0, alias=0.0, fov='front'):
     """Calculate the elevation angle for observations along a beam at a radar
 
     Parameters
@@ -252,14 +223,6 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         Name of the phase lag error attribute (default="phi0_e")
     hard : (class `pydarn.radar.radStruct.site` or NoneType)
         Radar hardware data or None to load here (default=None)
-    asep : (float or NoneType)
-        Antenna separation in meters or None to calculate (default=None)
-    ecor : (float or NoneType)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer or None to calculate (default=None)
-    phi_sign : (float or NoneType)
-        Sign change determined by the relative location of the interferometer
-        to the radar or None to calculate (default=None)
     bmaz_e : (float)
         Error in beam azimuth in degrees (default=0.0)
     boresite_e : (float)
@@ -299,14 +262,6 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         alias the elevation angles
     hard : (class `pydarn.radar.radStruct.site` or NoneType)
         Radar hardware data or None to load here (default=None)
-    asep : (float or NoneType)
-        Antenna separation in meters or None to calculate (default=None)
-    ecor : (float or NoneType)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer or None to calculate (default=None)
-    phi_sign : (float or NoneType)
-        Sign change determined by the relative location of the interferometer
-        to the radar or None to calculate (default=None)
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
@@ -321,12 +276,6 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
         logging.error('the phase lag error data is not in this beam')
     assert isinstance(hard, pyrad.site) or hard is None, \
         logging.error('supply the hardware class or None')
-    assert isinstance(asep, float) or asep is None, \
-        logging.error('the asep should be a float or NoneType')
-    assert isinstance(ecor, float) or ecor is None, \
-        logging.error('the ecor should be a float or NoneType')
-    assert isinstance(phi_sign, float) or phi_sign is None, \
-        logging.error('the phi_sign should be a float or NoneType')
     assert isinstance(tdiff, float) or tdiff is None, \
         logging.error('the tdiff should be a float or NoneType')
     assert isinstance(tdiff_e, float) or tdiff is None, \
@@ -364,7 +313,21 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     if hasattr(beam.fit, phi0_e_attr):
         phi0_e = getattr(beam.fit, phi0_e_attr)
     else:
-        phi0_e = [np.nan for p in phi0]
+        phi0_e = [0.0 for p in phi0]
+
+    # If any of the errors are NaN, set to zero
+    if np.isnan(bmaz_e):
+        bmaz_e = 0.0
+    if np.isnan(boresite_e):
+        boresite_e = 0.0
+    if np.isnan(ix_e):
+        ix_e = 0.0
+    if np.isnan(iy_e):
+        iy_e = 0.0
+    if np.isnan(iz_e):
+        iz_e = 0.0
+    if np.isnan(tdiff_e):
+        tdiff_e = 0.0
 
     #-------------------------------------------------------------------------
     # Initialize output
@@ -388,46 +351,54 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     if tdiff is None:
         tdiff = hard.tdiff
 
-    # If desired, calculate the radar specific variables
-    if asep is None or ecor is None or phi_sign is None:
-        # Calculate the elevation angle correction due to differences in
-        # altitude between the interferometer and the radar and determine
-        # whether the interferometer is in front or behind the radar
-        asep = np.sqrt(np.dot(hard.interfer, hard.interfer)) # meters
-        phi_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
-        ecor = phi_sign * hard.phidiff * np.arcsin(hard.interfer[2] / asep)
-
-    # Calculate two of the error coefficients for the interferometer location
-    ecor_coef = phi_sign * hard.phidiff / asep
-    asin_ecor = np.sqrt(1.0 - (hard.interfer[2] / asep)**2)
-
     #-------------------------------------------------------------------------
     # Calculate the beam-specific variables
     #
     # Phi is the beam direction off the radar boresite assuming an elevation
     # angle of zero.  This is calculated by the hardware routine 'beamToAzim'
     # located in pydarn.radar.radStruct
-    bmaz = hard.beamToAzim(beam.bmnum)
-    cos_phi = np.cos(np.radians(bmaz - hard.boresite))
+    bm_az = np.radians(hard.beamToAzim(beam.bmnum) - hard.boresite)
+    cos_az = np.cos(bm_az)
+    sin_az = np.sin(bm_az)
+    az_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
+    sig2_az = bmaz_e**2 + boresite_e**2 
+    
+    # Find the elevation angle with the maximum phase lag
+    el_max = np.arcsin(az_sign * hard.interfer[2] * cos_az /
+                       np.sqrt(hard.interfer[1]**2 + hard.interfer[2]**2))
+    if el_max < 0.0:
+        el_max = 0.0
 
+    cos_max = np.cos(el_max)
+    sin_max = np.sin(el_max)
+    
     # k is the wavenumber in radians per meter
     k = 2.0 * np.pi * beam.prm.tfreq * 1.0e3 / scicon.c
+
+    # Calculate the phase-lag independent portion of the theta error
+    theta2_base = sig2_az * (hard.interfer[0] * cos_az)**2
+
+    if ix_e > 0.0:
+        theta2_base += (ix_e * sin_az)**2
+
+    if tdiff_e > 0.0:
+        theta2_base += (scicon.c * tdiff_e * 1.0e-6)**2
 
     # Calculate the phase shift due to the radar cables
     del_chi = -np.pi * beam.prm.tfreq * tdiff * 2.0e-3
 
     # Find the maximum possible phase shift
-    chimax = phi_sign * k * asep * cos_phi
-    chimin = chimax - (alias + 1.0) * phi_sign * 2.0 * np.pi
+    chimax = k * (hard.interfer[0] * sin_az + hard.interfer[1] *
+                  np.sqrt(cos_max**2- sin_az**2) + hard.interfer[2] * sin_max)
+    chimin = chimax - (alias + 1.0) * az_sign * 2.0 * np.pi
     
     #-------------------------------------------------------------------------
     # Calculate the elevation for each value of phi0
     for i,p0 in enumerate(phi0):
         #---------------------------------------------------------------------
         # Use only data where the angular drift between signals is not
-        # identically zero with an error of zero, since this could either be a
-        # sloppy flag denoting no data or an actual measurement.
-        if p0 != 0.0 or np.isnan(phi0_e[i]) or phi0_e[i] != 0.0:
+        # identically zero and the error is not NaN
+        if p0 != 0.0 and not np.isnan(phi0_e[i]):
             # Find the right phase.  This method works for both front and back
             # lobe calculations, unlike the more efficient method used by RST
             # in elevation.c:
@@ -444,12 +415,12 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 
             # Ensure that phi_temp falls within the proper limits
             while phi_temp > max(chimax, chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
-                amb_temp += phi_sign
+                phi_temp += az_sign * 2.0 * np.pi
+                amb_temp += az_sign
 
             while abs(phi_temp) < abs(chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
-                amb_temp += phi_sign
+                phi_temp += az_sign * 2.0 * np.pi
+                amb_temp += az_sign
 
             #--------------------------
             # Evaluate the phase shift
@@ -462,86 +433,78 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
                 logging.critical(estr)
             else:
                 # Calculate the elevation angle and set if realistic
-                cos_theta = phi_temp / (k * asep)
-                sin2_delta = cos_phi**2 - cos_theta**2
+                cos_theta = phi_temp / k - hard.interfer[0] * sin_az
+                yz_sum2 = hard.interfer[1]**2 + hard.interfer[2]**2
+                yscale2 = ((cos_theta * hard.interfer[2])**2 -
+                           yz_sum2 * (cos_theta**2 -
+                                      (hard.interfer[1] * cos_az)**2))
+                sin_delta = (cos_theta * hard.interfer[2] +
+                             np.sqrt(yscale2)) / yz_sum2
 
-                if sin2_delta >= 0.0:
-                    sin_delta = np.sqrt(sin2_delta)
-                    if sin_delta <= 1.0:
-                        # Calculate the elevation
-                        new_elv = np.degrees(np.arcsin(sin_delta) + ecor)
-                        elv[i] = new_elv
-                        phase_amb[i] = int(amb_temp)
+                if sin_delta <= 1.0:
+                    # Calculate the elevation
+                    elv[i] = np.degrees(np.arcsin(sin_delta))
+                    phase_amb[i] = int(amb_temp)
 
-                        # Now that the elevation was calculated, attempt to
-                        # find the elevation error, using the propagation of
-                        # error to propagate all possible uncertainties
-                        asin_der = 1.0 / np.sqrt(sin2_delta - sin2_delta**2)
+                    # Now that the elevation was calculated, find the
+                    # elevation error, using the propagation of error to
+                    # propagate the provided uncertainties
+                    asin_der = 1.0 / np.sqrt(1.0 - sin_delta**2)
 
-                        # Calculate the error terms for beam azimuth and
-                        # boresite
-                        term_bmaz = 0.0
-                        term_bore = 0.0
-                        if((not np.isnan(bmaz_e) and bmaz_e > 0.0) or
-                           (not np.isnan(boresite_e) and boresite_e > 0.0)):
-                            sin_phi = np.sin(np.radians(bmaz - hard.boresite))
+                    # If the azimuthal error is not zero, calculate derivative
+                    if sig2_az > 0.0:
+                        az_term2 = (cos_az * sin_az)**2 / yscale2
+                        az_term2 *= np.power(hard.interfer[1], 4) * sig2_az
 
-                            if not np.isnan(bmaz_e) and bmaz_e > 0.0:
-                                temp = (-bmaz * sin_phi * cos_phi * asin_der)**2
-                                term_bmaz = bmaz_e * bmaz_e * temp
-                            if not np.isnan(boresite_e) and boresite_e > 0.0:
-                                temp = (hard.boresite * sin_phi * cos_phi *
-                                        asin_der)**2
-                                term_bore = boresite_e * boresite_e * temp
+                    else:
+                        az_term2 = 0.0
 
-                        # Calculate the error terms for the interferometer
-                        # location
-                        term_x = 0.0
-                        term_y = 0.0
-                        term_z = 0.0
-                        if((not np.isnan(ix_e) and ix_e > 0.0) or
-                           (not np.isnan(iy_e) and iy_e > 0.0)):
-                            temp = (cos_theta * cos_theta * asin_der +
-                                    ecor_coef * hard.interfer[2] /
-                                    (asep * asep * asin_ecor))
+                    # If there is an error in the phase lag, add this to the
+                    # theta sigma and then calculate the theta term
+                    if phi0_e[i] > 0.0:
+                        theta_term2 = theta2_base + (phi0_e[i] / k)**2
+                    else:
+                        theta_term2 = theta2_base
 
-                            if not np.isnan(ix_e) and ix_e > 0.0:
-                                term_x = (ix_e * hard.interfer[0] * temp)**2
+                    if theta_term2 > 0.0:
+                        theta_term2 *= ((hard.interfer[2] - hard.interfer[1]**2
+                                        * cos_theta / np.sqrt(yscale2))
+                                       / yz_sum2)**2
 
-                            if not np.isnan(iy_e) and iy_e > 0.0:
-                                term_y = (iy_e * hard.interfer[1] * temp)**2
+                    # If the interferometer Y error is not zero, get derivative
+                    if iy_e > 0.0:
+                        iy_term2 = (yz_sum2 - 2.0 * cos_theta *
+                                    hard.interfer[1] * hard.interfer[2] - 2.0 *
+                                    hard.interfer[1] * np.sqrt(yscale2) +
+                                    hard.interfer[1]**2 * yz_sum2 *
+                                    (yz_sum2 * cos_az**2 - cos_theta**2) /
+                                    np.sqrt(yscale2))**2 / np.power(yz_sum2, 4)
+                        iy_term2 *= iy_e**2
+                    else:
+                        iy_term2 = 0.0
 
-                        if not np.isnan(iz_e) and iz_e > 0.0:
-                            temp = (cos_theta**2 * asin_der * hard.interfer[2]
-                                    / (asep * asep) - ecor_coef * asin_ecor)
-                            term_z = iz_e * iz_e * temp * temp
-                        
-                        # Calculate the error terms for tdiff
-                        term_tdiff = 0.0
-                        if not np.isnan(tdiff_e) and tdiff_e > 0.0:
-                            temp = (2.0 * np.pi * beam.prm.tfreq * cos_theta /
-                                    (1000.0 * asep * k * asin_der))**2
-                            term_tdiff = temp * tdiff_e * tdiff_e
+                    # If the interferometer Z error is not zero, get derivative
+                    if iz_e > 0.0:
+                        iz_term2 = ((yz_sum2 * (cos_theta + hard.interfer[2] *
+                                                (hard.interfer[1] * cos_az)**2 /
+                                                np.sqrt(yscale2)) - 2.0 *
+                                     hard.interfer[2] * np.sqrt(yscale2))
+                                    * iz_e)**2 / np.power(yz_sum2, 4)
+                    else:
+                        iz_term2 = 0.0                        
 
-                        # Calculate the error term for phase lag
-                        term_phi0 = 0.0
-                        if not np.isnan(phi0_e[i]) and phi0_e[i] > 0.0:
-                            temp = cos_theta * asin_der / (k * asep)
-                            term_phi0 = (phi0_e[i] * temp)**2
+                    # Calculate the elevation error, adding in quadrature
+                    temp = np.sqrt(az_term2 + theta_term2 + iy_term2 + iz_term2)
 
-                        # Calculate the elevation error, adding in quadrature
-                        temp = np.sqrt(term_phi0 + term_tdiff + term_z + term_y
-                                       + term_x + term_bore + term_bmaz)
+                    # If the elevation error is identically zero, assume
+                    # that no error could be obtained
+                    elv_e[i] = np.nan if temp == 0.0 else temp
 
-                        # If the elevation error is identically zero, assume
-                        # that no error could be obtained
-                        elv_e[i] = np.nan if temp == 0.0 else temp
-
-    return elv, elv_e, phase_amb, hard, asep, ecor, phi_sign
+    return elv, elv_e, phase_amb, hard
 
 
 #---------------------------------------------------------------------------
-def calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
+def calc_elv_list(phi0, phi0_e, fovflg, bm_az, tfreq, interfer_offset,
                   tdiff, alias=0.0):
     '''Calculate the elevation angle in radians for a single radar
 
@@ -553,18 +516,14 @@ def calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
         List of phase lag errors in radians
     fovflg : (list of ints)
         List of field-of-view flags where 1 indicates the front, -1 the rear
-    cos_phi : (list of floats)
-        Cosine of the azimuthal angle between the beam and the radar boresite
+    bm_az : (list of floats)
+        Azimuthal angle between the beam and the radar boresite at zero
+        elevation (radians)
     tfreq : (list of floats)
         Transmission frequency (kHz)
-    asep : (float)
-        Antenna separation in meters or None to calculate
-    ecor : (float)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer
-    phi_sign : (float)
-        Sign change determined by the relative location of the interferometer
-        to the radar
+    interfer_offset : (list or numpy.ndarray of floats)
+        Offset of the midpoints of the interferometer and main array (meters),
+        where [0] is X, [1] is Y, and [2] is Z.
     tdiff : (float)
         The relative time delay of the signal paths from the interferometer
         array to the receiver and the main array to the reciver (microsec)
@@ -603,22 +562,8 @@ def calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
         logging.error("the input lists are empty or are not the same size")
         return elv
 
-    if isinstance(ecor, int):
-        ecor = float(ecor)
-    elif not isinstance(ecor, float):
+    if not isinstance(interfer_offset, list) or len(interfer_offset) != 3:
         logging.error("the elevation correction must be a float")
-        return elv
-
-    if isinstance(phi_sign, int):
-        phi_sign = float(phi_sign)
-    elif not isinstance(phi_sign, float):
-        logging.error("the phase lag sign must be a float")
-        return elv
-
-    if isinstance(asep, int):
-        asep = float(asep)
-    elif not isinstance(asep, float):
-        logging.error("the interferometer distance must be a float")
         return elv
 
     if isinstance(tdiff, int):
@@ -632,7 +577,7 @@ def calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
     elif not isinstance(alias, float):
         logging.error("the alias must be a float")
         return elv
-
+    
     #-------------------------------------------------------------------------
     # Calculate the elevation for each value of phi0
     for i,p0 in enumerate(phi0):
@@ -649,50 +594,59 @@ def calc_elv_list(phi0, phi0_e, fovflg, cos_phi, tfreq, asep, ecor, phi_sign,
             # Calculate the phase shift due to the radar cables
             del_chi = -np.pi * tfreq[i] * tdiff * 2.0e-3
 
+            # Calculate geometry parameters
+            sin_az = np.sin(bm_az[i])
+            cos_az = np.cos(bm_az[i])
+            az_sign = 1.0 if interfer_offset[1] > 0.0 else -1.0
+
+            # Find the elevation angle with the maximum phase lag
+            el_max = np.arcsin(az_sign * interfer_offset[2] * cos_az /
+                               np.sqrt(interfer_offset[1]**2 +
+                                       interfer_offset[2]**2))
+            if el_max < 0.0:
+                el_max = 0.0
+
+            cos_max = np.cos(el_max)
+            sin_max = np.sin(el_max)
+
             # Find the maximum possible phase shift
-            chimax = phi_sign * k * asep * cos_phi[i]
-            chimin = chimax - (alias + 1.0) * phi_sign * 2.0 * np.pi
+            chimax = k * (interfer_offset[0] * sin_az + interfer_offset[1] *
+                          np.sqrt(cos_max**2- sin_az**2)
+                          + interfer_offset[2] * sin_max)
+            chimin = chimax - (alias + 1.0) * az_sign * 2.0 * np.pi
     
-            # Find the right phase.  This method works for both front and back
-            # lobe calculations, unlike the more efficient method used by RST
-            # in elevation.c:
-            # phi_tempf = phi0 + 2.0*np.pi* np.floor(((chimax+del_chi)-phi0)/
-            #                                       (2.0*np.pi))
-            # if phi_sign < 0.:
-            #     phi_tempf += 2.0 * np.pi
-            # cos_thetaf = (phi_tempf - del_chi) / (k * asep)
-            # sin2_deltaf = cos_phi**2 - cos_thetaf**2
-            #
-            # They both yield the same elevation for front lobe calculations
+            # Find the right phase.  This method works for both front and
+            # back lobe calculations.
             phi_temp = (fovflg[i] * (p0 - del_chi)) % (2.0 * np.pi)
 
             # Ensure that phi_temp falls within the proper limits
             while phi_temp > max(chimax, chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
+                phi_temp += az_sign * 2.0 * np.pi
 
             while abs(phi_temp) < abs(chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
+                phi_temp += az_sign * 2.0 * np.pi
 
             #--------------------------
             # Evaluate the phase shift
             if phi_temp > max(chimax, chimin):
-                estr = "BUG: can't fix phase shift [{:f} not ".format(phi_temp)
-                estr = "{:s}between {:f},{:f}] for".format(estr, chimin, chimax)
-                estr = "{:s} index [{:d}]".format(i)
+                estr = "BUG: can't fix phase shift [{:f} ".format(phi_temp)
+                estr = "{:s}not between {:f},".format(estr, chimin)
+                estr = "{:s}{:f}] for index [{:d}]".format(estr, chimax, i)
                 logging.critical(estr)
                 elv.append(np.nan)
             else:
                 # Calcualte the elevation angle and set if realistic
-                cos_theta = phi_temp / (k * asep)
-                sin2_delta = (cos_phi[i] * cos_phi[i]) - (cos_theta * cos_theta)
+                cos_theta = phi_temp / k - interfer_offset[0] * sin_az
+                yz_sum2 = interfer_offset[1]**2 + interfer_offset[2]**2
+                sin_delta = (cos_theta * interfer_offset[2] +
+                             np.sqrt((cos_theta * interfer_offset[2])**2 -
+                                     yz_sum2 * (cos_theta**2 -
+                                                (interfer_offset[1] *
+                                                 cos_az)**2))) / yz_sum2
 
-                if sin2_delta >= 0.0:
-                    sin_delta = np.sqrt(sin2_delta)
-                    if sin_delta <= 1.0:
-                        new_elv = np.arcsin(sin_delta) + ecor
-                        elv.append(new_elv)
-                    else:
-                        elv.append(np.nan)
+                if sin_delta <= 1.0:
+                    new_elv = np.arcsin(sin_delta)
+                    elv.append(new_elv)
                 else:
                     elv.append(np.nan)
         else:

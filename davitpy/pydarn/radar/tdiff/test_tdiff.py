@@ -182,7 +182,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
     In[5]: tt, trange, ldist = dtdiff.test_tdiff.test_calc_tdiff()
     --- shows simplex output ---
     In[6]: print tt
-    0.15493524451202445
+    0.155995791387
     '''
     import datetime as dt
     import davitpy.pydarn.radar as pyrad
@@ -244,15 +244,12 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
     ref_err = max(abs(han_heater_field_line_lat(np.array([ref_alt - 10.0,
                                                           ref_alt + 10.0]),
                                                 heater="tromso") - ref_lat))
-    asep = np.sqrt(np.dot(hard.interfer, hard.interfer))
-    phi_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
-    ecor = phi_sign * hard.phidiff * np.arcsin(hard.interfer[2] / asep)
     ttol = 1.0e-4
     fovflg = [1 for i in sdata["phi0"]]
-    cos_phi = [np.cos(np.radians(hard.beamToAzim(b) - hard.boresite))
-               for b in sdata['bmnum']]
-    lat_args = (hard, asep, phi_sign, ecor, sdata["phi0"], sdata["phi0e"],
-                fovflg, cos_phi, sdata["tfreq"], sdata['bmnum'], sdata['dist']) 
+    bm_az = [np.radians(hard.beamToAzim(b) - hard.boresite)
+             for b in sdata['bmnum']]
+    lat_args = (hard, sdata["phi0"], sdata["phi0e"], fovflg, bm_az,
+                sdata["tfreq"], sdata['dist']) 
 
     # Estimate tdiff
     tout = pyrad.tdiff.calc_tdiff.calc_tdiff(hard.tdiff, ref_lat, ref_err,
@@ -272,6 +269,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
         import matplotlib as mpl
         import matplotlib.pyplot as plt
         from davitpy.utils import calcDistPnt
+        fov_dir = {1:"front", -1:"back"}
         try:
             sax = tdiff_plot.add_subplot(3,1,1)
             hax = tdiff_plot.add_subplot(2,2,4)
@@ -349,24 +347,30 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
         # Add the latitude histogram
         elv = np.array(fov.calc_elevation.calc_elv_list(sdata['phi0'],
                                                         sdata['phi0e'], fovflg,
-                                                        cos_phi, sdata['tfreq'],
-                                                        asep,ecor, phi_sign,
+                                                        bm_az, sdata['tfreq'],
+                                                        hard.interfer,
                                                         hard.tdiff))
-        loc = calcDistPnt(hard.geolat, hard.geolon, hard.alt,
-                          az=hard.beamToAzim(np.array(sdata['bmnum'])),
-                          el=np.degrees(elv), dist=np.array(sdata['dist']))
+        elv = np.degrees(elv)
+        az = np.array([pyrad.radFov.calcAzOffBore(e, np.degrees(bm_az[i]),
+                                                  fov_dir[fovflg[i]]) +
+                       hard.boresite for i,e in enumerate(elv)])
+        loc = calcDistPnt(hard.geolat, hard.geolon, hard.alt, az=az, el=elv,
+                          dist=np.array(sdata['dist']))
 
         hax.hist(loc['distLat'], 8, color="0.6",
                  label="{:.3f}".format(hard.tdiff))
        
         elv = np.array(fov.calc_elevation.calc_elv_list(sdata['phi0'],
                                                         sdata['phi0e'], fovflg,
-                                                        cos_phi, sdata['tfreq'],
-                                                        asep, ecor, phi_sign,
-                                                        tout[0]))
-        loc = calcDistPnt(hard.geolat, hard.geolon, hard.alt,
-                          az=hard.beamToAzim(np.array(sdata['bmnum'])),
-                          el=np.degrees(elv), dist=np.array(sdata['dist']))
+                                                        bm_az, sdata['tfreq'],
+                                                        hard.interfer, tout[0]))
+        
+        elv = np.degrees(elv)
+        az = np.array([pyrad.radFov.calcAzOffBore(e, np.degrees(bm_az[i]),
+                                                  fov_dir[fovflg[i]]) +
+                       hard.boresite for i,e in enumerate(elv)])
+        loc = calcDistPnt(hard.geolat, hard.geolon, hard.alt, az=az, el=elv,
+                          dist=np.array(sdata['dist']))
 
         hax.hist(loc['distLat'], 8, color="c", alpha=.5,
                  label="{:.3f}".format(tout[0]))

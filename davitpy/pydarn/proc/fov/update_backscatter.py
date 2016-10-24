@@ -18,8 +18,6 @@ assign_region               ionosphere region based on virtual height
 test_propagation            test propgation against reality
 select_alt_groups           determine altitude limits for range gate
 get_beam                    load beams from list or pointer
-calc_elv                    calculate elevation angle for scatter points
-calc_virtual_height         calculate virtual height from distance & elevation
 calc_distance               calculate slant range
 select_beam_groundscatter   filter to select groundscatter data
 calc_frac_points            calculate precentage of groundscatter
@@ -867,10 +865,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 
     #----------------------------------
     # Test input
-    if not isinstance(hard, pyrad.radStruct.site):
-        logging.error('need a hardware site structure to load data')
-        return None
-
     if(not ((isinstance(scan, list) or isinstance(scan, np.ndarray)) and
             len(scan) > 0 and len(scan) <= hard.maxbeam and
             isinstance(scan[0], sdio.radDataTypes.beamData))
@@ -925,9 +919,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                "back":[list() for bi in range(hard.maxbeam)]}
     bnum = 0
     snum = 0
-    asep = None
-    ecor = None
-    phi_sign = None
 
     while scan is not None:
         # Load beams from scan, accounting for different input types
@@ -1605,10 +1596,6 @@ def update_beam_fit(beam, hard=None,
     import davitpy.pydarn.proc.fov.calc_elevation as ce
     import davitpy.pydarn.proc.fov.calc_height as ch
 
-    asep = None
-    ecor = None
-    phi_sign = None
-
     #----------------------------------
     # Test input
     if not isinstance(region_hmin, dict) or min(region_hmin.values()) < 0.0:
@@ -1717,20 +1704,17 @@ def update_beam_fit(beam, hard=None,
     for ff in ["front", "back"]:
         # Calculate the elevation
         try:
-            (elvs[ff], elv_errs[ff], pamb, hard, asep, ecor,
-             phi_sign) = ce.calc_elv_w_err(beam, hard=hard, asep=asep,
-                                           ecor=ecor, phi_sign=phi_sign,
-                                           bmaz_e=bmaz_e, boresite_e=boresite_e,
-                                           ix_e=ix_e, iy_e=iy_e, iz_e=iz_e,
-                                           tdiff=beam.prm.tdiff,
-                                           tdiff_e=beam.prm.tdiff_e, fov=ff)
-            (elvs_aliased[ff], elva_errs[ff], pamb, hard, asep, ecor,
-             phi_sign) = ce.calc_elv_w_err(beam, hard=hard, asep=asep,
-                                           ecor=ecor, phi_sign=phi_sign,
-                                           bmaz_e=bmaz_e, boresite_e=boresite_e,
-                                           ix_e=ix_e, iy_e=iy_e, iz_e=iz_e,
-                                           tdiff=beam.prm.tdiff, alias=1.0,
-                                           fov=ff)
+            (elvs[ff], elv_errs[ff], pamb,
+             hard) = ce.calc_elv_w_err(beam, hard=hard, bmaz_e=bmaz_e,
+                                       boresite_e=boresite_e, ix_e=ix_e,
+                                       iy_e=iy_e, iz_e=iz_e,
+                                       tdiff=beam.prm.tdiff,
+                                       tdiff_e=beam.prm.tdiff_e, fov=ff)
+            (elvs_aliased[ff], elva_errs[ff], pamb,
+             hard) = ce.calc_elv_w_err(beam, hard=hard, bmaz_e=bmaz_e,
+                                       boresite_e=boresite_e, ix_e=ix_e,
+                                       iy_e=iy_e, iz_e=iz_e,
+                                       tdiff=beam.prm.tdiff, alias=1.0, fov=ff)
         except:
             estr = "can't get elevation for beam {:d} at {:}".format(beam.bmnum,
                                                                      beam.time)
