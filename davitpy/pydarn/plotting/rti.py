@@ -706,7 +706,7 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
                 # Clear the current axis
                 ax.cla()
                 # Kick out error messages
-                diff_time = (times[-1]-times[0]).total_seconds()/2.
+                diff_time = (times[-1] - times[0]).total_seconds() / 2.
                 cpid_time = times[0] + timedelta(seconds=diff_time)
                 temp = ', '.join([str(x) for x in list(set(cpid))])
                 cpid_text = 'CPIDs: ' + temp
