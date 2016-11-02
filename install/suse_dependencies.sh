@@ -42,6 +42,8 @@ zypper -n install libatlas3-devel
 zypper -n install openblas-devel blas-devel
 zypper -n install python-Cython python3-Cython
 zypper -n install libagg2
+zypper -n install libffi-devel
+zypper -n install libopenssl-devel
 #apt-get install -y python-mpltoolkits.basemap
 pip install --upgrade numpy
 zypper -n install python-scipy
@@ -62,6 +64,8 @@ pip install --upgrade ipython
 pip install --upgrade jupyter
 pip install --upgrade matplotlib
 #pip install --upgrade basemap
+pip install --upgrade pyproj
+pip install --upgrade cryptography
 
 dir=$(pwd)
 
