@@ -52,7 +52,7 @@ class MapConv(object):
         the axis handle used
     mObj : utils.plotUtils.mapObj
         the map object you want data to be overlayed on.
-    
+ 
 
     Methods
     --------
@@ -134,7 +134,7 @@ class MapConv(object):
         # check if hemi and coords keywords are correct
         assert(hemi == "north" or hemi == "south"), \
             logging.error("hemi should either be 'north' or 'south'")
-        assert(plotCoords == 'mag' or coords == 'mlt'), \
+        assert(plotCoords == 'mag' or plotCoords == 'mlt'), \
             logging.error("error, coords must be one of 'mag' or 'mlt'")
 
         self.hemi = hemi
@@ -496,7 +496,8 @@ class MapConv(object):
         import datetime
         import numpy
         import scipy
-
+	from davitpy.utils import *
+    	import davitpy.models.aacgm as aacgm
 
         if self.hemi == 'north':
             hemisphere = 1
@@ -613,7 +614,7 @@ class MapConv(object):
 
         # mlt conversion stuff
         if self.plotCoords == 'mlt':
-            epoch = timeUtils.datetimeToEpoch(strtTime)
+            epoch = timeUtils.datetimeToEpoch(self.mapData.sTime+datetime.timedelta(minutes=1))
             mltDef = aacgm.mltFromEpoch(epoch,0.0) * 15.
             lonShftFit += mltDef
             gridArr[1,:] = numpy.mod( ( gridArr[1,:] + lonShftFit ) / 15., 24. )
