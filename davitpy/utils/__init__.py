@@ -53,6 +53,10 @@ try:
 except Exception, e:
     logging.exception(__file__ + ' -> utils.coordUtils: ' + str(e))
 
+try:
+    from model_vheight import *
+except Exception, e:
+    logging.exception(__file__ + ' -> utils.model_vheight: ' + str(e))
 
 # Define a few general-use constants
 

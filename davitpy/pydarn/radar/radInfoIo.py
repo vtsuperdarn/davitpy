@@ -192,21 +192,22 @@ def hdwRead(fname, path=None):
             siteF['tval'].append(-1)
         else:
             siteF['tval'].append(timeYrsecToDate(int(ldat[2]), int(ldat[1])))
-            siteF['geolat'].append(float(ldat[3]))
-            siteF['geolon'].append(float(ldat[4]))
-            siteF['alt'].append(float(ldat[5]))
-            siteF['boresite'].append(float(ldat[6]))
-            siteF['bmsep'].append(float(ldat[7]))
-            siteF['vdir'].append(float(ldat[8]))
-            siteF['atten'].append(float(ldat[9]))
-            siteF['tdiff'].append(float(ldat[10]))
-            siteF['phidiff'].append(float(ldat[11]))
-            siteF['interfer'].append([float(ldat[12]), float(ldat[13]),
-                                      float(ldat[14])])
-            siteF['recrise'].append(float(ldat[15]))
-            siteF['maxatten'].append(int(ldat[16]))
-            siteF['maxgate'].append(int(ldat[17]))
-            siteF['maxbeam'].append(int(ldat[18]))
+
+        siteF['geolat'].append(float(ldat[3]))
+        siteF['geolon'].append(float(ldat[4]))
+        siteF['alt'].append(float(ldat[5]))
+        siteF['boresite'].append(float(ldat[6]))
+        siteF['bmsep'].append(float(ldat[7]))
+        siteF['vdir'].append(float(ldat[8]))
+        siteF['atten'].append(float(ldat[9]))
+        siteF['tdiff'].append(float(ldat[10]))
+        siteF['phidiff'].append(float(ldat[11]))
+        siteF['interfer'].append([float(ldat[12]), float(ldat[13]),
+                                  float(ldat[14])])
+        siteF['recrise'].append(float(ldat[15]))
+        siteF['maxatten'].append(int(ldat[16]))
+        siteF['maxgate'].append(int(ldat[17]))
+        siteF['maxbeam'].append(int(ldat[18]))
 
     # Return
     return siteF

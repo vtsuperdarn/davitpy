@@ -243,7 +243,7 @@ def plotOmni(omniList,parameter=None,sTime=None,eTime=None,ymin=None,
       if(parameter[0] == 'al'): ylabel = 'AL [nT]'
       if(parameter[0] == 'au'): ylabel = 'AU [nT]'
       if(parameter[0] == 'bx'): ylabel = 'Bx [nT]'
-      if(parameter[0] == 'bze'): ylabel = 'By GSE [nT]'
+      if(parameter[0] == 'bye'): ylabel = 'By GSE [nT]'
       if(parameter[0] == 'bze'): ylabel = 'Bz GSE [nT]'
       if(parameter[0] == 'bym'): ylabel = 'By GSM [nT]'
       if(parameter[0] == 'bzm'): ylabel = 'Bz GSM [nT]'
