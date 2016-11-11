@@ -259,7 +259,7 @@ def gcarToLcar(X, Y, Z, lat, lon, rho , inverse=False):
         # Then, rotate about global-Z to get local-X pointing eastward
         rot = -np.radians(lon + 90.0)
         sx = tx * np.cos(rot) - ty * np.sin(rot)
-        sy = tx * np.sin(rot) + ty * cos(rot)
+        sy = tx * np.sin(rot) + ty * np.cos(rot)
         sz = tz
         # Finally, rotate about X axis to align Z with upward direction
         rot = -np.radians(90.0 - lat)
