@@ -762,7 +762,7 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
     times : list
         a list of the times of the beam soundings
     sky: list
-        a lsit of the noise.sky of the beam soundings
+        a list of the noise.sky of the beam soundings
     search : list
         a list of the noise.search param
     xlim : Optional[list]
@@ -839,7 +839,7 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
     times : list
         a list of the times of the beam soundings
     sky : list
-        a lsit of the noise.sky of the beam soundings
+        a list of the noise.sky of the beam soundings
     search : list
         a list of the noise.search param
     xlim : Optional[list]
@@ -922,7 +922,7 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
     times : list
         a list of the times of the beam soundings
     freq : list
-        a lsit of the tfreq of the beam soundings
+        a list of the tfreq of the beam soundings
     xlim : Optional[list]
         2-element limits of the x-axis.  None for default.
     xticks : Optional[list]
@@ -998,7 +998,7 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
     times : list
         a list of the times of the beam soundings
     nave : list
-        a lsit of the nave of the beam soundings
+        a list of the nave of the beam soundings
     xlim : Optional[list]
         2-element limits of the x-axis.  None for default.
     xticks : Optional[list]
