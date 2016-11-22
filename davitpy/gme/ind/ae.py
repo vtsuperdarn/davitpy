@@ -237,7 +237,7 @@ def readAe(sTime=None,eTime=None,res=60,ae=None,al=None,au=None,ao=None):
         aeList = []
         for rec in qry.sort('time'):
             aeList.append(aeRec(dbDict=rec))
-        logging.info('\nreturning a list with ' + len(aeList) + 'records of ae data')
+        logging.info('\nreturning a list with ' + str(len(aeList)) + ' records of ae data')
         return aeList
     #if we didn't find anything on the mongodb
     else:

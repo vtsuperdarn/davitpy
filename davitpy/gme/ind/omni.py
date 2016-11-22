@@ -331,7 +331,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
         omniList = []
         for rec in qry.sort('time'):
             omniList.append(omniRec(dbDict=rec))
-        logging.info('\nreturning a list with ' + len(omniList) + ' records of omni data')
+        logging.info('\nreturning a list with ' + str(len(omniList)) + ' records of omni data')
         return omniList
     #if we didn't find anything on the mongodb
     else:
@@ -342,7 +342,7 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
         omniList = readOmniFtp(sTime, eTime)
         
         if(omniList != None):
-            logging.info('\nreturning a list with ' + len(omniList) + ' recs of omni data')
+            logging.info('\nreturning a list with ' + str(len(omniList)) + ' recs of omni data')
             return omniList
         else:
             logging.info('\n no data found on FTP server, returning None...')
