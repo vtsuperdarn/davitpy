@@ -201,10 +201,14 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     beamLimits : Optional[2-element list]
         Plot only between the beams specified.
     model : Optional[str]
-        'IS for ionopsheric scatter projection model (default), 'GS' for
-        ground scatter projection model, None if you are really
-        confident in your elevation or altitude values.  fov object will over
-        write this choice.
+        IS : standard ionospheric scatter projection model (default)
+        GS : standard ground scatter projection model
+        S  : standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1 1/2-hop ionospheric projection model
+        C  : Chisham projection model
+        None : if you trust your elevation or altitude values
     fov_dir : Optional[str] 
         Field of view direction ('front' or 'back'). Value in fov object will
         overwrite this choice.  Default='front'
