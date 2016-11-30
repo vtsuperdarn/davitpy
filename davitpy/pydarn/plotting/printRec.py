@@ -131,7 +131,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
         the start time as a datetime
     eTime : datetime
         the end time as a datetime
-    rad : str 
+    rad : str
         the 3 letter radar code, eg 'bks'
     outfile : str
         the txt file we are outputting to
