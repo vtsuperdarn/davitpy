@@ -671,6 +671,9 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             n += 1
 
         if n >= maxn:
+            estr = 'Accuracy on height calculation ({}) not reached '.format(htol)
+            estr = '{:s}quick enough. Returning nan, nan.'.format(estr)
+            logging.warning(estr)
             return np.nan, np.nan
         else:
             return geo_dict['distLat'], geo_dict['distLon']
