@@ -73,7 +73,7 @@ class fov(object):
     hop : Optional[scalar or ndarray(ngates) or ndarray(nbeams,ngates)]
         Hop, used if elevation angle is used.
     model
-        IS : standard ionopsheric scatter projection model (default)
+        IS : standard ionospheric scatter projection model (default)
         GS : standard ground scatter projection model
         S : standard projection model
         E1 : for Chisham E-region 1/2-hop ionospheric projection model
