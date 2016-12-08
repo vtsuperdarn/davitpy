@@ -131,7 +131,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
         the start time as a datetime
     eTime : datetime
         the end time as a datetime
-    rad : str 
+    rad : str
         the 3 letter radar code, eg 'bks'
     outfile : str
         the txt file we are outputting to
@@ -171,8 +171,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     radar = pydarn.radar.network().getRadarByCode(rad)
     site = radar.getSiteByDate(myData.time)
     myFov = pydarn.radar.radFov.fov(site=site, rsep=myData.prm.rsep,
-                                    ngates=myData.prm.nrang, model=None,
-                                    altitude=300.)
+                                    ngates=myData.prm.nrang, altitude=300.)
 
     f = open(outfile, 'w')
 

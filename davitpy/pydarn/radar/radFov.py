@@ -30,6 +30,7 @@ Based on R.J. Barnes radar.pro
 import numpy as np
 import logging
 
+
 class fov(object):
     """ This class calculates and stores field-of-view coordinates.
     Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object.
@@ -72,7 +73,7 @@ class fov(object):
     hop : Optional[scalar or ndarray(ngates) or ndarray(nbeams,ngates)]
         Hop, used if elevation angle is used.
     model
-        IS : standard ionopsheric scatter projection model (default)
+        IS : standard ionospheric scatter projection model (default)
         GS : standard ground scatter projection model
         S : standard projection model
         E1 : for Chisham E-region 1/2-hop ionospheric projection model
@@ -309,7 +310,7 @@ class fov(object):
                 estr = '{:s} Using first element: {}'.format(estr, hop[0])
                 logging.error(estr)
                 hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
-                
+
         # Do for coord_alt what we just did for altitude.
         if isinstance(coord_alt, np.ndarray):
             if coord_alt.ndim == 1:
@@ -381,8 +382,8 @@ class fov(object):
                 srang_center = slantRange(frang[ib], rsep[ib], recrise[ib],
                                           gates, center=True)
                 # Calculate edges slant range
-                srang_edge = slantRange(frang[ib], rsep[ib], recrise[ib], gates,
-                                        center=False)
+                srang_edge = slantRange(frang[ib], rsep[ib], recrise[ib],
+                                        gates, center=False)
             # Save into output arrays
             slant_range_center[ib, :-1] = srang_center[:-1]
             slant_range_full[ib, :] = srang_edge
@@ -565,7 +566,7 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             if adjusted_sr:
                 logging.error("Chisham model needs total slant range")
                 return np.nan, np.nan
-            
+
             # Use Chisham model to calculate virtual height
             cmodel = None if model == "C" else model
             xalt, shop = vhm.chisham_vhm(slant_range, cmodel, hop_output=True)
@@ -586,7 +587,7 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
         if altitude is None or np.isnan(altitude):
             logging.error("No observations supplied")
             return np.nan, np.nan
-        
+
         # Adjust slant range if there is groundscatter and the location
         # desired is the ionospheric reflection point
         asr = slant_range
@@ -629,10 +630,10 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             if calt is not None:
                 # Adjust elevation angle for any hop > 1 (Chisham et al. 2008)
                 pos_dist = rad_pos + calt
-                phi = np.arccos((tr_dist**2 + pos_dist**2 - asr**2)
-                                / (2.0 * tr_dist * pos_dist))
-                beta = np.arcsin((tr_dist * np.sin(phi / (shop * 2.0)))
-                                 / (asr / (shop * 2.0)))
+                phi = np.arccos((tr_dist**2 + pos_dist**2 - asr**2) /
+                                (2.0 * tr_dist * pos_dist))
+                beta = np.arcsin((tr_dist * np.sin(phi / (shop * 2.0))) /
+                                 (asr / (shop * 2.0)))
                 tel = np.pi / 2.0 - beta - phi / (shop * 2.0)
 
                 if xalt == calt:
@@ -641,8 +642,8 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
                 tel = np.degrees(tel)
             else:
                 # pointing elevation (spherical Earth value) [degree]
-                tel = np.arcsin(((rad_pos + xalt)**2 - tr_dist**2 - asr**2)
-                                / (2.0 * tr_dist * asr))
+                tel = np.arcsin(((rad_pos + xalt)**2 - tr_dist**2 - asr**2) /
+                                (2.0 * tr_dist * asr))
                 tel = np.degrees(tel)
 
             # estimate off-array-normal azimuth (because it varies slightly
@@ -671,22 +672,25 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             n += 1
 
         if n >= maxn:
+            estr = 'Accuracy on height calculation ({}) not '.format(htol)
+            estr = '{:s}reached quick enough. Returning nan, nan.'.format(estr)
+            logging.warning(estr)
             return np.nan, np.nan
         else:
             return geo_dict['distLat'], geo_dict['distLon']
     elif elevation is not None:
         # No projection model (i.e., the elevation or altitude is so good that
-        # it gives you the proper projection by simple geometric considerations)
-        # Using no models simply means tracing based on trustworthy elevation
-        # or altitude
+        # it gives you the proper projection by simple geometric
+        # considerations). Using no models simply means tracing based on
+        # trustworthy elevation or altitude
         if hop is None or adjusted_sr:
             logging.error("Hop and total slant range needed with measurements")
             return np.nan, np.nan
-        
+
         if np.isnan(elevation):
             logging.error("No observations provided")
             return np.nan, np.nan
-        
+
         shop = hop - 0.5 if hop == np.floor(hop) and gs_loc == "I" else hop
         asr = slant_range
         if hop > 0.5 and hop != shop:
@@ -698,6 +702,7 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
                                        el=elevation, az=boresight + boff)
 
         return geo_dict['distLat'], geo_dict['distLon']
+
 
 # *************************************************************
 # *************************************************************
@@ -849,7 +854,8 @@ if __name__ == "__main__":
     fov1 = fov(site=site_sas, model="C")
 #    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
 #    print "Result:   " + str(fov1.latCenter[0][0:4])
-#    print "Expected: [-106.87506589 -106.80488558 -106.77349475 -106.75811049]"
+#    print "Expected: [-106.87506589 -106.80488558 -106.77349475 "
+#    print "-106.75811049]"
 #    print "Result:   " + str(fov1.lonCenter[0][0:4])
 #    print "coords of result are " + fov1.coords
     print
