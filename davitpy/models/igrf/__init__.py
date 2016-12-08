@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-"""
-*********************
-**Module**: models.igrf
-*********************
-Basic plotting tools
+"""International Geomagnetic Reference Field 2011
 
-**Modules**:
-  * :mod:`models.igrf`: fortran subroutines
+Basic plotting tools for IGRF
+
+Modules
+---------------------------
+igrf    fortran subroutines
+---------------------------
 
 """
+import logging
 
 try:
     from igrf import *
 except Exception, e:
-    print __file__+' -> igrf: ', e
+    logging.exception(__file__ + ' -> igrf: ' + str(e))

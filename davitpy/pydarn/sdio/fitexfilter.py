@@ -15,296 +15,327 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-*************************************
-**Module**: pydarn.sdio.fitexfilter
-*************************************
+pydarn.sdio.fitexfilter
+-------------------------------------
 Filter fitexfiles natively in python
 
-.. warning::
-  This is very SLOW.  We are currently working on this.  We recommend using the c version which is folded into :func:`pydarn.sdio.radDataRead.radDataOpen` 
-**Functions**:
-  * :func:`pydarn.sdio.fitexfilter.combBeams`
-  * :func:`pydarn.sdio.fitexfilter.fitFilter`
-  * :func:`pydarn.sdio.fitexfilter.doFilter`
-**Classes**:
-  * :class:`pydarn.sdio.fitexfilter.Gate`
+Functions
+----------
+combBeams
+fitFilter
+doFilter
+
+Classes
+--------
+Gate : A class to hold limited fitted and interferometer values for a single
+       radar, time, beam, and range gate
+
+
+Notes
+---------
+This is very SLOW.   We recommend using the c version which is folded into
+the sdio function radDataRead.radDataOpen
 """
 
 import numpy as np
 import datetime as dt
 from davitpy import utils
-
+import logging
 
 class Gate(object):
-  """A class to represent a single range gate
-    
-  **Attrs**: 
-    * **v** (float): velocity
-    * **w_l** (float): spectral width
-    * **p_l** (float): power
-    * **elv** (float): elevation angle
-    * **phi0** (float): phase difference between front and back array
+    """A class to represent a single range gate
+  
+    Parameters
+    ------------
+    v : (float)
+        velocity in m/s
+    w_l : (float)
+        spectral width in m/s
+    p_l :(float)
+        power in dB
+    elv : (float)
+        elevation angle in degrees
+    phi0 : (float)
+        phase difference between front and back array in degrees
 
-  written by AJ, 20130402
-  """
-  def __init__(self,fit,i):
-    self.v = fit.v[i]
-    self.w_l = fit.w_l[i]
-    self.p_l = fit.p_l[i]
-    self.pwr0 = fit.pwr0[i]
-    if fit.elv != None: self.elv = fit.elv[i]
-    else: self.elv = None
-    if fit.phi0 != None: self.phi0 = fit.phi0[i]
-    else: self.phi0 = None
+    written by AJ, 20130402
+    """
+
+    def __init__(self, fit, i):
+        self.v = fit.v[i]
+        self.w_l = fit.w_l[i]
+        self.p_l = fit.p_l[i]
+        self.pwr0 = fit.pwr0[i]
+        self.elv = None if fit.elv is None else fit.elv[i]
+        self.phi0 = None if fit.phi0 is None else fit.phi0[i]
 
 def combBeams(scan):
-  """This function combines all repeated beams within a scan into an averaged beam
-    
-  **Args**: 
-    * **scan** (:class:`sdio.scanData`): the scan to be combined
-  **Returns**:
-    * **outScan** (:class:`sdio.scanData`): the combined scan
-  **Example**:
-    ::
-    
-      combBeams(myScan)
-    
-  written by AJ, 20130402
-  """
-  from davitpy import pydarn
-  outScan = []
-  #sort the scan by beam number
-  sorted(scan, key=lambda beam: beam.bmnum)
+    """This function combines all repeated beams within a scan into a
+    single beam with medians for the velocity, elevation, phase lag, and
+    exponentially fitted power and spectral width.
 
-  #see if any beam number repeat
-  bcnt = np.zeros(50)
-  for b in scan:
-    bcnt[b.bmnum] += 1.
+    Parameters
+    -----------
+    scan : (list or sdio.scanData object)
+        A list of beams in a scan
 
-  #save any single beams:
-  for b in scan:
-    if bcnt[b.bmnum] == 1:
-      outScan.append(b)
+    Returns
+    --------
+    outscan (sdio.scanData object)
+        The averaged scan
 
-  #average any repeat beams
-  for i in range(len(bcnt)):
-    beams = []
-    #check for more than one
-    if bcnt[i] > 1:
-      myBeam = pydarn.sdio.beamData()
-      for b in scan:
-        #append it to beams list
-        if b.bmnum == i: beams.append(b)
+    written by AJ, 20130402
+    """
+    from davitpy import pydarn
+    outscan = []
+    # sort the scan by beam number
+    sorted(scan, key=lambda beam: beam.bmnum)
 
-      nrang = max(beams,key= lambda x:x.prm.nrang)
+    # see if any beam number repeat
+    bcnt = np.zeros(50)
+    for b in scan:
+        bcnt[b.bmnum] += 1.
 
-      #initialize a new beam object
-      myBeam.copyData(beams[0])
-      for key,val in myBeam.fit.__dict__.iteritems(): 
-        setattr(myBeam.fit,key,[])
-      myBeam.prm.nrang = nrang
+    # save any single beams:
+    for b in scan:
+        if bcnt[b.bmnum] == 1:
+            outscan.append(b)
 
-      for j in range(nrang):
-        cnt,pos = 0.,float(bcnt[i])
-        for b in beams:
-          if j in b.fit.slist: cnt += 1.
-        if cnt/pos > .5:
-          myBeam.fit.slist.append(j)
-          myBeam.fit.qflg = 1
-          for key in myBeam.fit.__dict__.iterkeys():
-            if key == 'qflg' or key == 'gflg' or key == 'slist':
-              continue
-            arr = []
-            for b in beams:
-              if j in b.fit.slist:
-                ind = b.fit.slist.index(j)
-                arr.append(getattr(b.fit, key)[ind])
-            setattr(myBeam.fit,key,np.median(arr))
-      outScan.append(myBeam)
+    # average any repeat beams
+    for i in range(len(bcnt)):
+        beams = []
+        # check for more than one
+        if bcnt[i] > 1:
+            beam = pydarn.sdio.beamData()
+            for b in scan:
+                # append it to beams list
+                if b.bmnum == i:
+                    beams.append(b)
 
-  sorted(outScan, key=lambda beam: beam.bmnum)
+            nrang = max(beams, key= lambda x:x.prm.nrang)
 
-  return outScan
+            # initialize a new beam object
+            beam.copyData(beams[0])
+            for key,val in beam.fit.__dict__.iteritems(): 
+                setattr(beam.fit, key, [])
+            beam.prm.nrang = nrang
 
+            for j in range(nrang):
+                cnt = 0.0
+                pos = float(bcnt[i])
+                for b in beams:
+                    if j in b.fit.slist:
+                        cnt += 1.
+                if cnt / pos > .5:
+                    beam.fit.slist.append(j)
+                    beam.fit.qflg = 1
+                    for key in beam.fit.__dict__.iterkeys():
+                        if key == 'qflg' or key == 'gflg' or key == 'slist':
+                            continue
+                        arr = []
+                        for b in beams:
+                            if j in b.fit.slist:
+                                ind = b.fit.slist.index(j)
+                                arr.append(getattr(b.fit, key)[ind])
+                        setattr(beam.fit, key, np.median(arr))
+            outscan.append(beam)
 
-def fitFilter(inFile,outFile,thresh=0.4,vb=False):
-  """This function applies a boxcar filter to a fitacf file
-    
-  .. warning::
-    This is **VERY** slow.  We are currently working on improving this.
+    sorted(outscan, key=lambda beam: beam.bmnum)
 
-  **Args**: 
-    * **infile** (str): the name of the input fitacf-format file
-    * **outfile** (str): the name of the output file
-    * **[thresh]** (float): the filter threshold for turning on a R-B cell.  default = 0.4
-    * **[vb]** (boolean): a flag indicating verbose output.  default = False
-  **Returns**:
-    * Nothing.
+    return outscan
 
-  **Example**:
-    ::
-    
-      pydarn.sdio.fitexfilter.fitFilter('input.fitacf','output.fitacf',thresh=0.5,vb=True)
-    
-  written by AJ, 20130402
-  """
-  from davitpy import pydarn
-  inp = pydarn.sdio.radDataOpen(dt.datetime(2010,5,1),'bks',fileName=inFile)
+def fitFilter(infile, outfile, thresh=0.4):
+    """This function applies a boxcar filter to a fitacf file.  Currently
+    hardwired to load Blackstone on 1-5-2010.  The fix to this is stored in
+    0.5-release_fitexFilter_change branch in aburrell's fork.
 
-  outp = open(outFile,'w')
+    Parameters
+    ------------
+    infile : (str)
+        The name of the input fitacf-format file
+    outfile : (str)
+        The name of the output file
+    thresh : (float)
+        The filter threshold for turning on a R-B cell.  (default=0.4)
 
-  scans = [None, None, None]
+    Returns
+    ---------
+    Void
 
-  sc = pydarn.sdio.radDataReadScan(inp)
-  scans[1] = sc
+    Note
+    -----
+    This is VERY slow
 
-  sc = pydarn.sdio.radDataReadScan(inp)
-  scans[2] = sc
+    written by AJ, 20130402
+    """
+    from davitpy import pydarn
+    inp = pydarn.sdio.radDataOpen(dt.datetime(2010,5,1), 'bks', fileName=infile)
 
-  while sc != None:
+    outp = open(outfile, 'w')
 
-    tsc = doFilter(scans,thresh=thresh)
-
-    for b in tsc:
-      print b
-      pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
+    scans = [None, None, None]
 
     sc = pydarn.sdio.radDataReadScan(inp)
-    
-    scans[0] = scans[1]
-    scans[1] = scans[2]
+    scans[1] = sc
+
+    sc = pydarn.sdio.radDataReadScan(inp)
     scans[2] = sc
 
-  tsc = doFilter(scans,thresh=thresh)
-  print tsc.time
-  for b in tsc:
-    pydarn.dmapio.writeFitRec(b,utils.datetimeToEpoch(b.time),outp)
+    while sc != None:
+        tsc = doFilter(scans, thresh=thresh)
 
-  outp.close()
+        for b in tsc:
+            logging.info("processing: {:}".format(b))
+            pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
 
+        sc = pydarn.sdio.radDataReadScan(inp)
+        scans[0] = scans[1]
+        scans[1] = scans[2]
+        scans[2] = sc
 
-def doFilter(scans,thresh=.4):
-  """This function applies a boxcar filter to consecutive scans
-    
-  .. warning::
-    This is **VERY** slow.  We are currently working on improving this.
+    tsc = doFilter(scans, thresh=thresh)
+    logging.info("current at time: {:}".format(tsc.time))
 
-  **Args**: 
-    * **scans** (list): a list of 3 consecutive scans in time.
-    * **[thresh]** (float): the filter threshold for turning on a R-B cell.  default = 0.4
-  **Returns**:
-    * outScan** (:class:`pydarn.sdio.radDataTypes.scanData`): the filtered scan
+    for b in tsc:
+        pydarn.dmapio.writeFitRec(b, utils.datetimeToEpoch(b.time), outp)
 
-  **Example**:
-    ::
-    
-      filtScan = pydarn.sdio.fitexfilter.doFilter(scanList,thresh=0.5)
-    
-  written by AJ, 20130402
-  """
-  from davitpy import pydarn
-  myScans = []
-  for s in scans:
-    if s == None:
-      myScans.append(None)
-    else:
-      myScans.append(combBeams(s))
+    outp.close()
+    return
 
-  outScan = pydarn.sdio.scanData()
+def doFilter(scans, thresh=.4):
+    """This function applies a boxcar filter to consecutive scans
 
-  #define the weigths array
-  w = [[[0. for i in range(3)] for j in range(3)] for k in range(3)]
-  for i in range(0,3):
-    for j in range(0,3):
-      for k in range(0,3):
-        if k == 0: tplus = 1
-        else: tplus = 0
-        if i == 0: rplus = 1
-        else: rplus = 0
-        if j == 0: bmplus = 1
-        else: bmplus = 0
-        if i == 0 and j == 0 and k == 0: centplus = 1
-        else: centplus = 0
+    Note
+    -----
+    This is VERY slow.
 
-        w[(i+1)%3][(j+1)%3][(k+1)%3] = 1+tplus+rplus+bmplus+centplus
+    Parameters
+    -----------
+    scans : (list)
+        a list of 3 consecutive scans, sorted by time.
+    thresh : (float)
+        The filter threshold for turning on a R-B cell.  (default=0.4)
 
+    Returns
+    --------
+    outscan : (list or radDataTypes.scanData object)
+        The filtered scan
 
+    written by AJ, 20130402
+    """
+    from davitpy import pydarn
 
-  for b in myScans[1]:
-    bmnum = b.bmnum
-    #make a new beam
-    myBeam = pydarn.sdio.beamData()
-    myBeam.copyData(b)
-    for key,val in myBeam.fit.__dict__.iteritems(): 
-      setattr(myBeam.fit,key,[])
+    scans = []
+    for s in scans:
+        if s == None:
+            scans.append(None)
+        else:
+            scans.append(combBeams(s))
 
-    for r in range(0,b.prm.nrang):
+    outscan = pydarn.sdio.scanData()
 
-      #boxcar to hold the gates
-      box = [[[None for j in range(3)] for k in range(3)] for n in range(3)]
+    # define the weigths array
+    w = [[[0.0 for i in range(3)] for j in range(3)] for k in range(3)]
+    for i in range(0,3):
+        for j in range(0,3):
+            for k in range(0,3):
+                tplus = 1 if k == 0 else 0
+                rplus = 1 if i == 0 else 0
+                bmplus = 1 if j == 0 else 0
+                centplus = 1 if i == 0 and j == 0 and k == 0 else 0
 
-      #iterate through time
-      for j in range(0,3):
-        #iterate through beam
-        for k in range(-1,2):
-          #iterate through gate
-          for n in range(-1,2):
+                w[(i+1)%3][(j+1)%3][(k+1)%3] = 1+tplus+rplus+bmplus+centplus
 
-            #get the scan we are working on
-            s = myScans[j]
-            if s == None: continue
+    for b in scans[1]:
+        bmnum = b.bmnum
+        # make a new beam
+        beam = pydarn.sdio.beamData()
+        beam.copyData(b)
+        for key,val in beam.fit.__dict__.iteritems(): 
+            setattr(beam.fit,key,[])
 
-            #get the beam we are working on
-            tbm = None
-            for bm in s:
-              if bm.bmnum == bmnum + k: tbm = bm
-            if tbm == None: continue
+        for r in range(0,b.prm.nrang):
+            # boxcar to hold the gates
+            box = [[[None for j in range(3)] for k in range(3)]
+                   for n in range(3)]
 
-            #check if target gate number is in the beam
-            if r+n in tbm.fit.slist:
-              ind = tbm.fit.slist.index(r+n)
-              box[j][k+1][n+1] = Gate(tbm.fit,ind)
-            else: box[j][k+1][n+1] = 0
+            # iterate through time
+            for j in range(0,3):
+                # iterate through beam
+                for k in range(-1,2):
+                    # iterate through gate
+                    for n in range(-1,2):
+                        # get the scan we are working on
+                        s = scans[j]
+                        if s == None:
+                            continue
 
-      pts,tot=0.,0.
-      v,w_l,p_l,elv,phi0,pwr0 = [],[],[],[],[],[]
-      #iterate through time
-      for j in range(0,3):
-        #iterate through beam
-        for k in range(0,3):
-          #iterate through gate
-          for n in range(0,3):
-            bx = box[j][k][n]
-            if bx == None: continue
-            wt = w[j][k][n]
-            tot += wt
-            if bx != 0:
-              pts += wt
-              for m in range(0,wt):
-                v.append(bx.v)
-                pwr0.append(bx.pwr0)
-                w_l.append(bx.w_l)
-                p_l.append(bx.p_l)
-                if bx.elv: elv.append(bx.elv)
-                if bx.phi0: phi0.append(bx.phi0)
+                        # get the beam we are working on
+                        tbm = None
+                        for bm in s:
+                            if bm.bmnum == bmnum + k:
+                                tbm = bm
+                        if tbm == None:
+                            continue
 
-      #check if we meet the threshold
-      if pts/tot >= thresh:
-        myBeam.fit.slist.append(r)
-        myBeam.fit.qflg.append(1)
-        myBeam.fit.v.append(np.median(v))
-        myBeam.fit.w_l.append(np.median(w_l))
-        myBeam.fit.p_l.append(np.median(p_l))
-        myBeam.fit.pwr0.append(np.median(pwr0))
-        if elv != []: myBeam.fit.elv.append(np.median(elv))
-        if phi0 != []: myBeam.fit.phi0.append(np.median(phi0))
-        if np.median(w_l) > -3.*np.median(v)+90.:
-          myBeam.fit.gflg.append(0)
-        else: myBeam.fit.gflg.append(1)
+                        # check if target gate number is in the beam
+                        if r+n in tbm.fit.slist:
+                            ind = tbm.fit.slist.index(r + n)
+                            box[j][k+1][n+1] = Gate(tbm.fit, ind)
+                        else:
+                            box[j][k+1][n+1] = 0
 
-    outScan.append(myBeam)
+            pts = 0.0
+            tot = 0.0
+            v = list()
+            w_l = list()
+            p_l = list()
+            elv = list()
+            phi0 = list()
+            pwr0 = list()
+            # iterate through time
+            for j in range(0,3):
+                # iterate through beam
+                for k in range(0,3):
+                    # iterate through gate
+                    for n in range(0,3):
+                        bx = box[j][k][n]
+                        if bx == None:
+                            continue
+                        wt = w[j][k][n]
+                        tot += wt
+                        if bx != 0:
+                            pts += wt
+                            for m in range(0, wt):
+                                v.append(bx.v)
+                                pwr0.append(bx.pwr0)
+                                w_l.append(bx.w_l)
+                                p_l.append(bx.p_l)
+                                if bx.elv:
+                                    elv.append(bx.elv)
+                                if bx.phi0:
+                                    phi0.append(bx.phi0)
 
-  return outScan
+            # check if we meet the threshold
+            if pts / tot >= thresh:
+                beam.fit.slist.append(r)
+                beam.fit.qflg.append(1)
+                beam.fit.v.append(np.median(v))
+                beam.fit.w_l.append(np.median(w_l))
+                beam.fit.p_l.append(np.median(p_l))
+                beam.fit.pwr0.append(np.median(pwr0))
+                if len(elv) > 0:
+                    beam.fit.elv.append(np.median(elv))
+                if len(phi0) > 0:
+                    beam.fit.phi0.append(np.median(phi0))
+
+                # Re-evaluate the groundscatter flag
+                gflg = 0 if np.median(w_l) > -3.0 * np.median(v) + 90.0 else 1
+                beam.fit.gflg.append(gflg)
+
+        outscan.append(beam)
+
+    return outscan
 
 
 
