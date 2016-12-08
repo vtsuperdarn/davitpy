@@ -533,6 +533,9 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
     """
     from davitpy import pydarn
+
+    if(isinstance(myData, pydarn.sdio.beamData)): myData = [myData]
+
     if(site is None):
         site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
     if(fov is None):
@@ -540,8 +543,6 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
                                       ngates=myData[0].prm.nrang + 1,
                                       nbeams=site.maxbeam, coords=coords,
                                       date_time=myData[0].time)
-
-    if(isinstance(myData, pydarn.sdio.beamData)): myData = [myData]
 
     gs_flg, lines = [], []
     if fill: verts, intensities = [], []

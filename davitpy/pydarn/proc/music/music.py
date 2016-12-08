@@ -519,8 +519,14 @@ class musicArray(object):
         Passed directly to pydarn.radar.radFov.fov()
     fovModel : Optional[str]
         Scatter mapping model.
-            'GS': Ground Scatter Mapping Model.  See Bristow et al. [1994]
-            'IS': Standard SuperDARN scatter mapping model.
+        GS : Ground Scatter Mapping Model.  See Bristow et al. [1994] (default)
+        IS : Standard SuperDARN scatter mapping model.
+        S  : Standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1 1/2-hop ionospheric projection model
+        C  : Chisham projection model
+        None : if you trust your elevation or altitude values
     fovCoords : Optional[str]
         Map coordinate system. WARNING: 'geo' is curently only tested coordinate system.
     full_array : Optional[bool]
@@ -696,14 +702,14 @@ class musicArray(object):
             return
 
         #Figure out what size arrays we need and initialize the arrays...
-        nrTimes = np.max(dataListArray[:,scanInx]) + 1
+        nrTimes = int(np.max(dataListArray[:,scanInx]) + 1)
 
         if full_array:
-            nrBeams = fov.beams.max() + 1
-            nrGates = fov.gates.max() + 1
+            nrBeams = int(fov.beams.max() + 1)
+            nrGates = int(fov.gates.max() + 1)
         else:
-            nrBeams = np.max(dataListArray[:,beamInx]) + 1
-            nrGates = np.max(dataListArray[:,gateInx]) + 1
+            nrBeams = int(np.max(dataListArray[:,beamInx]) + 1)
+            nrGates = int(np.max(dataListArray[:,gateInx]) + 1)
 
         #Make sure the FOV is the same size as the data array.
         if len(fov.beams) != nrBeams:
@@ -728,7 +734,7 @@ class musicArray(object):
         dataArray     = np.ndarray([nrTimes,nrBeams,nrGates])
         dataArray[:]  = np.nan
         for inx in range(len(dataListArray)):
-          dataArray[dataListArray[inx,scanInx],dataListArray[inx,beamInx],dataListArray[inx,gateInx]] = dataListArray[inx,dataInx]
+            dataArray[int(dataListArray[inx,scanInx]),int(dataListArray[inx,beamInx]),int(dataListArray[inx,gateInx])] = dataListArray[inx,dataInx]
 
         #Make metadata block to hold information about the processing.
         metadata = {}

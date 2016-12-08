@@ -18,8 +18,6 @@ assign_region               ionosphere region based on virtual height
 test_propagation            test propgation against reality
 select_alt_groups           determine altitude limits for range gate
 get_beam                    load beams from list or pointer
-calc_elv                    calculate elevation angle for scatter points
-calc_virtual_height         calculate virtual height from distance & elevation
 calc_distance               calculate slant range
 select_beam_groundscatter   filter to select groundscatter data
 calc_frac_points            calculate precentage of groundscatter
@@ -32,7 +30,6 @@ beam_ut_struct_test         test for continuity in UT across beams
 Author: Angeline G. Burrell (AGB)
 Date: January 15, 2015
 Inst: University of Leicester (UoL)
-
 """
 
 # Import python packages
@@ -73,7 +70,6 @@ def assign_region(vheight, region_hmax={"D":115.0,"E":150.0,"F":900.0},
     -----------
     region : (str)
         one (or zero) character string denoting region
-
     """
     region = ""
     rpad = {"D":0.0, "E":0.0, "F":1.0}
@@ -113,7 +109,6 @@ def test_propagation(hop, vheight, dist,
     -----------
     good : (boolian)
         True if the path is realistic, False if it is not
-
     """
     good = True
 
@@ -409,332 +404,6 @@ def get_beam(radar_beams, nbeams):
 
     return beam, nbeams
 
-#---------------------------------------------------------------------------
-def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
-             asep=None, ecor=None, phi_sign=None, tdiff=None, del_chi=None,
-             del_chif=0.0, alias=0.0, fov='front'):
-    """Calculate the elevation angle for observations along a beam at a radar
-
-    Parameters
-    -----------
-    beam : (class `pydarn.sdio.radDataTypes.beamData`)
-        Data for a single radar and beam along all range gates at a given time
-    hard : (class `pydarn.radar.radStruct.site` or NoneType)
-        Radar hardware data or None to load here (default=None)
-    asep : (float or NoneType)
-        Antenna separation in meters or None to calculate (default=None)
-    ecor : (float or NoneType)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer or None to calculate (default=None)
-    phi_sign : (float or NoneType)
-        Sign change determined by the relative location of the interferometer
-        to the radar or None to calculate (default=None)
-    tdiff : (float or NoneType)
-        The relative time delay of the signal paths from the interferometer
-        array to the receiver and the main array to the reciver (microsec) or
-        None to use the value supplied by the hardware file (default=None)
-    del_chi : (float or NoneType)
-        The total phase shift caused by the cables and the filter in radians.
-        If None, will be calculated. (default=None)
-    del_chif : (float)
-        Additional phase shift in radians (default=0.0)
-    alias : (float)
-        Amount to offset the acceptable phase shifts by.  The default phase
-        shift range starts at the calculated max - 2 pi, any (positive) alias
-        will remove 2 pi from the minimum allowable phase shift. (default=0.0)
-    fov : (str)
-        'front' = Calculate elevation angles from front Field-of-View (fov);
-        'back' = Calculate elevation angle from back FoV. (default='front')
-    
-    Returns
-    --------
-    elv : (np.array)
-        A list of floats of the same size as the myBeam.fit.slist list,
-        containing the new elevation angles for each range gate or NaN if an
-        elevation angle could not be calculated
-    phase_amb: (np.array)
-        A list of integers containing the phase ambiguity integer used to
-        alias the elevation angles
-    hard : (class `pydarn.radar.radStruct.site` or NoneType)
-        Radar hardware data or None to load here (default=None)
-    asep : (float or NoneType)
-        Antenna separation in meters or None to calculate (default=None)
-    ecor : (float or NoneType)
-        Elevation correction in radians based on the altitude difference between
-        the radar and the interferometer or None to calculate (default=None)
-    phi_sign : (float or NoneType)
-        Sign change determined by the relative location of the interferometer
-        to the radar or None to calculate (default=None)
-
-    """
-    import davitpy.pydarn.sdio as sdio
-    import davitpy.pydarn.radar as pyrad
-
-    #-------------------------------------------------------------------------
-    # Test input
-    if not isinstance(beam, sdio.radDataTypes.beamData):
-        logging.error('the beam must be a beamData class')
-    assert(isinstance(phi0_attr, str) and hasattr(beam.fit, phi0_attr)), \
-        logging.error('the phase lag data is not in this beam')
-    assert(isinstance(hard, pyrad.site) or hard is None), \
-        logging.error('supply the hardware class or None')
-    assert(isinstance(asep, float) or asep is None), \
-        logging.error('the asep should be a float or NoneType')
-    assert(isinstance(ecor, float) or ecor is None), \
-        logging.error('the ecor should be a float or NoneType')
-    assert(isinstance(phi_sign, float) or phi_sign is None), \
-        logging.error('the phi_sign should be a float or NoneType')
-    assert(isinstance(tdiff, float) or tdiff is None), \
-        logging.error('the tdiff should be a float or NoneType')
-    assert(isinstance(del_chi, float) or del_chi is None), \
-        logging.error('the del_chi should be a float or NoneType')
-    assert(isinstance(del_chif, float)), \
-        logging.error('the del_chif should be a float')
-    assert(isinstance(alias, float)), \
-        logging.error('the alias number should be a float')
-    assert(isinstance(fov, str) and (fov.find("front") >= 0 or
-                                     fov.find("back") >= 0)), \
-        logging.error('the field-of-view must be "front" or "back"')
-
-    # Only use this if the interferometer data was stored during this scan
-    assert(beam.prm.xcf == 1), \
-        logging.error('no interferometer data at this time')
-
-    # Load the phase lag data
-    phi0 = getattr(beam.fit, phi0_attr)
-
-    # This method cannot be applied at Goose Bay or any other radar/beam that
-    # does not include phi0 in their FIT output
-    assert(phi0 is not None), \
-        logging.error('phi0 missing from rad {:d} beam {:d}'.format(beam.stid,
-                                                                    beam.bmnum))
-
-    # If possible, load the phase lag error data (not required to run)
-    if hasattr(beam.fit, phi0_e_attr):
-        phi0_e = getattr(beam.fit, phi0_e_attr)
-    else:
-        phi0_e = [1.0 for p in phi0]
-
-    #-------------------------------------------------------------------------
-    # Initialize output
-    elv = np.empty(shape=(len(phi0),), dtype=float) * np.nan
-    phase_amb = np.zeros(shape=(len(phi0),), dtype=int)
-
-    #-------------------------------------------------------------------------
-    # If desired, load the radar hardware data for the specified site and time
-    if hard is None:
-        hard = pyrad.site(radId=beam.stid, dt=beam.time)
-
-    # Set the proper angle sign based on whether this is backlobe or
-    # front lobe data
-    if fov.find("front") == 0:
-        back = 1.0
-    else:
-        back = -1.0
-
-    # If desired, overwrite the hardware value for tdiff
-    if tdiff is None:
-        tdiff = hard.tdiff
-
-    # If desired, calculate the radar specific variables
-    if asep is None or ecor is None or phi_sign is None:
-        # Calculate the elevation angle correction due to differences in
-        # altitude between the interferometer and the radar and determine
-        # whether the interferometer is in front or behind the radar
-        asep = np.sqrt(np.dot(hard.interfer, hard.interfer)) # meters
-        phi_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
-        ecor = phi_sign * hard.phidiff * np.arcsin(hard.interfer[2] / asep)
-
-    #-------------------------------------------------------------------------
-    # Calculate the beam-specific variables
-    #
-    # Phi is the beam direction off the radar boresite assuming an elevation
-    # angle of zero.  This is calculated by the hardware routine 'beamToAzim'
-    # located in pydarn.radar.radStruct
-    cos_phi = np.cos(np.radians(hard.beamToAzim(beam.bmnum) - hard.boresite))
-
-    # k is the wavenumber in radians per meter
-    k = 2.0 * np.pi * beam.prm.tfreq * 1.0e3 / scicon.c
-
-    # Calculate the phase shift due to the radar cables and any additional
-    # amount (due to the radar mode, etc.) unless a phase shift was supplied
-    if del_chi is None:
-        del_chi = -np.pi * beam.prm.tfreq * tdiff * 2.0e-3 - del_chif
-
-    # Find the maximum possible phase shift
-    chimax = phi_sign * k * asep * cos_phi
-    chimin = chimax - (alias + 1.0) * phi_sign * 2.0 * np.pi
-    
-    #-------------------------------------------------------------------------
-    # Calculate the elevation for each value of phi0
-    for i,p0 in enumerate(phi0):
-        #---------------------------------------------------------------------
-        # Use only data where the angular drift between signals is not
-        # identically zero with an error of zero, since this could either be a
-        # sloppy flag denoting no data or an actual measurement.
-        if p0 != 0.0 or phi0_e[i] != 0.0:
-            # Find the right phase.  This method works for both front and back
-            # lobe calculations, unlike the more efficient method used by RST
-            # in elevation.c:
-            # phi_tempf = phi0 + 2.0*np.pi* np.floor(((chimax+del_chi)-phi0)/
-            #                                       (2.0*np.pi))
-            # if phi_sign < 0.:
-            #     phi_tempf += 2.0 * np.pi
-            # cos_thetaf = (phi_tempf - del_chi) / (k * asep)
-            # sin2_deltaf = cos_phi**2 - cos_thetaf**2
-            #
-            # They both yield the same elevation for front lobe calculations
-            phi_temp = (back * (p0 - del_chi)) % (2.0 * np.pi)
-            amb_temp = -np.floor(back * (p0 - del_chi) / (2.0 * np.pi))
-
-            # Ensure that phi_temp falls within the proper limits
-            while phi_temp > max(chimax, chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
-                amb_temp += phi_sign
-
-            while abs(phi_temp) < abs(chimin):
-                phi_temp += phi_sign * 2.0 * np.pi
-                amb_temp += phi_sign
-
-            #--------------------------
-            # Evaluate the phase shift
-            if phi_temp > max(chimax, chimin):
-                estr = "BUG ERROR: can't fix phase shift for beam "
-                estr = "{:s}{:d} [{:f} ".format(estr, beam.bmnum, phi_temp)
-                estr = "{:s}not between {:f},{:f} ".format(estr, chimin, chimax)
-                estr = "{:s}on {:} at range gate {:d}".format(estr, beam.time,
-                                                              beam.fit.slist[i])
-                logging.critical(estr)
-            else:
-                # Calcualte the elevation angle and set if realistic
-                cos_theta = phi_temp / (k * asep)
-                sin2_delta = cos_phi**2 - cos_theta**2
-
-                if sin2_delta >= 0.0:
-                    sin_delta = np.sqrt(sin2_delta)
-                    if sin_delta <= 1.0:
-                        new_elv = np.degrees(np.arcsin(sin_delta) + ecor)
-                        elv[i] = new_elv
-                        phase_amb[i] = int(amb_temp)
-
-    return elv, phase_amb, hard, asep, ecor, phi_sign
-
-#---------------------------------------------------------------------------
-def calc_virtual_height(beam, radius, elv=list(), elv_attr="elv", dist=list(),
-                        dist_attr="slist", dist_units=None):
-    """Calculate the virtual height for a specified backscatter distance and
-    elevation angle.  Specifying a single earth radius introduces additional
-    error into the resulting heights.  If the terrestrial radius at the radar
-    location is used, this error is on the order of 0.01-0.1 km (much smaller
-    than the difference between the real and virtual height).
-
-    Parameters
-    -----------
-    beam : (class `pydarn.sdio.radDataTypes.beamData`)
-        Data for a single radar and beam along all range gates at a given time
-    radius : (float)
-        Earth radius in km
-    elv : (list or numpy.array())
-        List containing elevation in degrees, or nothing to load the
-        elevation from the beam (default=list())
-    elv_attr : (string)
-        Name of beam attribute containing the elevation (default="elv")
-    dist : (list or numpy.array())
-        List containing the slant distance from the radar to the reflection
-        location of the backscatter, or nothing to load the distance from the
-        beam. (default=list())
-    dist_attr : (str)
-        Name of beam attribute containing the slant distance.  Be aware that if
-        the default is used, all heights returned will be for .5 hop propogation
-        paths.  (default="slist")
-    dist_units : (string or NoneType)
-        Units of the slant distance to backscatter location data.  May supply
-        "km", "m", or None.  None indicates that the distance is in range gate
-        bins. (default=None)
-    
-    Returns
-    --------
-    height : (numpy.array)
-        An array of floats of the same size as the myBeam.fit.slist list,
-        containing the new elevation angles for each range gate or NaN if an
-        elevation angle could not be calculated
-
-    """
-    import davitpy.pydarn.sdio as sdio
-
-    #---------------------------------
-    # Check the input
-    if not isinstance(beam, sdio.radDataTypes.beamData):
-        logging.error('the beam must be a beamData class')
-        return None
-
-    if not isinstance(radius, float):
-        logging.error('the radius must be a float')
-        return None
-
-    #---------------------------------
-    # Load elevation
-    if len(elv) == 0 or (len(dist) > 0 and len(elv) != len(dist)):
-        try:
-            elv = getattr(beam.fit, elv_attr)
-
-            if elv is None:
-                logging.error('no elevation available')
-                return None
-        except:
-            logging.error('no elevation attribute [{:s}]'.format(elv_attr))
-            return None
-
-    #---------------------------------
-    # Load the slant range/distance
-    if len(dist) == 0 or len(dist) != len(elv):
-        try:
-            dist = getattr(beam.fit, dist_attr)
-
-            if dist is None:
-                logging.error('no range/distance data availalbe')
-                return None
-
-            if len(dist) != len(elv):
-                logging.error('different number of range and elevation points')
-                return None
-        except:
-            logging.error('no range attribute [{:s}]'.format(dist_attr))
-            return None
-
-    if len(dist) == 0 or len(elv) == 0 or len(elv) != len(dist):
-        logging.error("unable to load matching elevation and distance lists")
-        return None
-
-    #---------------------------------------------------------------------
-    # Ensure that the range/distance (and error) are in km
-    if dist_units is None:
-        # Convert from range gates to km
-        dist = list(5.0e-10 * scicon.c * (np.array(dist) * beam.prm.smsep
-                                          + beam.prm.lagfr))
-    elif dist_units is "m":
-        # Convert from meters to km
-        dist = [d / 1000.0 for d in dist]
-    elif dist_units is not "km":
-        logging.error('unknown range unit [{:s}]'.format(dist_units))
-        return None
-
-    #-----------------------------------------------------------------------
-    # Cycle through the beams and elevations, calculating the virtual height
-    height = np.empty(shape=(len(dist),), dtype=float) * np.nan
-
-    for i,d in enumerate(dist):
-        if not np.isnan(elv[i]):
-            # Calculate height by assuming a spherical earth and solving the
-            # law of cosines for an obtuse triangle with sides radius,
-            # radius + height, and distance, where the angle between the side of
-            # length distance and radius + height is equal to 90 deg - elevation
-            hsqrt = np.sqrt(d**2 + radius**2 + 2.0 * d * radius
-                            * np.sin(np.radians(elv[i])))
-            height[i] = hsqrt - radius
-
-    return height
-
 #----------------------------------------------------------------------------
 def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5):
     """A routine to calculate distance in either meters or kilometers along the
@@ -772,7 +441,6 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5):
         containing the distance along the slant path from the radar to the first
         ionospheric reflection/refraction point given the specified propagation
         path for for each range gate. Returns None upon input error.
-
     """
     import davitpy.pydarn.sdio as sdio
 
@@ -787,7 +455,6 @@ def calc_distance(beam, rg_attr="slist", dist_units="km", hop=.5):
         estr = 'unknown units for distance [{:}]'.format(dist_units)
     elif not isinstance(hop, float) and hop > 0.0 and hop % 0.5 == 0.0:
         estr = 'unknown hop number [{:}]'.format(hop)
-
     else:
         # Load the range gate data
         try:
@@ -934,7 +601,6 @@ def select_beam_groundscatter(beam, dist, min_rg=10, max_rg=76, rg_box=5,
         ---------
         gflg : (boolean)
             New groundscatter flag
-
         """
         gflg = False
 
@@ -1012,7 +678,6 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
         Total number of observations in the specified box.
 
     If there is an input error, exits with an exception
-
     """
     import davitpy.pydarn.sdio as sdio
 
@@ -1022,12 +687,12 @@ def calc_frac_points(beam, dat_attr, dat_index, central_index, box,
         logging.error("beam is not a beamData object")
     assert isinstance(dat_attr, str) and hasattr(beam.fit, dat_attr), \
         logging.error("beam does not contain attribute {:}".format(dat_attr))
-    assert(isinstance(dat_index, list) and isinstance(dat_index[0], int)), \
+    assert isinstance(dat_index, list) and isinstance(dat_index[0], int), \
         logging.error("dat_index is not a list of integers")
-    assert(box > 0), logging.error("box is not positive")
-    assert(isinstance(dat_min, type(box)) or dat_min is None), \
+    assert box > 0, logging.error("box is not positive")
+    assert isinstance(dat_min, type(box)) or dat_min is None, \
         logging.error("dat_min is of a different type is suspect")
-    assert(isinstance(dat_max, type(box)) or dat_max is None), \
+    assert isinstance(dat_max, type(box)) or dat_max is None, \
         logging.error("dat_max is of a different type is suspect")
 
     # Get the data list and ensure there is a value to search about
@@ -1075,7 +740,9 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                      region_hmin={"D":75.0,"E":115.0,"F":150.0},
                      rg_box=[2,5,10,20], rg_max=[5,25,40,76],
                      vh_box=[50.0,50.0,50.0,150.0], max_hop=3.0, tdiff=None,
-                     tdiff_e=None, ptest=True, strict_gs=False, step=6):
+                     tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                     ptest=True, strict_gs=False, bmaz_e=0.0, boresite_e=0.0,
+                     ix_e=0.0, iy_e=0.0, iz_e=0.0, step=6):
     """Updates the propagation path, elevation, backscatter type, structure
     flag, and origin field-of-view (FoV) for all backscatter observations in
     each beam for a scan of data.  A full scan is not necessary, but if the
@@ -1109,15 +776,42 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         The maximum hop to consider for the range gate and height criteria
         specified by each list element in rg_box, srg_box, vh_box, and svh_box.
         (default=[3.0])
-    tdiff : (float or NoneType)
-        tdiff values (in microsec) or None (to use the hardware value)
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
         (default=None)
-    tdiff_e : (float or NoneType)
-        tdiff error (in microsec) or None. (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : (function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additionalinputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stid, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
+        (default=list())
     ptest : (boolian)
         Perform test to see if propagation modes are realistic? (default=True)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=False)
+    bmaz_e : (float)
+        Error in beam azimuth in degrees (default=0.0)
+    boresite_e : (float)
+        Error in the boresite location in degrees (default=0.0)
+    ix_e : (float)
+        Error in the interferometer x coordinate in meters (default=0.0)
+    iy_e : (float)
+        Error in the interferometer y coordinate in meters (default=0.0)
+    iz_e : (float)
+        Error in the interferometer z coordinate in meters (default=0.0)
     step : (int)
         Integer denoting the number of processing steps to perform.  This should
         always be set to 6 (or greater) unless one wishes to reproduce the
@@ -1158,8 +852,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         beam.fit.gflg : updated : Flag indicating backscatter type
                                   (1=ground, 0=ionospheric, -1=indeterminate)
         beam.prm.tdiff : added : tdiff used in elevation (microsec)
-        beam.prm.tdiff_e : possibly added : tdiff error (microsec)
-
+        beam.prm.tdiff_e : added : tdiff error (microsec)
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
@@ -1172,10 +865,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
 
     #----------------------------------
     # Test input
-    if not isinstance(hard, pyrad.radStruct.site):
-        logging.error('need a hardware site structure to load data')
-        return None
-
     if(not ((isinstance(scan, list) or isinstance(scan, np.ndarray)) and
             len(scan) > 0 and len(scan) <= hard.maxbeam and
             isinstance(scan[0], sdio.radDataTypes.beamData))
@@ -1212,18 +901,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         logging.error('bad FoV virtual height box [{:}]'.format(vh_box))
         return None
 
-    if isinstance(tdiff, int):
-        tdiff = float(tdiff)
-    if not isinstance(tdiff, float) and tdiff is not None:
-        logging.error('tdiff must be a float')
-        return None
-
-    if isinstance(tdiff_e, int):
-        tdiff_e = float(tdiff_e)
-    if not isinstance(tdiff_e, float) and tdiff_e is not None:
-        logging.error('tdiff error values must be a float')
-        return None
-
     #-------------------------------------------------------------------------
     # Loading the beams into the output list, updating the distance,
     # groundscatter flag, virtual height, and propogation path
@@ -1242,9 +919,6 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                "back":[list() for bi in range(hard.maxbeam)]}
     bnum = 0
     snum = 0
-    asep = None
-    ecor = None
-    phi_sign = None
 
     while scan is not None:
         # Load beams from scan, accounting for different input types
@@ -1258,7 +932,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
             try:
                 beams[bnum] = scan.readRec()
             except:
-                logging.info("empty data pointer")
+                estr = "{:s} INFO: empty data pointer".format(rn)
+                logging.info(estr)
                 scan = None
 
         bnum += 1
@@ -1268,11 +943,31 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         elif beams[bnum-1] is None:
             bnum -= 1
         else:
+            # Update the beam parameters
+            if tdiff is None:
+                beams[bnum-1].prm.tdiff = None
+            else:
+                args = [beams[bnum-1].stid, beams[bnum-1].time,
+                        beams[bnum-1].prm.tfreq]
+                args.extend(tdiff_args)
+                beams[bnum-1].prm.tdiff = tdiff(*args)
+
+            if tdiff_e is None:
+                beams[bnum-1].prm.tdiff_e = None
+            else:
+                args = [beams[bnum-1].stid, beams[bnum-1].time,
+                        beams[bnum-1].prm.tfreq]
+                args.extend(tdiff_e_args)
+                beams[bnum-1].prm.tdiff_e = tdiff_e(*args)
+
+            # Update the beam fit values
             (beams[bnum-1], e, eerr, vh, verr, hh, rr,
-             nhard) = update_beam_fit(beams[bnum-1], hard=hard, tdiff=tdiff,
-                                      tdiff_e=tdiff_e, region_hmax=region_hmax,
+             nhard) = update_beam_fit(beams[bnum-1], hard=hard,
+                                      region_hmax=region_hmax,
                                       region_hmin=region_hmin, max_hop=max_hop,
-                                      ptest=ptest, strict_gs=strict_gs)
+                                      ptest=ptest, strict_gs=strict_gs,
+                                      bmaz_e=bmaz_e, boresite_e=boresite_e,
+                                      ix_e=ix_e, iy_e=iy_e, iz_e=iz_e)
 
             if e is None or nhard is None:
                 beams[bnum-1] = None
@@ -1379,7 +1074,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         rgbi = np.array(rgbi)
         rgsi = np.array(rgsi)
         rgrg = np.array(rgrg)
-        rgpath = set(["{:.1f}{:s}".format(rghop[ff][ii],reg)
+        rgpath = set(["{:.1f}{:s}".format(rghop[ff][ii], reg)
                       for ii,reg in enumerate(rgreg[ff])
                       if len(reg) == 1 and not np.isnan(rghop[ff][ii])
                       for ff in fov.values()])
@@ -1433,8 +1128,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                             estr = "insufficient beams to evaluate "
                             estr = "{:s}{:s} field-of-".format(estr, fov[ff])
                             estr = "{:s}view between [{:.0f}".format(estr, vmin)
-                            estr = "{:s}{-:.0f} km] ".format(estr, vmaxs[iv])
-                            estr = "{:s}at range gate {:d}".format(estr, r)
+                            estr = "{:s}-{:.0f} km] at ".format(estr, vmaxs[iv])
+                            estr = "{:s}range gate {:d}".format(estr, r)
                             logging.info(estr)
                         else:
                             # Initialize evaluation statistics to bad values
@@ -1498,7 +1193,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     inc_rg_box = 3.0
     for bi in range(bnum):
         if step < 3:
-            estr = "not testing backscatter unassigned after performing scan "
+            estr = "not testing backscatter unassigned after performing scan"
             logging.info("{:s}evaluation".format(estr))
             break
 
@@ -1544,8 +1239,8 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                         ilim += 1
 
                     if ilim >= len(rg_max):
-                        estr = "no guidelines provided for range gate ["
-                        logging.info("{:s}{:d}]".format(estr, rg))
+                        estr = "no guidelines provided for range gate "
+                        logging.info("{:s}[{:d}]".format(estr, rg))
                         continue
 
                     rg_half = (0.5 * (rg_box[ilim] + inc_rg_box))
@@ -1581,7 +1276,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                             # comparison continue without assigning a FoV flag
                             if not np.isnan(ihop) and len(ireg) == 1:
                                 estr = "not enough points to do single-beam "
-                                estr = "{:s}est for the ".format(estr)
+                                estr = "{:s}test for the ".format(estr)
                                 estr = "{:s}{:s} field-of".format(estr, fov[ff])
                                 estr = "{:s}-view for hop [".format(estr)
                                 estr = "{:s}{:.1f}{:s}".format(estr, ihop, ireg)
@@ -1639,17 +1334,17 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
             break
 
         # Initialize the hop-dependent data
-        sihop = {ih:list() for ih in np.arange(0.5, max_hop+0.5, 0.5)}
-        bihop = {ih:list() for ih in np.arange(0.5, max_hop+0.5, 0.5)}
-        fovhop = {ih:list() for ih in np.arange(0.5, max_hop+0.5, 0.5)}
-        reghop = {ih:list() for ih in np.arange(0.5, max_hop+0.5, 0.5)}
+        sihop = {ih:list() for ih in np.arange(0.5, max_hop + 0.5, 0.5)}
+        bihop = {ih:list() for ih in np.arange(0.5, max_hop + 0.5, 0.5)}
+        fovhop = {ih:list() for ih in np.arange(0.5, max_hop + 0.5, 0.5)}
+        reghop = {ih:list() for ih in np.arange(0.5, max_hop + 0.5, 0.5)}
 
         min_range = hard.maxgate
         max_range = 0
         ilim = 0
 
         # Calculate the range gate limits
-        while(ilim < len(rg_max) and r >= rg_max[ilim]):
+        while ilim < len(rg_max) and r >= rg_max[ilim]:
             ilim += 1
 
         width = np.floor(0.5 * (rg_box[ilim] + inc_rg_box))
@@ -1824,12 +1519,16 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
     return beams
 
 #-------------------------------------------------------------------------
-def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
+def update_beam_fit(beam, hard=None,
                     region_hmax={"D":115.0,"E":150.0,"F":900.0},
                     region_hmin={"D":75.0,"E":115.0,"F":150.0}, max_hop=3.0,
-                    ptest=True, strict_gs=False):
+                    ptest=True, strict_gs=False, bmaz_e=0.0, boresite_e=0.0,
+                    ix_e=0.0, iy_e=0.0, iz_e=0.0):
     """Update the beam.fit and beam.prm class, updating and adding attributes
-    needed for common data analysis
+    needed for common data analysis.
+
+    Currently the earth radius error and slant distance error have no update
+    option through this routine and are identically zero.
 
     Parameters
     ------------
@@ -1838,11 +1537,6 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
     hard : (class `pydarn.radar.radStruct.site` or NoneType)
        Hardware information for this radar.  Will load if not supplied.
        (default=None)
-    tdiff : (float or NoneType)
-        tdiff values (in microsec) or None (to use the hardware value)
-        (default=None)
-    tdiff_e : (float or NoneType)
-        tdiff error (in microsec) or None. (default=None)
     region_hmax : (dict)
         Maximum virtual heights allowed in each ionospheric layer.
         (default={"D":115.0,"E":150.0,"F":400.0})
@@ -1855,6 +1549,16 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         Perform test to see if propagation modes are realistic? (default=True)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=False)
+    bmaz_e : (float)
+        Error in beam azimuth in degrees (default=0.0)
+    boresite_e : (float)
+        Error in the boresite location in degrees (default=0.0)
+    ix_e : (float)
+        Error in the interferometer x coordinate in meters (default=0.0)
+    iy_e : (float)
+        Error in the interferometer y coordinate in meters (default=0.0)
+    iz_e : (float)
+        Error in the interferometer z coordinate in meters (default=0.0)
 
     Returns
     ---------
@@ -1865,8 +1569,8 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         or adjusted attributes:
         beam.fit.gflg : updated : Flag indicating backscatter type
                                   (1=ground, 0=ionospheric, -1=indeterminate)
-        beam.prm.tdiff : added : tdiff used in elevation (microsec)
-        beam.prm.tdiff_e : possibly added : tdiff error (microsec)
+        beam.prm.tdiff : possibly updated : tdiff used in elevation (microsec)
+        beam.prm.tdiff_e : possibly updated : tdiff error (microsec)
     elvs : (dict)
         Elevation angles for the front "front" and rear "back" FoV
     elv_errs : (dict)
@@ -1885,15 +1589,12 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         Ionospheric regions for the front "front" and rear "back" FoV
     hard : (class `pydarn.radar.radStruct.site`)
         Radar hardware data for this scan
-
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
     import davitpy.utils.geoPack as geo
-
-    asep = None
-    ecor = None
-    phi_sign = None
+    import davitpy.pydarn.proc.fov.calc_elevation as ce
+    import davitpy.pydarn.proc.fov.calc_height as ch
 
     #----------------------------------
     # Test input
@@ -1913,18 +1614,6 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         logging.error('maximum hop must be a float greater than 0.5')
         return beam, None, None, None, None, None, None, None
 
-    if isinstance(tdiff, int):
-        tdiff = float(tdiff)
-    if not isinstance(tdiff, float) and tdiff is not None:
-        logging.error('tdiff must be a float or NoneType')
-        return beam, None, None, None, None, None, None, None
-
-    if isinstance(tdiff_e, int):
-        tdiff_e = float(tdiff_e)
-    if not isinstance(tdiff_e, float) and tdiff_e is not None:
-        logging.error('tdiff error must be a float or NoneType')
-        return beam, None, None, None, None, None, None, None
-
     if beam is None or beam.fit.slist is None or len(beam.fit.slist) <= 0:
         logging.warning("no fit data in beam at {:}".format(beam.time))
         return beam, None, None, None, None, None, None, None
@@ -1934,14 +1623,22 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
     slist = getattr(beam.fit, "slist")
     elvs_aliased = {"front":[np.nan for s in slist],
                     "back":[np.nan for s in slist]}
+    elva_errs = {"front":[np.nan for s in slist],
+                 "back":[np.nan for s in slist]}
     elvs = {"front":[np.nan for s in slist], "back":[np.nan for s in slist]}
     elv_errs = {"front":[np.nan for s in slist], "back":[np.nan for s in slist]}
     vheights = {"front":[np.nan for s in slist], "back":[np.nan for s in slist]}
     vheights_aliased = {"front":[np.nan for s in slist],
                         "back":[np.nan for s in slist]}
+    vheighta_errs = {"front":[np.nan for s in slist],
+                     "back":[np.nan for s in slist]}
     vherrs = {"front":[np.nan for s in slist], "back":[np.nan for s in slist]}
     hops = {"front":[0.5 for s in slist], "back":[0.5 for s in slist]}
     regions = {"front":["" for s in slist], "back":["" for s in slist]}
+
+    # Initialize local constants
+    vmin = min(region_hmin.values())
+    vmax = max(region_hmax.values())
 
     #------------------------------------------------------------------------
     # Load the radar hardware data and calculate hardware specific variables,
@@ -1950,8 +1647,9 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
         try:
             hard = pyrad.site(radId=beam.stid, dt=beam.time)
         except:
-            estr = "can't load hardware data for radar {:d}".format(beam.stid)
-            logging.warning("{:s} at {:}".format(estr, beam.time))
+            estr = "unable to load hardware data for radar "
+            estr = "{:s}{:d} at {:}".format(estr, beam.stid, beam.time)
+            logging.warning(estr)
             return beam, elvs, elv_errs, vheights, vherrs, None, None, None
 
     # Use the geodetic/geocentric conversion to get the terrestrial radius at
@@ -1997,25 +1695,26 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
 
     # Calculate the elevation angles for the front and rear FoV, after
     # initializing the beam parameters with the supplied tdiff
-    if not hasattr(beam.prm, "tdiff"):
-        if tdiff is not None:
-            beam.prm.tdiff = tdiff
-        else:
-            beam.prm.tdiff = hard.tdiff
-    elif beam.prm.tdiff is None:
+    if not hasattr(beam.prm, "tdiff") or beam.prm.tdiff is None:
         beam.prm.tdiff = hard.tdiff
+
+    if not hasattr(beam.prm, "tdiff_e") or beam.prm.tdiff_e is None:
+        beam.prm.tdiff_e = np.nan
 
     for ff in ["front", "back"]:
         # Calculate the elevation
         try:
-            (elvs[ff], pamb, hard, asep, ecor,
-             phi_sign) = calc_elv(beam, hard=hard, asep=asep, ecor=ecor,
-                                  phi_sign=phi_sign, tdiff=beam.prm.tdiff,
-                                  fov=ff)
-            (elvs_aliased[ff], pamb, hard, asep, ecor,
-             phi_sign) = calc_elv(beam, hard=hard, asep=asep, ecor=ecor,
-                                  phi_sign=phi_sign, tdiff=beam.prm.tdiff,
-                                  alias=1.0, fov=ff)
+            (elvs[ff], elv_errs[ff], pamb,
+             hard) = ce.calc_elv_w_err(beam, hard=hard, bmaz_e=bmaz_e,
+                                       boresite_e=boresite_e, ix_e=ix_e,
+                                       iy_e=iy_e, iz_e=iz_e,
+                                       tdiff=beam.prm.tdiff,
+                                       tdiff_e=beam.prm.tdiff_e, fov=ff)
+            (elvs_aliased[ff], elva_errs[ff], pamb,
+             hard) = ce.calc_elv_w_err(beam, hard=hard, bmaz_e=bmaz_e,
+                                       boresite_e=boresite_e, ix_e=ix_e,
+                                       iy_e=iy_e, iz_e=iz_e,
+                                       tdiff=beam.prm.tdiff, alias=1.0, fov=ff)
         except:
             estr = "can't get elevation for beam {:d} at {:}".format(beam.bmnum,
                                                                      beam.time)
@@ -2023,40 +1722,49 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
             elvs[ff] = None
 
         if elvs[ff] is not None:
-            # Get the virtual height
-            vheights[ff] = calc_virtual_height(beam, radius, elv=elvs[ff],
-                                               dist=dist[ff], dist_units="km")
-            vheights_aliased[ff] = calc_virtual_height(beam, radius,
-                                                       elv=elvs_aliased[ff],
-                                                       dist=dist[ff],
-                                                       dist_units="km")
+            # Get the virtual height and virtual height error
+            vheights[ff], vherrs[ff] = \
+                ch.calc_virtual_height_w_err(beam, radius, elv=elvs[ff],
+                                             elv_e=elv_errs[ff], dist=dist[ff],
+                                             dist_e=[0.0 for dd in dist[ff]],
+                                             dist_units="km")
+            vheights_aliased[ff], vheighta_errs[ff] = \
+                ch.calc_virtual_height_w_err(beam, radius, elv=elvs_aliased[ff],
+                                             elv_e=elva_errs[ff], dist=dist[ff],
+                                             dist_e=[0.0 for dd in dist[ff]],
+                                             dist_units="km")
 
             # Test the virtual height
             for i,vh in enumerate(vheights[ff]):
-                if not np.isnan(vh) and vh < min(region_hmin.values()):
+                if not np.isnan(vh) and vh < vmin:
                     # This height is too low.  Replace it with a value corrected
                     # with a 2 pi alias or remove it from consideration for
                     # this FoV
-                    if vheights_aliased[ff][i] < min(region_hmin.values()):
+                    if vheights_aliased[ff][i] < vmin:
                         elvs[ff][i] = elvs_aliased[ff][i]
+                        elv_errs[ff][i] = elva_errs[ff][i]
                         vheights[ff][i] = vheights_aliased[ff][i]
+                        vherrs[ff][i] = vheighta_errs[ff][i]
                     else:
                         elvs[ff][i] = np.nan
                         vheights[ff][i] = np.nan
                     vh = vheights[ff][i]
+                vhe = vherrs[ff][i]
 
                 if not np.isnan(vh):
                     hop = hops[ff][i]
                     dd = dlist[i] * 0.5 / hop
                     ghop = True
-                    while vh > max(region_hmax.values()) and hop <= max_hop:
+                    while vh > vmax and hop <= max_hop:
                         # This height is too high.  Increase the hop
                         # number to acheive a realistic value
                         hop += 1.0
                         dd = dlist[i] * 0.5 / hop
-                        vh = calc_virtual_height(beam, radius,
-                                                 elv=[elvs[ff][i]], dist=[dd],
-                                                 dist_units="km")[0]
+                        vout = ch.calc_virtual_height_w_err(beam, radius, \
+                                    elv=[elvs[ff][i]], elv_e=[elv_errs[ff][i]],\
+                                    dist=[dd], dist_e=[0.0], dist_units="km")
+                        vh = vout[0][0]
+                        vhe = vout[1][0]
 
                     # Test the distance and hop to ensure that this
                     # mode is realistic
@@ -2069,31 +1777,39 @@ def update_beam_fit(beam, hard=None, tdiff=None, tdiff_e=None,
                         # If this is not a valid propagation path, attempt to
                         # use the elevation angle with a 2pi alias added
                         ea = elvs_aliased[ff][i]
+                        ee = elva_errs[ff][i]
                         vh = vheights_aliased[ff][i]
+                        vhe = vheighta_errs[ff][i]
                         hop = 1.0 if beam.fit.gflg[i] == 1 else 0.5
                         dd = dlist[i] * 0.5 / hop
-                        while vh > max(region_hmax.values()) and hop <= max_hop:
+                        while vh > vmax and hop <= max_hop:
                             # This height is too high.  Increase the hop
                             # number to acheive a realistic value
                             hop += 1.0
                             dd = dlist[i] * 0.5 / hop
-                            vh = calc_virtual_height(beam, radius, elv=[ea],
-                                                     dist=[dd],
-                                                     dist_units="km")[0]
+                            vout = ch.calc_virtual_height_w_err(beam, radius, \
+                                                                elv=[ea],
+                                                                elv_e=[ee], \
+                                    dist=[dd], dist_e=[0.0], dist_units="km")
+                            vh = vout[0][0]
+                            vhe = vout[1][0]
                         
-                        if vh >= min(region_hmin.values()):
+                        if vh >= vmin:
                             ghop = test_propagation(hop, vh, dd,
                                                     region_hmax=region_hmax,
                                                     region_hmin=region_hmin)
                     else:
                         ea = elvs[ff][i]
+                        ee = elv_errs[ff][i]
 
                     if hop <= max_hop and ghop:
                         # Update the lists
                         hops[ff][i] = hop
                         dist[ff][i] = dd
                         vheights[ff][i] = vh
+                        vherrs[ff][i] = vhe
                         elvs[ff][i] = ea
+                        elv_errs[ff][i] = ee
                         regions[ff][i] = assign_region(vh,
                                                        region_hmax=region_hmax,
                                                        region_hmin=region_hmin)
@@ -2117,9 +1833,10 @@ def update_backscatter(rad_bms, min_pnts=3,
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
-                       ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
-                       tdiff_e=list(), tdiff_time=list(), ptest=True,
-                       strict_gs=False, step=6):
+                       ut_box=dt.timedelta(minutes=20.0), tdiff=None,
+                       tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                       ptest=True, strict_gs=False, bmaz_e=0.0, boresite_e=0.0,
+                       ix_e=0.0, iy_e=0.0, iz_e=0.0, step=6):
     """Updates the propagation path, elevation, backscatter type, and origin
     field-of-view (FoV) for all backscatter observations in each beam.  Scans
     of data are used to determine the origin field-of-view (FoV), but a full
@@ -2152,19 +1869,42 @@ def update_backscatter(rad_bms, min_pnts=3,
     ut_box : (class `dt.timedelta`)
         Total width of universal time box to examine for backscatter FoV
         continuity. (default=20.0 minutes)
-    tdiff : (list)
-        A list of tdiff values (in microsec) or an empty list (to use the
-        hardware value) (default=list())
-    tdiff_e : (list)
-        A list containing the tdiff error (in microsec) or an empty list
-        (no elevation/virtual height error will be computed). (default=list())
-    tdiff_time : (list)
-        A list containing the starting time (datetimes) for each tdiff.
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
+        (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stud, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
     strict_gs : (boolian)
         Remove indeterminately flagged backscatter (default=False)
+    bmaz_e : (float)
+        Error in beam azimuth in degrees (default=0.0)
+    boresite_e : (float)
+        Error in the boresite location in degrees (default=0.0)
+    ix_e : (float)
+        Error in the interferometer x coordinate in meters (default=0.0)
+    iy_e : (float)
+        Error in the interferometer y coordinate in meters (default=0.0)
+    iz_e : (float)
+        Error in the interferometer z coordinate in meters (default=0.0)
     step : (int)
         Integer denoting the number of processing steps to perform.  This should
         always be set to 6 (or greater) unless one wishes to reproduce the
@@ -2209,7 +1949,6 @@ def update_backscatter(rad_bms, min_pnts=3,
         beam.prm.tdiff_e : possibly added : tdiff error (microsec)
 
     If the input is incorrect, exits with an exception
-
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
@@ -2222,12 +1961,12 @@ def update_backscatter(rad_bms, min_pnts=3,
         logging.error('need a list/array of beams or a radar data pointer')
     if isinstance(min_pnts, float):
         min_pnts = int(min_pnts)
-    assert(isinstance(min_pnts, int) and min_pnts >= 0), \
+    assert isinstance(min_pnts, int) and min_pnts >= 0, \
         logging.error('unknown point minimum [{:}]'.format(min_pnts))
     assert isinstance(region_hmin, dict) and min(region_hmin.values()) >= 0.0, \
-        logging.error('unknown min virtual heights [{:}]'.format(region_hmin))
+        logging.error("unknown minimum h' [{:}]".format(region_hmin))
     assert isinstance(region_hmax, dict), \
-        logging.error('unknown max virtual heights [{:}]'.format(region_hmax))
+        logging.error("unknown maximum h' [{:}]".format(region_hmax))
     assert((isinstance(rg_box, list) or isinstance(rg_box, np.ndarray))
            and min(rg_box) >= 1.0), \
         logging.error('range gate box is too small [{:}]'.format(rg_box))
@@ -2243,30 +1982,10 @@ def update_backscatter(rad_bms, min_pnts=3,
         logging.error('hop limits are unrealistic [{:}]'.format(max_hop))
     assert isinstance(ut_box, dt.timedelta) and ut_box.total_seconds() > 0.0, \
         logging.error('UT box must be a positive datetime.timdelta object')
-    assert(isinstance(tdiff, list) or isinstance(tdiff, np.ndarray)), \
-        logging.error('tdiff must be a list [{:}]'.format(tdiff))
-    assert isinstance(tdiff_e, list) or isinstance(tdiff_e, np.ndarray), \
-        logging.error('tdiff error values must be in a list [{:}]'.format( \
-                                                                    tdiff_e))
-    assert((isinstance(tdiff_time, list) or isinstance(tdiff_time, np.ndarray))
-           and len(tdiff_time) == len(tdiff)), \
-        logging.error('tdiff times must be in a list [{:}]'.format(tdiff_time))
     if isinstance(step, float):
         step = int(step)
     assert isinstance(step, int), logging.error('step flag must be an int')
 
-    #-----------------------------------------------------------------------
-    # Define local routines
-    def get_tdiff(td, bm_time):
-        ig = 0
-        while ig < len(tdiff_time) and bm_time < tdiff_time[ig]:
-            ig += 1
-
-        if ig >= len(tdiff_time):
-            return None
-
-        return td[ig]
-    # End local routine
     #-----------------------------------------------------------------------
     # Cycle through all the beams
     snum = 0
@@ -2279,8 +1998,7 @@ def update_backscatter(rad_bms, min_pnts=3,
     try:
         hard = pyrad.site(radId=bm.stid, dt=bm.time)
     except:
-        estr = "no data available in input rad structure"
-        logging.error(estr)
+        logging.error("no data available in input rad structure")
         return None
 
     #----------------------------------------------------------------
@@ -2326,10 +2044,12 @@ def update_backscatter(rad_bms, min_pnts=3,
                                          region_hmin=region_hmin,
                                          rg_box=rg_box, vh_box=vh_box,
                                          rg_max=max_rg, max_hop=max_hop,
-                                         tdiff=get_tdiff(tdiff,st),
-                                         tdiff_e=get_tdiff(tdiff_e,st),
-                                         ptest=ptest, strict_gs=strict_gs,
-                                         step=step)
+                                         tdiff=tdiff, tdiff_args=tdiff_args,
+                                         tdiff_e=tdiff_e,
+                                         tdiff_e_args=tdiff_e_args, ptest=ptest,
+                                         strict_gs=strict_gs, bmaz_e=bmaz_e,
+                                         boresite_e=boresite_e, ix_e=ix_e,
+                                         iy_e=iy_e, iz_e=iz_e, step=step)
 
                     if b is not None:
                         beams.extend(list(b))
@@ -2407,7 +2127,6 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
     beams : (dict)
         Dictionary containing lists of beams with updated FoV flags seperated
         by beam number.  The beam numbers are the dictionary keys
-
     """
     import davitpy.pydarn.sdio as sdio
     import davitpy.pydarn.radar as pyrad
@@ -2469,13 +2188,11 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
         return beams
 
     if not isinstance(reg_attr, str) or len(reg_attr) <= 0:
-        estr = 'badly formated region attribute [{:}]'.format(reg_attr)
-        logging.error(estr)
+        logging.error('badly formated region attribute [{:}]'.format(reg_attr))
         return beams
 
     if not isinstance(hop_attr, str) or len(reg_attr) <= 0:
-        estr = 'badly formated hop attribute [{:}]'.format(hop_attr)
-        logging.error(estr)
+        logging.error('badly formated hop attribute [{:}]'.format(hop_attr))
         return beams
 
     if not isinstance(fov_attr, str) or len(reg_attr) <= 0:

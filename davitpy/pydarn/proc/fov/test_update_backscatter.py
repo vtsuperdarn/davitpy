@@ -141,8 +141,8 @@ def add_colorbar(figure_handle, contour_handle, zmin, zmax, zinc=6, name=None,
             cb.ax.set_xticklabels(w)
 
     # Change the z scale, if necessary
-    if(scale is "exponetial"):
-        cb.formatter=FormatStrFormatter('%7.2E')
+    if(scale is "exponential"):
+        cb.formatter = ticker.FormatStrFormatter('%7.2E')
 
     # Set the label and update the ticks
     if name is not None:
@@ -174,14 +174,14 @@ def get_sorted_legend_labels(ax, marker_key="reg"):
         ordered list of marker handles
     labels : (list)
         ordered list of marker labels
-
     """
     handles, labels = ax.get_legend_handles_labels()
 
     try:
         lind = {morder[marker_key][ll]:il for il,ll in enumerate(labels)}
     except:
-        lind = {morder[marker_key][float(ll)]:il for il,ll in enumerate(labels)}
+        labels = [float(ll) for ll in labels]
+        lind = {morder[marker_key][ll]:il for il,ll in enumerate(labels)}
     order = [lind[k] for k in sorted(lind.keys())]
 
     return [handles[i] for i in order], [labels[i] for i in order]
@@ -199,7 +199,6 @@ def get_fractional_hop_labels(legend_labels):
     --------
     legend_labels : (list)
         List of strings containing fracitonal hops
-
     """
     for i,ll in enumerate(legend_labels):
         ll = ll.replace("0.5", r"$\frac{1}{2}$")
@@ -225,10 +224,10 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                        region_hmax={"D":115.0,"E":150.0,"F":900.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
-                       ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
-                       tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, draw=True, label_type="frac",
-                       beams=dict()):
+                       ut_box=dt.timedelta(minutes=20.0), tdiff=None,
+                       tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                       ptest=True, step=6, strict_gs=True, draw=True,
+                       label_type="frac", beams=dict()):
     """Plot based on Plate 1  in Yeoman et al (2001) Radio Science, 36, 801-813.
 
 
@@ -314,14 +313,27 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
     ut_box : (class dt.timedelta)
         Total width of universal time box to examine for backscatter FoV
         continuity. (default=20.0 minutes)
-    tdiff : (list)
-        A list of tdiff values (in microsec) or an empty list (to use the
-        hardware value) (default=list())
-    tdiff_e : (list)
-        A list containing the tdiff error (in microsec) or an empty list
-        (no elevation/virtual height error will be computed). (default=list())
-    tdiff_time : (list)
-        A list containing the starting time (datetimes) for each tdiff.
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
+        (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stud, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
@@ -347,10 +359,8 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-
     """
     import davitpy.pydarn.radar as pyrad
-    rn = "plot_yeoman_plate1"
 
     # Load and process the desired data
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
@@ -361,11 +371,14 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                            region_hmax=region_hmax, region_hmin=region_hmin,
                            rg_box=rg_box, vh_box=vh_box, max_rg=max_rg,
                            max_hop=max_hop, ut_box=ut_box, tdiff=tdiff,
-                           tdiff_e=tdiff_e, tdiff_time=tdiff_time, ptest=ptest,
-                           step=step, strict_gs=strict_gs, beams=beams)
+                           tdiff_args=tdiff_args, tdiff_e=tdiff_e,
+                           tdiff_e_args=tdiff_e_args, ptest=ptest, step=step,
+                           strict_gs=strict_gs, beams=beams)
 
     rad = rad_bms.keys()[0]
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
+        estr = "can't find radar [" + rad + "] in data:" + dout[0].keys()
+        logging.error(estr)
         return(dout[0], dout[1], dout[2], beams)
 
     # Recast the data as numpy arrays
@@ -524,10 +537,10 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
-                       ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
-                       tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, draw=True, label_type="frac",
-                       beams=dict()):
+                       ut_box=dt.timedelta(minutes=20.0), tdiff=None,
+                       tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                       ptest=True, step=6, strict_gs=True, draw=True,
+                       label_type="frac", beams=dict()):
     """Plot based on Figure 9 in Milan et al (1997) Annales Geophysicae, 15,
     29-39.
 
@@ -600,14 +613,27 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
     ut_box : (class dt.timedelta)
         Total width of universal time box to examine for backscatter FoV
         continuity. (default=20.0 minutes)
-    tdiff : (list)
-        A list of tdiff values (in microsec) or an empty list (to use the
-        hardware value) (default=list())
-    tdiff_e : (list)
-        A list containing the tdiff error (in microsec) or an empty list
-        (no elevation/virtual height error will be computed). (default=list())
-    tdiff_time : (list)
-        A list containing the starting time (datetimes) for each tdiff.
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
+        (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stud, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
@@ -635,7 +661,6 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-
     """
 
     # Load and process the desired data
@@ -646,12 +671,14 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                            min_pnts=min_pnts, region_hmax=region_hmax,
                            region_hmin=region_hmin, rg_box=rg_box,
                            vh_box=vh_box, max_rg=max_rg, max_hop=max_hop,
-                           ut_box=ut_box, tdiff=tdiff, tdiff_e=tdiff_e,
-                           tdiff_time=tdiff_time, ptest=ptest, step=step,
-                           strict_gs=strict_gs, beams=beams)
+                           ut_box=ut_box, tdiff=tdiff, tdiff_args=tdiff_args,
+                           tdiff_e=tdiff_e, tdiff_e_args=tdiff_e_args,
+                           ptest=ptest, step=step, strict_gs=strict_gs,
+                           beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
-        logging.error("can't find radar [" + rad + "] in data:" + dout[0].keys())
+        estr = "can't find radar [" + rad + "] in data:" + dout[0].keys()
+        logging.error(estr)
         return(dout[0], dout[1], dout[2], beams)
 
     # Recast the data as numpy arrays
@@ -710,7 +737,7 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                        mtimes=[dt.datetime(1997,10,10,16),
                                dt.datetime(1997,10,10,17,30),
                                dt.datetime(1997,10,10,18,30),
-                               dt.datetime(1997,10,10,19,30)],
+                               dt.datetime(1997,10,10,19,30)], coords="mlt",
                        imin={"v":-500.0}, imax={"v":500.0}, zinc={"v":5.0},
                        rad="pyk", bmnum=0, cp=None, figname_time=None,
                        figname_maps=None, password=True, file_type="fitacf",
@@ -719,10 +746,10 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
-                       ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
-                       tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, draw=True, label_type="frac",
-                       beams=dict()):
+                       ut_box=dt.timedelta(minutes=20.0), tdiff=None,
+                       tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                       ptest=True, step=6, strict_gs=True, draw=True,
+                       label_type="frac", beams=dict()):
     """Plot showing a period of time where E-region scatter past over the
     radar at pyk.
 
@@ -730,12 +757,13 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
     -----------
     intensity_all : (str)
         Intensity attribute to plot in the top figure with unseperated fields-
-        of-view.  Uses SuperDARN beam fit attribute names. (default="v")
+        of-view.  Uses SuperDARN beam fit attribute names. (default='v')
     intensity_sep : (str)
         Intensity attribute to plot in the separated fields-of-view.  Uses
-        SuperDARN beam fit attribute names. (default="fovelv")
+        SuperDARN beam fit attribute names. (default='fovelv')
     marker_key : (str)
-        key to denote what type of marker labels are being used (default="reg")
+        key to denote what type of marker labels are being used, including:
+        'region', 'reg', and 'hop'. (default='reg')
     color : (dict of str)
         Intensity color scheme.  Defaults to the standard centered color
         scheme for this program.
@@ -754,6 +782,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
         Times to plot maps, unless no times are provided.
         (default=[dt.datetime(1997,10,10,16), dt.datetime(1997,10,10,17,30),
                   dt.datetime(1997,10,10,18,30), dt.datetime(1997,10,10,19,30)])
+    coords : (str)
+        Type of map to plot ("geo" or "mlt") (default="mlt")
     imin : (dict)
         Dictionary of intensity minimums (default={"v":-500.0})
     imax : (dict)
@@ -806,14 +836,27 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
     ut_box : (class dt.timedelta)
         Total width of universal time box to examine for backscatter FoV
         continuity. (default=20.0 minutes)
-    tdiff : (list)
-        A list of tdiff values (in microsec) or an empty list (to use the
-        hardware value) (default=list())
-    tdiff_e : (list)
-        A list containing the tdiff error (in microsec) or an empty list
-        (no elevation/virtual height error will be computed). (default=list())
-    tdiff_time : (list)
-        A list containing the starting time (datetimes) for each tdiff.
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
+        (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stud, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
@@ -839,9 +882,9 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-
     """
     import davitpy.pydarn.radar as pyrad
+    import davitpy.utils as dutils
 
     # Load and process the desired data
     dout = load_test_beams(intensity_all, intensity_sep, stime, etime,
@@ -851,11 +894,14 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                            min_pnts=min_pnts, region_hmax=region_hmax,
                            region_hmin=region_hmin, rg_box=rg_box,
                            vh_box=vh_box, max_rg=max_rg, max_hop=max_hop,
-                           ut_box=ut_box, tdiff=tdiff, tdiff_e=tdiff_e,
-                           tdiff_time=tdiff_time, ptest=ptest, step=step,
-                           strict_gs=strict_gs, beams=beams)
+                           ut_box=ut_box, tdiff=tdiff, tdiff_args=tdiff_args,
+                           tdiff_e=tdiff_e, tdiff_e_args=tdiff_e_args,
+                           ptest=ptest, step=step, strict_gs=strict_gs,
+                           beams=beams)
 
     if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
+        estr = "can't find radar [" + rad + "] in data:" + dout[0].keys()
+        logging.error(estr)
         return(dout[0], dout[1], dout[2], beams)
 
     # Recast the data as numpy arrays
@@ -900,42 +946,183 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                 a.plot([mt, mt], [-1, 76], "k--")
 
         # Initialize the map figure
-        fmap = plt.figure(figsize=(12, 3 * mlen))
-        nrows = int(np.ceil(0.5*mlen))
-        axmap = [fmap.add_subplot(2, nrows, ia+1) for ia in range(mlen)]
-        hard = None
-        fovs = {1:None, -1:None}
-        mm = None
-        for ia,mt in enumerate(sorted(mtimes)):
-            scan = list()
-            for k in beams[rad].keys():
-                j = 0
-                while j < len(beams[rad][k]):
-                    if beams[rad][k][j].scan_time > mt:
-                        break
-                    elif beams[rad][k][j].scan_time == mt:
-                        scan.append(beams[rad][k][j])
-                    j += 1
+        if coords.lower() == "geo":
+            fmap = plt.figure(figsize=(12, 3 * mlen))
+            nrows = int(np.ceil(0.5*mlen))
+            axmap = [fmap.add_subplot(2, nrows, ia+1) for ia in range(mlen)]
+            hard = None
+            fovs = {1:None, -1:None}
+            mmm = None
+            for ia,mt in enumerate(sorted(mtimes)):
+                scan = list()
+                for k in beams[rad].keys():
+                    j = 0
+                    while j < len(beams[rad][k]):
+                        if beams[rad][k][j].scan_time > mt:
+                            break
+                        elif beams[rad][k][j].scan_time == mt:
+                            scan.append(beams[rad][k][j])
+                        j += 1
 
-            llab = True if ia % 2 == 0 else False
-            axmap[ia].set_axis_bgcolor(acolor)
-            mm, fovs, hard, con = plot_map(axmap[ia], scan, hard=hard,
-                                           map_handle=mm, fovs=fovs,
-                                           plot_beams={1:[bmnum],-1:[bmnum]},
-                                           color_beams={1:["0.6"],-1:["0.6"]},
-                                           maxgates=45, dat_attr=intensity_all,
-                                           fov_attr="fovflg",
-                                           dmax=imax[intensity_all],
-                                           dmin=imin[intensity_all],
-                                           dcolor=color[intensity_all],
-                                           lat_label=llab, draw=False)
+                llab = True if ia % 2 == 0 else False
+                axmap[ia].set_axis_bgcolor(acolor)
+                mm, fovs, hard, con = plot_map(axmap[ia], scan, hard=hard,
+                                               map_handle=mm, fovs=fovs,
+                                               plot_beams={1:[bmnum],
+                                                           -1:[bmnum]},
+                                               color_beams={1:["0.6"],
+                                                            -1:["0.6"]},
+                                               maxgates=45,
+                                               dat_attr=intensity_all,
+                                               fov_attr="fovflg",
+                                               dmax=imax[intensity_all],
+                                               dmin=imin[intensity_all],
+                                               dcolor=color[intensity_all],
+                                               lat_label=llab, draw=False)
 
-        label = pyrad.radUtils.getParamDict(intensity_all)['label']
-        unit = pyrad.radUtils.getParamDict(intensity_all)['unit']
-        cbmap = add_colorbar(fmap, con, imin[intensity_all],
-                             imax[intensity_all], zinc[intensity_all],
-                             label, unit, loc=[0.91,.1,.01,.8])
-        plt.subplots_adjust(wspace=.05)
+            label = pyrad.radUtils.getParamDict(intensity_all)['label']
+            unit = pyrad.radUtils.getParamDict(intensity_all)['unit']
+            cbmap = add_colorbar(fmap, con, imin[intensity_all],
+                                 imax[intensity_all], zinc[intensity_all],
+                                 label, unit, loc=[0.91,.1,.01,.8])
+            plt.subplots_adjust(wspace=.05)
+        elif coords.lower() == "mlt":
+            fov_dir = {1:"front", -1:"back"}
+
+            # Determine the largest and smallest MLTs
+            mlts = np.ndarray(shape=mlen, dtype=float) * np.nan
+            quarters = np.zeros(shape=mlen, dtype=int)
+            hard = list()
+            for ia,mt in enumerate(mtimes):
+                hard.append(pyrad.site(code=rad, dt=mt))
+                mlon = dutils.coordUtils.coord_conv(hard[ia].geolon,
+                                                    hard[ia].geolat, "geo",
+                                                    "mlt", 300.0, mt)[0]
+                
+                mlts[ia] = mlon * 24.0 / 360.0
+                if mlts[ia] < 0.0:
+                    mlts[ia] = mlts[ia] + 24.0
+                if mlts[ia] >= 24.0:
+                    mlts[ia] = mlts[ia] - 24.0
+
+                # Assign MLT clock corners
+                if mlts[ia] < 12.0 and mlts[ia] >= 6.0:
+                    quarters[ia] = 1
+                elif mlts[ia] < 6.0:
+                    quarters[ia] = 2
+                elif mlts[ia] >= 18.0:
+                    quarters[ia] = 3
+                else:
+                    quarters[ia] = 4
+
+            quarters = list(set(quarters))
+            qlen = len(quarters)
+            qmin = min(quarters)
+            qmax = max(quarters)
+            fwidth = 12 if qlen>2 or (qlen>1 and qmin<3 and qmax>2) else 6
+            fheight = 6
+            if(qlen > 2 or (qlen > 1 and (qmin > 1 and qmin < 4 and qmax == 4)
+                            or (qmin == 1 and qmax < 4))):
+               fheight *= 2
+            proj = "npstere" if hard[0].geolat > 0.0 else "spstere"
+            boundinglat = (np.sign(hard[0].geolat) *
+                           (np.floor(abs(hard[0].geolat) / 10.0 - 1.0) * 10.0))
+            boundinglat = 56.0
+            mwidth = 111.0e3 * boundinglat * fwidth / 6.0
+            mheight = 111.0e3 * boundinglat * fheight / 6.0
+            lat_0 = np.sign(hard[0].geolat) * 90.0
+            lon_0 = 0.0
+
+            fmap = plt.figure(figsize=(12,12))
+            axmap = fmap.add_subplot(1,1,1)
+            axmap.set_axis_bgcolor(acolor)
+
+            # Cycle through times
+            for ia,mt in enumerate(sorted(mtimes)):
+                # Load data
+                scan = list()
+                for k in beams[rad].keys():
+                    j = 0
+                    while j < len(beams[rad][k]):
+                        if beams[rad][k][j].scan_time > mt:
+                            break
+                        elif beams[rad][k][j].scan_time == mt:
+                            scan.append(beams[rad][k][j])
+                        j += 1
+
+                # Initialize map, hardware data, and fovs
+                fovs = {ff:pyrad.radFov.fov(site=hard[ia],
+                                            rsep=scan[0].prm.rsep,
+                                            nbeams=hard[ia].maxbeam, ngates=45,
+                                            bmsep=hard[ia].bmsep, model="IS",
+                                            coords=coords, date_time=mt,
+                                            fov_dir=fov_dir[ff])
+                        for ff in [1,-1]}
+                mmm = dutils.plotUtils.mapObj(ax=axmap, datetime=mt,
+                                              coords=coords, projection=proj,
+                                              resolution="c", lon_0=0, lat_0=90,
+                                              boundinglat=boundinglat,
+                                              draw_map=False, grid=True,
+                                              gridLabels=False, round=True)
+
+                mmm, fovs, hh, con = plot_map(axmap, scan, hard=hard[ia],
+                                              map_handle=mmm, fovs=fovs,
+                                              plot_beams={1:[bmnum],-1:[bmnum]},
+                                              color_beams={1:["0.6"],
+                                                           -1:["0.6"]},
+                                              maxgates=45,
+                                              dat_attr=intensity_all,
+                                              fov_attr="fovflg",
+                                              dmax=imax[intensity_all],
+                                              dmin=imin[intensity_all],
+                                              dcolor=color[intensity_all],
+                                              draw_map=False, plot_name=False,
+                                              draw=False)
+                axmap.set_title("")
+
+            # Add clock hours
+            (xmin, xmax) = axmap.get_xlim()
+            (ymin, ymax) = axmap.get_ylim()
+            axmap.text(xmax*0.47, ymax*1.01, "12:00", fontsize="medium")
+            axmap.text(xmax*0.47, -ymax*0.02, "00:00", fontsize="medium")
+            axmap.text(-xmax*0.07, ymax*0.495, "18:00", fontsize="medium")
+            axmap.text(xmax*1.01, ymax*0.495, "06:00", fontsize="medium")
+            axmap.text(xmax*0.86, ymax*0.12, "03:00", fontsize="medium")
+            axmap.text(xmax*0.09, ymax*0.12, "21:00", fontsize="medium")
+            axmap.text(xmax*0.09, ymax*0.87, "15:00", fontsize="medium")
+            axmap.text(xmax*0.86, ymax*0.86, "09:00", fontsize="medium")
+            fmap.suptitle("{:s} Magnetic Local Time".format(rad.upper()))
+
+            # Fix axis and figure limits
+            if fwidth < 12:
+                if qmin > 2:
+                    axmap.set_xlim(xmin, xmax * 0.51)
+                else:
+                    axmap.set_xlim(xmax * 0.49, xmax)
+            if fheight < 12:
+                if qmax < 4 and qmin > 1:
+                    axmap.set_ylim(ymin, ymax * 0.51)
+                else:
+                    axmap.set_ylim(ymax * 0.49, ymax)
+
+            if fwidth < 12 or fheight < 12:
+                fmap.set_size_inches(fwidth, fheight)
+
+            label = pyrad.radUtils.getParamDict(intensity_all)['label']
+            unit = pyrad.radUtils.getParamDict(intensity_all)['unit']
+            cbmap = add_colorbar(fmap, con, imin[intensity_all],
+                                 imax[intensity_all], zinc[intensity_all],
+                                 label, unit, orient="horizontal",
+                                 loc=[0.1,.05,.8,.01])
+
+            
+        else:
+            estr = "{:s} WARNING: unknown coordinate ".format(rn)
+            estr = "{:s}format [{:}]".format(estr, coords)
+            logging.warning(estr)
+            fmap = None
+            axmap = None
+            cbmap = None
     else:
         fmap = None
         axmap = None
@@ -1036,12 +1223,17 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
         Figure handle
     ax : (dict)
         Dictionary of axis handles
-
     """
     import davitpy.pydarn.radar as pyrad
 
+    # Ensure the z limits have been set
+    if zmin is None:
+        zmin = {ff:zdata[ff].min() for ff in zdata.keys()}
+    if zmax is None:
+        zmax = {ff:zdata[ff].max() for ff in zdata.keys()}
+
     # Initialize the subplots
-    xpos = {7:1.1, 6:1.0, 5:0.9, 4:0.8, 3:0.7, 2:0.5, 1:0.0}
+    xpos = {8:1.1, 7:1.1, 6:1.0, 5:0.9, 4:0.8, 3:0.7, 2:0.5, 1:0.0}
     iax = {ff:i for i,ff in enumerate(["all",1,-1,0])}
     ax = {ff:f.add_subplot(4,1,iax[ff]+1) for ff in iax.keys()}
     ypos = 0.89
@@ -1081,9 +1273,9 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
                 zz = zindices[ff][hh]
                 ll = hh if isinstance(hh, str) else "{:.1f}".format(hh)
                 if ii is 'hop' or ii is 'reg':
-                    ax[ff].plot(xdata[zz], ydata[zz], mm[marker_key][hh], ms=5,
-                                markeredgecolor="face",
-                                color=mc[marker_key][hh], label=ll)
+                    ax[ff].plot(xdata[zz], ydata[zz], "|", ms=5, linewidth=3,
+                                color=mc[marker_key][hh],
+                                markeredgecolor=mc[marker_key][hh], label=ll)
                 elif len(zz) > 0:
                     if isinstance(color[ii], str):
                         cmap = cm.get_cmap(color[ii])
@@ -1115,8 +1307,25 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
                         handles.insert(jl, hl[il])
 
         # Format the axes; add titles, colorbars, and labels
+        if xmin is None:
+            try:
+                xmin = xdata.min()
+            except: pass
+        if xmax is None:
+            try:
+                xmax = xdata.max()
+            except: pass
         if xmin is not None and xmax is not None:
             ax[ff].set_xlim(xmin, xmax)
+
+        if ymin is None:
+            try:
+                ymin = ydata.min()
+            except: pass
+        if ymax is None:
+            try:
+                ymax = ydata.max()
+            except: pass
         if ymin is not None and ymax is not None:
             ax[ff].set_ylim(ymin, ymax)
 
@@ -1178,9 +1387,9 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                     region_hmax={"D":115.0,"E":150.0,"F":900.0},
                     rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                     max_rg=[5,25,40,76], max_hop=3.0,
-                    ut_box=dt.timedelta(minutes=20.0),tdiff=list(),
-                    tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                    strict_gs=True, beams=dict()):
+                    ut_box=dt.timedelta(minutes=20.0),tdiff=None,
+                    tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                    ptest=True, step=6, strict_gs=True, beams=dict()):
     """Load data for a test period, updating the beams to include origin field-
     of-view data and returning dictionaries of lists with time, range,
     and intensity data for a specified radar/beam combination.
@@ -1244,14 +1453,27 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
     ut_box : (class dt.timedelta)
         Total width of universal time box to examine for backscatter FoV
         continuity. (default=20.0 minutes)
-    tdiff : (list)
-        A list of tdiff values (in microsec) or an empty list (to use the
-        hardware value) (default=list())
-    tdiff_e : (list)
-        A list containing the tdiff error (in microsec) or an empty list
-        (no elevation/virtual height error will be computed). (default=list())
-    tdiff_time : (list)
-        A list containing the starting time (datetimes) for each tdiff.
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
+        (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stud, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
@@ -1275,7 +1497,6 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-
     """
     import davitpy.pydarn.sdio as sdio
 
@@ -1326,8 +1547,9 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                                                rg_box=rg_box, vh_box=vh_box,
                                                max_rg=max_rg, max_hop=max_hop,
                                                ut_box=ut_box, tdiff=tdiff,
+                                               tdiff_args=tdiff_args,
                                                tdiff_e=tdiff_e,
-                                               tdiff_time=tdiff_time,
+                                               tdiff_e_args=tdiff_e_args,
                                                ptest=ptest, strict_gs=strict_gs,
                                                logfile=logfile,
                                                log_level=log_level, step=step)
@@ -1387,7 +1609,8 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                        binc=ticker.MultipleLocator(3),
                        tinc=mdates.MinuteLocator(interval=15),
                        yinc=ticker.MultipleLocator(15), zinc=6, plot_title="",
-                       label_type="frac", make_plot=True, draw=True):
+                       label_type="frac", acolor="w", make_plot=True,
+                       draw=True):
     """Plot a specified attribute (elevation angle or virtual height) for the
     front and rear field-of-view, using a scan of beams and a single beam for
     a longer period of time.
@@ -1449,6 +1672,8 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
         Plot title (default="")
     label_type : (str)
         Type of hop label to use (frac/decimal) (default="frac")
+    acolor : (str or tuple)
+        Background color for subplots (default="0.9" - light grey)
     make_plot : (boolian)
         Make plot (True) or just process data (False) (default=True)
     draw : (boolian)
@@ -1462,10 +1687,8 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
         List of axis handles
     cb : (set)
         Output from colorbar
-
     """
     import davitpy.pydarn.radar as pyrad
-    rn = "plot_scan_and_beam"
 
     mkey = fhop_attr if mm.has_key(fhop_attr) else fhop_attr[1:]
     xpos = {7:1.1, 6:0.49, 5:0.35, 4:0.8, 3:0.7, 2:0.5, 1:0.0}
@@ -1604,6 +1827,12 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
     rbax = plt.subplot(gb[:,1])
     ftax = plt.subplot(gt[0,:])
     rtax = plt.subplot(gt[1,:])
+
+    # Set the plot background color
+    fbax.set_axis_bgcolor(acolor)
+    rbax.set_axis_bgcolor(acolor)
+    ftax.set_axis_bgcolor(acolor)
+    rtax.set_axis_bgcolor(acolor)
 
     if zmin is None:
         zmin = min(np.nanmin(ftime), np.nanmin(rtime), np.nanmin(fbeam),
@@ -1788,9 +2017,10 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
                        rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
                        max_rg=[5,25,40,76], max_hop=3.0,
-                       ut_box=dt.timedelta(minutes=20.0), tdiff=list(),
-                       tdiff_e=list(), tdiff_time=list(), ptest=True, step=6,
-                       strict_gs=True, draw=True, beams=dict()):
+                       ut_box=dt.timedelta(minutes=20.0), tdiff=None,
+                       tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
+                       ptest=True, step=6, strict_gs=True, draw=True,
+                       beams=dict()):
     """Plot comparing HWM14 neutral winds with the line-of-site velocity
     for two beams at Saskatoon
 
@@ -1856,14 +2086,27 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     ut_box : (class dt.timedelta)
         Total width of universal time box to examine for backscatter FoV
         continuity. (default=20.0 minutes)
-    tdiff : (list)
-        A list of tdiff values (in microsec) or an empty list (to use the
-        hardware value) (default=list())
-    tdiff_e : (list)
-        A list containing the tdiff error (in microsec) or an empty list
-        (no elevation/virtual height error will be computed). (default=list())
-    tdiff_time : (list)
-        A list containing the starting time (datetimes) for each tdiff.
+    tdiff : (function or NoneType)
+        A function to retrieve tdiff values (in microsec) using the radar ID
+        number current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_args.  Example:
+        def get_tdiff(stid, time, tfreq, filename) { do things } return tdiff
+        tdiff=get_tdiff, tdiff_args=["tdiff_file"]
+        (default=None)
+    tdiff_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff function.
+        (default=list())
+    tdiff_e : function or NoneType)
+        A function to retrieve tdiff error values (in microsec) using the radar
+        ID number, current datetime, and transmisson frequency as input.
+        Additional inputs may be specified using tdiff_e_args.  Example:
+        def get_tdiffe(stud, time, tfreq, filename) { do things } return tdiffe
+        tdiff_e=get_tdiffe, tdiff_e_args=["tdiff_file"]
+        (default=None)
+    tdiff_e_args : (list)
+        A list specifying any arguements other than radar, time, and
+        transmission frequency to run the specified tdiff_e function.
         (default=list())
     ptest : (boolian)
         Test to see if a propagation path is realistic (default=True)
@@ -1889,7 +2132,6 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     beams : (dict)
         Dictionary with radar codes as keys for the dictionaries containing
         beams with the data used to create the plots
-
     """
     import davitpy.pydarn.plotting as plotting
     import davitpy.pydarn.radar as pyrad
@@ -1903,12 +2145,17 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
 
         Parameters
         ----------
-        p :
+        p : (float)
+            Power
+        verr : (float)
+            Doppler velocity error
+        werr : (float)
+            Spectral width error
 
-        verr :
-
-        werr :
-
+        Returns
+        --------
+        good : (bool)
+            True if fits characteristics for meteor, else false
         """
         # Initialize output
         good = False
@@ -1945,7 +2192,6 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
         Returns
         ---------
         bm_ap : (float)
-
         """
         ap_times = [dt.datetime(2001,12,1) + dt.timedelta(hours=i)
                     for i in range(744)]
@@ -2040,8 +2286,9 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                                       region_hmin=region_hmin, rg_box=rg_box,
                                       vh_box=vh_box, max_rg=max_rg,
                                       max_hop=max_hop, ut_box=ut_box,
-                                      tdiff=tdiff, tdiff_e=tdiff_e,
-                                      tdiff_time=tdiff_time, ptest=ptest,
+                                      tdiff=tdiff, tdiff_args=tdiff_args,
+                                      tdiff_e=tdiff_e,
+                                      tdiff_e_args=tdiff_e_args, ptest=ptest,
                                       logfile=logfile, log_level=log_level,
                                       step=step)
 
@@ -2200,7 +2447,7 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
              maxgates=None, fan_model='IS', model_alt=300.0, elv_attr="fovelv",
              alt_attr="vheight", dat_attr="v", fov_attr="fovflg", dmax=500.0,
              dmin=-500.0, dcolor=ccenter, lat_label=True, lon_label=True,
-             gscatter=True, draw=True):
+             gscatter=True, draw_map=True, plot_name=True, draw=True):
     """Plot a fov map
 
     Parameters
@@ -2229,6 +2476,11 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
         Type of model to use when plotting data (default="IS")
         IS : Ionospheric Backscatter model
         GS : Ground Backscatter model
+        S  : standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1 1/2-hop ionospheric projection model
+        C  : Chisham projection model
         None : No model, use elevation and altitude
     model_alt : (float)
         Model altitude if IS or GS is used (default=300.0)
@@ -2263,7 +2515,6 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
         Dictionary of fields-of-view
     hard : ( or NoneType)
         Hardware data (default=None)
-
     """
     import davitpy.pydarn.plotting as plotting
     import davitpy.pydarn.radar as pyrad
@@ -2332,7 +2583,7 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
             fovs[ff] = pyrad.radFov.fov(site=hard, rsep=scan[0].prm.rsep,
                                         nbeams=hard.maxbeam, ngates=maxgates,
                                         bmsep=hard.bmsep, elevation=fan_elv,
-                                        altitude=fan_alt, model = fan_model,
+                                        altitude=fan_alt, model=fan_model,
                                         coords="geo", date_time=scan[0].time,
                                         fov_dir=fov_dir[ff])
 
@@ -2350,12 +2601,14 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
                                      urcrnrlat=urlat, resolution="l")
 
     map_handle.ax = ax
-    map_handle.drawcoastlines(linewidth=0.5, color="0.6")
-    map_handle.fillcontinents(color="0.6", alpha=.1)
-    map_handle.drawmeridians(np.arange(-180.0, 180.0, 15.0),
-                             labels=[0,0,0,lon_label])
-    map_handle.drawparallels(np.arange(lllat, urlat+1.0, 10.0),
-                             labels=[lat_label,0,0,0])
+
+    if draw_map:
+        map_handle.drawcoastlines(linewidth=0.5, color="0.6")
+        map_handle.fillcontinents(color="0.6", alpha=.1)
+        map_handle.drawmeridians(np.arange(-180.0, 180.0, 15.0),
+                                 labels=[0,0,0,lon_label])
+        map_handle.drawparallels(np.arange(lllat, urlat+1.0, 10.0),
+                                 labels=[lat_label,0,0,0])
 
     # Add the field-of-view boundaries
     for ff in fovs.keys():
@@ -2368,7 +2621,7 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
     # Add the radar location and name
     norm = mcolors.Normalize(vmin=dmin, vmax=dmax)
     plotting.mapOverlay.overlayRadar(map_handle, ids=scan[0].stid,
-                                     dateTime=scan[0].time, annotate=True,
+                                     dateTime=scan[0].time, annotate=plot_name,
                                      fontSize=16)
 
     # Add the data to each field-of-view

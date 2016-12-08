@@ -288,7 +288,7 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
                 kpList.append(x)
                 
         if(kpList != []):
-            logging.info('\nreturning a list with ' + len(kpList) + ' days of kp data')
+            logging.info('\nreturning a list with ' + str(len(kpList)) + ' days of kp data')
             return kpList
         else:
             logging.info('\n no data found on FTP server, returning None...')

@@ -193,9 +193,9 @@ def datetimeToEpoch(my_date):
     import calendar
     import numpy as np
 
-    assert(isinstance(my_date, (list, datetime))), logging.error(
+    assert(isinstance(my_date, (list, np.ndarray, datetime))), logging.error(
         'input must be of type datetime or list of datetimes')
-    if isinstance(my_date, list):
+    if isinstance(my_date, (list,np.ndarray)):
         for dt in my_date:
             assert(isinstance(dt, datetime)), logging.error(
                 'each member of my_date list must be of type datetime')

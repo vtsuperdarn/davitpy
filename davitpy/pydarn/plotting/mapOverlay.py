@@ -15,14 +15,14 @@ overlayFov     Overlay field(s)-of-view on a map
 import logging
 
 
-def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None, 
+def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
                  annotate=True, plot_all=False, hemi=None, zorder=2,
                  markerColor='k', markerSize=10, fontSize=10, font_color='k',
-                 xOffset=None,yOffset=-5):
-    """Overlay radar position(s) and name(s) on map 
-    
+                 xOffset=None, yOffset=-5):
+    """Overlay radar position(s) and name(s) on map
+
     Parameters
-    ---------- 
+    ----------
     mapObj : mapObj class object or Basemap map object
 
     codes : Optional[list]
@@ -38,7 +38,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     plot_all : Optional[boolean]
         Set to true to plot all the radars (active ones)
     hemi : Optional[str]
-        'north', 'south', or None.  If a hemisphere is specified, limits 
+        'north', 'south', or None.  If a hemisphere is specified, limits
         radar calls to that hemisphere.  Default: None
     zorder : Optional[int]
         The overlay order number. Default: 2
@@ -49,7 +49,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     fontSize : Optional[int]
         [point] Default: 10
     xOffset : Optional[int]
-        x-Offset of the annotation in points.  Default: None 
+        x-Offset of the annotation in points.  Default: None
     yOffset : Optional[int]
         y-Offset of the annotation in points.  Default: -5
 
@@ -64,7 +64,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
         m1 = utils.plotUtils.mapObj(boundinglat=30., gridLabels=True, \
                                     coords='mag')
         pydarn.plot.overlayRadar(m1, fontSize=8, plot_all=True, markerSize=5)
-			
+
     written by Sebastien, 2012-08
 
     """
@@ -75,8 +75,10 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
 
     # List paired radars.  Each member of a pair is placed in a different
     # sublist, with the more westward member in the first sublist
-    nearby_rad = [['adw','kod','cve','fhe','wal','gbr','pyk','aze','sys'],
-                  ['ade','ksr','cvw','fhw','bks','sch','sto','azw','sye']]
+    nearby_rad = [['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze',
+                   'sys'],
+                  ['ade', 'ksr', 'cvw', 'fhw', 'bks', 'sch', 'sto', 'azw',
+                   'sye']]
 
     # Set dateTime.
     if dateTime is not None:
@@ -86,14 +88,14 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
             logging.warning(estr)
     else:
         dateTime = mapObj.dateTime
-	
+
     # Load radar structure
     NetworkObj = network()
-	
+
     # If all radars are to be plotted, create the list
     if plot_all:
         codes = NetworkObj.getAllCodes(datetime=dateTime, hemi=hemi)
-	
+
     # Define how the radars to be plotted are identified (code, id or name)
     if codes:
         rad_input = {'meth': 'code', 'vals': codes}
@@ -104,7 +106,7 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     else:
         logging.error('No radars to plot')
         return
-	
+
     # Check if radars is given as a list
     if not isinstance(rad_input['vals'], list):
         rad_input['vals'] = [rad_input['vals']]
@@ -128,21 +130,21 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     if hemi is None:
         hemiInt = 0
     else:
-        hemiInt = 1 if hemi.lower()[0]=='n' else -1
+        hemiInt = 1 if hemi.lower()[0] == 'n' else -1
 
     # iterates through radars to be plotted
-    for ir,radN in enumerate(rad_input['vals']):
+    for ir, radN in enumerate(rad_input['vals']):
         rad = NetworkObj.getRadarBy(radN, rad_input['meth'])
         if not rad: continue
         site = rad.getSiteByDate(dateTime)
         if not site: continue
         # Check for hemisphere specification
-        if site.geolat*hemiInt < 0: continue
+        if site.geolat * hemiInt < 0: continue
         # Get radar coordinates in map projection
-        if not hasattr(mapObj, 'coords'): 
-            x,y = mapObj(site.geolon, site.geolat)
+        if not hasattr(mapObj, 'coords'):
+            x, y = mapObj(site.geolon, site.geolat)
         else:
-            x,y = mapObj(site.geolon, site.geolat, coords='geo')
+            x, y = mapObj(site.geolon, site.geolat, coords='geo')
         if not mapObj.xmin <= x <= mapObj.xmax: continue
         if not mapObj.ymin <= y <= mapObj.ymax: continue
 
@@ -159,13 +161,13 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
             elif rad.code[0] in nearby_rad[1]:
                 xOff = -5 if not xOffset else xOffset
                 ha = 1
-            else: 
+            else:
                 xOff = 0.0
                 ha = .5
 
             # Plot radar name
             textHighlighted((x, y), rad.code[0].upper(), ax=mapObj.ax,
-                            xytext=(xOff, yOffset), text_alignment=(ha,1),
+                            xytext=(xOff, yOffset), text_alignment=(ha, 1),
                             variant='small-caps', fontsize=fontSize,
                             zorder=zorder, color=rad_input['fcolor'][ir])
 
@@ -201,11 +203,17 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     beamLimits : Optional[2-element list]
         Plot only between the beams specified.
     model : Optional[str]
-        'IS for ionopsheric scatter projection model (default), 'GS' for
-        ground scatter projection model, None if you are really
-        confident in your elevation or altitude values
-    fov_dir : Optional[str] 
-        Field of view direction ('front' or 'back'). Default='front'
+        IS : standard ionospheric scatter projection model (default)
+        GS : standard ground scatter projection model
+        S  : standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1 1/2-hop ionospheric projection model
+        C  : Chisham projection model
+        None : if you trust your elevation or altitude values
+    fov_dir : Optional[str]
+        Field of view direction ('front' or 'back'). Value in fov object will
+        overwrite this choice.  Default='front'
     zorder : Optional[int]
         The overlay order number
     lineColor : Optional[str]
@@ -222,13 +230,13 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         'north' or 'south', ignore radars from the other hemisphere
     beams : Optional[int]
         hightlight specified beams
-    beamsColors : Optional[str] 
+    beamsColors : Optional[str]
         colors of the hightlighted beams
-    
+
     Returns
     -------
     None
-    
+
     Example
     -------
         import pydarn, utils
@@ -256,8 +264,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # Set dateTime.
     if dateTime is not None:
         if hasattr(mapObj, 'dateTime') and dateTime != mapObj.dateTime:
-            logging.warning("dateTime is " + str(dateTime) + \
-                    ", not mapObj.dateTime " + str(mapObj.dateTime))
+            logging.warning("dateTime is " + str(dateTime) +
+                            ", not mapObj.dateTime " + str(mapObj.dateTime))
     else:
         dateTime = mapObj.dateTime
 
@@ -290,7 +298,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # iterates through radars to be plotted
     for ir in xrange(nradars):
         # Get field of view coordinates
-        if(fovObj is None):
+        if fovObj is None:
             rad = network_obj.getRadarBy(rad_input['vals'][ir],
                                          rad_input['meth'])
             if not rad:
@@ -299,19 +307,22 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             if not site:
                 continue
             # Set number of gates to be plotted
-            egate = site.maxgate-1 if not maxGate else maxGate
+            egate = site.maxgate - 1 if not maxGate else maxGate
             ebeam = site.maxbeam
 
-            if not hasattr(mapObj, 'coords'): 
-                rad_fov = fov(site=site, ngates=egate+1, model=model,
+            if not hasattr(mapObj, 'coords'):
+                rad_fov = fov(site=site, ngates=egate + 1, model=model,
                               fov_dir=fov_dir)
             else:
-                rad_fov = fov(site=site, ngates=egate+1, coords=mapObj.coords, 
-                              model=model, date_time=dateTime, fov_dir=fov_dir)
+                rad_fov = fov(site=site, ngates=egate + 1,
+                              coords=mapObj.coords, model=model,
+                              date_time=dateTime, fov_dir=fov_dir)
         else:
             rad_fov = fovObj
             egate = len(fovObj.gates)
             ebeam = len(fovObj.beams)
+            model = fovObj.model
+            fov_dir = fovObj.fov_dir
 
         if rangeLimits is not None:
             sgate = rangeLimits[0]
@@ -329,31 +340,31 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             # Ground scatter model is not defined for close in rangegates.
             # np.nan will be returned for these gates.
             # Set sGate >= to the first rangegate that has real values.
-                    
-            not_finite  = np.logical_not(np.isfinite(rad_fov.lonFull))
+
+            not_finite = np.logical_not(np.isfinite(rad_fov.lonFull))
             grid = np.tile(np.arange(rad_fov.lonFull.shape[1]),
-                           (rad_fov.lonFull.shape[0],1)) 
+                           (rad_fov.lonFull.shape[0], 1))
             grid[not_finite] = 999999
-            tmp_sGate = (np.min(grid,axis=1)).max()
+            tmp_sGate = (np.min(grid, axis=1)).max()
             if tmp_sGate > sgate: sgate = tmp_sGate
 
         # Get radar coordinates in map projection
-        if hasattr(mapObj, 'coords'): 
+        if hasattr(mapObj, 'coords'):
             x, y = mapObj(rad_fov.lonFull, rad_fov.latFull,
                           coords=rad_fov.coords)
         else:
             x, y = mapObj(rad_fov.lonFull, rad_fov.latFull)
         # Plot field of view
         # Create contour
-        contour_x = concatenate((x[sbeam,sgate:egate], x[sbeam:ebeam,egate],
-                                 x[ebeam,egate:sgate:-1],
-                                 x[ebeam:sbeam:-1,sgate]))
-        contour_y = concatenate((y[sbeam,sgate:egate], y[sbeam:ebeam,egate],
-                                 y[ebeam,egate:sgate:-1],
-                                 y[ebeam:sbeam:-1,sgate]))
+        contour_x = concatenate((x[sbeam, sgate:egate], x[sbeam:ebeam, egate],
+                                 x[ebeam, egate:sgate:-1],
+                                 x[ebeam:sbeam:-1, sgate]))
+        contour_y = concatenate((y[sbeam, sgate:egate], y[sbeam:ebeam, egate],
+                                 y[ebeam, egate:sgate:-1],
+                                 y[ebeam:sbeam:-1, sgate]))
         # Set the color if a different color has been specified for each radar
         if isinstance(lineColor, list) and len(lineColor) > ir:
-            lcolor=lineColor[ir]
+            lcolor = lineColor[ir]
 
         # Plot contour
         mapObj.plot(contour_x, contour_y, color=lcolor, zorder=zorder,
@@ -361,7 +372,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
 
         # Field of view fill
         if fovColor:
-            contour = transpose(vstack((contour_x,contour_y)))
+            contour = transpose(vstack((contour_x, contour_y)))
             patch = Polygon(contour, color=fovColor, alpha=fovAlpha,
                             zorder=zorder)
             mapObj.ax.add_patch(patch)
@@ -374,16 +385,18 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
             for ib in beams:
                 if not (0 <= ib <= x.shape[0]): continue
                 if not beamsColors:
-                    bcol_rgb = ib/float(x.shape[0])
-                    bcol = (bcol_rgb/2., bcol_rgb, 1)
+                    bcol_rgb = ib / float(x.shape[0])
+                    bcol = (bcol_rgb / 2., bcol_rgb, 1)
                 else:
                     bcol = beamsColors[beams.index(ib)]
-                contour_x = concatenate((x[ib,sgate:egate+1], x[ib:ib+2,egate],
-                                         x[ib+1,egate:sgate:-1],
-                                         x[ib+1:ib-1:-1,sgate]))
-                contour_y = concatenate((y[ib,sgate:egate+1], y[ib:ib+2,egate],
-                                         y[ib+1,egate:sgate:-1],
-                                         y[ib+1:ib-1:-1,sgate]))
+                contour_x = concatenate((x[ib, sgate:egate + 1], x[ib:ib + 2,
+                                                                   egate],
+                                         x[ib + 1, egate:sgate:-1],
+                                         x[ib + 1:ib - 1:-1, sgate]))
+                contour_y = concatenate((y[ib, sgate:egate + 1], y[ib:ib + 2,
+                                                                   egate],
+                                         y[ib + 1, egate:sgate:-1],
+                                         y[ib + 1:ib - 1:-1, sgate]))
                 contour = transpose(vstack((contour_x, contour_y)))
                 patch = Polygon(contour, color=bcol, alpha=.4,
                                 zorder=zorder)
@@ -401,21 +414,21 @@ if __name__ == "__main__":
     fig = plt.figure()
     ax = fig.add_axes()
     # Changed coords from "mlt" to "geo" because mlt kept crashing
-    print "Creating map object for datetime(2012,1,1,0,2) in Geographic"
+    print "Creating map object for datetime(2012, 1, 1, 0, 2) in Geographic"
     mo = utils.mapObj(lat_0=90., lon_0=0., boundinglat=40.,
-                      dateTime=datetime(2012,1,1,0,2), coords="geo",
+                      dateTime=datetime(2012, 1, 1, 0, 2), coords="geo",
                       projection="stere")
     print "overlayRadar"
     overlayRadar(mo, codes="sas")
     print "overlayRadar for datetime(2012,1,1,1,2);"
     print "should produce warning about different time"
-    overlayRadar(mo, codes="sas", dateTime=datetime(2012,1,1,1,2))
+    overlayRadar(mo, codes="sas", dateTime=datetime(2012, 1, 1, 1, 2))
     print "overlayFov"
     overlayFov(mo, codes="sas", maxGate=45)
     print "overlay the near-range rear-FoV and fill shade it magenta"
     overlayFov(mo, codes="sas", maxGate=10, fov_dir='back', fovColor="m")
     print "overlayFov for datetime(2012,1,1,1,2);"
     print "should produce warning about different time"
-    overlayFov(mo, codes="sas", maxGate=45, dateTime=datetime(2012,1,1,1,2))
+    overlayFov(mo, codes="sas", maxGate=45, dateTime=datetime(2012, 1, 1, 1, 2))
     print "Showing plot"
     plt.show()

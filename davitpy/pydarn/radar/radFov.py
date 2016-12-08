@@ -30,6 +30,7 @@ Based on R.J. Barnes radar.pro
 import numpy as np
 import logging
 
+
 class fov(object):
     """ This class calculates and stores field-of-view coordinates.
     Provide the input-set [nbeams, ngates, bmsep, recrise] or a SITE object.
@@ -69,10 +70,17 @@ class fov(object):
         elevation angle [degree] (if not provided, is evaluated using 'model')
     altitude : scalar or ndarray(ngates) or ndarray(nbeams,ngates)
         altitude [km] (if not provided, set to 300 km)
+    hop : Optional[scalar or ndarray(ngates) or ndarray(nbeams,ngates)]
+        Hop, used if elevation angle is used.
     model
-        IS : for ionopsheric scatter projection model (default)
-        GS : for ground scatter projection model
-        None : if you trust your elevation or altitude values. more to come
+        IS : standard ionospheric scatter projection model (default)
+        GS : standard ground scatter projection model
+        S : standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1-1/2-hop ionospheric projection model
+        C : Chisham projection model
+        None : if you trust your elevation or altitude values
     coords
         anything accepted by coord_conv; see utils.get_coord_dict. Default: geo
     date_time : Optional[datetime.datetime object]
@@ -84,13 +92,12 @@ class fov(object):
     fov_dir : str
         Provide the front or back field of view?  If not specified,
         defaults to 'front'. Use 'front' or 'back'.
-
     """
     def __init__(self, frang=180.0, rsep=45.0, site=None, nbeams=None,
                  ngates=None, bmsep=None, recrise=None, siteLat=None,
                  siteLon=None, siteBore=None, siteAlt=None, siteYear=None,
-                 elevation=None, altitude=300., model='IS', coords='geo',
-                 date_time=None, coord_alt=0., fov_dir='front'):
+                 elevation=None, altitude=300., hop=None, model='IS',
+                 coords='geo', date_time=None, coord_alt=0., fov_dir='front'):
         # Import neccessary functions and classes
         from davitpy.utils.coordUtils import coord_conv
 
@@ -181,8 +188,8 @@ class fov(object):
         else:
             recrise = np.array([recrise])
 
-        # If altitude or elevation are arrays, then they should be of shape
-        # (nbeams, ngates)
+        # If altitude, elevation, or hop are arrays, then they should be of
+        # shape (nbeams, ngates)
         if isinstance(altitude, np.ndarray):
             if altitude.ndim == 1:
                 # Array is adjusted to add on extra beam/gate edge by copying
@@ -269,6 +276,41 @@ class fov(object):
                 logging.error(estr)
                 elevation = elevation[0] * np.ones((nbeams + 1, ngates + 1))
 
+        if isinstance(hop, np.ndarray):
+            if hop.ndim == 1:
+                # Array is adjusted to add on extra beam/gate edge by copying
+                # the last element and replicating the whole array as many
+                # times as beams
+                if hop.size != ngates:
+                    estr = '{:s}: hop must be of a scalar or numpy '.format(rn)
+                    estr = '{:s}ndarray of size (ngates) or '.format(estr)
+                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
+                    estr = '{:s}element: {}'.format(estr, hop[0])
+                    logging.error(estr)
+                    hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
+                else:
+                    hop = np.resize(np.append(hop, hop[-1]),
+                                    (nbeams + 1, ngates + 1))
+            elif hop.ndim == 2:
+                # Array is adjusted to add on extra beam/gate edge by copying
+                # the last row and column
+                if hop.shape != (nbeams, ngates):
+                    estr = '{:s}: hop must be of a scalar or numpy '.format(rn)
+                    estr = '{:s}ndarray of size (ngates) or '.format(estr)
+                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
+                    estr = '{:s}element: {}'.format(hop[0])
+                    logging.error(estr)
+                    hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
+                else:
+                    hop = np.append(hop, hop[-1, :].reshape(1, ngates), axis=0)
+                    hop = np.append(hop, hop[:, -1].reshape(nbeams, 1), axis=1)
+            else:
+                estr = '{:s}: hop must be a scalar or numpy ndarray'.format(rn)
+                estr = '{:s} of size (ngates) or (nbeams,ngates).'.format(estr)
+                estr = '{:s} Using first element: {}'.format(estr, hop[0])
+                logging.error(estr)
+                hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
+
         # Do for coord_alt what we just did for altitude.
         if isinstance(coord_alt, np.ndarray):
             if coord_alt.ndim == 1:
@@ -340,8 +382,8 @@ class fov(object):
                 srang_center = slantRange(frang[ib], rsep[ib], recrise[ib],
                                           gates, center=True)
                 # Calculate edges slant range
-                srang_edge = slantRange(frang[ib], rsep[ib], recrise[ib], gates,
-                                        center=False)
+                srang_edge = slantRange(frang[ib], rsep[ib], recrise[ib],
+                                        gates, center=False)
             # Save into output arrays
             slant_range_center[ib, :-1] = srang_center[:-1]
             slant_range_full[ib, :] = srang_edge
@@ -355,15 +397,16 @@ class fov(object):
                     else elevation
                 t_c_alt = coord_alt[ib, ig] \
                     if isinstance(coord_alt, np.ndarray) else coord_alt
+                thop = hop[ib, ig] if isinstance(hop, np.ndarray) else hop
 
                 if model == 'GS':
                     if (~is_param_array and ib == 0) or is_param_array:
                         slant_range_center[ib, ig] = \
                             gsMapSlantRange(srang_center[ig], altitude=None,
                                             elevation=None)
-                        slant_range_full[ib, ig] = gsMapSlantRange(srang_edge[ig],
-                                                                   altitude=None,
-                                                                   elevation=None)
+                        slant_range_full[ib, ig] = \
+                            gsMapSlantRange(srang_edge[ig], altitude=None,
+                                            elevation=None)
                         srang_center[ig] = slant_range_center[ib, ig]
                         srang_edge[ig] = slant_range_full[ib, ig]
 
@@ -372,13 +415,13 @@ class fov(object):
                     latc, lonc = calcFieldPnt(siteLat, siteLon, siteAlt * 1e-3,
                                               siteBore, boff_center[ib],
                                               srang_center[ig], elevation=telv,
-                                              altitude=talt, model=model,
-                                              fov_dir=fov_dir)
+                                              altitude=talt, hop=thop,
+                                              model=model, fov_dir=fov_dir)
                     late, lone = calcFieldPnt(siteLat, siteLon, siteAlt * 1e-3,
                                               siteBore, boff_edge[ib],
                                               srang_edge[ig], elevation=telv,
-                                              altitude=talt, model=model,
-                                              fov_dir=fov_dir)
+                                              altitude=talt, hop=thop,
+                                              model=model, fov_dir=fov_dir)
                     if(coords != 'geo'):
                         lonc, latc = coord_conv(lonc, latc, "geo", coords,
                                                 altitude=t_c_alt,
@@ -406,32 +449,31 @@ class fov(object):
         self.beams = beams[:-1]
         self.gates = gates[:-1]
         self.coords = coords
+        self.fov_dir = fov_dir
+        self.model = model
 
     # *************************************************************
     def __str__(self):
-        outstring = 'latCenter: {} \
-                     \nlonCenter: {} \
-                     \nlatFull: {} \
-                     \nlonFull: {} \
-                     \nslantRCenter: {} \
-                     \nslantRFull: {} \
-                     \nbeams: {} \
-                     \ngates: {} \
-                     \ncoords: {}'.format(np.shape(self.latCenter),
-                                          np.shape(self.lonCenter),
-                                          np.shape(self.latFull),
-                                          np.shape(self.lonFull),
-                                          np.shape(self.slantRCenter),
-                                          np.shape(self.slantRFull),
-                                          np.shape(self.beams),
-                                          np.shape(self.gates), self.coords)
+        outstring = 'latCenter: {}\nlonCenter: {}\nlatFull: {}\nlonFull: {} \
+                     \nslantRCenter: {}\nslantRFull: {}\nbeams: {} \
+                     \ngates: {} \ncoords: {} \nfield of view: {}\
+                     \nmodel: {}'.format(np.shape(self.latCenter),
+                                         np.shape(self.lonCenter),
+                                         np.shape(self.latFull),
+                                         np.shape(self.lonFull),
+                                         np.shape(self.slantRCenter),
+                                         np.shape(self.slantRFull),
+                                         np.shape(self.beams),
+                                         np.shape(self.gates), self.coords,
+                                         self.fov_dir, self.model)
         return outstring
 
 
 # *************************************************************
 # *************************************************************
-def calcFieldPnt(tGeoLat, tGeoLon, tAlt, boreSight, boreOffset, slantRange,
-                 elevation=None, altitude=None, model=None, coords='geo',
+def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
+                 adjusted_sr=True, elevation=None, altitude=None, hop=None,
+                 model=None, coords='geo', gs_loc="G", max_vh=400.0,
                  fov_dir='front'):
     """Calculate coordinates of field point given the radar coordinates and
     boresight, the pointing direction deviation from boresight and elevation
@@ -441,124 +483,225 @@ def calcFieldPnt(tGeoLat, tGeoLon, tAlt, boreSight, boreOffset, slantRange,
 
     Parameters
     ----------
-    tGeoLat
+    tr_glat
         transmitter latitude [degree, N]
-    tGeoLon
+    tr_glon
         transmitter longitude [degree, E]
-    tAlt
+    tr_alt
         transmitter altitude [km]
-    boreSight
+    boresight
         boresight azimuth [degree, E]
-    boreOffset
-        offset from boresight [degree]
-    slantRange
+    beam_off
+        beam azimuthal offset from boresight [degree]
+    slant_range
         slant range [km]
+    adjusted_sr : Optional(bool)
+        Denotes whether or not the slant range is the total measured slant
+        range (False) or if it has been adjusted to be the slant distance to
+        last ionospheric reflection point (True).  (default=True)
     elevation : Optional[float]
         elevation angle [degree] (estimated if None)
     altitude : Optional[float]
         altitude [km] (default 300 km)
+    hop : Optional[float]
+        backscatter hop (ie 0.5, 1.5 for ionospheric; 1.0, 2.0 for ground)
     model : Optional[str]
-        IS : for ionopsheric scatter projection model
-        GS : for ground scatter projection model
+        IS : for standard ionopsheric scatter projection model (ignores hop)
+        GS : for standard ground scatter projection model (ignores hop)
+        S : for standard projection model (uses hop)
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1-1/2-hop ionospheric projection model
+        C : for Chisham projection model (ionospheric only, ignores hop,
+            requires total measured slant range)
         None : if you trust your elevation or altitude values. more to come
     coords
         'geo' (more to come)
+    gs_loc : (str)
+        Provide last ground scatter location 'G' or ionospheric refraction
+        location 'I' for groundscatter (default='G')
+    max_vh : (float)
+        Maximum height for longer slant ranges in Standard model (default=400)
     fov_dir
         'front' (default) or 'back'.  Specifies fov direction
 
+    Returns
+    ---------
+    geo_dict['geoLat'] : (float or np.ndarray)
+        Field point latitude(s) in degrees or np.nan if error
+    geo_dict['geoLon'] : (float or np.ndarray)
+        Field point longitude(s) in degrees or np.nan if error
     """
-    from math import asin
     from davitpy.utils import Re, geoPack
-
-    # Make sure we have enough input stuff
-    # if (not model) and (not elevation or not altitude): model = 'IS'
+    import davitpy.utils.model_vheight as vhm
 
     # Only geo is implemented.
-    assert(coords == "geo"), \
-        "Only geographic (geo) is implemented in calcFieldPnt."
+    if coords != "geo":
+        logging.error("Only geographic (geo) is implemented in calcFieldPnt.")
+        return np.nan, np.nan
 
-    # Now let's get to work
-    # Classic Ionospheric/Ground scatter projection model
-    if model in ['IS', 'GS']:
-        # Make sure you have altitude (even if it isn't used), because these
-        # 2 projection models rely on it
-        if not elevation and not altitude:
-            # Set default altitude to 300 km
-            altitude = 300.0
-        elif elevation and not altitude:
-            # If you have elevation but not altitude, then you calculate
-            # altitude, and elevation will be adjusted anyway
-            altitude = np.sqrt(Re ** 2 + slantRange ** 2 + 2. * slantRange * Re *
-                               np.sin(np.radians(elevation))) - Re
+    # Use model to get altitude if desired
+    xalt = np.nan
+    calt = None
+    if model is not None:
+        if model in ['IS', 'GS', 'S']:
+            # The standard model can be used with or without an input altitude
+            # or elevation.  Returns an altitude that has been adjusted to
+            # comply with common scatter distributions
+            if hop is None:
+                if model == "S":
+                    # Default to ionospheric backscatter if hop not specified
+                    hop = 0.5
+                else:
+                    hop = 0.5 if model == "IS" else 1.0
 
-        # Now you should have altitude (and maybe elevation too, but it won't
-        # be used in the rest of the algorithm).  Adjust altitude so that it
-        # makes sense with common scatter distribution
-        xAlt = altitude
-        if model == 'IS':
-            if altitude > 150. and slantRange <= 600.:
-                xAlt = 115.
-            elif altitude > 150. and slantRange > 600. and slantRange <= 800.:
-                xAlt = 115. + (slantRange - 600.) / 200. * (altitude - 115.)
-        elif model == 'GS':
-            if altitude > 150. and slantRange <= 300:
-                xAlt = 115.
-            elif altitude > 150. and slantRange > 300. and slantRange <= 500.:
-                xAlt = 115. + (slantRange - 300.) / 200. * (altitude - 115.)
-        if slantRange < 150.:
-            xAlt = slantRange / 150. * 115.
+            xalt = vhm.standard_vhm(slant_range, adjusted_sr=adjusted_sr,
+                                    max_vh=max_vh, hop=hop, alt=altitude,
+                                    elv=elevation)
+        else:
+            # The Chisham model uses only the total slant range to determine
+            # altitude based on years of backscatter data at SAS.  Performs
+            # significantly better than the standard model for ionospheric
+            # backscatter, not tested on groundscatter
+            if adjusted_sr:
+                logging.error("Chisham model needs total slant range")
+                return np.nan, np.nan
 
-        # To start, set Earth radius below field point to Earth radius at radar
-        (lat, lon, tRe) = geoPack.geodToGeoc(tGeoLat, tGeoLon)
-        RePos = tRe
+            # Use Chisham model to calculate virtual height
+            cmodel = None if model == "C" else model
+            xalt, shop = vhm.chisham_vhm(slant_range, cmodel, hop_output=True)
+
+            # If hop is not known, set using model divisions
+            if hop is None:
+                hop = shop
+
+            # If hop is greater than 1/2, the elevation angle needs to be
+            # calculated from the ground range rather than the virtual height
+            if hop > 0.5:
+                calt = float(xalt)
+
+    elif elevation is None or np.isnan(elevation):
+        if hop is None or adjusted_sr:
+            logging.error("Total slant range and hop needed with measurements")
+            return np.nan, np.nan
+        if altitude is None or np.isnan(altitude):
+            logging.error("No observations supplied")
+            return np.nan, np.nan
+
+        # Adjust slant range if there is groundscatter and the location
+        # desired is the ionospheric reflection point
+        asr = slant_range
+        if hop == np.floor(hop) and gs_loc == "I":
+            asr *= 1.0 - 1.0 / (2.0 * hop)
+
+        # Adjust altitude if it's unrealistic
+        if asr < altitude:
+            altitude = asr - 10
+
+        xalt = altitude
+
+    # Use model altitude to determine elevation angle and then the location,
+    # or if elevation angle was supplied, find the location
+    if not np.isnan(xalt):
+        # Since we have a modeled or measured altitude, start by setting the
+        # Earth radius below field point to Earth radius at radar
+        (lat, lon, tr_rad) = geoPack.geodToGeoc(tr_glat, tr_glon)
+        rad_pos = tr_rad
 
         # Iterate until the altitude corresponding to the calculated elevation
-        # matches the desired altitude
-        n = 0  # safety counter
-        while True:
-            # pointing elevation (spherical Earth value) [degree]
-            tel = np.degrees(asin(((RePos + xAlt) ** 2 - (tRe + tAlt) ** 2 -
-                                   slantRange ** 2) / (2. * (tRe + tAlt) *
-                                                       slantRange)))
+        # matches the desired altitude.  Assumes straight-line path to last
+        # ionospheric scattering point, so adjust slant range if necessary
+        # for groundscatter
+        asr = slant_range
+        shop = hop
+        if not adjusted_sr and hop == np.floor(hop) and gs_loc == "I":
+            asr *= 1.0 - 1.0 / (2.0 * hop)
+            shop = hop - 0.5
+
+        # Set safty counter and iteratively determine location
+        maxn = 30
+        hdel = 100.0
+        htol = 0.5
+        if (slant_range >= 800.0 and model != 'GS') or shop > 1.0:
+            htol = 5.0
+        n = 0
+        while n < maxn:
+            tr_dist = tr_rad + tr_alt
+            if calt is not None:
+                # Adjust elevation angle for any hop > 1 (Chisham et al. 2008)
+                pos_dist = rad_pos + calt
+                phi = np.arccos((tr_dist**2 + pos_dist**2 - asr**2) /
+                                (2.0 * tr_dist * pos_dist))
+                beta = np.arcsin((tr_dist * np.sin(phi / (shop * 2.0))) /
+                                 (asr / (shop * 2.0)))
+                tel = np.pi / 2.0 - beta - phi / (shop * 2.0)
+
+                if xalt == calt:
+                    xalt = np.sqrt(tr_rad**2 + asr**2 + 2.0 * asr * tr_rad *
+                                   np.sin(tel)) - tr_rad
+                tel = np.degrees(tel)
+            else:
+                # pointing elevation (spherical Earth value) [degree]
+                tel = np.arcsin(((rad_pos + xalt)**2 - tr_dist**2 - asr**2) /
+                                (2.0 * tr_dist * asr))
+                tel = np.degrees(tel)
 
             # estimate off-array-normal azimuth (because it varies slightly
             # with elevation) [degree]
-            boff = calcAzOffBore(tel, boreOffset, fov_dir=fov_dir)
-
+            boff = calcAzOffBore(tel, beam_off, fov_dir=fov_dir)
             # pointing azimuth
-            taz = boreSight + boff
-
+            taz = boresight + boff
             # calculate position of field point
-            dictOut = geoPack.calcDistPnt(tGeoLat, tGeoLon, tAlt,
-                                          dist=slantRange, el=tel, az=taz)
+            geo_dict = geoPack.calcDistPnt(tr_glat, tr_glon, tr_alt,
+                                           dist=asr, el=tel, az=taz)
 
             # Update Earth radius
-            RePos = dictOut['distRe']
+            rad_pos = geo_dict['distRe']
 
             # stop if the altitude is what we want it to be (or close enough)
-            n += 1
-            if abs(xAlt - dictOut['distAlt']) <= 0.5 or n > 2:
-                return dictOut['distLat'], dictOut['distLon']
+            new_hdel = abs(xalt - geo_dict['distAlt'])
+            if new_hdel <= htol:
                 break
 
-    # No projection model (i.e., the elevation or altitude is so good that it
-    # gives you the proper projection by simple geometric considerations)
-    elif not model:
-        # Using no models simply means tracing based on trustworthy elevation
-        # or altitude
-        if not altitude:
-            altitude = np.sqrt(Re ** 2 + slantRange ** 2 + 2. * slantRange * Re *
-                               np.sin(np.radians(elevation))) - Re
-        if not elevation:
-            if(slantRange < altitude):
-                altitude = slantRange - 10
-            elevation = np.degrees(asin(((Re + altitude) ** 2 - (Re + tAlt) ** 2 -
-                                         slantRange ** 2) /
-                                        (2. * (Re + tAlt) * slantRange)))
+            # stop unsuccessfully if the altitude difference hasn't improved
+            if abs(new_hdel - hdel) < 1.0e-3:
+                n = maxn
+
+            # Prepare the next iteration
+            hdel = new_hdel
+            n += 1
+
+        if n >= maxn:
+            estr = 'Accuracy on height calculation ({}) not '.format(htol)
+            estr = '{:s}reached quick enough. Returning nan, nan.'.format(estr)
+            logging.warning(estr)
+            return np.nan, np.nan
+        else:
+            return geo_dict['distLat'], geo_dict['distLon']
+    elif elevation is not None:
+        # No projection model (i.e., the elevation or altitude is so good that
+        # it gives you the proper projection by simple geometric
+        # considerations). Using no models simply means tracing based on
+        # trustworthy elevation or altitude
+        if hop is None or adjusted_sr:
+            logging.error("Hop and total slant range needed with measurements")
+            return np.nan, np.nan
+
+        if np.isnan(elevation):
+            logging.error("No observations provided")
+            return np.nan, np.nan
+
+        shop = hop - 0.5 if hop == np.floor(hop) and gs_loc == "I" else hop
+        asr = slant_range
+        if hop > 0.5 and hop != shop:
+            asr *= 1.0 - 1.0 / (2.0 * hop)
+
         # The tracing is done by calcDistPnt
-        dict = geoPack.calcDistPnt(tGeoLat, tGeoLon, tAlt, dist=slantRange,
-                                   el=elevation, az=boreSight + boreOffset)
-        return dict['distLat'], dict['distLon']
+        boff = calcAzOffBore(elevation, beam_off, fov_dir=fov_dir)
+        geo_dict = geoPack.calcDistPnt(tr_glat, tr_glon, tr_alt, dist=asr,
+                                       el=elevation, az=boresight + boff)
+
+        return geo_dict['distLat'], geo_dict['distLon']
 
 
 # *************************************************************
@@ -568,40 +711,39 @@ def slantRange(frang, rsep, recrise, range_gate, center=True):
 
     Parameters
     ----------
-    frang
+    frang : (float)
         first range gate position [km]
-    rsep
+    rsep : (float)
         range gate separation [km]
-    recrise
+    recrise : (float)
         receiver rise time [us]
-    range_gate
+    range_gate : (int)
         range gate number(s)
-    center
+    center : (bool)
         whether or not to compute the slant range in the center of
-        the gate rather than at the edge
+        the gate rather than at the edge (default=True)
 
     Returns
     -------
-    srang
+    srang : (float)
         slant range [km]
-
     """
     # Lag to first range gate [us]
-    lagfr = frang * 2. / 0.3
+    lagfr = frang * 2.0 / 0.3
     # Sample separation [us]
-    smsep = rsep * 2. / 0.3
+    smsep = rsep * 2.0 / 0.3
     # Range offset if calculating slant range at center of the gate
     range_offset = -0.5 * rsep if not center else 0.0
 
     # Slant range [km]
-    srang = (lagfr - recrise + range_gate * smsep) * 0.3 / 2. + range_offset
+    srang = (lagfr - recrise + range_gate * smsep) * 0.3 / 2.0 + range_offset
 
     return srang
 
 
 # *************************************************************
 # *************************************************************
-def calcAzOffBore(elevation, boreOffset0, fov_dir='front'):
+def calcAzOffBore(elevation, boff_zero, fov_dir='front'):
     """Calculate off-boresight azimuth as a function of elevation angle and
     zero-elevation off-boresight azimuth.
     See Milan et al. [1997] for more details on how this works.
@@ -610,7 +752,7 @@ def calcAzOffBore(elevation, boreOffset0, fov_dir='front'):
     ----------
     elevation
         elevation angle [degree]
-    boreOffset0
+    boff_zero
         zero-elevation off-boresight azimuth [degree]
     fov_dir
         field-of-view direction ('front','back'). Default='front'
@@ -619,28 +761,24 @@ def calcAzOffBore(elevation, boreOffset0, fov_dir='front'):
     -------
     bore_offset
         off-boresight azimuth [degree]
-
     """
-    from math import atan
-
     # Test to see where the true beam direction lies
-    bdir = np.cos(np.radians(boreOffset0)) ** 2 - \
-        np.sin(np.radians(elevation)) ** 2
+    bdir = np.cos(np.radians(boff_zero))**2 - np.sin(np.radians(elevation))**2
 
     # Calculate the front fov azimuthal angle off the boresite
     if bdir < 0.0:
         bore_offset = np.pi / 2.
     else:
-        tan_boff = np.sqrt(np.sin(np.radians(boreOffset0)) ** 2 / bdir)
-        bore_offset = atan(tan_boff)
+        tan_boff = np.sqrt(np.sin(np.radians(boff_zero))**2 / bdir)
+        bore_offset = np.arctan(tan_boff)
 
 # Old version
 #   if bdir < 0.0:
-#       if boreOffset0 >= 0: boreOffset = np.pi/2.
+#       if boff_zero >= 0: boreOffset = np.pi/2.
 #       else: boreOffset = -np.pi/2.
 #   else:
-#       tan_boff = np.sqrt(np.sin(np.radians(boreOffset0))**2 / bdir)
-#       if boreOffset0 >= 0: boreOffset = atan(tan_boff)
+#       tan_boff = np.sqrt(np.sin(np.radians(boff_zero))**2 / bdir)
+#       if boff_zero >= 0: boreOffset = atan(tan_boff)
 #       else: boreOffset = -atan(tan_boff)
 
     # If the rear lobe is desired, adjust the azimuthal offset from the
@@ -650,19 +788,19 @@ def calcAzOffBore(elevation, boreOffset0, fov_dir='front'):
 
     # Correct the sign based on the sign of the zero-elevation off-boresight
     # azimuth
-    if boreOffset0 < 0.0:
+    if boff_zero < 0.0:
         bore_offset *= -1.0
 
     return np.degrees(bore_offset)
 
 
-def gsMapSlantRange(slantRange, altitude=None, elevation=None):
+def gsMapSlantRange(slant_range, altitude=None, elevation=None):
     """Calculate the ground scatter mapped slant range.
-    See Bristow et al. [1994] for more details.
+    See Bristow et al. [1994] for more details. (Needs full reference)
 
     Parameters
     ----------
-    slantRange
+    slant_range
         normal slant range [km]
     altitude : Optional[float]
         altitude [km] (defaults to 300 km)
@@ -673,11 +811,10 @@ def gsMapSlantRange(slantRange, altitude=None, elevation=None):
     -------
     gsSlantRange
         ground scatter mapped slant range [km] (typically slightly less than
-        0.5*slantRange. Will return -1 if (slantRange**2/4. - altitude**2 >= 0).
-        This occurs when the scatter is too close and this model breaks down.
-
+        0.5 * slant_range.  Will return -1 if
+        (slant_range**2 / 4. - altitude**2) >= 0. This occurs when the scatter
+        is too close and this model breaks down.
     """
-    from math import asin
     from davitpy.utils import Re
 
     # Make sure you have altitude, because these 2 projection models rely on it
@@ -687,12 +824,12 @@ def gsMapSlantRange(slantRange, altitude=None, elevation=None):
     elif elevation and not altitude:
         # If you have elevation but not altitude, then you calculate altitude,
         # and elevation will be adjusted anyway
-        altitude = np.sqrt(Re ** 2 + slantRange ** 2 + 2. * slantRange * Re *
+        altitude = np.sqrt(Re ** 2 + slant_range ** 2 + 2. * slant_range * Re *
                            np.sin(np.radians(elevation))) - Re
 
-    if (slantRange ** 2) / 4. - altitude ** 2 >= 0:
+    if (slant_range**2) / 4. - altitude ** 2 >= 0:
         gsSlantRange = Re * \
-            asin(np.sqrt(slantRange ** 2 / 4. - altitude ** 2) / Re)
+            np.arcsin(np.sqrt(slant_range ** 2 / 4. - altitude ** 2) / Re)
         # From Bristow et al. [1994]
     else:
         gsSlantRange = -1
@@ -713,13 +850,14 @@ if __name__ == "__main__":
     print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
     site_sas = radStruct.site(code="sas", dt=time)
     print
-    print "Create a fov object using that site, coords are geo."
-    fov1 = fov(site=site_sas)
-    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
-    print "Result:   " + str(fov1.latCenter[0][0:4])
-    print "Expected: [-106.87506589 -106.80488558 -106.77349475 -106.75811049]"
-    print "Result:   " + str(fov1.lonCenter[0][0:4])
-    print "coords of result are " + fov1.coords
+    print "Create a fov object using that site, coords are geo, model Chisham."
+    fov1 = fov(site=site_sas, model="C")
+#    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
+#    print "Result:   " + str(fov1.latCenter[0][0:4])
+#    print "Expected: [-106.87506589 -106.80488558 -106.77349475 "
+#    print "-106.75811049]"
+#    print "Result:   " + str(fov1.lonCenter[0][0:4])
+#    print "coords of result are " + fov1.coords
     print
     print "Now create a fov object with mag coords."
     fov2 = fov(site=site_sas, coords="mag", date_time=time)
@@ -729,7 +867,7 @@ if __name__ == "__main__":
     print "Result:   " + str(fov2.lonCenter[0][0:4])
     print "coords of result are " + fov2.coords
     print
-    print "Another fov, now in MLT"
+    print "Another fov, now in MLT."
     fov3 = fov(site=site_sas, coords="mlt", date_time=time)
     print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
     print "Result:   " + str(fov3.latCenter[0][0:4])

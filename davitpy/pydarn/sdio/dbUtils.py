@@ -25,7 +25,7 @@ import davitpy
 
 def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
                   password=davitpy.rcParams['SDBREADPASS'],
-                  dbaddress=davitpy.rcParams['SDDB']):
+                  dbAddress=davitpy.rcParams['SDDB']):
     """Gets a connection to the mongodb server.  This is the most basic
     connection.  In order to actually access data, this connection must be used
     to get a database connection which can in turn be used to get a data
@@ -35,7 +35,7 @@ def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
     --------
     ::
     sconn = getServerConn(username='auser',password='apass', \
-                          dbaddress='sd-work9.ece.vt.edu:27017')
+                          dbAddress='sd-work9.ece.vt.edu:27017')
 
     Parameters
     ------------
@@ -45,7 +45,7 @@ def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
     password : (str)
         The password corresponding to the user username. The default is defined
         in davitpyrc (default=davitpy.rcParams['SDBREADPASS'])
-    dbaddress : (str)
+    dbAddress : (str)
         The address of the database to be accessed.  Default is defined in
         davitpyrc.  (default=davitpy.rcParams['SDDB'])
 
@@ -63,10 +63,10 @@ def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
 
     # get a server connection, checking for any errors
     try:
-        sconn = MongoClient('mongodb://'+username+':'+password+'@'+dbaddress)
+        sconn = MongoClient('mongodb://'+username+':'+password+'@'+dbAddress)
     except Exception,e:
         logging.error(e)
-        logging.error('problem connecting to server {}'.format(dbaddress))
+        logging.error('problem connecting to server {}'.format(dbAddress))
         sconn = None
     
     # return connection for good, none for bad
@@ -74,15 +74,15 @@ def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
 
 def getDbConn(username=davitpy.rcParams['SDBREADUSER'],
               password=davitpy.rcParams['SDBREADPASS'],
-              dbaddress=davitpy.rcParams['SDDB'], dbname='radData'):
-    """ Gets a connection to the database 'dbname'. on the mongodb server.
+              dbAddress=davitpy.rcParams['SDDB'], dbName='radData'):
+    """ Gets a connection to the database 'dbName'. on the mongodb server.
     This is the middle-tier connection.  In order to actually access data, this
     connection must be used to get a data connection.
  
     Examples
     ----------
     dbConn = getDbConn(username='auser',password='apass',\
-                       dbaddress='sd-work9.ece.vt.edu:27017',dbname='aDb')
+                       dbAddress='sd-work9.ece.vt.edu:27017',dbName='aDb')
 
     Parameters
     -----------
@@ -94,11 +94,11 @@ def getDbConn(username=davitpy.rcParams['SDBREADUSER'],
         davitpyrc.  If the boolian 'True' is specified, an interactive prompt
         will be used obtain the password.
         (default=davitpy.rcParams['SDBREADPASS'])
-    dbaddress : (str)
+    dbAddress : (str)
         The address of the database to be accessed, eg
         'sd-work9.ece.vt.edu:27017'.  Default is defined in davitpyrc.
         (default=davitpy.rcParams['SDDB'])
-    dbname : (str)
+    dbName : (str)
         The name of the database to connect to. Default is 'radData', where fit
         data is stored. (default='radData')
 
@@ -119,30 +119,30 @@ def getDbConn(username=davitpy.rcParams['SDBREADUSER'],
 
     # get a connection to the server
     sconn = getServerConn(username=username, password=password,
-                          dbaddress=dbaddress)
+                          dbAddress=dbAddress)
     # if we have a good server connection
     if(sconn != None):
         # connect to the database, testing for errors
         try:
-            dbConn = getattr(sconn, dbname)
+            dbconn = getattr(sconn, dbName)
         except:
-            logging.error('error connecting to database {}'.format(dbname))
+            logging.error('error connecting to database {}'.format(dbName))
 
     # return connection for good, None for bad
     return dbconn
 
 def getDataConn(username=davitpy.rcParams['SDBREADUSER'],
                 password=davitpy.rcParams['SDBREADPASS'],
-                dbaddress=davitpy.rcParams['SDDB'], dbname='radData',
-                collname='beams'):
-    """Gets a connection to the collection collname on the mongodb server. This
+                dbAddress=davitpy.rcParams['SDDB'], dbName='radData',
+                collName='beams'):
+    """Gets a connection to the collection collName on the mongodb server. This
     is the highetst level connection.
  
     Examples
     ----------
     dataconn = getDbConn(username='auser',password='apass',\
-                         dbaddress='sd-work9.ece.vt.edu:27017',\
-                         dbname='aDb',collname='acoll')
+                         dbAddress='sd-work9.ece.vt.edu:27017',\
+                         dbName='aDb',collName='acoll')
 
     Parameters
     -----------
@@ -153,13 +153,13 @@ def getDataConn(username=davitpy.rcParams['SDBREADUSER'],
         The password corresponding to the user username.  The default password
         is defined in rcParams.  If the boolian 'True' is used, an interactive
         plot will be used.  (default=davitpy.rcParams['SDBREADPASS'])
-    dbaddress : (str)
+    dbAddress : (str)
         The address of the database to be accessed, eg
         'sd-work9.ece.vt.edu:27017'.  Default is defined in rcParams.
         (default=davitpy.rcParams['SDDB'])
-    dbname : (str)
+    dbName : (str)
         The name of the database to connect to. (default='radData')
-    collname : (str)
+    collName : (str)
         The name of the collection to connect to. (default='beams')
  
     Returns
@@ -178,14 +178,14 @@ def getDataConn(username=davitpy.rcParams['SDBREADUSER'],
 
     # get a connection to the database
     dbconn = getDbConn(username=username, password=password,
-                       dbaddress=dbaddress, dbname=dbname)
+                       dbAddress=dbAddress, dbName=dbName)
 
     if(dbconn != None):
-        # get the collection collname
+        # get the collection collName
         try:
-            dataconn = getattr(dbconn, collname)
+            dataconn = getattr(dbconn, collName)
         except:
-            logging.error("can't connect to collection {}".format(collname))
+            logging.error("can't connect to collection {}".format(collName))
 
     return dataconn
 

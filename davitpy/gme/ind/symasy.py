@@ -221,7 +221,7 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
         symList = []
         for rec in qry.sort('time'):
             symList.append(symAsyRec(dbDict=rec))
-        logging.info('\nreturning a list with' + len(symList) + 'records of sym/asy data')
+        logging.info('\nreturning a list with ' + str(len(symList)) + ' records of sym/asy data')
         return symList
     #if we didn't find anything on the mongodb
     else:
