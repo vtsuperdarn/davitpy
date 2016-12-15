@@ -461,6 +461,26 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
     import matplotlib.cm as cmx
     from davitpy import pydarn
 
+    # Input checks
+    # myBeam check for rawacf file
+    assert(myBeam.fType == 'rawacf'), logging.error('myBeam must '
+        'be from a rawacf file')
+    # Check of normalized variable type
+    assert(isinstance(normalized, bool)), logging.error(
+        'normalized must be a boolean')
+    # Check of xcf variable type
+    assert(isinstance(xcf, bool)), logging.error(
+        'xcf must be a boolean')
+    # Check of show variable type
+    assert(isinstance(show, bool)), logging.error(
+        'show must be a boolean')
+    # Check of png variable type
+    assert(isinstance(png, bool)), logging.error(
+        'png must be a boolean')
+    # Check of pdf variable type
+    assert(isinstance(pdf, bool)), logging.error(
+        'pdf must be a boolen')
+
     # Get parameters
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
     range_gates = np.linspace(0.5, myBeam.prm.nrang + 0.5,
