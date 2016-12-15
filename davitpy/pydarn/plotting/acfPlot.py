@@ -95,8 +95,8 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     # Input checks
     # myBeam check for rawacf file
-    assert(myBeam.fType == 'rawacf'), logging.error('myBeam must '
-        'be from a rawacf file')
+    assert(myBeam.fType == 'rawacf'), logging.error(
+        'myBeam must be from a rawacf file')
     # Check of gate parameter
     assert(isinstance(gate, int) and gate >= 0), logging.error(
         'gate must be an integer and zero or positive')
@@ -169,7 +169,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     acfFFT = []
     acfFFT.extend(temp[len(temp) / 2 + 1:])
     acfFFT.extend(temp[0:len(temp) / 2 + 1])
-    freq_scale_factor = ((3. * 10 ** 8) / 
+    freq_scale_factor = ((3. * 10 ** 8) /
                          (myBeam.prm.tfreq * 1000. * 2. * lags[-1] *
                           myBeam.prm.mpinc * 10.0 ** -6))
     vels = freq_scale_factor * (np.array(range(len(acfFFT))) -
@@ -190,7 +190,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         if show:
             fig = pyplot.figure()
         else:
-            if (png == False) and (pdf == False):
+            if (png is False) and (pdf is False):
                 png = True
             fig = mpl_fig()
         ax1 = fig.add_axes([0.1, 0.55, 0.35, 0.35])
@@ -415,7 +415,8 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
     return txs_in_lag
 
 
-def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False):
+def plot_rli(myBeam, normalized=True, xcf=False,
+             show=True, png=False, pdf=False):
     """This function plots a range-lag-intensity plot of ACF/XCF data
     for an input beamData object.
 
@@ -463,8 +464,8 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
 
     # Input checks
     # myBeam check for rawacf file
-    assert(myBeam.fType == 'rawacf'), logging.error('myBeam must '
-        'be from a rawacf file')
+    assert(myBeam.fType == 'rawacf'), logging.error(
+        'myBeam must be from a rawacf file')
     # Check of normalized variable type
     assert(isinstance(normalized, bool)), logging.error(
         'normalized must be a boolean')
@@ -492,7 +493,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
     if show:
         fig = pyplot.figure()
     else:
-        if (png == False) and (pdf == False):
+        if (png is False) and (pdf is False):
             png = True
         fig = mpl_fig()
 
@@ -593,7 +594,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
             'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
     fig.suptitle(title, y=0.94)
 
-    #handle the outputs
+    # handle the outputs
     if png:
         if not show:
             canvas = FigureCanvasAgg(fig)
