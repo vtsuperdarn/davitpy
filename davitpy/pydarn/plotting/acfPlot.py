@@ -93,6 +93,36 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     import numpy as np
     from davitpy import pydarn
 
+    # Input checks
+    # myBeam check for rawacf file
+    assert(myBeam.fType == 'rawacf'), logging.error('myBeam must '
+        'be from a rawacf file')
+    # Check of gate parameter
+    assert(isinstance(gate, int) and gate >= 0), logging.error(
+        'gate must be an integer and zero or positive')
+    # Check of normalized
+    assert(isinstance(normalized, bool)), logging.error(
+        'normalized must be a boolean')
+    # Check of mark_blanked
+    assert(isinstance(mark_blanked, bool)), logging.error(
+        'mark_blanked must be a boolean')
+    # Check of xcf
+    assert(isinstance(xcf, bool)), logging.error(
+        'xcf must be a boolean')
+    # Check of panel
+    assert(isinstance(panel, int)), logging.error(
+        'panel must be an integer')
+    # Space for ax check(s)
+    # Check of show variable type
+    assert(isinstance(show, bool)), logging.error(
+        'show must be a boolean')
+    # Check of png variable type
+    assert(isinstance(png, bool)), logging.error(
+        'png must be a boolean')
+    # Check of pdf variable type
+    assert(isinstance(pdf, bool)), logging.error(
+        'pdf must be a boolen')
+
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
     ltab = myBeam.prm.ltab
     tau = myBeam.prm.mpinc
