@@ -26,7 +26,7 @@ apt-get install -y python-gi-cairo  #needed in Ubuntu 16.04
 apt-get install -y mpich2
 apt-get install -y gfortran
 apt-get install -y libhdf5-serial-dev
-apt-get install -y libfreetype6-dev 
+apt-get install -y libfreetype6-dev
 apt-get install -y libpng-dev
 apt-get install -y libffi-dev
 apt-get install -y libssl-dev
@@ -53,6 +53,7 @@ pip install -U scikit-image
 pip install -U netcdf4
 pip install -U pyproj
 pip install -U cryptography
+pip install -U gitpython
 
 #install basemap
 cd /tmp
