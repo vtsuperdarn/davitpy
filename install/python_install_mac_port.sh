@@ -13,9 +13,9 @@ port -n select gcc mp-gcc49
 hash gfotran
 port -n install coreutils
 #easy_install pip
-sudo port install py${ver}-pip
-sudo port install pip_select
-sudo port select --set pip pip${ver}
+port install py${ver}-pip
+port install pip_select
+port select --set pip pip${ver}
 pip install --upgrade numpy
 pip install --upgrade matplotlib
 port -n install py${ver}-matplotlib-basemap
