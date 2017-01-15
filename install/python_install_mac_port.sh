@@ -44,4 +44,4 @@ export GEOS_DIR=/usr/local/geos
 make
 make install
 cd ..
-python2.7 setup.py install
+python setup.py install
