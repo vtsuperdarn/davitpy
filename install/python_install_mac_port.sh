@@ -30,6 +30,6 @@ pip install --upgrade pandas
 
 dir=$(pwd)
 cd /tmp
-git clone https://github.com/matplotlib/basemap.git
+git clone --branch v1.0.7rel https://github.com/matplotlib/basemap.git
 cd basemap
 python2.7 setup.py install
