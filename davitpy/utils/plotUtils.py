@@ -78,6 +78,8 @@ class mapObj(basemap.Basemap):
         show/hide parallels and meridians grid (default=True)
     gridLabels : Optional[bool]
         label parallels and meridians (default=True)
+    gridLatRes: Optional[float]
+        set the latitude resolution of gridlines (default=20.)
     showCoords : Optional[bool]
         display coordinate system name in upper right
         corner (default=True)
@@ -133,7 +135,7 @@ class mapObj(basemap.Basemap):
                  boundinglat=None, width=None, height=None, draw=True, 
                  fillContinents='.8', fillOceans='None', fillLakes=None,
                  fill_alpha=.5, coastLineWidth=0., coastLineColor=None,
-                 grid=True, gridLabels=True, showCoords=True, **kwargs):
+                 grid=True, gridLabels=True, gridLatRes=20., showCoords=True, **kwargs):
         """This class wraps arround :class:`mpl_toolkits.basemap.Basemap`
         (<http://tinyurl.com/d4rzmfo>)
   
@@ -155,6 +157,7 @@ class mapObj(basemap.Basemap):
         self._showCoords=showCoords
         self._grid=grid
         self._gridLabels=gridLabels
+        self._gridLatRes=gridLatRes
         self._coordsDict, self._coords_string = get_coord_dict()
 
         if datetime is None and dateTime is None:
@@ -218,7 +221,7 @@ class mapObj(basemap.Basemap):
     
         # draw parallels and meridians.
         if self._grid:
-          parallels = np.arange(-80.,81.,20.)
+          parallels = np.arange(-80.,81.,self._gridLatRes)
           out = self.drawparallels(parallels, color='.6', zorder=10)
           # Set format of meridian labels.
           if self.coords == "mlt":
