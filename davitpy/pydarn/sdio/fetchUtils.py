@@ -238,7 +238,6 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
-
             # create a regular expression to check for the desired files
             name = namefmt.format(**localdict)
             regex = re.compile(name)
@@ -247,6 +246,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
             for lf in files:
 
                 #if we have a file match between a file and our regex
+                
                 if(regex.match(lf)):
                     if lf in temp_filelist: 
                         continue
@@ -261,6 +261,19 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
                         if verbose: print rn, "ADVISEMENT: performed [",command,"]"
                     except:
                         if verbose: print rn, "WARNING: unable to perform [",command,"]"
+
+
+                    # attempt to unzip the compressed file
+                    uncompressed = uncompress_file(outname, None, verbose)
+                    if type(uncompressed) is str:
+                    # save name of uncompressed file for output
+                        filelist.append(uncompressed)
+                    else:
+                    # file wasn't compressed, use outname
+                        filelist.append(outname)
+
+        # Advance the cycle time by the specified increment
+        ctime = ctime + time_inc
 
         # Advance the cycle time by the "lowest" time increment 
         # in the namefmt (either forward or reverse)
@@ -300,7 +313,9 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         # file wasn't compressed, use outname
             filelist.append(outname)
 
+
     # Return the list of uncompressed files
+    
     return filelist
 
 
