@@ -469,6 +469,23 @@ class fov(object):
         return outstring
 
 
+    def triangle(self, site):
+
+
+        if self.coords == 'geo':
+            sitecorner = site.geolat, site.geolon
+        else:
+            print "Site coordinates only available for geographic coordinate system"
+
+        nbeams = len(self.beams)
+        ngates = len(self.gates)
+
+        westcorner = self.latFull[0][ngates], self.lonFull[0][ngates]
+        eastcorner = self.latFull[nbeams][ngates], self.lonFull[nbeams][ngates]
+
+        return sitecorner, westcorner, eastcorner
+
+
 # *************************************************************
 # *************************************************************
 def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
