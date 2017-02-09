@@ -480,10 +480,14 @@ class fov(object):
         nbeams = len(self.beams)
         ngates = len(self.gates)
 
-        westcorner = self.latFull[0][ngates], self.lonFull[0][ngates]
-        eastcorner = self.latFull[nbeams][ngates], self.lonFull[nbeams][ngates]
+        if site.bmsep > 0:
+            leftcorner = self.latFull[0][ngates], self.lonFull[0][ngates]
+            rightcorner = self.latFull[nbeams][ngates], self.lonFull[nbeams][ngates]
+        else:
+            rightcorner = self.latFull[0][ngates], self.lonFull[0][ngates]
+            leftcorner = self.latFull[nbeams][ngates], self.lonFull[nbeams][ngates]
 
-        return sitecorner, westcorner, eastcorner
+        return sitecorner, leftcorner, rightcorner
 
 
 # *************************************************************
@@ -638,9 +642,9 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
         # Set safty counter and iteratively determine location
         maxn = 150
         hdel = 100.0
-        htol = 100.0
+        htol = 0.5
         if (slant_range >= 800.0 and model != 'GS') or shop > 1.0:
-            htol = 1000.0
+            htol = 50.0
         n = 0
         while n < maxn:
             tr_dist = tr_rad + tr_alt
