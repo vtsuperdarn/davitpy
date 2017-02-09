@@ -316,8 +316,8 @@ class updateRadars(object):
             conn.server_info()
             dba = conn[self.db_name]
         except:
-            logging.exception('Could not connect to remote DB: ',
-                              sys.exc_info()[0])
+            logging.warning('Could not connect to remote DB: %s',
+                              str(uri))
             dba = False
 
         if dba:
