@@ -640,11 +640,11 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             shop = hop - 0.5
 
         # Set safty counter and iteratively determine location
-        maxn = 150
+        maxn = 30
         hdel = 100.0
         htol = 0.5
         if (slant_range >= 800.0 and model != 'GS') or shop > 1.0:
-            htol = 50.0
+            htol = 5.75
         n = 0
         while n < maxn:
             tr_dist = tr_rad + tr_alt
