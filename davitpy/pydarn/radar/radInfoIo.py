@@ -310,7 +310,10 @@ class updateRadars(object):
                                                  self.db_host, self.db_name)
         # print uri
         try:
+            logging.debug('Trying to connect to hdw.dat mongodb')
             conn = MongoClient(uri)
+            # Force connection attempt
+            conn.server_info()
             dba = conn[self.db_name]
         except:
             logging.exception('Could not connect to remote DB: ',
@@ -318,6 +321,7 @@ class updateRadars(object):
             dba = False
 
         if dba:
+            logging.debug('Connection a success, so proceeding with remote db')
             try:
                 colSel = lambda colName: dba[colName].find()
 
@@ -332,6 +336,7 @@ class updateRadars(object):
                                   hdw.dat info')
                 return False
         else:
+            logging.debug('Reading hdw.dat info from local files')
             result = self.__readFromFiles()
             if not result:
                 logging.error('Could not update .radars.sqlite file with \
