@@ -30,6 +30,7 @@ Sebastien
 """
 import logging
 
+
 def radarRead(path=None):
     """Reads radar.dat file
 
@@ -71,9 +72,9 @@ def radarRead(path=None):
         txt = 'You may be getting this error because your computer cannot '
         txt = '{:s}contact an appropriate internet server to get '.format(txt)
         txt = '{:s}the latest radar.dat information.  You can '.format(txt)
-        txt = '{:s}use a local file instead by setting the SD_RADAR'.format(txt)
-        txt = '{:s} environment variable to the location of a local'.format(txt)
-        txt = '{:s} copy of radar.dat.\n'.format(txt)
+        txt = '{:s}use a local file instead by setting the '.format(txt)
+        txt = '{:s}SD_RADAR environment variable to the location '.format(txt)
+        txt = '{:s}of a local copy of radar.dat.\n'.format(txt)
         print txt
 
         print 'Example, you might add a similar line to your .bashrc:'
@@ -161,10 +162,10 @@ def hdwRead(fname, path=None):
 
         txt = 'You may be getting this error because your computer cannot '
         txt = '{:s}contact an appropriate internet server to get '.format(txt)
-        txt = '{:s}the latest hdw.dat information.  You can can use'.format(txt)
-        txt = '{:s} a local file instead by setting the SD_HDWPATH '.format(txt)
-        txt = '{:s}environment variable to the location of the '.format(txt)
-        txt = '{:s}local hdw.dat path.'.format(txt)
+        txt = '{:s}the latest hdw.dat information.  You can can '.format(txt)
+        txt = '{:s}use a local file instead by setting the '.format(txt)
+        txt = '{:s}SD_HDWPATH environment variable to the location'.format(txt)
+        txt = '{:s} of the local hdw.dat path.'.format(txt)
         print txt
         txt = 'You can get the latest hdw.dat files from '
         txt = '{:s}https://github.com/vtsuperdarn/hdw.dat\n'.format(txt)
@@ -219,7 +220,7 @@ class updateRadars(object):
     if the database cannot be reached.
     Currently, the remote database is housed on the VT servers.
 
-    Attributes 
+    Attributes
     -------
     sql_path : str
         path to sqlite file
@@ -317,7 +318,7 @@ class updateRadars(object):
             dba = conn[self.db_name]
         except:
             logging.warning('Could not connect to remote DB: %s',
-                              str(uri))
+                            str(uri))
             dba = False
 
         if dba:
@@ -325,7 +326,8 @@ class updateRadars(object):
             try:
                 colSel = lambda colName: dba[colName].find()
 
-                self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"),
+                self.db_select = {'rad': colSel("radars"),
+                                  'hdw': colSel("hdw"),
                                   'inf': colSel("metadata")}
                 return True
             except:
