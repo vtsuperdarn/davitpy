@@ -150,7 +150,6 @@ def hdwRead(fname, path=None):
     if path:
         pathOpen = os.path.join(path, fname)
     else:
-        pathOpen = os.getenv('SD_RADAR')
         pathOpen = os.path.join(str(os.getenv('SD_HDWPATH')), fname)
 
     try:
