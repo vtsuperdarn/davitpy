@@ -304,6 +304,7 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
+        import os
 
         # print self.db_user,self.db_pswd,self.db_host, self.db_name
         uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd,
@@ -316,7 +317,7 @@ class updateRadars(object):
             conn.server_info()
             dba = conn[self.db_name]
         except:
-            logging.warning('Could not connect to remote DB: %s',
+            logging.error('Could not connect to remote DB: %s',
                             str(uri))
             dba = False
 
@@ -337,7 +338,8 @@ class updateRadars(object):
                                   hdw.dat info')
                 return False
         else:
-            logging.debug('Reading hdw.dat info from local files')
+            logging.warning('Reading hdw.dat info from local files in %s',
+                            os.getenv('SD_HDWPATH'))
             result = self.__readFromFiles()
             if not result:
                 logging.error('Could not update .radars.sqlite file with \
