@@ -318,7 +318,7 @@ class updateRadars(object):
             dba = conn[self.db_name]
         except:
             logging.error('Could not connect to remote DB: %s',
-                            str(uri))
+                          str(uri))
             dba = False
 
         if dba:
@@ -427,11 +427,11 @@ class updateRadars(object):
             cur.execute("CREATE TABLE hdw (%s)" % ', '.join(self.dtype_hdw))
             cur.execute("CREATE TABLE inf (%s)" % ', '.join(self.dtype_inf))
 
-            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?'] * \
+            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?'] *
                             len(self.dtype_rad)), arr_rad)
-            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?'] * \
+            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?'] *
                             len(self.dtype_hdw)), arr_hdw)
-            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?'] * \
+            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?'] *
                             len(self.dtype_inf)), arr_inf)
 
         return True
