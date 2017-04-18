@@ -215,19 +215,21 @@ validate_verbose = ValidateInStrings(
     ['silent', 'helpful', 'debug', 'debug-annoying'])
 
 
-# determine install location of aacgm coefficients
+# determine install location of model coefficients
 #aacgm_coeffs_dir = os.path.join(get_data_path(),'tables/aacgm/aacgm_coeffs')
 path = os.path.split(os.path.dirname(__file__))[0]
-aacgm_coeffs_dir = os.path.join(path, 'tables/aacgm/')
+model_coeffs_dir = os.path.join(path, 'tables/')
 
-if not os.path.exists(aacgm_coeffs_dir):
-    print "WARNING, location of aacgm coefficients could not be determined!"
+if not os.path.exists(model_coeffs_dir):
+    print "WARNING, location of model coefficients could not be determined!"
     print aacgm_coeffs_dir
 
 
 # a map from key -> value, converter
 defaultParams = {
-    'AACGM_DAVITPY_DAT_PREFIX':	[aacgm_coeffs_dir + 'aacgm_coeffs',
+    'AACGM_DAVITPY_DAT_PREFIX':	[model_coeffs_dir + 'aacgm/aacgm_coeffs-12-',
+                                 validate_string],
+    'IGRF_DAVITPY_COEFF_FILE':	[model_coeffs_dir + 'igrf/igrf12coeffs.txt',
                                  validate_string],
     'DAVITPY_PATH':             [path, validate_path_exists],
 
