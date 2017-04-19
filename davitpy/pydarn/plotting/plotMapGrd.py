@@ -34,8 +34,6 @@ class MapConv(object):
     maxVelScale : Optional[float]
         maximum velocity to be used for plotting, min is zero so scale is
         [0,1000]
-    plotCoords : Optional[str]
-        coordinates of the plot, only use either 'mag' or 'mlt'
 
     Attributes
     ----------
@@ -52,7 +50,7 @@ class MapConv(object):
         the axis handle used
     mObj : utils.plotUtils.mapObj
         the map object you want data to be overlayed on.
- 
+
 
     Methods
     --------
