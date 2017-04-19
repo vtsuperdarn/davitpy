@@ -122,12 +122,12 @@ class MapConv(object):
         # requested
         if hemi == "north":
             assert(mObj.boundarylats[0] > 0.), \
-                logging.error("Map object is using one hemisphere and data the"
-                              " other")
+                logging.error("Map and data objects must be from the same"
+                              " hemisphere")
         else:
             assert(mObj.boundarylats[0] < 0.), \
-                logging.error("Map object is using one hemisphere and data the"
-                              " other")
+                logging.error("Map and data objects must be from the same"
+                              " hemisphere")
 
         # check if hemi and coords keywords are correct
         assert(hemi == "north" or hemi == "south"), \
