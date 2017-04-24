@@ -4,7 +4,9 @@
 Functions
 --------------
 convert_latlon
+convert_latlon_arr
 get_aacgm_coord
+get_aacgm_coord_arr
 convert_str_to_bit
 --------------
 '''
@@ -147,6 +149,19 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
     '''
     from davitpy import rcParams
     from davitpy.models import aacgm
+    import numpy as np
+
+    # If someone was lazy and entered a list instead of a numpy array,
+    # recast it here
+
+    if isinstance(in_lat, list):
+        in_lat = np.array(in_lat)
+
+    if isinstance(in_lon, list):
+        in_lon = np.array(in_lon)
+
+    if isinstance(height, list):
+        height = np.array(height)
     
     # Ensure that lat, lon, and height are the same length or if the lengths
     # differ that the different ones contain only a single value
@@ -315,6 +330,7 @@ def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
     '''
     from davitpy import rcParams
     from davitpy.models import aacgm
+    import numpy as np
 
     # Define coefficient file prefix if not supplied
     if coeff_prefix is None:
