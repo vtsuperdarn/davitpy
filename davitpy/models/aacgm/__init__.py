@@ -23,7 +23,7 @@ try:
     from aacgm import set_datetime
 except Exception, e:
     logging.exception(__file__ + ' -> aacgm: ' + str(e))
-    
+
 try:
     from aacgm import mlt_convert
 except Exception, e:

@@ -11,8 +11,8 @@ convert_str_to_bit
 --------------
 '''
 
-from __future__ import division, print_function, absolute_import, unicode_literals
-
+from __future__ import division, print_function, absolute_import
+from __future__ import unicode_literals
 import numpy as np
 import datetime as dt
 import logging
@@ -79,7 +79,7 @@ def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
 
     # Test code
     code = code.upper()
-    
+
     if(height > 2000 and code.find("TRACE") < 0 and code.find("ALLOWTRACE") < 0
        and code.find("BADIDEA")):
         estr = 'coefficients are not valid for altitudes above 2000 km. You '
@@ -106,7 +106,7 @@ def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
     # convert
     lat_out, lon_out, r_out = aacgm.convert(in_lat, in_lon, height, bit_code,
                                             igrf_file)
-    
+
     return lat_out, lon_out, r_out
 
 def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
@@ -162,7 +162,7 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
 
     if isinstance(height, list):
         height = np.array(height)
-    
+
     # Ensure that lat, lon, and height are the same length or if the lengths
     # differ that the different ones contain only a single value
     ulen = np.unique([height.shape, in_lat.shape, in_lon.shape])
@@ -191,7 +191,7 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
 
     # Test code
     code = code.upper()
-    
+
     if(np.max(height) > 2000 and code.find("TRACE") < 0 and
        code.find("ALLOWTRACE") < 0 and code.find("BADIDEA")):
         estr = 'coefficients are not valid for altitudes above 2000 km. You '
@@ -218,11 +218,11 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
 
     # Vectorise the AACGM code
     convert_vectorised = np.vectorize(aacgm.convert)
-    
+
     # convert
     lat_out, lon_out, r_out = convert_vectorised(in_lat, in_lon, height,
                                                  bit_code, igrf_file)
-    
+
     return lat_out, lon_out, r_out
 
 def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
@@ -276,7 +276,7 @@ def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
     mlat = None
     mlon = None
     mlt = None
-    
+
     try:
         # Get magnetic lat and lon.
         mlat, mlon, mr = convert_latlon(glat, glon, height, dtime,
@@ -289,7 +289,7 @@ def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
                                 dtime.minute, dtime.second, mlon, igrf_file)
     except:
         logging.error("Unable to get magnetic lat/lon")
-        
+
     return mlat, mlon, mlt
 
 def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
@@ -359,7 +359,7 @@ def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
                                  dtime.minute, dtime.second, mlon, igrf_file)
     except:
         logging.error("Unable to get magnetic lat/lon")
-        
+
     return mlat, mlon, mlt
 
 def convert_str_to_bit(code):
@@ -380,9 +380,9 @@ def convert_str_to_bit(code):
     convert_code = {"G2A":aacgm.G2A, "A2G":aacgm.A2G, "TRACE":aacgm.TRACE,
                     "GEOCENTRIC":aacgm.GEOCENTRIC,
                     "ALLOWTRACE":aacgm.ALLOWTRACE, "BADIDEA":aacgm.BADIDEA}
-    
+
     code = code.upper()
-    
+
     bit_code = sum([convert_code[k] for k in convert_code.keys()
                     if code.find(k) >= 0])
 
