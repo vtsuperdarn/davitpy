@@ -643,7 +643,7 @@ def greatCircleDist(lat1, lon1, lat2, lon2):
     lon2 = np.radians(lon2)
 
     dlat = (lat2 - lat1) / 2.0
-    dlon = (lon2 - lon1) / 2,0
+    dlon = (lon2 - lon1) / 2.0
     a = np.sin(dlat)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon)**2
     radDist = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
 

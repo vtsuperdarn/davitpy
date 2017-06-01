@@ -34,8 +34,6 @@ class MapConv(object):
     maxVelScale : Optional[float]
         maximum velocity to be used for plotting, min is zero so scale is
         [0,1000]
-    plotCoords : Optional[str]
-        coordinates of the plot, only use either 'mag' or 'mlt'
 
     Attributes
     ----------
@@ -52,7 +50,7 @@ class MapConv(object):
         the axis handle used
     mObj : utils.plotUtils.mapObj
         the map object you want data to be overlayed on.
-    
+
 
     Methods
     --------
@@ -103,7 +101,7 @@ class MapConv(object):
 
 
     def __init__(self, startTime, mObj, axisHandle, hemi='north',
-                 maxVelScale=1000., plotCoords='mag'):
+                 maxVelScale=1000.):
 
         import datetime
         from davitpy.pydarn.sdio import sdDataOpen
@@ -124,21 +122,18 @@ class MapConv(object):
         # requested
         if hemi == "north":
             assert(mObj.boundarylats[0] > 0.), \
-                logging.error("Map object is using one hemisphere and data the"
-                              " other")
+                logging.error("Map and data objects must be from the same"
+                              " hemisphere")
         else:
             assert(mObj.boundarylats[0] < 0.), \
-                logging.error("Map object is using one hemisphere and data the"
-                              " other")
+                logging.error("Map and data objects must be from the same"
+                              " hemisphere")
 
         # check if hemi and coords keywords are correct
         assert(hemi == "north" or hemi == "south"), \
             logging.error("hemi should either be 'north' or 'south'")
-        assert(plotCoords == 'mag' or coords == 'mlt'), \
-            logging.error("error, coords must be one of 'mag' or 'mlt'")
 
         self.hemi = hemi
-        self.plotCoords = plotCoords
 
         # Read the corresponding data record from both map and grid files.
         # This is the way I'm setting stuff up to avoid confusion of reading
@@ -215,18 +210,13 @@ class MapConv(object):
 
             # depending on whether we have 'mag' or 'mlt' coords,
             # calculate endLon
-            if self.plotCoords == 'mag':
-                endLon = mlonsPlot[nn] + numpy.degrees(delLon)
-            elif self.plotCoords == 'mlt':
-                endLon = (mlonsPlot[nn] + numpy.degrees(delLon)) / 15.
-            else:
-                logging.warning('Check the coords')
+            endLon = mlonsPlot[nn] + numpy.degrees(delLon)
 
             # get the start and end vecs
             xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn],
-                                           coords=self.plotCoords)
+                                           coords='mag')
             xVecEnd, yVecEnd = self.mObj(endLon, endLat,
-                                         coords=self.plotCoords)
+                                         coords='mag')
 
             # Plot the start point and then append the vector indicating magn.
             # and azimuth
@@ -496,7 +486,8 @@ class MapConv(object):
         import datetime
         import numpy
         import scipy
-
+	from davitpy.utils import *
+    	import davitpy.models.aacgm as aacgm
 
         if self.hemi == 'north':
             hemisphere = 1
@@ -611,14 +602,7 @@ class MapConv(object):
         else:
             logging.warning('LatShift is not zero, need to rewrite code for that, currently continuing assuming it is zero')
 
-        # mlt conversion stuff
-        if self.plotCoords == 'mlt':
-            epoch = timeUtils.datetimeToEpoch(strtTime)
-            mltDef = aacgm.mltFromEpoch(epoch,0.0) * 15.
-            lonShftFit += mltDef
-            gridArr[1,:] = numpy.mod( ( gridArr[1,:] + lonShftFit ) / 15., 24. )
-        else:
-            gridArr[1,:] = ( gridArr[1,:] + lonShftFit ) 
+        gridArr[1,:] = ( gridArr[1,:] + lonShftFit ) 
 
         latCntr = gridArr[0,:].reshape( ( 181, 60 ) )
         lonCntr = gridArr[1,:].reshape( ( 181, 60 ) )
@@ -650,7 +634,7 @@ class MapConv(object):
         ( latCntr, lonCntr, potCntr ) = self.calcCnvPots()
 
         #plot the contours
-        xCnt, yCnt = self.mObj( lonCntr, latCntr, coords=self.plotCoords )
+        xCnt, yCnt = self.mObj( lonCntr, latCntr, coords='mag')
         cntrPlt = self.mObj.contour( xCnt, yCnt, potCntr, 
             zorder = 2.,
             vmax=potCntr.max(), vmin=potCntr.min(), 
@@ -680,7 +664,7 @@ class MapConv(object):
 
         """
         xVecHMB, yVecHMB = self.mObj( self.mapData.model.boundarymlon, 
-            self.mapData.model.boundarymlat, coords = self.plotCoords )
+            self.mapData.model.boundarymlat, coords='mag' )
         grdPltHMB = self.mObj.plot( xVecHMB, yVecHMB, 
             linewidth = 2., linestyle = ':', color = hmbCol, zorder = 4. )
         grdPltHMB2 = self.mObj.plot( xVecHMB, yVecHMB, 
@@ -741,16 +725,10 @@ class MapConv(object):
             
             delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(numpy.deg2rad( endLat ) ) ) )
             
-            if self.plotCoords == 'mag':
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
-            elif self.plotCoords == 'mlt':
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
-            else:
-                logging.warning('Check the coords.')
-                
-            
-            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords=self.plotCoords)
-            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords = self.plotCoords)
+            endLon = mlonsPlot[nn] + numpy.degrees( delLon )
+
+            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords='mag')
+            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords='mag')
 
             self.mapModelPltStrt = self.mObj.scatter( xVecStrt, yVecStrt, c=velMagn[nn], s=10.,
                 vmin=0, vmax=self.maxVelPlot, alpha=0.7, 
@@ -834,18 +812,10 @@ class MapConv(object):
                 numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) ) \
                 *numpy.sin(numpy.deg2rad( endLat ) ) ) )
             
-            if self.plotCoords == 'mag':
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
-            elif self.plotCoords == 'mlt':
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
-            else:
-                logging.warning('Check the coords.')
-                
+            endLon = mlonsPlot[nn] + numpy.degrees( delLon )                
             
-            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], 
-                coords=self.plotCoords)
-            xVecEnd, yVecEnd = self.mObj(endLon, endLat, 
-                coords = self.plotCoords)
+            xVecStrt, yVecStrt = self.mObj(mlonsPlot[nn], mlatsPlot[nn], coords='mag')
+            xVecEnd, yVecEnd = self.mObj(endLon, endLat, coords='mag')
 
             self.mapFitPltStrt.append(self.mObj.scatter( xVecStrt, yVecStrt, 
                 c=velMagn[nn], s=10.,

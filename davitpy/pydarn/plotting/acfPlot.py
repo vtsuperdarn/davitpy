@@ -93,6 +93,36 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     import numpy as np
     from davitpy import pydarn
 
+    # Input checks
+    # myBeam check for rawacf file
+    assert(myBeam.fType == 'rawacf'), logging.error(
+        'myBeam must be from a rawacf file')
+    # Check of gate parameter
+    assert(isinstance(gate, int) and gate >= 0), logging.error(
+        'gate must be an integer and zero or positive')
+    # Check of normalized
+    assert(isinstance(normalized, bool)), logging.error(
+        'normalized must be a boolean')
+    # Check of mark_blanked
+    assert(isinstance(mark_blanked, bool)), logging.error(
+        'mark_blanked must be a boolean')
+    # Check of xcf
+    assert(isinstance(xcf, bool)), logging.error(
+        'xcf must be a boolean')
+    # Check of panel
+    assert(isinstance(panel, int)), logging.error(
+        'panel must be an integer')
+    # Space for ax check(s)
+    # Check of show variable type
+    assert(isinstance(show, bool)), logging.error(
+        'show must be a boolean')
+    # Check of png variable type
+    assert(isinstance(png, bool)), logging.error(
+        'png must be a boolean')
+    # Check of pdf variable type
+    assert(isinstance(pdf, bool)), logging.error(
+        'pdf must be a boolen')
+
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
     ltab = myBeam.prm.ltab
     tau = myBeam.prm.mpinc
@@ -139,7 +169,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
     acfFFT = []
     acfFFT.extend(temp[len(temp) / 2 + 1:])
     acfFFT.extend(temp[0:len(temp) / 2 + 1])
-    freq_scale_factor = ((3. * 10 ** 8) / 
+    freq_scale_factor = ((3. * 10 ** 8) /
                          (myBeam.prm.tfreq * 1000. * 2. * lags[-1] *
                           myBeam.prm.mpinc * 10.0 ** -6))
     vels = freq_scale_factor * (np.array(range(len(acfFFT))) -
@@ -160,7 +190,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         if show:
             fig = pyplot.figure()
         else:
-            if (png == False) and (pdf == False):
+            if (png is False) and (pdf is False):
                 png = True
             fig = mpl_fig()
         ax1 = fig.add_axes([0.1, 0.55, 0.35, 0.35])
@@ -385,7 +415,8 @@ def calc_blanked(ltab, tp, tau, tfr, gate):
     return txs_in_lag
 
 
-def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False):
+def plot_rli(myBeam, normalized=True, xcf=False,
+             show=True, png=False, pdf=False):
     """This function plots a range-lag-intensity plot of ACF/XCF data
     for an input beamData object.
 
@@ -431,6 +462,26 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
     import matplotlib.cm as cmx
     from davitpy import pydarn
 
+    # Input checks
+    # myBeam check for rawacf file
+    assert(myBeam.fType == 'rawacf'), logging.error(
+        'myBeam must be from a rawacf file')
+    # Check of normalized variable type
+    assert(isinstance(normalized, bool)), logging.error(
+        'normalized must be a boolean')
+    # Check of xcf variable type
+    assert(isinstance(xcf, bool)), logging.error(
+        'xcf must be a boolean')
+    # Check of show variable type
+    assert(isinstance(show, bool)), logging.error(
+        'show must be a boolean')
+    # Check of png variable type
+    assert(isinstance(png, bool)), logging.error(
+        'png must be a boolean')
+    # Check of pdf variable type
+    assert(isinstance(pdf, bool)), logging.error(
+        'pdf must be a boolen')
+
     # Get parameters
     lags = list(set([x[1] - x[0] for x in myBeam.prm.ltab]))
     range_gates = np.linspace(0.5, myBeam.prm.nrang + 0.5,
@@ -442,7 +493,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
     if show:
         fig = pyplot.figure()
     else:
-        if (png == False) and (pdf == False):
+        if (png is False) and (pdf is False):
             png = True
         fig = mpl_fig()
 
@@ -543,7 +594,7 @@ def plot_rli(myBeam, normalized=True, xcf=False, show=True, png=False, pdf=False
             'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
     fig.suptitle(title, y=0.94)
 
-    #handle the outputs
+    # handle the outputs
     if png:
         if not show:
             canvas = FigureCanvasAgg(fig)
