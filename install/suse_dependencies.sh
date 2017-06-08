@@ -71,7 +71,7 @@ dir=$(pwd)
 
 #Now install basemap!
 cd /tmp
-git clone https://github.com/matplotlib/basemap.git
+git clone --branch v1.0.7rel https://github.com/matplotlib/basemap.git
 cd basemap/geos-3.3.3
 export GEOS_DIR=/usr/local
 ./configure --prefix=$GEOS_DIR
