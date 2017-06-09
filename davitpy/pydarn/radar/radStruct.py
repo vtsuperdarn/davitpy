@@ -721,6 +721,11 @@ class site(object):
         import os
         import davitpy
 
+        if not isinstance(code, str):
+            codetype = type(code)
+            logging.exception('code must be a string, type found is %s', codetype)
+            return
+
         self.tval = 0.0
         self.geolat = 0.0
         self.geolon = 0.0
