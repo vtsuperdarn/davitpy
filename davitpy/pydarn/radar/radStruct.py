@@ -722,9 +722,14 @@ class site(object):
         import davitpy
 
         # Lets do some type checks on the input
-        if not isinstance(code, str):
-            codetype = type(code)
-            logging.error('code must be a string, type found is %s', codetype)
+        if not isinstance(radId, int) and radId is not None:
+            vtype = type(radId)
+            logging.error('radId must be an integer, type found is %s', vtype)
+            return
+
+        if not isinstance(code, str) and code is not None:
+            vtype = type(code)
+            logging.error('code must be a string, type found is %s', vtype)
             return
 
         self.tval = 0.0
