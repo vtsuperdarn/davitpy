@@ -721,9 +721,10 @@ class site(object):
         import os
         import davitpy
 
+        # Lets do some type checks on the input
         if not isinstance(code, str):
             codetype = type(code)
-            logging.exception('code must be a string, type found is %s', codetype)
+            logging.error('code must be a string, type found is %s', codetype)
             return
 
         self.tval = 0.0
