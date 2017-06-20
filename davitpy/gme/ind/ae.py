@@ -37,7 +37,6 @@ Module Author:: AJ, 20130131
 from __future__ import absolute_import
 from davitpy.gme.base.gmeBase import gmeData
 import logging
-from six.moves import range
 
 class aeRec(gmeData):
     """a class to represent a record of ae data.  Extends class 

@@ -23,7 +23,7 @@ We recommend using Ubuntu 14.04 with this version of DaViTPy.  Although Macintos
 Prereqs
 -------
 
-* Python
+* Python 2.7  (the Python code is Python 3 compatible, but the C code needs updating where it imports Python)
 * fortran compiler e.g. ``gfortran``
 
 
