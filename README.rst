@@ -2,11 +2,18 @@
 DaViT-py
 ========
 
-Welcome to the Data and Visualization Toolkit-Python.  This code base is designed to allow you to access and visualize SuperDARN (Super Dual Auroral Radar Network) data, as well as other relevant space physics/space weather data sets and models.  This code is an international collaboration of many institutions and contributors.
+Welcome to the Data and Visualization Toolkit-Python.  This code base is designed to allow you to access and visualize SuperDARN (Super Dual Auroral Radar Network) data, as well as other relevant space phyics/space weather data sets and models. As such, DaViT-py includes code for reading and plotting SuperDARN data (iqdata, rawacf, fitacf, and convection maps) and python wrappers for various fortran based models (AACGM, HWM14, IGRF11, IRI11, NRLMSISE00, IGRF2008, and RayDARN HF raytracing).  This code is an international collaboration of many institutions and contributors.
 
-DaViTPy pulls in datasets and models from a variety of data suppliers and model authors.  All users are requested properly cite the ORIGINAL supplier of the data or models used when presenting or publishing work.  Furthermore, it is often important to contact the original data provider for assistance in data interpretation and to arrange for proper attribution.
+DaViTPy pulls in datasets and models from a variety of data suppliers and model authors.  
+All users are requested to properly cite the ORIGINAL supplier of the data or models used when presenting or publishing work.  
+Furthermore, it is often important to contact the original data provider for assistance in data interpretation and to arrange for proper attribution.
 
 `Virginia Tech SuperDARN Page <http://vt.superdarn.org>`_
+
+Davit-py Users
+--------------
+While git can be very useful for managing and updating software, users are encouraged to join the davitpy-users Google group (https://groups.google.com/forum/#!forum/davitpy-users) to keep in e-mail contact.  Announcements (not too often) will be made about changes to the software and you will be able to post questions or browse for help.  Bug reports should still go through github, but anything else can be addressed here.  Active developers of DaViTpy should refer to the DaViTpy-dev group with instructions at the bottom of this file.
+
 
 Install
 =======
@@ -76,6 +83,19 @@ The README also contains instructions on how to install a 'davitpy' executable B
 
 Issues and Bug reporting
 ========================
+
+If you report a bug or issue, please include as much information as possible. 
+If a developer can't reproduce your problem, they can't help you solve it very easily! At a bare minimum, it is very helpful to include the following information: 1) operating system, 2) code executed that produced the error, and 3) any and all error messages/logs that you received.
+
+As of DaViTPy release 0.5, we switched to using the logging module for reporting information. 
+Before submitting a bug, to help give developers as much information as possible, please do the following before running your code::
+
+    import davitpy
+    davitpy.rcParams['verbosity'] = "debug-annoying"
+
+and then execute the code you used to produce the bug. 
+The above code tells DaViTPy to output all information to the terminal.
+
 
 raytracing
 ----------
