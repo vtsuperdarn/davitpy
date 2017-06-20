@@ -14,18 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from distutils.core import setup, Extension
-import os
+from setuptools import setup, Extension
 
 
-dmap = Extension("dmapio",sources=["src/dmapio.c","src/rtime.c","src/dmap.c","src/convert.c"],include_dirs = ["src"])
+dmap = Extension("dmapio",
+            sources=["src/dmapio.c","src/rtime.c","src/dmap.c","src/convert.c"],
+            include_dirs = ["src"])
 
 setup (name = "rst",
        version = "1.0",
        description = "lib to read dmap files",
        author = "AJ Ribeiro based on pydmap lib by Jef Spaleta",
        author_email = "ribeiro@vt.edu",
-       ext_modules = [dmap]
+       ext_modules = [dmap],
        )
        
        
