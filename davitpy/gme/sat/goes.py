@@ -31,12 +31,9 @@ find_flares     find flares in a certain class
 --------------------------------------------------------
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 from davitpy import rcParams
 import logging
-from six.moves import map
-from six.moves import zip
 
 
 def read_goes(sTime, eTime=None, sat_nr=15):
@@ -567,7 +564,7 @@ if __name__ == '__main__':
     if np.all(test_results):
         print('CONGRATULATIONS: Test passed for flare_value()!')
     else:
-        print('WARNING: flare_value() failed self-test.')
+        logging.warning('WARNING: flare_value() failed self-test.')
     print('')
 
     # Flare finding and plotting test. #############################################
@@ -622,4 +619,4 @@ directory as your plots.
 """
 
     print(flares_str)
-    print('Your DAVIT_TMPDIR/goes: {0}'.format(output_dir))
+    print('Your DAVIT_TMPDIR/goes:',output_dir)
