@@ -1,9 +1,12 @@
+#!/usr/bin/env python
 import os
 import glob
 from setuptools import find_packages
 from setuptools.command import install as _install
 from numpy.distutils.core import Extension, setup
 from numpy.distutils import exec_command
+
+req = ['numpy','matplotlib','pandas','netcdf4','basemap']
 
 #%% Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
@@ -122,7 +125,7 @@ setup(name='davitpy',
       },
       data_files=data_files,
       py_modules = ['davitpy'],
-      install_requires=[],
+      install_requires = req,
       classifiers = [
             "Development Status :: 4 - Beta",
             "Topic :: Scientific/Engineering",
