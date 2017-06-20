@@ -26,36 +26,38 @@ ReEqu : float
     Equatorial Earth radisu in kilometers
 
 """
+from __future__ import absolute_import
 import logging
+import six
 
 try:
-    from plotUtils import *
-except Exception, e:
+    from .plotUtils import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.plotUtils: ' + str(e))
 
 try:
-    from geoPack import *
-except Exception, e:
+    from .geoPack import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.geoPack: ' + str(e))
 
 try:
-    from timeUtils import *
-except Exception, e:
+    from .timeUtils import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.timeUtils: ' + str(e))
 
 try:
-    from calcSun import *
-except Exception, e:
+    from .calcSun import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.calcSun: ' + str(e))
 
 try:
-    from coordUtils import *
-except Exception, e:
+    from .coordUtils import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.coordUtils: ' + str(e))
 
 try:
-    from model_vheight import *
-except Exception, e:
+    from .model_vheight import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.model_vheight: ' + str(e))
 
 # Define a few general-use constants
@@ -83,7 +85,7 @@ class twoWayDict(dict):
         
     """
     def __init__(self,initDict={}):
-        for key,val in initDict.iteritems():
+        for key,val in six.iteritems(initDict):
             self[key] = val
             self[val] = key
 
