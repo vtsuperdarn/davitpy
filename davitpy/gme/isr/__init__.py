@@ -13,8 +13,9 @@ mho     Millstone Hill Observatory data
 ---------------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
-try: from mho import *
-except Exception, e:
+try: from .mho import *
+except Exception as e:
     logging.exception(__file__+' -> gme.isr.mho: ' + str(e))

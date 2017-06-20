@@ -10,6 +10,7 @@ References
 ------------
 Chisham, G., T. K. Yeoman, and G. J. Sofko (2008), doi:10.5194/angeo-26-823-2008
 '''
+from __future__ import absolute_import
 import numpy as np
 
 def standard_vhm(slant_range, adjusted_sr=True, max_vh=400.0, hop=0.5,

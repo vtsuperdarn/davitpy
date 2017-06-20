@@ -26,7 +26,9 @@ gmeData     a gme data record
 Module author:: AJ, 20130129
 
 """
+from __future__ import absolute_import
 import logging
+import six
 
 class gmeData:
     """a class to represent a a record of gme data.  Other classes will extend this class
@@ -85,7 +87,7 @@ class gmeData:
 
         """
         #iterate over the mongo dict
-        for attr, val in dbDict.iteritems():
+        for attr, val in six.iteritems(dbDict):
             #check for mongo _id attribute
             if(attr == '_id'): pass
             elif(attr == 'kp'):
@@ -99,7 +101,7 @@ class gmeData:
             else:
                 #assign the value to our object
                 try: setattr(self,attr,val)
-                except Exception,e:
+                except Exception as e:
                     logging.exception(e)
                     logging.exception('problem assigning ' + attr)
 
@@ -133,7 +135,7 @@ class gmeData:
         #initialize a new dictionary
         dbDict = {}
         #create dictionary entries for all out our attributes
-        for attr, val in self.__dict__.iteritems():
+        for attr, val in six.iteritems(self.__dict__):
             if(attr == 'kp'):
                 dbDict['kp'] = []
                 for i in range(len(self.kp)):
@@ -149,7 +151,7 @@ class gmeData:
 
     def __repr__(self):
         myStr = self.dataSet+' record FROM: '+str(self.time)+'\n'
-        for key,var in self.__dict__.iteritems():
+        for key,var in six.iteritems(self.__dict__):
             myStr += key+' = '+str(var)+'\n'
         return myStr
 

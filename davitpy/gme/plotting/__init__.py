@@ -13,8 +13,9 @@ gmeplot     reading, writing, storing Kp data
 ---------------------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
-try: from gmeplot import *
-except Exception, e: 
+try: from .gmeplot import *
+except Exception as e: 
   logging.exception('problem importing gme.plotting.gmeplot: ' + str(e))

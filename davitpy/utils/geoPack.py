@@ -31,6 +31,7 @@ Based on J.M. Ruohoniemi's geopack
 Based on R.J. Barnes radar.pro
 Updates based on G. Chishams cnvtcoord_vhm.c
 """
+from __future__ import absolute_import
 import logging
 import numpy as np
 

@@ -134,4 +134,4 @@ setup(name='davitpy',
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
-    print(find_packages())
+    print((find_packages()))

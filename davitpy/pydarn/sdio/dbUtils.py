@@ -17,11 +17,13 @@ readFromDb
 mapDbFit
 """
 
+from __future__ import absolute_import, print_function
 import logging
 import datetime as dt
 import os
 from pymongo import MongoClient
 import davitpy
+import six
 
 def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
                   password=davitpy.rcParams['SDBREADPASS'],
@@ -64,7 +66,7 @@ def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
     # get a server connection, checking for any errors
     try:
         sconn = MongoClient('mongodb://'+username+':'+password+'@'+dbAddress)
-    except Exception,e:
+    except Exception as e:
         logging.error(e)
         logging.error('problem connecting to server {}'.format(dbAddress))
         sconn = None
@@ -212,13 +214,13 @@ def updateDbDict(dbdict, dmapdict):
     """
 
     # iterate through the items in the db dict
-    for key,val in dbdict.iteritems():
+    for key,val in six.iteritems(dbdict):
         # pass over the mongodb _id param
         if(key == '_id'):
             continue
 
         # check if the dmap dict has a corresponding key
-        if(dmapdict.has_key(cipher[key])):
+        if(cipher[key] in dmapdict):
             # check for a valid different value
             if(val != dmapdict[cipher[key]] and dmapdict[cipher[key]] != None):
                 # update the db dictionary value with the new value
@@ -340,7 +342,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None,
     # make a dictionary telling which data types NOT to get,
     # eg dont get rawacf, iqdat, fitacf, lmfit for fitex request
     exdict = {}
-    for key,val in refArr.iteritems():
+    for key,val in six.iteritems(refArr):
         if(key != flg):
             exdict[cipher[val]] = 0
 
@@ -350,7 +352,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None,
     # check if we have any results
     try:
         count = qry.count()
-    except Exception,e:
+    except Exception as e:
         logging.error(e)
         qry = None
 
@@ -399,7 +401,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
     # files are named
     hr1 = 2 * int(math.floor(time[0] / 50.0))
     hr2 = 2 * int(math.floor(time[1] / 50.0))
-    print "TEST!", hr1, int(math.floor(time[0] / 100. / 2.)*2)
+    print("TEST!", hr1, int(math.floor(time[0] / 100. / 2.)*2))
 
     min1 = int(time[0] - int(math.floor(time[0] / 100.0) * 100))
     min2 = int(time[1] - int(math.floor(time[1] / 1000.) * 100))
@@ -483,7 +485,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
                 beams.insert(dmapdict)
             else:
                 # update the data
-                dbdict = qry.next()
+                dbdict = next(qry)
                 dbdict = updateDbDict(dbdict, dmapdict)
                 beams.save(dbdict)
         # read the next record from the dmap file

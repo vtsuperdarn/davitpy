@@ -12,6 +12,7 @@ MapConv
 -------
 
 """
+from __future__ import absolute_import
 import logging
 
 class MapConv(object):
@@ -524,9 +525,9 @@ class MapConv(object):
         lonStep = 2
         numLats     =  int( ( 90. - plotLatMin ) / latStep )
         numLongs    =  int( 360. / lonStep )+1
-        zatArr = numpy.array( range(numLats) * latStep ) + plotLatMin
+        zatArr = numpy.array( list(range(numLats)) * latStep ) + plotLatMin
         zatArr = zatArr * hemisphere
-        zonArr = numpy.array( range(numLongs) )* lonStep
+        zonArr = numpy.array( list(range(numLongs)) )* lonStep
 
         # Right now create a grid kinda stuff with lats and lons
         gridArr = numpy.zeros( (2, numLats * numLongs) )

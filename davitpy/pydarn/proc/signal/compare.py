@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from matplotlib import pyplot as mp
 import numpy as np
-from signalCommon import *
+from .signalCommon import *
 
 class oplot(object):
 
@@ -50,7 +51,7 @@ class oplot(object):
         # object.
         sigList = self.sigList
         nSigs = len(sigList)
-        sigRange = range(nSigs)
+        sigRange = list(range(nSigs))
 
         for xx in sigRange:
             if hasattr(sigList[xx], 'data') is False:
@@ -64,7 +65,7 @@ class oplot(object):
         mp.hold(True)
 
         # Allow linestyles to be passed.
-        if self.metadata.has_key('ls'):
+        if 'ls' in self.metadata:
             ls0 = self.metadata['ls']
         else:
             ls0 = '-'
@@ -77,7 +78,7 @@ class oplot(object):
         # Plot the traces.
         for xx in sigRange:
             plotData = sigList[xx].data
-            if self.metadata.has_key('normalize'):
+            if 'normalize' in self.metadata:
                 if self.metadata['normalize'] is True:
                     plotData = plotData / np.nanmax(np.abs(plotData))
             # mp.plot(sigList[xx].dtv,plotData,color=colors[xx],ls=ls[xx])
@@ -93,7 +94,7 @@ class oplot(object):
             t0.append(sigList[xx].dtv[0])
             t1.append(sigList[xx].dtv[-1])
             md = sigList[xx].getAllMetaData()
-            if md.has_key('validTimes'):
+            if 'validTimes' in md:
                 val_t0.append(md['validTimes'][0])
                 val_t1.append(md['validTimes'][1])
 
@@ -117,11 +118,11 @@ class oplot(object):
 #    title(data['title'])
 
         md = sigList[0].getAllMetaData()
-        if md.has_key('xlabel'):
+        if 'xlabel' in md:
             mp.xlabel(md['xlabel'])
-        if md.has_key('xmin'):
+        if 'xmin' in md:
             mp.xlim(xmin=md['xmin'])
-        if md.has_key('xmax'):
+        if 'xmax' in md:
             mp.xlim(xmax=md['xmax'])
 
         mp.grid()
@@ -130,44 +131,44 @@ class oplot(object):
         legend = []
         for xx in sigRange:
             md = sigList[xx].getAllMetaData()
-            if md.has_key('legend'):
+            if 'legend' in md:
                 temp = md['legend']
-            elif md.has_key('title'):
+            elif 'title' in md:
                 temp = md['title']
             else:
                 temp = 'Data source ' + str(xx)
 
-            if md.has_key('ylabel'):
+            if 'ylabel' in md:
                 temp = ''.join([temp, ', ', md['ylabel']])
 
             legend.append(temp)
 
-        if self.metadata.has_key('legend_size'):
+        if 'legend_size' in self.metadata:
             leg_size = self.metadata['legend_size']
         else:
             leg_size = 10
         font = {'size': leg_size}
         mp.legend(legend, loc='best', shadow=True, fancybox=True, prop=font)
 
-        if self.metadata.has_key('normalize'):
+        if 'normalize' in self.metadata:
             if self.metadata['normalize'] is True:
                 mp.ylabel('All Data Normalized')
 
         # Use local plot settings.
         if hasattr(self, 'metadata'):
-            if self.metadata.has_key('title'):
+            if 'title' in self.metadata:
                 mp.title(self.metadata['title'])
-            if self.metadata.has_key('xlabel'):
+            if 'xlabel' in self.metadata:
                 mp.xlabel(self.metadata['xlabel'])
-            if self.metadata.has_key('ylabel'):
+            if 'ylabel' in self.metadata:
                 mp.ylabel(self.metadata['ylabel'])
-            if self.metadata.has_key('xmin'):
+            if 'xmin' in self.metadata:
                 mp.xlim(xmin=self.metadata['xmin'])
-            if self.metadata.has_key('xmax'):
+            if 'xmax' in self.metadata:
                 mp.xlim(xmax=self.metadata['xmax'])
-            if self.metadata.has_key('ymin'):
+            if 'ymin' in self.metadata:
                 mp.ylim(ymin=self.metadata['ymin'])
-            if self.metadata.has_key('ymax'):
+            if 'ymax' in self.metadata:
                 mp.ylim(ymax=self.metadata['ymax'])
 
         mp.hold(False)
@@ -218,7 +219,7 @@ class oplotfft(object):
             self.metadata[key] = metadata[key]
         sigList = self.sigList
         nSigs = len(sigList)
-        sigRange = range(nSigs)
+        sigRange = list(range(nSigs))
 
         for xx in sigRange:
             if hasattr(sigList[xx], 'data') is False:
@@ -248,7 +249,7 @@ class oplotfft(object):
             sigList[xx].metadata['fftTimes'] = fftTimes
             sigList[xx].fft()
             plotData = abs(sigList[xx].spectrum)
-            if self.metadata.has_key('normalize'):
+            if 'normalize' in self.metadata:
                 if self.metadata['normalize'] is True:
                     plotData = plotData / np.nanmax(np.abs(plotData))
             mp.plot(sigList[xx].freqVec, plotData, color=colors[xx])
@@ -256,11 +257,11 @@ class oplotfft(object):
         mp.xlim(xmin=0)
 
         md = sigList[0].getAllMetaData()
-        if md.has_key('fft_xlabel'):
+        if 'fft_xlabel' in md:
             mp.xlabel(md['fft_xlabel'])
-        if md.has_key('fft_xmin'):
+        if 'fft_xmin' in md:
             mp.xlim(xmin=md['fft_xmin'])
-        if md.has_key('fft_xmax'):
+        if 'fft_xmax' in md:
             mp.xlim(xmax=md['fft_xmax'])
 
         mp.grid()
@@ -269,62 +270,62 @@ class oplotfft(object):
         legend = []
         for xx in sigRange:
             md = sigList[xx].getAllMetaData()
-            if md.has_key('fft_legend'):
+            if 'fft_legend' in md:
                 temp = md['fft_legend']
-            elif md.has_key('legend'):
+            elif 'legend' in md:
                 temp = md['legend']
-            elif md.has_key('title'):
+            elif 'title' in md:
                 temp = md['title']
             else:
                 temp = 'Data source ' + str(xx)
 
-            if md.has_key('fft_ylabel'):
+            if 'fft_ylabel' in md:
                 temp = ''.join([temp, ', ', md['fft_ylabel']])
-            elif md.has_key('ylabel'):
+            elif 'ylabel' in md:
                 temp = ''.join([temp, ', ', md['ylabel']])
 
             legend.append(temp)
 
-        if self.metadata.has_key('legend_size'):
+        if 'legend_size' in self.metadata:
             leg_size = self.metadata['legend_size']
         else:
             leg_size = 10
         font = {'size': leg_size}
         mp.legend(legend, loc='best', shadow=True, fancybox=True, prop=font)
 
-        if self.metadata.has_key('normalize'):
+        if 'normalize' in self.metadata:
             if self.metadata['normalize'] is True:
                 mp.ylabel('All Data Normalized')
 
         # Use local plot settings.
         if hasattr(self, 'metadata'):
-            if self.metadata.has_key('title'):
+            if 'title' in self.metadata:
                 mp.title(self.metadata['title'])
-            if self.metadata.has_key('xlabel'):
+            if 'xlabel' in self.metadata:
                 mp.xlabel(self.metadata['xlabel'])
-            if self.metadata.has_key('ylabel'):
+            if 'ylabel' in self.metadata:
                 mp.ylabel(self.metadata['ylabel'])
-            if self.metadata.has_key('xmin'):
+            if 'xmin' in self.metadata:
                 mp.xlim(xmin=self.metadata['xmin'])
-            if self.metadata.has_key('xmax'):
+            if 'xmax' in self.metadata:
                 mp.xlim(xmax=self.metadata['xmax'])
-            if self.metadata.has_key('ymin'):
+            if 'ymin' in self.metadata:
                 mp.ylim(ymin=self.metadata['ymin'])
-            if self.metadata.has_key('ymax'):
+            if 'ymax' in self.metadata:
                 mp.ylim(ymax=self.metadata['ymax'])
-            if self.metadata.has_key('fft_title'):
+            if 'fft_title' in self.metadata:
                 mp.title(self.metadata['fft_title'])
-            if self.metadata.has_key('fft_xlabel'):
+            if 'fft_xlabel' in self.metadata:
                 mp.xlabel(self.metadata['fft_xlabel'])
-            if self.metadata.has_key('fft_ylabel'):
+            if 'fft_ylabel' in self.metadata:
                 mp.ylabel(self.metadata['fft_ylabel'])
-            if self.metadata.has_key('fft_xmin'):
+            if 'fft_xmin' in self.metadata:
                 mp.xlim(xmin=self.metadata['fft_xmin'])
-            if self.metadata.has_key('fft_xmax'):
+            if 'fft_xmax' in self.metadata:
                 mp.xlim(xmax=self.metadata['fft_xmax'])
-            if self.metadata.has_key('fft_ymin'):
+            if 'fft_ymin' in self.metadata:
                 mp.ylim(ymin=self.metadata['fft_ymin'])
-            if self.metadata.has_key('fft_ymax'):
+            if 'fft_ymax' in self.metadata:
                 mp.ylim(ymax=self.metadata['fft_ymax'])
 
         # Print the time window of the FFT on the side of the plot.

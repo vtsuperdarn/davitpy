@@ -22,44 +22,45 @@ rti             range-time-intensity data
 """
 
 
+from __future__ import absolute_import
 import logging
 
 try:
-    from rti import *
-except Exception, e:
+    from .rti import *
+except Exception as e:
     logging.exception('problem importing rti: ' + str(e))
 
 try:
-    from acfPlot import *
-except Exception, e:
+    from .acfPlot import *
+except Exception as e:
     logging.exception('problem importing acfPlot: ' + str(e))
 
 try:
-    from iqPlot import *
-except Exception, e:
+    from .iqPlot import *
+except Exception as e:
     logging.exception('problem importing iqPlot: ' + str(e))
 
 try:
-    from fan import *
-except Exception, e:
+    from .fan import *
+except Exception as e:
     logging.exception('problem importing fan: ' + str(e))
 
 try:
-    from mapOverlay import *
-except Exception, e:
+    from .mapOverlay import *
+except Exception as e:
     logging.exception('problem importing mapOverlay: ' + str(e))
 
 try:
-    from printRec import *
-except Exception, e:
+    from .printRec import *
+except Exception as e:
     logging.exception('problem importing printRec: ' + str(e))
 
 try:
-    from plotMapGrd import *
-except Exception, e:
+    from .plotMapGrd import *
+except Exception as e:
     logging.exception(__file__ + ' -> utils.plotMapGrd: ' + str(e))
 
 try:
-    from musicPlot import *
-except Exception, e:
+    from .musicPlot import *
+except Exception as e:
     logging.exception('problem importing musicPlot: ' + str(e))

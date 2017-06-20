@@ -22,6 +22,7 @@ Inst: University of Leicester (UoL)
 """
 
 # Import python packages
+from __future__ import absolute_import
 import numpy as np
 from scipy import constants as scicon
 import logging
