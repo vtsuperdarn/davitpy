@@ -67,7 +67,7 @@ Usage
 =====
 To test davitpy and learn more about some of its functionality, please look at the included Jupyter notebooks.  To run these::
 
-    cd davitpy/docs/notebook
+    cd docs/notebook
     jupyter notebook
 
 This command will launch a web browser with an interface that will allow you to run python code directly in a browsing window.  
