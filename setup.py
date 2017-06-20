@@ -6,18 +6,12 @@ from setuptools.command import install as _install
 from numpy.distutils.core import Extension, setup
 from numpy.distutils import exec_command
 
-# Output debugging information while installing
+#%% Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
-#############################################################################
-# First, check to make sure we are executing
-# 'python setup.py install' from the same directory 
-# as setup.py (root davitpy directory)
-#############################################################################
-path = os.getcwd()
-assert('setup.py' in os.listdir(path)), \
-"You must execute 'python setup.py install' from within the \
-davitpy root directory."
+#%% check we are executing setup.py from root davitpy directory
+assert( os.path.isfile('setup.py'),
+    "You must execute setup.py from within the davitpy root directory.")
 
 ################################################################################
 # define a read function for using README.md for long_description
@@ -107,10 +101,10 @@ setup(name='davitpy',
       description = "Space Science Toolkit",
       author = "VT SuperDARN Lab and friends",
       author_email = "ajribeiro86@gmail.com",
-      url = "",
+      url = "http://davit.ece.vt.edu/davitpy/",
       download_url = "https://github.com/vtsuperdarn/davitpy",
       packages = sources,
-      long_description = read('README.md'),
+      long_description = read('README.rst'),
       zip_safe = False,
       ext_modules = [dmap,aacgm,tsyg,hwm,msis,igrf,iri],
       package_data={
