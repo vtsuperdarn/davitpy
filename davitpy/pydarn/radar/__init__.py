@@ -24,31 +24,32 @@ tdiff
 
 """
 
+from __future__ import absolute_import
 import logging
 
 try:
-    from radFov import *
+    from .radFov import *
 except Exception as e:
     logging.exception(__file__+' -> pydarn.radar.radFov: ', str(e))
 
 try:
-    from radUtils import *
+    from .radUtils import *
 except Exception as e:
     logging.exception(__file__+' -> pydarn.radar.radUtils: ', str(e))
 
 try:
-    from radInfoIo import *
+    from .radInfoIo import *
 except Exception as e:
     logging.exception(__file__+' -> pydarn.radar.radInfoIo: ', str(e))
 
 try:
-    from radStruct import *
+    from .radStruct import *
 except Exception as e:
     logging.exception(__file__+' -> pydarn.radar.radStruct: ', str(e))
 
 try:
-    import tdiff
-except Exception, e:
+    from . import tdiff
+except Exception as e:
     logging.exception('problem importing tdiff: ' + str(e))
 
 
