@@ -45,7 +45,7 @@ Linux
 
     ./install/debian_dependencies.sh
 
-    python setup.py install
+    python setup.py develop
 
 Close and reopen Terminal to use DaViTPy.
     

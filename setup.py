@@ -1,7 +1,6 @@
 import os
 import glob
-# Need to use the enhanced version of distutils packaged with
-# numpy so that we can compile fortran extensions
+from setuptools import find_packages
 from setuptools.command import install as _install
 from numpy.distutils.core import Extension, setup
 from numpy.distutils import exec_command
@@ -26,7 +25,7 @@ def read(fname):
 # 'exec_command' is supposed to work on win32
 # according to its documentation.
 #############################################################################
-command = 'make -C "davitpy/models/raydarn/"'
+command = 'FC=mpif90 make -C "davitpy/models/raydarn/"'
 exec_command.exec_command(command)
 
 #############################################################################
@@ -135,4 +134,4 @@ setup(name='davitpy',
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
-    print 'Sources', find_packages()
+    print(find_packages())
