@@ -9,7 +9,7 @@ from numpy.distutils import exec_command
 os.environ['DISTUTILS_DEBUG'] = "1"
 
 #%% check we are executing setup.py from root davitpy directory
-assert( os.path.isfile('setup.py'),
+assert os.path.isfile('setup.py'),(
     "You must execute setup.py from within the davitpy root directory.")
 
 #############################################################################
