@@ -37,10 +37,12 @@ This is very SLOW.   We recommend using the c version which is folded into
 the sdio function radDataRead.radDataOpen
 """
 
+from __future__ import absolute_import
 import numpy as np
 import datetime as dt
 from davitpy import utils
 import logging
+import six
 
 class Gate(object):
     """A class to represent a single range gate
@@ -116,7 +118,7 @@ def combBeams(scan):
 
             # initialize a new beam object
             beam.copyData(beams[0])
-            for key,val in beam.fit.__dict__.iteritems(): 
+            for key,val in six.iteritems(beam.fit.__dict__): 
                 setattr(beam.fit, key, [])
             beam.prm.nrang = nrang
 
@@ -129,7 +131,7 @@ def combBeams(scan):
                 if cnt / pos > .5:
                     beam.fit.slist.append(j)
                     beam.fit.qflg = 1
-                    for key in beam.fit.__dict__.iterkeys():
+                    for key in six.iterkeys(beam.fit.__dict__):
                         if key == 'qflg' or key == 'gflg' or key == 'slist':
                             continue
                         arr = []
@@ -251,7 +253,7 @@ def doFilter(scans, thresh=.4):
         # make a new beam
         beam = pydarn.sdio.beamData()
         beam.copyData(b)
-        for key,val in beam.fit.__dict__.iteritems(): 
+        for key,val in six.iteritems(beam.fit.__dict__): 
             setattr(beam.fit,key,[])
 
         for r in range(0,b.prm.nrang):

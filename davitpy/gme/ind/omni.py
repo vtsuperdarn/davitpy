@@ -33,6 +33,7 @@ mapOmniMongo    read omni data and store into database
 Module author: AJ, 20130128
 
 """
+from __future__ import absolute_import
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
@@ -181,13 +182,13 @@ class omniRec(gmeData):
                                     
         #go through the columns and assign the attribute values 
         for i in range(9,len(cols)):
-            if(not mappingdict.has_key(i)): continue
+            if(i not in mappingdict): continue
             temp = cols[i]
             temp = temp.replace('.','')
             temp = temp.replace('9','')
             if(temp == ''): continue
             try: setattr(self,mappingdict[i],float(cols[i]))
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('problem assigning value to' + mappingdict[i])
             
@@ -392,19 +393,19 @@ def readOmniFtp(sTime,eTime=None,res=5):
     
     #connect to the server
     try: ftp = FTP('spdf.gsfc.nasa.gov')    
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem connecting to SPDF server')
         
     #login as anonymous
     try: l=ftp.login()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem logging in to SPDF server')
     
     #go to the omni directory
     try: ftp.cwd('/pub/data/omni/high_res_omni/')
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('error getting to data directory')
     
@@ -416,7 +417,7 @@ def readOmniFtp(sTime,eTime=None,res=5):
         else: fname = 'omni_5min'+str(yr)+'.asc'
         logging.info('omni: RETR ' + fname)
         try: ftp.retrlines('RETR '+fname,lines.append)
-        except Exception,e:
+        except Exception as e:
             logging.exception(e)
             logging.exception('error retrieving' + fname)
     
@@ -503,7 +504,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
                 #if this is an existing record, update it
                 elif(cnt == 1):
                     logging.debug('found one!!')
-                    dbDict = qry.next()
+                    dbDict = next(qry)
                     temp = dbDict['_id']
                     dbDict = tempRec
                     dbDict['_id'] = temp

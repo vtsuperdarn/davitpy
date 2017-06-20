@@ -26,6 +26,7 @@ Moduleauthor
 ------------
 Angeline G. Burrell (AGB), 25 July 2016, University of Leicester (UoL)
 '''
+from __future__ import absolute_import
 import logging
 
 # Define the frequency bands for different radars
@@ -148,7 +149,7 @@ class radFreqBands(object):
     def __init__(self, rad=None):
 
         # Assign the radar IDs
-        if id_to_code.has_key(rad):
+        if rad in id_to_code:
             self.rad_code = id_to_code[rad]
             self.stid = rad
         else:

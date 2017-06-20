@@ -12,6 +12,7 @@ overlayFov     Overlay field(s)-of-view on a map
 -------------------------------------------------------
 
 """
+from __future__ import absolute_import, print_function
 import logging
 
 
@@ -296,7 +297,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     lcolor = lineColor
 
     # iterates through radars to be plotted
-    for ir in xrange(nradars):
+    for ir in range(nradars):
         # Get field of view coordinates
         if fovObj is None:
             rad = network_obj.getRadarBy(rad_input['vals'][ir],
@@ -410,25 +411,25 @@ if __name__ == "__main__":
 
     from davitpy import utils
 
-    print "Creating figure and axes"
+    print("Creating figure and axes")
     fig = plt.figure()
     ax = fig.add_axes()
     # Changed coords from "mlt" to "geo" because mlt kept crashing
-    print "Creating map object for datetime(2012, 1, 1, 0, 2) in Geographic"
+    print("Creating map object for datetime(2012, 1, 1, 0, 2) in Geographic")
     mo = utils.mapObj(lat_0=90., lon_0=0., boundinglat=40.,
                       dateTime=datetime(2012, 1, 1, 0, 2), coords="geo",
                       projection="stere")
-    print "overlayRadar"
+    print("overlayRadar")
     overlayRadar(mo, codes="sas")
-    print "overlayRadar for datetime(2012,1,1,1,2);"
-    print "should produce warning about different time"
+    print("overlayRadar for datetime(2012,1,1,1,2);")
+    print("should produce warning about different time")
     overlayRadar(mo, codes="sas", dateTime=datetime(2012, 1, 1, 1, 2))
-    print "overlayFov"
+    print("overlayFov")
     overlayFov(mo, codes="sas", maxGate=45)
-    print "overlay the near-range rear-FoV and fill shade it magenta"
+    print("overlay the near-range rear-FoV and fill shade it magenta")
     overlayFov(mo, codes="sas", maxGate=10, fov_dir='back', fovColor="m")
-    print "overlayFov for datetime(2012,1,1,1,2);"
-    print "should produce warning about different time"
+    print("overlayFov for datetime(2012,1,1,1,2);")
+    print("should produce warning about different time")
     overlayFov(mo, codes="sas", maxGate=45, dateTime=datetime(2012, 1, 1, 1, 2))
-    print "Showing plot"
+    print("Showing plot")
     plt.show()

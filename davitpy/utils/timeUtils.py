@@ -32,6 +32,7 @@ yyyymmddToDate  string to date
 -----------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
 

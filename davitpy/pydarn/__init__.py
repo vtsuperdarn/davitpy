@@ -18,29 +18,30 @@ proc     adanced data processing utilities
 """
 
 
+from __future__ import absolute_import
 import logging
 
 try:
-	import dmapio
-except Exception, e:
+	from . import dmapio
+except Exception as e:
     logging.exception('problem importing dmapio: ' + str(e))
 
 try:
-	import radar
-except Exception, e:
+	from . import radar
+except Exception as e:
     logging.exception('problem importing radar: ' + str(e))
 
 try:
-	import sdio
-except Exception, e:
+	from . import sdio
+except Exception as e:
     logging.exception('problem importing sdio: ' + str(e))
 
 try:
-	import plotting
-except Exception, e:
+	from . import plotting
+except Exception as e:
     logging.exception('problem importing plotting: ' + str(e))
 
 try:
-	import proc
-except Exception, e:
+	from . import proc
+except Exception as e:
     logging.exception('problem importing proc: ' + str(e))

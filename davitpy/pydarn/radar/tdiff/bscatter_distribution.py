@@ -22,6 +22,7 @@ References
 A.G. Burrell et al. (2016) submitted to Radio Science doi:xxx
 ------------------------------------------------------------------------------
 """
+from __future__ import absolute_import
 import numpy as np
 
 #---------------------------------------------------------------------------

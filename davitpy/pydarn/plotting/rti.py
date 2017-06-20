@@ -37,6 +37,7 @@ daynight_terminator calculate day/night terminator
 --------------------------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
 

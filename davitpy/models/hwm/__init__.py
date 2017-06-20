@@ -9,6 +9,7 @@ hwm14   fortran subroutines
 ---------------------------
   
 """
+from __future__ import absolute_import
 import logging
 
 def hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path=None):
@@ -53,4 +54,4 @@ def hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path=None):
 
     return hwm14(iyd,sec,alt,glat,glon,stl,f107a,f107,ap,path)
 
-import hwm_input
+from . import hwm_input

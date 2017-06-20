@@ -15,6 +15,7 @@ getParamDict
     default ranges, and axis labels.
 
 """
+from __future__ import absolute_import
 import logging
 
 def getCpName(cpid):

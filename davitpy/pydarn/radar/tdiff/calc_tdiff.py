@@ -19,6 +19,7 @@ References
 A.G. Burrell et al. (2016) submitted to Radio Science doi:xxx
 ------------------------------------------------------------------------------
 """
+from __future__ import absolute_import
 import numpy as np
 import logging
 
@@ -65,7 +66,7 @@ def calc_tdiff(init_tdiff, ref_loc, ref_err, loc_args, loc_func, func_tol,
     res : (tuple)
         Results from the successful simplex minimization run
     '''
-    import bscatter_distribution as bdist
+    from . import bscatter_distribution as bdist
 
     terr = np.nan
 
@@ -135,7 +136,7 @@ def select_bscatter(beams, ret_attrs, radcp, tband, bnum, min_power=0.0,
     ret_data : (dict of lists)
         Dictionary containing lists of desired return attributes
     '''
-    import rad_freqbands
+    from . import rad_freqbands
 
     # Define the local routines
     def good_fov(fovflg, bfit, i):

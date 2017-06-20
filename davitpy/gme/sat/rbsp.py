@@ -12,6 +12,7 @@ rbspFp  FPs reading (or calculating) and plotting
 -------------------------------------------------
 
 """
+from __future__ import absolute_import, print_function
 import logging
 
 
@@ -182,8 +183,8 @@ class rbspFp(object):
         myMap = Basemap(projection=projection, lon_0=270,
                         boundinglat=sgn * boundinglat, ax=ax)
         myMap.fillcontinents(color='.8')
-        myMap.drawmeridians(range(0, 360, 20), alpha=0.5)
-        myMap.drawparallels(range(-80, 81, 20), alpha=0.5)
+        myMap.drawmeridians(list(range(0, 360, 20)), alpha=0.5)
+        myMap.drawparallels(list(range(-80, 81, 20)), alpha=0.5)
         # Calculate FP coordinates
         x, y = myMap(lon, lat)
         # Scatter FPs
@@ -638,40 +639,40 @@ if __name__ == '__main__':
 
         # Get all the FPs for 1/Sept/2012 from 0 to 6 UT
         from datetime import datetime
-        import rbsp
+        from . import rbsp
 
-        print ""
-        print "Testing footprint collection and apogee calculation..."
-        print ""
+        print("")
+        print("Testing footprint collection and apogee calculation...")
+        print("")
         sTime = datetime(2016, 6, 2, 0)
         eTime = datetime(2016, 6, 2, 12)
 #        fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
         fps = rbsp.rbspFp(sTime, eTime)
-        print ""
-        print "Calculated results:"
-        print ""
+        print("")
+        print("Calculated results:")
+        print("")
         # Pretty print the apogees in that period
-        print fps
-        print "Expected results for orbits on June 2, 2016  between"
-        print "00:00 and 12:00 utc:"
-        print "    07:45 UT, B: ( 57.82 N, 314.19 E)      (-72.89 N, 351.06 E)"
-        print "    08:45 UT, A: ( 56.43 N, 307.07 E)      (-74.73 N, 337.82 E)"
-        raw_input("Enter to continue on to another example")
+        print(fps)
+        print("Expected results for orbits on June 2, 2016  between")
+        print("00:00 and 12:00 utc:")
+        print("    07:45 UT, B: ( 57.82 N, 314.19 E)      (-72.89 N, 351.06 E)")
+        print("    08:45 UT, A: ( 56.43 N, 307.07 E)      (-74.73 N, 337.82 E)")
+        input("Enter to continue on to another example")
 
-        print ""
-        print "Forcing a re-read from the JHU/APL website"
+        print("")
+        print("Forcing a re-read from the JHU/APL website")
         sTime = datetime(2016, 7, 2, 0)
         eTime = datetime(2016, 7, 2, 12)
         fps = rbsp.rbspFp(sTime, eTime, force_web_read=True)
 #        fps = rbsp.rbspFp(sTime, eTime)
-        print ""
-        print "Calculated results:"
-        print ""
+        print("")
+        print("Calculated results:")
+        print("")
         # Pretty print the apogees in that period
-        print fps
-        print "Expected results for orbits on July 2, 2016  between"
-        print "00:00 and 12:00 utc:"
-        print "    04:50 UT, A: ( 62.90 N, 350.35 E)      (-63.47 N,  30.53 E)"
-        print "    11:55 UT, A: ( 52.75 N, 244.64 E)      (-60.94 N, 206.49 E)"
-        print "    02:55 UT, B: ( 64.70 N,  16.63 E)      (-58.19 N,  51.03 E)"
-        print ""
+        print(fps)
+        print("Expected results for orbits on July 2, 2016  between")
+        print("00:00 and 12:00 utc:")
+        print("    04:50 UT, A: ( 62.90 N, 350.35 E)      (-63.47 N,  30.53 E)")
+        print("    11:55 UT, A: ( 52.75 N, 244.64 E)      (-60.94 N, 206.49 E)")
+        print("    02:55 UT, B: ( 64.70 N,  16.63 E)      (-58.19 N,  51.03 E)")
+        print("")

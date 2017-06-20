@@ -21,44 +21,45 @@ dbUtils
 fetchUtils
     routines to retrieve data files from local and remote locations
 """
+from __future__ import absolute_import
 import logging
 
 try:
-    from fetchUtils import *
-except Exception,e:
+    from .fetchUtils import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.fetchUtils: ', str(e))
 
 try:
-    from DataTypes import *
-except Exception,e:
+    from .DataTypes import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.DataTypes: ', str(e))
 
 try:
-    from radDataTypes import *
-except Exception,e:
+    from .radDataTypes import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.radDataTypes: ', str(e))
 
 try:
-    from radDataRead import *
-except Exception,e:
+    from .radDataRead import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.radDataRead: ', str(e))
 
 try:
-    from sdDataTypes import *
-except Exception,e:
+    from .sdDataTypes import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.sdDataTypes: ', str(e))
 
 try:
-    from sdDataRead import *
-except Exception,e: 
+    from .sdDataRead import *
+except Exception as e: 
     logging.exception(__file__+' -> pydarn.sdio.sdDataRead: ', str(e))
 
 try:
-    from fitexfilter import *
-except Exception,e:
+    from .fitexfilter import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.fitexfilter: ', str(e))
 
 try:
-    from dbUtils import *
-except Exception,e:
+    from .dbUtils import *
+except Exception as e:
     logging.exception(__file__+' -> pydarn.sdio.dbUtils: ', str(e))

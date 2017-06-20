@@ -17,6 +17,7 @@ tsygFort    Fortran subroutines
 
 """
 
+from __future__ import absolute_import
 import tsygFort
 import logging
 
@@ -294,7 +295,7 @@ class tsygTrace(object):
         self.rhoSH = self.l.copy()
 
         # And now iterate through the desired points
-        for ip in xrange(len(lat)):
+        for ip in range(len(lat)):
             # This has to be called first
             tsygFort.recalc_08(datetime[ip].year,datetime[ip].timetuple().tm_yday,
                                 datetime[ip].hour,datetime[ip].minute,datetime[ip].second,
@@ -386,7 +387,7 @@ bzimf={:3.0f}                       [nT]
         outstr += '(latitude [degrees], longitude [degrees], distance from center of the Earth [km])\n'
 
         # Print stuff
-        for ip in xrange(len(self.lat)):
+        for ip in range(len(self.lat)):
             outstr +=   '''
 ({:6.3f}, {:6.3f}, {:6.3f}) @ {}
     --> NH({:6.3f}, {:6.3f}, {:6.3f})
@@ -409,7 +410,7 @@ bzimf={:3.0f}                       [nT]
         Written by Sebastien 2012-10
 
         """
-        import cPickle as pickle
+        import six.moves.cPickle as pickle
 
         with open( filename, "wb" ) as fileObj:
             pickle.dump(self, fileObj)
@@ -424,7 +425,7 @@ bzimf={:3.0f}                       [nT]
 
         Written by Sebastien 2012-10
         """
-        import cPickle as pickle
+        import six.moves.cPickle as pickle
 
         with open( filename, "rb" ) as fileObj:
             obj = pickle.load(fileObj)
@@ -481,7 +482,7 @@ bzimf={:3.0f}                       [nT]
 
         # Select indices to show
         if onlyPts is None:
-            inds = xrange(len(self.lat))
+            inds = range(len(self.lat))
         else:
             try:
                 inds = [ip for ip in onlyPts]
@@ -599,7 +600,7 @@ bzimf={:3.0f}                       [nT]
 
         # Select indices to show
         if onlyPts is None:
-            inds = xrange(len(self.lat))
+            inds = range(len(self.lat))
         else:
             try:
                 inds = [ip for ip in onlyPts]
