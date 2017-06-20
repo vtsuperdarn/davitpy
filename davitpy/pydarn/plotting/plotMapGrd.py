@@ -14,6 +14,8 @@ MapConv
 """
 from __future__ import absolute_import
 import logging
+#
+from davitpy.utils import *
 
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
@@ -487,8 +489,7 @@ class MapConv(object):
         import datetime
         import numpy
         import scipy
-	from davitpy.utils import *
-    	import davitpy.models.aacgm as aacgm
+        import davitpy.models.aacgm as aacgm
 
         if self.hemi == 'north':
             hemisphere = 1
