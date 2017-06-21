@@ -46,6 +46,9 @@ Linux
 
     apt install git libopenmpi-dev libssl-dev gfortran g++
 
+Fedora may also need::
+
+    ln -s /usr/lib64/openmpi/bin/mpif90 /usr/bin/mpif90 
 
 Mac
 ~~~
