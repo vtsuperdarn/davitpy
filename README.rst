@@ -19,49 +19,40 @@ Install
 =======
 We recommend using Ubuntu 14.04 with this version of DaViTPy.  Although Macintosh install scripts are provided, more active development, testing, and use occurs in the Linux environment.  We do not currently offer any Windows support.
 
+::
+
+    git clone https://github.com/vtsuperdarn/davitpy.git
+
+    cd davitpy
+
+    python setup.py develop
+
 
 Prereqs
 -------
 
-* Python 2.7  (the Python code is Python 3 compatible, but the C code needs updating where it imports Python)
+* Python 2.7. `Miniconda <>`_ is strongly suggested.
 * fortran compiler e.g. ``gfortran``
 
+Linux
+~~~~~
+::
+
+    apt install git libopenmpi-dev libssl-dev gfortran g++
+
+
+Mac
+~~~
+::
+
+    brew install gcc openmpi
 
 davitpyrc
 ---------
 Settings pertaining to server addresses and passwords, data file directory structure, and other global parameters are stored in a run control file called davitpyrc.  
 For most users, the default values in this file should be satisfactory., stored in ``davitpy/davitpy/davitpyrc``.  
 After making a change, re-run the ``python setup.py install`` script to copy the run control file to the appropriate system location.
-
-Linux
------
-::
-
-    apt install git
-
-    git clone https://github.com/vtsuperdarn/davitpy.git
-
-    cd davitpy
-
-    ./install/debian_dependencies.sh
-
-    python setup.py develop
-
-Close and reopen Terminal to use DaViTPy.
     
-MacOS
------
-It is easiest to have either homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/) installed on your system.
-
-Next, follow the instructions for Ubuntu, but for the dependencies script, choose one of the following::
-
-    ./python_install_mac_brew.sh
-   
-    ./python_install_mac_port.sh
-
-preferably after checking the dependencies to see if you already have them installed.
-
-(**note**: you may encounter some errors because sometimes MacPorts will install binaries with the python version as an extension in their name, so f2py becomes f2py-2.7. If this happens, you will have to manually create symbolic links to the *-2.7 binaries or specify the extended name when running setup.py)
 
 Usage
 =====

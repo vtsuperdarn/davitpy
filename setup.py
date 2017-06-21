@@ -3,8 +3,15 @@ import os, glob, subprocess
 import setuptools # needed for develop
 from numpy.distutils.core import Extension,setup
 
-req = ['numpy','matplotlib','pandas','netcdf4','basemap']
-
+req = ['numpy','scipy','h5py','matplotlib','pandas','netcdf4','basemap','pyzmq','jupyter',
+       'tornado','paramiko','pymongo','mechanize','jinja2','jsonschema','ecdsa','scikit-image',
+       'pyproj','cryptography']
+try:
+    import conda.cli
+    conda.cli.main('install',*req)
+except Exception as e:
+    import pip
+    pip.main(['install'] + req)
 # %% Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
@@ -105,7 +112,6 @@ setup(name='davitpy',
       },
       data_files=data_files,
       py_modules = ['davitpy'],
-      install_requires = req,
       classifiers = [
             "Development Status :: 4 - Beta",
             "Topic :: Scientific/Engineering",
