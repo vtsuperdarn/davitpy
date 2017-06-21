@@ -1,6 +1,9 @@
 .. image:: https://travis-ci.org/scivision/davitpy.svg
     :target: https://travis-ci.org/scivision/davitpy
 
+.. image:: https://coveralls.io/repos/github/scivision/davitpy/badge.svg
+    :target: https://coveralls.io/github/scivision/davitpy
+
 ========
 DaViT-py
 ========
@@ -14,7 +17,7 @@ Furthermore, it is often important to contact the original data provider for ass
 `Virginia Tech SuperDARN Page <http://vt.superdarn.org>`_
 
 Davit-py Users
---------------
+==============
 While git can be very useful for managing and updating software, users are encouraged to join the davitpy-users Google group (https://groups.google.com/forum/#!forum/davitpy-users) to keep in e-mail contact.  Announcements (not too often) will be made about changes to the software and you will be able to post questions or browse for help.  Bug reports should still go through github, but anything else can be addressed here.  Active developers of DaViTpy should refer to the DaViTpy-dev group with instructions at the bottom of this file.
 
 
