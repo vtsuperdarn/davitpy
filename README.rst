@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/scivision/davitpy.svg
+    :target: https://travis-ci.org/scivision/davitpy
+
 ========
 DaViT-py
 ========
