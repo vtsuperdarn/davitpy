@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os, glob, subprocess
 import setuptools # needed for develop
-from numpy.distutils.core import Extension,setup
 
 req = ['numpy','scipy','h5py','matplotlib','pandas','netcdf4','basemap','pyzmq','jupyter',
        'tornado','paramiko','pymongo','mechanize','jinja2','jsonschema','ecdsa','scikit-image',
@@ -12,6 +11,9 @@ try:
 except Exception as e:
     import pip
     pip.main(['install'] + req)
+
+from numpy.distutils.core import Extension,setup
+
 # %% Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
