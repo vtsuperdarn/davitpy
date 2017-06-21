@@ -2,12 +2,13 @@
 import os, glob, subprocess
 import setuptools # needed for develop
 
-req = ['numpy','scipy','h5py','matplotlib','pandas','netcdf4','basemap','pyzmq','jupyter',
+req = ['numpy','scipy','h5py','matplotlib','pandas','netcdf4','pyzmq','jupyter',
        'tornado','paramiko','pymongo','mechanize','jinja2','jsonschema','ecdsa','scikit-image',
        'pyproj','cryptography']
+pipreq = 'basemap'
 try:
     import conda.cli
-    conda.cli.main('install',*req)
+    conda.cli.main('install',*(req+pipreq))
 except Exception as e:
     import pip
     pip.main(['install'] + req)
@@ -122,6 +123,8 @@ setup(name='davitpy',
             "Natural Language :: English",
             "Programming Language :: Python"
             ],
+      install_requires=pipreq,
+      dependency_links=['https://downloads.sourceforge.net/project/matplotlib/matplotlib-toolkits/basemap-1.0.7/basemap-1.0.7.tar.gz'],
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
