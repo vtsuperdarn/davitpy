@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import copy
 import datetime
 from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
 import scipy.signal
-from signalCommon import *
+from .signalCommon import *
 import logging
 
 
@@ -147,16 +148,16 @@ def detrend(vtsig):
     if hasattr(newsigobj, 'metadata'):
         delMeta = ['ymin', 'ymax']
         for key in delMeta:
-            if newsigobj.metadata.has_key(key):
+            if key in newsigobj.metadata:
                 del newsigobj.metadata[key]
     else:
         newsigobj.metadata = {}
 
     key = 'title'
-    if newsigobj.metadata.has_key(key):
+    if key in newsigobj.metadata:
         newsigobj.metadata[key] = ' '.join(
             ['Detrended ', newsigobj.metadata[key]])
-    elif vtsig.metadata.has_key(key):
+    elif key in vtsig.metadata:
         newsigobj.metadata[key] = ' '.join(['Detrended ', vtsig.metadata[key]])
     else:
         newsigobj.metadata[key] = 'Detrended'
@@ -239,15 +240,15 @@ class filter(object):
         # Get metadata for cutoffs and numtaps.
         md = sigObj.getAllMetaData()
         if cutoff_high is None:
-            if md.has_key('filter_cutoff_high'):
+            if 'filter_cutoff_high' in md:
                 cutoff_high = md['filter_cutoff_high']
 
         if cutoff_low is None:
-            if md.has_key('filter_cutoff_low'):
+            if 'filter_cutoff_low' in md:
                 cutoff_low = md['filter_cutoff_low']
 
         if numtaps is None:
-            if md.has_key('filter_numtaps'):
+            if 'filter_numtaps' in md:
                 numtaps = md['filter_numtaps']
             else:
                 logging.warning('WARNING: You must provide numtaps.')
@@ -449,7 +450,7 @@ class filter(object):
         if hasattr(newsigobj, 'metadata'):
             delMeta = ['ymin', 'ymax']
             for key in delMeta:
-                if newsigobj.metadata.has_key(key):
+                if key in newsigobj.metadata:
                     del newsigobj.metadata[key]
         else:
             newsigobj.metadata = {}
@@ -457,10 +458,10 @@ class filter(object):
         newsigobj.updateValidTimes([val_tm0, val_tm1])
 
         key = 'title'
-        if newsigobj.metadata.has_key(key):
+        if key in newsigobj.metadata:
             newsigobj.metadata[key] = ' '.join(
                 ['Filtered', newsigobj.metadata[key]])
-        elif vtsig.metadata.has_key(key):
+        elif key in vtsig.metadata:
             newsigobj.metadata[key] = ' '.join(
                 ['Filtered', vtsig.metadata[key]])
         else:

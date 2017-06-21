@@ -58,6 +58,7 @@ Translated to Python by Sebastien de Larquier
 
 """
 
+from __future__ import absolute_import
 import math
 import numpy
 

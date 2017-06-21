@@ -30,25 +30,31 @@ sat         satellite data
 --------------------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
 
-try: import base
-except Exception,e: 
+try: 
+    from . import base
+except Exception as e: 
     logging.exception(__file__ + ' -> gme.base: ' + str(e))
 
-try: import ind
-except Exception,e: 
+try: 
+    from . import ind
+except Exception as e: 
     logging.exception(__file__ + ' -> gme.ind: ' + str(e))
 
-try: import sat
-except Exception,e: 
+try: 
+    from . import sat
+except Exception as e: 
     logging.exception(__file__ + ' -> gme.sat: ' + str(e))
 
-try: import plotting
-except Exception,e: 
+try: 
+    from . import plotting
+except Exception as e: 
     logging.exception(__file__ + ' -> gme.plot: ' + str(e))
 
-try: import isr
-except Exception, e:
+try: 
+    from . import isr
+except Exception as e:
     logging.exception(__file__ + ' -> isr: ' + str(e))

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
 import logging
 
 def fillGmeDb(time='recent'):
@@ -78,37 +79,37 @@ def fillGmeDb(time='recent'):
         p6 = Process(target=gme.ind.symasy.mapSymAsyMongo, args=(1980,now.year))
 
     try: p0.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exeption('problem filling Omni db')
 
     try: p1.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Omni db')
 
     try: p2.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Poes db')
 
     try: p3.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Kp db')
 
     try: p4.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Dst db')
 
     try: p5.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling AE db')
 
     try: p6.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling AE db')
 

@@ -11,6 +11,7 @@ mhoData     Millstone Hill data interaction
 -------------------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
 # constants

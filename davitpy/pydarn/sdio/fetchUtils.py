@@ -37,6 +37,7 @@ Functions
   * :func:`pydarn.sdio.fetchUtils.fetch_remote_files`
 """
 
+from __future__ import absolute_import, print_function
 import logging
 import datetime as dt
 from dateutil.relativedelta import relativedelta
@@ -618,7 +619,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                             # remote file to prevent multiple downloads
                             if tfsize >= 0 and check_cache:
                                 f = urllib2.urlopen(furl)
-                                if f.headers.has_key("Content-Length"):
+                                if "Content-Length" in f.headers:
                                     rfsize = int(f.headers["Content-Length"])
                                     if rfsize != tfsize:
                                         tfsize = -1
@@ -692,47 +693,47 @@ def test_fetchutils():
     tests = 3
     success = 0
 
-    print "Testing fetchUtils.uncompress_files"
-    print "    Testing .zip"
+    print("Testing fetchUtils.uncompress_files")
+    print("    Testing .zip")
     try:
         uncompress_file('20121107.0201.00.kod.d.fitacf.zip',
                         outname='test.fitacf')
-        print "SUCCESS!"
+        print("SUCCESS!")
         success += 1
     except:
-        print "FAILED!"
+        print("FAILED!")
 
-    print "    Testing .bz2"
+    print("    Testing .bz2")
     try:
         uncompress_file('20121107.0201.00.kod.d.fitacf.bz2',
                         outname='test.fitacf')
-        print "SUCCESS!"
+        print("SUCCESS!")
         success += 1
     except:
-        print "FAILED!"
+        print("FAILED!")
 
-    print "    Testing .gz"
+    print("    Testing .gz")
     try:
         uncompress_file('20121107.0201.00.kod.d.fitacf.gz',
                         outname='test.fitacf')
-        print "SUCCESS!"
+        print("SUCCESS!")
         success += 1
     except:
-        print "FAILED!"
+        print("FAILED!")
 
-    print "Finished testing. Success: {:s}/{:s}".format(str(success),str(tests))
+    print("Finished testing. Success: {:s}/{:s}".format(str(success),str(tests)))
 
 if __name__=="__main__":
     import os
     from datetime import datetime,timedelta
 
-    print "*************************************************"
-    print "*************************************************"
-    print "    Running examples of fetch_remote_files..."
-    print "*************************************************"
-    print "*************************************************"
+    print("*************************************************")
+    print("*************************************************")
+    print("    Running examples of fetch_remote_files...")
+    print("*************************************************")
+    print("*************************************************")
 
-    print "Attempting to fetch a mapex file from the VT server..."
+    print("Attempting to fetch a mapex file from the VT server...")
     mapexFiles = fetch_remote_files(datetime(2012,11,24),
                                     datetime(2012,11,24,23,59), 'sftp',
                                     'sd-data2.ece.vt.edu',
@@ -741,11 +742,11 @@ if __name__=="__main__":
                                     '{date}.north.{ftype}',
                                     username='sd_dbread', password='5d')
 
-    print "Expected the file: ['/tmp/sd/20121124.north.mapex']"
-    print "Received the file: " + str(mapexFiles)
-    print "*************************************************"
+    print("Expected the file: ['/tmp/sd/20121124.north.mapex']")
+    print("Received the file: " + str(mapexFiles))
+    print("*************************************************")
 
-    print "Attempting to fetch map files from the usask server..."
+    print("Attempting to fetch map files from the usask server...")
     mapFiles = fetch_remote_files(datetime(2001,11,24),
                                   datetime(2001,11,24,23,59), 'sftp',
                                   'chapman.usask.ca',
@@ -754,11 +755,11 @@ if __name__=="__main__":
                                   ['{date}.{ftype}','{date}s.{ftype}'],
                                   username='davitpy', password='d4vitPY-usask')
 
-    print "Expected the files: ['/tmp/sd/20011124.map','/tmp/sd/20011124s.map']"
-    print "Received the files: " + str(mapFiles)
-    print "*************************************************"
+    print("Expected the files: ['/tmp/sd/20011124.map','/tmp/sd/20011124s.map']")
+    print("Received the files: " + str(mapFiles))
+    print("*************************************************")
 
-    print "Attempting to fetch a fitex file from the VT server..."
+    print("Attempting to fetch a fitex file from the VT server...")
     fitex = fetch_remote_files(datetime(2013,11,30,22),
                                datetime(2013,12,1,2), 'sftp',
                                'sd-data2.ece.vt.edu',
@@ -771,11 +772,11 @@ if __name__=="__main__":
     estr = "Expected the files: ['/tmp/sd/20131130.2201.00.mcm.a.fitex', "
     estr = "{:s}'/tmp/sd/20131201.0000.04.mcm.a.fitex', ".format(estr)
     estr = "{:s}'/tmp/sd/20131201.0201.00.mcm.a.fitex']".format(estr)
-    print "{:s}\nReceived the files: {:s}".format(estr, str(fitex))
-    print "*************************************************"
+    print("{:s}\nReceived the files: {:s}".format(estr, str(fitex)))
+    print("*************************************************")
 
-    print "Attempting to fetch a fitex file from the VT server..."
-    fitex = fetch_remote_files(datetime(2013,01,21,00), datetime(2013,01,21,05),
+    print("Attempting to fetch a fitex file from the VT server...")
+    fitex = fetch_remote_files(datetime(2013,0o1,21,00), datetime(2013,0o1,21,0o5),
                                'sftp', 'sd-data2.ece.vt.edu',
                                'data/{year}/{ftype}/{radar}/',
                                {'ftype':'fitex','radar':'ade','channel':'a'},
@@ -787,10 +788,10 @@ if __name__=="__main__":
     estr = "{:s}'/tmp/sd/20130121.0201.00.ade.a.fitex', ".format(estr)
     estr = "{:s}'/tmp/sd/20130121.0349.59.ade.a.fitex', ".format(estr)
     estr = "{:s}'/tmp/sd/20130121.0401.00.ade.a.fitex']".format(estr)
-    print "{:s}\nReceived the files: {:s}".format(estr, str(fitex))
-    print "*************************************************"
+    print("{:s}\nReceived the files: {:s}".format(estr, str(fitex)))
+    print("*************************************************")
 
-    print "Attempting to fetch fitacf files from the usask server..."
+    print("Attempting to fetch fitacf files from the usask server...")
     fitacf = fetch_remote_files(datetime(2012,11,24,4), datetime(2012,11,24,7),
                                 'sftp', 'chapman.usask.ca',
                                 'fitcon/{year}/{month}/',
@@ -798,5 +799,5 @@ if __name__=="__main__":
                                 '{date}.C0.{radar}.{ftype}', username='davitpy',
                                 password='d4vitPY-usask')
 
-    print "Expected the file: ['/tmp/sd/20121124.C0.sas.fitacf']"
-    print "Received the file: " + str(fitacf)
+    print("Expected the file: ['/tmp/sd/20121124.C0.sas.fitacf']")
+    print("Received the file: " + str(fitacf))

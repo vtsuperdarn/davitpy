@@ -21,10 +21,11 @@ dmapio
 Module for interfacing with dmapio c code
 
 """
+from __future__ import absolute_import
 import logging
 
 try:
     from dmapio import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__+' -> dmapio: ' + str(e))
 

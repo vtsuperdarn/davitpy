@@ -66,6 +66,7 @@ T(2) :
     temperature at ALT
   
 """
+from __future__ import absolute_import
 import logging
 
 try:
@@ -126,7 +127,7 @@ def getF107Ap(mydatetime=None):
         year = 1900 + yy if (yy >= 58) else 2000 + yy
         tdate.append(datetime(year, int(ldat[4:6]), int(ldat[7:9])).date())
         ttap = []
-        for iap in xrange(8):
+        for iap in range(8):
             ttap.append(int(ldat[9 + 3 * iap:9 + 3 * iap + 4]))
         tap.append(ttap)
         tapd.append(int(ldat[33:36]))
@@ -158,8 +159,8 @@ def getF107Ap(mydatetime=None):
 
     # AP output
     ttap = [tap[dtInd][hrInd - i] for i in range(hrInd + 1)]
-    for id in xrange(3):
-        for ih in xrange(8):
+    for id in range(3):
+        for ih in range(8):
             ttap.append(tap[dtInd - id - 1][-ih - 1])
     dictOut['ap'] = [tapd[dtInd],
                      ttap[0],

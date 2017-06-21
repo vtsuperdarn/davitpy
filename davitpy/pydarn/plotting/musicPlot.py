@@ -49,6 +49,7 @@ musicRTI    RTI plot of musicArray data
 ---------------------------------------
 
 """
+from __future__ import absolute_import
 import numpy as np
 import scipy as sp
 import datetime
@@ -233,7 +234,7 @@ class musicFan(object):
 
         # Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
-        if paramDict.has_key('label'):
+        if 'label' in paramDict:
             param     = paramDict['param']
             cbarLabel = paramDict['label']
         else:
@@ -251,7 +252,7 @@ class musicFan(object):
                 else:
                     scale   = scMax*np.array([0.,1.])
             else:
-                if paramDict.has_key('range'):
+                if 'range' in paramDict:
                     scale = paramDict['range']
                 else:
                     scale = [-200,200]
@@ -418,7 +419,7 @@ class musicFan(object):
             else:
                 cbar.set_ticks(cbar_ticks)
 
-            if currentData.metadata.has_key('gscat'):
+            if 'gscat' in currentData.metadata:
                 if currentData.metadata['gscat'] == 1:
                     cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
@@ -554,7 +555,7 @@ class musicRTI(object):
         **kwArgs):
 
         from scipy import stats
-        from rti import plot_freq,plot_nave,plot_skynoise,plot_searchnoise
+        from .rti import plot_freq,plot_nave,plot_skynoise,plot_searchnoise
 
         if axis is None:
             from matplotlib import pyplot as plt
@@ -590,7 +591,7 @@ class musicRTI(object):
 
         # Translate parameter information from short to long form.
         paramDict = getParamDict(metadata['param'])
-        if paramDict.has_key('label'):
+        if 'label' in paramDict:
             param     = paramDict['param']
             cbarLabel = paramDict['label']
         else:
@@ -608,7 +609,7 @@ class musicRTI(object):
                 else:
                     scale   = scMax*np.array([0.,1.])
             else:
-                if paramDict.has_key('range'):
+                if 'range' in paramDict:
                     scale = paramDict['range']
                 else:
                     scale = [-200,200]
@@ -795,7 +796,7 @@ class musicRTI(object):
         axis.set_ylim(ylim)
         # Shade xBoundary Limits
         if xBoundaryLimits is None:
-            if currentData.metadata.has_key('timeLimits'):
+            if 'timeLimits' in currentData.metadata:
                 xBoundaryLimits = currentData.metadata['timeLimits']
 
         if xBoundaryLimits is not None:
@@ -809,10 +810,10 @@ class musicRTI(object):
 
         # Shade yBoundary Limits
         if yBoundaryLimits is None:
-            if currentData.metadata.has_key('gateLimits') and coords == 'gate':
+            if 'gateLimits' in currentData.metadata and coords == 'gate':
                 yBoundaryLimits = currentData.metadata['gateLimits']
 
-            if currentData.metadata.has_key('rangeLimits') and coords == 'range':
+            if 'rangeLimits' in currentData.metadata and coords == 'range':
                 yBoundaryLimits = currentData.metadata['rangeLimits']
 
         if yBoundaryLimits is not None:
@@ -851,7 +852,7 @@ class musicRTI(object):
             else:
                 cbar.set_ticks(cbar_ticks)
 
-            if currentData.metadata.has_key('gscat'):
+            if 'gscat' in currentData.metadata:
                 if currentData.metadata['gscat'] == 1:
                     cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
@@ -1164,12 +1165,12 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
     # Set x boundary limits using timeLimits, if they exist.  Account for both dataSet1 and dataSet2, and write it so timeLimits can be any type of sequence.
     if xBoundaryLimits is None:
         tmpLim = []
-        if currentData.metadata.has_key('timeLimits'):
+        if 'timeLimits' in currentData.metadata:
             tmpLim.append(currentData.metadata['timeLimits'][0])
             tmpLim.append(currentData.metadata['timeLimits'][1])
 
         if dataSet2 is not None:
-          if currentData2.metadata.has_key('timeLimits'):
+          if 'timeLimits' in currentData2.metadata:
             tmpLim.append(currentData2.metadata['timeLimits'][0])
             tmpLim.append(currentData2.metadata['timeLimits'][1])
 
@@ -1182,7 +1183,7 @@ def timeSeriesMultiPlot(dataObj,dataSet='active',dataObj2=None,dataSet2=None,plo
 
     # Get Y-Axis title.
     paramDict = getParamDict(currentData.metadata['param'])
-    if ylabel is None and paramDict.has_key('label'):
+    if ylabel is None and 'label' in paramDict:
         ylabel = paramDict['label']
 
     yData1_title = currentData.history[max(currentData.history.keys())] # Label the plot with the current level of data processing
@@ -1628,7 +1629,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
         else:
             cbar.set_ticks(cbar_ticks)
 
-        if currentData.metadata.has_key('gscat') and cbar_gstext_enable:
+        if 'gscat' in currentData.metadata and cbar_gstext_enable:
             if currentData.metadata['gscat'] == 1:
                 cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
@@ -1729,7 +1730,7 @@ def plotFullSpectrum(dataObj,dataSet='active',
 
         text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-        if md.has_key('fir_filter'):
+        if 'fir_filter' in md:
             filt = md['fir_filter']
             if filt[0] is None:
                 low = 'None'
@@ -1819,7 +1820,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
     # Colorbar
     cbar = fig.colorbar(pcoll,orientation='vertical')#,shrink=.65,fraction=.1)
     cbar.set_label('ABS(Spectral Density)')
-    if currentData.metadata.has_key('gscat'):
+    if 'gscat' in currentData.metadata:
         if currentData.metadata['gscat'] == 1:
             cbar.ax.text(0.5,-0.075,'Ground\nscat\nonly',ha='center')
     #  labels[-1].set_visible(False)
@@ -1833,7 +1834,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
     ticks   = []
     labels  = []
     mod = int(np.floor(nrGates / 10))
-    for x in xrange(nrGates):
+    for x in range(nrGates):
         if x % mod != 0: continue
         ll = nrBeams*x
         ticks.append(ll)
@@ -1865,7 +1866,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
 
     text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-    if md.has_key('fir_filter'):
+    if 'fir_filter' in md:
         filt = md['fir_filter']
         if filt[0] is None:
             low = 'None'
@@ -1950,7 +1951,7 @@ def plotKarr(dataObj,dataSet='active',fig=None,axis=None,maxSignals=None, sig_fo
 
         text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-        if md.has_key('fir_filter'):
+        if 'fir_filter' in md:
             filt = md['fir_filter']
             if filt[0] is None:
                 low = 'None'
@@ -2019,7 +2020,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
     text = md['name'] + ' ' + param.capitalize() + timeLim[0].strftime(' (%Y %b %d %H:%M - ') + timeLim[1].strftime('%Y %b %d %H:%M)')
 
-    if md.has_key('fir_filter'):
+    if 'fir_filter' in md:
         filt = md['fir_filter']
         if filt[0] is None:
             low = 'None'
@@ -2086,7 +2087,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
         # Add wavelength to x/y tick labels ############################################ 
         ticks     = axis.get_xticks()
         newLabels = []
-        for x in xrange(len(ticks)):
+        for x in range(len(ticks)):
             tck = ticks[x]
             if tck != 0:
                 km = 2*np.pi/tck
@@ -2103,7 +2104,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
         ticks     = axis.get_yticks()
         newLabels = []
-        for y in xrange(len(ticks)):
+        for y in range(len(ticks)):
             tck = ticks[y]
             if tck != 0:
                 km = 2*np.pi/tck
@@ -2120,7 +2121,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
 
         if hasattr(currentData,'sigDetect'):
             pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
-            tmpList = range(currentData.sigDetect.nrSigs)[::-1] # Force list to plot backwards so number 1 is on top!
+            tmpList = list(range(currentData.sigDetect.nrSigs))[::-1] # Force list to plot backwards so number 1 is on top!
             for signal in currentData.sigDetect.info:
                 if maxSignals is not None:
                     if signal['order'] > maxSignals: continue 
@@ -2235,7 +2236,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
             cbar_ticks = np.arange(10)/10.
         cbar.set_ticks(cbar_ticks)
 
-        if currentData.metadata.has_key('gscat'):
+        if 'gscat' in currentData.metadata:
             if currentData.metadata['gscat'] == 1:
                 cbar.ax.text(0.5,cbar_gstext_offset,'Ground\nscat\nonly',ha='center',fontsize=cbar_gstext_fontsize)
 
@@ -2252,7 +2253,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     # Add wavelength to x/y tick labels ############################################ 
     ticks     = axis.get_xticks()
     newLabels = []
-    for x in xrange(len(ticks)):
+    for x in range(len(ticks)):
         tck = ticks[x]
         if tck != 0:
             km = 2*np.pi/tck
@@ -2270,7 +2271,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
 
     ticks     = axis.get_yticks()
     newLabels = []
-    for y in xrange(len(ticks)):
+    for y in range(len(ticks)):
         tck = ticks[y]
         if tck != 0:
             km = 2*np.pi/tck

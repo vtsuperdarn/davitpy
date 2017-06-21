@@ -27,6 +27,8 @@ Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
 
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import numpy as np
 import logging
 
@@ -840,17 +842,17 @@ if __name__ == "__main__":
     from davitpy.pydarn.radar import radStruct
     from datetime import datetime
 
-    print
-    print "Testing radFov"
-    print "Expected and result samples are from the fov's"
-    print "fov.latCenter[0][0:4] and fov.lonCenter[0][0:4]"
-    print "(in that order) on a 32-bit machine"
-    print
+    print()
+    print("Testing radFov")
+    print("Expected and result samples are from the fov's")
+    print("fov.latCenter[0][0:4] and fov.lonCenter[0][0:4]")
+    print("(in that order) on a 32-bit machine")
+    print()
     time = datetime(2012, 1, 1, 0, 2)
-    print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
+    print("Create a site object for Saskatoon, 2012-01-01 00:02 UT.")
     site_sas = radStruct.site(code="sas", dt=time)
-    print
-    print "Create a fov object using that site, coords are geo, model Chisham."
+    print()
+    print("Create a fov object using that site, coords are geo, model Chisham.")
     fov1 = fov(site=site_sas, model="C")
 #    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
 #    print "Result:   " + str(fov1.latCenter[0][0:4])
@@ -858,19 +860,19 @@ if __name__ == "__main__":
 #    print "-106.75811049]"
 #    print "Result:   " + str(fov1.lonCenter[0][0:4])
 #    print "coords of result are " + fov1.coords
-    print
-    print "Now create a fov object with mag coords."
+    print()
+    print("Now create a fov object with mag coords.")
     fov2 = fov(site=site_sas, coords="mag", date_time=time)
-    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
-    print "Result:   " + str(fov2.latCenter[0][0:4])
-    print "Expected: [-43.22579758 -43.25962883 -43.33474048 -43.42848079]"
-    print "Result:   " + str(fov2.lonCenter[0][0:4])
-    print "coords of result are " + fov2.coords
-    print
-    print "Another fov, now in MLT."
+    print("Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]")
+    print("Result:   " + str(fov2.latCenter[0][0:4]))
+    print("Expected: [-43.22579758 -43.25962883 -43.33474048 -43.42848079]")
+    print("Result:   " + str(fov2.lonCenter[0][0:4]))
+    print("coords of result are " + fov2.coords)
+    print()
+    print("Another fov, now in MLT.")
     fov3 = fov(site=site_sas, coords="mlt", date_time=time)
-    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
-    print "Result:   " + str(fov3.latCenter[0][0:4])
-    print "Expected: [-121.24209635 -121.27592761 -121.35103925 -121.44477957]"
-    print "Result:   " + str(fov3.lonCenter[0][0:4])
-    print "coords of result are " + fov3.coords
+    print("Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]")
+    print("Result:   " + str(fov3.latCenter[0][0:4]))
+    print("Expected: [-121.24209635 -121.27592761 -121.35103925 -121.44477957]")
+    print("Result:   " + str(fov3.lonCenter[0][0:4]))
+    print("coords of result are " + fov3.coords)

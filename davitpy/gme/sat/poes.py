@@ -34,8 +34,10 @@ overlayPoesTed  map poes ted data
 ------------------------------------------
 
 """
+from __future__ import absolute_import, print_function
 from davitpy.gme.base.gmeBase import gmeData
 import logging
+import six
 
 class poesRec(gmeData):
   """a class to represent a record of poes data.
@@ -200,10 +202,10 @@ class poesRec(gmeData):
     self.time = dt.datetime(int(cols[0]), int(cols[1]), int(cols[2]), int(cols[3]),int(cols[4]), \
                             int(float(cols[5])),int(round((float(cols[5])-int(float(cols[5])))*1e6)))
     
-    for key in self.__dict__.iterkeys():
+    for key in six.iterkeys(self.__dict__):
       if(key == 'dataSet' or key == 'info' or key == 'satnum' or key == 'time'): continue
       try: ind = head.index(key)
-      except Exception,e:
+      except Exception as e:
         logging.exception(e)
         logging.exception('problem setting attribute' + key)
       #check for a good value
@@ -413,14 +415,14 @@ def readPoesFtp(sTime,eTime=None):
 
   # connect to the server
   try: ftp = FTP('satdat.ngdc.noaa.gov')  
-  except Exception,e:
+  except Exception as e:
     logging.exception(e)
     logging.exception('problem connecting to NOAA server')
     return None
 
   # login as anonymous
   try: l=ftp.login()
-  except Exception,e:
+  except Exception as e:
     logging.exception(e)
     logging.exception('problem logging in to NOAA server')
     return None
@@ -431,7 +433,7 @@ def readPoesFtp(sTime,eTime=None):
   while(myTime <= eTime):
     # go to the data directory
     try: ftp.cwd('/sem/poes/data/avg/txt/'+str(myTime.year))
-    except Exception,e:
+    except Exception as e:
       logging.exception(e)
       logging.exception('error getting to data directory')
       return None
@@ -450,7 +452,7 @@ def readPoesFtp(sTime,eTime=None):
       lines = []
       # get the data
       try: ftp.retrlines('RETR '+fname,lines.append)
-      except Exception,e:
+      except Exception as e:
         logging.exception(e)
         logging.exception('error retrieving' + fname)
 
@@ -527,7 +529,7 @@ def mapPoesMongo(sYear,eYear=None):
     for rec in templist:
       # check if a duplicate record exists
       qry = mongoData.find({'$and':[{'time':rec.time},{'satnum':rec.satnum}]})
-      print rec.time, rec.satnum
+      print(rec.time, rec.satnum)
       tempRec = rec.toDbDict()
       cnt = qry.count()
       # if this is a new record, insert it
@@ -535,7 +537,7 @@ def mapPoesMongo(sYear,eYear=None):
       # if this is an existing record, update it
       elif(cnt == 1):
         logging.debug('found one!!')
-        dbDict = qry.next()
+        dbDict = next(qry)
         temp = dbDict['_id']
         dbDict = tempRec
         dbDict['_id'] = temp
@@ -686,7 +688,7 @@ def overlayPoesTed( baseMapObj, axisHandle, startTime, endTime = None, coords = 
           lonPoesAll[sN].append(l.folon)
 
         timePoesAll[sN].append(l.time)
-      except Exception,e:
+      except Exception as e:
         logging.exception(e)
         logging.exception('could not get parameter for time' + l.time)
 

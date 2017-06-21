@@ -30,6 +30,7 @@ Classes
 
 """
 
+from __future__ import absolute_import, print_function
 import logging
 
 class DataPtr(object):
@@ -120,7 +121,7 @@ class DataPtr(object):
         __offsetSeek = {'dmap':self.__offsetSeekDmap}
         __offsetTell = {'dmap':self.__offsetTellDmap}
         __rewind = {'dmap':self.__rewindDmap}
-        datatypelist = __read.keys()
+        datatypelist = list(__read.keys())
 
         # Check input variables
         estr = "datatype: {:} not supported.  ".format(str(datatype))
@@ -200,7 +201,7 @@ class DataPtr(object):
             dfile = readDmapRec(self._fd)
             if dfile is None:
                 # if we dont have valid data, clean up, get out
-                print '\nreached end of data'
+                print('\nreached end of data')
                 break
             else:
                 if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
@@ -230,7 +231,7 @@ class DataPtr(object):
             if self.recordIndex is None:        
                 self.__createIndexDmap()
 
-            if offset in self.recordIndex.values():
+            if offset in list(self.recordIndex.values()):
                 return setDmapOffset(self._fd, offset)
             else:
                 return getDmapOffset(self._fd)
@@ -287,7 +288,7 @@ class DataPtr(object):
            if(dfile == None or
               dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
                # if we dont have valid data, clean up, get out
-               print '\nreached end of data'
+               print('\nreached end of data')
                return None
 
            # check that we're in the time window
@@ -327,15 +328,15 @@ if __name__=="__main__":
     from davitpy import pydarn
     from davitpy.pydarn.sdio.fetchUtils import fetch_remote_files
 
-    print "##############################"
-    print " TESTING THE DataPtr class..."
-    print "##############################"
+    print("##############################")
+    print(" TESTING THE DataPtr class...")
+    print("##############################")
 
     stime = datetime.datetime(2012, 11, 24, 4)
     eTime = datetime.datetime(2012, 11, 24, 5)
 
-    print " TRYING TO WORK WITH THE DMAP DATATYPE"
-    print " FETCHING A SUPERDARN FITEX FILE......"
+    print(" TRYING TO WORK WITH THE DMAP DATATYPE")
+    print(" FETCHING A SUPERDARN FITEX FILE......")
     files = fetch_remote_files(stime, eTime, \
                 'sftp','sd-data.ece.vt.edu', 'data/{year}/{ftype}/{radar}/', \
                 {'radar':'mcm', 'ftype':'fitex', 'channel':'a'}, '/tmp/sd/', \
@@ -343,53 +344,53 @@ if __name__=="__main__":
                  '{date}.{hour}......{radar}.{channel}.{ftype}'], \
                 username='sd_dbread', password='5d', \
                 time_inc=datetime.timedelta(hours=2))
-    print "   Fetched the file: " + files[0] + "\n"
+    print("   Fetched the file: " + files[0] + "\n")
 
-    print " INITIALIZING A CLASS THAT INHERITS FROM DataPtr"
+    print(" INITIALIZING A CLASS THAT INHERITS FROM DataPtr")
     t = pydarn.sdio.DataTypes.testing(stime, 'dmap', eTime, files[0])
-    print "   ...it worked! (Success!)"
+    print("   ...it worked! (Success!)")
 
 
-    print " Opening the file..."
+    print(" Opening the file...")
     t.open()
-    print "   ...it worked! (Success!)"
+    print("   ...it worked! (Success!)")
 
 
-    print "Reading a line of the file..."
+    print("Reading a line of the file...")
     dfile = t.read()
     if isinstance(dfile, dict):
-        print "   SUCCESS!"
+        print("   SUCCESS!")
     else:
-        print "   FAILED!"
+        print("   FAILED!")
 
 
-    print " Getting file offsets as a function of timestamp..."
+    print(" Getting file offsets as a function of timestamp...")
     index, _ = t.createIndex()
     if isinstance(index, dict):
-        print "   SUCCESS!"
+        print("   SUCCESS!")
     else:
-        print "   FAILED!"
+        print("   FAILED!")
 
 
-    print " Seeking to file offset at datetime(2012,11,24,4,4,39,141000)"
+    print(" Seeking to file offset at datetime(2012,11,24,4,4,39,141000)")
     t.offsetSeek(index[datetime.datetime(2012, 11, 24, 4, 4, 39, 141000)])
     offset = t.offsetTell()
     dfile = t.read()
-    print " Seeked to time: {:}".format( \
-                        str(datetime.datetime.utcfromtimestamp(dfile['time'])))
-    print " Telling the file offset..."
-    print " Should get: {:} and we got: {:}".format( \
+    print(" Seeked to time: {:}".format( \
+                        str(datetime.datetime.utcfromtimestamp(dfile['time']))))
+    print(" Telling the file offset...")
+    print(" Should get: {:} and we got: {:}".format( \
                 str(index[datetime.datetime(2012, 11, 24, 4, 4, 39, 141000)]),
-                                                     str(offset))
+                                                     str(offset)))
 
-    print " Rewinding the file..."
+    print(" Rewinding the file...")
     t.rewind()
-    print "    ...rewound! (Success!)"
+    print("    ...rewound! (Success!)")
 
-    print " Closing the file..."
+    print(" Closing the file...")
     t.close()
-    print "    ...closed! (Success!)"
-    print "\n ALL DONE TESTING"
+    print("    ...closed! (Success!)")
+    print("\n ALL DONE TESTING")
 
   
 

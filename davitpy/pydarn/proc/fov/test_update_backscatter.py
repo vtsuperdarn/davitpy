@@ -35,6 +35,7 @@ Inst: University of Leicester (UoL)
 """
 
 # Import python packages
+from __future__ import absolute_import
 import os
 import numpy as np
 import datetime as dt
@@ -48,7 +49,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.collections as mcol
 import matplotlib.colors as mcolors
 # Import DaViTpy packages
-import update_backscatter as ub
+from . import update_backscatter as ub
 
 #--------------------------------------------------------------------------
 # Define the colors (can be overwritten)
@@ -375,9 +376,9 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                            tdiff_e_args=tdiff_e_args, ptest=ptest, step=step,
                            strict_gs=strict_gs, beams=beams)
 
-    rad = rad_bms.keys()[0]
-    if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
-        estr = "can't find radar [" + rad + "] in data:" + dout[0].keys()
+    rad = list(rad_bms.keys())[0]
+    if rad not in dout[0] or len(dout[0][rad]) == 0:
+        estr = "can't find radar [" + rad + "] in data:" + list(dout[0].keys())
         logging.error(estr)
         return(dout[0], dout[1], dout[2], beams)
 
@@ -463,7 +464,7 @@ def plot_yeoman_plate1(intensity_all="p_l", intensity_sep="fovelv",
                 if ii is not "hop":
                     label = pyrad.radUtils.getParamDict(ii)['label']
                     unit = pyrad.radUtils.getParamDict(ii)['unit']
-                    if not iinc.has_key(ii):
+                    if ii not in iinc:
                         iinc[ii] = 6
                     cb[ff] = add_colorbar(f, con, imin[ii], imax[ii], iinc[ii],
                                           label, unit, loc=pos[ff])
@@ -676,8 +677,8 @@ def plot_milan_figure9(intensity_all="p_l", intensity_sep="p_l",
                            ptest=ptest, step=step, strict_gs=strict_gs,
                            beams=beams)
 
-    if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
-        estr = "can't find radar [" + rad + "] in data:" + dout[0].keys()
+    if rad not in dout[0] or len(dout[0][rad]) == 0:
+        estr = "can't find radar [" + rad + "] in data:" + list(dout[0].keys())
         logging.error(estr)
         return(dout[0], dout[1], dout[2], beams)
 
@@ -899,8 +900,8 @@ def plot_storm_figures(intensity_all="v", intensity_sep="v", marker_key="reg",
                            ptest=ptest, step=step, strict_gs=strict_gs,
                            beams=beams)
 
-    if not dout[0].has_key(rad) or len(dout[0][rad]) == 0:
-        estr = "can't find radar [" + rad + "] in data:" + dout[0].keys()
+    if rad not in dout[0] or len(dout[0][rad]) == 0:
+        estr = "can't find radar [" + rad + "] in data:" + list(dout[0].keys())
         logging.error(estr)
         return(dout[0], dout[1], dout[2], beams)
 
@@ -1357,7 +1358,7 @@ def plot_single_column(f, xdata, ydata, zdata, zindices, zname, color,
         if ii is not "hop" and ii is not "reg":
             label = pyrad.radUtils.getParamDict(ii)['label']
             unit = pyrad.radUtils.getParamDict(ii)['unit']
-            if not zinc.has_key(ii):
+            if ii not in zinc:
                 zinc[ii] = 6
             cb[ff] = add_colorbar(f, con, zmin[ii], zmax[ii], zinc[ii], label,
                                   unit, loc=pos[ff])
@@ -1515,7 +1516,7 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
 
     # For each radar, load and process the desired data
     for rad in rad_bms.keys():
-        if not beams.has_key(rad):
+        if rad not in beams:
             # Load data for one radar, padding data based on the largest
             # temporal boxcar window used in the FoV processing
             rad_ptr = sdio.radDataRead.radDataOpen(stime-ut_box, rad,
@@ -1523,7 +1524,7 @@ def load_test_beams(intensity_all, intensity_sep, stime, etime, rad_bms,
                                                    cp=rad_cp[rad],
                                                    fileType=file_type,
                                                    password=password)
-            if fix_gs.has_key(rad):
+            if rad in fix_gs:
                 read_ptr = list()
                 i = 0
                 bm, i = ub.get_beam(rad_ptr, i)
@@ -1690,7 +1691,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
     """
     import davitpy.pydarn.radar as pyrad
 
-    mkey = fhop_attr if mm.has_key(fhop_attr) else fhop_attr[1:]
+    mkey = fhop_attr if fhop_attr in mm else fhop_attr[1:]
     xpos = {7:1.1, 6:0.49, 5:0.35, 4:0.8, 3:0.7, 2:0.5, 1:0.0}
 
     # Extract the scan data
@@ -1734,7 +1735,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                 fi = ff[i] if abs(ff[i]) == 1 else (1 if not np.isnan(fd[i])
                                                     else -1)
                 fe = fd[i] if fi == 1 else rd[i]
-                if not np.isnan(fe) and bhop[fi].has_key(hh[fi][i]):
+                if not np.isnan(fe) and hh[fi][i] in bhop[fi]:
                     xbeam.append(bm.bmnum)
                     brange.append(s)
                     fbeam.append(fd[i])
@@ -1742,7 +1743,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                     bfov[ff[i]][hh[fi][i]].append(j)
                     bfov[ff[i]]['all'].append(j)
                     bhop[fi][hh[fi][i]].append(j)
-                    if bhop[fi].has_key(hh[-fi][i]):
+                    if hh[-fi][i] in bhop[fi]:
                         bhop[-fi][hh[-fi][i]].append(j)
                     j += 1
 
@@ -1791,7 +1792,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                                                     else -1)
                 fe = fd[i] if fi == 1 else rd[i]
 
-                if not np.isnan(fe) and thop[fi].has_key(hh[fi][i]):
+                if not np.isnan(fe) and hh[fi][i] in thop[fi]:
                     xtime.append(bm.time)
                     trange.append(s)
                     ftime.append(fd[i])
@@ -1799,7 +1800,7 @@ def plot_scan_and_beam(scan, beam, fattr="felv", rattr="belv", fhop_attr="fhop",
                     tfov[ff[i]][hh[fi][i]].append(j)
                     tfov[ff[i]]['all'].append(j)
                     thop[fi][hh[fi][i]].append(j)
-                    if thop[-fi].has_key(hh[-fi][i]):
+                    if hh[-fi][i] in thop[-fi]:
                         thop[-fi][hh[-fi][i]].append(j)
                     j += 1
     xtime = np.array(xtime)
@@ -2274,7 +2275,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
     # End local routines
     #-------------------------------------------------------------------------
     # Load and process the desired data
-    if not beams.has_key(fbmnum) or not beams.has_key(rbmnum):
+    if fbmnum not in beams or rbmnum not in beams:
         # Load the SuperDARN data, padding data based on the largest
         # temporal boxcar window used in the FoV processing
         rad_ptr = sdio.radDataRead.radDataOpen(stime-ut_box, rad,
@@ -2292,7 +2293,7 @@ def plot_meteor_figure(fcolor="b", rcolor="m", stime=dt.datetime(2001,12,14),
                                       logfile=logfile, log_level=log_level,
                                       step=step)
 
-    if not beams.has_key(fbmnum) or not beams.has_key(rbmnum):
+    if fbmnum not in beams or rbmnum not in beams:
         return(None, None, None, beams)
 
     if len(beams[fbmnum]) == 0 or len(beams[rbmnum]) == 0:

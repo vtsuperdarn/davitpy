@@ -21,6 +21,7 @@ mapObj          Create empty map
 --------------------------------
 
 """
+from __future__ import absolute_import, print_function
 from mpl_toolkits import basemap
 import logging
 
@@ -779,30 +780,30 @@ if __name__ == "__main__":
     time = datetime(2014,8,7,18,30)
     time2 = datetime(2014,8,8,0,0)
 
-    print "Simple tests for plotUtils"
+    print("Simple tests for plotUtils")
     coords='geo'
     lat_0=20.
     lon_0=150.
-    print "Setting up figure 1 and axis"
+    print("Setting up figure 1 and axis")
     fig=plt.figure(1)
     ax=None
-    print "Init a mapObj instance with draw==False"
+    print("Init a mapObj instance with draw==False")
     tmpmap1 = mapObj(coords=coords,projection='stere', draw=False, 
                      llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
                      lat_0=lat_0, lon_0=lon_0, resolution='l', ax=ax,
                      datetime=time, dateTime=time)
-    print "initializing plots with plt.show, expect an empty figure 1 window"
-    print "Close figure window to continue with example"
+    print("initializing plots with plt.show, expect an empty figure 1 window")
+    print("Close figure window to continue with example")
     plt.show()
-    print "call the draw method for tmpmap1"
+    print("call the draw method for tmpmap1")
     tmpmap1.draw()
-    print "initializing plots with plt.show, expect a map in figure 1 window"
-    print "Close figure window to continue with example"
+    print("initializing plots with plt.show, expect a map in figure 1 window")
+    print("Close figure window to continue with example")
     plt.show()
-    print "Making plot in geo and mag for comparison."
+    print("Making plot in geo and mag for comparison.")
     fig2=plt.figure(2)
     ax=None
-    print "Init a mapObj instance with draw==True"
+    print("Init a mapObj instance with draw==True")
     tmpmap2 = mapObj(coords=coords,projection='stere', draw=True,
                      llcrnrlon=100, llcrnrlat=0, urcrnrlon=170, urcrnrlat=40,
                      lat_0=lat_0, lon_0=lon_0, resolution='l', datetime=time,
@@ -810,18 +811,18 @@ if __name__ == "__main__":
     fig3=plt.figure(3)
     ax=None
     coords="mag"
-    print "The inputs for the mag plot have been converted to magnetic"
-    print "beforehand so the maps should show the same region."
+    print("The inputs for the mag plot have been converted to magnetic")
+    print("beforehand so the maps should show the same region.")
     tmpmap3 = mapObj(coords=coords,projection='stere', draw=True,
                      llcrnrlon=172.63974536615848,llcrnrlat=-8.8093703108623647,
                      urcrnrlon=-121.21238751130332,urcrnrlat=33.758571820294179,
                      lat_0=lat_0, lon_0=lon_0,resolution='l', datetime=time,
                      dateTime=time)
-    print "initializing plots with plt.show, expect fig 2 & 3 windows with maps"
-    print "Close figure window to continue with example"
+    print("initializing plots with plt.show, expect fig 2 & 3 windows with maps")
+    print("Close figure window to continue with example")
     plt.show()
 
-    print "\nComparing magnetic and MLT.  Time selected is " + str(time)
+    print("\nComparing magnetic and MLT.  Time selected is " + str(time))
     fig4=plt.figure(4)
     ax=None
     coords="mag"
@@ -834,110 +835,110 @@ if __name__ == "__main__":
     tmpmap5 = mapObj(coords=coords, projection="stere", draw=True,
                      boundinglat=40., lat_0=90., lon_0=0., resolution='l',
                      datetime=time, dateTime=time)
-    print "MLT at zero MLON should be at " + \
+    print("MLT at zero MLON should be at " + \
       str(aacgm.mltFromYmdhms(time.year, time.month, time.day,
-                              time.hour, time.minute, time.second, 0.))
-    print "Figures 4 and 5 should now appear.  Close their windows to continue."
+                              time.hour, time.minute, time.second, 0.)))
+    print("Figures 4 and 5 should now appear.  Close their windows to continue.")
     plt.show()
 
-    print "\nTesting some coordinate transformations."
-    print "  Converting geo lat/lon to map x/y to geo lat/lon."
-    print "  geo lat/lon to map x/y"
+    print("\nTesting some coordinate transformations.")
+    print("  Converting geo lat/lon to map x/y to geo lat/lon.")
+    print("  geo lat/lon to map x/y")
 
     map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0, 
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
     x,y = map1(-120,54)
-    print "    Expected: ",14898932.7446,-14364789.7586
-    print "    Received: ",x,y
-    print "  map x/y to geo lat/lon"
+    print("    Expected: ",14898932.7446,-14364789.7586)
+    print("    Received: ",x,y)
+    print("  map x/y to geo lat/lon")
     lon,lat = map1(x,y,inverse=True,coords='geo')
-    print "    Expected: ",-119.99999999999999, 54.000000000000014
-    print "    Received: ",lon,lat
+    print("    Expected: ",-119.99999999999999, 54.000000000000014)
+    print("    Received: ",lon,lat)
 
-    print "\n  Converting mag lat/lon to map x/y to mag lat/lon."
-    print "  geo lat/lon to map x/y"
+    print("\n  Converting mag lat/lon to map x/y to mag lat/lon.")
+    print("  geo lat/lon to map x/y")
     map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
     x,y = map1(-120,54)
-    print "    Expected: ",14898932.7446,-14364789.7586
-    print "    Received: ",x,y
-    print "  map x/y to geo lat/lon"
+    print("    Expected: ",14898932.7446,-14364789.7586)
+    print("    Received: ",x,y)
+    print("  map x/y to geo lat/lon")
     lon,lat = map1(x,y,inverse=True,coords='mag')
-    print "    Expected: ",-119.99999999999999, 54.000000000000014
-    print "    Received: ",lon,lat
+    print("    Expected: ",-119.99999999999999, 54.000000000000014)
+    print("    Received: ",lon,lat)
 
-    print "\n  Converting geo lat/lon to map x/y to mag lat/lon."
-    print "  geo lat/lon to map x/y"
+    print("\n  Converting geo lat/lon to map x/y to mag lat/lon.")
+    print("  geo lat/lon to map x/y")
     map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
     x,y = map1(-120,54)
-    print "    Expected: ",14898932.7446,-14364789.7586
-    print "    Received: ",x,y
-    print "  map x/y to mag lat/lon"
+    print("    Expected: ",14898932.7446,-14364789.7586)
+    print("    Received: ",x,y)
+    print("  map x/y to mag lat/lon")
     lon,lat = map1(x,y,inverse=True,coords='mag')
-    print "    Expected: ",-59.9940107681,59.9324622167
-    print "    Received: ",lon,lat
+    print("    Expected: ",-59.9940107681,59.9324622167)
+    print("    Received: ",lon,lat)
 
-    print "\n  Converting mag lat/lon to map x/y to geo lat/lon."
-    print "  mag lat/lon to map x/y"
+    print("\n  Converting mag lat/lon to map x/y to geo lat/lon.")
+    print("  mag lat/lon to map x/y")
     map1 = mapObj(coords='mag', projection='stere', llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
     x,y = map1(-120,54)
-    print "    Expected: ",14898932.7446,-14364789.7586
-    print "    Received: ",x,y
-    print "  map x/y to geo lat/lon"
+    print("    Expected: ",14898932.7446,-14364789.7586)
+    print("    Received: ",x,y)
+    print("  map x/y to geo lat/lon")
     lon,lat = map1(x,y,inverse=True,coords='geo')
-    print "    Expected: ",175.311901385,58.8384430722
-    print "    Received: ",lon,lat
+    print("    Expected: ",175.311901385,58.8384430722)
+    print("    Received: ",lon,lat)
 
-    print "\n  Converting geo lat/lon from a mag map to map x/y."
-    print "  mag lat/lon to map x/y"
+    print("\n  Converting geo lat/lon from a mag map to map x/y.")
+    print("  mag lat/lon to map x/y")
     map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
     x,y = map1(175.311901385,58.8384430722,coords='geo')
-    print "    Expected: ",14900062.142,-14366347.2577
-    print "    Received: ",x,y
+    print("    Expected: ",14900062.142,-14366347.2577)
+    print("    Received: ",x,y)
 
-    print "\n  Converting mag lat/lon from a geo map to map x/y."
-    print "  mag lat/lon to map x/y"
+    print("\n  Converting mag lat/lon from a geo map to map x/y.")
+    print("  mag lat/lon to map x/y")
     map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
     x,y = map1(-59.9940107681,59.9324622167,coords='mag')
-    print "    Expected: ",14902099.9295,-14362212.9526
-    print "    Received: ",x,y
+    print("    Expected: ",14902099.9295,-14362212.9526)
+    print("    Received: ",x,y)
 
-    print "Testing datetime/dateTime checking."
-    print "Setting only datetime:"
+    print("Testing datetime/dateTime checking.")
+    print("Setting only datetime:")
     map1 = mapObj(coords='geo',projection='stere', llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False, datetime=time)
-    print "datetime: "+str(map1.datetime)
-    print "dateTime: "+str(map1.dateTime)
-    print "Setting only dateTime:"
+    print("datetime: "+str(map1.datetime))
+    print("dateTime: "+str(map1.dateTime))
+    print("Setting only dateTime:")
     map1 = mapObj(coords='geo',projection='stere', llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False, dateTime=time)
-    print "datetime: "+str(map1.datetime)
-    print "dateTime: "+str(map1.dateTime)
-    print "Setting both the same:"
+    print("datetime: "+str(map1.datetime))
+    print("dateTime: "+str(map1.dateTime))
+    print("Setting both the same:")
     map1 = mapObj(coords='geo',projection='stere', llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False, datetime=time, dateTime=time)
-    print "datetime: "+str(map1.datetime)
-    print "dateTime: "+str(map1.dateTime)
-    print "Setting neither:"
+    print("datetime: "+str(map1.datetime))
+    print("dateTime: "+str(map1.dateTime))
+    print("Setting neither:")
     map1 = mapObj(coords='geo', projection='stere', llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False)
-    print "datetime: "+str(map1.datetime)
-    print "dateTime: "+str(map1.dateTime)
-    print "Setting to different times, should fail:"
+    print("datetime: "+str(map1.datetime))
+    print("dateTime: "+str(map1.dateTime))
+    print("Setting to different times, should fail:")
     map1 = mapObj(coords='geo', projection='stere', llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
                   resolution='l', draw=False, datetime=time, dateTime=time2)
