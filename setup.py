@@ -1,35 +1,31 @@
 #!/usr/bin/env python
-import os
-import glob
-from setuptools import find_packages
-from setuptools.command import install as _install
-from numpy.distutils.core import Extension, setup
-from numpy.distutils import exec_command
+import os, glob, subprocess
+import setuptools # needed for develop
+from numpy.distutils.core import Extension,setup
 
 req = ['numpy','matplotlib','pandas','netcdf4','basemap']
 
-#%% Output debugging information while installing
+# %% Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
-#%% check we are executing setup.py from root davitpy directory
+# %% check we are executing setup.py from root davitpy directory
 assert os.path.isfile('setup.py'),(
     "You must execute setup.py from within the davitpy root directory.")
 
-#############################################################################
-# define a read function for using README.md for long_description
-#############################################################################
-
-
+# %% define a read function for using README for long_description
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-#############################################################################
-# Next let's compile raydarn using its makefile.
-# 'exec_command' is supposed to work on win32
-# according to its documentation.
-#############################################################################
-command = 'FC=mpif90 make -C "davitpy/models/raydarn/"'
-exec_command.exec_command(command)
+# %% compile raydarn using its makefile.
+try:
+    FC='mpif90'
+    subprocess.check_call([FC,'--version'])
+except OSError:
+    FC='gfortran'
+    subprocess.check_call([FC,'--version'])
+
+cmd = 'make -C davitpy/models/raydarn/'.split(' ')
+subprocess.check_call(cmd, env=dict(os.environ, FC=FC))
 
 #############################################################################
 # Now we must define all of our C and Fortran extensions
@@ -115,7 +111,7 @@ setup(name='davitpy',
       author_email = "ajribeiro86@gmail.com",
       url = "http://davit.ece.vt.edu/davitpy/",
       download_url = "https://github.com/vtsuperdarn/davitpy",
-      packages = find_packages(),
+      packages = setuptools.find_packages(),
       long_description = read('README.rst'),
       zip_safe = False,
       ext_modules = [dmap, aacgm, tsyg, hwm, msis, igrf, iri],
@@ -137,4 +133,4 @@ setup(name='davitpy',
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
-    print((find_packages()))
+    print(setuptools.find_packages())
