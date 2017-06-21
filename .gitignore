@@ -1,3 +1,8 @@
+*module.c
+*-f2pywrappers.f
+*-f2pywrappers2.f90
+
+
 *~
 *.mod
 *.rst
