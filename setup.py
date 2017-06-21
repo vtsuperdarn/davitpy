@@ -17,25 +17,28 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 # %% compile raydarn using its makefile.
-try:
-    FC='mpif90'
-    subprocess.check_call([FC,'--version'])
-except OSError:
-    FC='gfortran'
-    subprocess.check_call([FC,'--version'])
+def findfort():
+    fcl = ['mpif90','ifort','gfortran']
 
-cmd = 'make -C davitpy/models/raydarn/'.split(' ')
+    for f in fcl:
+        try:
+            subprocess.check_call([f,'--version'])
+            return f
+        except OSError:
+            continue
+
+    raise RuntimeError('Fortran compiler not found from ' + str(fcl))
+
+FC = findfort()
+cmd = 'make -kC davitpy/models/raydarn/'.split(' ')
 subprocess.check_call(cmd, env=dict(os.environ, FC=FC))
-
-#############################################################################
-# Now we must define all of our C and Fortran extensions
-#############################################################################
-# Fortran extensions
-#############################################################################
+# %% Fortran extensions
 hwm = Extension('hwm14', sources=['davitpy/models/hwm/hwm14.f90',
                                   'davitpy/models/hwm/hwm14.pyf'])
+
 igrf = Extension("igrf", sources=['davitpy/models/igrf/igrf11.f90',
                                   'davitpy/models/igrf/igrf11.pyf'])
+
 iri = Extension('iri', sources=['davitpy/models/iri/irisub.for',
                                 'davitpy/models/iri/irifun.for',
                                 'davitpy/models/iri/iriflip.for',
@@ -44,66 +47,47 @@ iri = Extension('iri', sources=['davitpy/models/iri/irisub.for',
                                 'davitpy/models/iri/cira.for',
                                 'davitpy/models/iri/iridreg.for',
                                 'davitpy/models/iri/iri.pyf'])
+
 msis = Extension("msisFort", sources=['davitpy/models/msis/nrlmsise00_sub.for',
                                       'davitpy/models/msis/nrlmsis.pyf'])
+
 tsyg = Extension('tsygFort',
                  sources=['davitpy/models/tsyganenko/T02.f',
                           'davitpy/models/tsyganenko/T96.f',
                           'davitpy/models/tsyganenko/geopack08.for',
                           'davitpy/models/tsyganenko/geopack08.pyf'])
 
-#############################################################################
-# C extensions
-#############################################################################
+# %% C extensions
 dmap = Extension("dmapio",
                  sources=glob.glob('davitpy/pydarn/dmapio/rst/src/*.c'),)
+
 aacgm = Extension("aacgm",
                   sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
-#############################################################################
-# And now get a list of all Python source files
-#############################################################################
-# pwd = os.getcwd()
-# sources = []
-# source_dirs = ['davitpy']
-# for s in source_dirs:
-#     for root, dirs, files in os.walk(pwd+'/'+s):
-#         if '__init__.py' in files:
-#             sources.append('.'.join(
-#                 root.replace(pwd,'').strip('/').split('/')
-#                 ))
-#############################################################################
-# And a list of all the AACGM tables
-#############################################################################
+# %% data files
 data_files = []
 for f in os.listdir('tables/aacgm'):
     data_files.append(('tables/aacgm',
                        [os.path.join('tables/aacgm', f)]))
 
-#############################################################################
-# Include the davitpyrc file
-#############################################################################
+# %% Include the davitpyrc file
 data_files.append(('davitpy', ['davitpy/davitpyrc']))
 
-#############################################################################
-# Include the necessary raydarn files
-#############################################################################
+# %% Include the necessary raydarn files
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/rtFort']))
+
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/constants.mod']))
+
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/mpiutils.mod']))
 
-#############################################################################
-# Include the necessary HWM files
-#############################################################################
+# %% Include the necessary HWM files
 data_files.append(('davitpy/models/hwm',
                    ['davitpy/models/hwm/hwm123114.bin']))
 
-#############################################################################
-# Now execute the setup
-#############################################################################
+# %% Now execute the setup
 setup(name='davitpy',
       version = "0.7",
       description = "Space Science Toolkit",
