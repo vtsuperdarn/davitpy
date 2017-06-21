@@ -22,6 +22,8 @@ from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import logging
+import cPickle as pickle
+# import six.moves.cPickle as pickle # TODO Py3
 
 
 #########################################################################
@@ -380,7 +382,7 @@ class RtRun(object):
         filename : str
 
         """
-        import six.moves.cPickle as pickle
+
 
         with open( filename, "wb" ) as f:
             pickle.dump(self, f)
@@ -394,7 +396,6 @@ class RtRun(object):
         filename : str
 
         """
-        import six.moves.cPickle as pickle
 
         with open( filename, "rb" ) as f:
             obj = pickle.load(f)

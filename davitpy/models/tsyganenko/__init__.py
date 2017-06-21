@@ -20,6 +20,8 @@ tsygFort    Fortran subroutines
 from __future__ import absolute_import
 import tsygFort
 import logging
+import cPickle as pickle
+# import six.moves.cPickle as pickle # TODO Py3
 
 class tsygTrace(object):
     """models.tsyganenko.trace
@@ -410,7 +412,6 @@ bzimf={:3.0f}                       [nT]
         Written by Sebastien 2012-10
 
         """
-        import six.moves.cPickle as pickle
 
         with open( filename, "wb" ) as fileObj:
             pickle.dump(self, fileObj)
@@ -425,7 +426,6 @@ bzimf={:3.0f}                       [nT]
 
         Written by Sebastien 2012-10
         """
-        import six.moves.cPickle as pickle
 
         with open( filename, "rb" ) as fileObj:
             obj = pickle.load(fileObj)
