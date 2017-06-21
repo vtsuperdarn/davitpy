@@ -123,15 +123,15 @@ class tsygTrace(object):
     Written by Sebastien 2012-10
 
     """
-    def __init__(self, lat=None, lon=None, rho=None, filename=None, 
+    def __init__(self, lat=None, lon=None, rho=None, filename=None,
         coords='geo', datetime=None,
         vswgse=[-400.,0.,0.], pdyn=2., dst=-5., byimf=0., bzimf=-5.,
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
         from datetime import datetime as pydt
 
-        assert (None not in [lat, lon, rho]) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
+        assert ([v is not None for v in [lat, lon, rho]]) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
 
-        if None not in [lat, lon, rho]: 
+        if [v is not None for v in [lat, lon, rho]]:
             self.lat = lat
             self.lon = lon
             self.rho = rho
@@ -181,7 +181,7 @@ class tsygTrace(object):
         # Make sure they're all the sam elength
         assert (len(self.lat) == len(self.lon) == len(self.rho) == len(self.datetime)), \
             'lat, lon, rho and datetime must me the same length'
-        
+
         return True
 
 
@@ -268,17 +268,17 @@ class tsygTrace(object):
 
         # Test that everything is in order, if not revert to existing values
         iTest = self.__test_valid__()
-        if not iTest: 
+        if not iTest:
             if lat: self.lat = _lat
             if lon: _self.lon = lon
             if rho: self.rho = _rho
-            if coords: self.coords = _coords 
+            if coords: self.coords = _coords
             if vswgse: self.vswgse = _vswgse
             if not datetime is None: self.datetime = _datetime
 
         # Declare the same Re as used in Tsyganenko models [km]
         Re = 6371.2
-        
+
         # Initialize trace array
         self.l = zeros(len(lat))
         self.xTrace = zeros((len(lat),2*lmax))
@@ -346,7 +346,7 @@ class tsygTrace(object):
                     self.latNH[ip] = 90. - degrees(geoColat)
                     self.lonNH[ip] = degrees(geoLon)
                     self.rhoNH[ip] = geoR*Re
-                    
+
                 # Store trace
                 if mapto == -1:
                     self.xTrace[ip,0:l] = xarr[l-1::-1]
@@ -391,10 +391,10 @@ bzimf={:3.0f}                       [nT]
             outstr +=   '''
 ({:6.3f}, {:6.3f}, {:6.3f}) @ {}
     --> NH({:6.3f}, {:6.3f}, {:6.3f})
-    --> SH({:6.3f}, {:6.3f}, {:6.3f}) 
-                        '''.format(self.lat[ip], self.lon[ip], self.rho[ip], 
-                                   self.datetime[ip].strftime('%H:%M UT (%d-%b-%y)'), 
-                                   self.latNH[ip], self.lonNH[ip], self.rhoNH[ip], 
+    --> SH({:6.3f}, {:6.3f}, {:6.3f})
+                        '''.format(self.lat[ip], self.lon[ip], self.rho[ip],
+                                   self.datetime[ip].strftime('%H:%M UT (%d-%b-%y)'),
+                                   self.latNH[ip], self.lonNH[ip], self.rhoNH[ip],
                                    self.latSH[ip], self.lonSH[ip], self.rhoSH[ip])
 
         return outstr
@@ -433,7 +433,7 @@ bzimf={:3.0f}                       [nT]
                 self.__dict__[k] = v
 
 
-    def plot(self, proj='xz', color='b', onlyPts=None, showPts=False, 
+    def plot(self, proj='xz', color='b', onlyPts=None, showPts=False,
         showEarth=True, disp=True, **kwargs):
         """Generate a 2D plot of the trace projected onto a given plane
         Graphic keywords apply to the plot method for the field lines
@@ -523,21 +523,21 @@ bzimf={:3.0f}                       [nT]
                 ax.set_ylabel(r'$Z_{GSW}$')
                 ydir = [0,0,1]
             sign = 1 if -1 not in cross(xdir,ydir) else -1
-            if 'x' not in proj: 
+            if 'x' not in proj:
                 zz = sign*self.xGsw[ip]
                 indMask = sign*self.xTrace[ip,0:self.l[ip]] < 0
-            if 'y' not in proj: 
+            if 'y' not in proj:
                 zz = sign*self.yGsw[ip]
                 indMask = sign*self.yTrace[ip,0:self.l[ip]] < 0
-            if 'z' not in proj: 
+            if 'z' not in proj:
                 zz = sign*self.zGsw[ip]
                 indMask = sign*self.zTrace[ip,0:self.l[ip]] < 0
             # Plot
-            ax.plot(masked_array(xx, mask=~indMask), 
-                    masked_array(yy, mask=~indMask), 
+            ax.plot(masked_array(xx, mask=~indMask),
+                    masked_array(yy, mask=~indMask),
                     zorder=-1, color=color, **kwargs)
-            ax.plot(masked_array(xx, mask=indMask), 
-                    masked_array(yy, mask=indMask), 
+            ax.plot(masked_array(xx, mask=indMask),
+                    masked_array(yy, mask=indMask),
                     zorder=1, color=color, **kwargs)
             if showPts:
                 ax.scatter(xpt, ypt, c='k', s=40, zorder=zz)
@@ -547,7 +547,7 @@ bzimf={:3.0f}                       [nT]
         return ax
 
 
-    def plot3d(self, onlyPts=None, showEarth=True, showPts=False, disp=True, 
+    def plot3d(self, onlyPts=None, showEarth=True, showPts=False, disp=True,
         xyzlim=None, zorder=1, linewidth=2, color='b', **kwargs):
         """Generate a 3D plot of the trace
         Graphic keywords apply to the plot3d method for the field lines
@@ -611,7 +611,7 @@ bzimf={:3.0f}                       [nT]
         for ip in inds:
             ax.plot3D(  self.xTrace[ip,0:self.l[ip]],
                         self.yTrace[ip,0:self.l[ip]],
-                        self.zTrace[ip,0:self.l[ip]], 
+                        self.zTrace[ip,0:self.l[ip]],
                         zorder=zorder, linewidth=linewidth, color=color, **kwargs)
             if showPts:
                 ax.scatter3D(self.xGsw[ip], self.yGsw[ip], self.zGsw[ip], c='k')
