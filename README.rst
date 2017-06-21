@@ -34,7 +34,7 @@ We recommend using Ubuntu 14.04 with this version of DaViTPy.  Although Macintos
 Prereqs
 -------
 
-* Python 2.7. `Miniconda <>`_ is strongly suggested.
+* Python 2.7. `Miniconda <https://conda.io/miniconda.html>`_ is strongly suggested.
 * fortran compiler e.g. ``gfortran``
 
 Linux
