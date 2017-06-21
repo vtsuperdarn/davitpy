@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os, glob, subprocess
+from __future__ import print_function
+import os, glob, subprocess,sys
 import setuptools # needed for develop
 
 req = ['numpy','scipy','h5py','matplotlib','pandas','netcdf4','pyzmq','jupyter',
@@ -10,6 +11,7 @@ try:
     import conda.cli
     conda.cli.main('install',*(req+pipreq))
 except Exception as e:
+    print(e,file=sys.stderr)
     import pip
     pip.main(['install'] + req)
 
