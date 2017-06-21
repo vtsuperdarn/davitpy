@@ -5,6 +5,10 @@ python:
   
 os: 
   - linux
+
+dist: trusty
+group: edge
+
 addons:
   apt:
     packages: 
