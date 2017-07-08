@@ -720,6 +720,7 @@ class site(object):
         import pickle
         import os
         import davitpy
+        import datetime
 
         # Lets do some type checks on the input
         if not isinstance(radId, int) and radId is not None:
@@ -735,6 +736,11 @@ class site(object):
             logging.warning('Both code and radId have been set, where only'
                             ' one should be set.')
             logging.warning('Using code %s', code)
+
+        if dt is not None and not isinstance(dt, datetime.datetime):
+            vtype = type(dt)
+            logging.error('dt must be a datetime object, type found'
+                         ' is %s', vtype)
 
         self.tval = 0.0
         self.geolat = 0.0
