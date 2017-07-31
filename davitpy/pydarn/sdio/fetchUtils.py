@@ -198,12 +198,12 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","min","date"]
+    time_keys = ["year", "month", "day", "hour", "min", "date"]
     keys_in_localdir = [x for x in time_keys if localdirfmt.find('{'+x+'}') > 0]
 
     checkstruct = {}
     for key in keys_in_localdir:
-      checkstruct[key] = ''
+        checkstruct[key] = ''
 
     while ctime <= etime:
         # set the temporal parts of the possible local directory structure
@@ -219,15 +219,21 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         for key in keys_in_localdir:
             if (checkstruct[key] != localdict[key]):
                 checkstruct[key] = localdict[key]    
-                dir_change = 1   
+                dir_change = 1
+        else:
+            # If there is no time structure to local directory structure,
+            # only the first time will need a directory change
+            if ctime <= stime:
+                dir_change = 1
 
         # get the files in the directory if directory has changed
         if dir_change:
-          local_dir = localdirfmt.format(**localdict)
-          try:
-              files = os.listdir(local_dir)
-          except:
-              files = []
+            # Local directory will be correct even if there is no date structure
+            local_dir = localdirfmt.format(**localdict)
+            try:
+                files = os.listdir(local_dir)
+            except:
+                files = []
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
@@ -282,7 +288,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     # attempt to unzip the files
     for lf in temp_filelist:
-        outname = os.path.join(outdir,lf)
+        outname = os.path.join(outdir, lf)
         uncompressed = uncompress_file(outname, None)
 
         if (type(uncompressed) is str):
@@ -417,7 +423,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         logging.error('password must be a string or Boolean')
     assert(isinstance(port, str) or port is None), \
         logging.error('port must be a string')
-    assert(isinstance(fnamefmt, (str,list))), \
+    assert(isinstance(fnamefmt, (str, list))), \
         logging.error('fnamefmt must be str or list')
 
     #--------------------------------------------------------------------------
@@ -478,7 +484,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     #--------------------------------------------------------------------------
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","min","date"]
+    time_keys = ["year", "month", "day", "hour", "min", "date"]
     keys_in_remotedir = [x for x in time_keys
                          if remotedirfmt.find('{'+x+'}') > 0]
 
@@ -518,7 +524,12 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         for key in keys_in_remotedir:
             if (checkstruct[key] != remotedict[key]):
                 checkstruct[key] = remotedict[key]    
-                dir_change = 1   
+                dir_change = 1
+        else:
+            # If there is no date structure in remote directory, change to the
+            # directory for only the first entry
+            if ctime <= stime:
+                dir_change = 1
     
         # get the files in the directory if directory has changed
         if dir_change:
@@ -664,7 +675,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     temp_filelist = sorted(temp_filelist)
     # attempt to unzip the files
     for rf in temp_filelist:
-        outname = os.path.join(outdir,rf)
+        outname = os.path.join(outdir, rf)
         uncompressed = uncompress_file(outname, None)
 
         if type(uncompressed) is str:
