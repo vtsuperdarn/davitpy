@@ -41,7 +41,7 @@ import logging
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 
-def uncompress_file(filename, outname=None):
+def uncompress_file(filename, outname=None, remove=False):
     """
     A function to perform an appropriate type of uncompression on a specified 
     file.  Current extensions include: bz2, gz, zip. This function does not 
@@ -56,6 +56,8 @@ def uncompress_file(filename, outname=None):
         Compressed name of the desired output file (allows uncompressed file to
         be placed in a different location) or None (if the uncompressed file
         will stay in the same directory).  (default=None)
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
 
     Returns
     ---------
@@ -69,6 +71,8 @@ def uncompress_file(filename, outname=None):
     assert isinstance(filename, str), logging.error('filename must be a string')
     assert isinstance(outname, (str, type(None))), \
         logging.error('outname must be a string or None')
+    assert isinstance(remove, bool), \
+        logging.error('remove status must be Boolian')
 
     command = None  # Initialize command as None. It will be updated 
                     # if a known file compression is found.
@@ -84,12 +88,12 @@ def uncompress_file(filename, outname=None):
         command = 'gunzip -c ' + filename + ' > ' + outname
     elif filename.find('.zip') != -1:
         outname = outname.replace('.zip', '')
-        command = 'unzip -c '+filename+' > '+outname
+        command = 'unzip -c ' + filename + ' > ' + outname
     #elif filename.find('.tar') != -1:
     #    outname = outname.replace('.tar', '')
     #    command = 'tar -xf ' + filename
 
-    if type(command) is str:
+    if command is not None:
         try:
             os.system(command)
             logging.info("performed [{:s}]".format(command))
@@ -98,6 +102,15 @@ def uncompress_file(filename, outname=None):
             # Returning None instead of setting outname=None to avoid
             # messing with inputted outname variable
             return None
+
+        if remove:
+            command = 'rm {:s}'.format(filename)
+
+            try:
+                os.system(command)
+                logging.info("performed [{:s}]".format(command))
+            except:
+                logging.warning("unable to perform [{:s}]".format(command))
     else:
         return None
         estr = "unknown compression type for [{:s}]".format(filename)
@@ -107,7 +120,7 @@ def uncompress_file(filename, outname=None):
 
 
 def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
-                      back_time=relativedelta(years=1)):
+                      back_time=relativedelta(years=1), remove=False):
 
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
@@ -152,6 +165,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     back_time : (dateutil.relativedelta.relativedelta)
         Time difference from stime that fetchUtils should search backwards
         until before giving up. (default=relativedelta(years=1))
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
 
     Returns
     --------
@@ -289,7 +304,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     # attempt to unzip the files
     for lf in temp_filelist:
         outname = os.path.join(outdir, lf)
-        uncompressed = uncompress_file(outname, None)
+        uncompressed = uncompress_file(outname, None, remove=remove)
 
         if (type(uncompressed) is str):
         # save name of uncompressed file for output
@@ -304,7 +319,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                        remotedict, outdir, fnamefmt, username=None,
                        password=False, port=None, check_cache=True,
-                       back_time=relativedelta(years=1)):
+                       back_time=relativedelta(years=1), remove=False):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -366,6 +381,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     back_time : (dateutil.relativedelta.relativedelta)
         Time difference from stime that fetchUtils should search backwards
         until before giving up.
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
 
     Returns
     --------
@@ -676,7 +693,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     # attempt to unzip the files
     for rf in temp_filelist:
         outname = os.path.join(outdir, rf)
-        uncompressed = uncompress_file(outname, None)
+        uncompressed = uncompress_file(outname, None, remove=remove)
 
         if type(uncompressed) is str:
             # save name of uncompressed file for output

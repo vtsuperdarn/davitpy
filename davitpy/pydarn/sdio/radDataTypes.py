@@ -112,7 +112,7 @@ class radDataPtr():
                  local_dirfmt=None, local_fnamefmt=None, local_dict=None,
                  remote_dirfmt=None, remote_fnamefmt=None, remote_dict=None,
                  remote_site=None, username=None, port=None, password=None,
-                 tmpdir=None):
+                 tmpdir=None, remove=False):
         import datetime as dt
         import os,glob,string
         from davitpy.pydarn.radar import network
@@ -324,7 +324,8 @@ class radDataPtr():
                     # fetch the local files
                     temp = futils.fetch_local_files(self.sTime, self.eTime,
                                                     local_dirfmt, local_dict,
-                                                    outdir, local_fnamefmt)
+                                                    outdir, local_fnamefmt,
+                                                    remove=remove)
 
                     # check to see if the files actually have data between stime
                     # and etime
@@ -446,7 +447,7 @@ class radDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port, remove=remove)
 
                     # check to see if the files actually have data between
                     # stime and etime

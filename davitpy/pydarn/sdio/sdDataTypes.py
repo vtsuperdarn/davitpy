@@ -141,7 +141,8 @@ class sdDataPtr():
                  fileName=None, noCache=False, local_dirfmt=None,
                  local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                  remote_fnamefmt=None, remote_dict=None, remote_site=None,
-                 username=None, password=None, port=None, tmpdir=None):
+                 username=None, password=None, port=None, tmpdir=None,
+                 remove=False):
 #        from davitpy.pydarn.sdio import sdDataPtr
         from davitpy.utils.timeUtils import datetimeToEpoch
         import datetime as dt
@@ -307,7 +308,8 @@ class sdDataPtr():
                     # fetch the local files
                     temp = futils.fetch_local_files(self.sTime, self.eTime,
                                                     local_dirfmt, local_dict,
-                                                    outdir, local_fnamefmt)
+                                                    outdir, local_fnamefmt,
+                                                    remove=remove)
 
                     # check to see if the files actually have data between
                     # stime and etime
@@ -422,7 +424,7 @@ class sdDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port, remove=remove)
 
                     # check to see if the files actually have data between
                     # stime and etime
