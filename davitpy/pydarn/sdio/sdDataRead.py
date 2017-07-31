@@ -36,7 +36,7 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
                local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                remote_fnamefmt=None, remote_dict=None, remote_site=None,
                username=None, password=None, port=None, tmpdir=None,
-               remove=False):
+               remove=False, try_file_types=True):
     """A function to establish a pipeline through which we can read radar data.
     first it tries the mongodb, then it tries to find local files, and lastly
     it sftp's over to the VT data server.
@@ -105,6 +105,9 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
         value DAVIT_TMPDIR will be used. (default=None)
     remove : (bool)
         Remove compressed file after uncompression (default=False)
+    try_file_types : (bool)
+        If desired file type could not be found, try to download others
+        (default=True)
 
     Returns
     ---------

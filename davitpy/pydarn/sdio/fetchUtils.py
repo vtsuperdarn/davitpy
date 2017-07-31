@@ -32,9 +32,9 @@
 
 Functions
 -----------
-  * :func:`pydarn.sdio.fetchUtils.uncompress_file`
-  * :func:`pydarn.sdio.fetchUtils.fetch_local_files`
-  * :func:`pydarn.sdio.fetchUtils.fetch_remote_files`
+    uncompress_file : uncompress files using appropriate format
+    fetch_local_files : retrieve files from a local directory
+    fetch_remote_files : retrieve files from a remote directory
 """
 
 import logging
@@ -396,10 +396,10 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     Weird edge case behaviour occurs when attempting to fetch all channel data
     (e.g. remotedict['channel'] = '.').
     """
-
-    from dateutil.relativedelta import relativedelta
     # getpass allows passwords to be entered without them appearing onscreen
     import getpass
+
+    from dateutil.relativedelta import relativedelta
     # paramiko is necessary to use sftp, pyCurl currently requires much fiddling
     import paramiko as p
 
@@ -460,8 +460,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
             remoteaccess['password'] = password
             remoteaccfmt += ":{password}"
         elif password is True:
-            prompt = 'Password for {:s}@{:s}: '.format(username, remotesite)
-            remoteaccess['password'] = getpass.getpass(prompt)
+            pprompt = 'Password for {:s}@{:s}: '.format(username, remotesite)
+            remoteaccess['password'] = getpass.getpass(pprompt)
             remoteaccfmt += ":{password}"
         remoteaccfmt += "@"
 
@@ -488,8 +488,32 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                               password=remoteaccess['password'])
         except:
             estr = "can't connect to {:s} with username and ".format(remotesite)
-            logging.error("{:s}password".format(estr))
-            return filelist
+            estr = "{:s}password".format(estr)
+
+            if password:
+                # It is possible connection was refused because of wrong
+                # password.  Give the user two more tries at the right one.
+                ipass = 0
+                while ipass < 2:
+                    pstr = "{:s}: {:d} password attempts left".format(estr,
+                                                                      2-ipass)
+                    logging.warn(pstr)
+                    remoteaccess['password'] = getpass.getpass(pprompt)
+
+                    try:
+                        transport = p.Transport((remotesite, 22))
+                        transport.connect(username=remoteaccess['username'],
+                                          password=remoteaccess['password'])
+                        ipass = 3
+                    except:
+                        ipass += 1
+
+                if ipass == 2:
+                    logging.error(estr)
+                    return filelist
+            else:
+                logging.error(estr)
+                return filelist
 
         try:
             sftp = p.SFTPClient.from_transport(transport)
@@ -561,9 +585,38 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 # Any other method can use urllib2
                 url = remoteaccfmt.format(**remoteaccess) # Build the url
                 req = urllib2.Request(url) # Set up a request
+                response = None
                 try:
                     # Establish a connection
                     response = urllib2.urlopen(req)
+                except:
+                    estr = "unable to connect to [{:s}]".format(url)
+
+                    if password:
+                        # It is possible connection was refused because of wrong
+                        # password.  Give the user two more tries at the right
+                        # one.
+                        ipass = 0
+                        while ipass < 2:
+                            pstr = "{:s}: {:d} ".format(estr, 2 - ipass)
+                            pstr = "{:s}password attempts left".format(pstr)
+                            logging.warn(pstr)
+                            remoteaccess['password'] = getpass.getpass(pprompt)
+
+                            try:
+                                # Establish a connection
+                                response = urllib2.urlopen(req)
+                                ipass = 3
+                            except:
+                                ipass += 1
+
+                        if ipass == 2:
+                            logging.warning(estr)
+
+                    else:
+                        logging.warning(estr)
+
+                if response is not None:
                     # Extract the available files.  Assumes that the filename
                     # will be the first reference in the line
                     remotefiles.append([f[f.find('<a href="') + 9:
@@ -574,9 +627,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     
                     # Close the connection
                     response.close()
-                except:
-                    estr = "unable to connect to [{:s}]".format(url)
-                    logging.warning(estr)
 
         #----------------------------------------------------------------------
         # Search through the remote files for the ones we want and download them
