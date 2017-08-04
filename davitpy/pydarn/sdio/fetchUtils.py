@@ -32,16 +32,16 @@
 
 Functions
 -----------
-  * :func:`pydarn.sdio.fetchUtils.uncompress_file`
-  * :func:`pydarn.sdio.fetchUtils.fetch_local_files`
-  * :func:`pydarn.sdio.fetchUtils.fetch_remote_files`
+    uncompress_file : uncompress files using appropriate format
+    fetch_local_files : retrieve files from a local directory
+    fetch_remote_files : retrieve files from a remote directory
 """
 
 import logging
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 
-def uncompress_file(filename, outname=None):
+def uncompress_file(filename, outname=None, remove=False):
     """
     A function to perform an appropriate type of uncompression on a specified 
     file.  Current extensions include: bz2, gz, zip. This function does not 
@@ -56,6 +56,8 @@ def uncompress_file(filename, outname=None):
         Compressed name of the desired output file (allows uncompressed file to
         be placed in a different location) or None (if the uncompressed file
         will stay in the same directory).  (default=None)
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
 
     Returns
     ---------
@@ -69,6 +71,8 @@ def uncompress_file(filename, outname=None):
     assert isinstance(filename, str), logging.error('filename must be a string')
     assert isinstance(outname, (str, type(None))), \
         logging.error('outname must be a string or None')
+    assert isinstance(remove, bool), \
+        logging.error('remove status must be Boolian')
 
     command = None  # Initialize command as None. It will be updated 
                     # if a known file compression is found.
@@ -84,12 +88,12 @@ def uncompress_file(filename, outname=None):
         command = 'gunzip -c ' + filename + ' > ' + outname
     elif filename.find('.zip') != -1:
         outname = outname.replace('.zip', '')
-        command = 'unzip -c '+filename+' > '+outname
+        command = 'unzip -c ' + filename + ' > ' + outname
     #elif filename.find('.tar') != -1:
     #    outname = outname.replace('.tar', '')
     #    command = 'tar -xf ' + filename
 
-    if type(command) is str:
+    if command is not None:
         try:
             os.system(command)
             logging.info("performed [{:s}]".format(command))
@@ -98,6 +102,15 @@ def uncompress_file(filename, outname=None):
             # Returning None instead of setting outname=None to avoid
             # messing with inputted outname variable
             return None
+
+        if remove:
+            command = 'rm {:s}'.format(filename)
+
+            try:
+                os.system(command)
+                logging.info("performed [{:s}]".format(command))
+            except:
+                logging.warning("unable to perform [{:s}]".format(command))
     else:
         return None
         estr = "unknown compression type for [{:s}]".format(filename)
@@ -107,7 +120,7 @@ def uncompress_file(filename, outname=None):
 
 
 def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
-                      back_time=relativedelta(years=1)):
+                      back_time=relativedelta(years=1), remove=False):
 
     """
     A routine to locate and retrieve file names from locally stored SuperDARN 
@@ -152,6 +165,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
     back_time : (dateutil.relativedelta.relativedelta)
         Time difference from stime that fetchUtils should search backwards
         until before giving up. (default=relativedelta(years=1))
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
 
     Returns
     --------
@@ -198,12 +213,12 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","min","date"]
+    time_keys = ["year", "month", "day", "hour", "min", "date"]
     keys_in_localdir = [x for x in time_keys if localdirfmt.find('{'+x+'}') > 0]
 
     checkstruct = {}
     for key in keys_in_localdir:
-      checkstruct[key] = ''
+        checkstruct[key] = ''
 
     while ctime <= etime:
         # set the temporal parts of the possible local directory structure
@@ -219,15 +234,21 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         for key in keys_in_localdir:
             if (checkstruct[key] != localdict[key]):
                 checkstruct[key] = localdict[key]    
-                dir_change = 1   
+                dir_change = 1
+        else:
+            # If there is no time structure to local directory structure,
+            # only the first time will need a directory change
+            if ctime <= stime:
+                dir_change = 1
 
         # get the files in the directory if directory has changed
         if dir_change:
-          local_dir = localdirfmt.format(**localdict)
-          try:
-              files = os.listdir(local_dir)
-          except:
-              files = []
+            # Local directory will be correct even if there is no date structure
+            local_dir = localdirfmt.format(**localdict)
+            try:
+                files = os.listdir(local_dir)
+            except:
+                files = []
 
         # check to see if any files in the directory match the fnamefmt
         for namefmt in fnamefmt:
@@ -282,8 +303,8 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 
     # attempt to unzip the files
     for lf in temp_filelist:
-        outname = os.path.join(outdir,lf)
-        uncompressed = uncompress_file(outname, None)
+        outname = os.path.join(outdir, lf)
+        uncompressed = uncompress_file(outname, None, remove=remove)
 
         if (type(uncompressed) is str):
         # save name of uncompressed file for output
@@ -298,7 +319,7 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
 def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                        remotedict, outdir, fnamefmt, username=None,
                        password=False, port=None, check_cache=True,
-                       back_time=relativedelta(years=1)):
+                       back_time=relativedelta(years=1), remove=False):
     """
     A routine to locate and retrieve file names from remotely stored 
     SuperDARN radar files that fit the input criteria.
@@ -360,6 +381,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     back_time : (dateutil.relativedelta.relativedelta)
         Time difference from stime that fetchUtils should search backwards
         until before giving up.
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
 
     Returns
     --------
@@ -373,10 +396,10 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     Weird edge case behaviour occurs when attempting to fetch all channel data
     (e.g. remotedict['channel'] = '.').
     """
-
-    from dateutil.relativedelta import relativedelta
     # getpass allows passwords to be entered without them appearing onscreen
     import getpass
+
+    from dateutil.relativedelta import relativedelta
     # paramiko is necessary to use sftp, pyCurl currently requires much fiddling
     import paramiko as p
 
@@ -417,7 +440,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         logging.error('password must be a string or Boolean')
     assert(isinstance(port, str) or port is None), \
         logging.error('port must be a string')
-    assert(isinstance(fnamefmt, (str,list))), \
+    assert(isinstance(fnamefmt, (str, list))), \
         logging.error('fnamefmt must be str or list')
 
     #--------------------------------------------------------------------------
@@ -437,8 +460,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
             remoteaccess['password'] = password
             remoteaccfmt += ":{password}"
         elif password is True:
-            prompt = 'Password for {:s}@{:s}: '.format(username, remotesite)
-            remoteaccess['password'] = getpass.getpass(prompt)
+            pprompt = 'Password for {:s}@{:s}: '.format(username, remotesite)
+            remoteaccess['password'] = getpass.getpass(pprompt)
             remoteaccfmt += ":{password}"
         remoteaccfmt += "@"
 
@@ -465,8 +488,32 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                               password=remoteaccess['password'])
         except:
             estr = "can't connect to {:s} with username and ".format(remotesite)
-            logging.error("{:s}password".format(estr))
-            return filelist
+            estr = "{:s}password".format(estr)
+
+            if password:
+                # It is possible connection was refused because of wrong
+                # password.  Give the user two more tries at the right one.
+                ipass = 0
+                while ipass < 2:
+                    pstr = "{:s}: {:d} password attempts left".format(estr,
+                                                                      2-ipass)
+                    logging.warn(pstr)
+                    remoteaccess['password'] = getpass.getpass(pprompt)
+
+                    try:
+                        transport = p.Transport((remotesite, 22))
+                        transport.connect(username=remoteaccess['username'],
+                                          password=remoteaccess['password'])
+                        ipass = 3
+                    except:
+                        ipass += 1
+
+                if ipass == 2:
+                    logging.error(estr)
+                    return filelist
+            else:
+                logging.error(estr)
+                return filelist
 
         try:
             sftp = p.SFTPClient.from_transport(transport)
@@ -478,7 +525,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     #--------------------------------------------------------------------------
     # construct a checkstruct dictionary to detect if changes in ctime
     # lead to a change in directory to limit how often directories are listed
-    time_keys = ["year","month","day","hour","min","date"]
+    time_keys = ["year", "month", "day", "hour", "min", "date"]
     keys_in_remotedir = [x for x in time_keys
                          if remotedirfmt.find('{'+x+'}') > 0]
 
@@ -518,7 +565,12 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         for key in keys_in_remotedir:
             if (checkstruct[key] != remotedict[key]):
                 checkstruct[key] = remotedict[key]    
-                dir_change = 1   
+                dir_change = 1
+        else:
+            # If there is no date structure in remote directory, change to the
+            # directory for only the first entry
+            if ctime <= stime:
+                dir_change = 1
     
         # get the files in the directory if directory has changed
         if dir_change:
@@ -533,9 +585,38 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                 # Any other method can use urllib2
                 url = remoteaccfmt.format(**remoteaccess) # Build the url
                 req = urllib2.Request(url) # Set up a request
+                response = None
                 try:
                     # Establish a connection
                     response = urllib2.urlopen(req)
+                except:
+                    estr = "unable to connect to [{:s}]".format(url)
+
+                    if password:
+                        # It is possible connection was refused because of wrong
+                        # password.  Give the user two more tries at the right
+                        # one.
+                        ipass = 0
+                        while ipass < 2:
+                            pstr = "{:s}: {:d} ".format(estr, 2 - ipass)
+                            pstr = "{:s}password attempts left".format(pstr)
+                            logging.warn(pstr)
+                            remoteaccess['password'] = getpass.getpass(pprompt)
+
+                            try:
+                                # Establish a connection
+                                response = urllib2.urlopen(req)
+                                ipass = 3
+                            except:
+                                ipass += 1
+
+                        if ipass == 2:
+                            logging.warning(estr)
+
+                    else:
+                        logging.warning(estr)
+
+                if response is not None:
                     # Extract the available files.  Assumes that the filename
                     # will be the first reference in the line
                     remotefiles.append([f[f.find('<a href="') + 9:
@@ -546,9 +627,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     
                     # Close the connection
                     response.close()
-                except:
-                    estr = "unable to connect to [{:s}]".format(url)
-                    logging.warning(estr)
 
         #----------------------------------------------------------------------
         # Search through the remote files for the ones we want and download them
@@ -664,8 +742,8 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
     temp_filelist = sorted(temp_filelist)
     # attempt to unzip the files
     for rf in temp_filelist:
-        outname = os.path.join(outdir,rf)
-        uncompressed = uncompress_file(outname, None)
+        outname = os.path.join(outdir, rf)
+        uncompressed = uncompress_file(outname, None, remove=remove)
 
         if type(uncompressed) is str:
             # save name of uncompressed file for output

@@ -112,7 +112,7 @@ class radDataPtr():
                  local_dirfmt=None, local_fnamefmt=None, local_dict=None,
                  remote_dirfmt=None, remote_fnamefmt=None, remote_dict=None,
                  remote_site=None, username=None, port=None, password=None,
-                 tmpdir=None):
+                 tmpdir=None, remove=False, try_file_types=True):
         import datetime as dt
         import os,glob,string
         from davitpy.pydarn.radar import network
@@ -169,14 +169,15 @@ class radDataPtr():
             self.eTime = self.sTime + dt.timedelta(days=1)
 
         filelist = []
-        if fileType == 'fitex':
-            arr = ['fitex', 'fitacf', 'lmfit']
-        elif fileType == 'fitacf':
-            arr = ['fitacf', 'fitex', 'lmfit']
-        elif fileType == 'lmfit':
-            arr = ['lmfit', 'fitex', 'fitacf']
-        else:
-            arr = [fileType]
+        arr = [fileType]
+
+        if try_file_types:
+            all_file_types = ['fitex', 'fitacf', 'lmfit']
+            try:
+                all_file_types.pop(all_file_types.index(fileType))
+                arr.extend(all_file_types)
+            except:
+                pass
 
         # a temporary directory to store a temporary file
         if tmpdir is None:
@@ -324,7 +325,8 @@ class radDataPtr():
                     # fetch the local files
                     temp = futils.fetch_local_files(self.sTime, self.eTime,
                                                     local_dirfmt, local_dict,
-                                                    outdir, local_fnamefmt)
+                                                    outdir, local_fnamefmt,
+                                                    remove=remove)
 
                     # check to see if the files actually have data between stime
                     # and etime
@@ -446,7 +448,7 @@ class radDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port, remove=remove)
 
                     # check to see if the files actually have data between
                     # stime and etime
