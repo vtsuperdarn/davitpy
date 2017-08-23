@@ -54,7 +54,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             overlayPoes=False, poesparam='ted', poesMin=-3., poesMax=0.5,
             poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
             overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
-            tFreqBands=[]):
+            tFreqBands=[], mult=False):
     """A function to make a fan plot
 
     Parameters
@@ -462,7 +462,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         # if not show:
         #   canvas = FigureCanvasAgg(myFig)
         myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) +
-                      '.fan.png', dpi=dpi)
+                      '.'+str(rad[0])+'.fan.png', dpi=dpi)
     if pdf:
         # if not show:
         #   canvas = FigureCanvasAgg(myFig)
@@ -471,6 +471,10 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
                       '.fan.pdf')
     if show:
         myFig.show()
+
+    if mult:
+        return myFig
+
 
 
 def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
@@ -555,10 +559,10 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
             r = myBeam.fit.slist[k]
 
             if fill:
-                x1, y1 = myMap(fov.lonFull[myBeam.bmnum, r],
-                               fov.latFull[myBeam.bmnum, r])
-                x2, y2 = myMap(fov.lonFull[myBeam.bmnum, r + 1],
-                               fov.latFull[myBeam.bmnum, r + 1])
+                x1, y1 = myMap(fov.lonFull[myBeam.bmnum-1, r],
+                               fov.latFull[myBeam.bmnum-1, r])
+                x2, y2 = myMap(fov.lonFull[myBeam.bmnum-1, r + 1],
+                               fov.latFull[myBeam.bmnum-1, r + 1])
                 x3, y3 = myMap(fov.lonFull[myBeam.bmnum + 1, r + 1],
                                fov.latFull[myBeam.bmnum + 1, r + 1])
                 x4, y4 = myMap(fov.lonFull[myBeam.bmnum + 1, r],
@@ -674,6 +678,42 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
             return intensities, lcoll
 
+
+def multi_fan(sTime, rad, step=10, size=[3,3], fileType='fitacf', param='power',
+            filtered=False, scale=[], channel=None, coords='geo',
+            colors='lasse', gsct=False, fov=True, edgeColors='face',
+            lowGray=False, fill=True, velscl=1000., legend=True,
+            overlayPoes=False, poesparam='ted', poesMin=-3., poesMax=0.5,
+            poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
+            overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
+            tFreqBands=[], mult=False):
+
+
+    import datetime as dt
+
+    totalSize=size[0]*size[1]
+
+    print totalSize
+    for i in range(0, size[0]):
+        for j in range(0, size[1]):
+            print i
+            print j
+            print sTime
+
+           # fig[i] = plotFan(sTime,rad, mult=True,param=param, show=False)
+
+#        print type(fig)
+            #plot.figure(1)
+            #plot.subplot(311)
+            #plot.plot(fig)
+
+
+            sTime=sTime+dt.timedelta(minutes=step)
+
+
+
+
+
 if __name__ == "__main__":
     from datetime import datetime
 
@@ -697,3 +737,4 @@ if __name__ == "__main__":
     print "Now generate a png instead of showing the plot."
     plotFan(time, ["sas", "han"], param="power", coords="mag", gsct=True,
             show=False, png=True)
+
