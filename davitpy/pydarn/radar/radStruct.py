@@ -23,10 +23,11 @@ Sebastien
 """
 import logging
 
+
 class network(object):
     """ This class stores information from all radars according to their
-    hdw.dat and radar.dat files.  This information is read from the radar.sqlite
-    files provided with the pydarn module.
+    hdw.dat and radar.dat files.  This information is read from the
+    radar.sqlite files provided with the pydarn module.
 
     Attributes
     ----------
@@ -740,7 +741,7 @@ class site(object):
         if dt is not None and not isinstance(dt, datetime.datetime):
             vtype = type(dt)
             logging.error('dt must be a datetime object, type found'
-                         ' is %s', vtype)
+                          ' is %s', vtype)
 
         self.tval = 0.0
         self.geolat = 0.0
@@ -864,8 +865,9 @@ class site(object):
                     \nrecrise: {13:5.3f} \
                     \nmaxatten: {14} \
                     \nmaxgate: {15} \
-                    \nmaxbeam: {16}'.format(self.tval, self.geolat, self.geolon,
-                                            self.alt, self.boresite, self.bmsep,
+                    \nmaxbeam: {16}'.format(self.tval, self.geolat,
+                                            self.geolon, self.alt,
+                                            self.boresite, self.bmsep,
                                             self.vdir, self.atten, self.tdiff,
                                             self.phidiff, self.interfer[0],
                                             self.interfer[1], self.interfer[2],
