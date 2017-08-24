@@ -217,7 +217,7 @@ class MapConv(object):
         """
         assert sd_type == "grd" or sd_type == "map", \
             logging.error("unknown sdDataPtr type, must be 'map' or 'grd'")
-        
+
         # Set the date and time formats
         dfmt = '%Y/%b/%d' if label_style == "web" else '%d %b %Y,'
         tfmt = '%H%M' if label_style == "web" else '%H:%M'
@@ -238,7 +238,7 @@ class MapConv(object):
                                                     tt=tfmt)
 
         return date_str
-            
+
     def overlayGridVel(self, pltColBar=True, overlayRadNames=True,
                        annotateTime=True, colorBarLabelSize=15.0,
                        colMap=cm.jet, label_style="web"):
