@@ -105,8 +105,9 @@ class MapConv(object):
     """
     import matplotlib.cm as cm
 
-    def __init__(self, start_time, mobj, ax, hemi='north', maxVelScale=1000.0,
-                 min_vel=0.0, grid_file='grd', map_file='map'):
+    def __init__(self, start_time, mobj, ax, end_time=None, hemi='north',
+                 maxVelScale=1000.0, min_vel=0.0, grid_type='grd',
+                 map_type='map'):
         from davitpy.pydarn.sdio import sdDataOpen
         import matplotlib.cm as cm
         import matplotlib as mpl
@@ -142,8 +143,10 @@ class MapConv(object):
         # This is the way I'm setting stuff up to avoid confusion of reading
         # and plotting seperately.  Just give the date/hemi and the code reads
         # the corresponding rec
-        
-        end_time = start_time + dt.timedelta(minutes=2)
+
+        if end_time is None:
+            end_time = start_time + dt.timedelta(minutes=2)
+
         if grid_type is not None:
             grdPtr = sdDataOpen(start_time, hemi, eTime=end_time,
                                 fileType=grid_type)
@@ -164,10 +167,82 @@ class MapConv(object):
             estr = "{:s}[{:} to {:}]".format(estr, start_time, end_time)
             logging.error(estr)
 
+    def __repr__(self):
+        """Provides a readable representation of the MapConv object
+        """
+
+        out = "SuperDARN Map Convection for the "
+        out = "{:s}{:s}ern Hemisphere\n".format(out, self.hemi.capitalize())
+        out = "{:s}{:-<77s}".format(out, "")
+
+        # Output the grid and map file information
+        if self.grdData is None:
+            out = "{:s}\nGrid File: None".format(out)
+        else:
+            out = "{:s}\nGrid File: {:s}\nGrid Time: {:} to {:}".format(out, \
+                self.grdData.fPtr._sdDataPtr__filename, self.grdData.sTime, \
+                self.grdData.eTime)
+
+        if self.mapData is None:
+            out = "{:s}\nMap File: None".format(out)
+        else:
+            out = "{:s}\nMap File: {:s}\nMap Time: {:} to {:}".format(out, \
+                self.mapData.fPtr._sdDataPtr__filename, self.mapData.sTime, \
+                self.mapData.eTime)
+
+        return(out)
+
+    def __str__(self):
+        """Provide a readable representation of the MapConv object
+        """
+
+        out = self.__repr__()
+        return out
+
+    def date_string(self, sd_type, label_style="web"):
+        """Format a data string using data from an sdDataPtr class object
+
+        Parameters
+        ------------
+        sd_type : (str)
+            Plot 'map' or 'grd' times? 
+        label_style : (str)
+            Set colorbar label style.  'web'=[m/s]; 'agu'=[$m s^{-1}$]
+            (default='web')
+
+        Returns
+        --------
+        date_str : (str)
+            String containing formated date range
+        """
+        assert sd_type == "grd" or sd_type == "map", \
+            logging.error("unknown sdDataPtr type, must be 'map' or 'grd'")
+        
+        # Set the date and time formats
+        dfmt = '%Y/%b/%d' if label_style == "web" else '%d %b %Y,'
+        tfmt = '%H%M' if label_style == "web" else '%H:%M'
+
+        # Set the times
+        stime = self.grdData.sTime if sd_type == "grd" else self.mapData.sTime
+        etime = self.grdData.eTime if sd_type == "grd" else self.mapData.eTime
+
+        # Set the start time
+        date_str = '{:{dd} {tt}} - '.format(stime, dd=dfmt, tt=tfmt)
+
+        # Set the end time, only including the date if it differs from the
+        # start time
+        if etime.date() == stime.date():
+            date_str = '{:s}{:{tt}} UT'.format(date_str, etime, tt=tfmt)
+        else:
+            date_str = '{:s}{:{dd} {tt}} UT'.format(date_str, etime, dd=dfmt,
+                                                    tt=tfmt)
+
+        return date_str
+            
     def overlayGridVel(self, pltColBar=True, overlayRadNames=True,
                        annotateTime=True, colorBarLabelSize=15.0,
-                       colMap=cm.jet):
-        """Overlay Gridded LoS velocity data from grdex files
+                       colMap=cm.jet, label_style="web"):
+        """Overlay Gridded LoS velocity data from grd files
 
         Parameters
         ---------
@@ -181,6 +256,9 @@ class MapConv(object):
             Set colorbar label size (default=15.0)
         colMap : (matplotlib.colors.LinearSegmentedColormap)
             Set color map (default=cm.jet)
+        label_style : (str)
+            Set colorbar label style.  'web'=[m/s]; 'agu'=[$m s^{-1}$]
+            (default='web')
 
         Note
         ----
@@ -198,8 +276,7 @@ class MapConv(object):
         norm = mpl.colors.Normalize(self.min_vel, self.maxVelPlot)
 
         # dateString to overlay date on plot
-        date_str = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(self.grdData.sTime,
-                                                          self.grdData.eTime)
+        date_str = self.date_string("grd", label_style=label_style)
 
         # get the standard location and LoS Vel parameters.
         mlats_plot = self.grdData.vector.mlat
@@ -243,20 +320,19 @@ class MapConv(object):
         # Check and overlay colorbar
         if pltColBar:
             cbar = mpl.pyplot.colorbar(self.grdPltStrt, orientation='vertical')
-            cbar.set_label('Velocity [m/s]', size=colorBarLabelSize)
+            vlabel = "Velocity [m/s]" if label_style == "web" else \
+                     "v [$m s^{-1}$]"
+            cbar.set_label(vlabel, size=colorBarLabelSize)
         # Check and overlay radnames
         if overlayRadNames:
             overlayRadar(self.mObj, fontSize=12, ids=self.grdData.stid)
         # Check and annotate time
         if annotateTime:
-            self.axisHandle.annotate(date_str, xy=(0.5, 1.0), fontsize=12,
-                                     ha="center", xycoords="axes fraction",
-                                     bbox=dict(boxstyle='round,pad=0.2',
-                                     fc="w", alpha=0.3))
+            self.axisHandle.set_title(date_str, fontsize="medium")
 
     def calcFitCnvVel(self):
         """Calculate fitted convection velocity magnitude and azimuth from
-        mapex data (basically coefficients of the fit)
+        map data (basically coefficients of the fit)
 
         Returns
         ---------
@@ -462,7 +538,7 @@ class MapConv(object):
         return mlats_plot, mlons_plot, vel_mag, vel_azm
 
     def calcCnvPots(self, plot_lat_min=30):
-        """Calculate equipotential contour values from mapex data (basically
+        """Calculate equipotential contour values from map data (basically
         coefficients of the fit)
 
         Parameters
@@ -602,17 +678,28 @@ class MapConv(object):
 
         return lat_cntr, lon_cntr, pot_arr
 
-    def overlayCnvCntrs(self):
-        """Overlay convection contours from mapex data
+    def overlayCnvCntrs(self, zorder=2, line_color="DarkSlateGray",
+                        line_width=1.0, font_size=10.0, plot_label=True):
+        """Overlay convection contours from map data
+
+        Parameters
+        -----------
+        zorder : (int)
+            Specify the top-to-bottom ordering of layers for the contours
+            (default=2)
+        line_color : (str/float)
+            Specify the line color for the contours (default='DarkSlateGray')
+        line_width : (float)
+            Specify the contour line width (default=1.0)
+        font_size : (float)
+            Specify the font size for the contour labels (default=10.0)
+        plot_label : (bool)
+            Specify whether or not to plot the contour labels (default=True)
 
         Returns
         -------
-        cntr_plt : NEEDS TYPE
+        cntr_plt : (matplotlib.contour.QuadContourSet)
             contours of convection are overlayed on the map object.
-
-        Note
-        ----
-        Belongs to class MapConv
 
         Example
         -------
@@ -626,15 +713,18 @@ class MapConv(object):
 
         # plot the contours
         x_cntr, y_cntr = self.mObj(lon_cntr, lat_cntr, coords='mag')
-        cntr_plt = self.mObj.contour(x_cntr, y_cntr, pot_cntr, zorder=2.0,
+        cntr_plt = self.mObj.contour(x_cntr, y_cntr, pot_cntr, zorder=zorder,
                                      vmax=pot_cntr.max(), vmin=pot_cntr.min(),
-                                     colors='DarkSlateGray', linewidths=1.0,
+                                     colors=line_color, linewidths=line_width,
                                      locator=LinearLocator(12))
-        plt.clabel(cntr_plt, inline=1, fontsize=10)
+
+        if plot_label:
+            plt.clabel(cntr_plt, inline=1, fontsize=font_size)
+
         return cntr_plt
 
     def overlayHMB(self, hmbCol='Gray'):
-        """Overlay Heppnard-Maynard boundary from mapex data
+        """Overlay Heppnard-Maynard boundary from map data
 
         Parameters
         ----------
@@ -663,8 +753,9 @@ class MapConv(object):
                                       linestyle='--', color=hmbCol, zorder=4.0)
 
     def overlayMapModelVel(self, pltColBar=False, annotateTime=True,
-                           colorBarLabelSize=15.0, colMap=cm.jet):
-        """Overlay model velocity vectors from mapex data
+                           colorBarLabelSize=15.0, colMap=cm.jet,
+                           label_style="web"):
+        """Overlay model velocity vectors from the map data
 
         Parameters
         ----------
@@ -676,6 +767,9 @@ class MapConv(object):
             Specify label size for colorbar (default=15.0)
         colMap : (matplotlib.colors.LinearSegmentedColormap)
             Set color map (default=cm.jet)
+        label_style : (str)
+            Set colorbar label style.  'web'=[m/s]; 'agu'=[$m s^{-1}$]
+            (default='web')
 
         Returns
         -------
@@ -695,8 +789,7 @@ class MapConv(object):
         norm = mpl.colors.Normalize(self.min_vel, self.maxVelPlot)
 
         # date_string to overlay date on plot
-        date_str = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(self.mapData.sTime,
-                                                          self.mapData.eTime)
+        date_str = self.date_string("map", label_style=label_style)
 
         # get the standard location and velocity parameters of the model.
         mlats_plot = self.mapData.model.mlat
@@ -720,7 +813,7 @@ class MapConv(object):
             end_lon = mlons_plot[nn] + np.degrees(del_lon)
 
             x_vec_strt, y_vec_strt = self.mObj(mlons_plot[nn], nn_mlats,
-                                           coords='mag')
+                                               coords='mag')
             x_vec_end, y_vec_end = self.mObj(end_lon, end_lat, coords='mag')
 
             self.mapModelPltStrt = self.mObj.scatter(x_vec_strt, y_vec_strt,
@@ -740,18 +833,17 @@ class MapConv(object):
         if pltColBar:
             cbar = mpl.pyplot.colorbar(self.mapModelPltStrt,
                                        orientation='vertical')
-            cbar.set_label('Velocity [m/s]', size = colorBarLabelSize)
+            vlabel = "Velocity [m/s]" if label_style == "web" else \
+                     "v [$m s^{-1}$]"
+            cbar.set_label(vlabel, size = colorBarLabelSize)
         # Check and annotate time
         if annotateTime:
-            self.axisHandle.annotate(date_str, xy=(0.5, 1.0), fontsize=12, 
-                                     ha="center", xycoords="axes fraction",
-                                     bbox=dict(boxstyle='round,pad=0.2',
-                                               fc="w", alpha=0.3))
+            self.axisHandle.set_title(date_str, fontsize="medium")
 
     def overlayMapFitVel(self, pltColBar=True, overlayRadNames=True,
                          annotateTime=True, colorBarLabelSize=15.0,
-                         colMap=cm.jet):
-        """Overlay fitted velocity vectors from mapex data
+                         colMap=cm.jet, label_style="web"):
+        """Overlay fitted velocity vectors from the map data
         
         Parameters
         ----------
@@ -765,6 +857,9 @@ class MapConv(object):
             Specify colorbar label size (default=15.0)
         colMap : (matplotlib.colors.LinearSegmentedColormap)
             Set color map (default=cm.jet)
+        label_style : (str)
+            Set colorbar label style.  'web'=[m/s]; 'agu'=[$m s^{-1}$]
+            (default='web')
 
         Returns
         -------
@@ -786,8 +881,7 @@ class MapConv(object):
         norm = mpl.colors.Normalize(self.min_vel, self.maxVelPlot)
 
         # dateString to overlay date on plot
-        date_str = '{:%Y/%b/%d %H%M} - {:%H%M} UT'.format(self.mapData.sTime,
-                                                          self.mapData.eTime)
+        date_str = self.date_string("map", label_style=label_style)
 
         # get the fitted mlat, mlon, velocity magnitude and azimuth from
         # calcFitCnvVel() function
@@ -825,19 +919,18 @@ class MapConv(object):
             map_color = colMap(norm(vel_mag[nn]))
             self.mapFitPltVec.append(self.mObj.plot([x_vec_strt, x_vec_end],
                                                     [y_vec_strt, y_vec_end], 
-                                                    color=map_color)
+                                                    color=map_color))
 
         # Check and overlay colorbar
         if pltColBar:
-            cbar = matplotlib.pyplot.colorbar(self.mapFitPltStrt[0],
-                                              orientation='vertical')
-            cbar.set_label('Velocity [m/s]', size=colorBarLabelSize)
+            cbar = mpl.pyplot.colorbar(self.mapFitPltStrt[0],
+                                       orientation='vertical')
+            vlabel = "Velocity [m/s]" if label_style == "web" else \
+                     "v [$m s^{-1}$]"
+            cbar.set_label(vlabel, size=colorBarLabelSize)
         # Check and overlay radnames
         if overlayRadNames:
             overlayRadar(self.mObj, fontSize=12, ids=self.mapData.grid.stid)
         # Check and annotate time
         if annotateTime:
-            self.axisHandle.annotate(date_str, xy=(0.5, 1.0), fontsize=12,
-                                     ha="center", xycoords="axes fraction",
-                                     bbox=dict(boxstyle='round,pad=0.2', fc="w",
-                                               alpha=0.3))
+            self.axisHandle.set_title(date_str, fontsize="medium")
