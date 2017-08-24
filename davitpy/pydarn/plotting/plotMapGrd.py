@@ -825,7 +825,7 @@ class MapConv(object):
             map_color = colMap(norm(vel_mag[nn]))
             self.mapFitPltVec.append(self.mObj.plot([x_vec_strt, x_vec_end],
                                                     [y_vec_strt, y_vec_end], 
-                                                    color=map_color)
+                                                    color=map_color))
 
         # Check and overlay colorbar
         if pltColBar:
