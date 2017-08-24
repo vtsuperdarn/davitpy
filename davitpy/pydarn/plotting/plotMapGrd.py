@@ -105,8 +105,8 @@ class MapConv(object):
     """
     import matplotlib.cm as cm
 
-    def __init__(self, start_time, mobj, ax, end_time=None, hemi='north',
-                 maxVelScale=1000.0, min_vel=0.0, grid_type='grd',
+    def __init__(self, start_time, mobj=None, ax=None, end_time=None,
+                 hemi='north', maxVelScale=1000.0, min_vel=0.0, grid_type='grd',
                  map_type='map'):
         from davitpy.pydarn.sdio import sdDataOpen
         import matplotlib.cm as cm
@@ -121,21 +121,22 @@ class MapConv(object):
         self.min_vel = min_vel
         self.axisHandle = ax
         self.mObj = mobj
-        
-        # check if the mapObj is indicating the same hemisphere as data
-        # requested
-        if hemi == "north":
-            assert(mobj.boundarylats[0] > 0.0), \
-                logging.error("Map and data objects must be from the same"
-                              " hemisphere")
-        else:
-            assert(mobj.boundarylats[0] <= 0.0), \
-                logging.error("Map and data objects must be from the same"
-                              " hemisphere")
 
         # check if hemi and coords keywords are correct
         assert(hemi == "north" or hemi == "south"), \
             logging.error("hemi should either be 'north' or 'south'")
+
+        # check if the mapObj is indicating the same hemisphere as data
+        # requested, if it was provided.
+        if mobj is not None:
+            if hemi == "north":
+                assert(mobj.boundarylats[0] > 0.0), \
+                    logging.error("Map and data objects must be from the same"
+                                  " hemisphere")
+            else:
+                assert(mobj.boundarylats[0] <= 0.0), \
+                    logging.error("Map and data objects must be from the same"
+                                  " hemisphere")
 
         self.hemi = hemi
 
@@ -150,14 +151,20 @@ class MapConv(object):
         if grid_type is not None:
             grdPtr = sdDataOpen(start_time, hemi, eTime=end_time,
                                 fileType=grid_type)
-            self.grdData = grdPtr.readRec()
+            try:
+                self.grdData = grdPtr.readRec()
+            except:
+                self.grdData = None
         else:
             self.grdData = None
 
         if map_type is not None:
             mapPtr = sdDataOpen(start_time, hemi, eTime=end_time,
                                 fileType=map_type)
-            self.mapData = mapPtr.readRec()
+            try:
+                self.mapData = mapPtr.readRec()
+            except:
+                self.mapData = None
         else:
             self.mapData = None
 
@@ -189,6 +196,14 @@ class MapConv(object):
             out = "{:s}\nMap File: {:s}\nMap Time: {:} to {:}".format(out, \
                 self.mapData.fPtr._sdDataPtr__filename, self.mapData.sTime, \
                 self.mapData.eTime)
+
+        # Indicate whether or not the map and axis handles are initialized
+        out = "{:s}\n{:-<77s}\n".format(out, "")
+        out = "{:s}Map is {:s}set\n".format(out, "not " if self.mObj is None
+                                            else "")
+        out = "{:s}Subplot axis is {:s}set".format(out, "not "
+                                                   if self.axisHandle is None
+                                                   else "")
 
         return(out)
 
@@ -272,6 +287,12 @@ class MapConv(object):
         import matplotlib as mpl
         from davitpy.pydarn.plotting import overlayRadar
 
+        # Test to make sure the necessary attributes have been set
+        assert self.grdData is not None, logging.error("no grid data available")
+        assert self.mObj is not None, logging.error("no map available")
+        assert self.axisHandle is not None, \
+            logging.error("no axis handle available")
+
         # the color maps work for [0, 1]
         norm = mpl.colors.Normalize(self.min_vel, self.maxVelPlot)
 
@@ -336,25 +357,23 @@ class MapConv(object):
 
         Returns
         ---------
-        mlats_plot : NEEDS TYPE
-
-        mlons_plot : NEEDS TYPE
-
-        velMagn : NEEDS TYPE
-
-        velAzm : NEEDS TYPE
-
-            Arrays of Fitted velocity magnitude and azimuth
-
-        Note
-        ----
-        Belongs to class MapConv
+        mlats_plot : (list)
+            List of map latitudes
+        mlons_plot : (list)
+            List of map longitudes
+        vel_mag : (numpy.ndarray)
+            Array of fitted velocity magnitudes
+        vel_azm : (numpy.ndarray)
+            Array of velocity azimuths
 
         Example
         -------
             (mlat, mlon, magn, azimuth) = MapConv.calcFitCnvVel()
         """
         import scipy
+
+        # Test to make sure the necessary attributes have been set
+        assert self.mapData is not None, logging.error("no map data available")
 
         if self.hemi == 'north' :
             hemisphere = 1
@@ -548,11 +567,11 @@ class MapConv(object):
 
         Returns
         -------
-        latCntr : NEEDS TYPE
+        latCntr : (numpy.ndarray)
             Array of latitudes
-        lonCntr : NEEDS TYPE
+        lonCntr : (numpy.ndarray)
             Array of longitudes
-        potArr : NEEDS TYPE
+        potArr : (numpy.ndarray)
             Array of potentials
 
         Note
@@ -565,9 +584,9 @@ class MapConv(object):
 
         """
         import scipy
-        # These don't appear to be used, commenting out to test
-	# import davitpy.utils as dutils
-    	# import davitpy.models.aacgm as aacgm
+
+        # Test to make sure the necessary attributes have been set
+        assert self.mapData is not None, logging.error("no map data available")
 
         hemisphere = 1 if self.hemi == 'north' else -1
 
@@ -708,6 +727,10 @@ class MapConv(object):
         from matplotlib.ticker import LinearLocator
         import matplotlib.pyplot as plt
 
+        # Test to make sure the necessary attributes have been set
+        assert self.mapData is not None, logging.error("no map data available")
+        assert self.mObj is not None, logging.error("no map available")
+
         # get the lats, lons and potentials from calcCnvPots() function
         (lat_cntr, lon_cntr, pot_cntr) = self.calcCnvPots()
 
@@ -735,15 +758,15 @@ class MapConv(object):
         -------
             Heppnard-Maynard boundary is overlayed on the map object.
 
-        Note
-        ----
-        Belongs to class MapConv
-
         Example
         -------
             MapConv.overlayHMB()
 
         """
+        # Test to make sure the necessary attributes have been set
+        assert self.mapData is not None, logging.error("no map data available")
+        assert self.mObj is not None, logging.error("no map available")
+
         x_vec_hmb, y_vec_hmb = self.mObj(self.mapData.model.boundarymlon, 
                                          self.mapData.model.boundarymlat,
                                          coords='mag')
@@ -784,6 +807,12 @@ class MapConv(object):
             MapConv.overlayMapModelVel()
         """
         import matplotlib as mpl
+
+        # Test to make sure the necessary attributes have been set
+        assert self.mapData is not None, logging.error("no map data available")
+        assert self.mObj is not None, logging.error("no map available")
+        assert self.axisHandle is not None, \
+            logging.error("no axis handle available")
 
         # the color maps work for [0, 1]
         norm = mpl.colors.Normalize(self.min_vel, self.maxVelPlot)
@@ -876,6 +905,12 @@ class MapConv(object):
         """
         import matplotlib as mpl
         from davitpy.pydarn.plotting import overlayRadar
+
+        # Test to make sure the necessary attributes have been set
+        assert self.mapData is not None, logging.error("no map data available")
+        assert self.mObj is not None, logging.error("no map available")
+        assert self.axisHandle is not None, \
+            logging.error("no axis handle available")
 
         # the color maps work for [0, 1]
         norm = mpl.colors.Normalize(self.min_vel, self.maxVelPlot)
