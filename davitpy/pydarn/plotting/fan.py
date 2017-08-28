@@ -54,7 +54,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             overlayPoes=False, poesparam='ted', poesMin=-3., poesMax=0.5,
             poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
             overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
-            tFreqBands=[], mult=False):
+            tFreqBands=[], multi=False):
     """A function to make a fan plot
 
     Parameters
@@ -248,17 +248,20 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         latC.append(xlat)
         lonC.append(xlon)
         myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,
-                                        ngates=allBeams[i].prm.nrang + 1,
+#                                        ngates=allBeams[i].prm.nrang + 1,
+                                        ngates=65,
                                         nbeams=site.maxbeam, coords=coords,
                                         date_time=t)
         fovs.append(myFov)
         for b in range(0, site.maxbeam + 1):
-            for k in range(0, allBeams[i].prm.nrang + 1):
+#            for k in range(0, allBeams[i].prm.nrang + 1):
+            for k in range(0, 65):
                 lonFull.append(myFov.lonFull[b][k])
                 latFull.append(myFov.latFull[b][k])
         oldCpids.append(allBeams[i].cp)
 
-        k = allBeams[i].prm.nrang
+#        k = allBeams[i].prm.nrang + 1
+        k = 65
         b = 0
         latC.append(myFov.latFull[b][k])
         lonC.append(myFov.lonFull[b][k])
@@ -468,11 +471,11 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         #   canvas = FigureCanvasAgg(myFig)
         logging.info('Saving as pdf...this may take a moment...')
         myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) +
-                      '.fan.pdf')
+                      +'.fan.pdf')
     if show:
         myFig.show()
 
-    if mult:
+    if multi:
         return myFig
 
 
@@ -694,16 +697,17 @@ def multi_fan(sTime, rad, step=10, size=[3,3], fileType='fitacf', param='power',
     totalSize=size[0]*size[1]
 
     print totalSize
+    plot.figure(1)
+
     for i in range(0, size[0]):
         for j in range(0, size[1]):
             print i
             print j
             print sTime
 
-           # fig[i] = plotFan(sTime,rad, mult=True,param=param, show=False)
+            fig = plotFan(sTime,rad, param=param, show=False,multi=True)
 
 #        print type(fig)
-            #plot.figure(1)
             #plot.subplot(311)
             #plot.plot(fig)
 
