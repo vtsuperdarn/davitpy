@@ -733,6 +733,7 @@ class site(object):
             vtype = type(code)
             logging.error('code must be a string, type found is %s', vtype)
             return
+
         if code is not None and radId is not None:
             logging.warning('Both code and radId have been set, where only'
                             ' one should be set.')
@@ -742,6 +743,7 @@ class site(object):
             vtype = type(dt)
             logging.error('dt must be a datetime object, type found'
                           ' is %s', vtype)
+            return
 
         self.tval = 0.0
         self.geolat = 0.0
