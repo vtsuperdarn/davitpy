@@ -772,6 +772,9 @@ if __name__ == "__main__":
     from datetime import datetime
 
     from davitpy.models import aacgm
+    import davitpy
+
+    igrf_file = davitpy.rcParams['IGRF_DAVITPY_COEFF_FILE']
 
     time = datetime(2014,8,7,18,30)
     time2 = datetime(2014,8,8,0,0)
@@ -832,8 +835,8 @@ if __name__ == "__main__":
                      boundinglat=40., lat_0=90., lon_0=0., resolution='l',
                      datetime=time, dateTime=time)
     print "MLT at zero MLON should be at " + \
-      str(aacgm.mltFromYmdhms(time.year, time.month, time.day,
-                              time.hour, time.minute, time.second, 0.))
+      str(aacgm.mlt_convert(time.year, time.month, time.day, time.hour,
+                            time.minute, time.second, 0.0, igrf_file))
     print "Figures 4 and 5 should now appear.  Close their windows to continue."
     plt.show()
 

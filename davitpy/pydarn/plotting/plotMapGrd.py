@@ -13,6 +13,8 @@ MapConv
 
 """
 import logging
+import datetime as dt
+import numpy as np
 
 class MapConv(object):
     """Plot/retrieve data from mapex and grdex files
@@ -23,7 +25,7 @@ class MapConv(object):
 
     Parameters
     ----------
-    startTime : datetime.datetime
+    startTime : dt.datetime
         start date and time of the data rec
     mObj : utils.plotUtils.mapObj
         the map object you want data to be overlayed on.
@@ -103,12 +105,10 @@ class MapConv(object):
 
 
     def __init__(self, startTime, mObj, axisHandle, hemi='north',
-                 maxVelScale=1000., plotCoords='mag'):
+                 maxVelScale=1000.0, plotCoords='mag'):
 
-        import datetime
         from davitpy.pydarn.sdio import sdDataOpen
         import matplotlib.cm as cm
-        import numpy
         import matplotlib
 
         # set up some initial paramteres
@@ -144,7 +144,7 @@ class MapConv(object):
         # This is the way I'm setting stuff up to avoid confusion of reading
         # and plotting seperately.  Just give the date/hemi and the code reads
         # the corresponding rec
-        endTime = startTime + datetime.timedelta(minutes=2)
+        endTime = startTime + dt.timedelta(minutes=2)
         grdPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='grdex')
         self.grdData = grdPtr.readRec()
         mapPtr = sdDataOpen(startTime, hemi, eTime=endTime, fileType='mapex')
@@ -178,8 +178,6 @@ class MapConv(object):
 
         """
         import matplotlib
-        import datetime
-        import numpy
         from davitpy.pydarn.plotting import overlayRadar
 
         # the color maps work for [0, 1]
@@ -200,25 +198,25 @@ class MapConv(object):
 
             # calculate stuff for plotting such as vector length, azimuth etc
             vecLen = velsPlot[nn] * self.lenFactor / self.radEarth / 1000.
-            endLat = numpy.arcsin(numpy.sin(numpy.deg2rad(mlatsPlot[nn])) *
-                                  numpy.cos(vecLen) +
-                                  numpy.cos(numpy.deg2rad(mlatsPlot[nn])) *
-                                  numpy.sin(vecLen) *
-                                  numpy.cos(numpy.deg2rad(azmsPlot[nn])))
-            endLat = numpy.degrees(endLat)
-            delLon = (numpy.arctan2(numpy.sin(numpy.deg2rad(azmsPlot[nn])) *
-                      numpy.sin(vecLen) *
-                      numpy.cos(numpy.deg2rad(mlatsPlot[nn])),
-                      numpy.cos(vecLen) -
-                      numpy.sin(numpy.deg2rad(mlatsPlot[nn])) *
-                      numpy.sin(numpy.deg2rad(endLat))))
+            endLat = np.arcsin(np.sin(np.deg2rad(mlatsPlot[nn])) *
+                                  np.cos(vecLen) +
+                                  np.cos(np.deg2rad(mlatsPlot[nn])) *
+                                  np.sin(vecLen) *
+                                  np.cos(np.deg2rad(azmsPlot[nn])))
+            endLat = np.degrees(endLat)
+            delLon = (np.arctan2(np.sin(np.deg2rad(azmsPlot[nn])) *
+                      np.sin(vecLen) *
+                      np.cos(np.deg2rad(mlatsPlot[nn])),
+                      np.cos(vecLen) -
+                      np.sin(np.deg2rad(mlatsPlot[nn])) *
+                      np.sin(np.deg2rad(endLat))))
 
             # depending on whether we have 'mag' or 'mlt' coords,
             # calculate endLon
             if self.plotCoords == 'mag':
-                endLon = mlonsPlot[nn] + numpy.degrees(delLon)
+                endLon = mlonsPlot[nn] + np.degrees(delLon)
             elif self.plotCoords == 'mlt':
-                endLon = (mlonsPlot[nn] + numpy.degrees(delLon)) / 15.
+                endLon = (mlonsPlot[nn] + np.degrees(delLon)) / 15.
             else:
                 logging.warning('Check the coords')
 
@@ -279,9 +277,6 @@ class MapConv(object):
             ( mlat, mlon, magn, azimuth ) = MapConv.calcFitCnvVel()
 
         """
-
-        import datetime
-        import numpy
         import scipy
 
         if self.hemi == 'north' :
@@ -300,7 +295,7 @@ class MapConv(object):
         # for eField and then calc eField and Fitted Vels.
 
         # Some important parameters from fitting.
-        coeffFit = numpy.array( [ self.mapData.Np2 ] )
+        coeffFit = np.array( [ self.mapData.Np2 ] )
         orderFit = self.mapData.fitorder
         latShftFit = self.mapData.latshft
         lonShftFit = self.mapData.lonshft
@@ -308,16 +303,16 @@ class MapConv(object):
 
         # Set up more parameters for getting the fitted vectors
         # the absolute part is for the southern hemisphere
-        theta = numpy.deg2rad( 90. - numpy.absolute( mlatsPlot ) )
-        thetaMax = numpy.deg2rad( 90. - numpy.absolute( latMinFit ) )
+        theta = np.deg2rad( 90. - np.absolute( mlatsPlot ) )
+        thetaMax = np.deg2rad( 90. - np.absolute( latMinFit ) )
 
         # Now we need the adjusted/normalized values of the theta such that
         # full range of theta runs from 0 to pi.  At this point if you are
         # wondering why we are doing this, It would be good to refer Mike's
         # paper
-        alpha = numpy.pi / thetaMax
+        alpha = np.pi / thetaMax
         thetaPrime = alpha * theta
-        x = numpy.cos( thetaPrime )
+        x = np.cos( thetaPrime )
 
         # Here we evaluate the associated legendre polynomials..from order 0
         # to orderFit we use scipy.special.lpmn() function to get the assciated
@@ -327,14 +322,14 @@ class MapConv(object):
         for j in range(len(x)):
             plmTemp = scipy.special.lpmn( orderFit, orderFit, x[j] )
             if j == 0:
-                plmFit = numpy.append( [plmTemp[0]], [plmTemp[0]], axis=0 )
+                plmFit = np.append( [plmTemp[0]], [plmTemp[0]], axis=0 )
             else:
-                plmFit = numpy.append( plmFit, [plmTemp[0]], axis=0 )
+                plmFit = np.append( plmFit, [plmTemp[0]], axis=0 )
 
         # we need to remove the first part/subarray/element (whatever you want
         # to call it) of this array its there twice....look at j==0 part.
-        plmFit = numpy.delete(plmFit, 0, 0)
-        phi = numpy.deg2rad(mlonsPlot)
+        plmFit = np.delete(plmFit, 0, 0)
+        phi = np.deg2rad(mlonsPlot)
 
         # now do the index legender part,
         # We are doing Associated Legendre Polynomials but for each polynomial
@@ -350,12 +345,12 @@ class MapConv(object):
         kMax = indexLgndr( orderFit, orderFit )
 
         # set up arrays and small stuff for the eFld coeffs calculation
-        thetaECoeffs = numpy.zeros((kMax + 2, len(theta)))
-        phiECoeffs = numpy.zeros((kMax + 2, len(theta)))
+        thetaECoeffs = np.zeros((kMax + 2, len(theta)))
+        phiECoeffs = np.zeros((kMax + 2, len(theta)))
 
-        qPrime = numpy.array( numpy.where( thetaPrime != 0. ) )
+        qPrime = np.array( np.where( thetaPrime != 0. ) )
         qPrime = qPrime[0]
-        q = numpy.array( numpy.where( theta != 0. ) )
+        q = np.array( np.where( theta != 0. ) )
         q = q[0]
 
         # finally get to converting coefficients for the potential into
@@ -370,13 +365,13 @@ class MapConv(object):
                 if k3 >= 0:
                     thetaECoeffs[k4, qPrime] = thetaECoeffs[k4, qPrime] - \
                         coeffFitFlat[k3] * alpha * L * \
-                        numpy.cos(thetaPrime[qPrime]) \
-                        / numpy.sin(thetaPrime[qPrime]) / self.radEarthMtrs
+                        np.cos(thetaPrime[qPrime]) \
+                        / np.sin(thetaPrime[qPrime]) / self.radEarthMtrs
                     phiECoeffs[k4, q] = phiECoeffs[k4, q] - \
-                        coeffFitFlat[k3 + 1] * m / numpy.sin(theta[q]) / \
+                        coeffFitFlat[k3 + 1] * m / np.sin(theta[q]) / \
                         self.radEarthMtrs
                     phiECoeffs[k4 + 1, q] = phiECoeffs[k4 + 1, q] + \
-                        coeffFitFlat[k3] * m / numpy.sin(theta[q]) / \
+                        coeffFitFlat[k3] * m / np.sin(theta[q]) / \
                         self.radEarthMtrs
 
                 if L < orderFit:
@@ -389,7 +384,7 @@ class MapConv(object):
                 if k1 >= 0:
                     thetaECoeffs[k2, qPrime] = thetaECoeffs[k2, qPrime] + \
                         coeffFitFlat[k1] * alpha * (L + 1 + m) / \
-                        numpy.sin(thetaPrime[qPrime]) / self.radEarthMtrs
+                        np.sin(thetaPrime[qPrime]) / self.radEarthMtrs
 
                 if m > 0:
                     if k3 >= 0:
@@ -403,17 +398,17 @@ class MapConv(object):
                     if k3 >= 0:
                         thetaECoeffs[k4, qPrime] = thetaECoeffs[k4, qPrime] - \
                             coeffFitFlat[k3] * alpha * L * \
-                            numpy.cos(thetaPrime[qPrime]) / \
-                            numpy.sin(thetaPrime[qPrime]) / self.radEarthMtrs
+                            np.cos(thetaPrime[qPrime]) / \
+                            np.sin(thetaPrime[qPrime]) / self.radEarthMtrs
 
                     if k1 >= 0:
                         thetaECoeffs[k2, qPrime] = thetaECoeffs[k2, qPrime] + \
                             coeffFitFlat[k1] * alpha * (L + 1 + m) / \
-                            numpy.sin(thetaPrime[qPrime]) / self.radEarthMtrs
+                            np.sin(thetaPrime[qPrime]) / self.radEarthMtrs
 
         # Calculate the Elec. fld positions where
-        thetaEcomp = numpy.zeros( theta.shape )
-        phiEcomp = numpy.zeros( theta.shape )
+        thetaEcomp = np.zeros( theta.shape )
+        phiEcomp = np.zeros( theta.shape )
 
         for m in range( orderFit+1 ):
             for L in range( m, orderFit+1 ):
@@ -429,51 +424,52 @@ class MapConv(object):
                     phiEcomp = phiEcomp + phiECoeffs[k, :] * plmFit[:, m, L]
                 else:
                     thetaEcomp = thetaEcomp + thetaECoeffs[k, :] * \
-                        plmFit[:, m, L] * numpy.cos(m * phi) + \
+                        plmFit[:, m, L] * np.cos(m * phi) + \
                         thetaECoeffs[k + 1, :] * plmFit[:, m, L] * \
-                        numpy.sin(m * phi)
+                        np.sin(m * phi)
                     phiEcomp = phiEcomp + phiECoeffs[k, :] * \
-                        plmFit[:, m, L] * numpy.cos(m * phi) + \
+                        plmFit[:, m, L] * np.cos(m * phi) + \
                         phiECoeffs[k + 1, :] * plmFit[:, m, L] * \
-                        numpy.sin(m * phi)
+                        np.sin(m * phi)
 
         # Store the two components of EFld into a single array
-        eFieldFit = numpy.append( [thetaEcomp], [phiEcomp], axis=0 )
+        eFieldFit = np.append( [thetaEcomp], [phiEcomp], axis=0 )
 
         # We'll calculate Bfld magnitude now, need to initialize some more
         # stuff
         alti = 300. * 1000.
         bFldPolar = -0.62e-4
         bFldMagn = bFldPolar * (1. - 3. * alti / self.radEarthMtrs) \
-            * numpy.sqrt( 3.0*numpy.square( numpy.cos( theta ) ) + 1. )/2
+            * np.sqrt( 3.0*np.square( np.cos( theta ) ) + 1. )/2
 
         # get the velocity components from E-field
-        velFitVecs = numpy.zeros( eFieldFit.shape )
+        velFitVecs = np.zeros( eFieldFit.shape )
         velFitVecs[0, :] = eFieldFit[1, :] / bFldMagn
         velFitVecs[1, :] = -eFieldFit[0, :] / bFldMagn
 
-        velMagn = numpy.sqrt(numpy.square(velFitVecs[0, :]) +
-                             numpy.square(velFitVecs[1, :]))
-        velChkZeroInds = numpy.where( velMagn != 0. )
+        velMagn = np.sqrt(np.square(velFitVecs[0, :]) +
+                             np.square(velFitVecs[1, :]))
+        velChkZeroInds = np.where( velMagn != 0. )
         velChkZeroInds = velChkZeroInds[0]
 
-        velAzm = numpy.zeros( velMagn.shape )
+        velAzm = np.zeros( velMagn.shape )
 
         if len(velChkZeroInds) == 0:
-            velMagn = numpy.array( [0.] )
-            velAzm = numpy.array( [0.] )
+            velMagn = np.array( [0.] )
+            velAzm = np.array( [0.] )
         else:
             if hemisphere == -1:
-                velAzm[velChkZeroInds] = numpy.rad2deg(numpy.arctan2(velFitVecs[1, velChkZeroInds], 
+                velAzm[velChkZeroInds] = np.rad2deg(np.arctan2(velFitVecs[1, velChkZeroInds], 
                     velFitVecs[0, velChkZeroInds]))
             else:
-                velAzm[velChkZeroInds] = numpy.rad2deg(numpy.arctan2(velFitVecs[1, velChkZeroInds], 
+                velAzm[velChkZeroInds] = np.rad2deg(np.arctan2(velFitVecs[1, velChkZeroInds], 
                     -velFitVecs[0, velChkZeroInds]))            
                         
         return mlatsPlot, mlonsPlot, velMagn, velAzm
 
     def calcCnvPots(self):
-        """Calculate equipotential contour values from mapex data (basically coefficients of the fit)
+        """Calculate equipotential contour values from mapex data (basically
+        coefficients of the fit)
 
         Returns
         -------
@@ -491,12 +487,10 @@ class MapConv(object):
         Example
         -------
             (lats, lons, pots) = MapConv.calcCnvPots()
-
         """
-        import datetime
-        import numpy
         import scipy
-
+        from davitpy.models import aacgm
+        from davitpy import rcParams
 
         if self.hemi == 'north':
             hemisphere = 1
@@ -515,14 +509,14 @@ class MapConv(object):
         # calculate the coeffs for eField and then calc eField and Fitted Vels.
         
         # Some important parameters from fitting.
-        coeffFit = numpy.array( [ self.mapData.Np2 ] )
+        coeffFit = np.array([self.mapData.Np2])
         orderFit = self.mapData.fitorder
         latShftFit = self.mapData.latshft
         lonShftFit = self.mapData.lonshft
         latMinFit = self.mapData.latmin
 
         # Set up more parameters for getting the fitted vectors
-        thetaMax = numpy.deg2rad( 90.-numpy.absolute( latMinFit ) )
+        thetaMax = np.deg2rad(90.0 - np.absolute(latMinFit))
 
 
         # Set the min plotting latitude...
@@ -531,14 +525,14 @@ class MapConv(object):
         # we set up a grid to evaluate potential on...
         latStep = 1
         lonStep = 2
-        numLats     =  int( ( 90. - plotLatMin ) / latStep )
-        numLongs    =  int( 360. / lonStep )+1
-        zatArr = numpy.array( range(numLats) * latStep ) + plotLatMin
+        numLats = int((90.0 - plotLatMin) / latStep)
+        numLongs = int(360.0 / lonStep) + 1
+        zatArr = np.array( range(numLats) * latStep ) + plotLatMin
         zatArr = zatArr * hemisphere
-        zonArr = numpy.array( range(numLongs) )* lonStep
+        zonArr = np.array( range(numLongs) )* lonStep
 
         # Right now create a grid kinda stuff with lats and lons
-        gridArr = numpy.zeros( (2, numLats * numLongs) )
+        gridArr = np.zeros( (2, numLats * numLongs) )
         counter1 = 0
         for lo in zonArr :
             for la in zatArr :
@@ -547,62 +541,66 @@ class MapConv(object):
                 counter1 = counter1 + 1
 
         # Now we need to convert a few things to spherical coordinates
-        theta = numpy.deg2rad( 90. - numpy.abs(gridArr[0,:]) )
-        phi = numpy.deg2rad( gridArr[1,:] )
+        theta = np.deg2rad(90.0 - np.abs(gridArr[0,:]))
+        phi = np.deg2rad(gridArr[1,:])
 
-        # Now we need the adjusted/normalized values of the theta such that full range of theta runs from 0 to pi
-        # At this point if you are wondering why we are doing this, It would be good to refer Mike's paper
-        alpha = numpy.pi/thetaMax
-        tPrime = alpha*theta
-        x = numpy.cos(tPrime)
+        # Now we need the adjusted/normalized values of the theta such that
+        # full range of theta runs from 0 to pi.  At this point if you are
+        # wondering why we are doing this, refer Mike's paper
+        alpha = np.pi / thetaMax
+        tPrime = alpha * theta
+        x = np.cos(tPrime)
 
 
-        # Here we evaluate the associated legendre polynomials..from order 0 to orderFit
-        # we use scipy.special.lpmn() function to get the assciated legendre polynomials...but it doesnt
-        # accept an array...so do loop calculate the leg.pol for each value of x and append these arrays to a new array
+        # Here we evaluate the associated legendre polynomials..from order 0 to
+        # orderFit.  We use scipy.special.lpmn() function to get the assciated
+        # legendre polynomials...but it doesn't accept an array...so do loop
+        # calculate the leg.pol for each value of x and append these arrays to
+        # a new array
         for j in range(len(x)):
-            plmTemp = scipy.special.lpmn( orderFit, orderFit, x[j] )
+            plmTemp = scipy.special.lpmn( orderFit, orderFit, x[j])
             
             if j == 0:
-                plmFit = numpy.append( [plmTemp[0]], [plmTemp[0]], axis = 0 )
+                plmFit = np.append([plmTemp[0]], [plmTemp[0]], axis=0)
             else:
-                plmFit = numpy.append( plmFit, [plmTemp[0]], axis= 0 )
+                plmFit = np.append(plmFit, [plmTemp[0]], axis=0)
 
-        # we need to remove the first part/subarray/element (whatever you want to call it) of this array
-        # its there twice, look at j==0 part.
-        plmFit = numpy.delete(plmFit, 0, 0)
+        # we need to remove the first part/subarray/element (whatever you want
+        # to call it) of this array its there twice, look at j==0 part.
+        plmFit = np.delete(plmFit, 0, 0)
 
         # Get to evaluating the potential
         lMax = plmFit.shape
         lMax = lMax[1]
-        v= numpy.zeros( phi.shape )
+        v= np.zeros(phi.shape)
 
 
-        # we use a lambda function for the index legender part, since we use it in other places as well..
-        # a good thing about python is this lambda functions..u dont have to define another function for this....
-        indexLgndr = lambda l,m :( m == 0 and l**2 ) or \
-            ( (l != 0 ) and (m != 0) and l**2 + 2*m - 1 ) or 0
+        # we use a lambda function for the index legender part, since we use it
+        # in other places as well... Agood thing about python is this lambda
+        # functions.  You dont have to define another function for this.
+        indexLgndr = lambda l,m :(m == 0 and l**2) or \
+            ((l != 0) and (m != 0) and l**2 + 2*m - 1) or 0
 
         coeffFitFlat = coeffFit.flatten()
-        for m in range( lMax ):
-            for L in range( m, lMax ):
-                k = indexLgndr( L, m )
+        for m in range(lMax):
+            for L in range(m, lMax):
+                k = indexLgndr(L, m)
                 if m == 0:
                     v = v + coeffFitFlat[k]*plmFit[:,0,L]
                 else:
                     v = v + \
-                        coeffFitFlat[k]*numpy.cos( m*phi )*plmFit[:,m,L] + \
-                        coeffFitFlat[k+1]*numpy.sin( m*phi )*plmFit[:,m,L]
+                        coeffFitFlat[k]*np.cos( m*phi )*plmFit[:,m,L] + \
+                        coeffFitFlat[k+1]*np.sin( m*phi )*plmFit[:,m,L]
 
-        potArr = numpy.zeros( ( numLongs, numLats ) ) 
-        potArr = numpy.reshape(v, potArr.shape)/1000.
+        potArr = np.zeros((numLongs, numLats))
+        potArr = np.reshape(v, potArr.shape) / 1000.0
 
         # latShftFit and lonShftFit are almost always zero
         # but in case they are not... we print out a message...
         # you need an extra bit of code to account for the lat shift
-        if latShftFit == 0.:
+        if latShftFit == 0.0:
 
-            q = numpy.array( numpy.where( numpy.abs(zatArr) <= numpy.abs(latMinFit) ) )
+            q = np.array(np.where(np.abs(zatArr) <= np.abs(latMinFit)))
             q = q[0]
             
             if ( len(q) != 0 ):
@@ -613,15 +611,18 @@ class MapConv(object):
 
         # mlt conversion stuff
         if self.plotCoords == 'mlt':
-            epoch = timeUtils.datetimeToEpoch(strtTime)
-            mltDef = aacgm.mltFromEpoch(epoch,0.0) * 15.
-            lonShftFit += mltDef
-            gridArr[1,:] = numpy.mod( ( gridArr[1,:] + lonShftFit ) / 15., 24. )
+            igrf_file = rcParams['IGRF_DAVITPY_COEFF_FILE']
+            mlt_def = aacgm.mlt_convert(strtTime.year, strtTime.month,
+                                        strtTime.day, strtTime.hour,
+                                        strtTime.minute, strtTime.second, 0.0,
+                                        igrf_file) * 15.0
+            lonShftFit += mlt_def
+            gridArr[1,:] = np.mod((gridArr[1,:] + lonShftFit) / 15.0, 24.0)
         else:
-            gridArr[1,:] = ( gridArr[1,:] + lonShftFit ) 
+            gridArr[1,:] = (gridArr[1,:] + lonShftFit)
 
-        latCntr = gridArr[0,:].reshape( ( 181, 60 ) )
-        lonCntr = gridArr[1,:].reshape( ( 181, 60 ) )
+        latCntr = gridArr[0,:].reshape((181, 60))
+        lonCntr = gridArr[1,:].reshape((181, 60))
         
         return latCntr, lonCntr, potArr
 
@@ -715,8 +716,6 @@ class MapConv(object):
 
         """
         import matplotlib
-        import datetime
-        import numpy
         #from davitpy.pydarn.plotting import *
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
@@ -734,17 +733,17 @@ class MapConv(object):
         for nn in range( len(mlatsPlot) ):
 
             vecLen = velMagn[nn]*self.lenFactor/self.radEarth/1000.
-            endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) + \
-                numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
-                *numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
-            endLat = numpy.degrees( endLat )
+            endLat = np.arcsin( np.sin(np.deg2rad( mlatsPlot[nn] ) )*np.cos(vecLen) + \
+                np.cos( np.deg2rad( mlatsPlot[nn] ) )*np.sin(vecLen) \
+                *np.cos(np.deg2rad( velAzm[nn] ) ) )
+            endLat = np.degrees( endLat )
             
-            delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) )*numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(numpy.deg2rad( endLat ) ) ) )
+            delLon = ( np.arctan2( np.sin(np.deg2rad( velAzm[nn] ) )*np.sin(vecLen)*np.cos(np.deg2rad( mlatsPlot[nn] ) ), np.cos(vecLen) - np.sin(np.deg2rad( mlatsPlot[nn] ) )*np.sin(np.deg2rad( endLat ) ) ) )
             
             if self.plotCoords == 'mag':
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
+                endLon = mlonsPlot[nn] + np.degrees( delLon )
             elif self.plotCoords == 'mlt':
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
+                endLon = ( mlonsPlot[nn] + np.degrees( delLon ) )/15.
             else:
                 logging.warning('Check the coords.')
                 
@@ -800,8 +799,6 @@ class MapConv(object):
 
         """
         import matplotlib
-        import datetime
-        import numpy
         from davitpy.pydarn.plotting import overlayRadar
 
         norm = matplotlib.colors.Normalize(0, self.maxVelPlot) # the color maps work for [0, 1]
@@ -824,20 +821,20 @@ class MapConv(object):
         for nn in range( len(mlatsPlot) ):
 
             vecLen = velMagn[nn]*self.lenFactor/self.radEarth/1000.
-            endLat = numpy.arcsin( numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) )*numpy.cos(vecLen) \
-                + numpy.cos( numpy.deg2rad( mlatsPlot[nn] ) )*numpy.sin(vecLen) \
-                *numpy.cos(numpy.deg2rad( velAzm[nn] ) ) )
-            endLat = numpy.degrees( endLat )
+            endLat = np.arcsin( np.sin(np.deg2rad( mlatsPlot[nn] ) )*np.cos(vecLen) \
+                + np.cos( np.deg2rad( mlatsPlot[nn] ) )*np.sin(vecLen) \
+                *np.cos(np.deg2rad( velAzm[nn] ) ) )
+            endLat = np.degrees( endLat )
             
-            delLon = ( numpy.arctan2( numpy.sin(numpy.deg2rad( velAzm[nn] ) ) \
-                *numpy.sin(vecLen)*numpy.cos(numpy.deg2rad( mlatsPlot[nn] ) ), 
-                numpy.cos(vecLen) - numpy.sin(numpy.deg2rad( mlatsPlot[nn] ) ) \
-                *numpy.sin(numpy.deg2rad( endLat ) ) ) )
+            delLon = ( np.arctan2( np.sin(np.deg2rad( velAzm[nn] ) ) \
+                *np.sin(vecLen)*np.cos(np.deg2rad( mlatsPlot[nn] ) ), 
+                np.cos(vecLen) - np.sin(np.deg2rad( mlatsPlot[nn] ) ) \
+                *np.sin(np.deg2rad( endLat ) ) ) )
             
             if self.plotCoords == 'mag':
-                endLon = mlonsPlot[nn] + numpy.degrees( delLon )
+                endLon = mlonsPlot[nn] + np.degrees( delLon )
             elif self.plotCoords == 'mlt':
-                endLon = ( mlonsPlot[nn] + numpy.degrees( delLon ) )/15.
+                endLon = ( mlonsPlot[nn] + np.degrees( delLon ) )/15.0
             else:
                 logging.warning('Check the coords.')
                 

@@ -27,7 +27,6 @@ readPrintRec    Read printrec output files
 
 """
 
-
 def readPrintRec(filename):
     """A function to read the output of fitPrintRec
 
@@ -156,7 +155,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     """
     from davitpy import pydarn
     from davitpy import utils
-    from davitpy import models
+    from davitpy.models import aacgm
 
     file_format = ['{date}.{hour}......{radar}.{ftype}',
                    '{date}.{hour}......{radar}...{ftype}']
@@ -219,47 +218,36 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
 
             # Cycle through each range gate identified as having scatter in
             # the slist
-            for i in range(len(myData.fit.slist)):
-
-                d = utils.geoPack.calcDistPnt(
-                    myFov.latFull[myData.bmnum][myData.fit.slist[i]],
-                    myFov.lonFull[myData.bmnum][myData.fit.slist[i]], 300,
-                    distLat=myFov.latFull[myData.bmnum]
-                    [myData.fit.slist[i] + 1],
-                    distLon=myFov.lonFull[myData.bmnum]
-                    [myData.fit.slist[i] + 1],
-                    distAlt=300)
-
+            for i,s in enumerate(myData.fit.slist):
+                lat_full = myFov.latFull[myData.bmnum]
+                lon_full = myFov.lonFull[myData.bmnum]
+                
+                d = utils.geoPack.calcDistPnt(lat_full[s], lon_full[s], 300,
+                                              distLat=lat_full[s + 1],
+                                              distLon=lon_full[s + 1],
+                                              distAlt=300)
                 gazm = d['az']
 
-                mlat, mlon, a = models.aacgm.aacgmConv(
-                    myFov.latFull[myData.bmnum][myData.fit.slist[i]],
-                    myFov.lonFull[myData.bmnum][myData.fit.slist[i]],
-                    300, t.year, 0)
+                mlat, mlon, a = aacgm.convert_latlon(lat_full[s], lon_full[s],
+                                                     300, t, "G2A")
 
-                mlat2, mlon2, b = models.aacgm.aacgmConv(
-                    myFov.latFull[myData.bmnum][myData.fit.slist[i] + 1],
-                    myFov.lonFull[myData.bmnum][myData.fit.slist[i] + 1], 300,
-                    t.year, 0)
+                mlat2, mlon2, b = aacgm.convert_latlon(lat_full[s + 1],
+                                                       lon_full[s + 1], 300,
+                                                       t, "G2A")
 
                 d = utils.geoPack.calcDistPnt(mlat, mlon, 300, distLat=mlat2,
                                               distLon=mlon2, distAlt=300)
-
                 mazm = d['az']
 
                 f.write('{0:4d} {13:5d} {1:>5.1f} / {2:<5.1f} {3:>8.1f} '
                         '{4:>3d} {5:>8.1f} {6:>8.1f} {7:>8.2f} {8:>8.2f} '
                         '{9:>8.2f} {10:>8.2f} {11:>8.2f} {12:>8.2f}\n'.
-                        format(myData.fit.slist[i], myData.fit.pwr0[i],
+                        format(s, myData.fit.pwr0[i],
                                myData.fit.p_l[i], myData.fit.v[i],
                                myData.fit.gflg[i], myData.fit.v_e[i],
-                               myData.fit.w_l[i],
-                               myFov.latFull[myData.bmnum]
-                               [myData.fit.slist[i]],
-                               myFov.lonFull[myData.bmnum]
-                               [myData.fit.slist[i]], gazm, mlat, mlon, mazm,
-                               myData.prm.frang +
-                               myData.fit.slist[i] * myData.prm.rsep))
+                               myData.fit.w_l[i], lat_full[s], lon_full[s],
+                               gazm, mlat, mlon, mazm,  myData.prm.frang +
+                               s * myData.prm.rsep))
 
             f.write('\n')
         # Else write the beam summary for each sounding
