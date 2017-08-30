@@ -1,25 +1,25 @@
-/* time.c
-   ======
+/* rtime.c
+   =======
    Author: R.J.Barnes
+*/
 
-   (c) 2010 JHU/APL & Others - Please Consult
-   LICENSE.superdarn-rst.3.2-beta-4-g32f7302.txt for more information.
+/*
+ (c) 2010 JHU/APL & Others - Please Consult LICENSE.superdarn-rst.3.2-beta-4-g32f7302.txt for more information.
+ 
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <time.h>
 #include <string.h>
-
 #include <math.h>
-
-#include "local_time.h"
+#include <time.h>
+#include "rtime.h"
 
 #define DAY_SEC 86400
 
-int TimeYMDHMSToYrsec(int yr, int mo, int dy, int hr, int mn, int sc)
-{
+int TimeYMDHMSToYrsec(int yr,int mo,int dy,int hr,int mn,int sc) {
+
   time_t clock;
   struct tm tm;
   char *tz;
@@ -54,9 +54,10 @@ int TimeYMDHMSToYrsec(int yr, int mo, int dy, int hr, int mn, int sc)
   return (int) clock;
 }
 
-void TimeYrsecToYMDHMS(int yrsec, int yr, int *mo, int *dy, int *hr, int *mn,
-		       int *sc)
-{
+void TimeYrsecToYMDHMS(int yrsec,int yr,int *mo,int *dy,int *hr,int *mn,
+                  int *sc) {
+
+
   time_t clock;
   struct tm tmyr;
   struct tm *tm;
@@ -116,7 +117,7 @@ double TimeYMDHMSToEpoch(int yr,int mo,int dy,int hr,int mn,double sc) {
 }
 
 void TimeEpochToYMDHMS(double tme,int *yr,int *mo,int *dy,int *hr,int *mn,
-	       double *sc) {
+         double *sc) {
   time_t clock;
   struct tm *tm;
 

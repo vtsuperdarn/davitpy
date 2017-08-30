@@ -13,9 +13,9 @@
     Software Copyright (C) 2006, U.S. Government
     Author: Kile B. Baker
             National Science Foundation
- 	   4201 Wilson Blvd,
- 	   Arlington, VA 22230
- 	   email: kbaker@nsf.gov
+     4201 Wilson Blvd,
+     Arlington, VA 22230
+     email: kbaker@nsf.gov
  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -77,12 +77,12 @@ double AstAlg_equation_of_time(double jd);
 double AstAlg_geometric_solar_longitude(double jd);
 double AstAlg_jde(int year, int month, double day);
 void AstAlg_jde2calendar(double jd, 
-			 int *year,
-			 int *month,
-			 int *day,
-			 int *hour,
-			 int *minute,
-			 int *second);
+       int *year,
+       int *month,
+       int *day,
+       int *hour,
+       int *minute,
+       int *second);
 double AstAlg_lunar_ascending_node(double jd);
 double AstAlg_mean_lunar_longitude(double jd);
 double AstAlg_mean_obliquity(double jd);

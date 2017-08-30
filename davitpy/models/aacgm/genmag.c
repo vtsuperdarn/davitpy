@@ -26,19 +26,19 @@
 
 int dayno(int year, int month, int day, int *diy)
 {
-	int k,tot;
-	int ndays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+  int k,tot;
+  int ndays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 
-	*diy = 365;
-	if(((year%4==0)&&(year%100!=0))||(year%400==0)) {
-		ndays[1]++;
-		*diy = 366;
-	}
+  *diy = 365;
+  if(((year%4==0)&&(year%100!=0))||(year%400==0)) {
+    ndays[1]++;
+    *diy = 366;
+  }
 
-	tot = 0;
-	for (k=0; k<month-1; k++) tot += ndays[k];
-	tot += day;
+  tot = 0;
+  for (k=0; k<month-1; k++) tot += ndays[k];
+  tot += day;
 
-	return tot;
+  return tot;
 }
 

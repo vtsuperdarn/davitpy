@@ -1,5 +1,5 @@
 AACGM-v2 Software
-v2.3 20160504
+v2.4 20170601
 
 C Instructions:
 
@@ -174,7 +174,7 @@ This package include the following files:
 AACGM C software:
 
 README.txt            ; this file
-release_notes.txt     ; details of changes to v2.3
+release_notes.txt     ; details of changes to v2.4
 aacgmlib_v2.c         ; AACGM-v2 functions
 aacgmlib_v2.h         ; AACGM-v2 header file
 genmag.c              ; general purpose functions

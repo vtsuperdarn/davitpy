@@ -19,7 +19,6 @@ The book will be referred to as "Meeus" for short.
 
 #include <stdio.h>
 #include <math.h>
-
 #include "astalg.h"
 
 /* AstAlg_apparent_obliquity
@@ -39,17 +38,17 @@ The book will be referred to as "Meeus" for short.
 
 double AstAlg_apparent_obliquity(double jd) {
 
-	static double last_jd, last_eps;
+  static double last_jd, last_eps;
 
-	/* if we've already calculated the value just return it */
+  /* if we've already calculated the value just return it */
 
-	if (jd == last_jd) return (last_eps);
+  if (jd == last_jd) return (last_eps);
 
-	last_jd = jd;
-	last_eps = AstAlg_mean_obliquity(jd) + 
-	  0.00256 * cos(AstAlg_DTOR * AstAlg_lunar_ascending_node(jd));
+  last_jd = jd;
+  last_eps = AstAlg_mean_obliquity(jd) + 
+              0.00256 * cos(AstAlg_DTOR * AstAlg_lunar_ascending_node(jd));
 
-	return (last_eps);
+  return (last_eps);
 }
 
 /* AstAlg_apparent_solar_longitude
@@ -69,17 +68,17 @@ double AstAlg_apparent_obliquity(double jd) {
 
 double AstAlg_apparent_solar_longitude(double jd) {
 
-	static double last_jd, last_asl;
+  static double last_jd, last_asl;
     
-	/* if we've already calculated the value simply return it */
+  /* if we've already calculated the value simply return it */
 
-	if (jd == last_jd) return (last_asl);
+  if (jd == last_jd) return (last_asl);
 
-	last_jd = jd;
-	last_asl = AstAlg_geometric_solar_longitude(jd) - 0.00569 -
-	  0.00478*sin(AstAlg_DTOR * AstAlg_lunar_ascending_node(jd));
+  last_jd = jd;
+  last_asl = AstAlg_geometric_solar_longitude(jd) - 0.00569 -
+              0.00478*sin(AstAlg_DTOR * AstAlg_lunar_ascending_node(jd));
 
-	return (last_asl);
+  return (last_asl);
 }
 
 /* AstAlg_dday
@@ -101,8 +100,8 @@ double AstAlg_dday(int day, int hour, int minute, int second) {
 
 /* SGS Changed */
 /* Kile, this is WRONG! Nathanial found this bug */
-/*	return (double) (day + hour/24.0 + minute/60.0 + second/3600.0);*/
-	return ((double) (day + (hour + minute/60.0 + second/3600.0)/24.));
+/*  return (double) (day + hour/24.0 + minute/60.0 + second/3600.0);*/
+  return ((double) (day + (hour + minute/60.0 + second/3600.0)/24.));
 }
 
 /* AstAlg_equation_of_time
@@ -131,37 +130,37 @@ double AstAlg_dday(int day, int hour, int minute, int second) {
 
 double AstAlg_equation_of_time(double jd) {
 
-	static double last_jd, last_eqt;
+  static double last_jd, last_eqt;
 
-	double eqt;
-	double dpsi, deps, sml, sra, obliq;
+  double eqt;
+  double dpsi, deps, sml, sra, obliq;
 
-	/* if we've already calculated the value, simply return it */
+  /* if we've already calculated the value, simply return it */
 
-	if (jd == last_jd) return (last_eqt);
+  if (jd == last_jd) return (last_eqt);
 
-	/* first get all the separate pieces */
-	sml = AstAlg_mean_solar_longitude(jd);
-	sra = AstAlg_solar_right_ascension(jd);
-	obliq = AstAlg_mean_obliquity(jd);
-	AstAlg_nutation_corr(jd, &dpsi, &deps);
+  /* first get all the separate pieces */
+  sml = AstAlg_mean_solar_longitude(jd);
+  sra = AstAlg_solar_right_ascension(jd);
+  obliq = AstAlg_mean_obliquity(jd);
+  AstAlg_nutation_corr(jd, &dpsi, &deps);
 
-	/* now put it all together */
+  /* now put it all together */
 
-	eqt = sml - 0.0057183 - sra + dpsi*cos(AstAlg_DTOR*(obliq + deps));
+  eqt = sml - 0.0057183 - sra + dpsi*cos(AstAlg_DTOR*(obliq + deps));
 
-	eqt = dmod(eqt,360.0);
+  eqt = dmod(eqt,360.0);
 
-	/* now convert from degrees to minutes */
-	eqt = 4.0 * eqt;
+  /* now convert from degrees to minutes */
+  eqt = 4.0 * eqt;
 
-	if (eqt > 20.0) eqt = eqt - 24.0*60.0; /*wrap back 24 hours*/
-	if (eqt < -20.0) eqt = 24.0*60.0 + eqt; /*wrap forward 24 hours */
+  if (eqt > 20.0) eqt = eqt - 24.0*60.0; /*wrap back 24 hours*/
+  if (eqt < -20.0) eqt = 24.0*60.0 + eqt; /*wrap forward 24 hours */
 
-	last_jd = jd;
-	last_eqt = eqt;
+  last_jd = jd;
+  last_eqt = eqt;
 
-	return (eqt);
+  return (eqt);
 }
 
 /* AstAlg_geometric_solar_longitude
@@ -183,40 +182,40 @@ double AstAlg_equation_of_time(double jd) {
 
 double AstAlg_geometric_solar_longitude(double jd) {
 
-	static double last_jd, last_gsl;
+  static double last_jd, last_gsl;
 
-	double sml, sma, tau, gc;
+  double sml, sma, tau, gc;
 
-	/* if we've already calculated the value for this Julian Day just
-		 return it */
+  /* if we've already calculated the value for this Julian Day just
+     return it */
 
-	if (last_jd == jd) return (last_gsl);
+  if (last_jd == jd) return (last_gsl);
 
-	/* compute the delta-tau in centuries from the reference time J2000 */
-	tau = (jd - J2000)/36525.0;
+  /* compute the delta-tau in centuries from the reference time J2000 */
+  tau = (jd - J2000)/36525.0;
 
-	sml = AstAlg_mean_solar_longitude(jd);
+  sml = AstAlg_mean_solar_longitude(jd);
 
-	/* we need the mean solar anomaly in radians because it's used in some
-		 sine functions */
-	sma = AstAlg_DTOR * AstAlg_mean_solar_anomaly(jd);
+  /* we need the mean solar anomaly in radians because it's used in some
+     sine functions */
+  sma = AstAlg_DTOR * AstAlg_mean_solar_anomaly(jd);
 
-	gc = (1.914602 - 0.004817*tau - 0.000014*(tau*tau)) * sin(sma)
-			+ (0.019993 - 0.000101*tau) * sin(2.0*sma)
-			+ 0.000289 * sin(3.0*sma);
+  gc = (1.914602 - 0.004817*tau - 0.000014*(tau*tau)) * sin(sma)
+      + (0.019993 - 0.000101*tau) * sin(2.0*sma)
+      + 0.000289 * sin(3.0*sma);
 
-	sml += gc;
-/*	sml = sml + gc;*/
+  sml += gc;
+/*  sml = sml + gc;*/
 
-	/* make sure the value is between 0 and 360 degrees */
-	sml = dmod(sml, 360.0);
+  /* make sure the value is between 0 and 360 degrees */
+  sml = dmod(sml, 360.0);
 
-	if (sml < 0.0) sml += 360.0;
+  if (sml < 0.0) sml += 360.0;
 
-	last_jd = jd;
-	last_gsl = sml;
+  last_jd = jd;
+  last_gsl = sml;
 
-	return (sml);
+  return (sml);
 }
 
 /* AstAlg_jde2calendar
@@ -228,74 +227,74 @@ double AstAlg_geometric_solar_longitude(double jd) {
    hour, minute and second */
 
 void AstAlg_jde2calendar(double jd,
-			 int *year,
-			 int *month,
-			 int *day,
-			 int *hour,
-			 int *minute,
-			 int *second) {
+       int *year,
+       int *month,
+       int *day,
+       int *hour,
+       int *minute,
+       int *second) {
 
-	long a,b,c,d,e, z;
-	long alpha;
-	double f;
-	double dday, resid;
+  long a,b,c,d,e, z;
+  long alpha;
+  double f;
+  double dday, resid;
 
 /* this is a rather complicated calculation and uses some clever tricks
    that I (Kile Baker) don't really understand.  It all comes out of
    Meeus (chapter 7) and it all seems to work. */
 
-	jd +=  0.5;
+  jd +=  0.5;
 
 /* z is the integer part of jd+.5 and f is the remaining fraction of a day */
 
-	z = (long) jd;
-	f = jd - z;
+  z = (long) jd;
+  f = jd - z;
     
-	if (z < 2299161) a = z;
-	else {
-		alpha = (long) ((z - 1867216.25)/36524.25);
-		a = z + 1 + alpha - (long)(alpha/4);
-	}
+  if (z < 2299161) a = z;
+  else {
+    alpha = (long) ((z - 1867216.25)/36524.25);
+    a = z + 1 + alpha - (long)(alpha/4);
+  }
 
-	b = a + 1524;
-	c = (long) ((b - 122.1)/365.25);
-	d = (long) (365.25 * c);
-	e = (long) ((b - d)/30.6001);
+  b = a + 1524;
+  c = (long) ((b - 122.1)/365.25);
+  d = (long) (365.25 * c);
+  e = (long) ((b - d)/30.6001);
 /* NOTE: Meeus states emphatically that the constant 30.6001 must be used
    to avoid calculating dates such as Feb. 0 instead of Jan. 31. */
 
 /* the value of e is basically giving us the month */
 
-	if (e < 14) *month = e-1;
-	else *month = e-13;
+  if (e < 14) *month = e-1;
+  else *month = e-13;
 
 /* the value of c is basically giving us the year */
 
-	if (*month > 2) *year = c - 4716;
-	else *year = c - 4715;
+  if (*month > 2) *year = c - 4716;
+  else *year = c - 4715;
 
 /* now calclulate the decimal day */
 
-	dday = b - d - (double) ((long) (30.6001 * e)) + f;
+  dday = b - d - (double) ((long) (30.6001 * e)) + f;
 
 /* extract the integer part of the day and get the left over residual
    in hours */
 
-	*day = (int) dday;
-	resid = (dday - *day) * 24.0;
+  *day = (int) dday;
+  resid = (dday - *day) * 24.0;
 
 /* extract the integer part of the hours and get the left over minutes */
     
-	*hour = (int) resid;
-	resid = (resid - *hour)*60.0;
+  *hour = (int) resid;
+  resid = (resid - *hour)*60.0;
 
 /* extract the integer part of the minutes and get the left over seconds */
-	*minute = (int) resid;
-	resid = (resid - *minute)*60.0;
+  *minute = (int) resid;
+  resid = (resid - *minute)*60.0;
 
 /* round of the value of second to the nearest second */
 
-	*second = (int)(resid + 0.5);
+  *second = (int)(resid + 0.5);
 }
 
 /* AstAlg_jde
@@ -335,30 +334,30 @@ double AstAlg_jde(int year, int month, double day) {
 
 /* NOTE: the value of 'year' must be the full 4-digit year */
 
-	int a;
-	double b;
+  int a;
+  double b;
 
 /* if the month is January or February, treat it as belonging
    to the previous year.  This makes the leap year correction
    easier to handle */
 
-	if (month <= 2) {
-		year--;
-		month += 12;
-	}
+  if (month <= 2) {
+    year--;
+    month += 12;
+  }
 
 /* the next few lines perform the leap year correction.  It deals
    with the centuries correctly */
 
-	a = (int) (year/100);
-	b = (double) (2 - a + a/4);
+  a = (int) (year/100);
+  b = (double) (2 - a + a/4);
 
 /* ideally, the constant 30.6001 could simply be 30.6, but adding the
    additional .0001 to it ensures that truncation error doesn't result
    in an incorrect calculation */
 
-	return ((double) ( (long) (365.25*(year + 4716)) +
-					(double) ( (long) (30.6001 * (month + 1)))) + day + b - 1524.5);
+  return ((double) ( (long) (365.25*(year + 4716)) +
+          (double) ( (long) (30.6001 * (month + 1)))) + day + b - 1524.5);
 }
 
 /* AstAlg_lunar_ascending_node
@@ -377,32 +376,32 @@ double AstAlg_jde(int year, int month, double day) {
 
 double AstAlg_lunar_ascending_node(double jd) {
 
-	static double last_jd, last_ascn;
-	double tau, omega;
+  static double last_jd, last_ascn;
+  double tau, omega;
 
 /* if we've already calculated the value just return it */
 
-	if (jd == last_jd) return (last_ascn);
+  if (jd == last_jd) return (last_ascn);
 
 /* calculate the delta-time in centuries with respect to 
    the reference time J2000 */
 
-	tau = (jd - J2000)/36525.0;
+  tau = (jd - J2000)/36525.0;
 
 /* omega = 125 - 1934 * tau + .002*tau^2 + t^3/4.5e5 */
 
-	omega = (((tau/4.50e5 + 2.0708e-3)*tau - 1.934136261e3)*tau) + 125.04452;
+  omega = (((tau/4.50e5 + 2.0708e-3)*tau - 1.934136261e3)*tau) + 125.04452;
 
 /* now make sure omega is between 0 and 360 */
 
-	omega = dmod(omega, 360.0);
+  omega = dmod(omega, 360.0);
 
-	if (omega < 0.0) omega += 360.0;
+  if (omega < 0.0) omega += 360.0;
 
-	last_jd = jd;
-	last_ascn = omega;
+  last_jd = jd;
+  last_ascn = omega;
 
-	return (omega);
+  return (omega);
 }
      
 /* AstAlg_mean_lunar_longitude
@@ -421,29 +420,29 @@ double AstAlg_lunar_ascending_node(double jd) {
 
 double AstAlg_mean_lunar_longitude(double jd) {
 
-	static double last_jd, last_llong;
-	double tau, llong;
+  static double last_jd, last_llong;
+  double tau, llong;
 
 /* simply return the value if we've already calculated it */
 
-	if (jd == last_jd) return (last_llong);
+  if (jd == last_jd) return (last_llong);
 
 /* calculate the detla-time from the reference time J2000 in centuries */
 
-	tau = (jd - J2000)/36525.0;
+  tau = (jd - J2000)/36525.0;
 
-	llong = 218.3165 + 481267.8813 * tau;
+  llong = 218.3165 + 481267.8813 * tau;
 
 /* make sure the resulting value is between 0 and 360 */
 
-	llong = dmod(llong, 360.0);
+  llong = dmod(llong, 360.0);
 
-	if (llong < 0) llong += 360.0;
+  if (llong < 0) llong += 360.0;
 
-	last_jd = jd;
-	last_llong = llong;
+  last_jd = jd;
+  last_llong = llong;
 
-	return (llong);
+  return (llong);
 }
 
 /* AstAlg_apparent_solar_longitude
@@ -464,14 +463,14 @@ double AstAlg_mean_lunar_longitude(double jd) {
 
 double AstAlg_mean_obliquity(double jd) {
 
-	static double last_jd, last_e0;
-	double tau;
-	const double coefs[] = {23.439291111111, -0.0130041666667, -1.638888889e-7,
-													5.036111111e-7};
+  static double last_jd, last_e0;
+  double tau;
+  const double coefs[] = {23.439291111111, -0.0130041666667, -1.638888889e-7,
+                          5.036111111e-7};
 
 /* if we've already calculated this value for this date simply return it */
 
-	if (jd == last_jd) return (last_e0);
+  if (jd == last_jd) return (last_e0);
 
     /* the coefficients in Meeus are given in degrees, minutes and seconds
        so I have to convert them to double precision degrees first.
@@ -481,20 +480,20 @@ double AstAlg_mean_obliquity(double jd) {
     */
 
 /*    if (coeffs[3] != 0.001813/3600.0) {
-	coeffs[3] = 0.001813/3600.0;
-	coeffs[2] = -0.00059/3600.0;
-	coeffs[1] = -46.8150/3600.0;
-	coeffs[0] = 23.0 + 26.0/60.0 + 21.448/3600.0;
+  coeffs[3] = 0.001813/3600.0;
+  coeffs[2] = -0.00059/3600.0;
+  coeffs[1] = -46.8150/3600.0;
+  coeffs[0] = 23.0 + 26.0/60.0 + 21.448/3600.0;
     }
 */
 
-	tau = (jd - J2000)/36525.0;
+  tau = (jd - J2000)/36525.0;
 
 /* Now calculate the value of e0 */
-	last_e0 = ((((coefs[3]*tau) + coefs[2]) * tau) + coefs[1]) * tau + coefs[0];
-	last_jd = jd;
+  last_e0 = ((((coefs[3]*tau) + coefs[2]) * tau) + coefs[1]) * tau + coefs[0];
+  last_jd = jd;
 
-	return (last_e0);
+  return (last_e0);
 }
 
 /* AstAlg_apparent_solar_anomaly
@@ -518,28 +517,28 @@ double AstAlg_mean_solar_anomaly( double jd ) {
    to avoid recalculating the value multiple times, since it is used
    in several other functions in the AstAlg library */
 
-	static double last_jd, last_sma;
+  static double last_jd, last_sma;
 
-	double tau, sma;
+  double tau, sma;
 
-	if (jd == last_jd) return (last_sma);
+  if (jd == last_jd) return (last_sma);
 
 /* calculate the difference between the requested Julian Day and
-	  the reference value, J2000, in centuries */
+    the reference value, J2000, in centuries */
 
-	tau = (jd - J2000)/36525.0;
-	sma = 357.5291130 + 35999.05029 * tau - 0.0001537 * (tau*tau);
+  tau = (jd - J2000)/36525.0;
+  sma = 357.5291130 + 35999.05029 * tau - 0.0001537 * (tau*tau);
 
 /* make sure the value is between 0 and 360 */
 
-	sma = dmod(sma, 360);
+  sma = dmod(sma, 360);
 
-	if (sma < 0.0) sma += 360.0;
+  if (sma < 0.0) sma += 360.0;
 
-	last_jd = jd;
-	last_sma = sma;
+  last_jd = jd;
+  last_sma = sma;
 
-	return (sma);
+  return (sma);
 }
 
 /* AstAlg_mean_solar_longitude
@@ -562,39 +561,39 @@ double AstAlg_mean_solar_longitude( double jd ) {
    and we don't want to have to recalculate the value every time, so
    the last calculated value is saved as a static value */
 
-	static double last_jd, last_sl;
+  static double last_jd, last_sl;
 
-	static const double coefs[] = {280.4664567, 360007.6982779,
-																	0.03032028, 2.00276381406e-5,
-																	-6.53594771242e-5, -0.50e-6 };
-	double tau, sl;
-	int i;
+  static const double coefs[] = {280.4664567, 360007.6982779,
+                                  0.03032028, 2.00276381406e-5,
+                                  -6.53594771242e-5, -0.50e-6 };
+  double tau, sl;
+  int i;
 
-	if (jd == last_jd) return (last_sl);
+  if (jd == last_jd) return (last_sl);
 
 /* calculate the difference between the requested Julian day and the
    reference Julian day, J2000, in terms of milennia */
 
-	tau = (jd - J2000)/365250.0;
+  tau = (jd - J2000)/365250.0;
 
 /* now calculate the solar longitude using the delta-time tau and the
    coefficients */
 
-	sl = 0.0;
-	for (i=5; i>=0; i--) {
-		sl = tau * sl + coefs[i];
-	}
+  sl = 0.0;
+  for (i=5; i>=0; i--) {
+    sl = tau * sl + coefs[i];
+  }
 
 /* make sure the result is between 0 and 360 degrees */
 
-	sl = dmod(sl, 360);
+  sl = dmod(sl, 360);
 
-	if (sl < 0.0) sl += 360.0;
+  if (sl < 0.0) sl += 360.0;
 
-	last_jd = jd;
-	last_sl = sl;
+  last_jd = jd;
+  last_sl = sl;
 
-	return (sl);
+  return (sl);
 }
 
 /* AstAlg_nutation_corr
@@ -613,42 +612,42 @@ double AstAlg_mean_solar_longitude( double jd ) {
 
 void AstAlg_nutation_corr(double jd, double *slong_corr, double *obliq_corr)
 {
-	double slong, lunlong, omega;
-	static double last_jd, last_slcorr, last_oblcorr;
+  double slong, lunlong, omega;
+  static double last_jd, last_slcorr, last_oblcorr;
 
 /* just return the values if they've already been calculated */
 
-	if (jd == last_jd) {
-		*slong_corr = last_slcorr;
-		*obliq_corr = last_oblcorr;
-		return;		/* SGS added */
-	}
+  if (jd == last_jd) {
+    *slong_corr = last_slcorr;
+    *obliq_corr = last_oblcorr;
+    return;   /* SGS added */
+  }
 
 /* get the mean solar longitude and mean lunar longitude in radians */
 
-	slong = AstAlg_DTOR * AstAlg_mean_solar_longitude(jd);
-	lunlong = AstAlg_DTOR * AstAlg_mean_lunar_longitude(jd);
-	omega = AstAlg_DTOR * AstAlg_lunar_ascending_node(jd);
+  slong = AstAlg_DTOR * AstAlg_mean_solar_longitude(jd);
+  lunlong = AstAlg_DTOR * AstAlg_mean_lunar_longitude(jd);
+  omega = AstAlg_DTOR * AstAlg_lunar_ascending_node(jd);
 
 /* the next line computes the correction to the solar longitude in arcsecs */
 
-	*slong_corr = -17.20 * sin(omega) - 1.32 * sin(2.0*slong) -
-									0.23 * sin(2.0*lunlong) + 0.21 * sin(2.0*omega);
+  *slong_corr = -17.20 * sin(omega) - 1.32 * sin(2.0*slong) -
+                  0.23 * sin(2.0*lunlong) + 0.21 * sin(2.0*omega);
 
 /* convert from arcsec to degrees */
-	*slong_corr = *slong_corr/3600.0;
+  *slong_corr = *slong_corr/3600.0;
 
 /* Next we calculate the correction to the obliquity in arcsecs */
 
-	*obliq_corr = 9.20 * cos(omega) + 0.57 * cos(2.0*slong) +
-								0.10 * cos(2.0*lunlong) - 0.09 * cos(2.0*omega);
+  *obliq_corr = 9.20 * cos(omega) + 0.57 * cos(2.0*slong) +
+                0.10 * cos(2.0*lunlong) - 0.09 * cos(2.0*omega);
 
-	*obliq_corr = *obliq_corr/3600.0;
+  *obliq_corr = *obliq_corr/3600.0;
 
 /* save the calculated values in case their needed again */
-	last_jd = jd;
-	last_slcorr = *slong_corr;
-	last_oblcorr = *obliq_corr;
+  last_jd = jd;
+  last_slcorr = *slong_corr;
+  last_oblcorr = *obliq_corr;
 }
 
 /* AstAlg_apparent_solar_declination
@@ -669,20 +668,20 @@ void AstAlg_nutation_corr(double jd, double *slong_corr, double *obliq_corr)
 
 double AstAlg_solar_declination(double jd) {
 
-	static double last_jd, last_sdec;
-	double sindec;
+  static double last_jd, last_sdec;
+  double sindec;
 
 /* if we've already calculated the value simply return it */
 
-	if (jd == last_jd) return (last_sdec);
+  if (jd == last_jd) return (last_sdec);
 
-	sindec = sin(AstAlg_DTOR * AstAlg_apparent_obliquity(jd)) *
-	  sin(AstAlg_DTOR * AstAlg_apparent_solar_longitude(jd));
+  sindec = sin(AstAlg_DTOR * AstAlg_apparent_obliquity(jd)) *
+            sin(AstAlg_DTOR * AstAlg_apparent_solar_longitude(jd));
 
-	last_jd = jd;
-	last_sdec = asin(sindec)/AstAlg_DTOR;
+  last_jd = jd;
+  last_sdec = asin(sindec)/AstAlg_DTOR;
 
-	return (last_sdec);
+  return (last_sdec);
 }
 
 /* AstAlg_solar_right_ascension
@@ -706,24 +705,24 @@ double AstAlg_solar_declination(double jd) {
 
 double AstAlg_solar_right_ascension(double jd) {
 
-	static double last_jd, last_ra;
-	double eps, slong, alpha;
+  static double last_jd, last_ra;
+  double eps, slong, alpha;
 
 /* if we've already calculated the value, simply return it. */
 
-	if (jd == last_jd) return (last_ra);
+  if (jd == last_jd) return (last_ra);
 
-	/* get the solar longitude in radians */
-	slong = AstAlg_DTOR * AstAlg_apparent_solar_longitude(jd);
+  /* get the solar longitude in radians */
+  slong = AstAlg_DTOR * AstAlg_apparent_solar_longitude(jd);
 
-	/* get the obliquity in radians */
-	eps = AstAlg_DTOR * AstAlg_apparent_obliquity(jd);
+  /* get the obliquity in radians */
+  eps = AstAlg_DTOR * AstAlg_apparent_obliquity(jd);
 
-	alpha = atan2(cos(eps)*sin(slong),cos(slong));
+  alpha = atan2(cos(eps)*sin(slong),cos(slong));
 
-	last_ra = alpha/AstAlg_DTOR;
-	last_jd = jd;
+  last_ra = alpha/AstAlg_DTOR;
+  last_jd = jd;
 
-	return (last_ra);
+  return (last_ra);
 }
 
