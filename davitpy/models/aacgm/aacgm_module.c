@@ -71,7 +71,7 @@ static PyObject *aacgm_v2_convert(PyObject *self, PyObject *args)
 }
 
 static PyObject *mltconvert_v2(PyObject *self, PyObject *args)
-{
+{ 
   int yr, mo, dy, hr, mt, sc;
 
   double mlon, mlt;
@@ -79,13 +79,13 @@ static PyObject *mltconvert_v2(PyObject *self, PyObject *args)
   char *igrf_file;
 
   /* Parse the input as a tupple */
-  if(!PyArg_ParseTuple(args, "iiiiiids", &yr, &mo, &dy, &hr, &mt, &sc, &mlon,
-		       &igrf_file))
+  if(!PyArg_ParseTuple(args, "iiiiiidss", &yr, &mo, &dy, &hr, &mt, &sc, &mlon,
+		       &root, &igrf_file))
     return(NULL);
 
   /* Call the AACGM routine */
-  mlt = MLTConvert_v2(yr, mo, dy, hr, mt, sc, mlon, igrf_file);
-
+  mlt = MLTConvert_v2(yr, mo, dy, hr, mt, sc, mlon, root, igrf_file);
+    
   return Py_BuildValue("d", mlt);
 }
 
@@ -95,16 +95,53 @@ static PyObject *mltconvert_yrsec_v2(PyObject *self, PyObject *args)
 
   double mlon, mlt;
 
-  char *igrf_file;
+  char *igrf_file, *root;
 
   /* Parse the input as a tupple */
-  if(!PyArg_ParseTuple(args, "iids", &yr, &yr_sec, &mlon, &igrf_file))
+  if(!PyArg_ParseTuple(args, "iidss", &yr, &yr_sec, &mlon, &root, &igrf_file))
     return(NULL);
 
   /* Call the AACGM routine */
-  mlt = MLTConvertYrsec_v2(yr, yr_sec, mlon, igrf_file);
+  mlt = MLTConvertYrsec_v2(yr, yr_sec, mlon, root, igrf_file);
 
   return Py_BuildValue("d", mlt);
+}
+
+static PyObject *inv_mltconvert_v2(PyObject *self, PyObject *args)
+{ 
+  int yr, mo, dy, hr, mt, sc;
+
+  double mlon, mlt;
+
+  char *igrf_file;
+
+  /* Parse the input as a tupple */
+  if(!PyArg_ParseTuple(args, "iiiiiids", &yr, &mo, &dy, &hr, &mt, &sc, &mlt,
+		       &igrf_file))
+    return(NULL);
+
+  /* Call the AACGM routine */
+  mlon = inv_MLTConvert_v2(yr, mo, dy, hr, mt, sc, mlt, igrf_file);
+    
+  return Py_BuildValue("d", mlon);
+}
+
+static PyObject *inv_mltconvert_yrsec_v2(PyObject *self, PyObject *args)
+{
+  int yr, yr_sec;
+
+  double mlon, mlt;
+
+  char *igrf_file;
+
+  /* Parse the input as a tupple */
+  if(!PyArg_ParseTuple(args, "iidss", &yr, &yr_sec, &mlt, &igrf_file))
+    return(NULL);
+
+  /* Call the AACGM routine */
+  mlon = inv_MLTConvertYrsec_v2(yr, yr_sec, mlt, igrf_file);
+
+  return Py_BuildValue("d", mlon);
 }
 
 static PyMethodDef aacgm_v2_methods[] = {
@@ -129,6 +166,7 @@ second : (int)\n\
     Seconds of minute (0-59)\n\
 root : (str)\n\
     AACGM coefficient filename root\n\
+    (e.g. /davitpydir/tables/aacgm/aacgm_coeffs-12-)\n\
 \n\
 Returns\n\
 -------------\n\
@@ -166,7 +204,7 @@ out_lon : (float)\n\
 out_r : (float)\n\
     Geocentric radial distance in Re\n", },
   {"mlt_convert", mltconvert_v2, METH_VARARGS,
-    "mlt_convert(yr, mo, dy, hr, mt, sc, mlon, igrf_file)\n\
+    "mlt_convert(yr, mo, dy, hr, mt, sc, mlon, root, igrf_file)\n\
 \n\
 Converts from universal time to magnetic local time.\n\
 \n\
@@ -186,6 +224,9 @@ sc : (int)\n\
     Seconds of minute (0-59)\n\
 mlon : (float)\n\
     Magnetic longitude\n\
+root : (str)\n\
+    Root of the AACGM coefficient files\n\
+    (e.g. /davitpydir/tables/aacgm/aacgm_coeffs-12-)\n\
 igrf_file : (str)\n\
     Full filename of IGRF coefficient file\n\
 \n\
@@ -195,7 +236,7 @@ mlt : (float)\n\
     Magnetic local time (hours)\n" },
 
   {"mlt_convert_yrsec", mltconvert_yrsec_v2, METH_VARARGS,
-    "mlt_convert_yrsec(yr, yr_sec, mlon, igrf_file)\n\
+    "mlt_convert_yrsec(yr, yr_sec, mlon, root, igrf_file)\n\
 \n\
 Converts from universal time to magnetic local time.\n\
 \n\
@@ -207,13 +248,65 @@ yr_sec : (int)\n\
     Seconds of year (0-31622400)\n\
 mlon : (float)\n\
     Magnetic longitude\n\
+root : (str)\n\
+    Root of the AACGM coefficient files\n\
+    (e.g. /davitpydir/tables/aacgm/aacgm_coeffs-12-)\n\
 igrf_file : (str)\n\
     Full filename of IGRF coefficient file\n\
 \n\
 Returns	\n\
 -------\n\
 mlt : (float)\n\
-    Magnetic local time (hours)\n" },
+    Magnetic local time (hours)\n" },,
+  {"inv_mlt_convert", inv_mltconvert_v2, METH_VARARGS,
+    "inv_mlt_convert(yr, mo, dy, hr, mt, sc, mlt, igrf_file)\n\
+\n\
+Converts from universal time and magnetic local time to magnetic longitude.\n\
+\n\
+Parameters\n\
+-------------\n\
+yr : (int)\n\
+    4 digit integer year (1900-2020)\n\
+mo : (int)\n\
+    Month of year (1-12)\n\
+dy : (int)\n\
+    Day of month (1-31)\n\
+hr : (int)\n\
+    hours of day (0-23)\n\
+mt : (int)\n\
+    Minutes of hour (0-59)\n\
+sc : (int)\n\
+    Seconds of minute (0-59)\n\
+mlt : (float)\n\
+    Magnetic local time\n\
+igrf_file : (str)\n\
+    Full filename of IGRF coefficient file\n\
+\n\
+Returns	\n\
+-------\n\
+mlon : (float)\n\
+    Magnetic longitude (degrees)\n" },
+
+  {"inv_mlt_convert_yrsec", inv_mltconvert_yrsec_v2, METH_VARARGS,
+    "inv_mlt_convert_yrsec(yr, yr_sec, mlt, igrf_file)\n\
+\n\
+Converts from universal time and magnetic local time to magnetic longitude.\n\
+\n\
+Parameters\n\
+-------------\n\
+yr : (int)\n\
+    4 digit integer year (1900-2020)\n\
+yr_sec : (int)\n\
+    Seconds of year (0-31622400)\n\
+mlt : (float)\n\
+    Magnetic local time\n\
+igrf_file : (str)\n\
+    Full filename of IGRF coefficient file\n\
+\n\
+Returns	\n\
+-------\n\
+mlon : (float)\n\
+    Magnetic longitude (degrees)\n" },
   { NULL, NULL, 0, NULL }
 };
 
