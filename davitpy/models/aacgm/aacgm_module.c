@@ -76,7 +76,7 @@ static PyObject *mltconvert_v2(PyObject *self, PyObject *args)
 
   double mlon, mlt;
 
-  char *igrf_file;
+  char *igrf_file, *root;
 
   /* Parse the input as a tupple */
   if(!PyArg_ParseTuple(args, "iiiiiidss", &yr, &mo, &dy, &hr, &mt, &sc, &mlon,
@@ -257,7 +257,7 @@ igrf_file : (str)\n\
 Returns	\n\
 -------\n\
 mlt : (float)\n\
-    Magnetic local time (hours)\n" },,
+    Magnetic local time (hours)\n" },
   {"inv_mlt_convert", inv_mltconvert_v2, METH_VARARGS,
     "inv_mlt_convert(yr, mo, dy, hr, mt, sc, mlt, igrf_file)\n\
 \n\
