@@ -94,6 +94,7 @@ double MLTConvert_v2(int yr, int mo, int dy, int hr, int mt ,int sc,
   double hgt,aacgm_mlt;
   double ajd;
 
+  err = 0;
   AACGM_v2_GetDateTime(&ayr, &amo, &ady, &ahr, &amt, &asc, &adyn);
   if (ayr < 0) { 
     /* AACGM date/time not set so set it to the date/time passed in */
@@ -104,7 +105,7 @@ double MLTConvert_v2(int yr, int mo, int dy, int hr, int mt ,int sc,
      * than 30 days, recompute the AACGM-v2 coefficients */
     ajd = TimeYMDHMSToJulian(ayr,amo,ady,ahr,amt,asc);
     jd =  TimeYMDHMSToJulian(yr,mo,dy,hr,mt,sc);
-    if (abs(jd-ajd) > 30) {
+    if (fabs(jd-ajd) > 30.0) {
       err = AACGM_v2_SetDateTime(yr,mo,dy,hr,mt,sc, root);
     }
     if (err != 0) return (err);
