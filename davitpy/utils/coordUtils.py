@@ -103,13 +103,14 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 
     """
     import numpy as np
-    import davitpy
-    
+
+    from davitpy import rcParams
     from davitpy.models import aacgm
     from davitpy.utils.coordUtils import get_coord_dict
 
     # Define IGRF file location
-    igrf_file = davitpy.rcParams['IGRF_DAVITPY_COEFF_FILE']
+    igrf_file = rcParams['IGRF_DAVITPY_COEFF_FILE']
+    root = rcParams['AACGM_DAVITPY_DAT_PREFIX']
 
     ####################################################################
     #                                                                  #
@@ -233,7 +234,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                 mlt_0 = aacgm.mlt_convert(date_time.year, date_time.month,
                                           date_time.day, date_time.hour,
                                           date_time.minute, date_time.second,
-                                          0.0, igrf_file)     
+                                          0.0, root, igrf_file)     
                 # Calculate MLT difference, which is magnetic lon in hours.
                 lon -= mlt_0
                 # Sanitise and convert to degrees.
@@ -253,7 +254,9 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             # altitude conversion, convert to geo.
             if (end not in aacgm_sys) or alt_conv:
                 lat, lon, _ = aacgm.convert_latlon_arr(lat, lon, alt,
-                                                       date_time, 'A2G')
+                                                       date_time, 'A2G',
+                                                       igrf_file=igrf_file,
+                                                       coeff_prefix=root)
                 start = "geo"
         
         # End of AACGM family FROM block.
@@ -294,7 +297,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             # If it isn't in AACGM already it's in geo.
             if start == "geo":
                 lat, lon, _ = aacgm.convert_latlon_arr(lat, lon, alt, date_time,
-                                                       'G2A')
+                                                       'G2A', igrf_file, root)
                 start = "mag"
 
             # It is in AACGM now.
@@ -313,7 +316,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
                                                  date_time.month, date_time.day,
                                                  date_time.hour,
                                                  date_time.minute, 
-                                                 date_time.second, el,
+                                                 date_time.second, el, root,
                                                  igrf_file)
                 # Convert hours to degrees.
                 lon *= 360.0 / 24.0
