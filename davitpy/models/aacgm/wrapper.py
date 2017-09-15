@@ -283,10 +283,10 @@ def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
                                         code="G2A|{:s}".format(method),
                                         igrf_file=igrf_file,
                                         coeff_prefix=coeff_prefix)
- 
         # Get magnetic local time
         mlt = aacgm.mlt_convert(dtime.year, dtime.month, dtime.day, dtime.hour,
-                                dtime.minute, dtime.second, mlon, igrf_file)
+                                dtime.minute, dtime.second, mlon, coeff_prefix,
+                                igrf_file)
     except:
         logging.error("Unable to get magnetic lat/lon")
 
@@ -356,7 +356,8 @@ def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
             # Get magnetic local time
             mlt_vectorised = np.vectorize(aacgm.mlt_convert)
             mlt = mlt_vectorised(dtime.year, dtime.month, dtime.day, dtime.hour,
-                                 dtime.minute, dtime.second, mlon, igrf_file)
+                                 dtime.minute, dtime.second, mlon, coeff_prefix,
+                                 igrf_file)
     except:
         logging.error("Unable to get magnetic lat/lon")
 
