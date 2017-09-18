@@ -109,7 +109,6 @@ class MapConv(object):
                  hemi='north', maxVelScale=1000.0, min_vel=0.0, grid_type='grd',
                  map_type='map'):
         from davitpy.pydarn.sdio import sdDataOpen
-        import matplotlib.cm as cm
         import matplotlib as mpl
 
         # set up some initial parameters
@@ -144,7 +143,6 @@ class MapConv(object):
         # This is the way I'm setting stuff up to avoid confusion of reading
         # and plotting seperately.  Just give the date/hemi and the code reads
         # the corresponding rec
-
         if end_time is None:
             end_time = start_time + dt.timedelta(minutes=2)
 
@@ -581,13 +579,11 @@ class MapConv(object):
         Example
         -------
             (lats, lons, pots) = MapConv.calcCnvPots()
-
         """
         import scipy
 
         # Test to make sure the necessary attributes have been set
         assert self.mapData is not None, logging.error("no map data available")
-
         hemisphere = 1 if self.hemi == 'north' else -1
 
         # get the standard location parameters.

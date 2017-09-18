@@ -82,12 +82,16 @@ aacgm = Extension("aacgm",
 #                 root.replace(pwd,'').strip('/').split('/')
 #                 ))
 #############################################################################
-# And a list of all the AACGM tables
+# And a list of all the model tables
 #############################################################################
 data_files = []
 for f in os.listdir('tables/aacgm'):
     data_files.append(('tables/aacgm',
                        [os.path.join('tables/aacgm', f)]))
+    
+for f in os.listdir('tables/igrf'):
+    data_files.append(('tables/igrf',
+                       [os.path.join('tables/igrf', f)]))
 
 #############################################################################
 # Include the davitpyrc file
@@ -125,7 +129,7 @@ setup(name='davitpy',
       zip_safe=False,
       ext_modules=[dmap, aacgm, tsyg, hwm, msis, igrf, iri],
       package_data={
-        'davitpy.models.iri': ['*.dat', '*.asc'],
+        'davitpy.models.iri': ['*.dat', '*.asc', '*.txt'],
         'davitpy.models.hwm': ['*.dat']
       },
       data_files=data_files,
