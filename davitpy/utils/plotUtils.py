@@ -227,16 +227,20 @@ class mapObj(basemap.Basemap):
             otherwise E/W is used.  For mlt do not use '+/-'.  (default=None)
         """
         import numpy as np
-        from pylab import text
+
         # Add continents
-        _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
+        _ = self.drawcoastlines(linewidth=self._coastLineWidth,
+                                color=self._coastLineColor)
         _ = self.drawmapboundary(fill_color=self._fillOceans)
-        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes, alpha=self._fill_alpha)
+        _ = self.fillcontinents(color=self._fillContinents,
+                                lake_color=self._fillLakes,
+                                alpha=self._fill_alpha)
     
         # Add coordinate spec
         if self._showCoords:
-          _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
-            rotation=-90., va='top', fontsize=8)
+          _ = self.ax.text(self.urcrnrx, self.urcrnry,
+                           self._coordsDict[self.coords]+' coordinates', 
+                           rotation=-90., va='top', fontsize=8)
     
         # draw parallels and meridians.
         if self._grid:
@@ -249,14 +253,17 @@ class mapObj(basemap.Basemap):
             lonfmt = "%g"
           # label parallels on map
           if self._gridLabels: 
-            lablon = int(self.llcrnrlon/10)*10
-            rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
-            x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+            lablon = int(self.llcrnrlon / 10) * 10
+            rotate_label = (lablon - self.lon_0 if self.lat_0 >= 0
+                            else self.lon_0 - lablon + 180.0)
+            x,y = basemap.Basemap.__call__(self, lablon *
+                                           np.ones(parallels.shape), parallels)
             for ix,iy,ip in zip(x,y,parallels):
               if not self.xmin <= ix <= self.xmax: continue
               if not self.ymin <= iy <= self.ymax: continue
-              _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-                rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
+              _ = self.ax.text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+                               rotation=rotate_label, va='center', ha='center',
+                               zorder=10, color='.4')
           # label meridians on bottom and left
           if self.coords == "mlt":
             meridians = np.arange(0.,360.,15.)
