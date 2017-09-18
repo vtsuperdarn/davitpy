@@ -35,7 +35,8 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
                fileType='grdex', noCache=False, local_dirfmt=None,
                local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                remote_fnamefmt=None, remote_dict=None, remote_site=None,
-               username=None, password=None, port=None, tmpdir=None):
+               username=None, password=None, port=None, tmpdir=None,
+               remove=False, try_file_types=True):
     """A function to establish a pipeline through which we can read radar data.
     first it tries the mongodb, then it tries to find local files, and lastly
     it sftp's over to the VT data server.
@@ -102,6 +103,11 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
     tmpdir : (str or NoneType)
         The directory in which to store temporary files.  If None, the rcParam
         value DAVIT_TMPDIR will be used. (default=None)
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
+    try_file_types : (bool)
+        If desired file type could not be found, try to download others
+        (default=True)
 
     Returns
     ---------
@@ -134,7 +140,8 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
                        local_dict=local_dict, remote_dirfmt=remote_dirfmt,
                        remote_fnamefmt=remote_fnamefmt, remote_dict=remote_dict,
                        remote_site=remote_site, username=username,
-                       password=password, port=port, tmpdir=tmpdir)
+                       password=password, port=port, tmpdir=tmpdir,
+                       remove=remove)
 
     return my_ptr
 

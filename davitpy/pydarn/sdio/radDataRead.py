@@ -39,7 +39,8 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
                 noCache=False, local_dirfmt=None, local_fnamefmt=None,
                 local_dict=None, remote_dirfmt=None, remote_fnamefmt=None,
                 remote_dict=None, remote_site=None, username=None,
-                password=None, port=None, tmpdir=None):
+                password=None, port=None, tmpdir=None, remove=False,
+                try_file_types=True):
 
     """A function to establish a pipeline through which we can read radar data.
     first it tries the mongodb, then it tries to find local files, and lastly
@@ -120,6 +121,11 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
     tmpdir : (str/NoneType)
         The directory in which to store temporary files. If None, the rcParam
         value DAVIT_TMPDIR will be used. (default=None)
+    remove : (bool)
+        Remove compressed file after uncompression (default=False)
+    try_file_types : (bool)
+        If desired file type could not be found, try to download others
+        (default=True)
 
     Returns
     --------
@@ -166,7 +172,8 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
                        remote_fnamefmt=remote_fnamefmt, remote_site=remote_site,
                        username=username, port=port, password=password,
                        stid=int(network().getRadarByCode(radcode).id),
-                       tmpdir=tmpdir)
+                       tmpdir=tmpdir, remove=remove,
+                       try_file_types=try_file_types)
     return myPtr
   
 def radDataReadRec(my_ptr):

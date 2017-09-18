@@ -141,7 +141,8 @@ class sdDataPtr():
                  fileName=None, noCache=False, local_dirfmt=None,
                  local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                  remote_fnamefmt=None, remote_dict=None, remote_site=None,
-                 username=None, password=None, port=None, tmpdir=None):
+                 username=None, password=None, port=None, tmpdir=None,
+                 remove=False, try_file_types=True):
 #        from davitpy.pydarn.sdio import sdDataPtr
         from davitpy.utils.timeUtils import datetimeToEpoch
         import datetime as dt
@@ -183,17 +184,17 @@ class sdDataPtr():
             self.eTime = self.sTime + dt.timedelta(days=1)
     
         filelist = []
-        if fileType == 'grd':
-            arr = ['grd', 'grdex']
-        elif fileType == 'grdex':
-            arr = ['grdex', 'grd']
-        elif fileType == 'map':
-            arr = ['map', 'mapex']
-        elif fileType == 'mapex':
-            arr = ['mapex', 'map']
-        else:
-            arr = [fileType]
-    
+        arr = [fileType]
+        if try_file_types:
+            file_array = {'grd':['grd', 'grdex'], 'map':['map', 'mapex']}
+
+            try:
+                file_key = fileType[0:3]
+                file_array[file_key].pop(file_array[file_key].index(fileType))
+                arr.extend(file_array[file_key])
+            except:
+                pass
+
         # a temporary directory to store a temporary file
         if tmpdir is None:
             try:
@@ -307,7 +308,8 @@ class sdDataPtr():
                     # fetch the local files
                     temp = futils.fetch_local_files(self.sTime, self.eTime,
                                                     local_dirfmt, local_dict,
-                                                    outdir, local_fnamefmt)
+                                                    outdir, local_fnamefmt,
+                                                    remove=remove)
 
                     # check to see if the files actually have data between
                     # stime and etime
@@ -422,7 +424,7 @@ class sdDataPtr():
                                                      outdir, remote_fnamefmt,
                                                      username=username,
                                                      password=password,
-                                                     port=port)
+                                                     port=port, remove=remove)
 
                     # check to see if the files actually have data between
                     # stime and etime

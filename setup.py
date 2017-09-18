@@ -118,7 +118,7 @@ data_files.append(('davitpy/models/hwm',
 # Now execute the setup
 #############################################################################
 setup(name='davitpy',
-      version="0.6",
+      version="0.7",
       description="Space Science Toolkit",
       author="VT SuperDARN Lab and friends",
       author_email="ajribeiro86@gmail.com",
@@ -136,7 +136,7 @@ setup(name='davitpy',
       py_modules=['davitpy'],
       install_requires=[],
       classifiers=[
-            "Development Status :: 6 - Beta",
+            "Development Status :: 7 - Beta",
             "Topic :: Scientific/Engineering",
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: GNU General Public License (GPL)",

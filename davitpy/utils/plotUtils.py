@@ -78,12 +78,17 @@ class mapObj(basemap.Basemap):
         show/hide parallels and meridians grid (default=True)
     gridLabels : Optional[bool]
         label parallels and meridians (default=True)
+    gridLatRes: Optional[float]
+        set the latitude resolution of gridlines (default=20.)
     showCoords : Optional[bool]
         display coordinate system name in upper right
         corner (default=True)
     altitude : (float)
         Coordinate altitude; (default=0 km for geographic and 350 km for
         magnetic coordinate systems)
+    lon_label_style : (str or NoneType)
+        Set style of longitude labels.  '+/-' sets labels to +/- 180,
+        otherwise E/W is used.  For mlt do not use '+/-'.  (default=None)
     **kwargs : 
         See <http://tinyurl.com/d4rzmfo> for more keywords
 
@@ -136,8 +141,8 @@ class mapObj(basemap.Basemap):
                  boundinglat=None, width=None, height=None, draw=True, 
                  fillContinents='.8', fillOceans='None', fillLakes=None,
                  fill_alpha=.5, coastLineWidth=0., coastLineColor=None,
-                 grid=True, gridLabels=True, showCoords=True, altitude=0.0,
-                 **kwargs):
+                 grid=True, gridLabels=True, gridLatRes=20., showCoords=True,
+                 altitude=0.0, lon_label_style=None, **kwargs):
         """This class wraps arround :class:`mpl_toolkits.basemap.Basemap`
         (<http://tinyurl.com/d4rzmfo>)
   
@@ -156,9 +161,11 @@ class mapObj(basemap.Basemap):
         self._fillContinents=fillContinents
         self._fillOceans=fillOceans
         self._fillLakes=fillLakes
+        self._fill_alpha=fill_alpha
         self._showCoords=showCoords
         self._grid=grid
         self._gridLabels=gridLabels
+        self._gridLatRes=gridLatRes
         self._coordsDict, self._coords_string = get_coord_dict()
         self.altitude = altitude
         if coords.lower() != "geo" and altitude == 0.0:
@@ -208,15 +215,23 @@ class mapObj(basemap.Basemap):
             self.ax = pyplot.gca()
 
         if draw:
-          self.draw()
+          self.draw(lon_label_style=lon_label_style)
 
-    def draw(self):
+    def draw(self, lon_label_style=None):
+        """Draw a standard map
+
+        Parameters
+        -----------
+        lon_label_style : (str or NoneType)
+            Set style of longitude labels.  '+/-' sets labels to +/- 180,
+            otherwise E/W is used.  For mlt do not use '+/-'.  (default=None)
+        """
         import numpy as np
         from pylab import text
         # Add continents
         _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
         _ = self.drawmapboundary(fill_color=self._fillOceans)
-        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes)
+        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes, alpha=self._fill_alpha)
     
         # Add coordinate spec
         if self._showCoords:
@@ -225,7 +240,7 @@ class mapObj(basemap.Basemap):
     
         # draw parallels and meridians.
         if self._grid:
-          parallels = np.arange(-80.,81.,20.)
+          parallels = np.arange(-80.,81.,self._gridLatRes)
           out = self.drawparallels(parallels, color='.6', zorder=10)
           # Set format of meridian labels.
           if self.coords == "mlt":
@@ -256,7 +271,8 @@ class mapObj(basemap.Basemap):
             merLabels = [False,False,False,False]
           # draw meridians
           out = self.drawmeridians(meridians, labels=merLabels, 
-                                   fmt=lonfmt, color='.6', zorder=10)
+                                   fmt=lonfmt, color='.6', zorder=10,
+                                   labelstyle=lon_label_style)
       
     def __call__(self, x, y, inverse=False, coords=None):
         from copy import deepcopy

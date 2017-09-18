@@ -30,6 +30,7 @@ Sebastien
 """
 import logging
 
+
 def radarRead(path=None):
     """Reads radar.dat file
 
@@ -71,9 +72,9 @@ def radarRead(path=None):
         txt = 'You may be getting this error because your computer cannot '
         txt = '{:s}contact an appropriate internet server to get '.format(txt)
         txt = '{:s}the latest radar.dat information.  You can '.format(txt)
-        txt = '{:s}use a local file instead by setting the SD_RADAR'.format(txt)
-        txt = '{:s} environment variable to the location of a local'.format(txt)
-        txt = '{:s} copy of radar.dat.\n'.format(txt)
+        txt = '{:s}use a local file instead by setting the '.format(txt)
+        txt = '{:s}SD_RADAR environment variable to the location '.format(txt)
+        txt = '{:s}of a local copy of radar.dat.\n'.format(txt)
         print txt
 
         print 'Example, you might add a similar line to your .bashrc:'
@@ -149,7 +150,6 @@ def hdwRead(fname, path=None):
     if path:
         pathOpen = os.path.join(path, fname)
     else:
-        pathOpen = os.getenv('SD_RADAR')
         pathOpen = os.path.join(str(os.getenv('SD_HDWPATH')), fname)
 
     try:
@@ -161,10 +161,10 @@ def hdwRead(fname, path=None):
 
         txt = 'You may be getting this error because your computer cannot '
         txt = '{:s}contact an appropriate internet server to get '.format(txt)
-        txt = '{:s}the latest hdw.dat information.  You can can use'.format(txt)
-        txt = '{:s} a local file instead by setting the SD_HDWPATH '.format(txt)
-        txt = '{:s}environment variable to the location of the '.format(txt)
-        txt = '{:s}local hdw.dat path.'.format(txt)
+        txt = '{:s}the latest hdw.dat information.  You can can '.format(txt)
+        txt = '{:s}use a local file instead by setting the '.format(txt)
+        txt = '{:s}SD_HDWPATH environment variable to the location'.format(txt)
+        txt = '{:s} of the local hdw.dat path.'.format(txt)
         print txt
         txt = 'You can get the latest hdw.dat files from '
         txt = '{:s}https://github.com/vtsuperdarn/hdw.dat\n'.format(txt)
@@ -192,21 +192,22 @@ def hdwRead(fname, path=None):
             siteF['tval'].append(-1)
         else:
             siteF['tval'].append(timeYrsecToDate(int(ldat[2]), int(ldat[1])))
-            siteF['geolat'].append(float(ldat[3]))
-            siteF['geolon'].append(float(ldat[4]))
-            siteF['alt'].append(float(ldat[5]))
-            siteF['boresite'].append(float(ldat[6]))
-            siteF['bmsep'].append(float(ldat[7]))
-            siteF['vdir'].append(float(ldat[8]))
-            siteF['atten'].append(float(ldat[9]))
-            siteF['tdiff'].append(float(ldat[10]))
-            siteF['phidiff'].append(float(ldat[11]))
-            siteF['interfer'].append([float(ldat[12]), float(ldat[13]),
-                                      float(ldat[14])])
-            siteF['recrise'].append(float(ldat[15]))
-            siteF['maxatten'].append(int(ldat[16]))
-            siteF['maxgate'].append(int(ldat[17]))
-            siteF['maxbeam'].append(int(ldat[18]))
+
+        siteF['geolat'].append(float(ldat[3]))
+        siteF['geolon'].append(float(ldat[4]))
+        siteF['alt'].append(float(ldat[5]))
+        siteF['boresite'].append(float(ldat[6]))
+        siteF['bmsep'].append(float(ldat[7]))
+        siteF['vdir'].append(float(ldat[8]))
+        siteF['atten'].append(float(ldat[9]))
+        siteF['tdiff'].append(float(ldat[10]))
+        siteF['phidiff'].append(float(ldat[11]))
+        siteF['interfer'].append([float(ldat[12]), float(ldat[13]),
+                                  float(ldat[14])])
+        siteF['recrise'].append(float(ldat[15]))
+        siteF['maxatten'].append(int(ldat[16]))
+        siteF['maxgate'].append(int(ldat[17]))
+        siteF['maxbeam'].append(int(ldat[18]))
 
     # Return
     return siteF
@@ -218,7 +219,7 @@ class updateRadars(object):
     if the database cannot be reached.
     Currently, the remote database is housed on the VT servers.
 
-    Attributes 
+    Attributes
     -------
     sql_path : str
         path to sqlite file
@@ -303,24 +304,30 @@ class updateRadars(object):
         """
         from pymongo import MongoClient
         import sys
+        import os
 
         # print self.db_user,self.db_pswd,self.db_host, self.db_name
         uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd,
                                                  self.db_host, self.db_name)
         # print uri
         try:
+            logging.debug('Trying to connect to hdw.dat mongodb')
             conn = MongoClient(uri)
+            # Force connection attempt
+            conn.server_info()
             dba = conn[self.db_name]
         except:
-            logging.exception('Could not connect to remote DB: ',
-                              sys.exc_info()[0])
+            logging.error('Could not connect to remote DB: %s',
+                          str(uri))
             dba = False
 
         if dba:
+            logging.debug('Connection a success, so proceeding with remote db')
             try:
                 colSel = lambda colName: dba[colName].find()
 
-                self.db_select = {'rad': colSel("radars"), 'hdw': colSel("hdw"),
+                self.db_select = {'rad': colSel("radars"),
+                                  'hdw': colSel("hdw"),
                                   'inf': colSel("metadata")}
                 return True
             except:
@@ -331,6 +338,8 @@ class updateRadars(object):
                                   hdw.dat info')
                 return False
         else:
+            logging.warning('Reading hdw.dat info from local files in %s',
+                            os.getenv('SD_HDWPATH'))
             result = self.__readFromFiles()
             if not result:
                 logging.error('Could not update .radars.sqlite file with \
@@ -418,11 +427,11 @@ class updateRadars(object):
             cur.execute("CREATE TABLE hdw (%s)" % ', '.join(self.dtype_hdw))
             cur.execute("CREATE TABLE inf (%s)" % ', '.join(self.dtype_inf))
 
-            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?'] * \
+            cur.executemany("INSERT INTO rad VALUES(%s)" % ', '.join(['?'] *
                             len(self.dtype_rad)), arr_rad)
-            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?'] * \
+            cur.executemany("INSERT INTO hdw VALUES(%s)" % ', '.join(['?'] *
                             len(self.dtype_hdw)), arr_hdw)
-            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?'] * \
+            cur.executemany("INSERT INTO inf VALUES(%s)" % ', '.join(['?'] *
                             len(self.dtype_inf)), arr_inf)
 
         return True

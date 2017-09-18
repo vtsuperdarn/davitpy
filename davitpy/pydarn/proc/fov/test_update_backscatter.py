@@ -2476,6 +2476,11 @@ def plot_map(ax, scan, hard=None, map_handle=None, fovs={1:None,-1:None},
         Type of model to use when plotting data (default="IS")
         IS : Ionospheric Backscatter model
         GS : Ground Backscatter model
+        S  : standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1 1/2-hop ionospheric projection model
+        C  : Chisham projection model
         None : No model, use elevation and altitude
     model_alt : (float)
         Model altitude if IS or GS is used (default=300.0)

@@ -259,7 +259,7 @@ def gcarToLcar(X, Y, Z, lat, lon, rho , inverse=False):
         # Then, rotate about global-Z to get local-X pointing eastward
         rot = -np.radians(lon + 90.0)
         sx = tx * np.cos(rot) - ty * np.sin(rot)
-        sy = tx * np.sin(rot) + ty * cos(rot)
+        sy = tx * np.sin(rot) + ty * np.cos(rot)
         sz = tz
         # Finally, rotate about X axis to align Z with upward direction
         rot = -np.radians(90.0 - lat)
@@ -643,7 +643,7 @@ def greatCircleDist(lat1, lon1, lat2, lon2):
     lon2 = np.radians(lon2)
 
     dlat = (lat2 - lat1) / 2.0
-    dlon = (lon2 - lon1) / 2,0
+    dlon = (lon2 - lon1) / 2.0
     a = np.sin(dlat)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon)**2
     radDist = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
 

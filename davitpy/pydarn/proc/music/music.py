@@ -519,8 +519,14 @@ class musicArray(object):
         Passed directly to pydarn.radar.radFov.fov()
     fovModel : Optional[str]
         Scatter mapping model.
-            'GS': Ground Scatter Mapping Model.  See Bristow et al. [1994]
-            'IS': Standard SuperDARN scatter mapping model.
+        GS : Ground Scatter Mapping Model.  See Bristow et al. [1994] (default)
+        IS : Standard SuperDARN scatter mapping model.
+        S  : Standard projection model
+        E1 : for Chisham E-region 1/2-hop ionospheric projection model
+        F1 : for Chisham F-region 1/2-hop ionospheric projection model
+        F3 : for Chisham F-region 1 1/2-hop ionospheric projection model
+        C  : Chisham projection model
+        None : if you trust your elevation or altitude values
     fovCoords : Optional[str]
         Map coordinate system. WARNING: 'geo' is curently only tested coordinate system.
     full_array : Optional[bool]
