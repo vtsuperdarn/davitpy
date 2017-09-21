@@ -17,6 +17,7 @@ import numpy as np
 import datetime as dt
 import logging
 
+
 def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
                    coeff_prefix=None):
     '''Converts between geomagnetic coordinates and AACGM coordinates
@@ -81,12 +82,12 @@ def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
     # Test code
     code = code.upper()
 
-    if(height > 2000 and code.find("TRACE") < 0 and code.find("ALLOWTRACE") < 0
-       and code.find("BADIDEA")):
+    if(height > 2000 and code.find("TRACE") < 0 and
+       code.find("ALLOWTRACE") < 0 and code.find("BADIDEA")):
         estr = 'coefficients are not valid for altitudes above 2000 km. You '
-        estr = '{:s}must either use field-line tracing (trace=True'.format(estr)
-        estr = '{:s} or allowtrace=True) or indicate you know this'.format(estr)
-        estr = '{:s} is a bad idea'.format(estr)
+        estr += 'must either use field-line tracing (trace=True '
+        estr += 'or allowtrace=True) or indicate you know this '
+        estr += 'is a bad idea'
         logging.error(estr)
 
     # Test latitude range
@@ -109,6 +110,7 @@ def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
                                             igrf_file)
 
     return lat_out, lon_out, r_out
+
 
 def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
                        igrf_file=None, coeff_prefix=None):
@@ -197,9 +199,9 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
     if(np.max(height) > 2000 and code.find("TRACE") < 0 and
        code.find("ALLOWTRACE") < 0 and code.find("BADIDEA")):
         estr = 'coefficients are not valid for altitudes above 2000 km. You '
-        estr = '{:s}must either use field-line tracing (trace=True'.format(estr)
-        estr = '{:s} or allowtrace=True) or indicate you know this'.format(estr)
-        estr = '{:s} is a bad idea'.format(estr)
+        estr += 'must either use field-line tracing (trace=True '
+        estr += 'or allowtrace=True) or indicate you know this '
+        estr += 'is a bad idea'
         logging.error(estr)
 
     # Test latitude range
@@ -226,6 +228,7 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
                                                  bit_code, igrf_file)
 
     return lat_out, lon_out, r_out
+
 
 def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
                     igrf_file=None, coeff_prefix=None):
@@ -295,6 +298,7 @@ def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
 
     return mlat, mlon, mlt
 
+
 def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
                         igrf_file=None, coeff_prefix=None):
     '''Get AACGM latitude, longitude, and magnetic local time
@@ -359,13 +363,14 @@ def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
         if mlon is not None:
             # Get magnetic local time
             mlt_vectorised = np.vectorize(aacgm.mlt_convert)
-            mlt = mlt_vectorised(dtime.year, dtime.month, dtime.day, dtime.hour,
-                                 dtime.minute, dtime.second, mlon, coeff_prefix,
-                                 igrf_file)
+            mlt = mlt_vectorised(dtime.year, dtime.month, dtime.day,
+                                 dtime.hour, dtime.minute, dtime.second, mlon,
+                                 coeff_prefix, igrf_file)
     except:
         logging.error("Unable to get magnetic lat/lon")
 
     return mlat, mlon, mlt
+
 
 def convert_str_to_bit(code):
     '''convert string code specification to bit code specification
@@ -382,9 +387,9 @@ def convert_str_to_bit(code):
     '''
     from davitpy.models import aacgm
 
-    convert_code = {"G2A":aacgm.G2A, "A2G":aacgm.A2G, "TRACE":aacgm.TRACE,
-                    "GEOCENTRIC":aacgm.GEOCENTRIC,
-                    "ALLOWTRACE":aacgm.ALLOWTRACE, "BADIDEA":aacgm.BADIDEA}
+    convert_code = {"G2A": aacgm.G2A, "A2G": aacgm.A2G, "TRACE": aacgm.TRACE,
+                    "GEOCENTRIC": aacgm.GEOCENTRIC,
+                    "ALLOWTRACE": aacgm.ALLOWTRACE, "BADIDEA": aacgm.BADIDEA}
 
     code = code.upper()
 
