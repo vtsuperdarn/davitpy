@@ -31,7 +31,7 @@ def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
         Altitude above the surface of the earth in km
     dtime : (datetime)
         Datetime for magnetic field
-    code : (str)
+    code : Optional[str]
         String denoting which type(s) of conversion to perform
         G2A        - geographic (geodetic) to AACGM-v2
         A2G        - AACGM-v2 to geographic (geodetic)
@@ -39,10 +39,11 @@ def convert_latlon(in_lat, in_lon, height, dtime, code="G2A", igrf_file=None,
         ALLOWTRACE - use trace only above 2000 km
         BADIDEA    - use coefficients above 2000 km
         GEOCENTRIC - assume inputs are geocentric w/ RE=6371.2
-    igrf_file : (str or NoneType)
+        (default is "G2A")
+    igrf_file : Optional[str]
         Full filename of IGRF coefficient file or None to use
         rcParams["IGRF_DAVITPY_COEFF_FILE"]. (default=None)
-    coeff_prefix : (str or NoneType)
+    coeff_prefix : Optional[str]
         Location and file prefix for aacgm coefficient files or None to use
         rcParams["AACGM_DAVITPY_DAT_PREFEX"]. (default=None)
 
@@ -123,7 +124,7 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
         Altitude above the surface of the earth in km
     dtime : (datetime)
         Single datetime object for magnetic field
-    code : (str)
+    code : Optional[str]
         String denoting which type(s) of conversion to perform
         G2A        - geographic (geodetic) to AACGM-v2
         A2G        - AACGM-v2 to geographic (geodetic)
@@ -131,10 +132,11 @@ def convert_latlon_arr(in_lat, in_lon, height, dtime, code="G2A",
         ALLOWTRACE - use trace only above 2000 km
         BADIDEA    - use coefficients above 2000 km
         GEOCENTRIC - assume inputs are geocentric w/ RE=6371.2
-    igrf_file : (str or NoneType)
+        (default = "G2A")
+    igrf_file : Optional[str]
         Full filename of IGRF coefficient file or None to use
         rcParams["IGRF_DAVITPY_COEFF_FILE"]. (default=None)
-    coeff_prefix : (str or NoneType)
+    coeff_prefix : Optional[str]
         Location and file prefix for aacgm coefficient files or None to use
         rcParams["AACGM_DAVITPY_DAT_PREFEX"]. (default=None)
 
@@ -239,16 +241,17 @@ def get_aacgm_coord(glat, glon, height, dtime, method="TRACE",
         Altitude above the surface of the earth in km
     dtime : (datetime)
         Date and time to calculate magnetic location
-    method : (str)
+    method : Optional[str]
         String denoting which type(s) of conversion to perform
         TRACE      - use field-line tracing, not coefficients
         ALLOWTRACE - use trace only above 2000 km
         BADIDEA    - use coefficients above 2000 km
         GEOCENTRIC - assume inputs are geocentric w/ RE=6371.2
-    igrf_file : (str or NoneType)
+        (default = "TRACE")
+    igrf_file : Optional[str]
         Full filename of IGRF coefficient file or None to use
         rcParams["IGRF_DAVITPY_COEFF_FILE"]. (default=None)
-    coeff_prefix : (str or NoneType)
+    coeff_prefix : Optional[str]
         Location and file prefix for aacgm coefficient files or None to use
         rcParams["AACGM_DAVITPY_DAT_PREFEX"]. (default=None)
 
@@ -306,16 +309,17 @@ def get_aacgm_coord_arr(glat, glon, height, dtime, method="TRACE",
         Altitude above the surface of the earth in km
     dtime : (datetime)
         Date and time to calculate magnetic location
-    method : (str)
+    method : Optioanl[str]
         String denoting which type(s) of conversion to perform
         TRACE      - use field-line tracing, not coefficients
         ALLOWTRACE - use trace only above 2000 km
         BADIDEA    - use coefficients above 2000 km
         GEOCENTRIC - assume inputs are geocentric w/ RE=6371.2
-    igrf_file : (str or NoneType)
+        (default = "TRACE")
+    igrf_file : Optional[str]
         Full filename of IGRF coefficient file or None to use
         rcParams["IGRF_DAVITPY_COEFF_FILE"]. (default=None)
-    coeff_prefix : (str or NoneType)
+    coeff_prefix : Optional[str]
         Location and file prefix for aacgm coefficient files or None to use
         rcParams["AACGM_DAVITPY_DAT_PREFEX"]. (default=None)
 
