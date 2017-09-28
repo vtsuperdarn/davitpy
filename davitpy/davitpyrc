@@ -75,7 +75,8 @@ DAVIT_SD_LOCAL_FNAMEFMT		: {date}.{hemi}.{ftype}
 ####
 # By default, this is set to where the coefficients are installed with
 # DaViTpy after the line below this block is uncommented, ie)
-# 'davitpy install directory'/tables/aacgm/aacgm_coeffs/
+# 'davitpy install directory'/tables/aacgm/aacgm_coeffs-12-
 ####
-# AACGM_DAVITPY_DAT_PREFIX	: /davitpy_dir_path/tables/aacgm/aacgm_coeffs/
+# AACGM_DAVITPY_DAT_PREFIX	: /davitpy_dir_path/tables/aacgm/aacgm_coeffs-12-
+# IGRF_DAVITPY_COEFF_FILE	: /davitpy_dir_path/tables/igrf/igrf12coeffs.txt
 

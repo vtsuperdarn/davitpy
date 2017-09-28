@@ -83,6 +83,9 @@ class mapObj(basemap.Basemap):
     showCoords : Optional[bool]
         display coordinate system name in upper right
         corner (default=True)
+    altitude : (float)
+        Coordinate altitude; (default=0 km for geographic and 350 km for
+        magnetic coordinate systems)
     lon_label_style : (str or NoneType)
         Set style of longitude labels.  '+/-' sets labels to +/- 180,
         otherwise E/W is used.  For mlt do not use '+/-'.  (default=None)
@@ -139,7 +142,7 @@ class mapObj(basemap.Basemap):
                  fillContinents='.8', fillOceans='None', fillLakes=None,
                  fill_alpha=.5, coastLineWidth=0., coastLineColor=None,
                  grid=True, gridLabels=True, gridLatRes=20., showCoords=True,
-                 lon_label_style=None, **kwargs):
+                 altitude=0.0, lon_label_style=None, **kwargs):
         """This class wraps arround :class:`mpl_toolkits.basemap.Basemap`
         (<http://tinyurl.com/d4rzmfo>)
   
@@ -164,6 +167,9 @@ class mapObj(basemap.Basemap):
         self._gridLabels=gridLabels
         self._gridLatRes=gridLatRes
         self._coordsDict, self._coords_string = get_coord_dict()
+        self.altitude = altitude
+        if coords.lower() != "geo" and altitude == 0.0:
+            self.altitude = 350.0
 
         if datetime is None and dateTime is None:
           logging.warning("datetime/dateTime not specified, using current time.")
@@ -221,16 +227,20 @@ class mapObj(basemap.Basemap):
             otherwise E/W is used.  For mlt do not use '+/-'.  (default=None)
         """
         import numpy as np
-        from pylab import text
+
         # Add continents
-        _ = self.drawcoastlines(linewidth=self._coastLineWidth, color=self._coastLineColor)
+        _ = self.drawcoastlines(linewidth=self._coastLineWidth,
+                                color=self._coastLineColor)
         _ = self.drawmapboundary(fill_color=self._fillOceans)
-        _ = self.fillcontinents(color=self._fillContinents, lake_color=self._fillLakes, alpha=self._fill_alpha)
+        _ = self.fillcontinents(color=self._fillContinents,
+                                lake_color=self._fillLakes,
+                                alpha=self._fill_alpha)
     
         # Add coordinate spec
         if self._showCoords:
-          _ = text(self.urcrnrx, self.urcrnry, self._coordsDict[self.coords]+' coordinates', 
-            rotation=-90., va='top', fontsize=8)
+          _ = self.ax.text(self.urcrnrx, self.urcrnry,
+                           self._coordsDict[self.coords]+' coordinates', 
+                           rotation=-90., va='top', fontsize=8)
     
         # draw parallels and meridians.
         if self._grid:
@@ -243,14 +253,17 @@ class mapObj(basemap.Basemap):
             lonfmt = "%g"
           # label parallels on map
           if self._gridLabels: 
-            lablon = int(self.llcrnrlon/10)*10
-            rotate_label = lablon - self.lon_0 if self.lat_0 >= 0 else self.lon_0 - lablon + 180.
-            x,y = basemap.Basemap.__call__(self, lablon*np.ones(parallels.shape), parallels)
+            lablon = int(self.llcrnrlon / 10) * 10
+            rotate_label = (lablon - self.lon_0 if self.lat_0 >= 0
+                            else self.lon_0 - lablon + 180.0)
+            x,y = basemap.Basemap.__call__(self, lablon *
+                                           np.ones(parallels.shape), parallels)
             for ix,iy,ip in zip(x,y,parallels):
               if not self.xmin <= ix <= self.xmax: continue
               if not self.ymin <= iy <= self.ymax: continue
-              _ = text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
-                rotation=rotate_label, va='center', ha='center', zorder=10, color='.4')
+              _ = self.ax.text(ix, iy, r"{:3.0f}$^\circ$".format(ip), 
+                               rotation=rotate_label, va='center', ha='center',
+                               zorder=10, color='.4')
           # label meridians on bottom and left
           if self.coords == "mlt":
             meridians = np.arange(0.,360.,15.)
@@ -268,7 +281,7 @@ class mapObj(basemap.Basemap):
                                    fmt=lonfmt, color='.6', zorder=10,
                                    labelstyle=lon_label_style)
       
-    def __call__(self, x, y, inverse=False, coords=None, altitude=0.):
+    def __call__(self, x, y, inverse=False, coords=None):
         from copy import deepcopy
         import numpy as np
         import inspect
@@ -286,8 +299,9 @@ class mapObj(basemap.Basemap):
           return basemap.Basemap.__call__(self, x, y, inverse=inverse)
     
         # If call was from drawcoastlines, etc. then we do something different
+        # Remember that AACGM is not designed to be used near the ground.
         if 'mpl_toolkits' in callerFile and callerName is '_readboundarydata':
-          x, y = coord_conv(x, y, "geo", self.coords, altitude=0.,
+          x, y = coord_conv(x, y, "geo", self.coords, altitude=self.altitude,
                             date_time=self.datetime)
           return basemap.Basemap.__call__(self, x, y, inverse=False)
     
@@ -301,13 +315,13 @@ class mapObj(basemap.Basemap):
         # then lat/lon coord system change.
         elif inverse:
           x, y = basemap.Basemap.__call__(self, x, y, inverse=True)
-          return coord_conv(x, y, self.coords, coords, altitude=altitude,
+          return coord_conv(x, y, self.coords, coords, altitude=self.altitude,
                            date_time=self.datetime)
     
         # If inverse is false do the lat/lon coord system change first, 
         # then calculation of x,y map coords.
         else:
-          x, y = coord_conv(x, y, coords, self.coords, altitude=altitude,
+          x, y = coord_conv(x, y, coords, self.coords, altitude=self.altitude,
                            date_time=self.datetime)
           return basemap.Basemap.__call__(self, x, y, inverse=False)
     
@@ -320,7 +334,7 @@ class mapObj(basemap.Basemap):
     
         lons, lats = coord_conv(list(self._boundarypolyll.boundary[:, 0]),
                                 list(self._boundarypolyll.boundary[:, 1]),
-                                self.coords, "geo", altitude=0.,
+                                self.coords, "geo", altitude=self.altitude,
                                 date_time=self.datetime)
         b = np.asarray([lons,lats]).T
         oldgeom = deepcopy(self._boundarypolyll)
@@ -789,6 +803,10 @@ if __name__ == "__main__":
     from datetime import datetime
 
     from davitpy.models import aacgm
+    from davitpy import rcParams
+
+    igrf_file = rcParams['IGRF_DAVITPY_COEFF_FILE']
+    root = rcParams['AACGM_DAVITPY_DAT_PREFIX']
 
     time = datetime(2014,8,7,18,30)
     time2 = datetime(2014,8,8,0,0)
@@ -825,7 +843,7 @@ if __name__ == "__main__":
     ax=None
     coords="mag"
     print "The inputs for the mag plot have been converted to magnetic"
-    print "beforehand so the maps should show the same region."
+    print "beforehand so the map should show the same region."
     tmpmap3 = mapObj(coords=coords,projection='stere', draw=True,
                      llcrnrlon=172.63974536615848,llcrnrlat=-8.8093703108623647,
                      urcrnrlon=-121.21238751130332,urcrnrlat=33.758571820294179,
@@ -840,17 +858,17 @@ if __name__ == "__main__":
     ax=None
     coords="mag"
     tmpmap4 = mapObj(coords=coords, projection="stere", draw=True,
-                     boundinglat=40., lat_0=90., lon_0=0., resolution='l',
+                     boundinglat=55., lat_0=90., lon_0=0., resolution='l',
                      datetime=time, dateTime=time)
     fig5=plt.figure(5)
     ax=None
     coords="mlt"
     tmpmap5 = mapObj(coords=coords, projection="stere", draw=True,
-                     boundinglat=40., lat_0=90., lon_0=0., resolution='l',
+                     boundinglat=55., lat_0=90., lon_0=0., resolution='l',
                      datetime=time, dateTime=time)
     print "MLT at zero MLON should be at " + \
-      str(aacgm.mltFromYmdhms(time.year, time.month, time.day,
-                              time.hour, time.minute, time.second, 0.))
+      str(aacgm.mlt_convert(time.year, time.month, time.day, time.hour,
+                            time.minute, time.second, 0.0, root, igrf_file))
     print "Figures 4 and 5 should now appear.  Close their windows to continue."
     plt.show()
 
@@ -869,18 +887,20 @@ if __name__ == "__main__":
     print "    Expected: ",-119.99999999999999, 54.000000000000014
     print "    Received: ",lon,lat
 
-    print "\n  Converting mag lat/lon to map x/y to mag lat/lon."
-    print "  geo lat/lon to map x/y"
-    map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0,
-                  urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
-                  resolution='l', draw=False)
-    x,y = map1(-120,54)
-    print "    Expected: ",14898932.7446,-14364789.7586
-    print "    Received: ",x,y
-    print "  map x/y to geo lat/lon"
-    lon,lat = map1(x,y,inverse=True,coords='mag')
-    print "    Expected: ",-119.99999999999999, 54.000000000000014
-    print "    Received: ",lon,lat
+    # This won't work because AACGM-v2 doesn't perform calculations
+    # across the magnetic equator (system is undefined there)
+    # print "\n  Converting mag lat/lon to map x/y to mag lat/lon."
+    # print "  geo lat/lon to map x/y"
+    # map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0,
+    #               urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
+    #               resolution='l', draw=False)
+    # x,y = map1(-120,54)
+    # print "    Expected: ",14898932.7446,-14364789.7586
+    # print "    Received: ",x,y
+    # print "  map x/y to geo lat/lon"
+    # lon,lat = map1(x,y,inverse=True,coords='mag')
+    # print "    Expected: ",-119.99999999999999, 54.000000000000014
+    # print "    Received: ",lon,lat
 
     print "\n  Converting geo lat/lon to map x/y to mag lat/lon."
     print "  geo lat/lon to map x/y"
@@ -895,35 +915,38 @@ if __name__ == "__main__":
     print "    Expected: ",-59.9940107681,59.9324622167
     print "    Received: ",lon,lat
 
-    print "\n  Converting mag lat/lon to map x/y to geo lat/lon."
-    print "  mag lat/lon to map x/y"
-    map1 = mapObj(coords='mag', projection='stere', llcrnrlon=100, llcrnrlat=0,
-                  urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
-                  resolution='l', draw=False)
-    x,y = map1(-120,54)
-    print "    Expected: ",14898932.7446,-14364789.7586
-    print "    Received: ",x,y
-    print "  map x/y to geo lat/lon"
-    lon,lat = map1(x,y,inverse=True,coords='geo')
-    print "    Expected: ",175.311901385,58.8384430722
-    print "    Received: ",lon,lat
-
-    print "\n  Converting geo lat/lon from a mag map to map x/y."
-    print "  mag lat/lon to map x/y"
-    map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0,
-                  urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
-                  resolution='l', draw=False)
-    x,y = map1(175.311901385,58.8384430722,coords='geo')
-    print "    Expected: ",14900062.142,-14366347.2577
-    print "    Received: ",x,y
+    # This won't work because AACGM-v2 doesn't perform calculations
+    # across the magnetic equator (system is undefined there)
+    #
+    # print "\n  Converting mag lat/lon to map x/y to geo lat/lon."
+    # print "  mag lat/lon to map x/y"
+    # map1 = mapObj(coords='mag', projection='stere', llcrnrlon=100,
+    #               llcrnrlat=0, urcrnrlon=170, urcrnrlat=40, lat_0=54,
+    #               lon_0=-120, resolution='l', draw=False)
+    # x,y = map1(-120,54)
+    # print "    Expected: ",14898932.7446,-14364789.7586
+    # print "    Received: ",x,y
+    # print "  map x/y to geo lat/lon"
+    # lon,lat = map1(x,y,inverse=True,coords='geo')
+    # print "    Expected: ",175.311901385,58.8384430722
+    # print "    Received: ",lon,lat
+    #
+    # print "\n  Converting geo lat/lon from a mag map to map x/y."
+    # print "  mag lat/lon to map x/y"
+    # map1 = mapObj(coords='mag',projection='stere',llcrnrlon=100, llcrnrlat=0,
+    #               urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
+    #               resolution='l', draw=False)
+    # x,y = map1(175.311901385,58.8384430722,coords='geo')
+    # print "    Expected: ",14900062.142,-14366347.2577
+    # print "    Received: ",x,y
 
     print "\n  Converting mag lat/lon from a geo map to map x/y."
     print "  mag lat/lon to map x/y"
     map1 = mapObj(coords='geo',projection='stere',llcrnrlon=100, llcrnrlat=0,
                   urcrnrlon=170, urcrnrlat=40, lat_0=54, lon_0=-120,
-                  resolution='l', draw=False)
+                  resolution='l', draw=False, datetime=time)
     x,y = map1(-59.9940107681,59.9324622167,coords='mag')
-    print "    Expected: ",14902099.9295,-14362212.9526
+    print "    Expected: ",14874473.7385, -14314782.9106
     print "    Received: ",x,y
 
     print "Testing datetime/dateTime checking."

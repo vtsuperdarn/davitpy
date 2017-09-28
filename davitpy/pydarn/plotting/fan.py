@@ -153,11 +153,6 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     import pickle
     from matplotlib.backends.backend_pdf import PdfPages
 
-    import davitpy.models.aacgm as aacgm
-    # Is this leftover from a debugging point?
-    # Not sure where os is needed here.
-    import os
-    import copy
     from davitpy.utils.coordUtils import coord_conv
 
     tt = dt.datetime.now()
