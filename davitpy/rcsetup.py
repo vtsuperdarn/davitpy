@@ -230,7 +230,6 @@ defaultParams = {
                                  validate_string],
     'IGRF_DAVITPY_COEFF_FILE':	[model_coeffs_dir + 'igrf/igrf12coeffs.txt',
                                  validate_string],
-    'DAVITPY_PATH':             [path, validate_path_exists],
 
     # the verbosity setting for logging
     #'verbose.level': ['silent', validate_verbose],
