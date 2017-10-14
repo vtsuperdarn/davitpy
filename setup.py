@@ -81,6 +81,10 @@ data_files = []
 for f in os.listdir('tables/aacgm'):
     data_files.append(('tables/aacgm',
                        [os.path.join('tables/aacgm', f)]))
+    
+for f in os.listdir('tables/igrf'):
+    data_files.append(('tables/igrf',
+                       [os.path.join('tables/igrf', f)]))
 
 # %% Include the davitpyrc file
 data_files.append(('davitpy', ['davitpy/davitpyrc']))
@@ -112,7 +116,7 @@ setup(name='davitpy',
       zip_safe = False,
       ext_modules = [dmap, aacgm, tsyg, hwm, msis, igrf, iri],
       package_data={
-        'davitpy.models.iri': ['*.dat', '*.asc'],
+        'davitpy.models.iri': ['*.dat', '*.asc', '*.txt'],
         'davitpy.models.hwm': ['*.dat']
       },
       data_files=data_files,
