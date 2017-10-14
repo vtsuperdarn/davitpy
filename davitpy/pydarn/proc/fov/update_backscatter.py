@@ -33,6 +33,7 @@ Inst: University of Leicester (UoL)
 """
 
 # Import python packages
+from __future__ import absolute_import
 import numpy as np
 from scipy import constants as scicon
 from scipy import stats as stats
@@ -40,6 +41,7 @@ from scipy import optimize as optimize
 from scipy import signal as scisig
 import datetime as dt
 import logging
+
 # Import DaViTpy packages is done within routines to prevent this causing
 # an error when initially loading davitpy
 
@@ -112,13 +114,13 @@ def test_propagation(hop, vheight, dist,
     """
     good = True
 
-    if region_hmax.has_key("D") and vheight <= region_hmax["D"]:
+    if "D" in region_hmax and vheight <= region_hmax["D"]:
         if hop > 0.5 or dist > 500.0:
             # D-region backscatter is restricted to 0.5 hop ionospheric
             # backscatter near the radar (flat earth-approximation holds,
             # great circle distance is rounded down, to simplify things)
             good = False
-    elif region_hmax.has_key("E") and vheight <= region_hmax["E"]:
+    elif "E" in region_hmax and vheight <= region_hmax["E"]:
         if hop < 1.5 and dist > 900.0:
             # 0.5E and 1.0E backscatter is restrictued to slant path distances
             # of 1000 km or less.  1.5E backscatter is typically seen at far
@@ -199,7 +201,7 @@ def select_alt_groups(gate, vheight, rmin, rmax, vh_box, min_pnts=3):
         param = [0.0, 0.0, vh_box * 0.5]
         cbin = (hbin[:-1] + hbin[1:]) / 2.0
         hpeak = {hnum[ih]:ih for ih in hmax}
-        for hh in sorted(hpeak.keys(), reverse=True):
+        for hh in sorted(list(hpeak.keys()), reverse=True):
             ih = hpeak[hh]
             param[0] = hh
             param[1] = cbin[ih]
@@ -2220,7 +2222,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                        / bm.prm.smsep)
 
         # Load the beams into the output dictionary
-        if beams.has_key(bnum):
+        if bnum in beams:
             beams[bnum].append(bm)
         else:
             beams[bnum] = [bm]

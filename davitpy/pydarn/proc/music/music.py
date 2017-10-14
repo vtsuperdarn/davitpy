@@ -69,6 +69,7 @@ filter          a filter object for VT sig/siStruct objects
 -----------------------------------------------------------
 
 """
+from __future__ import absolute_import, print_function
 import numpy as np
 import datetime 
 import time
@@ -135,49 +136,49 @@ def stringify_signal(sig):
     Written by Nathaniel A. Frissell, Fall 2013
     """
     sigInfo = {}
-    if sig.has_key('order'):
+    if 'order' in sig:
         sigInfo['order']    = '%d' % sig['order']                   #Order of signals by strength as detected by image detection algorithm
-    if sig.has_key('kx'):
+    if 'kx' in sig:
         sigInfo['kx']       = '%.5f' % sig['kx']
-    if sig.has_key('ky'):
+    if 'ky' in sig:
         sigInfo['ky']       = '%.5f' % sig['ky']
-    if sig.has_key('k'):
+    if 'k' in sig:
         sigInfo['k']        = '%.3f' % sig['k']
-    if sig.has_key('lambda'):
+    if 'lambda' in sig:
         if np.isinf(sig['lambda']):
             sigInfo['lambda'] = 'inf'
         else:
             sigInfo['lambda'] = '%d' % np.round(sig['lambda'])      # km
-    if sig.has_key('lambda_x'):
+    if 'lambda_x' in sig:
         if np.isinf(sig['lambda_x']):
             sigInfo['lambda_x'] = 'inf'
         else:
             sigInfo['lambda_x'] = '%d' % np.round(sig['lambda_x'])      # km
-    if sig.has_key('lambda_y'):
+    if 'lambda_y' in sig:
         if np.isinf(sig['lambda_y']):
             sigInfo['lambda_y'] = 'inf'
         else:
             sigInfo['lambda_y'] = '%d' % np.round(sig['lambda_y'])      # km
-    if sig.has_key('azm'):
+    if 'azm' in sig:
         sigInfo['azm']      = '%d' % np.round(sig['azm'])           # degrees
-    if sig.has_key('freq'):
+    if 'freq' in sig:
         sigInfo['freq']     = '%.2f' % (sig['freq']*1000.)          # mHz
-    if sig.has_key('period'):
+    if 'period' in sig:
         sigInfo['period']   = '%d' % np.round(sig['period']/60.)    # minutes
-    if sig.has_key('vel'):
+    if 'vel' in sig:
         if np.isinf(np.round(sig['vel'])):
             sigInfo['vel']      = 'Inf'
         else:
             sigInfo['vel']      = '%d' % np.round(sig['vel'])           # km/s
-    if sig.has_key('area'):
+    if 'area' in sig:
         sigInfo['area']     = '%d' % sig['area']                    # Pixels
-    if sig.has_key('max'):
+    if 'max' in sig:
         sigInfo['max']      = '%.4f' % sig['max']                   # Value from kArr in arbitrary units, probably with some normalization
-    if sig.has_key('maxpos'):
+    if 'maxpos' in sig:
         sigInfo['maxpos']   = str(sig['maxpos'])                    # Index position in kArr of maximum value.
-    if sig.has_key('labelInx'):
+    if 'labelInx' in sig:
         sigInfo['labelInx'] = '%d' % sig['labelInx']                # Label value from image processing
-    if sig.has_key('serialNr'):
+    if 'serialNr' in sig:
         sigInfo['serialNr'] = '%d' % sig['serialNr']                # Label value from image processing
 
     return sigInfo
@@ -413,7 +414,7 @@ class musicDataObj(object):
 
             md          = self.metadata
             warn        = 'WARNING'
-            if md.has_key('title'): warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
+            if 'title' in md: warn = ' '.join([warn,'FOR','"'+md['title']+'"'])
             logging.warning(warn + ':')
             logging.warning('   Date time vector is not regularly sampled!')
             logging.warning('   Maximum difference in sampling rates is ' + str(maxDt) + ' sec.')
@@ -459,17 +460,17 @@ class musicDataObj(object):
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
-        self.metadata = dict(self.metadata.items() + metadata.items())
+        self.metadata = dict(list(self.metadata.items()) + list(metadata.items()))
 
     def printMetadata(self):
         """Nicely print all of the metadata associated with the current musicDataObj object.
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
-        keys = self.metadata.keys()
+        keys = list(self.metadata.keys())
         keys.sort()
         for key in keys:
-            print key+':',self.metadata[key]
+            print(key+':',self.metadata[key])
 
     def appendHistory(self,comment):
         """Add an entry to the processing history dictionary of the current musicDataObj object.
@@ -488,10 +489,10 @@ class musicDataObj(object):
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
-        keys = self.history.keys()
+        keys = list(self.history.keys())
         keys.sort()
         for key in keys:
-            print key,self.history[key]
+            print(key,self.history[key])
 
 
     
@@ -822,7 +823,7 @@ def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated'
             input_y   = currentData.data[tt,bb,:]
 
             #If metadata['gateLimits'], select only those measurements...
-            if currentData.metadata.has_key('gateLimits'):
+            if 'gateLimits' in currentData.metadata:
                 limits = currentData.metadata['gateLimits']
                 gateInx = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates <= limits[1]))[0]
 
@@ -967,14 +968,14 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
 
         commentList = []
 
-        if (currentData.metadata.has_key('timeLimits') == False and 
-            currentData.metadata.has_key('beamLimits') == False and 
-            currentData.metadata.has_key('gateLimits') == False):
+        if (('timeLimits' in currentData.metadata) == False and 
+            ('beamLimits' in currentData.metadata) == False and 
+            ('gateLimits' in currentData.metadata) == False):
             return currentData
 
         newData     = currentData.copy(newDataSetName,comment)
         #Apply the gateLimits
-        if currentData.metadata.has_key('gateLimits'):
+        if 'gateLimits' in currentData.metadata:
             limits      = currentData.metadata['gateLimits']
             gateInx     = np.where(np.logical_and(currentData.fov.gates >= limits[0],currentData.fov.gates<= limits[1]))[0]
 
@@ -999,10 +1000,10 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
 
             #Remove limiting item from metadata.
             newData.metadata.pop('gateLimits')
-            if newData.metadata.has_key('rangeLimits'): newData.metadata.pop('rangeLimits')
+            if 'rangeLimits' in newData.metadata: newData.metadata.pop('rangeLimits')
           
         #Apply the beamLimits.
-        if currentData.metadata.has_key('beamLimits'):
+        if 'beamLimits' in currentData.metadata:
             limits      = currentData.metadata['beamLimits']
             beamInx     = np.where(np.logical_and(currentData.fov.beams >= limits[0],currentData.fov.beams <= limits[1]))[0]
 
@@ -1026,7 +1027,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
             newData.metadata.pop('beamLimits')
         
         #Apply the time limits.
-        if currentData.metadata.has_key('timeLimits'):
+        if 'timeLimits' in currentData.metadata:
             limits      = currentData.metadata['timeLimits']
             timeInx     = np.where(np.logical_and(currentData.time >= limits[0],currentData.time <= limits[1]))[0]
 
@@ -1310,15 +1311,15 @@ class filter(object):
         #Get metadata for cutoffs and numtaps.
         md = sigObj.metadata
         if cutoff_high == None:
-            if md.has_key('filter_cutoff_high'):
+            if 'filter_cutoff_high' in md:
                 cutoff_high = md['filter_cutoff_high']
 
         if cutoff_low == None:
-            if md.has_key('filter_cutoff_low'):
+            if 'filter_cutoff_low' in md:
                 cutoff_low = md['filter_cutoff_low']
 
         if numtaps == None:
-            if md.has_key('filter_numtaps'):
+            if 'filter_numtaps' in md:
                 numtaps = md['filter_numtaps']
             else:
                 logging.warning('You must provide numtaps.')
@@ -1545,7 +1546,7 @@ class filter(object):
         if hasattr(newsigobj,'metadata'):
             delMeta = ['ymin','ymax','ylim']
             for key in delMeta:
-                if newsigobj.metadata.has_key(key):
+                if key in newsigobj.metadata:
                     del newsigobj.metadata[key]
         else:
             newsigobj.metadata = {}
@@ -1553,7 +1554,7 @@ class filter(object):
         newsigobj.metadata['timeLimits'] = (val_tm0,val_tm1)
 
         key = 'title'
-        if newsigobj.metadata.has_key(key):
+        if key in newsigobj.metadata:
             newsigobj.metadata[key] = ' '.join(['Filtered',newsigobj.metadata[key]])
         else:
             newsigobj.metadata[key] = 'Filtered'
@@ -1750,8 +1751,8 @@ def calculateDlm(dataObj,dataSet='active',comment=None):
     #Explicitly write out gate/range indices...
 
     llList = []
-    for gg in xrange(nrGates):
-        for bb in xrange(nrBeams):
+    for gg in range(nrGates):
+        for bb in range(nrBeams):
             llList.append((bb,gg))
 
 
@@ -1840,14 +1841,14 @@ def calculateKarr(dataObj,dataSet='active',kxMax=0.05,kyMax=0.05,dkx=0.001,dky=0
     def vCalc(um,v):
         return np.dot( np.conj(um), v) * np.dot( np.conj(v), um)
 
-    vList = [eVecs[:,minEvalsInx[ee]] for ee in xrange(cnt)]
+    vList = [eVecs[:,minEvalsInx[ee]] for ee in range(cnt)]
     kArr  = np.zeros((nkx,nky),dtype=np.complex64)
-    for kk_kx in xrange(nkx):
+    for kk_kx in range(nkx):
         kx  = kxVec[kk_kx]
-        for kk_ky in xrange(nky):
+        for kk_ky in range(nky):
             ky  = kyVec[kk_ky]
             um  = np.exp(1j*(kx*xm + ky*ym))
-            kArr[kk_kx,kk_ky]= 1. / np.sum(map(lambda v: vCalc(um,v), vList))
+            kArr[kk_kx,kk_ky]= 1. / np.sum([vCalc(um,v) for v in vList])
     t1 = datetime.datetime.now()
     logging.info('Finished kArr Calculation.  Total time: ' + str(t1-t0))
 
@@ -1925,8 +1926,8 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
         xgrid   = np.zeros((nx,ny))
         ygrid   = np.zeros((nx,ny))
 
-        for kk in xrange(nx): ygrid[kk,:] = yvec[:]
-        for kk in xrange(ny): xgrid[kk,:] = yvec[:]
+        for kk in range(nx): ygrid[kk,:] = yvec[:]
+        for kk in range(ny): xgrid[kk,:] = yvec[:]
 
     if sigs == None:
         #Set some default signals.
@@ -1943,9 +1944,9 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 
     dataArr = np.zeros((nSteps,nx,ny)) 
 
-    for step in xrange(nSteps):
+    for step in range(nSteps):
         t = secVec[step]
-        for kk in xrange(len(sigs)):
+        for kk in range(len(sigs)):
             amp     = sigs[kk][0]
             kx      = sigs[kk][1]
             ky      = sigs[kk][2]
@@ -1970,16 +1971,16 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 
     #Signal RMS
     sig_rms = np.zeros((nx,ny))
-    for xx in xrange(nx):
-        for yy in xrange(ny):
+    for xx in range(nx):
+        for yy in range(ny):
             sig_rms[xx,yy] = np.sqrt(np.mean((dataArr[:,xx,yy])**2.))
 
     noise_rms = np.zeros((nx,ny))
     if noiseFactor > 0:
         nf = noiseFactor
         #Temporal White Noise
-        for xx in xrange(nx):
-            for yy in xrange(ny):
+        for xx in range(nx):
+            for yy in range(ny):
                 noise             = nf*np.random.standard_normal(nSteps)
                 noise_rms[xx,yy]  = np.sqrt(np.mean(noise**2))
                 dataArr[:,xx,yy]  = dataArr[:,xx,yy] + noise
@@ -1992,10 +1993,10 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
     rgDist  = rgDist / np.max(rgDist)
 
     mask    = np.zeros((nx,ny))
-    for nn in xrange(nx): mask[nn,:] = rgDist[:]
+    for nn in range(nx): mask[nn,:] = rgDist[:]
 
     mask3d  = np.zeros((nSteps,nx,ny))
-    for nn in xrange(nSteps): mask3d[nn,:,:] = mask[:]
+    for nn in range(nSteps): mask3d[nn,:,:] = mask[:]
 
     #Apply Range Gate Dependence
     dataArr = dataArr * mask3d
@@ -2109,17 +2110,17 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     markers,nb  = ndimage.label(local_maxi)
     labels      = watershed(-distance,markers,mask=mask)
 
-    areas         = ndimage.sum(mask,labels,xrange(1,labels.max()+1))
-    maxima        = ndimage.maximum(data,labels,xrange(1, labels.max()+1))
+    areas         = ndimage.sum(mask,labels,range(1,labels.max()+1))
+    maxima        = ndimage.maximum(data,labels,range(1, labels.max()+1))
     order         = np.argsort(maxima)[::-1] + 1
-    maxpos        = ndimage.maximum_position(data,labels,xrange(1, labels.max()+1))
+    maxpos        = ndimage.maximum_position(data,labels,range(1, labels.max()+1))
 
     sigDetect = SigDetect()
     sigDetect.mask    = mask
     sigDetect.labels  = labels
     sigDetect.nrSigs  = nb
     sigDetect.info    = []
-    for x in xrange(labels.max()):
+    for x in range(labels.max()):
         info = {}
         info['labelInx']    = x+1
         info['order']       = order[x]

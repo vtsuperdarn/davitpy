@@ -18,6 +18,7 @@ in davitpy's root source directory.
 """
 
 
+from __future__ import absolute_import, print_function
 import six
 import os
 import warnings
@@ -219,9 +220,10 @@ validate_verbose = ValidateInStrings(
 path = os.path.split(os.path.dirname(__file__))[0]
 model_coeffs_dir = os.path.join(path, 'tables/')
 
+
 if not os.path.exists(model_coeffs_dir):
-    print "WARNING, location of model coefficients could not be determined!"
-    print model_coeffs_dir
+    warnings.warn("WARNING, location of aacgm coefficients could not be determined!")
+    print(model_coeffs_dir)
 
 
 # a map from key -> value, converter
@@ -275,4 +277,4 @@ if __name__ == '__main__':
     rc['datapath'][0] = '/'
     for key in rc:
         if not rc[key][1](rc[key][0]) == rc[key][0]:
-            print("%s: %s != %s" % (key, rc[key][1](rc[key][0]), rc[key][0]))
+            print(("%s: %s != %s" % (key, rc[key][1](rc[key][0]), rc[key][0])))

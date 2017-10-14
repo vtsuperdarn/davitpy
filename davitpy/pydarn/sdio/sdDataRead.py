@@ -29,6 +29,7 @@ sdDataReadRec
 sdDataReadAll
 """
 
+from __future__ import absolute_import
 import logging
 
 def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,

@@ -34,6 +34,7 @@ aeRec   An AE data record
 Module Author:: AJ, 20130131
 
 """
+from __future__ import absolute_import
 from davitpy.gme.base.gmeBase import gmeData
 import logging
 
@@ -356,7 +357,7 @@ def readAeWeb(sTime,eTime=None,res=60):
         if(l[0] == ' ' or l[0:4] == 'DATE'): continue
         cols=l.split()
         try: aeList.append(aeRec(webLine=l,res=res))
-        except Exception,e:
+        except Exception as e:
             logging.exception(e)
             logging.exception('problem assigning initializing ae object')
         
@@ -428,7 +429,7 @@ def mapAeMongo(sYear,eYear=None,res=60):
             #if this is an existing record, update it
             elif(cnt == 1):
                 logging.debug('foundone!!')
-                dbDict = qry.next()
+                dbDict = next(qry)
                 temp = dbDict['_id']
                 dbDict = tempRec
                 dbDict['_id'] = temp

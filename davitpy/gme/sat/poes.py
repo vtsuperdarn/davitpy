@@ -32,8 +32,10 @@ mapPoesMongo    populate database from ftp
 overlayPoesTed  map poes ted data
 ------------------------------------------
 """
+from __future__ import absolute_import, print_function
 from davitpy.gme.base.gmeBase import gmeData
 import logging
+import six
 
 class poesRec(gmeData):
     """a class to represent a record of POES data.
@@ -193,13 +195,13 @@ class poesRec(gmeData):
                                 int(cols[3]), int(cols[4]), sec,
                                 int(round((float(cols[5]) - sec) * 1e6)))
 
-        for key in self.__dict__.iterkeys():
+        for key in six.iterkeys(self.__dict__):
             if(key == 'dataSet' or key == 'info' or key == 'satnum' or
                key == 'time'):
                 continue
             try:
                 ind = head.index(key)
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('problem setting attribute' + key)
 
@@ -413,7 +415,7 @@ def readPoesFtp(stime, eTime=None):
     # connect to the server
     try:
         ftp = FTP('satdat.ngdc.noaa.gov')  
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem connecting to NOAA server')
         return None
@@ -421,7 +423,7 @@ def readPoesFtp(stime, eTime=None):
     # login as anonymous
     try:
         l = ftp.login()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem logging in to NOAA server')
         return None
@@ -433,7 +435,7 @@ def readPoesFtp(stime, eTime=None):
         # go to the data directory
         try:
             ftp.cwd('/sem/poes/data/avg/txt/'+str(my_time.year))
-        except Exception,e:
+        except Exception as e:
             logging.exception(e)
             logging.exception('error getting to data directory')
             return None
@@ -454,7 +456,7 @@ def readPoesFtp(stime, eTime=None):
             # get the data
             try:
                 ftp.retrlines('RETR '+fname,lines.append)
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('error retrieving' + fname)
 
@@ -546,7 +548,7 @@ def mapPoesMongo(syear, eYear=None):
                 mongo_data.insert(tempRec)
             elif cnt == 1:
                 logging.debug('found one!!')
-                db_dict = qry.next()
+                db_dict = next(qry)
                 temp = db_dict['_id']
                 db_dict = tempRec
                 db_dict['_id'] = temp
@@ -708,7 +710,7 @@ def overlayPoesTed(basemap_obj, ax, start_time, endTime=None,
                     lon_poes_all[sn].append(l.folon)
 
                 time_poes_all[sn].append(l.time)
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('could not get parameter for time' + l.time)
 

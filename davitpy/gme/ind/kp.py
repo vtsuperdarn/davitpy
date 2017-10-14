@@ -33,9 +33,10 @@ mapKpMongo  read data from server and store to database
 Module author:: AJ, 20130123
 
 """
+from __future__ import absolute_import
 from davitpy.gme.base.gmeBase import gmeData
 import logging
-
+import six
 
 class kpDay(gmeData):
     """a class to represent a day of kp data. Extends class gme.base.gmeBase.gmeData.
@@ -168,7 +169,7 @@ class kpDay(gmeData):
     def __repr__(self):
         import datetime as dt
         myStr = 'Kp record FROM: '+str(self.time)+'\n'
-        for key,var in self.__dict__.iteritems():
+        for key,var in six.iteritems(self.__dict__):
             myStr += key+' = '+str(var)+'\n'
         return myStr
 
@@ -340,19 +341,19 @@ def readKpFtp(sTime, eTime=None):
     
     #connect to the server
     try: ftp = FTP('ftp.gfz-potsdam.de')
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem connecting to GFZ-Potsdam server')
         
     #login as anonymous
     try: l=ftp.login()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem logging in to GFZ-potsdam server')
     
     #go to the kp directory
     try: ftp.cwd('/pub/home/obs/kp-ap/wdc')
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('error getting to data directory')
     
@@ -361,7 +362,7 @@ def readKpFtp(sTime, eTime=None):
     #get the data
     logging.debug('RETR kp' + str(sTime.year) + '.wdc')
     try:    ftp.retrlines('RETR kp'+str(sTime.year)+'.wdc',lines.append)
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('couldnt retrieve kp file')
     
@@ -437,7 +438,7 @@ def mapKpMongo(sYear,eYear=None):
             #if this is an existing record, update it
             elif(cnt == 1):
                 logging.debug('foundone!!')
-                dbDict = qry.next()
+                dbDict = next(qry)
                 temp = dbDict['_id']
                 dbDict = tempRec
                 dbDict['_id'] = temp

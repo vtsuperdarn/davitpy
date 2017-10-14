@@ -1,6 +1,7 @@
 # Configuration file for ipython.
 # DaViT-py
 
+from __future__ import print_function
 c = get_config()
 
 c.TerminalIPythonApp.display_banner = True
@@ -35,6 +36,6 @@ c.AliasManager.user_aliases = [
  ('la', 'ls -al')
 ]
 
-print '\nDaViT-Py Copyright (C) 2012 VT SuperDARN Lab\nThis program comes with ABSOLUTELY NO WARRANTY; for details see LICENSE.txt.\nThis is free software, and you are welcome to redistribute it\nunder certain conditions; for details see LICENSE.txt\n'
+print('\nDaViT-Py Copyright (C) 2012 VT SuperDARN Lab\nThis program comes with ABSOLUTELY NO WARRANTY; for details see LICENSE.txt.\nThis is free software, and you are welcome to redistribute it\nunder certain conditions; for details see LICENSE.txt\n')
 
 

@@ -16,40 +16,41 @@ raydarn     SuperDARN ray tracing code coupled with IRI
 ----------------------------------------------------------
 
 """
+from __future__ import absolute_import
 import logging
 
 try:
-    import tsyganenko
-except Exception, e:
+    from . import tsyganenko
+except Exception as e:
     logging.exception(__file__ + ' -> models.tsyganenko: ' + str(e))
 
 try:
-    import igrf
-except Exception, e:
+    from . import igrf
+except Exception as e:
     logging.exception(__file__ + ' -> models.igrf: ' + str(e))
 
 try:
-    import aacgm
-except Exception, e:
+    from . import aacgm
+except Exception as e:
     logging.exception(__file__ + ' -> models.aacgm: ' + str(e))
 
 try:
-    import iri
-except Exception, e:
+    from . import iri
+except Exception as e:
     logging.exception(__file__ + ' -> models.iri: ' + str(e))
 
 try:
-    import msis
-except Exception, e:
+    from . import msis
+except Exception as e:
     logging.exception(__file__ + ' -> models.msis: ' + str(e))
 
 try:
-    import hwm
-except Exception, e:
+    from . import hwm
+except Exception as e:
     logging.exception(__file__ + ' -> models.hwm: ' + str(e))
 
 try:
-    import raydarn
-except Exception, e:
+    from . import raydarn
+except Exception as e:
     logging.exception(__file__ + ' -> models.raydarn: ' + str(e))
 

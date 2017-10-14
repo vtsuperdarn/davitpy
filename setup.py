@@ -1,50 +1,56 @@
-import os
-import glob
-# Need to use the enhanced version of distutils packaged with
-# numpy so that we can compile fortran extensions
-from setuptools.command import install as _install
-from setuptools import find_packages
-from numpy.distutils.core import Extension, setup
-from numpy.distutils import exec_command
+#!/usr/bin/env python
+from __future__ import print_function
+import os, glob, subprocess,sys
+import setuptools # needed for develop
 
-# Output debugging information while installing
+req = ['numpy','scipy','h5py','matplotlib','pandas','netcdf4','pyzmq','jupyter',
+       'tornado','paramiko','pymongo','mechanize','jinja2','jsonschema','ecdsa','scikit-image',
+       'pyproj','cryptography']
+pipreq = 'basemap'
+try:
+    import conda.cli
+    conda.cli.main('install',*(req+pipreq))
+except Exception as e:
+    print(e,file=sys.stderr)
+    import pip
+    pip.main(['install'] + req)
+
+from numpy.distutils.core import Extension,setup
+
+# %% Output debugging information while installing
 os.environ['DISTUTILS_DEBUG'] = "1"
 
-#############################################################################
-# First, check to make sure we are executing
-# 'python setup.py install' from the same directory
-# as setup.py (root davitpy directory)
-#############################################################################
-path = os.getcwd()
-assert('setup.py' in os.listdir(path)), \
-       "You must execute 'python setup.py install' from within the \
-davitpy root directory."
+# %% check we are executing setup.py from root davitpy directory
+assert os.path.isfile('setup.py'),(
+    "You must execute setup.py from within the davitpy root directory.")
 
-#############################################################################
-# define a read function for using README.md for long_description
-#############################################################################
-
-
+# %% define a read function for using README for long_description
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-#############################################################################
-# Next let's compile raydarn using its makefile.
-# 'exec_command' is supposed to work on win32
-# according to its documentation.
-#############################################################################
-command = 'make -C "davitpy/models/raydarn/"'
-exec_command.exec_command(command)
+# %% compile raydarn using its makefile.
+def findfort():
+    fcl = ['mpif90','ifort','gfortran']
 
-#############################################################################
-# Now we must define all of our C and Fortran extensions
-#############################################################################
-# Fortran extensions
-#############################################################################
+    for f in fcl:
+        try:
+            subprocess.check_call([f,'--version'])
+            return f
+        except OSError:
+            continue
+
+    raise RuntimeError('Fortran compiler not found from ' + str(fcl))
+
+FC = findfort()
+cmd = 'make -kC davitpy/models/raydarn/'.split(' ')
+subprocess.check_call(cmd, env=dict(os.environ, FC=FC))
+# %% Fortran extensions
 hwm = Extension('hwm14', sources=['davitpy/models/hwm/hwm14.f90',
                                   'davitpy/models/hwm/hwm14.pyf'])
+
 igrf = Extension("igrf", sources=['davitpy/models/igrf/igrf11.f90',
                                   'davitpy/models/igrf/igrf11.pyf'])
+
 iri = Extension('iri', sources=['davitpy/models/iri/irisub.for',
                                 'davitpy/models/iri/irifun.for',
                                 'davitpy/models/iri/iriflip.for',
@@ -53,37 +59,24 @@ iri = Extension('iri', sources=['davitpy/models/iri/irisub.for',
                                 'davitpy/models/iri/cira.for',
                                 'davitpy/models/iri/iridreg.for',
                                 'davitpy/models/iri/iri.pyf'])
+
 msis = Extension("msisFort", sources=['davitpy/models/msis/nrlmsise00_sub.for',
                                       'davitpy/models/msis/nrlmsis.pyf'])
+
 tsyg = Extension('tsygFort',
                  sources=['davitpy/models/tsyganenko/T02.f',
                           'davitpy/models/tsyganenko/T96.f',
                           'davitpy/models/tsyganenko/geopack08.for',
                           'davitpy/models/tsyganenko/geopack08.pyf'])
 
-#############################################################################
-# C extensions
-#############################################################################
+# %% C extensions
 dmap = Extension("dmapio",
                  sources=glob.glob('davitpy/pydarn/dmapio/rst/src/*.c'),)
+
 aacgm = Extension("aacgm",
                   sources=glob.glob('davitpy/models/aacgm/*.c'),)
 
-#############################################################################
-# And now get a list of all Python source files
-#############################################################################
-# pwd = os.getcwd()
-# sources = []
-# source_dirs = ['davitpy']
-# for s in source_dirs:
-#     for root, dirs, files in os.walk(pwd+'/'+s):
-#         if '__init__.py' in files:
-#             sources.append('.'.join(
-#                 root.replace(pwd,'').strip('/').split('/')
-#                 ))
-#############################################################################
-# And a list of all the model tables
-#############################################################################
+# %% data files
 data_files = []
 for f in os.listdir('tables/aacgm'):
     data_files.append(('tables/aacgm',
@@ -93,57 +86,52 @@ for f in os.listdir('tables/igrf'):
     data_files.append(('tables/igrf',
                        [os.path.join('tables/igrf', f)]))
 
-#############################################################################
-# Include the davitpyrc file
-#############################################################################
+# %% Include the davitpyrc file
 data_files.append(('davitpy', ['davitpy/davitpyrc']))
 
-#############################################################################
-# Include the necessary raydarn files
-#############################################################################
+# %% Include the necessary raydarn files
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/rtFort']))
+
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/constants.mod']))
+
 data_files.append(('davitpy/models/raydarn',
                    ['davitpy/models/raydarn/mpiutils.mod']))
 
-#############################################################################
-# Include the necessary HWM files
-#############################################################################
+# %% Include the necessary HWM files
 data_files.append(('davitpy/models/hwm',
                    ['davitpy/models/hwm/hwm123114.bin']))
 
-#############################################################################
-# Now execute the setup
-#############################################################################
+# %% Now execute the setup
 setup(name='davitpy',
-      version="0.7",
-      description="Space Science Toolkit",
-      author="VT SuperDARN Lab and friends",
-      author_email="ajribeiro86@gmail.com",
-      url="",
-      download_url="https://github.com/vtsuperdarn/davitpy",
-      packages=find_packages(),
-      long_description=read('README.md'),
-      zip_safe=False,
-      ext_modules=[dmap, aacgm, tsyg, hwm, msis, igrf, iri],
+      version = "0.7",
+      description = "Space Science Toolkit",
+      author = "VT SuperDARN Lab and friends",
+      author_email = "ajribeiro86@gmail.com",
+      url = "http://davit.ece.vt.edu/davitpy/",
+      download_url = "https://github.com/vtsuperdarn/davitpy",
+      packages = setuptools.find_packages(),
+      long_description = read('README.rst'),
+      zip_safe = False,
+      ext_modules = [dmap, aacgm, tsyg, hwm, msis, igrf, iri],
       package_data={
         'davitpy.models.iri': ['*.dat', '*.asc', '*.txt'],
         'davitpy.models.hwm': ['*.dat']
       },
       data_files=data_files,
-      py_modules=['davitpy'],
-      install_requires=[],
-      classifiers=[
-            "Development Status :: 7 - Beta",
+      py_modules = ['davitpy'],
+      classifiers = [
+            "Development Status :: 4 - Beta",
             "Topic :: Scientific/Engineering",
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: GNU General Public License (GPL)",
             "Natural Language :: English",
             "Programming Language :: Python"
             ],
+      install_requires=pipreq,
+      dependency_links=['https://downloads.sourceforge.net/project/matplotlib/matplotlib-toolkits/basemap-1.0.7/basemap-1.0.7.tar.gz'],
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
-    print 'Sources', find_packages()
+    print(setuptools.find_packages())

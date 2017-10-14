@@ -31,8 +31,10 @@ gridData
 mapData
 """
 
+from __future__ import absolute_import, print_function
 import logging
 from davitpy.utils import twoWayDict
+import six
 
 alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',
          'r','s','t','u','v','w','x','y','z']
@@ -232,7 +234,7 @@ class sdDataPtr():
                 os.system(command)
                 filelist.append(outname)
     
-            except Exception, e:
+            except Exception as e:
                 logging.error(e)
                 logging.error('problem reading file [{:s}]'.format(fileName))
                 return None
@@ -259,9 +261,9 @@ class sdDataPtr():
                                 filelist.append(f)
                                 logging.info('Found cached file {:s}'.format(f))
                                 break
-                        except Exception, e:
+                        except Exception as e:
                             logging.warning(e)
-            except Exception, e:
+            except Exception as e:
                 logging.warning(e)
   
         # Next, LOOK LOCALLY FOR FILES
@@ -288,7 +290,7 @@ class sdDataPtr():
                     if local_dict is None:
                         local_dict = {'hemi':hemi, 'ftype':ftype}
 
-                    if 'ftype' in local_dict.keys():
+                    if 'ftype' in list(local_dict.keys()):
                         local_dict['ftype'] = ftype
 
                     if local_fnamefmt is None:
@@ -337,7 +339,7 @@ class sdDataPtr():
                         estr = "couldn't find any local {:s}".format(ftype)
                         logging.info(estr)
     
-            except Exception, e:
+            except Exception as e:
                 logging.warning(e)
                 estr = "Unable to fetch any local data, attempting to fetch "
                 logging.warning("{:s}remote data".format(estr))
@@ -393,7 +395,7 @@ class sdDataPtr():
                     if remote_dict is None:
                         remote_dict = {'ftype':ftype, 'hemi':hemi}
 
-                    if 'ftype' in remote_dict.keys():
+                    if 'ftype' in list(remote_dict.keys()):
                         remote_dict['ftype'] = ftype
 
                     if remote_fnamefmt is None:
@@ -451,7 +453,7 @@ class sdDataPtr():
                         estr = "couldn't find {:s} data on sftp ".format(ftype)
                         logging.info("{:s}server".format(estr))
     
-                except Exception, e:
+                except Exception as e:
                     logging.warning(e)
                     logging.warning('problem reading from sftp server')
 
@@ -492,7 +494,7 @@ class sdDataPtr():
 
     def __repr__(self):
         my_str = 'sdDataPtr\n'
-        for key,var in self.__dict__.iteritems():
+        for key,var in six.iteritems(self.__dict__):
             my_str = "{:s}{:s} = {:s}\n".format(my_str, key, str(var))
         return my_str
 
@@ -542,7 +544,7 @@ class sdDataPtr():
                                         int(dfile['start.second']))
                     dfile['time'] = (dtime -
                                      dt.datetime(1970, 1, 1)).total_seconds()
-                except Exception,e:
+                except Exception as e:
                     logging.warning(e)
                     logging.warning('problem reading time from file')
                     break
@@ -569,7 +571,7 @@ class sdDataPtr():
             if self.recordIndex is None:        
                 self.createIndex()
 
-            if offset in self.recordIndex.values():
+            if offset in list(self.recordIndex.values()):
                 return setDmapOffset(self.__fd, offset)
             else:
                 return getDmapOffset(self.__fd)
@@ -621,7 +623,7 @@ class sdDataPtr():
                 dfile['time'] = (dtime -
                                  dt.datetime(1970, 1, 1)).total_seconds()
 
-            except Exception, e:
+            except Exception as e:
                 logging.warning(e)
                 logging.warning('problem reading time from file')
                 break
@@ -782,7 +784,7 @@ class sdBaseData():
         emt = 1
         esc = 1
 
-        for key,val in adict.iteritems():
+        for key,val in six.iteritems(adict):
             if key == 'start.year':
                 syr = adict['start.year']
             elif key == 'start.month':
@@ -834,7 +836,7 @@ class sdBaseData():
 
     def __repr__(self):
         mystr = ''
-        for key,val in self.__dict__.iteritems():
+        for key,val in six.iteritems(self.__dict__):
             mystr = "{:s}{:s} = {:s}\n".format(mystr, str(key), str(val))
         return mystr
 
@@ -1117,21 +1119,21 @@ if __name__=="__main__":
     expected_path = os.path.join(tmpdir, expected_filename)
     expected_filesize = 32975826
     expected_md5sum = "1b0e78cb339e875cc17f82e240ef360f"
-    print "Expected File:", expected_path
+    print("Expected File:", expected_path)
 
-    print "\nRunning sftp grab example for sdDataPtr."
-    print "Environment variables used:"
-    print "  DB:", davitpy.rcParams['DB']
-    print "  DB_PORT:", davitpy.rcParams['DB_PORT']
-    print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
-    print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
-    print "  DAVIT_SD_REMOTE_DIRFORMAT:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
-    print "  DAVIT_SD_REMOTE_FNAMEFMT:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT']
-    print "  DAVIT_SD_REMOTE_TIMEINC:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC']
-    print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
+    print("\nRunning sftp grab example for sdDataPtr.")
+    print("Environment variables used:")
+    print("  DB:", davitpy.rcParams['DB'])
+    print("  DB_PORT:", davitpy.rcParams['DB_PORT'])
+    print("  DBREADUSER:", davitpy.rcParams['DBREADUSER'])
+    print("  DBREADPASS:", davitpy.rcParams['DBREADPASS'])
+    print("  DAVIT_SD_REMOTE_DIRFORMAT:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT'])
+    print("  DAVIT_SD_REMOTE_FNAMEFMT:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT'])
+    print("  DAVIT_SD_REMOTE_TIMEINC:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC'])
+    print("  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR'])
 
     src = 'sftp'
     if os.path.isfile(expected_path):
@@ -1140,50 +1142,50 @@ if __name__=="__main__":
                       noCache=True)
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print("Actual File Size:  ", statinfo.st_size)
+        print("Expected File Size:", expected_filesize) 
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
+        print("Actual Md5sum:  ", md5sum)
+        print("Expected Md5sum:", expected_md5sum)
         if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
+            print("Error: Cached dmap file has unexpected md5sum.")
     else:
-        print "Error: Failed to create expected cache file"
-    print "Let's read two records from the remote sftp server:"
+        print("Error: Failed to create expected cache file")
+    print("Let's read two records from the remote sftp server:")
     try:
         ptr = vtptr
         mydata = ptr.readRec()
-        print mydata.recordDict['time']
+        print(mydata.recordDict['time'])
         mydata = ptr.readRec()
-        print mydata.recordDict['time']
-        print "Close pointer"
+        print(mydata.recordDict['time'])
+        print("Close pointer")
         ptr.close()
-        print "reopen pointer"
+        print("reopen pointer")
         ptr.open()
-        print "Should now be back at beginning:"
+        print("Should now be back at beginning:")
         mydata = ptr.readRec()
-        print mydata.recordDict['time']
-        print "What is the current offset:"
-        print ptr.offsetTell()
-        print "Try to seek to offset 4, shouldn't work:"
-        print ptr.offsetSeek(4)
-        print "What is the current offset:"
-        print ptr.offsetTell()
+        print(mydata.recordDict['time'])
+        print("What is the current offset:")
+        print(ptr.offsetTell())
+        print("Try to seek to offset 4, shouldn't work:")
+        print(ptr.offsetSeek(4))
+        print("What is the current offset:")
+        print(ptr.offsetTell())
     except:
-        print "record read failed for some reason"
+        print("record read failed for some reason")
 
     ptr.close()
     del vtptr
 
-    print "\nRunning local grab example for sdDataPtr."
-    print "Environment variables used:"
-    print "  DAVIT_SD_LOCAL_DIRFORMAT:", \
-        davitpy.rcParams['DAVIT_SD_LOCAL_DIRFORMAT']
-    print "  DAVIT_SD_LOCAL_FNAMEFMT:", \
-        davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT']
-    print "  DAVIT_SD_LOCAL_TIMEINC:", \
-        davitpy.rcParams['DAVIT_SD_LOCAL_TIMEINC']
-    print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
+    print("\nRunning local grab example for sdDataPtr.")
+    print("Environment variables used:")
+    print("  DAVIT_SD_LOCAL_DIRFORMAT:", \
+        davitpy.rcParams['DAVIT_SD_LOCAL_DIRFORMAT'])
+    print("  DAVIT_SD_LOCAL_FNAMEFMT:", \
+        davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT'])
+    print("  DAVIT_SD_LOCAL_TIMEINC:", \
+        davitpy.rcParams['DAVIT_SD_LOCAL_TIMEINC'])
+    print("  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR'])
 
     src = 'local'
     if os.path.isfile(expected_path):
@@ -1192,31 +1194,31 @@ if __name__=="__main__":
                          noCache=True)
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
-        print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print("Actual File Size:  ", statinfo.st_size)
+        print("Expected File Size:", expected_filesize) 
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
-        print "Actual Md5sum:  ", md5sum
-        print "Expected Md5sum:", expected_md5sum
+        print("Actual Md5sum:  ", md5sum)
+        print("Expected Md5sum:", expected_md5sum)
         if expected_md5sum != md5sum:
-            print "Error: Cached dmap file has unexpected md5sum."
+            print("Error: Cached dmap file has unexpected md5sum.")
     else:
-        print "Error: Failed to create expected cache file"
-    print "Let's read two records:"
+        print("Error: Failed to create expected cache file")
+    print("Let's read two records:")
     try:
         ptr = localptr
         mydata = ptr.readRec()
-        print mydata.recordDict['time']
+        print(mydata.recordDict['time'])
         mydata = ptr.readRec()
-        print mydata.recordDict['time']
-        print "Close pointer"
+        print(mydata.recordDict['time'])
+        print("Close pointer")
         ptr.close()
-        print "reopen pointer"
+        print("reopen pointer")
         ptr.open()
-        print "Should now be back at beginning:"
+        print("Should now be back at beginning:")
         mydata = ptr.readRec()
-        print mydata.recordDict['time']
+        print(mydata.recordDict['time'])
     except:
-        print "record read failed for some reason"
+        print("record read failed for some reason")
     ptr.close()
 
     del localptr

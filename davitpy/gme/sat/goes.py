@@ -31,11 +31,12 @@ find_flares     find flares in a certain class
 --------------------------------------------------------
 
 """
+from __future__ import absolute_import, print_function
 from davitpy import rcParams
 import logging
 
 
-def read_goes(sTime,eTime=None,sat_nr=15):
+def read_goes(sTime, eTime=None, sat_nr=15):
     """Download GOES X-Ray Flux data from the NOAA FTP Site and return a
     dictionary containing the metadata and a dataframe.
 
@@ -95,7 +96,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
 
         """
         month = sourcedate.month - 1 + months
-        year = sourcedate.year + month / 12
+        year = sourcedate.year + month // 12
         month = month % 12 + 1
         day = min(sourcedate.day,calendar.monthrange(year,month)[1])
         return datetime.date(year,month,day)
@@ -301,7 +302,7 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     ax.grid()
     ax.legend(prop={'size':legendSize},numpoints=1,loc=legendLoc)
 
-    file_keys = goes_data['metadata'].keys() 
+    file_keys = list(goes_data['metadata'].keys()) 
     file_keys.remove('variables')
     file_keys.sort()
     md      = goes_data['metadata'][file_keys[-1]]
@@ -518,7 +519,7 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
 
     if drop_list != []:
         flares  = flares.drop(drop_list)
-    flares['class'] = map(classify_flare,flares['B_AVG'])
+    flares['class'] = list(map(classify_flare,flares['B_AVG']))
 
     return flares
 
@@ -534,37 +535,37 @@ if __name__ == '__main__':
     import numpy as np
 
     # Flare Classification Test ####################################################
-    print ''
-    print 'Flare classification test.'
+    print('')
+    print('Flare classification test.')
     flares = ['A5.5', 'B4.0', 'X11.1']
     values = [5.5e-8, 4.0e-7, 11.1e-4]
 
     test_results = []
     for flare,value in zip(flares,values):
-        print '  Testing classify_flare() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value)
+        print('  Testing classify_flare() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value))
 
         test_flare = classify_flare(value)
-        print '    classify_flare({0:.1e}) = {1}'.format(value,test_flare)
+        print('    classify_flare({0:.1e}) = {1}'.format(value,test_flare))
         test_results.append(flare == test_flare)
 
     if np.all(test_results):
-        print 'CONGRATULATIONS: Test passed for classify_flare()!'
+        print('CONGRATULATIONS: Test passed for classify_flare()!')
     else:
-        print 'WARNING: classify_flare() failed self-test.'
+        print('WARNING: classify_flare() failed self-test.')
 
-    print ''
+    print('')
     test_results = []
     for flare,value in zip(flares,values):
-        print '  Testing flare_value() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value)
+        print('  Testing flare_value() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value))
         test_value = flare_value(flare)
-        print '    flare_value({0}) = {1:.1e}'.format(test_flare,value)
+        print('    flare_value({0}) = {1:.1e}'.format(test_flare,value))
         test_results.append(value == test_value)
 
     if np.all(test_results):
-        print 'CONGRATULATIONS: Test passed for flare_value()!'
+        print('CONGRATULATIONS: Test passed for flare_value()!')
     else:
-        print 'WARNING: flare_value() failed self-test.'
-    print ''
+        logging.warning('WARNING: flare_value() failed self-test.')
+    print('')
 
     # Flare finding and plotting test. #############################################
     sTime       = datetime.datetime(2014,1,1)
@@ -617,5 +618,5 @@ directory as your plots.
 2014-06-11 09:06:00  0.000100  X1.0
 """
 
-    print flares_str
-    print 'Your DAVIT_TMPDIR/goes: {0}'.format(output_dir)
+    print(flares_str)
+    print('Your DAVIT_TMPDIR/goes:',output_dir)

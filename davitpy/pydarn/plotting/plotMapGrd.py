@@ -10,9 +10,11 @@ MapConv
 -------
 
 """
+from __future__ import absolute_import
 import logging
 import datetime as dt
 import numpy as np
+
 
 class MapConv(object):
     """Plot/retrieve data from map(ex) and grd(ex) files
@@ -606,11 +608,12 @@ class MapConv(object):
         # we set up a grid to evaluate potential on...
         lat_step = 1
         lon_step = 2
-        num_lats = int((90.0 - plot_lat_min) / lat_step)
-        num_longs = int(360.0 / lon_step) + 1
-        zat_arr = np.array(range(num_lats) * lat_step) + plot_lat_min
+        num_lats  = int( (90.0 - plot_lat_min) / lat_step )
+        num_longs = int( 360.0 / lon_step ) + 1
+        zat_arr = np.array( range(num_lats) * lat_step ) + plot_lat_min
         zat_arr = zat_arr * hemisphere
-        zon_arr = np.array(range(num_longs))* lon_step
+        zon_arr = np.array( range(num_longs) ) * lon_step
+
 
         # Right now create a grid kinda stuff with lats and lons
         grid_arr = np.zeros((2, num_lats * num_longs))

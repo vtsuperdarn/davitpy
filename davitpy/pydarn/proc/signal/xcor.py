@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import copy
 import datetime
 from matplotlib import pyplot as mp
 import numpy as np
 import scipy as sp
-from signalCommon import *
+from .signalCommon import *
 import logging
 
 # Cross Correlation Objects Start Here
@@ -52,7 +53,7 @@ class xcor(object):
 
         xcor = sp.signal.correlate(sig0.data, sig1.data, mode=mode)
 
-        lag = np.array(range(np.size(xcor))) - np.size(xcor) / 2.
+        lag = np.array(list(range(np.size(xcor)))) - np.size(xcor) / 2.
         lag = lag * samplePeriod / 60.  # Lag in minutes
 
         md0 = sig0.getAllMetaData()
@@ -66,7 +67,7 @@ class xcor(object):
         defaults['fft_ylabel'] = 'FFT Spectrum Magnitude'
         defaults['validTimes'] = sig0.getValidTimes()
 
-        self.metadata = dict(defaults.items() + metadata.items())
+        self.metadata = dict(list(defaults.items()) + list(metadata.items()))
         self.xcor = xcorStruct(lag, xcor, comment=comment, parent=self)
         self.active = self.xcor
 
@@ -191,9 +192,9 @@ class xcorStruct(xcor):
         newobj.dtv = dtv
         newobj.data = data
 
-        if kwargs.has_key('appendTitle'):
+        if 'appendTitle' in kwargs:
             md = newobj.getAllMetaData()
-            if md.has_key('title'):
+            if 'title' in md:
                 newobj.metadata['title'] = ' '.join(
                     [kwargs['appendTitle'], md['title']])
 
@@ -251,7 +252,7 @@ class xcorStruct(xcor):
             avg = avg.total_seconds()
             md = self.getAllMetaData()
             warn = 'WARNING'
-            if md.has_key('title'):
+            if 'title' in md:
                 warn = ' '.join([warn, 'FOR', '"' + md['title'] + '"'])
             logging.warning(warn + ':\n' +
                             '   Date time vector is not regularly sampled!\n' +
@@ -272,7 +273,7 @@ class xcorStruct(xcor):
             List of times between which the signal is valid.
 
         """
-        if self.metadata.has_key('validTimes'):
+        if 'validTimes' in self.metadata:
             if self.metadata['validTimes'][0] < times[0]:
                 self.metadata['validTimes'][0] = times[0]
             if self.metadata['validTimes'][1] > times[1]:
@@ -281,10 +282,10 @@ class xcorStruct(xcor):
             self.metadata['validTimes'] = times
 
     def getAllMetaData(self):
-        return dict(self.parent.metadata.items() + self.metadata.items())
+        return dict(list(self.parent.metadata.items()) + list(self.metadata.items()))
 
     def setMetaData(self, **metadata):
-        self.metadata = dict(self.metadata.items() + metadata.items())
+        self.metadata = dict(list(self.metadata.items()) + list(metadata.items()))
 
     def truncate(self):
         """Trim the ends of the current signal to match the valid time and
@@ -310,11 +311,11 @@ class xcorStruct(xcor):
         newsig.updateValidTimes([newsig.dtv[0], newsig.dtv[-1]])
 
         # Remove old time limits.
-        if newsig.metadata.has_key('xmin'):
+        if 'xmin' in newsig.metadata:
             if newsig.metadata['xmin'] <= newsig.dtv[0]:
                 del newsig.metadata['xmin']
 
-        if newsig.metadata.has_key('xmax'):
+        if 'xmax' in newsig.metadata:
             if newsig.metadata['xmax'] >= newsig.dtv[-1]:
                 del newsig.metadata['xmax']
 
@@ -327,7 +328,7 @@ class xcorStruct(xcor):
         # Metadata of "processed" signal overrides defaults.
         md = self.getAllMetaData()
 
-        if md.has_key('lineStyle'):
+        if 'lineStyle' in md:
             lineStyle = md['lineStyle']
         else:
             lineStyle = '-'
@@ -372,7 +373,7 @@ class xcorStruct(xcor):
 
         keys = ['validTimes', 'fftTimes']
         for kk in keys:
-            if md.has_key(kk):
+            if kk in md:
                 start.append(md[kk][0])
                 end.append(md[kk][1])
 
@@ -397,7 +398,7 @@ class xcorStruct(xcor):
         """
         valid = self.getFftTimes()
         if valid is None:
-            inx = range(len(self.dtv))
+            inx = list(range(len(self.dtv)))
         else:
             inx = np.where((self.dtv >= valid[0]) & (self.dtv <= valid[1]))
 
@@ -414,7 +415,7 @@ class xcorStruct(xcor):
 
         """
         md = self.getAllMetaData()
-        if md.has_key('validTimes'):
+        if 'validTimes' in md:
             valid = md['validTimes']
         else:
             valid = [self.dtv[0], self.dtv[-1]]
@@ -434,7 +435,7 @@ class xcorStruct(xcor):
         """
         valid = self.getValidTimes()
         if valid is None:
-            inx = range(len(self.dtv))
+            inx = list(range(len(self.dtv)))
         else:
             inx = np.where((self.dtv >= valid[0]) & (self.dtv <= valid[1]))
 
@@ -487,33 +488,33 @@ class xcorStruct(xcor):
         fig = mp.figure()
         ax = fig.add_subplot(111)
 
-        if md.has_key('fft_lineStyle'):
+        if 'fft_lineStyle' in md:
             lineStyle = md['fft_lineStyle']
         else:
             lineStyle = '-'
         ax.plot(freq_ax, abs(sig_fft), lineStyle)
 
-        if md.has_key('title'):
+        if 'title' in md:
             mp.title(md['title'])
-        if md.has_key('fft_title'):
+        if 'fft_title' in md:
             mp.title(md['fft_title'])
 
-        if md.has_key('fft_xlabel'):
+        if 'fft_xlabel' in md:
             mp.xlabel(md['fft_xlabel'])
-        if md.has_key('fft_ylabel'):
+        if 'fft_ylabel' in md:
             mp.ylabel(md['fft_ylabel'])
 
-        if md.has_key('fft_xmin'):
+        if 'fft_xmin' in md:
             mp.xlim(xmin=md['fft_xmin'])
         else:
             mp.xlim(xmin=0)
 
-        if md.has_key('fft_xmax'):
+        if 'fft_xmax' in md:
             mp.xlim(xmax=md['fft_xmax'])
 
-        if md.has_key('fft_ymin'):
+        if 'fft_ymin' in md:
             mp.ylim(ymin=md['fft_ymin'])
-        if md.has_key('fft_ymax'):
+        if 'fft_ymax' in md:
             mp.ylim(ymax=md['fft_ymax'])
 
         # Print the time window of the FFT on the side of the plot.

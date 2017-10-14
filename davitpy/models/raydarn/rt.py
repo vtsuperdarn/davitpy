@@ -18,9 +18,12 @@ The ray tracing requires mpi to run. You can adjust the number of processors, bu
 be wise about it and do not assign more than you have
 
 """
+from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import logging
+import cPickle as pickle
+# import six.moves.cPickle as pickle # TODO Py3
 
 
 #########################################################################
@@ -379,7 +382,7 @@ class RtRun(object):
         filename : str
 
         """
-        import cPickle as pickle
+
 
         with open( filename, "wb" ) as f:
             pickle.dump(self, f)
@@ -393,7 +396,6 @@ class RtRun(object):
         filename : str
 
         """
-        import cPickle as pickle
 
         with open( filename, "rb" ) as f:
             obj = pickle.load(f)
@@ -499,7 +501,7 @@ class Edens(object):
                 # format azimuth index (beam)
                 raz = site.azimToBeam(azim) if site else round(raz, 2)
                 # Initialize dicts
-                if rtime not in self.edens.keys(): self.edens[rtime] = {}
+                if rtime not in list(self.edens.keys()): self.edens[rtime] = {}
                 self.edens[rtime][raz] = {}
                 # Read edens dict
                 # self.edens[rtime][raz]['pos'] = array( unpack('{}f'.format(250*2), 
@@ -593,16 +595,16 @@ class Edens(object):
 
         # Allow a 60 second difference between the requested time and the time
         # available.
-        keys    = np.array(self.edens.keys())
+        keys    = np.array(list(self.edens.keys()))
         diffs   = np.abs(keys-time)
         if diffs.min() < dt.timedelta(minutes=1):
             time = keys[diffs.argmin()]
 
-        assert (time in self.edens.keys()), logging.error('Unkown time %s' % time)
+        assert (time in list(self.edens.keys())), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.edens[time].keys()), logging.error('Unkown beam %s' % beam)
+            assert (beam in list(self.edens[time].keys())), logging.error('Unkown beam %s' % beam)
         else:
-            beam = self.edens[time].keys()[0]
+            beam = list(self.edens[time].keys())[0]
 
         X, Y = np.meshgrid(self.edens[time][beam]['th'], ax.Re + np.linspace(60,560,250))
         im = aax.pcolormesh(X, Y, np.log10( self.edens[time][beam]['nel'] ), 
@@ -716,9 +718,9 @@ class Scatter(object):
                 dd = self.header['mmdd'] - mm*100
                 rtime = dt.datetime(self.header['year'], mm, dd) + dt.timedelta(hours=rhr)
                 # Create new entries in rays dict
-                if rtime not in self.gsc.keys(): self.gsc[rtime] = {}
-                if raz not in self.gsc[rtime].keys(): self.gsc[rtime][raz] = {}
-                if rel not in self.gsc[rtime][raz].keys(): 
+                if rtime not in list(self.gsc.keys()): self.gsc[rtime] = {}
+                if raz not in list(self.gsc[rtime].keys()): self.gsc[rtime][raz] = {}
+                if rel not in list(self.gsc[rtime][raz].keys()): 
                     self.gsc[rtime][raz][rel] = {
                         'r': np.empty(0),
                         'th': np.empty(0),
@@ -785,8 +787,8 @@ class Scatter(object):
                 dd = self.header['mmdd'] - mm*100
                 rtime = dt.datetime(self.header['year'], mm, dd) + dt.timedelta(hours=rhr)
                 # Create new entries in rays dict
-                if rtime not in self.isc.keys(): self.isc[rtime] = {}
-                if raz not in self.isc[rtime].keys(): self.isc[rtime][raz] = {}
+                if rtime not in list(self.isc.keys()): self.isc[rtime] = {}
+                if raz not in list(self.isc[rtime].keys()): self.isc[rtime][raz] = {}
                 self.isc[rtime][raz][rel] = {}
                 # Read to paths dict
                 self.isc[rtime][raz][rel]['nstp'] = nstp
@@ -887,19 +889,19 @@ class Scatter(object):
                 beam = ax.beam
 
         # make sure that the required time and beam are present
-        assert (time in self.isc.keys() or time in self.gsc.keys()), logging.error('Unkown time %s' % time)
+        assert (time in list(self.isc.keys()) or time in list(self.gsc.keys())), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.isc[time].keys()), logging.error('Unkown beam %s' % beam)
+            assert (beam in list(self.isc[time].keys())), logging.error('Unkown beam %s' % beam)
         else:
-            beam = self.isc[time].keys()[0]
+            beam = list(self.isc[time].keys())[0]
 
-        if gscat and time in self.gsc.keys():
+        if gscat and time in list(self.gsc.keys()):
             for ir, (el, rays) in enumerate( sorted(self.gsc[time][beam].items()) ):
                 if len(rays['r']) == 0: continue
                 _ = aax.scatter(rays['th'], ax.Re*np.ones(rays['th'].shape), 
                     color='0', zorder=zorder)
 
-        if iscat and time in self.isc.keys():
+        if iscat and time in list(self.isc.keys()):
             if weighted:
                 wmin = np.min( [ r['w'].min() for r in self.isc[time][beam].values() if r['nstp'] > 0] )
                 wmax = np.max( [ r['w'].max() for r in self.isc[time][beam].values() if r['nstp'] > 0] )
@@ -1064,8 +1066,8 @@ class Rays(object):
                 dd = self.header['mmdd'] - mm*100
                 rtime = dt.datetime(self.header['year'], mm, dd) + dt.timedelta(hours=rhr)
                 # Create new entries in rays dict
-                if rtime not in self.paths.keys(): self.paths[rtime] = {}
-                if raz not in self.paths[rtime].keys(): self.paths[rtime][raz] = {}
+                if rtime not in list(self.paths.keys()): self.paths[rtime] = {}
+                if raz not in list(self.paths[rtime].keys()): self.paths[rtime][raz] = {}
                 self.paths[rtime][raz][rel] = {}
                 # Read to paths dict
                 self.paths[rtime][raz][rel]['nrstep'] = nrstep
@@ -1203,16 +1205,16 @@ class Rays(object):
         # make sure that the required time and beam are present
         # Allow a 60 second difference between the requested time and the time
         # available.
-        keys    = np.array(self.paths.keys())
+        keys    = np.array(list(self.paths.keys()))
         diffs   = np.abs(keys-time)
         if diffs.min() < dt.timedelta(minutes=1):
             time = keys[diffs.argmin()]
 
-        assert (time in self.paths.keys()), logging.error('Unkown time %s' % time)
+        assert (time in list(self.paths.keys())), logging.error('Unkown time %s' % time)
         if beam:
-            assert (beam in self.paths[time].keys()), logging.error('Unkown beam %s' % beam)
+            assert (beam in list(self.paths[time].keys())), logging.error('Unkown beam %s' % beam)
         else:
-            beam = self.paths[time].keys()[0]
+            beam = list(self.paths[time].keys())[0]
         
         for ir, (el, rays) in enumerate( sorted(self.paths[time][beam].items()) ):
             if not ir % step:
@@ -1333,7 +1335,7 @@ def _readHeader(fObj):
         'shour', 'ehour', 'dhour', 
         'hmf2', 'nmf2')
     # Read header
-    header = OrderedDict( zip( params, unpack('3i9f3i5f', fObj.read(3*4 + 9*4 + 3*4 + 5*4)) ) )
+    header = OrderedDict( list(zip( params, unpack('3i9f3i5f', fObj.read(3*4 + 9*4 + 3*4 + 5*4)) )) )
     header['fext'] = unpack('10s', fObj.read(10))[0].strip()
     header['outdir'] = unpack('250s', fObj.read(250))[0].strip()
     header['indir'] = unpack('250s', fObj.read(250))[0].strip()

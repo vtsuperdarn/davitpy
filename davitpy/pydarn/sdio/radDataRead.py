@@ -32,6 +32,7 @@ Functions
   :func:`pydarn.sdio.radDataRead.radDataReadAll`
   :func:`pydarn.sdio.radDataRead.radDataCreateIndex`
 """
+from __future__ import absolute_import
 import logging
 
 def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,

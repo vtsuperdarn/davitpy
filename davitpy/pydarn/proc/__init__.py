@@ -13,6 +13,7 @@ signal  time series data
 ----------------------------------------
 
 """
-import signal
-import music
-import fov
+from __future__ import absolute_import
+from . import signal
+from . import music
+from . import fov

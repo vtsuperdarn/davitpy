@@ -21,6 +21,7 @@ Moduleauthor
 Sebastien
 
 """
+from __future__ import absolute_import
 import logging
 
 
@@ -258,9 +259,9 @@ class network(object):
 
         """
         found = False
-        for irad in xrange(self.nradar):
+        for irad in range(self.nradar):
             if by.lower() == 'code':
-                for ic in xrange(self.radars[irad].cnum):
+                for ic in range(self.radars[irad].cnum):
                     if self.radars[irad].code[ic].lower() == radN.lower():
                         found = True
                         return self.radars[irad]
@@ -328,7 +329,7 @@ class network(object):
         found = False
         out = {'radars': [], 'dist': [], 'beam': []}
 
-        for irad in xrange(self.nradar):
+        for irad in range(self.nradar):
             site = self.radars[irad].getSiteByDate(datetime)
             # Skip if radar inactive at date
             if (not site) and (self.radars[irad].status != 1):
@@ -398,7 +399,7 @@ class network(object):
             datetime = dt.utcnow()
 
         codes = []
-        for irad in xrange(self.nradar):
+        for irad in range(self.nradar):
             tcod = self.radars[irad].getSiteByDate(datetime)
             if((tcod) and (self.radars[irad].status == 1) and
                (self.radars[irad].stTime <= datetime <=

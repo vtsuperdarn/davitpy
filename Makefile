@@ -3,12 +3,6 @@
 # Declare DaViTpy working directory
 DAVITDIR = $(DAVITPY)
 
-# Declare local compilers, or use system defaults
-FC   = gfortran
-F77  = gfortran
-MPI  = mpif90
-F2PY = f2py
-
 # If you have problems compiling certain routines, your system may not support
 # some of these flags.  However, it is not recommended to change them.
 FC_FLAGS = -O2 -fPIC
@@ -25,21 +19,21 @@ RAYDIR = $(DAVITPY)/models/raydarn
 all: clean build
 
 build:
-	(cd $(IRIDIR); make F77=$(F77) F2PY=$(F2PY) OPT_FLAGS="$(F77_FLAGS)")
-	(cd $(TSYDIR); make F77=$(F77) F2PY=$(F2PY) OPT_FLAGS="$(F77_FLAGS)")
-	(cd $(HWMDIR); make FC=$(FC) F2PY=$(F2PY) OPT_FLAGS="$(FC_FLAGS)")
-	(cd $(RAYDIR); make FC=$(MPI) OPT_FLAGS="$(MPI_FLAGS)")
+	$(MAKE) -C $(IRIDIR) OPT_FLAGS="$(F77_FLAGS)"
+	$(MAKE) -C $(TSYDIR) OPT_FLAGS="$(F77_FLAGS)"
+	$(MAKE) -C $(HWMDIR) OPT_FLAGS="$(FC_FLAGS)"
+	$(MAKE) -C $(RAYDIR) OPT_FLAGS="$(MPI_FLAGS)"
 
 clean:
-	(cd $(IRIDIR); make clean)
-	(cd $(TSYDIR); make clean)
-	(cd $(HWMDIR); make clean)
-	(cd $(RAYDIR); make clean)
+	$(MAKE) -C $(IRIDIR) $@
+	$(MAKE) -C $(TSYDIR) $@
+	$(MAKE) -C $(HWMDIR) $@
+	$(MAKE) -C $(RAYDIR) $@
 test:
-	(cd $(IRIDIR); make test)
-	(cd $(TSYDIR); make test)
-	(cd $(HWMDIR); make test)
+	$(MAKE) -C $(IRIDIR) $@
+	$(MAKE) -C $(TSYDIR) $@
+	$(MAKE) -C $(HWMDIR) $@
 test_clean:
-	(cd $(IRIDIR); make test_clean)
-	(cd $(TSYDIR); make test_clean)
-	(cd $(HWMDIR); make test_clean)
+	$(MAKE) -C $(IRIDIR) $@
+	$(MAKE) -C $(TSYDIR) $@
+	$(MAKE) -C $(HWMDIR) $@
