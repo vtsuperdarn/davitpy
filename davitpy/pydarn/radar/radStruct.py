@@ -23,10 +23,11 @@ Sebastien
 """
 import logging
 
+
 class network(object):
     """ This class stores information from all radars according to their
-    hdw.dat and radar.dat files.  This information is read from the radar.sqlite
-    files provided with the pydarn module.
+    hdw.dat and radar.dat files.  This information is read from the
+    radar.sqlite files provided with the pydarn module.
 
     Attributes
     ----------
@@ -720,6 +721,29 @@ class site(object):
         import pickle
         import os
         import davitpy
+        import datetime
+
+        # Lets do some type checks on the input
+        if not isinstance(radId, int) and radId is not None:
+            vtype = type(radId)
+            logging.error('radId must be an integer, type found is %s', vtype)
+            return
+
+        if not isinstance(code, str) and code is not None:
+            vtype = type(code)
+            logging.error('code must be a string, type found is %s', vtype)
+            return
+
+        if code is not None and radId is not None:
+            logging.warning('Both code and radId have been set, where only'
+                            ' one should be set.')
+            logging.warning('Using code %s', code)
+
+        if dt is not None and not isinstance(dt, datetime.datetime):
+            vtype = type(dt)
+            logging.error('dt must be a datetime object, type found'
+                          ' is %s', vtype)
+            return
 
         self.tval = 0.0
         self.geolat = 0.0
@@ -843,8 +867,9 @@ class site(object):
                     \nrecrise: {13:5.3f} \
                     \nmaxatten: {14} \
                     \nmaxgate: {15} \
-                    \nmaxbeam: {16}'.format(self.tval, self.geolat, self.geolon,
-                                            self.alt, self.boresite, self.bmsep,
+                    \nmaxbeam: {16}'.format(self.tval, self.geolat,
+                                            self.geolon, self.alt,
+                                            self.boresite, self.bmsep,
                                             self.vdir, self.atten, self.tdiff,
                                             self.phidiff, self.interfer[0],
                                             self.interfer[1], self.interfer[2],

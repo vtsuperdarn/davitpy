@@ -16,9 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""The coordUtils module
-
-A module for manipulating coordinates
+"""A module for manipulating coordinates
 
 Functions
 ------------------------------------------------------
@@ -32,7 +30,6 @@ Written by Matt W.
 
 """
 import logging
-
 
 def coordConv(lon, lat, altitude, start, end, dateTime=None):
     """deprecated function, please use coord_conv
@@ -60,20 +57,22 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
   
     Parameters
     ----------
-    lon : float
-        longitude (MLT must be in degrees, not hours)
-    lat : float
-        latitude
-    start : str
+    lon : (int/float/list/np.array)
+        longitude (if using MLT, it must be in degrees, not hours)
+    lat : (int/float/list/np.array)
+        latitude in degrees.  Must be the same size as lon.
+    start : (str)
         coordinate system of input. Options: 'geo', 'mag', 'mlt'
-    end : str
+    end : (str)
         desired output coordinate system. Options: 'geo', 'mag', 'mlt'
-    altitude : Optional[int/float/list]
-        altitude to be used (km).  Can be int/float or
-        list of same size as lon and lat.  Default:  None
-    date_time : Optional[datetime]
-        Default:  None
-    end_altitude : Optional[int/float/list]
+    altitude : (int/float/list/np.array)
+        Altitude to be used (km); required for 'mag' and 'mlt' conversions.
+        May be a single value or a list/array the same size as lat and lon.
+        (default=None)
+    date_time : (datetime)
+        Universal time for conversion.  Must be provided for 'mag' and 'mlt'
+        (default=None)
+    end_altitude : (int/float/list/np.array)
         used for conversions from coords at one
         altitude to coords at another.  In km.  Can be int/float or
         list of same size as lon and lat.  Default:  None
@@ -104,9 +103,14 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 
     """
     import numpy as np
-    
+
+    from davitpy import rcParams
     from davitpy.models import aacgm
     from davitpy.utils.coordUtils import get_coord_dict
+
+    # Define IGRF file location
+    igrf_file = rcParams['IGRF_DAVITPY_COEFF_FILE']
+    root = rcParams['AACGM_DAVITPY_DAT_PREFIX']
 
     ####################################################################
     #                                                                  #
@@ -137,7 +141,6 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 
     # End of system list block.
     ####################################################################
-
     coords_dict, coords_string = get_coord_dict()
 
     # Create a string for printing of systems requiring altitude.
@@ -191,15 +194,15 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     if altitude is not None:
         alt = np.array(altitude)
         if np.size(alt) == 1:
-            altitude = [altitude]*np.size(lon)
+            alt = np.resize(alt, np.size(lon))
 
     if end_altitude is not None:
         e_alt = np.array(end_altitude)
         if np.size(e_alt) == 1:
-            end_altitude = [end_altitude]*np.size(lon)
+            e_alt = np.resize(e_alt, np.size(lon))
 
     # Set a flag that we are doing and altitude conversion.
-    alt_conv = (end_altitude is not None and end_altitude != altitude)
+    alt_conv = (end_altitude is not None and end_alt != alt)
 
     ####################################################################
     # FROM conversions for system families are performed in this 
@@ -212,12 +215,10 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
 
     # Check whether there is a conversion to do.
     if start != end or alt_conv:
-
         ################################################################
         # AACGM family FROM conversions.
         # This is the reason for having the aacgm_sys list:
         if start in aacgm_sys:
-
             # Convert all other AACGM systems to AACGM.  Follow the
             # example of the MLT block to add new systems within the
             # family.
@@ -226,21 +227,21 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             # Convert MLT to AACGM
             if start == "mlt":
                 # Convert MLT from degrees to hours.
-                lon *= 24./360.
+                lon *= 24.0 / 360.0
                 # Sanitise for later.
-                lon %= 24.
+                lon %= 24.0
                 # Find MLT of 0 magnetic lon.
-                mlt_0 = aacgm.mltFromYmdhms(date_time.year, date_time.month,
-                                            date_time.day, date_time.hour,
-                                            date_time.minute, date_time.second,
-                                            0.)     
+                mlt_0 = aacgm.mlt_convert(date_time.year, date_time.month,
+                                          date_time.day, date_time.hour,
+                                          date_time.minute, date_time.second,
+                                          0.0, root, igrf_file)     
                 # Calculate MLT difference, which is magnetic lon in hours.
                 lon -= mlt_0
                 # Sanitise and convert to degrees.
-                lon %= 24.
-                lon *= 360./24.
+                lon %= 24.0
+                lon *= 360.0 / 24.0
                 # Covert from (0,360) to (-180,180).
-                lon[np.where(lon > 180.)] -= 360.
+                lon[np.where(lon > 180.0)] -= 360.0
                 start = "mag"
 
             # End of MLT FROM block.
@@ -252,9 +253,10 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             # If the end result is not an AACGM system or there is an
             # altitude conversion, convert to geo.
             if (end not in aacgm_sys) or alt_conv:
-                lat, lon, _ = aacgm.aacgmConvArr(list(lat), list(lon), 
-                                                 altitude, date_time.year, 1)
-                lon, lat = np.array(lon), np.array(lat)
+                lat, lon, _ = aacgm.convert_latlon_arr(lat, lon, alt,
+                                                       date_time, 'A2G',
+                                                       igrf_file=igrf_file,
+                                                       coeff_prefix=root)
                 start = "geo"
         
         # End of AACGM family FROM block.
@@ -272,7 +274,7 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
     # next step is to convert to the end system even if it's the same
     # as the start system.  When we do that we want to set:
     if alt_conv:
-        altitude = end_altitude
+        alt = e_alt
 
     ####################################################################
     # TO conversions for system families are performed in this 
@@ -294,13 +296,12 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
         if end in aacgm_sys:
             # If it isn't in AACGM already it's in geo.
             if start == "geo":
-                lat, lon, _ = aacgm.aacgmConvArr(list(lat), list(lon), 
-                                                 altitude, date_time.year, 0)
-                lon, lat = np.array(lon), np.array(lat)
+                lat, lon, _ = aacgm.convert_latlon_arr(lat, lon, alt, date_time,
+                                                       'G2A', igrf_file, root)
                 start = "mag"
 
             # It is in AACGM now.
-            assert(start == "mag"),logging.error("should be in AACGM now")
+            assert start == "mag", logging.error("should be in AACGM now")
 
             # Convert AACGM to all other AACGM systems.  Follow the
             # example of the MLT block to add new systems within the
@@ -311,19 +312,18 @@ def coord_conv(lon, lat, start, end, altitude=None, date_time=None,
             if end == "mlt":
                 for num, el in enumerate(lon):
                     # Find MLT from magnetic lon and datetime.
-                    lon[num] = aacgm.mltFromYmdhms(date_time.year, 
-                                                   date_time.month, 
-                                                   date_time.day, 
-                                                   date_time.hour, 
-                                                   date_time.minute, 
-                                                   date_time.second, 
-                                                   el)
+                    lon[num] = aacgm.mlt_convert(date_time.year,
+                                                 date_time.month, date_time.day,
+                                                 date_time.hour,
+                                                 date_time.minute, 
+                                                 date_time.second, el, root,
+                                                 igrf_file)
                 # Convert hours to degrees.
-                lon *= 360./24.
+                lon *= 360.0 / 24.0
                 # Convert from (0,360) to (-180,180).
-                lon[np.where(lon > 180.)] -= 360.
+                lon[np.where(lon > 180.0)] -= 360.0
                 start = "mlt"
-            
+
             # End of MLT TO block.
             ############################################################
 
@@ -353,18 +353,18 @@ def planeRot(x, y, theta):
   
     Parameters
     ----------
-    x :
+    x : (int/float/list/np.array)
         x coordinate
-    y :
+    y : (int/float/list/np.array)
         y coordinate
-    theta : float
-        angle of rotation of new coordinate frame
+    theta : (float/np.array)
+        angle of rotation of new coordinate frame in radians
 
     Returns
     -------
-    x_prime
+    x_prime : (np.array)
         x coordinates in rotated frame
-    y_prime : 
+    y_prime : (np.array)
         y coordinates in rotated frame
 
     Example
@@ -379,8 +379,8 @@ def planeRot(x, y, theta):
 
     oldx, oldy = np.array(x), np.array(y)
 
-    x = oldx*np.cos(theta) + oldy*np.sin(theta)
-    y = -oldx*np.sin(theta) + oldy*np.cos(theta)
+    x = oldx * np.cos(theta) + oldy * np.sin(theta)
+    y = -oldx * np.sin(theta) + oldy * np.cos(theta)
 
     return x, y
 
@@ -391,9 +391,9 @@ def get_coord_dict():
 
     Returns
     -------
-    coord_dict : dict
+    coord_dict : (dict)
         the dictonary
-    coord_string : str
+    coord_string : (str)
         the string
 
     Example
@@ -410,9 +410,7 @@ def get_coord_dict():
 
     """
     # Define the dictionary.
-    coord_dict = {"mag": "AACGM",
-                   "geo": "Geographic",
-                   "mlt": "MLT"}
+    coord_dict = {"mag": "AACGM", "geo": "Geographic", "mlt": "MLT"}
 
     # Create a string of coord systems for printing to the terminal.
     coord_string = "Possible coordinate systems are:"

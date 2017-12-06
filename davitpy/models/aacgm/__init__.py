@@ -3,92 +3,38 @@
 
 Functions
 ------------
-aacgmConv
-aacgmConvArr
 ------------
 
 """
 import logging
 
 try:
-    from aacgm import mltFromEpoch
+    from wrapper import convert_latlon, convert_str_to_bit, get_aacgm_coord
+    from wrapper import convert_latlon_arr, get_aacgm_coord_arr
 except Exception, e:
     logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
 try:
-    from aacgm import mltFromYmdhms
+    from aacgm import convert
 except Exception, e:
     logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
 try:
-    from aacgm import mltFromYrsec
+    from aacgm import set_datetime
 except Exception, e:
     logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
+try:
+    from aacgm import mlt_convert
+except Exception, e:
+    logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
-def aacgmConv(in_lat, in_lon, height, year, flg, coeff_prefix=None):
-    """
-    Parameters
-    ----------
-    in_lat : float
+try:
+    from aacgm import mlt_convert_yrsec
+except Exception, e:
+    logging.exception(__file__ + ' -> aacgm: ' + str(e))
 
-    in_lon : float
-
-    height : float
-
-    year : int
-
-    flg :
-
-    coeff_prefix : Optional[str]
-        location for aacgm coefficient files. Default (none) is to use
-        rcParams['AACGM_DAVITPY_DAT_PREFEX']
-
-    Returns
-    -------
-    direct_aacgmConv()
-
-    """
-    from davitpy import rcParams
-    from davitpy import models
-    from aacgm import direct_aacgmConv
-
-    if coeff_prefix is None:
-        coeff_prefix = rcParams['AACGM_DAVITPY_DAT_PREFIX']
-
-    return direct_aacgmConv(in_lat, in_lon, height, year, flg, coeff_prefix)
-
-
-def aacgmConvArr(in_lat_list, in_lon_list, height_list, year, flg,
-                 coeff_prefix=None):
-    """
-    Parameters
-    ----------
-    in_lat_list : list
-
-    in_lon_list : list
-
-    height_list : list
-
-    year :
-
-    flg :
-
-    coeff_prefix : Optional[str]
-        location for aacgm coefficient files. Default (none) is to use
-        rcParams['AACGM_DAVITPY_DAT_PREFEX']
-
-    Returns
-    -------
-    direct_aacgmConvArr()
-
-    """
-    from davitpy import rcParams
-    from davitpy import models
-    from aacgm import direct_aacgmConvArr
-
-    if coeff_prefix is None:
-        coeff_prefix = rcParams['AACGM_DAVITPY_DAT_PREFIX']
-
-    return direct_aacgmConvArr(in_lat_list, in_lon_list, height_list,
-                               year, flg, coeff_prefix)
+try:
+    from aacgm import G2A, A2G, TRACE, ALLOWTRACE, BADIDEA, GEOCENTRIC
+except Exception, e:
+    logging.exception(__file__ + ' -> aacgm: ' + str(e))
