@@ -201,10 +201,12 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
         if xcf:
             title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
-                ' ' + 'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+                ' ' + 'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum) + \
+                ' Gate: ' + str(gate)
         else:
             title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
-                ' ' + 'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+                ' ' + 'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum) + \
+                ' Gate: ' + str(gate)
         fig.suptitle(title, y=0.94)
     else:
         ax1 = None
@@ -232,6 +234,9 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
         ax1.set_xlim([-0.5, lag_numbers[-1]])
         ax1.set_xlabel('Lag Number')
+        # Since dealing with lag numbers, force the tick marks
+        # To integer numbers as there isn't a lag 2.5
+        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
         if normalized:
             ax1.set_ylim([-1.5, 1.5])
             ax1.set_yticks(np.linspace(-1, 1, num=5))
@@ -260,6 +265,9 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
         ax2.set_xlim([-0.5, lag_numbers[-1]])
         ax2.set_xlabel('Lag Number')
+        # Since dealing with lag numbers, force the tick marks
+        # To integer numbers as there isn't a lag 2.5
+        ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax2.set_ylim([0, 1.05 * np.max(amplitude)])
         if normalized:
             ax2.set_ylabel('Normalized Lag Power')
@@ -284,6 +292,9 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         ax3.plot([lags[0], lags[-1] + 1], [0, 0], 'k--', lw=2)
 
         ax3.set_xlim([-0.50, lag_numbers[-1]])
+        # Since dealing with lag numbers, force the tick marks
+        # To integer numbers as there isn't a lag 2.5
+        ax3.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax3.set_xlabel('Lag Number')
         ax3.set_ylabel('Phase')
         ax3.set_ylim([-np.pi - 0.5, np.pi + 0.5])
