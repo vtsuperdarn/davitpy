@@ -330,22 +330,22 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         if xcf:
             fig.savefig('XCF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.png')
+                        '_' + rad + '_gate' + str(gate).zfill(2) + '.png')
         else:
             fig.savefig('ACF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.png')
+                        '_' + rad + '_gate' + str(gate).zfill(2) + '.png')
     if pdf and (ax is None):
         if not show:
             canvas = FigureCanvasAgg(fig)
         if xcf:
             fig.savefig('XCF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.pdf')
+                        '_' + rad + '_gate' + str(gate).zfill(2) + '.pdf')
         else:
             fig.savefig('ACF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.pdf')
+                        '_' + rad + '_gate' + str(gate).zfill(2) + '.pdf')
     if show and (ax is None):
         fig.show()
 
