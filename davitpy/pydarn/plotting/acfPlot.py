@@ -232,7 +232,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         ax1.plot(lags, im, marker='o', color='green', lw=2, label='Imag')
         ax1.plot([lags[0], lags[-1] + 1], [0, 0], 'k--', lw=2)
 
-        ax1.legend(loc='lower right')
+        ax1.legend(loc='lower right', fontsize='medium', ncol=2)
 
         ax1.set_xlim([-0.5, lag_numbers[-1]])
         ax1.set_xlabel('Lag Number')
