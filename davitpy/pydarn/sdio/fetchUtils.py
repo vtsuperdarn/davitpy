@@ -194,8 +194,6 @@ def fetch_local_files(stime, etime, localdirfmt, localdict, outdir, fnamefmt,
         logging.error('eTime must be datetime object')
     assert isinstance(localdirfmt, str) and localdirfmt[-1] == "/", \
         logging.error('localdirfmt must be a string ending in "/"')
-    assert isinstance(outdir, str) and outdir[-1] == "/", \
-        logging.error('outdir must be a string ending in "/"')
     assert os.path.isdir(outdir), logging.error("outdir is not a directory")
     assert isinstance(fnamefmt, (str, list)), \
         logging.error('fnamefmt must be str or list')
@@ -430,8 +428,6 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
         logging.error('remotesite must be a string')
     assert(isinstance(remotedirfmt, str)), \
         logging.error('remotedirfmt must be a string')
-    assert(isinstance(outdir, str) and outdir[-1] == "/"), \
-        logging.error('outdir must be a string ending in "/"')
     assert(os.path.isdir(outdir)), \
         logging.error("outdir is not a directory")
     assert(isinstance(username, str) or username is None), \
@@ -649,7 +645,7 @@ def fetch_remote_files(stime, etime, method, remotesite, remotedirfmt,
                         else:
                             temp_filelist.append(str(rf))
 
-                        tf = "{:s}{:s}".format(outdir, rf)
+                        tf = os.path.join(outdir, rf)
 
                         # Test to see if the temporary file already exists
                         try:
