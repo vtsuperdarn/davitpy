@@ -193,10 +193,10 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
             if (png is False) and (pdf is False):
                 png = True
             fig = mpl_fig()
-        ax1 = fig.add_axes([0.1, 0.55, 0.35, 0.35])
-        ax2 = fig.add_axes([0.1, 0.1, 0.35, 0.35])
-        ax3 = fig.add_axes([0.5, 0.1, 0.35, 0.35])
-        ax4 = fig.add_axes([0.5, 0.55, 0.35, 0.35])
+        ax1 = fig.add_axes([0.12, 0.55, 0.35, 0.35])
+        ax2 = fig.add_axes([0.12, 0.1, 0.35, 0.35])
+        ax3 = fig.add_axes([0.52, 0.1, 0.35, 0.35])
+        ax4 = fig.add_axes([0.52, 0.55, 0.35, 0.35])
 
         rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
         if xcf:
