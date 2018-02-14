@@ -314,7 +314,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     if (ax4 is not None):
         ax4.plot(vels, acfFFT, marker='o', lw=2)
-        ax4.set_xlabel(r'Velocity (m/s)')
+        ax4.set_xlabel(r'Velocity (m s$^{-1}$)')
         ax4.set_ylabel('Power Spectrum')
         if ax is None:
             ax4.yaxis.set_ticks_position('right')
