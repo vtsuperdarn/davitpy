@@ -201,13 +201,13 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
         if xcf:
             title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
-                ' ' + 'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum) + \
+                ' XCF ' + rad_name + '\nBeam: ' + str(myBeam.bmnum) + \
                 ' Gate: ' + str(gate)
         else:
             title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
-                ' ' + 'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum) + \
+                ' ACF ' + rad_name + '\nBeam: ' + str(myBeam.bmnum) + \
                 ' Gate: ' + str(gate)
-        fig.suptitle(title, y=0.94)
+        fig.suptitle(title)
     else:
         ax1 = None
         ax2 = None
