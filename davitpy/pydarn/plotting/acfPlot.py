@@ -200,11 +200,11 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
         rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
         if xcf:
-            title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
+            title = myBeam.time.strftime('%d %b %Y %H:%M:%S UT') + \
                 ' XCF ' + rad_name + '\nBeam: ' + str(myBeam.bmnum) + \
                 ' Gate: ' + str(gate)
         else:
-            title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
+            title = myBeam.time.strftime('%d %b %Y %H:%M:%S UT') + \
                 ' ACF ' + rad_name + '\nBeam: ' + str(myBeam.bmnum) + \
                 ' Gate: ' + str(gate)
         fig.suptitle(title)
