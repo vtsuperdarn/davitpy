@@ -71,7 +71,7 @@ preferably after checking the dependicies to see if you already have them instal
 To test DaViTPy and learn more about some of its functionality, please look at the included iPython notebooks.  To run these:
 
     cd davitpy/docs/notebook
-    ipython notebook
+    jupyter notebook
 
 This command will launch a web broswer with an interface that will allow you to run python code directly in a browsing window.  The browser should show a list of the demonstration notebooks.  If you do not see the demonstration notebooks, please make sure you are in the davitpy/doc/notebook/ directory before running the davitpy-notebook command.  To run code within a cell, place your cursor in the cell and press shift-enter.
 
