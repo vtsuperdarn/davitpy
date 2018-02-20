@@ -61,7 +61,8 @@ class radDataPtr():
     cp : (int)
         control prog id of the request
     fType : (str)
-        the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+        the file type, 'fitacf', 'fitacf3', 'rawacf', 'iqdat', 'fitex',
+        'lmfit'
     fBeam : (pydarn.sdio.radDataTypes.beamData)
         the first beam of the next scan, useful for when reading into scan
         objects
@@ -138,7 +139,8 @@ class radDataPtr():
         self.__ptr =  None
 
         # check inputs
-        estr = "fileType must be one of: rawacf, fitacf, fitex, lmfit, iqdat"
+        estr = "fileType must be one of: rawacf, fitacf, fitacf3, fitex,"
+        estr += " lmfit, iqdat"
         assert isinstance(self.sTime,dt.datetime), \
             logging.error('sTime must be datetime object')
         assert self.eTime == None or isinstance(self.eTime, dt.datetime), \
@@ -151,8 +153,9 @@ class radDataPtr():
         assert cp == None or isinstance(cp, int), \
             logging.error('cp must be an int or None')
         assert(fileType == 'rawacf' or fileType == 'fitacf' or
-               fileType == 'fitex' or fileType == 'lmfit' or
-               fileType == 'iqdat'), logging.error(estr)
+               fileType == 'fitacf3' or fileType == 'fitex' or
+               fileType == 'lmfit' or fileType == 'iqdat'),
+               logging.error(estr)
         assert fileName == None or isinstance(fileName,str), \
             logging.error('fileName must be None or a string')
         assert isinstance(filtered, bool), \
@@ -172,7 +175,7 @@ class radDataPtr():
         arr = [fileType]
 
         if try_file_types:
-            all_file_types = ['fitex', 'fitacf', 'lmfit']
+            all_file_types = ['fitex', 'fitacf', 'fitacf3', 'lmfit']
             try:
                 all_file_types.pop(all_file_types.index(fileType))
                 arr.extend(all_file_types)
@@ -604,7 +607,7 @@ class radDataPtr():
             return setDmapOffset(self.__fd, offset)
         else:
             if self.recordIndex is None:        
-                self.createIndex()
+               self.createIndex()
             if offset in self.recordIndex.values():
                 return setDmapOffset(self.__fd,offset)
             else:
@@ -826,8 +829,8 @@ class radDataPtr():
                     myBeam.rawacf.updateValsFromDict(dfile)
                 if myBeam.fType == "iqdat":
                     myBeam.iqdat.updateValsFromDict(dfile)
-                if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitex' or
-                   myBeam.fType == 'lmfit'):
+                if(myBeam.fType == 'fitacf' or myBeam.fType == 'fitacf3' or
+                   myBeam.fType == 'fitex' or myBeam.fType == 'lmfit' ):
                     myBeam.fit.updateValsFromDict(dfile)
                 if myBeam.fit.slist == None:
                     myBeam.fit.slist = []
@@ -1144,7 +1147,8 @@ class beamData(radBaseData):
     iqdat : (pydarn.sdio.radDataTypes.iqData)
         iqdat data
     fType : (str)
-        the file type, 'fitacf', 'rawacf', 'iqdat', 'fitex', 'lmfit'
+        the file type, 'fitacf', 'fitacf3' 'rawacf',
+        'iqdat', 'fitex', 'lmfit'
 
     Example
     --------
