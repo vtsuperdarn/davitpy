@@ -1749,3 +1749,48 @@ if __name__=="__main__":
     ptr.close()
     del VTptr
 
+    print ""
+    print "Now lets try to grab new file type, fitacf3"
+    rad = 'fhe'
+    channel = None
+    fileType = 'fitacf3'
+    filtered = False
+    sTime = datetime.datetime(2018, 1, 2, 0, 0)
+    eTime = datetime.datetime(2018, 1, 2, 4, 2)
+    expected_filename = "20180102.000000.20180102.040200.fhe.fitacf3"
+    expected_path = os.path.join(tmpdir, expected_filename)
+    expected_filesize = 14922244
+    expected_md5sum = "b8d21d5a612c074cc264f494e4a61b2b"
+    print "Expected File: " + expected_path
+
+    print "\nRunning sftp grab example for radDataPtr."
+    print "Environment variables used:"
+    print "  DB: " + davitpy.rcParams['DB']
+    print "  DB_PORT: " + davitpy.rcParams['DB_PORT']
+    print "  DBREADUSER: " + davitpy.rcParams['DBREADUSER']
+    print "  DBREADPASS: " + davitpy.rcParams['DBREADPASS']
+    print "  DAVIT_REMOTE_DIRFORMAT: {}".format( \
+                                    davitpy.rcParams['DAVIT_REMOTE_DIRFORMAT'])
+    print "  DAVIT_REMOTE_FNAMEFMT: {}".format( \
+                                    davitpy.rcParams['DAVIT_REMOTE_FNAMEFMT'])
+    print "  DAVIT_REMOTE_TIMEINC: " + davitpy.rcParams['DAVIT_REMOTE_TIMEINC']
+    print "  DAVIT_TMPDIR: " + davitpy.rcParams['DAVIT_TMPDIR']
+    src = 'sftp'
+    if os.path.isfile(expected_path):
+        os.remove(expected_path)
+    VTptr = radDataPtr(sTime, rad, eTime=eTime, channel=channel, bmnum=None,
+                       cp=None, fileType=fileType, filtered=filtered, src=src,
+                       noCache=True)
+    if os.path.isfile(expected_path):
+        statinfo = os.stat(expected_path)
+        print "Actual File Size:  ", statinfo.st_size
+        print "Expected File Size:", expected_filesize
+        md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
+        print "Actual Md5sum:  ", md5sum
+        print "Expected Md5sum:", expected_md5sum
+        if expected_md5sum != md5sum:
+            print "Error: Cached dmap file has unexpected md5sum."
+    else:
+        print "Error: Failed to create expected cache file"
+
+
