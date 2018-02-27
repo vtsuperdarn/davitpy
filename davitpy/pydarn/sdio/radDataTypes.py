@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -54,7 +54,7 @@ class radDataPtr():
         station id of the request
     channel : (str/NoneType)
         The 1-letter code to specify the UAF channel (not stereo),
-        e.g. 'a','b',... If 'all', ALL channels were obtained. 
+        e.g. 'a','b',... If 'all', ALL channels were obtained.
         (default=None, meaning don't check for UAF named data files)
     bmnum : (int)
         beam number of the request
@@ -76,13 +76,13 @@ class radDataPtr():
     ptr : (file or mongodb query object)
         the data pointer (different depending on mongodo or dmap)
     fd : (int)
-        the file descriptor 
+        the file descriptor
     filtered : (bool)
-        use Filtered datafile 
+        use Filtered datafile
     nocache : (bool)
-        do not use cached files, regenerate tmp files 
+        do not use cached files, regenerate tmp files
     src : (str)
-        local or sftp 
+        local or sftp
 
     Methods
     ----------
@@ -97,14 +97,14 @@ class radDataPtr():
     offsetTell
         Current byte offset
     rewind
-        rewind file back to the beginning 
+        rewind file back to the beginning
     readRec
         read record at current file offset
     readScan
         read scan associated with current record
     readAll
         read all records
-    
+
     Written by AJ 20130108
     """
     def __init__(self, sTime=None, radcode=None, eTime=None, stid=None,
@@ -131,7 +131,7 @@ class radDataPtr():
         self.fBeam = None
         self.recordIndex = None
         self.scanStartIndex = None
-        self.__filename = fileName 
+        self.__filename = fileName
         self.__filtered = filtered
         self.__nocache = noCache
         self.__src = src
@@ -370,7 +370,7 @@ class radDataPtr():
                 logging.info(estr)
                 try:
                     # If the following aren't already, in the near future
-                    # they will be assigned by a configuration dictionary 
+                    # they will be assigned by a configuration dictionary
                     # much like matplotlib's rcsetup.py (matplotlibrc)
                     if remote_site is None:
                         try:
@@ -549,7 +549,7 @@ class radDataPtr():
         return myStr
 
     def __del__(self):
-        self.close() 
+        self.close()
 
     def __iter__(self):
         return self
@@ -592,7 +592,7 @@ class radDataPtr():
                     rectime = dt.datetime.utcfromtimestamp(dfile['time'])
                     recordDict[rectime] = offset
                     if dfile['scan'] == 1: scanStartDict[rectime] = offset
-        # reset back to before building the index 
+        # reset back to before building the index
         self.recordIndex = recordDict
         self.offsetSeek(starting_offset)
         self.scanStartIndex = scanStartDict
@@ -600,13 +600,13 @@ class radDataPtr():
 
     def offsetSeek(self,offset,force=False):
         """jump to dmap record at supplied byte offset.
-        Require offset to be in record index list unless forced. 
+        Require offset to be in record index list unless forced.
         """
         from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
         if force:
             return setDmapOffset(self.__fd, offset)
         else:
-            if self.recordIndex is None:        
+            if self.recordIndex is None:
                self.createIndex()
             if offset in self.recordIndex.values():
                 return setDmapOffset(self.__fd,offset)
@@ -614,20 +614,20 @@ class radDataPtr():
                 return getDmapOffset(self.__fd)
 
     def offsetTell(self):
-        """jump to dmap record at supplied byte offset. 
+        """jump to dmap record at supplied byte offset.
         """
         from davitpy.pydarn.dmapio import getDmapOffset
         return getDmapOffset(self.__fd)
 
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset 
+        from davitpy.pydarn.dmapio import setDmapOffset
         return setDmapOffset(self.__fd,0)
 
     def readScan(self, firstBeam=None, useEvery=None, warnNonStandard=True,
                  showBeams=False):
         """A function to read a full scan of data from a
-        :class:`pydarn.sdio.radDataTypes.radDataPtr` object. 
+        :class:`pydarn.sdio.radDataTypes.radDataPtr` object.
         This function is capable of reading standard scans and extracting
         standard scans from patterned or interleaved scans (see Notes).
 
@@ -805,7 +805,7 @@ class radDataPtr():
                 logging.info('reached end of data')
                 #self.close()
                 return None
-            # check that we're in the time window, and that we have a 
+            # check that we're in the time window, and that we have a
             # match for the desired params
             # if dfile['channel'] < 2: channel = 'a'  THIS CHECK IS BAD.
             # 'channel' in a dmap file specifies STEREO operation or not.
@@ -922,10 +922,10 @@ class radBaseData():
         Recursively copy contents into a new object
     updateValsFromDict : (func)
         converts a dict from a dmap file to radBaseData
-    
+
     Written by AJ 20130108
     """
-  
+
     def copyData(self,obj):
         """This method is used to recursively copy all of the contents from
         input object to self
@@ -943,7 +943,7 @@ class radBaseData():
         ::
 
         myradBaseData.copyData(radBaseDataObj)
-      
+
         Note
         -----
         In general, users will not need to use this.
@@ -962,7 +962,7 @@ class radBaseData():
     def updateValsFromDict(self, aDict):
         """A function to to fill a radar params structure with the data in a
         dictionary that is returned from the reading of a dmap file
-    
+
         Parameters
         ------------
         aDict : (dict)
@@ -979,14 +979,14 @@ class radBaseData():
         Written by AJ 20121130
         """
         import datetime as dt
-    
+
         # iterate through prmData's attributes
         # REMOVED BY ASR on 11 SEP 2014
         # the channel attribute in fitted files (fitacf, lmfit, fitex) specifies
-        # if the data came from a STEREO radar, so we shouldn't clobber the 
+        # if the data came from a STEREO radar, so we shouldn't clobber the
         # value from the dmap file.
         #    elif(attr == 'channel'):
-        #      if(aDict.has_key('channel')): 
+        #      if(aDict.has_key('channel')):
         #        if(isinstance(aDict.has_key('channel'), int)):
         #          if(aDict['channel'] < 2): self.channel = 'a'
         #          else: self.channel = alpha[aDict['channel']-1]
@@ -1007,7 +1007,7 @@ class radBaseData():
                     self.channel = aDict['channel']
                 continue
             elif attr == 'inttus':
-                if aDict.has_key('intt.us'): 
+                if aDict.has_key('intt.us'):
                     self.inttus = aDict['intt.us']
                 continue
             elif attr == 'inttsc':
@@ -1088,7 +1088,7 @@ class radBaseData():
                 #put in a default value if not another object
                 if(not isinstance(getattr(self, attr), radBaseData)):
                     setattr(self, attr, None)
-          
+
   #def __repr__(self):
     #myStr = ''
     #for key,var in self.__dict__.iteritems():
@@ -1099,11 +1099,11 @@ class radBaseData():
       #else:
         #myStr += key+' = '+str(var)+'\n'
     #return myStr
-    
+
 class scanData(list):
     """a class to contain a radar scan.  Extends list.
     Just a list of :class:`pydarn.sdio.radDataTypes.beamData` objects
-  
+
     Attributes
     ----------
     None
@@ -1119,11 +1119,11 @@ class scanData(list):
 
     def __init__(self):
         pass
-  
+
 class beamData(radBaseData):
     """a class to contain the data from a radar beam sounding,
     extends class :class:`pydarn.sdio.radDataTypes.radBaseData`
-  
+
     Attributes
     -----------
     cp : (int)
@@ -1177,10 +1177,10 @@ class beamData(radBaseData):
         self.rawacf = rawData(parent=self)
         self.prm = prmData()
         self.iqdat = iqData()
-        self.recordDict = None 
+        self.recordDict = None
         self.fType = None
         self.offset = None
-        self.fPtr = None 
+        self.fPtr = None
         #if we are intializing from an object, do that
         if(beamDict != None):
             self.updateValsFromDict(beamDict)
@@ -1238,7 +1238,7 @@ class prmData(radBaseData):
     tfreq : (int)
         transmit freq in kHz
     txpl : (int)
-        transmit pulse length in us 
+        transmit pulse length in us
     ifmode : (int)
         if mode flag
     ptab : (mppul length list)
@@ -1282,7 +1282,7 @@ class prmData(radBaseData):
         self.noisemean = None   #mean noise level
         self.noisesky = None    #sky noise level
         self.noisesearch = None #freq search noise level
-    
+
         #if we are copying a structure, do that
         if(prmDict != None):
             self.updateValsFromDict(prmDict)
@@ -1386,7 +1386,7 @@ class rawData(radBaseData):
     Attributes
     -------------
     pwr0 : (nrang length list)
-        ACF (auto-correlation function) lag 0 power 
+        ACF (auto-correlation function) lag 0 power
     acfd : (nrang x mplgs x 2 length list)
         ACF data
     xcfd : (nrang x mplgs x 2 length list)
@@ -1536,7 +1536,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print "Expected File Size:", expected_filesize
         md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
         print "Actual Md5sum:  ", md5sum
         print "Expected Md5sum:", expected_md5sum
@@ -1586,7 +1586,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print "Expected File Size:", expected_filesize
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
         print "Actual Md5sum:  ",md5sum
         print "Expected Md5sum:",expected_md5sum
@@ -1611,7 +1611,7 @@ if __name__=="__main__":
     except:
         print "record read failed for some reason"
     ptr.close()
-  
+
     del localptr
 
 
@@ -1648,7 +1648,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print "Expected File Size:", expected_filesize
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
         print "Actual Md5sum:  ", md5sum
         print "Expected Md5sum:", expected_md5sum
@@ -1715,7 +1715,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print "Expected File Size:", expected_filesize
         md5sum=hashlib.md5(open(expected_path).read()).hexdigest()
         print "Actual Md5sum:  ", md5sum
         print "Expected Md5sum:", expected_md5sum
