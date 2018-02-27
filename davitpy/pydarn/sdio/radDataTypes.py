@@ -154,7 +154,7 @@ class radDataPtr():
             logging.error('cp must be an int or None')
         assert(fileType == 'rawacf' or fileType == 'fitacf' or
                fileType == 'fitacf3' or fileType == 'fitex' or
-               fileType == 'lmfit' or fileType == 'iqdat'),
+               fileType == 'lmfit' or fileType == 'iqdat'), \
                logging.error(estr)
         assert fileName == None or isinstance(fileName,str), \
             logging.error('fileName must be None or a string')
