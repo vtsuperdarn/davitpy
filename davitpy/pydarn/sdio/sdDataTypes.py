@@ -642,9 +642,11 @@ class sdDataPtr():
             if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
                 # fill the beamdata object, checking the file type
-                if self.fType == 'grd' or self.fType == 'grdex':
+                if self.fType == 'grd' or self.fType == 'grdex'
+                    or self.fType == 'grid2':
                     mydata = gridData(dataDict=dfile)
-                elif self.fType == 'map' or self.fType == 'mapex':
+                elif self.fType == 'map' or self.fType == 'mapex'
+                    or self.fType == 'map2':
                     mydata = mapData(dataDict=dfile)
                 else:
                     logging.error('unrecognized file type')
