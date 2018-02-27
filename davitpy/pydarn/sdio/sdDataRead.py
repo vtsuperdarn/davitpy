@@ -32,7 +32,7 @@ sdDataReadAll
 import logging
 
 def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
-               fileType='grdex', noCache=False, local_dirfmt=None,
+               fileType='grid2', noCache=False, local_dirfmt=None,
                local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                remote_fnamefmt=None, remote_dict=None, remote_site=None,
                username=None, password=None, port=None, tmpdir=None,
@@ -59,9 +59,9 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
         the name of a specific file which you want to open.  (default=None)
     fileType : (str)
         The type of data you want to read.  Valid inputs are 'grd', 'grdex',
-        'map', and 'mapex'.  If you choose a file format and the specified one
-        isn't found, we will search for one of the others (eg mapex instead of
-        map). (default='grdex')
+        'grid2', 'map', 'mapex' and 'map2'.  If you choose a file format and
+        the specified one isn't found, we will search for one of the others
+        (eg mapex instead of map). (default='grid2')
     noCache : (boolean)
         flag to indicate that you do not want to check first for cached files.
         (default=False)
