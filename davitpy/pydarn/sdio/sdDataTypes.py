@@ -143,7 +143,7 @@ class sdDataPtr():
                  remote_fnamefmt=None, remote_dict=None, remote_site=None,
                  username=None, password=None, port=None, tmpdir=None,
                  remove=False, try_file_types=True):
-#        from davitpy.pydarn.sdio import sdDataPtr
+#       from davitpy.pydarn.sdio import sdDataPtr
         from davitpy.utils.timeUtils import datetimeToEpoch
         import datetime as dt
         import os
@@ -160,7 +160,7 @@ class sdDataPtr():
         self.dType = None
         self.recordIndex = None
         self.__filename = fileName
-        self.__nocache  = noCache
+        self.__nocache = noCache
         self.__src = src
         self.__fd = None
         self.__ptr = None
@@ -170,26 +170,26 @@ class sdDataPtr():
             logging.error('sTime must be datetime object')
         assert hemi is not None, \
             logging.error("hemi must not be None")
-        assert self.eTime == None or isinstance(self.eTime, dt.datetime), \
+        assert self.eTime is None or isinstance(self.eTime, dt.datetime), \
             logging.error('eTime must be datetime object or None')
         assert(fileType == 'grd' or fileType == 'grdex' or
                fileType == 'map' or fileType == 'mapex' or
                fileType == 'grid2' or fileType == 'map2'), \
             logging.error("fileType must be one of: grd, grdex, grid2, "
                           "map, mapex, or map2")
-        assert fileName == None or isinstance(fileName, str), \
+        assert fileName is None or isinstance(fileName, str), \
             logging.error('fileName must be None or a string')
-        assert src == None or src == 'local' or src == 'sftp', \
+        assert src is None or src == 'local' or src == 'sftp', \
             logging.error('src must be one of: None, local, or sftp')
 
-        if self.eTime == None:
+        if self.eTime is None:
             self.eTime = self.sTime + dt.timedelta(days=1)
 
         filelist = []
         arr = [fileType]
         if try_file_types:
-            file_array = {'grd':['grd', 'grdex', 'grid2'],
-                          'map':['map', 'mapex', 'map2']}
+            file_array = {'grd': ['grd', 'grdex', 'grid2'],
+                          'map': ['map', 'mapex', 'map2']}
 
             try:
                 file_key = fileType[0:3]
@@ -213,7 +213,7 @@ class sdDataPtr():
         cached = False
 
         # First, check if a specific filename was given
-        if fileName != None:
+        if fileName is not None:
             try:
                 if not os.path.isfile(fileName):
                     estr = 'problem reading [{:}]: file does '.format(fileName)
@@ -224,8 +224,9 @@ class sdDataPtr():
                 outname = "{:s}{:d}".format(tmpdir, epoch)
                 if(string.find(fileName, '.bz2') != -1):
                     outname = string.replace(fileName, '.bz2', '')
-                    command = 'bunzip2 -c {:s} > {:s}'.format(fileName, outname)
-                elif(string.find(fileName,'.gz') != -1):
+                    command = 'bunzip2 -c {:s} > {:s}'.format(fileName,
+                                                              outname)
+                elif(string.find(fileName, '.gz') != -1):
                     outname = string.replace(fileName, '.gz', '')
                     command = 'gunzip -c {:s} > {:s}'.format(fileName, outname)
                 else:
@@ -241,11 +242,13 @@ class sdDataPtr():
                 return None
 
         # Next, check for a cached file
-        if fileName == None and not noCache:
+        if fileName is not None and not noCache:
             try:
                 if not cached:
-                    command = "{:s}????????.??????.????????.????".format(tmpdir)
-                    command = "{:s}??.{:s}.{:s}".format(command, hemi, fileType)
+                    command = "{:s}????????.??????.????????.????"\
+                              .format(tmpdir)
+                    command = "{:s}??.{:s}.{:s}".format(command, hemi,
+                                                        fileType)
                     for f in glob.glob(command):
                         try:
                             ff = string.replace(f, tmpdir, '')
@@ -260,7 +263,8 @@ class sdDataPtr():
                             if t1 <= self.sTime and t2 >= self.eTime:
                                 cached = True
                                 filelist.append(f)
-                                logging.info('Found cached file {:s}'.format(f))
+                                logging.info('Found cached file '
+                                             '{:s}'.format(f))
                                 break
                         except Exception, e:
                             logging.warning(e)
@@ -268,7 +272,7 @@ class sdDataPtr():
                 logging.warning(e)
 
         # Next, LOOK LOCALLY FOR FILES
-        if not cached and (src == None or src == 'local') and fileName == None:
+        if not cached and (src is None or src == 'local') and fileName is None:
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:s} files ".format(ftype)
@@ -289,7 +293,7 @@ class sdDataPtr():
                             logging.info("{:s}{:s}".format(estr, local_dirfmt))
 
                     if local_dict is None:
-                        local_dict = {'hemi':hemi, 'ftype':ftype}
+                        local_dict = {'hemi': hemi, 'ftype': ftype}
 
                     if 'ftype' in local_dict.keys():
                         local_dict['ftype'] = ftype
@@ -297,7 +301,8 @@ class sdDataPtr():
                     if local_fnamefmt is None:
                         try:
                             local_fnamefmt = \
-                        davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT'].split(',')
+                                davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT']\
+                                .split(',')
                         except:
                             local_fnamefmt = ['{date}.{hemi}.{ftype}']
                             estr = 'Environment variable DAVIT_SD_LOCAL_'
@@ -319,7 +324,8 @@ class sdDataPtr():
                     valid = self.__validate_fetched(temp, self.sTime,
                                                     self.eTime)
                     filelist = [x[0] for x in zip(temp, valid) if x[1]]
-                    invalid_files = [x[0] for x in zip(temp, valid) if not x[1]]
+                    invalid_files = [x[0] for x in zip(temp, valid)
+                                     if not x[1]]
 
                     if len(invalid_files) > 0:
                         for f in invalid_files:
@@ -347,8 +353,8 @@ class sdDataPtr():
                 src = None
 
         # Finally, check the sftp server if we have not yet found files
-        if((src == None or src == 'sftp') and self.__ptr == None and
-           len(filelist) == 0 and fileName == None):
+        if((src is None or src == 'sftp') and self.__ptr is None and
+           len(filelist) == 0 and fileName is None):
             for ftype in arr:
                 estr = 'Looking on the remote SFTP server for '
                 logging.info('{:s}{:s} files'.format(estr, ftype))
@@ -385,7 +391,7 @@ class sdDataPtr():
                     if remote_dirfmt is None:
                         try:
                             remote_dirfmt = \
-                            davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
+                                davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
                         except:
                             remote_dirfmt = 'data/{year}/{ftype}/{hemi}/'
                             estr = 'Config entry DAVIT_SD_REMOTE_DIRFORMAT not'
@@ -394,7 +400,7 @@ class sdDataPtr():
                             logging.info(estr)
 
                     if remote_dict is None:
-                        remote_dict = {'ftype':ftype, 'hemi':hemi}
+                        remote_dict = {'ftype': ftype, 'hemi': hemi}
 
                     if 'ftype' in remote_dict.keys():
                         remote_dict['ftype'] = ftype
@@ -402,7 +408,8 @@ class sdDataPtr():
                     if remote_fnamefmt is None:
                         try:
                             remote_fnamefmt = \
-                    davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
+                                davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT']\
+                                .split(',')
                         except:
                             remote_fnamefmt = ['{date}.{hemi}.{ftype}']
                             estr = 'Config entry DAVIT_SD_REMOTE_FNAMEFMT not '
@@ -415,7 +422,8 @@ class sdDataPtr():
                             port = davitpy.rcParams['DB_PORT']
                         except:
                             port = '22'
-                            estr = 'Config entry DB_PORT not set, using default'
+                            estr = 'Config entry DB_PORT not set, using '
+                            estr = '{:s}default'.formart(estr)
                             logging.info('{:s}: {:s}'.format(estr, port))
 
                     outdir = tmpdir
@@ -423,8 +431,9 @@ class sdDataPtr():
                     # Now fetch the files
                     temp = futils.fetch_remote_files(self.sTime, self.eTime,
                                                      'sftp', remote_site,
-                                                     remote_dirfmt, remote_dict,
-                                                     outdir, remote_fnamefmt,
+                                                     remote_dirfmt,
+                                                     remote_dict, outdir,
+                                                     remote_fnamefmt,
                                                      username=username,
                                                      password=password,
                                                      port=port, remove=remove)
@@ -434,7 +443,8 @@ class sdDataPtr():
                     valid = self.__validate_fetched(temp, self.sTime,
                                                     self.eTime)
                     filelist = [x[0] for x in zip(temp, valid) if x[1]]
-                    invalid_files = [x[0] for x in zip(temp, valid) if not x[1]]
+                    invalid_files = [x[0] for x in zip(temp, valid)
+                                     if not x[1]]
 
                     if len(invalid_files) > 0:
                         for f in invalid_files:
@@ -443,7 +453,7 @@ class sdDataPtr():
                             os.system("rm {:s}".format(f))
 
                     # If we have valid files then continue
-                    if len(filelist) > 0 :
+                    if len(filelist) > 0:
                         estr = 'found {:s} data on sftp server'.format(ftype)
                         logging.info(estr)
                         self.fType = ftype
@@ -464,12 +474,12 @@ class sdDataPtr():
             if not cached:
                 logging.info('Concatenating all the files in to one')
                 # choose a temp file name with time span info for cacheing
-                tmpname = '{:s}{:s}.{:s}'.format(tmpdir,
-                                                 self.sTime.strftime("%Y%m%d"),
-                                                 self.sTime.strftime("%H%M%S"))
-                tmpname = '{:s}.{:s}.{:s}'.format(tmpname,
-                                                  self.eTime.strftime("%Y%m%d"),
-                                                  self.eTime.strftime("%H%M%S"))
+                tmpname = '{:s}{:s}.{:s}'\
+                          .format(tmpdir, self.sTime.strftime("%Y%m%d"),
+                                  self.sTime.strftime("%H%M%S"))
+                tmpname = '{:s}.{:s}.{:s}'\
+                          .format(tmpname, self.eTime.strftime("%Y%m%d"),
+                                  self.eTime.strftime("%H%M%S"))
                 tmpname = '{:s}.{:s}.{:s}'.format(tmpname, hemi, fileType)
                 command = "cat {:s} > {:s}".format(string.join(filelist),
                                                    tmpname)
@@ -487,15 +497,15 @@ class sdDataPtr():
             self.__filename = tmpname
             self.open()
 
-        if self.__ptr != None:
-            if self.dType == None:
+        if self.__ptr is not None:
+            if self.dType is None:
                 self.dType = 'dmap'
         else:
             logging.info('Sorry, we could not find any data for you :(')
 
     def __repr__(self):
         my_str = 'sdDataPtr\n'
-        for key,var in self.__dict__.iteritems():
+        for key, var in self.__dict__.iteritems():
             my_str = "{:s}{:s} = {:s}\n".format(my_str, key, str(var))
         return my_str
 
@@ -545,7 +555,7 @@ class sdDataPtr():
                                         int(dfile['start.second']))
                     dfile['time'] = (dtime -
                                      dt.datetime(1970, 1, 1)).total_seconds()
-                except Exception,e:
+                except Exception, e:
                     logging.warning(e)
                     logging.warning('problem reading time from file')
                     break
@@ -602,7 +612,7 @@ class sdDataPtr():
         import datetime as dt
 
         # check input
-        if self.__ptr == None:
+        if self.__ptr is None:
             logging.error('the pointer does not point to any data')
             return None
 
@@ -629,7 +639,7 @@ class sdDataPtr():
                 logging.warning('problem reading time from file')
                 break
 
-            if(dfile == None or
+            if(dfile is None or
                dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
                 # if we dont have valid data, clean up, get out
                 logging.info('reached end of data')
@@ -640,11 +650,11 @@ class sdDataPtr():
             if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
                 # fill the beamdata object, checking the file type
-                if self.fType == 'grd' or self.fType == 'grdex'
-                    or self.fType == 'grid2':
+                if (self.fType == 'grd' or self.fType == 'grdex' or
+                        self.fType == 'grid2'):
                     mydata = gridData(dataDict=dfile)
-                elif self.fType == 'map' or self.fType == 'mapex'
-                    or self.fType == 'map2':
+                elif (self.fType == 'map' or self.fType == 'mapex' or
+                        self.fType == 'map2'):
                     mydata = mapData(dataDict=dfile)
                 else:
                     logging.error('unrecognized file type')
@@ -738,9 +748,10 @@ class sdDataPtr():
             if np.size(inds) > 0 or np.size(inde) > 0:
                 valid.append(True)
             else:
-                valid.append(False) # ISSUE 217: FASTER TO NOT USE APPEND
+                valid.append(False)  # ISSUE 217: FASTER TO NOT USE APPEND
 
         return valid
+
 
 class sdBaseData():
     """A base class for the processed SD data types.  This allows for single
@@ -787,7 +798,7 @@ class sdBaseData():
         emt = 1
         esc = 1
 
-        for key,val in adict.iteritems():
+        for key, val in adict.iteritems():
             if key == 'start.year':
                 syr = adict['start.year']
             elif key == 'start.month':
@@ -839,9 +850,10 @@ class sdBaseData():
 
     def __repr__(self):
         mystr = ''
-        for key,val in self.__dict__.iteritems():
+        for key, val in self.__dict__.iteritems():
             mystr = "{:s}{:s} = {:s}\n".format(mystr, str(key), str(val))
         return mystr
+
 
 class gridData(sdBaseData):
     """ a class to contain a record of gridded data, extends sdBaseData
@@ -910,8 +922,9 @@ class gridData(sdBaseData):
         self.vemax = None
         self.vector = sdVector(dataDict=dataDict)
 
-        if dataDict != None:
+        if dataDict is not None:
             self.updateValsFromDict(dataDict)
+
 
 # HERE
 class mapData(sdBaseData):
@@ -1017,8 +1030,9 @@ class mapData(sdBaseData):
         self.Np3 = None
         self.model = sdModel(dataDict=dataDict)
 
-        if(dataDict != None):
+        if(dataDict is not None):
             self.updateValsFromDict(dataDict)
+
 
 class sdVector(sdBaseData):
     """ a class to contain vector records of gridded data, extends sdBaseData
@@ -1068,8 +1082,9 @@ class sdVector(sdBaseData):
         self.wdtmedian = None
         self.wdtsd = None
 
-        if(dataDict != None):
+        if(dataDict is not None):
             self.updateValsFromDict(dataDict)
+
 
 class sdModel(sdBaseData):
     """ a class to contain model records of map poential data, extends
@@ -1099,11 +1114,11 @@ class sdModel(sdBaseData):
         self.boundarymlat = None
         self.boundarymlon = None
 
-        if(dataDict != None):
+        if(dataDict is not None):
             self.updateValsFromDict(dataDict)
 
 # TESTING CODE
-if __name__=="__main__":
+if __name__ == "__main__":
     import os
     import datetime as dt
     import hashlib
@@ -1226,7 +1241,6 @@ if __name__=="__main__":
 
     del localptr
 
-
     hemi = 'south'
     channel = None
     stime = dt.datetime(2017, 7, 10)
@@ -1267,7 +1281,6 @@ if __name__=="__main__":
             print "Error: Cached dmap file has unexpected md5sum."
     else:
         print "Error: Failed to create expected cache file"
-
 
     print ""
     print "Now lets grab the new grid2 file type"
@@ -1312,5 +1325,3 @@ if __name__=="__main__":
             print "Error: Cached dmap file has unexpected md5sum."
     else:
         print "Error: Failed to create expected cache file"
-
-
