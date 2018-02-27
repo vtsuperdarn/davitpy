@@ -1225,3 +1225,92 @@ if __name__=="__main__":
     ptr.close()
 
     del localptr
+
+
+    hemi = 'south'
+    channel = None
+    stime = dt.datetime(2017, 7, 10)
+    etime = dt.datetime(2017, 7, 11, 2)
+    expected_filename = "20170710.000000.20170711.020000.south.map2"
+    expected_path = os.path.join(tmpdir, expected_filename)
+    expected_filesize = 28284376
+    expected_md5sum = "de91b6bc239e0ff069732b1ecba5ecf1"
+    print "Expected File:", expected_path
+
+    print "\nRunning sftp grab example for sdDataPtr."
+    print "Environment variables used:"
+    print "  DB:", davitpy.rcParams['DB']
+    print "  DB_PORT:", davitpy.rcParams['DB_PORT']
+    print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
+    print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
+    print "  DAVIT_SD_REMOTE_DIRFORMAT:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
+    print "  DAVIT_SD_REMOTE_FNAMEFMT:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT']
+    print "  DAVIT_SD_REMOTE_TIMEINC:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC']
+    print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
+
+    src = 'sftp'
+    if os.path.isfile(expected_path):
+        os.remove(expected_path)
+    vtptr = sdDataPtr(stime, hemi, eTime=etime, fileType='map2', src=src,
+                      noCache=True)
+    if os.path.isfile(expected_path):
+        statinfo = os.stat(expected_path)
+        print "Actual File Size:  ", statinfo.st_size
+        print "Expected File Size:", expected_filesize
+        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
+        print "Actual Md5sum:  ", md5sum
+        print "Expected Md5sum:", expected_md5sum
+        if expected_md5sum != md5sum:
+            print "Error: Cached dmap file has unexpected md5sum."
+    else:
+        print "Error: Failed to create expected cache file"
+
+
+    print ""
+    print "Now lets grab the new grid2 file type"
+
+    hemi = 'north'
+    channel = None
+    stime = dt.datetime(2017, 7, 10)
+    etime = dt.datetime(2017, 7, 11, 2)
+    expected_filename = "20170710.000000.20170711.020000.north.grid2"
+    expected_path = os.path.join(tmpdir, expected_filename)
+    expected_filesize = 11931978
+    expected_md5sum = "c7f555249fc18244f61bb118cc71b2e1"
+    print "Expected File:", expected_path
+
+    print "\nRunning sftp grab example for sdDataPtr."
+    print "Environment variables used:"
+    print "  DB:", davitpy.rcParams['DB']
+    print "  DB_PORT:", davitpy.rcParams['DB_PORT']
+    print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
+    print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
+    print "  DAVIT_SD_REMOTE_DIRFORMAT:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
+    print "  DAVIT_SD_REMOTE_FNAMEFMT:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT']
+    print "  DAVIT_SD_REMOTE_TIMEINC:", \
+        davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC']
+    print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
+
+    src = 'sftp'
+    if os.path.isfile(expected_path):
+        os.remove(expected_path)
+    vtptr = sdDataPtr(stime, hemi, eTime=etime, fileType='grid2', src=src,
+                      noCache=True)
+    if os.path.isfile(expected_path):
+        statinfo = os.stat(expected_path)
+        print "Actual File Size:  ", statinfo.st_size
+        print "Expected File Size:", expected_filesize
+        md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
+        print "Actual Md5sum:  ", md5sum
+        print "Expected Md5sum:", expected_md5sum
+        if expected_md5sum != md5sum:
+            print "Error: Cached dmap file has unexpected md5sum."
+    else:
+        print "Error: Failed to create expected cache file"
+
+
