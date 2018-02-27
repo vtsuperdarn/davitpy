@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -47,7 +47,8 @@ class sdDataPtr():
     hemi : str
         hemisphere of data interested in
     fileType : str
-        the type of file: 'grd', 'grdex', 'map', or 'mapex'
+        the type of file: 'grd', 'grdex', 'grid2', 'map', 'mapex'
+        or 'map2'
     eTime : Optional[datetime]
         end time of the request.  If none, then a full day is
         requested.
@@ -87,7 +88,7 @@ class sdDataPtr():
     tmpdir : Optional[str]
         directory to download and source files from locally.  Default:
         rcParams' 'DAVIT_TMPDIR' value.
-    
+
 
     Attributes
     -----------
@@ -98,7 +99,8 @@ class sdDataPtr():
     hemi : str
         hemisphere of data interested in
     fType : str
-        the file type, 'grd', 'map', 'grdex' or 'mapex'
+        the file type, 'grd', 'map', 'grdex', 'mapex', 'grid2'
+        or 'map2'
     recordIndex : (dict)
         look up dictionary for file offsets for scan times
 
@@ -107,18 +109,18 @@ class sdDataPtr():
     ptr : (file or mongodb query object)
         the data pointer (different depending on mongodo or dmap)
     fd : (int)
-        the file descriptor 
+        the file descriptor
     fileName : (str)
         name of the file opened
     nocache : (bool)
-        do not use cached files, regenerate tmp files 
+        do not use cached files, regenerate tmp files
     src : (str)
-        local or sftp 
- 
+        local or sftp
+
     Methods
     --------
-    open 
-    close 
+    open
+    close
     createIndex
         Index the offsets for all records and scan boundaries
     offsetSeek
@@ -127,7 +129,7 @@ class sdDataPtr():
     offsetTell
         Current byte offset
     rewind
-        rewind file back to the beginning 
+        rewind file back to the beginning
     readRec
         read record at current file offset
     readScan
@@ -159,7 +161,7 @@ class sdDataPtr():
         self.fType = fileType
         self.dType = None
         self.recordIndex = None
-        self.__filename = fileName 
+        self.__filename = fileName
         self.__nocache  = noCache
         self.__src = src
         self.__fd = None
@@ -173,20 +175,23 @@ class sdDataPtr():
         assert self.eTime == None or isinstance(self.eTime, dt.datetime), \
             logging.error('eTime must be datetime object or None')
         assert(fileType == 'grd' or fileType == 'grdex' or
-               fileType == 'map' or fileType == 'mapex'), \
-            logging.error("fileType must be one of: grd, grdex, map, or mapex")
+               fileType == 'map' or fileType == 'mapex' or
+               fileType == 'grid2' or fileType == 'map2'), \
+            logging.error("fileType must be one of: grd, grdex, grid2, "
+                          "map, mapex, or map2")
         assert fileName == None or isinstance(fileName, str), \
             logging.error('fileName must be None or a string')
         assert src == None or src == 'local' or src == 'sftp', \
             logging.error('src must be one of: None, local, or sftp')
-    
+
         if self.eTime == None:
             self.eTime = self.sTime + dt.timedelta(days=1)
-    
+
         filelist = []
         arr = [fileType]
         if try_file_types:
-            file_array = {'grd':['grd', 'grdex'], 'map':['map', 'mapex']}
+            file_array = {'grd':['grd', 'grdex', 'grid2'],
+                          'map':['map', 'mapex', 'map2']}
 
             try:
                 file_key = fileType[0:3]
@@ -231,7 +236,7 @@ class sdDataPtr():
                 logging.info('performing: {:s}'.format(command))
                 os.system(command)
                 filelist.append(outname)
-    
+
             except Exception, e:
                 logging.error(e)
                 logging.error('problem reading file [{:s}]'.format(fileName))
@@ -263,7 +268,7 @@ class sdDataPtr():
                             logging.warning(e)
             except Exception, e:
                 logging.warning(e)
-  
+
         # Next, LOOK LOCALLY FOR FILES
         if not cached and (src == None or src == 'local') and fileName == None:
             try:
@@ -273,7 +278,7 @@ class sdDataPtr():
                     logging.info(estr)
 
                     # If the following aren't already, in the near future
-                    # they will be assigned by a configuration dictionary 
+                    # they will be assigned by a configuration dictionary
                     # much like matplotlib's rcsetup.py (matplotlibrc)
                     if local_dirfmt is None:
                         try:
@@ -284,7 +289,7 @@ class sdDataPtr():
                             estr = "Config entry DAVIT_SD_LOCAL_DIRFORMAT not "
                             estr = "{:s}set, using default: ".format(estr)
                             logging.info("{:s}{:s}".format(estr, local_dirfmt))
-    
+
                     if local_dict is None:
                         local_dict = {'hemi':hemi, 'ftype':ftype}
 
@@ -332,17 +337,17 @@ class sdDataPtr():
                         self.dType = 'dmap'
                         fileType = ftype
                         break
-    
+
                     else:
                         estr = "couldn't find any local {:s}".format(ftype)
                         logging.info(estr)
-    
+
             except Exception, e:
                 logging.warning(e)
                 estr = "Unable to fetch any local data, attempting to fetch "
                 logging.warning("{:s}remote data".format(estr))
                 src = None
-              
+
         # Finally, check the sftp server if we have not yet found files
         if((src == None or src == 'sftp') and self.__ptr == None and
            len(filelist) == 0 and fileName == None):
@@ -351,7 +356,7 @@ class sdDataPtr():
                 logging.info('{:s}{:s} files'.format(estr, ftype))
                 try:
                     # If the following aren't already, in the near future
-                    # they will be assigned by a configuration dictionary 
+                    # they will be assigned by a configuration dictionary
                     # much like matplotlib's rcsetup.py (matplotlibrc)
                     if remote_site is None:
                         try:
@@ -450,7 +455,7 @@ class sdDataPtr():
                     else:
                         estr = "couldn't find {:s} data on sftp ".format(ftype)
                         logging.info("{:s}server".format(estr))
-    
+
                 except Exception, e:
                     logging.warning(e)
                     logging.warning('problem reading from sftp server')
@@ -548,25 +553,25 @@ class sdDataPtr():
                     break
 
                 dfile_utc = dt.datetime.utcfromtimestamp(dfile['time'])
-                if dfile_utc >= self.sTime and dfile_utc <= self.eTime: 
+                if dfile_utc >= self.sTime and dfile_utc <= self.eTime:
                     rectime = dt.datetime.utcfromtimestamp(dfile['time'])
                     recordDict[rectime] = offset
 
-        # reset back to before building the index 
+        # reset back to before building the index
         self.recordIndex = recordDict
         self.offsetSeek(starting_offset)
         return recordDict
 
     def offsetSeek(self, offset, force=False):
         """jump to dmap record at supplied byte offset.
-           Require offset to be in record index list unless forced. 
+           Require offset to be in record index list unless forced.
         """
         from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
 
         if force:
             return dmapio.setDmapOffset(self.__fd, offset)
         else:
-            if self.recordIndex is None:        
+            if self.recordIndex is None:
                 self.createIndex()
 
             if offset in self.recordIndex.values():
@@ -575,16 +580,16 @@ class sdDataPtr():
                 return getDmapOffset(self.__fd)
 
     def offsetTell(self):
-        """jump to dmap record at supplied byte offset. 
+        """jump to dmap record at supplied byte offset.
         """
         from davitpy.pydarn.dmapio import getDmapOffset
         return getDmapOffset(self.__fd)
-  
+
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset 
+        from davitpy.pydarn.dmapio import setDmapOffset
         return setDmapOffset(self.__fd, 0)
-  
+
     def readRec(self):
         """A function to read a single record of radar data from a radDataPtr
         object
@@ -606,7 +611,7 @@ class sdDataPtr():
         if self.__ptr.closed:
             logging.error('the file pointer is closed')
             return None
-  
+
         # do this until we reach the requested start time
         # and have a parameter match
         while 1:
@@ -632,8 +637,8 @@ class sdDataPtr():
                 logging.info('reached end of data')
                 return None
 
-            # check that we're in the time window, and that we have a 
-            # match for the desired params  
+            # check that we're in the time window, and that we have a
+            # match for the desired params
             if(dt.datetime.utcfromtimestamp(dfile['time']) >= self.sTime and
                dt.datetime.utcfromtimestamp(dfile['time']) <= self.eTime):
                 # fill the beamdata object, checking the file type
@@ -649,7 +654,7 @@ class sdDataPtr():
                 mydata.fType = self.fType
                 mydata.fPtr = self
                 mydata.offset = offset
-  
+
                 return mydata
 
     def close(self):
@@ -964,7 +969,7 @@ class mapData(sdBaseData):
     potminerr : (double)
         Error of the previous value
     grid : (gridData)
-        an object to hold all of the grid data in the record 
+        an object to hold all of the grid data in the record
     N : (list)
     Np1 : (list)
     Np2 : (list)
@@ -1012,7 +1017,7 @@ class mapData(sdBaseData):
         self.Np3 = None
         self.model = sdModel(dataDict=dataDict)
 
-        if(dataDict != None): 
+        if(dataDict != None):
             self.updateValsFromDict(dataDict)
 
 class sdVector(sdBaseData):
@@ -1141,7 +1146,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print "Expected File Size:", expected_filesize
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
         print "Actual Md5sum:  ", md5sum
         print "Expected Md5sum:", expected_md5sum
@@ -1193,7 +1198,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print "Actual File Size:  ", statinfo.st_size
-        print "Expected File Size:", expected_filesize 
+        print "Expected File Size:", expected_filesize
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
         print "Actual Md5sum:  ", md5sum
         print "Expected Md5sum:", expected_md5sum
