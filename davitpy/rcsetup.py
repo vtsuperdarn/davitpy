@@ -220,8 +220,8 @@ path = os.path.split(os.path.dirname(__file__))[0]
 model_coeffs_dir = os.path.join(path, 'tables/')
 
 if not os.path.exists(model_coeffs_dir):
-    print "WARNING, location of model coefficients could not be determined!"
-    print model_coeffs_dir
+    print("WARNING, location of model coefficients could not be determined!")
+    print(model_coeffs_dir)
 
 
 # a map from key -> value, converter

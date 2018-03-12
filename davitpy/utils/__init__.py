@@ -9,9 +9,9 @@ This subpackage contains various utilities for DaViT-py
 
 Modules
 --------------------------------------
-plotUtils   Basic plotting tools 
+plotUtils   Basic plotting tools
 geoPack     geographic transformations
-timeUtils   date/time manipulations 
+timeUtils   date/time manipulations
 calcSun     solar position calculator
 coordUtils  coordinate system tools
 --------------------------------------
@@ -30,32 +30,32 @@ import logging
 
 try:
     from plotUtils import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> utils.plotUtils: ' + str(e))
 
 try:
     from geoPack import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> utils.geoPack: ' + str(e))
 
 try:
     from timeUtils import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> utils.timeUtils: ' + str(e))
 
 try:
     from calcSun import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> utils.calcSun: ' + str(e))
 
 try:
     from coordUtils import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> utils.coordUtils: ' + str(e))
 
 try:
     from model_vheight import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> utils.model_vheight: ' + str(e))
 
 # Define a few general-use constants
@@ -80,7 +80,7 @@ class twoWayDict(dict):
     References
     ----------
     [1] http://stackoverflow.com/questions/1456373/two-way-reverse-map
-        
+
     """
     def __init__(self,initDict={}):
         for key,val in initDict.iteritems():
@@ -89,7 +89,7 @@ class twoWayDict(dict):
 
     def __len__(self):
         return dict.__len__(self) / 2
-		
+
     def __setitem__(self, key, value):
         dict.__setitem__(self, key, value)
         dict.__setitem__(self, value, key)

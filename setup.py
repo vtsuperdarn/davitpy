@@ -88,7 +88,7 @@ data_files = []
 for f in os.listdir('tables/aacgm'):
     data_files.append(('tables/aacgm',
                        [os.path.join('tables/aacgm', f)]))
-    
+
 for f in os.listdir('tables/igrf'):
     data_files.append(('tables/igrf',
                        [os.path.join('tables/igrf', f)]))
@@ -146,4 +146,4 @@ setup(name='davitpy',
       )
 
 if os.environ['DISTUTILS_DEBUG'] == "1":
-    print 'Sources', find_packages()
+    print ('Sources', find_packages())

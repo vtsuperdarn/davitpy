@@ -21,7 +21,7 @@ Module author: AJ, 20130327
 
 Functions
 ------------------------------------------
-fitPrintRec     Print fit-type files
+fitPrintRec     print(fit-type files)
 readPrintRec    Read printrec output files
 ------------------------------------------
 
@@ -50,7 +50,7 @@ def readPrintRec(filename):
 
     # open the file
     try: fp = open(filename)
-    except Exception, e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem opening the file %s', filename)
         return None
@@ -122,7 +122,7 @@ def readPrintRec(filename):
 
 
 def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
-    """A function to print the contents of a fit-type file
+    """A function to print(the contents of a fit-type file)
 
     Parameters
     ----------
@@ -188,7 +188,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     while(myData is not None and myData.time <= eTime):
         t = myData.time
         if(summ == 0):
-            # If not interested in the summary, lets print all of the range
+            # If not interested in the summary, lets print(all of the range)
             # gate values.  We'll start with the header for each beam sounding.
             f.write(t.strftime("%Y-%m-%d  "))
             f.write(t.strftime("%H:%M:%S  "))
@@ -220,7 +220,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
             for i,s in enumerate(myData.fit.slist):
                 lat_full = myFov.latFull[myData.bmnum]
                 lon_full = myFov.lonFull[myData.bmnum]
-                
+
                 d = utils.geoPack.calcDistPnt(lat_full[s], lon_full[s], 300,
                                               distLat=lat_full[s + 1],
                                               distLon=lon_full[s + 1],

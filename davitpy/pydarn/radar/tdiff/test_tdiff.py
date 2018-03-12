@@ -80,11 +80,11 @@ def test_simplex(plot_handle=None):
          Current function value: -1.000000
          Iterations: 13
          Function evaluations: 26
-    In [3]: print min0, min1, min2
+    In [3]: print(min0, min1, min2)
     -1.5708125 4.71238898038 -7.85400933085
     '''
     from simplex import rigerous_simplex
-    
+
     def sin_func(angle_rad):
         return np.sin(angle_rad)
 
@@ -150,7 +150,7 @@ def han_heater_field_line_lat(alt, heater="Tromso"):
     heater_lat = 78.15 if heater.lower() == "spear" else 69.90
     heater_ang = 7.7 if heater.lower() == "spear" else 12.0
     line_lat = heater_lat - (alt * np.tan(np.radians(heater_ang)) / 111.0)
-    
+
     return line_lat
 
 def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
@@ -181,7 +181,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
     In[1]: import davitpy.radar.tdiff as dtdiff
     In[5]: tt, trange, ldist = dtdiff.test_tdiff.test_calc_tdiff()
     --- shows simplex output ---
-    In[6]: print tt
+    In[6]: print(tt)
     0.155995791387
     '''
     import datetime as dt
@@ -202,13 +202,13 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
                                                fileType=file_type,
                                                password=password, cp=radcp)
     except:
-        print "Unable to load tdiff test data:\nRadar: {:s}".format(rad)
-        print "Program: {:d}\nTime: {:} to {:}".format(radcp, stime, etime)
+        print("Unable to load tdiff test data:\nRadar: {:s}".format(rad))
+        print("Program: {:d}\nTime: {:} to {:}".format(radcp, stime, etime))
         return None, None, None
 
     hard = pyrad.site(code=rad, dt=stime)
     rad_bands = pyrad.tdiff.rad_freqbands.radFreqBands(rad)
-    
+
     # Set the beam selection criteria
     tb = 3
     bnum = 5
@@ -220,7 +220,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
     tmaxs = [dt.datetime(2006, 10, 13, 15, 6),dt.datetime(2006, 10, 13, 15, 10),
              dt.datetime(2006, 10, 13, 15, 14)]
     sattr = ["slist", "time", "tfreq", "p_l", "phi0", "phi0e", "bmnum", "dist"]
-    
+
     bm = rad_ptr.readRec()
     beams = list()
     while bm is not None:
@@ -249,7 +249,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
     bm_az = [np.radians(hard.beamToAzim(b) - hard.boresite)
              for b in sdata['bmnum']]
     lat_args = (hard, sdata["phi0"], sdata["phi0e"], fovflg, bm_az,
-                sdata["tfreq"], sdata['dist']) 
+                sdata["tfreq"], sdata['dist'])
 
     # Estimate tdiff
     tout = pyrad.tdiff.calc_tdiff.calc_tdiff(hard.tdiff, ref_lat, ref_err,
@@ -275,7 +275,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
             hax = tdiff_plot.add_subplot(2,2,4)
             tax = tdiff_plot.add_subplot(2,2,3)
         except:
-            print "Unable to add subplots to figure"
+            print("Unable to add subplots to figure")
             return tout[0], trange, ldist
 
         # Add the title
@@ -308,7 +308,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
                                       (tmaxs[i]-ss).total_seconds()/86400.,
                                       rmax-rmin, color="0.6", zorder=1)
             sax.add_patch(p)
-        
+
         sax.xaxis.set_major_formatter(mpl.dates.DateFormatter("%H:%M"))
         sax.xaxis.set_major_locator(mpl.dates.MinuteLocator(interval=5))
         sax.yaxis.set_major_locator(mpl.ticker.MultipleLocator(5))
@@ -322,7 +322,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
                 sax.collections[0], 0, 40, 5, name="Power", units="dB",
                                                       loc=[.91, .67, .01, .22])
 
-        # Add the tdiff-lat dist function 
+        # Add the tdiff-lat dist function
         tax.plot(trange, ldist, "b-", linewidth=2)
         ymin, ymax = tax.get_ylim()
         tax.plot([hard.tdiff, hard.tdiff], [ymin, ymax], "k--", linewidth=2,
@@ -359,12 +359,12 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
 
         hax.hist(loc['distLat'], 8, color="0.6",
                  label="{:.3f}".format(hard.tdiff))
-       
+
         elv = np.array(fov.calc_elevation.calc_elv_list(sdata['phi0'],
                                                         sdata['phi0e'], fovflg,
                                                         bm_az, sdata['tfreq'],
                                                         hard.interfer, tout[0]))
-        
+
         elv = np.degrees(elv)
         az = np.array([pyrad.radFov.calcAzOffBore(e, np.degrees(bm_az[i]),
                                                   fov_dir[fovflg[i]]) +
@@ -385,7 +385,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
         hax.xaxis.set_major_locator(mpl.ticker.MultipleLocator(1))
         hax.legend(ncol=2, fontsize="xx-small", title="$\delta t_c$ ($\mu s$)",
                    bbox_to_anchor=(.85,1.33))
-       
+
         # Add the reference locations to a twin of the histogram plot
         hax2 = hax.twinx()
         line_alt = np.arange(0.0, 315.0, 15.0)
@@ -393,7 +393,7 @@ def test_calc_tdiff(file_type="fitacf", password=True, tdiff_plot=None):
         hax2.plot(line_lat, line_alt, "k-", linewidth=4)
         hax2.plot([xmin, xmax], [ref_alt, ref_alt], "k:")
         hax2.plot([ref_lat, ref_lat], [0, 300], "k--", linewidth=2)
-        
+
         hax.set_xlim(xmin, xmax)
         hax2.set_ylabel("Altitude (km)")
 

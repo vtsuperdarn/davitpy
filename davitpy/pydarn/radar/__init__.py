@@ -48,7 +48,7 @@ except Exception as e:
 
 try:
     import tdiff
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing tdiff: ' + str(e))
 
 

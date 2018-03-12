@@ -47,7 +47,7 @@ from davitpy.pydarn.sdio.radDataRead import *
 import logging
 
 
-def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
+def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
             filtered=False, scale=[], channel=None, coords='geo',
             colors='lasse', gsct=False, fov=True, edgeColors='face',
             lowGray=False, fill=True, velscl=1000., legend=True,
@@ -55,6 +55,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
             overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
             tFreqBands=[]):
+    print("pltFan")
     """A function to make a fan plot
 
     Parameters
@@ -351,7 +352,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
                                    linewidths=.5, zorder=15, color='k')
                 myFig.gca().add_collection(y)
 
-    bbox = myFig.gca().get_axes().get_position()
+    bbox = myFig.gca().get_position()
     # now, loop through desired time interval
 
     tz = dt.datetime.now()
@@ -674,21 +675,21 @@ if __name__ == "__main__":
 
     time = datetime(2014, 8, 7, 18, 30)
 
-    print "Testing some of the plotFan stuff.  Time used is:"
-    print time
-    print "Generating a plot of Saskatoon and Hankasalmi velocity"
-    print "in geographic coords with ground scatter on."
+    print("Testing some of the plotFan stuff.  Time used is:")
+    print(time)
+    print("Generating a plot of Saskatoon and Hankasalmi velocity")
+    print("in geographic coords with ground scatter on.")
     plotFan(time, ["sas", "han"], param="velocity", coords="geo", gsct=True,
             show=True)
-    print "Now a plot of power."
+    print("Now a plot of power.")
     plotFan(time, ["sas", "han"], param="power", coords="geo", gsct=True,
             show=True)
-    print "Now change to magnetic coords."
+    print("Now change to magnetic coords.")
     plotFan(time, ["sas", "han"], param="power", coords="mag", gsct=True,
             show=True)
-    print "Now change to MLT coords."
+    print("Now change to MLT coords.")
     plotFan(time, ["sas", "han"], param="power", coords="mlt", gsct=True,
             show=True)
-    print "Now generate a png instead of showing the plot."
+    print("Now generate a png instead of showing the plot.")
     plotFan(time, ["sas", "han"], param="power", coords="mag", gsct=True,
             show=False, png=True)

@@ -400,7 +400,7 @@ class RcParams(dict):
 
                     # Set up the logger using a basic config
                     logging.basicConfig()
-                    # Update the logging level (do it this way so init_logging can be 
+                    # Update the logging level (do it this way so init_logging can be
                     # called to update the logging level of a root logger).
                     logging.getLogger().setLevel(level_dict[val])
 
@@ -564,7 +564,7 @@ def _rc_params_in_file(fname, fail_on_error=False):
 
         else:
             print("""
-                  Bad key "%s" on line %d in %s. You probably need to get an 
+                  Bad key "%s" on line %d in %s. You probably need to get an
                   updated davitpyrc file from https://github.com/vtsuperdarn/davitpy
                   """ % (key, cnt, fname), file=sys.stderr)
 
@@ -614,20 +614,20 @@ rcParams = rc_params()
 
 try:
     from davitpy import pydarn
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing pydarn: ' + str(e))
 
 try:
     from davitpy import gme
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing gme: ' + str(e))
 
 try:
     from davitpy import utils
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing utils: ' + str(e))
 
 try:
     from davitpy import models
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing models: ' + str(e))

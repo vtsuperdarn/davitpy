@@ -75,19 +75,19 @@ def radarRead(path=None):
         txt = '{:s}use a local file instead by setting the '.format(txt)
         txt = '{:s}SD_RADAR environment variable to the location '.format(txt)
         txt = '{:s}of a local copy of radar.dat.\n'.format(txt)
-        print txt
+        print(txt)
 
-        print 'Example, you might add a similar line to your .bashrc:'
-        print 'export SD_RADAR=/home/username/tables/radar.dat\n'
+        print('Example, you might add a similar line to your .bashrc:')
+        print('export SD_RADAR=/home/username/tables/radar.dat\n')
 
         txt = 'Also, make sure your SD_HDWPATH also points to the location of '
         txt = '{:s}your hdw.dat files.'.format(txt)
-        print txt
+        print(txt)
         txt = 'You can get the latest hdw.dat files from '
         txt = '{:s} https://github.com/vtsuperdarn/hdw.dat'.format(txt)
-        print txt
-        print 'Example, you might add a similar line to your .bashrc:'
-        print 'export SD_HDWPATH=/home/username/tables/hdw.dat/\n'
+        print(txt)
+        print('Example, you might add a similar line to your .bashrc:')
+        print('export SD_HDWPATH=/home/username/tables/hdw.dat/\n')
         return None
 
     # Initialize placeholder dictionary of lists
@@ -165,13 +165,13 @@ def hdwRead(fname, path=None):
         txt = '{:s}use a local file instead by setting the '.format(txt)
         txt = '{:s}SD_HDWPATH environment variable to the location'.format(txt)
         txt = '{:s} of the local hdw.dat path.'.format(txt)
-        print txt
+        print(txt)
         txt = 'You can get the latest hdw.dat files from '
         txt = '{:s}https://github.com/vtsuperdarn/hdw.dat\n'.format(txt)
-        print txt
+        print(txt)
 
-        print 'Example, you might add a similar line to your .bashrc:'
-        print 'export SD_HDWPATH=/home/username/tables/hdw.dat/\n'
+        print('Example, you might add a similar line to your .bashrc:')
+        print('export SD_HDWPATH=/home/username/tables/hdw.dat/\n')
         return
 
     # Site placeholder
@@ -306,10 +306,10 @@ class updateRadars(object):
         import sys
         import os
 
-        # print self.db_user,self.db_pswd,self.db_host, self.db_name
+        # print(self.db_user,self.db_pswd,self.db_host, self.db_name)
         uri = 'mongodb://{0}:{1}@{2}/{3}'.format(self.db_user, self.db_pswd,
                                                  self.db_host, self.db_name)
-        # print uri
+        # print(uri)
         try:
             logging.debug('Trying to connect to hdw.dat mongodb')
             conn = MongoClient(uri)
@@ -372,7 +372,7 @@ class updateRadars(object):
             with lite.connect(fname) as conn:
                 pass
             return True
-        except lite.Error, e:
+        except lite.Error as e:
             logging.exception("sqlInit() Error %s: %s" % (e.args[0], fname))
             return False
 

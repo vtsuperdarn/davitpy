@@ -160,7 +160,7 @@ class radFreqBands(object):
                     if id_to_code[stid] == rad.lower():
                         self.stid = stid
                         break
-                    
+
         # Assign the frequency bands
         try:
             self.tbands = rad_band_num[self.rad_code]
@@ -187,7 +187,7 @@ class radFreqBands(object):
         Example
         --------
         In[1]: fb = davitpy.pydarn.radar.tdiff.rad_freqbands.radFreqBands(10)
-        In[2]: print fb
+        In[2]: print(fb)
         Radar transmission frequency bands:
             Code: han       ID: 10
             Number of frequency bands spanning 8.305-19.990 MHz: 15
@@ -252,7 +252,7 @@ class radFreqBands(object):
         for i,t in enumerate(self.tmins):
             if tfreq - t >= 0 and self.tmaxs[i] - tfreq >= 0:
                 return(t, self.tmaxs[i])
-        
+
         logging.warn("Unknown transmission freq [{:d} kHz]".format(tfreq))
         return(-1, -1)
 
@@ -271,7 +271,7 @@ class radFreqBands(object):
             Mean frequency in kHz, -1 if unavailable
         '''
         mean_freq = -1
-            
+
         #--------------------------------------------
         # Ensure that band information is available
         if len(self.tmins) > tband:
@@ -302,6 +302,6 @@ class radFreqBands(object):
         for i,t in enumerate(self.tmins):
             if t <= tfreq and tfreq <= self.tmaxs[i]:
                 return(self.tbands[i])
-        
+
         logging.warn("no band for frequency [{:} kHz]".format(tfreq))
         return(-1)

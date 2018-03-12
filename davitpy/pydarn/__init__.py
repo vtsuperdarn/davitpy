@@ -22,25 +22,25 @@ import logging
 
 try:
 	import dmapio
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing dmapio: ' + str(e))
 
 try:
 	import radar
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing radar: ' + str(e))
 
 try:
 	import sdio
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing sdio: ' + str(e))
 
 try:
 	import plotting
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing plotting: ' + str(e))
 
 try:
 	import proc
-except Exception, e:
+except Exception as e:
     logging.exception('problem importing proc: ' + str(e))

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """gmeBase module
@@ -60,7 +60,7 @@ class gmeData:
     """
     def parseDb(self,dbDict):
         """This method is used to parse a dictionary of gme data from the mongodb
-        into a :class:`gmeData` object.  
+        into a :class:`gmeData` object.
 
         Parameters
         ----------
@@ -95,11 +95,11 @@ class gmeData:
                     if(mod == .3): mod = '-'
                     elif(mod == .7): mod = '+'
                     else: mod = ''
-                    self.kp.append(num+mod) 
+                    self.kp.append(num+mod)
             else:
                 #assign the value to our object
                 try: setattr(self,attr,val)
-                except Exception,e:
+                except Exception as e:
                     logging.exception(e)
                     logging.exception('problem assigning ' + attr)
 
@@ -153,7 +153,7 @@ class gmeData:
             myStr += key+' = '+str(var)+'\n'
         return myStr
 
-    
+
     def __init__(self):
         self.time = None
         self.dataSet = None

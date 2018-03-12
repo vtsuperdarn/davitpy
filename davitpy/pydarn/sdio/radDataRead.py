@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -111,7 +111,7 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
         The local directory structure. Can include keywords to be replaced by
         dictionary keys in remote_dict. If None, the rcParam value
         DAVIT_LOCAL_DIRFORMAT will be used. (default=None)
-        Ex) local_dirfmt='/{year}/{month}' 
+        Ex) local_dirfmt='/{year}/{month}'
     local_fnamefmt : (str/list/NoneType)
         The local file naming format. Can include keywords to be replaced by
         dictionary keys in remote_dict. If None, the rcParam value
@@ -138,15 +138,15 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
     -------
     The evironment variables are python dictionary capable formatted strings
     appended encode radar name, channel, and/or date information. Currently
-    supported dictionary keys which can be used are: 
+    supported dictionary keys which can be used are:
 
     "date"    : datetime.datetime.strftime("%Y%m%d")
-    "year"    : 0 padded 4 digit year 
-    "month"   : 0 padded 2 digit month 
-    "day"     : 0 padded 2 digit day 
-    "hour"    : 0 padded 2 digit day 
+    "year"    : 0 padded 4 digit year
+    "month"   : 0 padded 2 digit month
+    "day"     : 0 padded 2 digit day
+    "hour"    : 0 padded 2 digit day
     "ftype"   : filetype string
-    "radar"   : 3-chr radarcode 
+    "radar"   : 3-chr radarcode
     "channel" : single character string, ex) 'a'
 
     Example
@@ -175,7 +175,7 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
                        tmpdir=tmpdir, remove=remove,
                        try_file_types=try_file_types)
     return myPtr
-  
+
 def radDataReadRec(my_ptr):
     """A function to read a single record of radar data from a
     :class:`pydarn.sdio.radDataTypes.radDataPtr` object
@@ -190,22 +190,22 @@ def radDataReadRec(my_ptr):
     my_beam : (pydarn.sdio.radDataTypes.beamData/NoneType)
         An object filled with the data we are after.  Will return None when
         finished reading.
-    
+
     Example
     ---------
     ::
-    
+
     import datetime as dt
     my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
                    eTime=dt.datetime(2011,1,1,2),channel=None,bmnum=7,cp=153,
                    fileType='fitex',filtered=False,src=None)
     my_beam = radDataReadRec(my_ptr)
-    
+
     Notes
     ------
     To use this, you must first create a
     :class:`pydarn.sdio.radDataTypes.radDataPtr` object with
-    :func:`radDataOpen` 
+    :func:`radDataOpen`
 
     Written by AJ 20130110
     """
@@ -215,11 +215,11 @@ def radDataReadRec(my_ptr):
       logging.error('input must be of type radDataPtr')
 
     return my_ptr.readRec()
-      
+
 def radDataReadScan(my_ptr):
     """A function to read a full scan of data from a
     :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
+
     Parameters
     -----------
     my_ptr : (pydarn.sdio.radDataTypes.radDataPtr)
@@ -235,7 +235,7 @@ def radDataReadScan(my_ptr):
     Example
     --------
     ::
-    
+
     import datetime as dt
     my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
                   eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
@@ -263,7 +263,7 @@ def radDataReadScan(my_ptr):
 def radDataCreateIndex(my_ptr):
     """A function to index radar data into dict from a
     :class:`pydarn.sdio.radDataTypes.radDataPtr` object
-  
+
     Parameters
     -----------
     my_ptr : (pydarn.sdio.radDataTypes.radDataPtr)
@@ -274,8 +274,8 @@ def radDataCreateIndex(my_ptr):
     my_index : (dict)
         A dictionary with keys recording the time of each bean in the specified
         pointer and the value corresponding to the location for that record
-        in the data file (byte offsets in the file). 
-    
+        in the data file (byte offsets in the file).
+
     Example
     ---------
     ::
@@ -285,7 +285,7 @@ def radDataCreateIndex(my_ptr):
                    eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
                    fileType='fitex',filtered=False, src=None)
     my_index = radDataCreateIndex(my_ptr)
-    
+
     Notes
     ------
     To use this, you must first create a
@@ -298,7 +298,7 @@ def radDataCreateIndex(my_ptr):
     assert isinstance(my_ptr, radDataPtr), \
       logging.error('input must be of type radDataPtr')
 
-    return my_ptr.createIndex() 
+    return my_ptr.createIndex()
 
 def radDataReadAll(my_ptr):
     """A function to read a large amount (to the end of the request) of radar
@@ -318,7 +318,7 @@ def radDataReadAll(my_ptr):
     Example
     -----------
     ::
-    
+
     import datetime as dt
     my_ptr = radDataOpen(dt.datetime(2011,1,1),'bks', \
              eTime=dt.datetime(2011,1,1,2),channel=None, bmnum=7,cp=153, \
@@ -333,7 +333,7 @@ def radDataReadAll(my_ptr):
     Written by AJ 20130606
     """
     from davitpy.pydarn.sdio import radDataPtr
-  
+
     # check input
     assert isinstance(my_ptr, radDataPtr), \
       logging.error('input must be of type radDataPtr')

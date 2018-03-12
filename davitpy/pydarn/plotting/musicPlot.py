@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -71,7 +71,7 @@ import logging
 figsize=(20,10)
 
 def daynight_terminator(date, lons):
-    """Calculates the latitude, Greenwich Hour Angle, and solar 
+    """Calculates the latitude, Greenwich Hour Angle, and solar
     declination from a given latitude and longitude.
 
     This routine is used by musicRTI for terminator calculations.
@@ -405,7 +405,7 @@ class musicFan(object):
         dataName = currentData.history[max(currentData.history.keys())] # Label the plot with the current level of data processing.
         if plot_title:
             if title is None:
-                axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT')) 
+                axis.set_title(metadata['name']+' - '+dataName+currentData.time[timeInx].strftime('\n%Y %b %d %H%M UT'))
             else:
                 axis.set_title(title)
 
@@ -525,7 +525,7 @@ class musicRTI(object):
         ylim                    = None,
         axis                    = None,
         scale                   = None,
-        plotZeros               = False, 
+        plotZeros               = False,
         max_sounding_time       = datetime.timedelta(minutes=4),
         xBoundaryLimits         = None,
         yBoundaryLimits         = None,
@@ -533,7 +533,7 @@ class musicRTI(object):
         ytick_lat_format        = '.0f',
         autoScale               = False,
         plotTerminator          = True,
-        axvlines                = None, 
+        axvlines                = None,
         axvline_color           = '0.25',
         secondary_coords        = 'lat',
         plot_info               = True,
@@ -674,7 +674,7 @@ class musicRTI(object):
 
         # Plot the terminator! #########################################################
         if plotTerminator:
-#            print 'Terminator functionality is disabled until further testing is completed.'
+#            print('Terminator functionality is disabled until further testing is completed.')
             term_verts = []
             term_scan  = []
 
@@ -738,13 +738,13 @@ class musicRTI(object):
                     if np.size(rg_inx) != 0:
                         if secondary_coords == 'range':
                             rang = currentData.fov.slantRCenter[beamInx,rg_inx]
-                            if np.isfinite(rang): 
+                            if np.isfinite(rang):
                                 txt.append('%d' % rang)
                             else:
                                 txt.append('')
                         else:
                             lat = currentData.fov.latCenter[beamInx,rg_inx]
-                            if np.isfinite(lat): 
+                            if np.isfinite(lat):
                                 txt.append((u'%'+ytick_lat_format+'$^o$') % lat)
                             else:
                                 txt.append('')
@@ -823,7 +823,7 @@ class musicRTI(object):
             axis.axhspan(yBoundaryLimits[1],ylim[1],color=gray,zorder=1)
             axis.axhline(y=yBoundaryLimits[0],color='g',ls='--',lw=2,zorder=150)
             axis.axhline(y=yBoundaryLimits[1],color='g',ls='--',lw=2,zorder=150)
-        
+
             for bnd_item in yBoundaryLimits:
                 if coords == 'gate':
                     txt = []
@@ -832,7 +832,7 @@ class musicRTI(object):
                     rg_inx = np.where(bnd_item == currentData.fov.gates)[0]
                     if np.size(rg_inx) != 0:
                         lat = currentData.fov.latCenter[beamInx,rg_inx]
-                        if np.isfinite(lat): 
+                        if np.isfinite(lat):
                             txt.append(u'%.1f$^o$' % lat)
                         else:
                             txt.append('')
@@ -866,7 +866,7 @@ class musicRTI(object):
         # Get axis position information.
         pos = list(axis.get_position().bounds)
 
-        # Plot frequency and noise information. ######################################## 
+        # Plot frequency and noise information. ########################################
         if hasattr(dataObject,'prm') and plot_info:
             # Adjust current plot position to fit in the freq and noise plots.
             super_plot_hgt  = 0.06
@@ -920,8 +920,8 @@ class musicRTI(object):
 
         cbar_info           = {}
         cbar_info['cmap']   = cmap
-        cbar_info['bounds'] = bounds 
-        cbar_info['norm']   = norm 
+        cbar_info['bounds'] = bounds
+        cbar_info['norm']   = norm
         cbar_info['label']  = cbarLabel
         cbar_info['ticks']  = cbar_ticks
         cbar_info['mappable']  = pcoll
@@ -971,7 +971,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     ctrLon      = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
 
     gs    = matplotlib.gridspec.GridSpec(3, 2,hspace=None)
-    axis  = fig.add_subplot(gs[0:2, 1]) 
+    axis  = fig.add_subplot(gs[0:2, 1])
     musicFan(dataObj,time=time,plotZeros=True,dataSet=dataSet,axis=axis,markCell=(ctrBeam,ctrGate))
 
     # Determine the color scale for plotting.
@@ -988,7 +988,7 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     latRange  = np.nanmax(currentData.fov.latCenter)  - np.nanmin(currentData.fov.latCenter)
     lonRange  = np.nanmax(currentData.fov.lonCenter)  - np.nanmin(currentData.fov.lonCenter)
 
-    axis  = fig.add_subplot(gs[0:2, 0]) 
+    axis  = fig.add_subplot(gs[0:2, 0])
 
     axis.set_axis_off()
     text = []
@@ -1005,13 +1005,13 @@ def plotRelativeRanges(dataObj,dataSet='active',time=None,fig=None):
     ylabel    = 'Gate'
     cbarLabel = 'Distance from Center [km]'
 
-    axis   = fig.add_subplot(gs[2,0]) 
+    axis   = fig.add_subplot(gs[2,0])
     data    = currentData.fov.relative_y
     title   = 'N-S Distance from Center'
     title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
     rangeBeamPlot(currentData,data,axis,title=title,xlabel=xlabel,ylabel=ylabel,scale=scale,cbarLabel=cbarLabel)
 
-    axis   = fig.add_subplot(gs[2,1]) 
+    axis   = fig.add_subplot(gs[2,1])
     data    = currentData.fov.relative_x
     title   = 'E-W Distance from Center'
     title   = '\n'.join([title,'(Beam: %i, Gate: %i)' % (ctrBeam, ctrGate)])
@@ -1278,7 +1278,7 @@ def spectrumMultiPlot(dataObj,dataSet='active',plotType='real_imag',plotBeam=Non
 
         if xlim is None:
             xlim = (np.min(xData1),np.max(xData1))
-      
+
     beams       = currentData.fov.beams
     gates       = currentData.fov.gates
 
@@ -1417,7 +1417,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
 
         mx  = np.nanmax(data)
         mn  = np.nanmin(data)
-       
+
         if np.logical_and(mx > 0,mn >= -0.001):
             ylim = (0,mx)
         elif np.logical_and(mn < 0, mx <= 0.001):
@@ -1441,7 +1441,7 @@ def multiPlot(xData1,yData1,beams,gates,yData1_title=None,plotBeam=None,plotGate
             axis.set_ylim(ylim)
 
             # Special handling for time axes.
-            if xlabel == 'UT': 
+            if xlabel == 'UT':
                 axis.xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
 
                 labels = axis.get_xticklabels()
@@ -1701,8 +1701,8 @@ def plotFullSpectrum(dataObj,dataSet='active',
         if (gg % modY) != 0: continue
         ylabels.append('%i' % currentData.fov.gates[gg])
         ypos.append(gg+0.5)
-        
-    ylabels.append('$\Sigma$PSD') 
+
+    ylabels.append('$\Sigma$PSD')
     ypos.append(nrGates+0.5)
     axis.set_yticks(ypos)
     axis.set_yticklabels(ylabels)
@@ -1839,7 +1839,7 @@ def plotDlm(dataObj,dataSet='active',fig=None):
         ticks.append(ll)
         txt = '%i\n%i' % (ll, currentData.fov.gates[x])
         labels.append(txt)
-      
+
     ticks.append(nrL)
     xlabels = copy.copy(labels)
     xlabels.append('l\ngate')
@@ -2083,7 +2083,7 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
         axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
         axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
 
-        # Add wavelength to x/y tick labels ############################################ 
+        # Add wavelength to x/y tick labels ############################################
         ticks     = axis.get_xticks()
         newLabels = []
         for x in xrange(len(ticks)):
@@ -2116,14 +2116,14 @@ def plotKarrDetected(dataObj,dataSet='active',fig=None,maxSignals=None,roiPlot=T
             newLabels.append(txt)
         axis.set_yticklabels(newLabels)
         axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center')
-        # End add wavelength to x/y tick labels ######################################## 
+        # End add wavelength to x/y tick labels ########################################
 
         if hasattr(currentData,'sigDetect'):
             pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
             tmpList = range(currentData.sigDetect.nrSigs)[::-1] # Force list to plot backwards so number 1 is on top!
             for signal in currentData.sigDetect.info:
                 if maxSignals is not None:
-                    if signal['order'] > maxSignals: continue 
+                    if signal['order'] > maxSignals: continue
                 xpos = currentData.kxVec[signal['maxpos'][0]]
                 ypos = currentData.kyVec[signal['maxpos'][1]]
                 txt  = '%i' % signal['order']
@@ -2249,7 +2249,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
     axis.set_xlim([np.min(currentData.kxVec),np.max(currentData.kxVec)])
     axis.set_ylim([np.min(currentData.kyVec),np.max(currentData.kyVec)])
 
-    # Add wavelength to x/y tick labels ############################################ 
+    # Add wavelength to x/y tick labels ############################################
     ticks     = axis.get_xticks()
     newLabels = []
     for x in xrange(len(ticks)):
@@ -2283,7 +2283,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
         newLabels.append(txt)
     axis.set_yticklabels(newLabels,rotation=90.)
     axis.set_ylabel(u'ky [rad]\n$\lambda$ [km]',va='center',labelpad=y_labelpad)
-    # End add wavelength to x/y tick labels ######################################## 
+    # End add wavelength to x/y tick labels ########################################
 
     md = currentData.metadata
 
@@ -2296,7 +2296,7 @@ def plotKarrAxis(dataObj,dataSet='active',axis=None,maxSignals=None, sig_fontsiz
         pe = [PathEffects.withStroke(linewidth=3,foreground='w')]
         for signal in currentData.sigDetect.info:
             if maxSignals is not None:
-                if signal['order'] > maxSignals: continue 
+                if signal['order'] > maxSignals: continue
             xpos = currentData.kxVec[signal['maxpos'][0]]
             ypos = currentData.kyVec[signal['maxpos'][1]]
             txt  = '%i' % signal['order']

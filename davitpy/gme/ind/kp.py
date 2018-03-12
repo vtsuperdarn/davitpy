@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Kp module
-   
+
 A module for reading, writing, and storing kp Data
 
 Classes
@@ -41,9 +41,9 @@ class kpDay(gmeData):
     """a class to represent a day of kp data. Extends class gme.base.gmeBase.gmeData.
     Insight on the class members can be obtained from the NOAA FTP site:
     ftp://ftp.ngdc.noaa.gov/STP/GEOMAGNETIC_DATA/INDICES/KP_AP/kp_ap.fmt
-    
+
     Parameters
-    ---------- 
+    ----------
     ftpLine : Optional[str]
         an ASCII line from the FTP server, must be provided in conjunction with
         year.  if this is provided, the object is initialized from it.  default=None
@@ -76,7 +76,7 @@ class kpDay(gmeData):
     Notes
     -----
     If any of the members have a value of None, this means that they could not be read for that specific date
-   
+
     Methods
     -------
     parseDb
@@ -90,7 +90,7 @@ class kpDay(gmeData):
     or
 
         myKpDayObj = kpDay(ftpLine=aftpLine,year=2009)
-        
+
     written by AJ, 20130123
 
     """
@@ -98,7 +98,7 @@ class kpDay(gmeData):
         """This method is used to convert a line of kp data read from the GFZ-Potsdam
         FTP site into a :class:`kpDay` object.  In general, users will not need
         to worry about this.
-        
+
         Parameters
         ----------
         line : str
@@ -114,16 +114,16 @@ class kpDay(gmeData):
         Notes
         -----
         Belongs to class gme.ind.kp.kpDay
-        
+
         Example
         -------
             myKpDayObj.parseFtp(ftpLine,2009)
-            
+
         written by AJ, 20130123
 
         """
         import datetime as dt
-        
+
         self.time = dt.datetime(yr,int(line[2:4]),int(line[4:6]))
         for i in range(8):
             #store the kp vals
@@ -143,10 +143,10 @@ class kpDay(gmeData):
         try: self.sunspot = int(line[62:65])
         except: logging.exception('problem assigning sunspot')
 
-        
+
     def __init__(self, ftpLine=None, year=None, dbDict=None):
         """the intialization fucntion for a :class:`gme.ind.kp.kpDay` object.  In general, users will not need to worry about this.
-            
+
         written by AJ, 20130123
 
         """
@@ -159,9 +159,9 @@ class kpDay(gmeData):
         self.kpSum = None
         self.apMean = None
         self.sunspot = None
-        
+
         if(ftpLine != None and year != None): self.parseFtp(ftpLine,year)
-        
+
         if(dbDict != None): self.parseDb(dbDict)
 
 
@@ -172,12 +172,12 @@ class kpDay(gmeData):
             myStr += key+' = '+str(var)+'\n'
         return myStr
 
-        
+
 def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,sunspot=None):
     """This function reads kp data.  First, it will try to get it from the mongodb,
-    and if it can't find it, it will look on the GFZ ftp server using 
+    and if it can't find it, it will look on the GFZ ftp server using
     gme.ind.kp.readKpFtp
-    
+
     Parameters
     ----------
     sTime : Optional[datetime]
@@ -216,13 +216,13 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
     -------
         import datetime as dt
         kpList = gme.ind.readKp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),kpMin=2,apMin=1,kpSum=[0,10],apMean=[0,50],sunspot=[6,100])
-        
+
     written by AJ, 20130123
 
     """
     import datetime as dt
     import davitpy.pydarn.sdio.dbUtils as db
-    
+
     #check all the inputs for validity
     assert(sTime == None or isinstance(sTime,dt.datetime)), \
         logging.error('sTime must be either None or a datetime object')
@@ -241,7 +241,7 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
     assert(sunspot == None or (isinstance(sunspot,list) and len(sunspot) == 2and \
         isinstance(sunspot[0], int) and isinstance(sunspot[1], int))), \
         logging.error('sunspot must be either None or a 2 element list')
-    
+
     qryList = []
     #if arguments are provided, query for those
     if(sTime != None): qryList.append({'time':{'$gte':sTime}})
@@ -254,13 +254,13 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
     if(apMean != None): qryList.append({'apMean':{'$lte':max(apMean)}})
     if(sunspot != None): qryList.append({'sunspot':{'$gte':min(sunspot)}})
     if(sunspot != None): qryList.append({'sunspot':{'$lte':max(sunspot)}})
-    
+
     #construct the final query definition
     qryDict = {'$and': qryList}
-    
+
     #connect to the database
     kpData = db.getDataConn(dbName='gme',collName='kp')
-    
+
     #do the query
     if(qryList != []): qry = kpData.find(qryDict)
     else: qry = kpData.find()
@@ -274,11 +274,11 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
     else:
         logging.warning('\ncould not find requested data in the mongodb')
         logging.warning('we will look on the ftp server, but your conditions will be (mostly) ignored')
-        
+
         if(sTime == None):
             logging.info('start time for search set to 1980...')
             sTime = dt.datetime(1980,1,1)
-        
+
         kpList = []
         if(eTime == None): eTime = dt.now()
         for yr in range(sTime.year,eTime.year+1):
@@ -286,18 +286,18 @@ def readKp(sTime=None,eTime=None,kpMin=None,apMin=None,kpSum=None,apMean=None,su
             if(tmpList == None): continue
             for x in tmpList:
                 kpList.append(x)
-                
+
         if(kpList != []):
             logging.info('\nreturning a list with ' + str(len(kpList)) + ' days of kp data')
             return kpList
         else:
             logging.info('\n no data found on FTP server, returning None...')
             return None
-    
+
 def readKpFtp(sTime, eTime=None):
     """This function reads kp data from the GFZ Potsdam FTP server via anonymous
     FTP connection.  This cannot read across year boundaries.
-    
+
     Parameters
     ----------
     sTime : datetime
@@ -321,13 +321,13 @@ def readKpFtp(sTime, eTime=None):
     -------
         import datetime as dt
         kpList = gme.ind.readKpFtp(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1))
-            
+
     written by AJ, 20130123
 
     """
     from ftplib import FTP
     import datetime as dt
-    
+
     sTime.replace(hour=0,minute=0,second=0,microsecond=0)
     if(eTime == None): eTime=sTime
     assert(eTime >= sTime), logging.error('end time greater than start time')
@@ -337,50 +337,50 @@ def readKpFtp(sTime, eTime=None):
         eTime = dt.datetime(sTime.year,12,31)
         logging.warning('eTime = ' + eTime)
     eTime.replace(hour=0,minute=0,second=0,microsecond=0)
-    
+
     #connect to the server
     try: ftp = FTP('ftp.gfz-potsdam.de')
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem connecting to GFZ-Potsdam server')
-        
+
     #login as anonymous
     try: l=ftp.login()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem logging in to GFZ-potsdam server')
-    
+
     #go to the kp directory
     try: ftp.cwd('/pub/home/obs/kp-ap/wdc')
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('error getting to data directory')
-    
+
     #list to hold the lines
     lines = []
     #get the data
     logging.debug('RETR kp' + str(sTime.year) + '.wdc')
     try:    ftp.retrlines('RETR kp'+str(sTime.year)+'.wdc',lines.append)
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('couldnt retrieve kp file')
-    
+
     #convert the ascii lines into a list of kpDay objects
     myKp = []
     if(len(lines) > 0):
         for l in lines:
             if(sTime <= dt.datetime(sTime.year,int(l[2:4]),int(l[4:6])) <= eTime):
                 myKp.append(kpDay(ftpLine=l,year=sTime.year))
-            
+
         return myKp
     else:
         return None
 
-    
+
 def mapKpMongo(sYear,eYear=None):
     """This function reads kp data from the GFZ Potsdam FTP server via anonymous FTP
-    connection and maps it to the mongodb.  
-    
+    connection and maps it to the mongodb.
+
     Parameters
     ----------
     sYear : int
@@ -396,24 +396,24 @@ def mapKpMongo(sYear,eYear=None):
     Notes
     -----
     In general, nobody except the database admins will need to use this function
-    
+
     Example
     -------
         gme.ind.mapKpMongo(1985,eTime=1986)
-        
+
     written by AJ, 20130123
 
     """
     import davitpy.pydarn.sdio.dbUtils as db
     from davitpy import rcParams
     import datetime as dt
-    
+
     if(eYear == None): eYear=sYear
     assert(eYear >= sYear), logging.error('end year greater than start year')
-    
+
     mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
                                 dbAddress=rcParams['SDDB'],dbName='gme',collName='kp')
-    
+
     #set up all of the indices
     mongoData.ensure_index('time')
     mongoData.ensure_index('kp')
@@ -421,7 +421,7 @@ def mapKpMongo(sYear,eYear=None):
     mongoData.ensure_index('kpSum')
     mongoData.ensure_index('apMean')
     mongoData.ensure_index('sunspot')
-    
+
     #read the kp data from the FTP server
     datalist = []
     for yr in range(sYear,eYear+1):

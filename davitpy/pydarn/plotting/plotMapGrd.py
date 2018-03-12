@@ -218,7 +218,7 @@ class MapConv(object):
         Parameters
         ------------
         sd_type : (str)
-            Plot 'map' or 'grd' times? 
+            Plot 'map' or 'grd' times?
         label_style : (str)
             Set colorbar label style.  'web'=[m/s]; 'agu'=[$m s^{-1}$]
             (default='web')
@@ -550,8 +550,8 @@ class MapConv(object):
             if hemisphere == -1:
                 vel_azm[vel_chk_zero_inds] = np.rad2deg(np.arctan2(vel_fit_vecs[1,vel_chk_zero_inds], vel_fit_vecs[0,vel_chk_zero_inds]))
             else:
-                vel_azm[vel_chk_zero_inds] = np.rad2deg(np.arctan2(vel_fit_vecs[1,vel_chk_zero_inds], -vel_fit_vecs[0,vel_chk_zero_inds]))            
-                        
+                vel_azm[vel_chk_zero_inds] = np.rad2deg(np.arctan2(vel_fit_vecs[1,vel_chk_zero_inds], -vel_fit_vecs[0,vel_chk_zero_inds]))
+
         return mlats_plot, mlons_plot, vel_mag, vel_azm
 
     def calcCnvPots(self, plot_lat_min=30):
@@ -573,7 +573,7 @@ class MapConv(object):
             Array of potentials
 
         Note
-        ----        
+        ----
         Belongs to class MapConv
 
         Example
@@ -590,9 +590,9 @@ class MapConv(object):
         mlats_plot = self.mapData.grid.vector.mlat
         mlons_plot = self.mapData.grid.vector.mlon
 
-        # Alright we have the parameters but we need to 
+        # Alright we have the parameters but we need to
         # calculate the coeffs for efield and then calc efield and Fitted Vels.
-        
+
         # Some important parameters from fitting.
         coeff_fit = np.array([self.mapData.Np2])
         order_fit = self.mapData.fitorder
@@ -617,7 +617,7 @@ class MapConv(object):
         counter1 = 0
         for lo in zon_arr :
             for la in zat_arr :
-                grid_arr[0, counter1] = la 
+                grid_arr[0, counter1] = la
                 grid_arr[1, counter1] = lo
                 counter1 = counter1 + 1
 
@@ -638,7 +638,7 @@ class MapConv(object):
         # a new array
         for j,xj in enumerate(x):
             plm_temp = scipy.special.lpmn(order_fit, order_fit, xj)
-            
+
             if j == 0:
                 plm_fit = np.append([plm_temp[0]], [plm_temp[0]], axis=0)
             else:
@@ -673,7 +673,7 @@ class MapConv(object):
         pot_arr = np.reshape(v, pot_arr.shape) / 1000.0
 
         # lat_shft_fit and lon_shft_fit are almost always zero
-        # but in case they are not... we print out a message...
+        # but in case they are not... we print(out a message...)
         # you need an extra bit of code to account for the lat shift
         if lat_shft_fit == 0.0:
             q = np.array(np.where(np.abs(zat_arr) <= np.abs(lat_min_fit)))
@@ -763,7 +763,7 @@ class MapConv(object):
         assert self.mapData is not None, logging.error("no map data available")
         assert self.mObj is not None, logging.error("no map available")
 
-        x_vec_hmb, y_vec_hmb = self.mObj(self.mapData.model.boundarymlon, 
+        x_vec_hmb, y_vec_hmb = self.mObj(self.mapData.model.boundarymlon,
                                          self.mapData.model.boundarymlat,
                                          coords='mag')
         grd_plt_hmb = self.mObj.plot(x_vec_hmb, y_vec_hmb, linewidth=2.0,
@@ -869,7 +869,7 @@ class MapConv(object):
                          annotateTime=True, colorBarLabelSize=15.0,
                          colMap=cm.jet, label_style="web"):
         """Overlay fitted velocity vectors from the map data
-        
+
         Parameters
         ----------
         plotColBar : (bool)
@@ -927,7 +927,7 @@ class MapConv(object):
                                np.cos(np.deg2rad(nn_mlats)) * np.sin(vec_len) *
                                np.cos(np.deg2rad(vel_azm[nn])))
             end_lat = np.degrees(end_lat)
-            
+
             del_lon = np.arctan2(np.sin(np.deg2rad(vel_azm[nn])) *
                                  np.sin(vec_len) * np.cos(np.deg2rad(nn_mlats)),
                                  np.cos(vec_len) - np.sin(np.deg2rad(nn_mlats))
@@ -939,17 +939,17 @@ class MapConv(object):
                                            coords='mag')
             x_vec_end, y_vec_end = self.mObj(end_lon, end_lat, coords='mag')
 
-            self.mapFitPltStrt.append(self.mObj.scatter(x_vec_strt, y_vec_strt, 
+            self.mapFitPltStrt.append(self.mObj.scatter(x_vec_strt, y_vec_strt,
                                                         c=vel_mag[nn], s=10.0,
                                                         vmin=self.min_vel,
-                                                        vmax=self.maxVelPlot, 
+                                                        vmax=self.maxVelPlot,
                                                         alpha=0.7, cmap=colMap,
                                                         zorder=5.0,
                                                         edgecolor='none'))
 
             map_color = colMap(norm(vel_mag[nn]))
             self.mapFitPltVec.append(self.mObj.plot([x_vec_strt, x_vec_end],
-                                                    [y_vec_strt, y_vec_end], 
+                                                    [y_vec_strt, y_vec_end],
                                                     color=map_color))
 
         # Check and overlay colorbar

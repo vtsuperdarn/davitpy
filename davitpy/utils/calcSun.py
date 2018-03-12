@@ -180,7 +180,7 @@ def calcSunDeclination( t ):
 
 
 def calcEquationOfTime( t ):
-    """Calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)  
+    """Calculate the difference between true solar time and mean solar time (output: equation of time in minutes of time)
     """
     epsilon = calcObliquityCorrection(t)
     l0 = calcGeomMeanLongSun(t)
@@ -223,52 +223,52 @@ def calcAzEl( t, localtime, latitude, longitude, zone ):
         trueSolarTime -= 1440.
 
     hourAngle = trueSolarTime / 4.0 - 180.0
-    if hourAngle < -180.: 
+    if hourAngle < -180.:
         hourAngle += 360.0
 
     haRad = numpy.radians(hourAngle)
     csz = numpy.sin(numpy.radians(latitude)) * numpy.sin(numpy.radians(theta)) + numpy.cos(numpy.radians(latitude)) * numpy.cos(numpy.radians(theta)) * numpy.cos(haRad)
-    if csz > 1.0: 
-        csz = 1.0 
-    elif csz < -1.0: 
+    if csz > 1.0:
+        csz = 1.0
+    elif csz < -1.0:
         csz = -1.0
     zenith = numpy.degrees(numpy.arccos(csz))
     azDenom = numpy.cos(numpy.radians(latitude)) * numpy.sin(numpy.radians(zenith))
-    if abs(azDenom) > 0.001: 
+    if abs(azDenom) > 0.001:
         azRad = (( numpy.sin(numpy.radians(latitude)) * numpy.cos(numpy.radians(zenith)) ) - numpy.sin(numpy.radians(theta))) / azDenom
-        if abs(azRad) > 1.0: 
-            if azRad < 0.: 
-                azRad = -1.0 
+        if abs(azRad) > 1.0:
+            if azRad < 0.:
+                azRad = -1.0
             else:
                 azRad = 1.0
-        
+
         azimuth = 180.0 - numpy.degrees(numpy.arccos(azRad))
-        if hourAngle > 0.0: 
+        if hourAngle > 0.0:
             azimuth = -azimuth
     else:
-        if latitude > 0.0: 
-            azimuth = 180.0 
+        if latitude > 0.0:
+            azimuth = 180.0
         else:
             azimuth = 0.0
-    if azimuth < 0.0: 
+    if azimuth < 0.0:
         azimuth += 360.0
     exoatmElevation = 90.0 - zenith
 
     # Atmospheric Refraction correction
-    if exoatmElevation > 85.0: 
+    if exoatmElevation > 85.0:
         refractionCorrection = 0.0
     else:
         te = numpy.tan(numpy.radians(exoatmElevation))
-        if exoatmElevation > 5.0: 
-            refractionCorrection = 58.1 / te - 0.07 / (te*te*te) + 0.000086 / (te*te*te*te*te) 
-        elif exoatmElevation > -0.575: 
-            refractionCorrection = 1735.0 + exoatmElevation * (-518.2 + exoatmElevation * (103.4 + exoatmElevation * (-12.79 + exoatmElevation * 0.711) ) ) 
+        if exoatmElevation > 5.0:
+            refractionCorrection = 58.1 / te - 0.07 / (te*te*te) + 0.000086 / (te*te*te*te*te)
+        elif exoatmElevation > -0.575:
+            refractionCorrection = 1735.0 + exoatmElevation * (-518.2 + exoatmElevation * (103.4 + exoatmElevation * (-12.79 + exoatmElevation * 0.711) ) )
         else:
             refractionCorrection = -20.774 / te
         refractionCorrection = refractionCorrection / 3600.0
 
     solarZen = zenith - refractionCorrection
-    
+
     return azimuth, solarZen
 
 
@@ -287,7 +287,7 @@ def calcSolNoon( jd, longitude, timezone, dst ):
     timeUTC    = calcSolNoonUTC(jd, longitude)
     newTimeUTC = calcSolNoonUTC(jd + timeUTC/1440.0, longitude)
     solNoonLocal = newTimeUTC + (timezone*60.0) # in minutes
-    if dst: 
+    if dst:
         solNoonLocal += 60.0
     return solNoonLocal
 
@@ -317,7 +317,7 @@ def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
     rnewTimeUTC, snewTimeUTC = calcSunRiseSetUTC(jd + rtimeUTC/1440.0, latitude, longitude)
     rtimeLocal = rnewTimeUTC + (timezone * 60.0)
     rtimeLocal += 60.0 if dst else 0.0
-    if rtimeLocal < 0.0 or rtimeLocal >= 1440.0: 
+    if rtimeLocal < 0.0 or rtimeLocal >= 1440.0:
         jday = jd
         increment = 1. if rtimeLocal < 0. else -1.
         while rtimeLocal < 0.0 or rtimeLocal >= 1440.0:
@@ -327,7 +327,7 @@ def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
     rnewTimeUTC, snewTimeUTC = calcSunRiseSetUTC(jd + stimeUTC/1440.0, latitude, longitude)
     stimeLocal = snewTimeUTC + (timezone * 60.0)
     stimeLocal += 60.0 if dst else 0.0
-    if stimeLocal < 0.0 or stimeLocal >= 1440.0: 
+    if stimeLocal < 0.0 or stimeLocal >= 1440.0:
         jday = jd
         increment = 1. if stimeLocal < 0. else -1.
         while stimeLocal < 0.0 or stimeLocal >= 1440.0:
@@ -338,7 +338,7 @@ def calcSunRiseSet( jd, latitude, longitude, timezone, dst ):
 
 
 def calcTerminator( date, latitudes, longitudes,nlats=50,nlons=50 ):
-    """Calculate terminator position and solar zenith angle for a given julian date-time 
+    """Calculate terminator position and solar zenith angle for a given julian date-time
     within latitude/longitude limits Note that for plotting only, basemap has a built-in terminator
     """
     jd = getJD(date)
@@ -350,11 +350,11 @@ def calcTerminator( date, latitudes, longitudes,nlats=50,nlons=50 ):
     term = []
     for ilat in range(1,nlats+1):
         for ilon in range(nlons):
-            az,el = calcAzEl(t, ut, lats[-ilat], lons[ilon], 0.) 
+            az,el = calcAzEl(t, ut, lats[-ilat], lons[ilon], 0.)
             zen[-ilat,ilon] = el
         a = (90 - zen[-ilat,:])
         mins = numpy.r_[False, a[1:]*a[:-1] <= 0] | \
-            numpy.r_[a[1:]*a[:-1] <= 0, False] 
+            numpy.r_[a[1:]*a[:-1] <= 0, False]
         zmin = mins & numpy.r_[False, a[1:] < a[:-1]]
         if True in zmin:
             ll = numpy.interp(0, a[zmin][-1::-1], lons[zmin][-1::-1])
@@ -371,8 +371,8 @@ def getJD(date):
     """
 
     from dateutil.relativedelta import relativedelta
-    
-    if date.month < 2: 
+
+    if date.month < 2:
         date.replace(year=date.year-1)
         date += relativedelta(month=12)
 

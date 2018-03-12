@@ -474,7 +474,7 @@ class fov(object):
 def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
                  adjusted_sr=True, elevation=None, altitude=None, hop=None,
                  model=None, coords='geo', gs_loc="G", max_vh=400.0,
-                 fov_dir='front', eval_loc=False):
+                 fov_dir='front'):
     """Calculate coordinates of field point given the radar coordinates and
     boresight, the pointing direction deviation from boresight and elevation
     angle, and the field point slant range and altitude. Either the elevation
@@ -522,13 +522,8 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
         location 'I' for groundscatter (default='G')
     max_vh : (float)
         Maximum height for longer slant ranges in Standard model (default=400)
-    fov_dir : (str)
+    fov_dir
         'front' (default) or 'back'.  Specifies fov direction
-    eval_loc : (bool)
-        Evaluate the calcualted location based on reasonable tolerances (True)
-        or accept the first calculation (False).  Using True gives better
-        locations, but restricts data at the furthest range gates.
-        (default=False)
 
     Returns
     ---------
@@ -665,7 +660,7 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
 
             # stop if the altitude is what we want it to be (or close enough)
             new_hdel = abs(xalt - geo_dict['distAlt'])
-            if new_hdel <= htol or not eval_loc:
+            if new_hdel <= htol:
                 break
 
             # stop unsuccessfully if the altitude difference hasn't improved
@@ -846,36 +841,36 @@ if __name__ == "__main__":
     from datetime import datetime
 
     print
-    print "Testing radFov"
-    print "Expected and result samples are from the fov's"
-    print "fov.latCenter[0][0:4] and fov.lonCenter[0][0:4]"
-    print "(in that order) on a 32-bit machine"
+    print("Testing radFov")
+    print("Expected and result samples are from the fov's")
+    print("fov.latCenter[0][0:4] and fov.lonCenter[0][0:4]")
+    print("(in that order) on a 32-bit machine")
     print
     time = datetime(2012, 1, 1, 0, 2)
-    print "Create a site object for Saskatoon, 2012-01-01 00:02 UT."
+    print("Create a site object for Saskatoon, 2012-01-01 00:02 UT.")
     site_sas = radStruct.site(code="sas", dt=time)
     print
-    print "Create a fov object using that site, coords are geo, model Chisham."
+    print("Create a fov object using that site, coords are geo, model Chisham.")
     fov1 = fov(site=site_sas, model="C")
-#    print "Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]"
-#    print "Result:   " + str(fov1.latCenter[0][0:4])
-#    print "Expected: [-106.87506589 -106.80488558 -106.77349475 "
-#    print "-106.75811049]"
-#    print "Result:   " + str(fov1.lonCenter[0][0:4])
-#    print "coords of result are " + fov1.coords
+#    print("Expected: [ 53.20468706  53.7250585   54.18927222  54.63064699]")
+#    print("Result:   " + str(fov1.latCenter[0][0:4]))
+#    print("Expected: [-106.87506589 -106.80488558 -106.77349475 ")
+#    print("-106.75811049]")
+#    print("Result:   " + str(fov1.lonCenter[0][0:4]))
+#    print("coords of result are " + fov1.coords)
     print
-    print "Now create a fov object with mag coords."
+    print("Now create a fov object with mag coords.")
     fov2 = fov(site=site_sas, coords="mag", date_time=time)
-    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
-    print "Result:   " + str(fov2.latCenter[0][0:4])
-    print "Expected: [-43.22579758 -43.25962883 -43.33474048 -43.42848079]"
-    print "Result:   " + str(fov2.lonCenter[0][0:4])
-    print "coords of result are " + fov2.coords
+    print("Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]")
+    print("Result:   " + str(fov2.latCenter[0][0:4]))
+    print("Expected: [-43.22579758 -43.25962883 -43.33474048 -43.42848079]")
+    print("Result:   " + str(fov2.lonCenter[0][0:4]))
+    print("coords of result are " + fov2.coords)
     print
-    print "Another fov, now in MLT."
+    print("Another fov, now in MLT.")
     fov3 = fov(site=site_sas, coords="mlt", date_time=time)
-    print "Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]"
-    print "Result:   " + str(fov3.latCenter[0][0:4])
-    print "Expected: [-121.24209635 -121.27592761 -121.35103925 -121.44477957]"
-    print "Result:   " + str(fov3.lonCenter[0][0:4])
-    print "coords of result are " + fov3.coords
+    print("Expected: [ 61.55506679  62.08849503  62.55831358  63.00180636]")
+    print("Result:   " + str(fov3.latCenter[0][0:4]))
+    print("Expected: [-121.24209635 -121.27592761 -121.35103925 -121.44477957]")
+    print("Result:   " + str(fov3.lonCenter[0][0:4]))
+    print("coords of result are " + fov3.coords)

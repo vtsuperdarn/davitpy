@@ -16,5 +16,5 @@ mho     Millstone Hill Observatory data
 import logging
 
 try: from mho import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__+' -> gme.isr.mho: ' + str(e))

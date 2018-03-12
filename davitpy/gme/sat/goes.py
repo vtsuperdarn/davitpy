@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2014  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -62,11 +62,11 @@ def read_goes(sTime,eTime=None,sat_nr=15):
     (0.5-4.0 A and 1.0-8.0 A).
 
     NOAA NetCDF files are cached in rcParams['DAVIT_TMPDIR']
-    
+
     Example
     -------
         goes_data = read_goes(datetime.datetime(2014,6,21))
-      
+
     written by N.A. Frissell, 6 Sept 2014
 
     """
@@ -113,7 +113,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
 
     data_dir    = rcParams['DAVIT_TMPDIR']
     if data_dir.endswith('/'): data_dir = data_dir[:-1]
-    
+
     try:
         os.makedirs(data_dir)
     except:
@@ -174,7 +174,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         data    = {}
         for var in orbit_vars:
             data[var] = nc.variables[var][:]
-        
+
         df_tmp = pd.DataFrame(data,index=jd)
         if df_orbit is None:
             df_orbit = df_tmp
@@ -189,7 +189,7 @@ def read_goes(sTime,eTime=None,sat_nr=15):
         data = {}
         for var in myVars:
             data[var] = nc.variables[var][:]
-        
+
         df_tmp = pd.DataFrame(data,index=jd)
         if df_xray is None:
             df_xray = df_tmp
@@ -301,7 +301,7 @@ def goes_plot(goes_data,sTime=None,eTime=None,ymin=1e-9,ymax=1e-2,legendSize=10,
     ax.grid()
     ax.legend(prop={'size':legendSize},numpoints=1,loc=legendLoc)
 
-    file_keys = goes_data['metadata'].keys() 
+    file_keys = goes_data['metadata'].keys()
     file_keys.remove('variables')
     file_keys.sort()
     md      = goes_data['metadata'][file_keys[-1]]
@@ -333,7 +333,7 @@ def __split_sci(value):
 
 def classify_flare(value):
     """Convert GOES X-Ray flux into a string flare classification.
-    You should use the 1-8 Angstrom band for classification [1] 
+    You should use the 1-8 Angstrom band for classification [1]
     (B_AVG in the NOAA data files).
 
     A 0.001 W/m**2 measurement in the 1-8 Angstrom band is classified as an X10 flare..
@@ -381,7 +381,7 @@ def classify_flare(value):
 
 
 def flare_value(flare_class):
-    """Convert a string solar flare class [1] into the lower bound in W/m**2 of the 
+    """Convert a string solar flare class [1] into the lower bound in W/m**2 of the
     1-8 Angstrom X-Ray Band for the GOES Spacecraft.
 
     An 'X10' flare = 0.001 W/m**2.
@@ -409,7 +409,7 @@ def flare_value(flare_class):
     Written by Nathaniel Frissell 2014 Sept 07
 
     """
-    flare_dict  = {'A':-8, 'B':-7, 'C':-6, 'M':-5, 'X':-4} 
+    flare_dict  = {'A':-8, 'B':-7, 'C':-6, 'M':-5, 'X':-4}
     letter      = flare_class[0]
     power       = flare_dict[letter.upper()]
     coef        = float(flare_class[1:])
@@ -429,7 +429,7 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
         GOES data dict created by read_goes()
     window_minutes : Optional[int]
         Window size to look for peaks in minutes.
-        I.E., if window_minutes=60, then no more than 1 flare will be found 
+        I.E., if window_minutes=60, then no more than 1 flare will be found
         inside of a 60 minute window.
     min_class : Optional[str]
         Only flares >= to this class will be reported. Use a
@@ -494,7 +494,7 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
             keys.append(arg_max)
         except:
             pass
-        
+
     df_win      = pd.DataFrame({'B_AVG':b_avg[keys]})
     df_win.index = pd.to_datetime(df_win.index)
 
@@ -534,37 +534,37 @@ if __name__ == '__main__':
     import numpy as np
 
     # Flare Classification Test ####################################################
-    print ''
-    print 'Flare classification test.'
+    print('')
+    print('Flare classification test.')
     flares = ['A5.5', 'B4.0', 'X11.1']
     values = [5.5e-8, 4.0e-7, 11.1e-4]
 
     test_results = []
     for flare,value in zip(flares,values):
-        print '  Testing classify_flare() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value)
+        print('  Testing classify_flare() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value))
 
         test_flare = classify_flare(value)
-        print '    classify_flare({0:.1e}) = {1}'.format(value,test_flare)
+        print('    classify_flare({0:.1e}) = {1}'.format(value,test_flare))
         test_results.append(flare == test_flare)
 
     if np.all(test_results):
-        print 'CONGRATULATIONS: Test passed for classify_flare()!'
+        print('CONGRATULATIONS: Test passed for classify_flare()!')
     else:
-        print 'WARNING: classify_flare() failed self-test.'
+        print('WARNING: classify_flare() failed self-test.')
 
-    print ''
+    print('')
     test_results = []
     for flare,value in zip(flares,values):
-        print '  Testing flare_value() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value)
+        print('  Testing flare_value() with {0} ({1:.1e} W/m**2) flare...'.format(flare,value))
         test_value = flare_value(flare)
-        print '    flare_value({0}) = {1:.1e}'.format(test_flare,value)
+        print('    flare_value({0}) = {1:.1e}'.format(test_flare,value))
         test_results.append(value == test_value)
 
     if np.all(test_results):
-        print 'CONGRATULATIONS: Test passed for flare_value()!'
+        print('CONGRATULATIONS: Test passed for flare_value()!')
     else:
-        print 'WARNING: flare_value() failed self-test.'
-    print ''
+        print('WARNING: flare_value() failed self-test.')
+    print('')
 
     # Flare finding and plotting test. #############################################
     sTime       = datetime.datetime(2014,1,1)
@@ -602,7 +602,7 @@ if __name__ == '__main__':
         fig.clf()
 
     flares_str = """
-Thank you for testing the goes.py module.  If everything worked, you should find a 
+Thank you for testing the goes.py module.  If everything worked, you should find a
 set of plots for all x-class flares from 1Jan2014 - 30Jun2014 in your DAVIT_TMPDIR/goes.
 A list of the flares is given below.  This should match the flares.txt file in the same
 directory as your plots.
@@ -617,5 +617,5 @@ directory as your plots.
 2014-06-11 09:06:00  0.000100  X1.0
 """
 
-    print flares_str
-    print 'Your DAVIT_TMPDIR/goes: {0}'.format(output_dir)
+    print(flares_str)
+    print('Your DAVIT_TMPDIR/goes: {0}'.format(output_dir))

@@ -15,5 +15,5 @@ import logging
 
 try:
     from igrf import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> igrf: ' + str(e))

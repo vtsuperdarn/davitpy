@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -88,7 +88,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     lagfr = myBeam.prm.lagfr
 
     # If an axis object is provided, but the sequence number is not,
-    # set sequences so that the first sequence is plotted to the axis 
+    # set sequences so that the first sequence is plotted to the axis
     # object
     if user_ax is not None:
         if sequences is None:
@@ -113,7 +113,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     blanked_samples=[]
     for tx in tx_times:
         blanked_samples.extend([tx])
-  
+
     # Start plotting
     if user_ax is None:
         fig = pyplot.figure(figsize=(11,8.5))
@@ -128,10 +128,10 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
     # plot the iq data for each of the requested pulse sequences
     for s,seq in enumerate(sequences):
 
-        # calculate the positions of the data axis and colorbar axis 
+        # calculate the positions of the data axis and colorbar axis
         # for the current parameter and then add them to the figure
         pos = [.1,figtop-figheight*(s+1)+.05,.8,figheight]#-.04]
-        # cpos = [.86,figtop-figheight*(p+1)+.05,.03,figheight-.04]    
+        # cpos = [.86,figtop-figheight*(p+1)+.05,.03,figheight-.04]
         if user_ax is None:
             ax = fig.add_axes(pos)
         else:
@@ -183,18 +183,18 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
             ax.set_xlim([0,smpnum])
             ax.set_ylim([-np.pi,np.pi])
         ax.set_ylabel(str(seq))
-    
+
 
     if (tx_pulse):
         # Now plot when the Tx pulses were sent out
         txs = [1 if (x in blanked_samples) else 0 for x in sample_nums]
         pos = [.1,figtop-figheight*(len_seq)+.02,.8,0.03]
-    
-        # If a user axis is provided, then plot Tx pulses over 
+
+        # If a user axis is provided, then plot Tx pulses over
         # the voltage data
         if user_ax is None:
             ax = fig.add_axes(pos)
-    
+
         # constant for setting the "width" of the Tx pulse
         const = tp/float(rp)
         for x in blanked_samples:
@@ -210,7 +210,7 @@ def plot_iq(myBeam, sequences=None, mag_phase=False, scale=None, user_ax=None, t
                 ax.plot(time,0.1*amp*np.pi - np.pi,color='blue')
                 ax.fill(time,0.1*amp*np.pi - np.pi,color='blue', \
                                                     alpha = 0.5)
-    
+
     if user_ax is None:
         fig.show()
 
@@ -222,36 +222,36 @@ if __name__ == "__main__":
     from davitpy import pydarn
     from matplotlib import pyplot
     from datetime import datetime
-  
-    print "First we need to fetch an iqdat file and read a beam record..."
+
+    print("First we need to fetch an iqdat file and read a beam record...")
     myPtr = pydarn.sdio.radDataOpen(datetime(2012,5,21), 'kap', fileType='iqdat')
     myBeam = pydarn.sdio.radDataReadRec(myPtr)
 
-    print "Testing the plot_iq method and it's options...."
-    print "...First test default options..."
+    print("Testing the plot_iq method and it's options....")
+    print("...First test default options...")
     pydarn.plotting.iqPlot.plot_iq(myBeam)
 
-    print "...Second test plotting Magnitude and Phase..."
-    print "      using 'mag_phase = True'"
+    print("...Second test plotting Magnitude and Phase...")
+    print("      using 'mag_phase = True'")
     pydarn.plotting.iqPlot.plot_iq(myBeam, mag_phase = "True")
 
-    print "...Third test plotting only one sequence..."
-    print "      using 'sequences=[0]'"
+    print("...Third test plotting only one sequence...")
+    print("      using 'sequences=[0]'")
     pydarn.plotting.iqPlot.plot_iq(myBeam, sequences=[0])
 
-    print "...Fourth test plotting to an existing axis object..."
-    print "      using 'user_ax = ax'"
+    print("...Fourth test plotting to an existing axis object...")
+    print("      using 'user_ax = ax'")
     fig = pyplot.figure()
     ax = fig.add_axes([0.1,0.1,0.8,0.8])
     pydarn.plotting.iqPlot.plot_iq(myBeam, user_ax = ax)
 
-    print "...Fifth, test the tx_pulse option..."
-    print "      using 'tx_pulse = False.'"
+    print("...Fifth, test the tx_pulse option...")
+    print("      using 'tx_pulse = False.'")
     pydarn.plotting.iqPlot.plot_iq(myBeam, tx_pulse=False)
 
-    print "...Sixth test plotting with a custom scaling. Data should be scaled down a lot..."
-    print "      using 'scale = 1000.'"
+    print("...Sixth test plotting with a custom scaling. Data should be scaled down a lot...")
+    print("      using 'scale = 1000.'")
     pydarn.plotting.iqPlot.plot_iq(myBeam, scale=1000.)
 
     pyplot.show()
-    
+

@@ -264,7 +264,7 @@ def parseDate(date):
     Example
     -------
         tlist = utils.timeUtils.parseDate('20120710')
-        ttime = utils.timeUtils.parseDate([2012,07,10])
+        ttime = utils.timeUtils.parseDate([2012,7,10])
 
     Created by Sebastien
 

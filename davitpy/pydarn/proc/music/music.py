@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -70,7 +70,7 @@ filter          a filter object for VT sig/siStruct objects
 
 """
 import numpy as np
-import datetime 
+import datetime
 import time
 import copy
 import logging
@@ -266,7 +266,7 @@ class musicDataObj(object):
     """This class is the basic container for holding MUSIC data.
 
     Parameters
-    ---------- 
+    ----------
     time : list of datetime.datetime
         list of times corresponding to data
     data : numpy.array
@@ -290,7 +290,7 @@ class musicDataObj(object):
         Radar field-of-view object.
     metadata : dict
         keywords sent to matplot lib, etc.
-    history : dict 
+    history : dict
 
     Methods
     ---------
@@ -352,9 +352,9 @@ class musicDataObj(object):
         newsigobj.metadata['dataSetName'] = newsig
         newsigobj.metadata['serial']      = serial
         newsigobj.history[datetime.datetime.now()] = '['+newsig+'] '+comment
-        
+
         return newsigobj
-  
+
     def setActive(self):
         """Sets this signal as the currently active signal.
 
@@ -397,7 +397,7 @@ class musicDataObj(object):
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
-        
+
         if timeVec  == None: timeVec = self.time
 
         diffs       = np.diff(timeVec)
@@ -462,14 +462,14 @@ class musicDataObj(object):
         self.metadata = dict(self.metadata.items() + metadata.items())
 
     def printMetadata(self):
-        """Nicely print all of the metadata associated with the current musicDataObj object.
+        """Nicely print(all of the metadata associated with the current musicDataObj object.)
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
         keys = self.metadata.keys()
         keys.sort()
         for key in keys:
-            print key+':',self.metadata[key]
+            print(key+':',self.metadata[key])
 
     def appendHistory(self,comment):
         """Add an entry to the processing history dictionary of the current musicDataObj object.
@@ -484,17 +484,17 @@ class musicDataObj(object):
         self.history[datetime.datetime.now()] = '['+self.metadata['dataSetName']+'] '+comment
 
     def printHistory(self):
-        """Nicely print all of the processing history associated with the current musicDataObj object.
+        """Nicely print(all of the processing history associated with the current musicDataObj object.)
 
         Written by Nathaniel A. Frissell, Fall 2013
         """
         keys = self.history.keys()
         keys.sort()
         for key in keys:
-            print key,self.history[key]
+            print(key,self.history[key])
 
 
-    
+
 class musicArray(object):
     """This class is the basic container for holding MUSIC data.
 
@@ -511,7 +511,7 @@ class musicArray(object):
         FIT data structure is allowed.
     gscat : Optional[int]
         Ground scatter flag.
-            0: all backscatter data 
+            0: all backscatter data
             1: ground backscatter only
             2: ionospheric backscatter only
             3: all backscatter data with a ground backscatter flag.
@@ -539,7 +539,7 @@ class musicArray(object):
     ----------
     messages : list
 
-    prm : 
+    prm :
 
     Methods
     -------
@@ -634,7 +634,7 @@ class musicArray(object):
                     fov       = pydarn.radar.radFov.fov(frang=myBeam.prm.frang, rsep=myBeam.prm.rsep, site=site,elevation=fovElevation,model=fovModel,coords=fovCoords)
 
                 #Get information from each beam in the scan.
-                beamTime = myBeam.time 
+                beamTime = myBeam.time
                 bmnum    = myBeam.bmnum
 
                 # Save all of the radar operational parameters.
@@ -967,8 +967,8 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
 
         commentList = []
 
-        if (currentData.metadata.has_key('timeLimits') == False and 
-            currentData.metadata.has_key('beamLimits') == False and 
+        if (currentData.metadata.has_key('timeLimits') == False and
+            currentData.metadata.has_key('beamLimits') == False and
             currentData.metadata.has_key('gateLimits') == False):
             return currentData
 
@@ -981,17 +981,17 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
             newData.data = newData.data[:,:,gateInx]
             newData.fov.gates = newData.fov.gates[gateInx]
 
-            newData.fov.latCenter     = newData.fov.latCenter[:,gateInx] 
-            newData.fov.lonCenter     = newData.fov.lonCenter[:,gateInx] 
-            newData.fov.slantRCenter  = newData.fov.slantRCenter[:,gateInx] 
+            newData.fov.latCenter     = newData.fov.latCenter[:,gateInx]
+            newData.fov.lonCenter     = newData.fov.lonCenter[:,gateInx]
+            newData.fov.slantRCenter  = newData.fov.slantRCenter[:,gateInx]
 
             #Update the full FOV.
             #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
             #(typically for computational speed reasons), we will have to do something else.
             gateInxFull = np.append(gateInx,gateInx[-1]+1) #We need that extra gate since this is the full FOV.
-            newData.fov.latFull = newData.fov.latFull[:,gateInxFull] 
-            newData.fov.lonFull = newData.fov.lonFull[:,gateInxFull] 
-            newData.fov.slantRFull = newData.fov.slantRFull[:,gateInxFull] 
+            newData.fov.latFull = newData.fov.latFull[:,gateInxFull]
+            newData.fov.lonFull = newData.fov.lonFull[:,gateInxFull]
+            newData.fov.slantRFull = newData.fov.slantRFull[:,gateInxFull]
 
             commentList.append('gate: %i,%i' % tuple(limits))
             rangeLim = (np.min(newData.fov.slantRCenter), np.max(newData.fov.slantRCenter))
@@ -1000,7 +1000,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
             #Remove limiting item from metadata.
             newData.metadata.pop('gateLimits')
             if newData.metadata.has_key('rangeLimits'): newData.metadata.pop('rangeLimits')
-          
+
         #Apply the beamLimits.
         if currentData.metadata.has_key('beamLimits'):
             limits      = currentData.metadata['beamLimits']
@@ -1009,22 +1009,22 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
             newData.data = newData.data[:,beamInx,:]
             newData.fov.beams = newData.fov.beams[beamInx]
 
-            newData.fov.latCenter     = newData.fov.latCenter[beamInx,:] 
-            newData.fov.lonCenter     = newData.fov.lonCenter[beamInx,:] 
-            newData.fov.slantRCenter  = newData.fov.slantRCenter[beamInx,:] 
+            newData.fov.latCenter     = newData.fov.latCenter[beamInx,:]
+            newData.fov.lonCenter     = newData.fov.lonCenter[beamInx,:]
+            newData.fov.slantRCenter  = newData.fov.slantRCenter[beamInx,:]
 
             #Update the full FOV.
             #This works as long as we look at only consecutive gates.  If we ever do something where we are not looking at consecutive gates
             #(typically for computational speed reasons), we will have to do something else.
             beamInxFull = np.append(beamInx,beamInx[-1]+1) #We need that extra beam since this is the full FOV.
-            newData.fov.latFull = newData.fov.latFull[beamInxFull,:] 
-            newData.fov.lonFull = newData.fov.lonFull[beamInxFull,:] 
-            newData.fov.slantRFull = newData.fov.slantRFull[beamInxFull,:] 
+            newData.fov.latFull = newData.fov.latFull[beamInxFull,:]
+            newData.fov.lonFull = newData.fov.lonFull[beamInxFull,:]
+            newData.fov.slantRFull = newData.fov.slantRFull[beamInxFull,:]
 
             commentList.append('beam: %i,%i' % tuple(limits))
             #Remove limiting item from metadata.
             newData.metadata.pop('beamLimits')
-        
+
         #Apply the time limits.
         if currentData.metadata.has_key('timeLimits'):
             limits      = currentData.metadata['timeLimits']
@@ -1036,7 +1036,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
             commentList.append('time: '+limits[0].strftime('%Y-%m-%d/%H:%M,')+limits[1].strftime('%Y-%m-%d/%H:%M'))
             #Remove limiting item from metadata.
             newData.metadata.pop('timeLimits')
-            
+
             #Update the history with what limits were applied.
             comment = 'Limits Applied'
             commentStr = '['+newData.metadata['dataSetName']+'] '+comment+': '+'; '.join(commentList)
@@ -1048,7 +1048,7 @@ def applyLimits(dataObj,dataSet='active',rangeLimits=None,gateLimits=None,timeLi
         return newData
     except:
         if hasattr(dataObj,newDataSetName): delattr(dataObj,newDataSetName)
-#        print 'Warning! Limits not applied.'
+#        print('Warning! Limits not applied.')
         return currentData
 
 def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
@@ -1091,8 +1091,8 @@ def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
 
     #Set arrays of lat1/lon1 to the center cell value.  Use this to calculate all other positions
     #with numpy array math.
-    lat1 = np.zeros_like(currentData.fov.latCenter)   
-    lon1 = np.zeros_like(currentData.fov.latCenter)   
+    lat1 = np.zeros_like(currentData.fov.latCenter)
+    lon1 = np.zeros_like(currentData.fov.latCenter)
 
     lat1[:] = currentData.fov.latCenter[ctrBeamInx,ctrGateInx]
     lon1[:] = currentData.fov.lonCenter[ctrBeamInx,ctrGateInx]
@@ -1109,8 +1109,8 @@ def determineRelativePosition(dataObj,dataSet='active',altitude=250.):
     #X and Y relatvie positions of each cell.
     currentData.fov.relative_azm    = azm
     currentData.fov.relative_range  = dist
-    currentData.fov.relative_x      = dist * np.sin(np.radians(azm)) 
-    currentData.fov.relative_y      = dist * np.cos(np.radians(azm)) 
+    currentData.fov.relative_x      = dist * np.sin(np.radians(azm))
+    currentData.fov.relative_y      = dist * np.cos(np.radians(azm))
 
     return None
 
@@ -1136,7 +1136,7 @@ def timeInterpolation(dataObj,dataSet='active',newDataSetName='timeInterpolated'
 
     """
     from scipy.interpolate import interp1d
-    from davitpy import utils 
+    from davitpy import utils
     currentData = getDataSet(dataObj,dataSet)
 
     sTime = currentData.time[0]
@@ -1195,7 +1195,7 @@ def filterTimes(sTime,eTime,timeRes,numTaps):
     timeRes : float
         Time resolution in seconds of data to be sent to filter.
     numtaps : int
-        Length of the filter 
+        Length of the filter
 
     Returns
     -------
@@ -1290,7 +1290,7 @@ class filter(object):
         Like cutoff_low, but this is the low pass cutoff frequency of the filter.
     nyq : float
         the Nyquist rate
-    ir : 
+    ir :
 
     Methods
     -------
@@ -1303,7 +1303,7 @@ class filter(object):
     """
     def __init__(self, dataObj, dataSet='active', numtaps=None, cutoff_low=None, cutoff_high=None, width=None, window='blackman', pass_zero=True, scale=True,newDataSetName='filtered'):
         import scipy as sp
-        
+
         sigObj = getattr(dataObj,dataSet)
         nyq = sigObj.nyquistFrequency()
 
@@ -1342,7 +1342,7 @@ class filter(object):
         if cutoff_high == None and cutoff_low == None:
             logging.warning("You must define cutoff frequencies!")
             return
-    
+
         self.comment = ' '.join(['Filter:',window+',','Nyquist:',str(nyq),'Hz,','Cuttoff:','['+str(cutoff_low)+', '+str(cutoff_high)+']','Hz,','Numtaps:',str(numtaps)])
         self.cutoff_low   = cutoff_low
         self.cutoff_high  = cutoff_high
@@ -1595,10 +1595,10 @@ def detrend(dataObj,dataSet='active',newDataSetName='detrended',comment=None,typ
                 newDataArr[:,bm,rg] = sp.signal.detrend(currentData.data[:,bm,rg],type=type)
             except:
                 newDataArr[:,bm,rg] = np.nan
-  
+
     if comment == None:
         comment = type.capitalize() + ' detrend (scipy.signal.detrend)'
-      
+
     newDataSet      = currentData.copy(newDataSetName,comment)
     newDataSet.data = newDataArr
     newDataSet.setActive()
@@ -1625,7 +1625,7 @@ def nan_to_num(dataObj,dataSet='active',newDataSetName='nan_to_num',comment=None
 
     if comment == None:
         comment = 'numpy.nan_to_num'
-      
+
     newDataSet      = currentData.copy(newDataSetName,comment)
     newDataSet.data = np.nan_to_num(currentData.data)
     newDataSet.setActive()
@@ -1663,10 +1663,10 @@ def windowData(dataObj,dataSet='active',newDataSetName='windowed',comment=None,w
     for bm in range(nrBeams):
         for rg in range(nrGates):
             newDataArr[:,bm,rg] = currentData.data[:,bm,rg] * win
-  
+
     if comment == None:
         comment = window.capitalize() + ' window applied (scipy.signal.get_window)'
-      
+
     newDataSet      = currentData.copy(newDataSetName,comment)
     newDataSet.data = newDataArr
     newDataSet.setActive()
@@ -1704,7 +1704,7 @@ def calculateFFT(dataObj,dataSet='active',comment=None):
     for bm in range(nrBeams):
         for rg in range(nrGates):
             newDataArr[:,bm,rg] = sp.fftpack.fftshift(sp.fftpack.fft(currentData.data[:,bm,rg])) / np.size(currentData.data[:,bm,rg])
-  
+
     currentData.freqVec   = freq_ax
     currentData.spectrum  = newDataArr
 
@@ -1720,7 +1720,7 @@ def calculateFFT(dataObj,dataSet='active',comment=None):
     for x in range(npf): avg_psd[x] = np.mean(data[x,:,:])
     currentData.dominantFreq = posFreqVec[np.argmax(avg_psd)]
     currentData.appendHistory('Calculated FFT')
-  
+
 def calculateDlm(dataObj,dataSet='active',comment=None):
     """Calculate the cross-spectral matrix of a musicaArray object. FFT must already have been calculated.
 
@@ -1934,14 +1934,14 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
         #           (amp,    kx,      ky,      f, phi, dcOffset)
         sigs.append((  5,  0.01,  -0.010, 0.0004,   0,       5.))
         sigs.append((  5, 0.022,  -0.023, 0.0004,   0,       5.))
-  
+
     secVec  = np.array(utils.datetimeToEpoch(currentData.time))
     secVec  = secVec - secVec[0]
 
     nSteps  = len(secVec)
     dt      = currentData.samplePeriod()
 
-    dataArr = np.zeros((nSteps,nx,ny)) 
+    dataArr = np.zeros((nSteps,nx,ny))
 
     for step in xrange(nSteps):
         t = secVec[step]
@@ -1958,12 +1958,12 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
                 logging.warning('Signal #: %i' % kk)
 
 #            if 1./dx <= 2.*kx/(2.*np.pi):
-#                print 'WARNING: Nyquist Violation in kx.'
-#                print 'Signal #: %i' % kk
+#                print('WARNING: Nyquist Violation in kx.')
+#                print('Signal #: %i' % kk)
 #
 #            if 1./dy <= 2.*ky/(2.*np.pi):
-#                print 'WARNING: Nyquist Violation in ky.'
-#                print 'Signal #: %i' % kk
+#                print('WARNING: Nyquist Violation in ky.')
+#                print('Signal #: %i' % kk)
 
             temp    = amp * np.cos(kx*xgrid + ky*ygrid - 2.*np.pi*f*t + phi) + dc
             dataArr[step,:,:] = dataArr[step,:,:] + temp
@@ -2005,7 +2005,7 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 
     if comment == None:
         comment = 'Simulated data injected.'
-      
+
     newDataSet      = currentData.copy(newDataSetName,comment)
     newDataSet.data = dataArr
     newDataSet.setActive()
@@ -2038,7 +2038,7 @@ def simulator(dataObj, dataSet='active',newDataSetName='simulated',comment=None,
 def scale_karr(kArr):
     from scipy import stats
     """Scale/normalize kArr for plotting and signal detection.
-    
+
     Parameters
     ----------
     kArr : 2D numpy.array
@@ -2143,8 +2143,8 @@ def detectSignals(dataObj,dataSet='active',threshold=0.35,neighborhood=(10,10)):
     return currentData
 
 def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
-    """Manually add a signal to the detected signal list.  All signals will be re-ordered according to value in the 
-    scaled kArr.  Added signals can be distinguished from autodetected signals because 
+    """Manually add a signal to the detected signal list.  All signals will be re-ordered according to value in the
+    scaled kArr.  Added signals can be distinguished from autodetected signals because
     'labelInx' and 'area' will both be set to -1.
 
     Parameters
@@ -2158,7 +2158,7 @@ def add_signal(kx,ky,dataObj,dataSet='active',frequency=None):
     dataSet : Optional[str]
         which dataSet in the musicArray object to process
     frequency : Optional[float]
-        Frequency to use to calculate period, phase velocity, etc.  If None, 
+        Frequency to use to calculate period, phase velocity, etc.  If None,
         the calculated dominant frequency will be used.
 
     Returns

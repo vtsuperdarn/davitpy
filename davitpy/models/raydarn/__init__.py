@@ -14,5 +14,5 @@ raydarn.rt  interfacing run code
 import logging
 
 try: from rt import *
-except Exception, e:
+except Exception as e:
     logging.exception(__file__ + ' -> models.raydarn.rt: ' + str(e))

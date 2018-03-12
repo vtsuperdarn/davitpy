@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """OMNI module
@@ -59,7 +59,7 @@ class omniRec(gmeData):
         is initialized from it.  default = None
     res : Optional[int]
         the time resolution of the data.  default=None
-    
+
     Attributes
     ----------
     time : datetime
@@ -119,7 +119,7 @@ class omniRec(gmeData):
     info : str
         information about where the data come from.  *Please be courteous and
         give credit to data providers when credit is due.*
-        
+
     Methods
     -------
     parseFtp
@@ -136,14 +136,14 @@ class omniRec(gmeData):
     or
 
         myOmniObj = omniRec(ftpLine=aftpLine)
-        
+
     written by AJ, 20130128
 
     """
     def parseFtp(self,line):
         """This method is used to convert a line of omni data read from the
         NASA SPDF FTP site into a :class:`omniRec` object.
-        
+
         Parameters
         ----------
         line : str
@@ -156,30 +156,30 @@ class omniRec(gmeData):
         Notes
         -----
         In general, users will not need to worry about this.
-        
+
         Belongs to class omniRec
-        
+
         Example
         -------
             myOmniObj.parseFtp(ftpLine)
-            
+
         written by AJ, 20130123
 
         """
         import datetime as dt
-        
+
         #a dict to map from the column number in the line to attribute name
         mappingdict = {9:'timeshift',13:'bMagAvg',14:'bx',15:'bye',16:'bze',17:'bym', \
                                         18:'bzm',21:'flowSpeed',22:'vxe',23:'vye',24:'vze',25:'np', \
                                         26:'temp',27:'pDyn',28:'e',29:'beta',30:'machNum',37:'ae', \
                                         38:'al',39:'au',40:'symd',41:'symh',42:'asyd',43:'asyh'}
-                                        
+
         #split the line into cols
         cols = line.split()
         self.time = dt.datetime(int(cols[0]), 1, 1, int(cols[2]),int(cols[3])) + \
                                     dt.timedelta(days=(int(cols[1])-1))
-                                    
-        #go through the columns and assign the attribute values 
+
+        #go through the columns and assign the attribute values
         for i in range(9,len(cols)):
             if(not mappingdict.has_key(i)): continue
             temp = cols[i]
@@ -187,10 +187,10 @@ class omniRec(gmeData):
             temp = temp.replace('9','')
             if(temp == ''): continue
             try: setattr(self,mappingdict[i],float(cols[i]))
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('problem assigning value to' + mappingdict[i])
-            
+
     def __init__(self, ftpLine=None, res=None, dbDict=None):
         #initialize the attributes
         #note about where data came from
@@ -224,12 +224,12 @@ class omniRec(gmeData):
         #if we're initializing from an object, do it!
         if(ftpLine != None): self.parseFtp(ftpLine)
         if(dbDict != None): self.parseDb(dbDict)
-    
+
 def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,pDyn=None,ae=None,symh=None):
     """This function reads omni data.  First, it will try to get it from the
     mongodb, and if it can't find it, it will look on the NASA SPDF FTP
     server using readOmniFtp
-    
+
     Parameters
     ----------
     sTime : datetime
@@ -288,13 +288,13 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
     -------
         import datetime as dt
         omniList = gme.ind.readOmni(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),bx=[0,5.5],bye=[-1,3.5],bze=[-10,0],ae=[0,56.3])
-        
+
     written by AJ, 20130128
 
     """
     import datetime as dt
     import davitpy.pydarn.sdio.dbUtils as db
-    
+
     #check all the inputs for validity
     assert(isinstance(sTime,dt.datetime)), \
         logging.error('sTime must be a datetime object')
@@ -315,15 +315,15 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
     if(eTime != None): qryList.append({'time':{'$lte':eTime}})
     var = locals()
     for name in ['bx','bye','bze','bym','bzm','pDyn','ae','symh']:
-        if(var[name] != None): 
+        if(var[name] != None):
             qryList.append({name:{'$gte':min(var[name])}})
             qryList.append({name:{'$lte':max(var[name])}})
-            
+
     #construct the final query definition
     qryDict = {'$and': qryList}
     #connect to the database
     omniData = db.getDataConn(dbName='gme',collName='omni')
-    
+
     #do the query
     if(qryList != []): qry = omniData.find(qryDict)
     else: qry = omniData.find()
@@ -337,10 +337,10 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
     else:
         logging.info('\ncould not find requested data in the mongodb')
         logging.info('we will look on the ftp server, but your conditions will be (mostly) ignored')
-        
+
         #read from ftp server
         omniList = readOmniFtp(sTime, eTime)
-        
+
         if(omniList != None):
             logging.info('\nreturning a list with ' + str(len(omniList)) + ' recs of omni data')
             return omniList
@@ -348,14 +348,14 @@ def readOmni(sTime,eTime=None,res=5,bx=None,bye=None,bze=None,bym=None,bzm=None,
             logging.info('\n no data found on FTP server, returning None...')
             return None
 
-            
+
 def readOmniFtp(sTime,eTime=None,res=5):
     """This function reads omni data from the NASA SPDF server via anonymous
     FTP connection.
-    
+
     .. warning::
         You should not use this. Use the general function :func:`readOmni` instead.
-    
+
     Parameters
     ----------
     sTime : datetime
@@ -377,37 +377,37 @@ def readOmniFtp(sTime,eTime=None,res=5):
     -------
         import datetime as dt
         omniList = gme.ind.readOmniFtp(dt.datetime(2011,1,1,1,50),eTime=dt.datetime(2011,1,1,10,0),res=5)
-        
+
     written by AJ, 20130128
 
     """
     from ftplib import FTP
     import datetime as dt
-    
+
     assert(isinstance(sTime,dt.datetime)), logging.error('sTime must be datetime')
     if(eTime == None): eTime=sTime
     assert(isinstance(eTime,dt.datetime)), logging.error('eTime must be datetime')
     assert(eTime >= sTime), logging.error('end time greater than start time')
     assert(res == 1 or res == 5), logging.error('res must be 1 or 5')
-    
+
     #connect to the server
-    try: ftp = FTP('spdf.gsfc.nasa.gov')    
-    except Exception,e:
+    try: ftp = FTP('spdf.gsfc.nasa.gov')
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem connecting to SPDF server')
-        
+
     #login as anonymous
     try: l=ftp.login()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem logging in to SPDF server')
-    
+
     #go to the omni directory
     try: ftp.cwd('/pub/data/omni/high_res_omni/')
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('error getting to data directory')
-    
+
     #list to hold the lines
     lines = []
     #get the omni data
@@ -416,10 +416,10 @@ def readOmniFtp(sTime,eTime=None,res=5):
         else: fname = 'omni_5min'+str(yr)+'.asc'
         logging.info('omni: RETR ' + fname)
         try: ftp.retrlines('RETR '+fname,lines.append)
-        except Exception,e:
+        except Exception as e:
             logging.exception(e)
             logging.exception('error retrieving' + fname)
-    
+
     #convert the ascii lines into a list of omniRec objects
     myOmni = []
     if(len(lines) > 0):
@@ -432,14 +432,14 @@ def readOmniFtp(sTime,eTime=None,res=5):
         return myOmni
     else:
         return None
-        
+
 def mapOmniMongo(sYear,eYear=None,res=5):
     """This function reads omni data from the NASA SPDF FTP server via
-    anonymous FTP connection and maps it to the mongodb.  
-    
+    anonymous FTP connection and maps it to the mongodb.
+
     .. warning::
         In general, nobody except the database admins will need to use this function
-    
+
     Parameters
     ----------
     sYear : int
@@ -456,25 +456,25 @@ def mapOmniMongo(sYear,eYear=None,res=5):
     Example
     -------
         gme.ind.mapOmniMongo(1997,res=1)
-        
+
     written by AJ, 20130123
 
     """
     import davitpy.pydarn.sdio.dbUtils as db
     from davitpy import rcParams
     import datetime as dt
-    
+
     #check inputs
     assert(res == 1 or res == 5), logging.error('res must be either 1 or 5')
     assert(isinstance(sYear,int)), logging.error('sYear must be int')
     if(eYear == None): eYear=sYear
     assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
     assert(eYear >= sYear), logging.error('end year greater than start year')
-    
+
     #get data connection
     mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
                                 dbAddress=rcParams['SDDB'],dbName='gme',collName='omni')
-    
+
     #set up all of the indices
     mongoData.ensure_index('time')
     mongoData.ensure_index('res')
@@ -486,7 +486,7 @@ def mapOmniMongo(sYear,eYear=None,res=5):
     mongoData.ensure_index('pDyn')
     mongoData.ensure_index('ae')
     mongoData.ensure_index('symh')
-        
+
     #read the omni data from the FTP server
     for yr in range(sYear,eYear+1):
         for mon in range(1,13):

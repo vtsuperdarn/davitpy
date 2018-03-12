@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -78,37 +78,37 @@ def fillGmeDb(time='recent'):
         p6 = Process(target=gme.ind.symasy.mapSymAsyMongo, args=(1980,now.year))
 
     try: p0.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exeption('problem filling Omni db')
 
     try: p1.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Omni db')
 
     try: p2.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Poes db')
 
     try: p3.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Kp db')
 
     try: p4.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling Dst db')
 
     try: p5.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling AE db')
 
     try: p6.start()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem filling AE db')
 

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """symasy module
@@ -42,7 +42,7 @@ class symAsyRec(gmeData):
     day (or whatever the latest WDC has uploaded is).  **The data are 1-minute
     values.**  More info on sym/asy can be found here:
     http://wdc.kugi.kyoto-u.ac.jp/aeasy/asy.pdf
-        
+
     Parameters
     ----------
     webLine : Optional[str]
@@ -78,7 +78,7 @@ class symAsyRec(gmeData):
     -----
     If any of the members have a value of None, this means that
     they could not be read for that specific time
-   
+
     Example
     -------
         emptySymAsyObj = gme.ind.symAsyRec()
@@ -93,7 +93,7 @@ class symAsyRec(gmeData):
     def parseWeb(self,line):
         """This method is used to convert a line of sym/asy data from
         the WDC to a symAsyRec object
-        
+
         Parameters
         ----------
         line : str
@@ -106,13 +106,13 @@ class symAsyRec(gmeData):
         Notes
         -----
         In general, users will not need to worry about this.
-        
+
         Belongs to class gme.ind.symasy.symAsyRec
 
         Example
         -------
             mysymAsyObj.parseWeb(webLine)
-            
+
         written by AJ, 20130131
 
         """
@@ -125,7 +125,7 @@ class symAsyRec(gmeData):
         if(float(cols[5]) != 99999.0): self.symd = float(cols[5])
         if(float(cols[6]) != 99999.0): self.symh = float(cols[6])
 
-        
+
     def __init__(self, webLine=None, dbDict=None):
         #note about where data came from
         self.dataSet = 'Sym/Asy'
@@ -136,15 +136,15 @@ class symAsyRec(gmeData):
         self.symd = None
         self.asyh = None
         self.asyd = None
-        
+
         #if we're initializing from an object, do it!
         if(webLine != None): self.parseWeb(webLine)
         if(dbDict != None): self.parseDb(dbDict)
 
-        
+
 def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
     """This function reads sym/asy data from the mongodb.
-    
+
     Parameters
     ----------
     sTime : Optional[datetime]
@@ -180,13 +180,13 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
     -------
         import datetime as dt
         symList = gme.ind.readSymAsy(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),symh=[5,50],asyd=[-10,0])
-        
+
     written by AJ, 20130131
 
     """
     import datetime as dt
     import davitpy.pydarn.sdio.dbUtils as db
-    
+
     #check all the inputs for validity
     assert(sTime == None or isinstance(sTime,dt.datetime)), \
         logging.error('sTime must be a datetime object')
@@ -197,7 +197,7 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
         assert(var[name] == None or (isinstance(var[name],list) and \
             isinstance(var[name][0],(int,float)) and isinstance(var[name][1],(int,float)))), \
             logging.error(name + ' must None or a list of 2 numbers')
-            
+
     if(eTime == None and sTime != None): eTime = sTime+dt.timedelta(days=1)
     qryList = []
     #if arguments are provided, query for those
@@ -205,15 +205,15 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
     if(eTime != None): qryList.append({'time':{'$lte':eTime}})
     var = locals()
     for name in ['symh','symd','asyh','asyd']:
-        if(var[name] != None): 
+        if(var[name] != None):
             qryList.append({name:{'$gte':min(var[name])}})
             qryList.append({name:{'$lte':max(var[name])}})
-            
+
     #construct the final query definition
     qryDict = {'$and': qryList}
     #connect to the database
     symData = db.getDataConn(dbName='gme',collName='symasy')
-    
+
     #do the query
     if(qryList != []): qry = symData.find(qryDict)
     else: qry = symData.find()
@@ -231,11 +231,11 @@ def readSymAsy(sTime=None,eTime=None,symh=None,symd=None,asyh=None,asyd=None):
 
 def readSymAsyWeb(sTime,eTime=None):
     """This function reads sym/asy data from the WDC kyoto website
-    
+
     .. warning::
         You should not use this. Use the general function
         gme.ind.symasy.readSymAsy instead.
-    
+
     Parameters
     ----------
     sTime : datetime
@@ -249,20 +249,20 @@ def readSymAsyWeb(sTime,eTime=None):
     -------
         import datetime as dt
         symList = gme.ind.readSymAsyWeb(dt.datetime(2011,1,1),eTime=dt.datetime(2011,1,5))
-        
+
     written by AJ, 20130131
 
     """
     import datetime as dt
     import mechanize
-    
+
     assert(isinstance(sTime,dt.datetime)), logging.error('sTime must be a datetime object')
     if(eTime == None): eTime = sTime+dt.timedelta(days=1)
     assert(isinstance(eTime,dt.datetime)), logging.error('eTime must be a datetime object')
     assert(eTime >= sTime), logging.error('eTime < eTime')
     delt = eTime-sTime
     assert(delt.days <= 366), logging.error('cant read more than 366 days')
-    
+
     tens = (sTime.year)/10
     year = sTime.year-tens*10
     month = sTime.strftime("%m")
@@ -277,9 +277,9 @@ def readSymAsyWeb(sTime,eTime=None):
     br.set_handle_refresh(False)  # can sometimes hang without this
     br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
     br.open('http://wdc.kugi.kyoto-u.ac.jp/aeasy/index.html')
-    
+
     br.form = list(br.forms())[0]
-    
+
     #fill out the fields
     br.form.find_control('Tens').value = [str(tens)]
     br.form.find_control('Year').value = [str(year)]
@@ -294,9 +294,9 @@ def readSymAsyWeb(sTime,eTime=None):
     br.form.find_control('Output').value = ['ASY']
     br.form.find_control('Out format').value = ['IAGA2002']
     br.form.find_control('Email').value = "vt.sd.sw@gmail.com"
-    
+
     response = br.submit()
-    
+
     #get the data file
     lines = response.readlines()
 
@@ -306,20 +306,20 @@ def readSymAsyWeb(sTime,eTime=None):
         if(l[0] == ' ' or l[0:4] == 'DATE'): continue
         cols=l.split()
         try: symList.append(symAsyRec(webLine=l))
-        except Exception,e:
+        except Exception as e:
             logging.exception(e)
             logging.exception('problem initializing symAsy object')
-        
+
     if(symList != []): return symList
     else: return None
 
 def mapSymAsyMongo(sYear,eYear=None):
     """This function reads sym/asy data from wdc and puts it in mongodb
-    
+
     .. warning::
         In general, nobody except the database admins will need to
         use this function
-    
+
     Parameters
     ----------
     sYear : int
@@ -335,31 +335,31 @@ def mapSymAsyMongo(sYear,eYear=None):
     Example
     -------
         gme.ind.mapSymAsyMongo(2001)
-        
+
     written by AJ, 20130123
 
     """
     import davitpy.pydarn.sdio.dbUtils as db
     from davitpy import rcParams
     import datetime as dt
-    
+
     #check inputs
     assert(isinstance(sYear,int)), logging.error('sYear must be int')
     if(eYear == None): eYear=sYear
     assert(isinstance(eYear,int)), logging.error('sYear must be None or int')
     assert(eYear >= sYear), logging.error('end year greater than start year')
-    
+
     #get data connection
     mongoData = db.getDataConn(username=rcParams['DBWRITEUSER'],password=rcParams['DBWRITEPASS'],\
                                 dbAddress=rcParams['SDDB'],dbName='gme',collName='symasy')
-    
+
     #set up all of the indices
     mongoData.ensure_index('time')
     mongoData.ensure_index('symh')
     mongoData.ensure_index('symd')
     mongoData.ensure_index('asyh')
     mongoData.ensure_index('asyd')
-    
+
     for yr in range(sYear,eYear+1):
         #1 day at a time, to not fill up RAM
         templist = readSymAsyWeb(dt.datetime(yr,1,1),dt.datetime(yr,1,1)+dt.timedelta(days=366))

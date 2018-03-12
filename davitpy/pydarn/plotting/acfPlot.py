@@ -657,39 +657,39 @@ if __name__ == "__main__":
     from datetime import datetime
     from matplotlib import pyplot
 
-    print "First we need to fetch an rawacf file and read a beam record..."
+    print("First we need to fetch an rawacf file and read a beam record...")
     myPtr = pydarn.sdio.radDataOpen(datetime(2012, 5, 21), 'sas', eTime=datetime(2012, 5, 21, 2), fileType='rawacf')
     myBeam = myPtr.readRec()
 
-    print "Testing the plot_rli method and it's options...."
-    print "...First test default options..."
+    print("Testing the plot_rli method and it's options....")
+    print("...First test default options...")
     pydarn.plotting.acfPlot.plot_rli(myBeam)
 
-    print "...Next test with 'normalized=False'..."
+    print("...Next test with 'normalized=False'...")
     pydarn.plotting.acfPlot.plot_rli(myBeam, normalized=False)
 
-    print "...Next test with 'xcf=True'..."
+    print("...Next test with 'xcf=True'...")
     pydarn.plotting.acfPlot.plot_rli(myBeam, xcf=True)
 
-    print "Close the figures to proceed with testing..."
+    print("Close the figures to proceed with testing...")
     pyplot.show()
 
-    print "Testing the plot_acf method and it's options...."
-    print "...First test default options, at range gate 31, you should see ground scatter and lags marked that are blanked by Tx blanking..."
+    print("Testing the plot_acf method and it's options....")
+    print("...First test default options, at range gate 31, you should see ground scatter and lags marked that are blanked by Tx blanking...")
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31)
 
-    print "...Next, with 'normalized=False', normalization by lag-zero power turned off "
+    print("...Next, with 'normalized=False', normalization by lag-zero power turned off ")
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31, normalized=False)
 
-    print "...Next, with 'mark_blanked=False', blanking marking turned off "
+    print("...Next, with 'mark_blanked=False', blanking marking turned off ")
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31, mark_blanked=False)
 
-    print "...Next, with 'xcf=True', plotting xcf data"
+    print("...Next, with 'xcf=True', plotting xcf data")
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31, xcf=True)
 
     fig = pyplot.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    print "...Next, plotting to our own axis object, 'ax=ax'"
+    print("...Next, plotting to our own axis object, 'ax=ax'")
     pydarn.plotting.acfPlot.plot_acf(myBeam, 31, ax=ax)
 
     pyplot.show()

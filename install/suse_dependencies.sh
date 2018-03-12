@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -i 
 
 # Python install script for Ubuntu
 #	installs all pre-requisite software to run DaViT-py
@@ -10,8 +10,22 @@
 
 #ver=2.7
 
-alias pip="pip2"    #davitpy only supports python 2 for now, suse defaults to using pip3
+shopt -s expand_aliases
 
+alias sudo="sudo "
+
+if [[ $1 == 3 ]]
+then
+    echo "Using python 3"
+    alias pip="pip3"
+    alias python="python3" #davitpy only supports python 2 for now, suse defaults to using pip3
+    pip --version
+    python --version
+else
+    echo "Using python 2"
+    alias pip="pip2" 
+    alias python="python2"
+fi
 #apt-get install -y python$ver
 zypper -n install python
 #apt-get install -y python-dev
@@ -35,9 +49,9 @@ zypper -n install gcc gcc-c++ make
 #CHOOSE ONE OF THESE ONLY
 #############################
 #zypper -n install libatlas3-sse3-devel  
-#zypper -n install libatlas3-sse2-devel
+zypper -n install libatlas3-sse2-devel
 #zypper -n install libatlas3-sse-devel
-zypper -n install libatlas3-devel
+#zypper -n install libatlas3-devel
 #############################
 zypper -n install openblas-devel blas-devel
 zypper -n install python-Cython python3-Cython
@@ -45,6 +59,7 @@ zypper -n install libagg2
 zypper -n install libffi-devel
 zypper -n install libopenssl-devel
 #apt-get install -y python-mpltoolkits.basemap
+pip --version
 pip install --upgrade numpy
 zypper -n install python-scipy
 pip install --upgrade h5py
@@ -71,7 +86,7 @@ dir=$(pwd)
 
 #Now install basemap!
 cd /tmp
-git clone --branch v1.0.7rel https://github.com/matplotlib/basemap.git
+git clone --branch v1.1.0 https://github.com/matplotlib/basemap.git
 cd basemap/geos-3.3.3
 export GEOS_DIR=/usr/local
 ./configure --prefix=$GEOS_DIR

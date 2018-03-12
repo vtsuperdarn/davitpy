@@ -141,7 +141,7 @@ class poesRec(gmeData):
 
     Extends class gmeBase.gmeData.  Insight on the class members can
     be obtained from the NOAA NGDC site:
-    <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>. 
+    <ftp://satdat.ngdc.noaa.gov/sem/poes/data/readme.txt>.
     Note that POES data are available from 1998-present day (or whatever the
     latest NOAA has uploaded is).  **The data are the 16-second averages**
 
@@ -156,7 +156,7 @@ class poesRec(gmeData):
     or
 
         myPoesObj = poesRec(ftpLine=aftpLine)
- 
+
     written by AJ, 20130131
     """
 
@@ -199,16 +199,16 @@ class poesRec(gmeData):
                 continue
             try:
                 ind = head.index(key)
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('problem setting attribute' + key)
 
             # check for a good value
             if(float(cols[ind]) != -999.0):
                 setattr(self, key, float(cols[ind]))
-  
+
     def __init__(self, ftpLine=None, dbDict=None, satnum=None, header=None):
-        """the intialization fucntion for a class omniRec object.  
+        """the intialization fucntion for a class omniRec object.
 
         written by AJ, 20130131
         """
@@ -256,7 +256,7 @@ class poesRec(gmeData):
             self.parseFtp(ftpLine, header)
         if(dbDict != None):
             self.parseDb(dbDict)
-    
+
 def readPoes(stime, eTime=None, satnum=None, folat=None, folon=None, ted=None,
              echar=None, pchar=None):
     """This function reads POES data.
@@ -308,7 +308,7 @@ def readPoes(stime, eTime=None, satnum=None, folat=None, folon=None, ted=None,
     -------
         import datetime as dt
         poesList = gme.sat.readPoes(sTime=dt.datetime(2011,1,1),eTime=dt.datetime(2011,6,1),folat=[60,80])
-    
+
     written by AJ, 20130131
     """
     import datetime as dt
@@ -339,7 +339,7 @@ def readPoes(stime, eTime=None, satnum=None, folat=None, folon=None, ted=None,
         qryList.append({'satnum':satnum})
     var = locals()
     for name in ['folat','folon','ted','echar','pchar']:
-        if(var[name] != None): 
+        if(var[name] != None):
             qryList.append({name:{'$gte':min(var[name])}})
             qryList.append({name:{'$lte':max(var[name])}})
 
@@ -362,17 +362,17 @@ def readPoes(stime, eTime=None, satnum=None, folat=None, folon=None, ted=None,
     else:
         logging.info('could not find requested data in the mongodb')
         return None
-        # print 'we will look on the ftp server, but your conditions will be
+        # print('we will look on the ftp server, but your conditions will be)
         # (mostly) ignored'
 
         ## read from ftp server
         # poesList = readPoesFtp(stime, eTime)
 
         # if(poesList != None):
-        # print '\nreturning a list with',len(poesList),'recs of poes data'
+        # print('\nreturning a list with',len(poesList),'recs of poes data')
         # return poesList
         # else:
-        # print '\n no data found on FTP server, returning None...'
+        # print('\n no data found on FTP server, returning None...')
         # return None
 
 def readPoesFtp(stime, eTime=None):
@@ -412,8 +412,8 @@ def readPoesFtp(stime, eTime=None):
 
     # connect to the server
     try:
-        ftp = FTP('satdat.ngdc.noaa.gov')  
-    except Exception,e:
+        ftp = FTP('satdat.ngdc.noaa.gov')
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem connecting to NOAA server')
         return None
@@ -421,7 +421,7 @@ def readPoesFtp(stime, eTime=None):
     # login as anonymous
     try:
         l = ftp.login()
-    except Exception,e:
+    except Exception as e:
         logging.exception(e)
         logging.exception('problem logging in to NOAA server')
         return None
@@ -433,7 +433,7 @@ def readPoesFtp(stime, eTime=None):
         # go to the data directory
         try:
             ftp.cwd('/sem/poes/data/avg/txt/'+str(my_time.year))
-        except Exception,e:
+        except Exception as e:
             logging.exception(e)
             logging.exception('error getting to data directory')
             return None
@@ -454,7 +454,7 @@ def readPoesFtp(stime, eTime=None):
             # get the data
             try:
                 ftp.retrlines('RETR '+fname,lines.append)
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('error retrieving' + fname)
 
@@ -478,7 +478,7 @@ def readPoesFtp(stime, eTime=None):
 
 def mapPoesMongo(syear, eYear=None):
     """This function reads poes data from the NOAA NGDC FTP server via anonymous
-    FTP connection and maps it to the mongodb.  
+    FTP connection and maps it to the mongodb.
 
     Parameters
     ----------
@@ -653,11 +653,11 @@ def overlayPoesTed(basemap_obj, ax, start_time, endTime=None,
     if satNum is None:
         satNum = [None]
     # If any particular satellite number is not chosen by user loop through all
-    # the available one's 
+    # the available one's
 
     satNum = np.array(satNum)
     snum_size = len(satNum)
-    
+
     lat_poes_all = [[] for j in range(snum_size)]
     lon_poes_all = [[] for j in range(snum_size)]
     ted_poes_all = [[] for j in range(snum_size)]
@@ -682,7 +682,7 @@ def overlayPoesTed(basemap_obj, ax, start_time, endTime=None,
         else:
             good_flag = True
 
-        # Loop through the list and store the data into arrays    
+        # Loop through the list and store the data into arrays
         len_data_all.append(len(curr_poes))
 
         for l in curr_poes:
@@ -708,14 +708,14 @@ def overlayPoesTed(basemap_obj, ax, start_time, endTime=None,
                     lon_poes_all[sn].append(l.folon)
 
                 time_poes_all[sn].append(l.time)
-            except Exception,e:
+            except Exception as e:
                 logging.exception(e)
                 logging.exception('could not get parameter for time' + l.time)
 
     if not good_flag:
       return None
 
-    lat_poes_all = np.array(lat_poes_all) 
+    lat_poes_all = np.array(lat_poes_all)
     lon_poes_all = np.array(lon_poes_all)
     ted_poes_all = np.array(ted_poes_all)
     time_poes_all = np.array(time_poes_all)
@@ -797,7 +797,7 @@ def overlayPoesBnd(basemap_obj, ax, start_time, coords='geo', hemi=1,
     from davitpy import rcParams
 
     igrf_file = rcParams['IGRF_DAVITPY_COEFF_FILE']
-    
+
     # check all the inputs for validity
     assert isinstance(start_time, dt.datetime), \
         logging.error('stime must be a datetime object')
@@ -835,7 +835,7 @@ def overlayPoesBnd(basemap_obj, ax, start_time, coords='geo', hemi=1,
             logging.warning('No data found')
             continue
 
-        # Loop through the list and store the data into arrays    
+        # Loop through the list and store the data into arrays
         len_data_all.append(len(curr_poes))
 
         for l in range(len_data_all[-1]):
@@ -885,7 +885,7 @@ def overlayPoesBnd(basemap_obj, ax, start_time, coords='geo', hemi=1,
     eq_bnd_lats = []
     eq_bnd_lons = []
     po_bnd_lats = []
-    po_bnd_lons = []    
+    po_bnd_lons = []
 
     for n1 in range(snum_size):
         curr_sat_lats = lat_poes_all[n1]

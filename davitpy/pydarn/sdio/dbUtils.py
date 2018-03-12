@@ -1,7 +1,7 @@
 """
 .. module:: dbUtils
    :synopsis: the classes needed for manipulating the mongodb
-   
+
 .. moduleauthor:: AJ, 20130108
 
 pydarn.sdio.dbUtils
@@ -64,11 +64,11 @@ def getServerConn(username=davitpy.rcParams['SDBREADUSER'],
     # get a server connection, checking for any errors
     try:
         sconn = MongoClient('mongodb://'+username+':'+password+'@'+dbAddress)
-    except Exception,e:
+    except Exception as e:
         logging.error(e)
         logging.error('problem connecting to server {}'.format(dbAddress))
         sconn = None
-    
+
     # return connection for good, none for bad
     return sconn
 
@@ -78,7 +78,7 @@ def getDbConn(username=davitpy.rcParams['SDBREADUSER'],
     """ Gets a connection to the database 'dbName'. on the mongodb server.
     This is the middle-tier connection.  In order to actually access data, this
     connection must be used to get a data connection.
- 
+
     Examples
     ----------
     dbConn = getDbConn(username='auser',password='apass',\
@@ -137,7 +137,7 @@ def getDataConn(username=davitpy.rcParams['SDBREADUSER'],
                 collName='beams'):
     """Gets a connection to the collection collName on the mongodb server. This
     is the highetst level connection.
- 
+
     Examples
     ----------
     dataconn = getDbConn(username='auser',password='apass',\
@@ -161,12 +161,12 @@ def getDataConn(username=davitpy.rcParams['SDBREADUSER'],
         The name of the database to connect to. (default='radData')
     collName : (str)
         The name of the collection to connect to. (default='beams')
- 
+
     Returns
     --------
     dataconn : (/NoneType)
         A connection to the database, or None if no connection could be made.
- 
+
     Notes
     ------
     mongodb hierarchy goes SERVER->DATABASE->COLLECTION
@@ -285,7 +285,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None,
     Written by AJ 20130108
     """
     t = dt.datetime.now()
-  
+
     # a list which will contain our query criteria
     qry_list = []
 
@@ -299,7 +299,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None,
         qry_list.append({"time": sTime})
     else:
         # if endtime is not provided, use a 24-hour window
-        if(eTime == None): 
+        if(eTime == None):
             eTime = sTime + dt.timedelta(hours=24)
 
         # query for time later than start time and less than end time
@@ -350,7 +350,7 @@ def readFromDb(sTime=None, eTime=None, stid=None, channel=None, bmnum=None,
     # check if we have any results
     try:
         count = qry.count()
-    except Exception,e:
+    except Exception as e:
         logging.error(e)
         qry = None
 
@@ -373,7 +373,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
         The three letter radar code, e.g. 'bks'
     time : (list)
         The time range to perform the operation in reduced hhmm format,
-        ie [28,652] instead of [0028,0652].  (default=[0,2400])
+        ie [28,652] instead of [0028,652].  (default=[0,2400])
     fileType : (str)
         The file type for which to perform the operation. Valid inputs are:
         'fitex', 'fitacf', 'lmfit', 'rawacf' , 'iqdat' (default='fitacf')
@@ -386,12 +386,12 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
     ------
     This is a write operation, so you must have DBWRITEUSER and DBWRITEPASS
     defined in rcParams.
- 
+
     Written by AJ 20130108
     """
     from davitpy import utils
     import math
-  
+
     # parse the date_str into a datetime object
     my_date = utils.yyyymmddToDate(date_str)
 
@@ -399,7 +399,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
     # files are named
     hr1 = 2 * int(math.floor(time[0] / 50.0))
     hr2 = 2 * int(math.floor(time[1] / 50.0))
-    print "TEST!", hr1, int(math.floor(time[0] / 100. / 2.)*2)
+    print("TEST!", hr1, int(math.floor(time[0] / 100. / 2.)*2))
 
     min1 = int(time[0] - int(math.floor(time[0] / 100.0) * 100))
     min2 = int(time[1] - int(math.floor(time[1] / 1000.) * 100))
@@ -414,7 +414,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
         etime = my_date + dt.timedelta(days=1)
     else:
         etime = my_date.replace(hour=hr2, minute=min2)
-    
+
     # open the dmap file
     my_file = radDataOpen(stime, rad, eTime=etime, fileType=fileType,
                           src='local')
@@ -433,7 +433,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
         estr = '{:s}and file type [{:s}] combination'.format(estr, fileType)
         logging.error(estr)
         return None
-    
+
     # get a write connection to the db
     try:
         beams = getDataConn(davitpy.rcParams['DBWRITEUSER'],
@@ -470,7 +470,7 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
 
             # convert the dmap dict to a db dictionary
             dmapdict = dmap_beam.toDbDict()
-      
+
             # perform a query (search for already existent entry
             qry = beams.find({'$and':[{cipher["time"]: dmap_beam.time},
                                       {cipher["bmnum"]: dmap_beam.bmnum},
@@ -488,6 +488,6 @@ def mapDbFit(date_str, rad, time=[0,2400], fileType='fitex'):
                 beams.save(dbdict)
         # read the next record from the dmap file
         dmap_beam = radDataReadRec(my_file)
-  
+
     # close the dmap file
     my_file.close()
