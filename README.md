@@ -39,8 +39,6 @@ We need to install some dependencies using a script that makes calls to apt-get 
 
     sudo ./install/debian_dependencies.sh
 
-Note that this script also modifies your ~/.bashrc file to set environment variables identifying the DaViTPy installation location, the SuperDARN database access information, and others.  Because of this, please source your ~/.bashrc file (or close and reopen a new terminal window) to refresh your environment variables.
-
 Next, do the actual davitpy install (from in the davitpy directory):
 
     sudo python setup.py install
