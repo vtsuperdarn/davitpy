@@ -35,7 +35,7 @@ Module author:: AJ, 20130123
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
-
+import os
 
 class kpDay(gmeData):
     """a class to represent a day of kp data. Extends class gme.base.gmeBase.gmeData.

@@ -36,7 +36,7 @@ Module Author:: AJ, 20130131
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
-
+import os
 class aeRec(gmeData):
     """a class to represent a record of ae data.  Extends class
     gme.base.gmeBase.gmeData. Note that Ae data is available

@@ -31,6 +31,7 @@ gridData
 mapData
 """
 
+import os
 import logging
 from davitpy.utils import twoWayDict
 

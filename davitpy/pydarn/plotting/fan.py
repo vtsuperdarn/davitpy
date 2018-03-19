@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """The fan module
 
 Module generating fan plots
@@ -27,35 +26,45 @@ overlayFan  plot a scan of data on a map
 
 """
 
-from davitpy import utils
+# standard libraries
+import logging  # TODO: this either needs to be removed or handled better
 import numpy
 import math
-import matplotlib
+import matplotlib.pyplot as plot
 import calendar
 import pylab
-import matplotlib.pyplot as plot
-import matplotlib.lines as lines
+import pickle
+import os
+from datetime import datetime, timedelta
 from matplotlib.ticker import MultipleLocator
-import matplotlib.patches as patches
+from matplotlib import patches, cm, pyplot, lines
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib.figure import Figure
-import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.backends.backend_pdf import PdfPages
+
+# Third party libraries
 from mpl_toolkits.basemap import Basemap, pyproj
-from davitpy.utils.timeUtils import *
-from davitpy.pydarn.sdio.radDataRead import *
-import logging
+
+# local libraries
+from davitpy import utils, gme
+from davitpy.pydarn import radar
+from davitpy.pydarn.plotting.mapOverlay import overlayFov, overlayRadar
+from davitpy.utils.timeUtils import *  # This is not a good practice because it is too ambigous
+from davitpy.pydarn.sdio.radDataRead import radDataOpen, radDataReadRec
+from davitpy.pydarn.sdio import beamData
+from davitpy.utils.coordUtils import coord_conv
+from davitpy.utils.davitpy_exceptions import DavitpyNoFoundError
 
 
-def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
-            filtered=False, scale=[], channel=None, coords='geo',
-            colors='lasse', gsct=False, fov=True, edgeColors='face',
-            lowGray=False, fill=True, velscl=1000., legend=True,
-            overlayPoes=False, poesparam='ted', poesMin=-3., poesMax=0.5,
-            poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
-            overlayBnd=False, show=True, png=False, pdf=False, dpi=500,
+def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
+            filtered=False,fileName='', myFiles=[], scale=[], channel=None,
+            coords='geo', colors='lasse', gsct=False, fov=True,
+            edgeColors='face', lowGray=False, fill=True, velscl=1000.,
+            legend=True, overlayPoes=False, poesparam='ted', poesMin=-3.,
+            poesMax=0.5, poesLabel=r"Total Log Energy Flux [ergs cm$^{-2}$ s$^{-1}$]",
+            overlayBnd=False, show=True, extension="ps", dpi=500,
             tFreqBands=[]):
-    print("pltFan")
     """A function to make a fan plot
 
     Parameters
@@ -75,6 +84,12 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
     filtered : Optional[boolean]
         A flag indicating whether the data should be boxcar filtered.
         default = False
+    fileName : Optional[string]
+        The filename you wish to save the fan plot image as.
+    myFiles : optional[list of pydarn.sdio.radDataTyoes.radDatPtr]
+        contains the pipeline to the data that you want to plot. If specified,
+        then the datafiles will be used, otherwise the remote data will be used.
+        default: []
     scale : Optional[list]
         The min and max values of the color scale, i.e. [min,max].  If this is
         set to [], then default values will be used
@@ -124,11 +139,10 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
     show : Optional[boolean]
         A flag indicating whether to display the figure on the screen.  This
         can cause problems over ssh.  default = True
-    pdf : Optional[boolean]
-        A flag indicating whether to output to a pdf file.  default = False.
-        WARNING: saving as pdf is slow
-    png : Optional[boolean]
-        A flag indicating whether to output to a png file.  default = False
+    extension : Optional[string]
+        String repersenting the extention you wish to save the image in.
+        Do not include the period, the extension postfix.
+        default: "ps"
     dpi : Optional[int]
         Dots per inch if saving as png.  default = 300
     tFreqBands : optional
@@ -144,39 +158,44 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
     Examples
     --------
         import datetime as dt
-        pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
-        pydarn.plotting.fan.plotFan(dt.datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
+        pydarn.plotting.fan.plotFan(datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True)
+        pydarn.plotting.fan.plotFan(datetime(2013,3,16,16,30),['fhe','fhw'],param='power',gsct=True,tFreqBands=[[10000,11000],[]])
 
+    Modified by Marina Schmidt 20180312
     """
-    from davitpy import pydarn
-    from davitpy import gme
-    import datetime as dt
-    import pickle
-    from matplotlib.backends.backend_pdf import PdfPages
 
-    from davitpy.utils.coordUtils import coord_conv
+    tt = datetime.now()
+    possible_params = ["velocity","power","width","elevation","phi0"]
+    color_options = ["lasse","aj"]
+    # Do not use asserts! this is bad practice!
+    # raise exceptions and make new exception classes for betteer descriptions
+    if not isinstance(sTime, datetime):
+        raise TypeError('sTime must be a datetime object')
+    if not isinstance(rad, list):
+        raise TypeError("rad must be a list, eg ['bks'] or ['bks','fhe']")
 
-    tt = dt.datetime.now()
-
-    # check the inputs
-    assert(isinstance(sTime, dt.datetime)), 'error, sTime must be a datetime \
-           object'
-    assert(isinstance(rad, list)), "error, rad must be a list, eg ['bks'] or \
-           ['bks','fhe']"
     for r in rad:
-        assert(isinstance(r, str) and len(r) == 3), 'error, elements of rad \
-               list must be 3 letter strings'
-    assert(param == 'velocity' or param == 'power' or param == 'width' or
-           param == 'elevation' or param == 'phi0'), ("error, allowable params \
-           are 'velocity','power','width','elevation','phi0'")
-    assert(scale == [] or len(scale) == 2), (
-        'error, if present, scales must have 2 elements')
-    assert(colors == 'lasse' or colors == 'aj'), "error, valid inputs for color \
-        are 'lasse' and 'aj'"
+        if not isinstance(r, str) and len(r) == 3:
+            raise TypeError('error, elements of rad '\
+                            'list must be 3 letter strings')
+    if param not in possible_params:
+        raise ValueError(" {} is not an allowable param. The possible params"\
+                         "are 'velocity','power','width','elevation',"\
+                         "'phi0'".format(param))
+    if scale != [] and len(scale) != 2:
+        raise ValueError('The length of scale is {}.\
+                         Scale must have 2 elements'.format(len(scale)))
+    if colors not in color_options:
+        raise ValueError("{} is not a valid color option. Possible colors are \
+                         are 'lasse' and 'aj'".format(color))
 
     # check freq band and set to default if needed
-    assert(tFreqBands == [] or len(tFreqBands) == len(rad)), 'error, if \
-        present, tFreqBands must have same number of elements as rad'
+    if tFreqBands != [] and len(tFreqBands) != len(rad):
+        raise ValueError('tFreeBands: {lfreqbands} and rad: {lrad} are '\
+                         'not the same length.tFreqBands must have '\
+                         'same number of elements '\
+                         'as rad'.format(lfreqbands=len(tFreqBands),
+                                        lrad=len(rad)))
     tbands = []
     for i in range(len(rad)):
         if tFreqBands == [] or tFreqBands[i] == []:
@@ -185,15 +204,17 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
             tbands.append(tFreqBands[i])
 
     for i in range(len(tbands)):
-        assert(tbands[i][1] > tbands[i][0]), 'error, frequency upper bound must \
-            be > lower bound'
+        if tbands[i][1] < tbands[i][0]:
+            raise TypeError('Frequency upper bound {ub} must \
+            be > lower bound {lb}'.format(tbands[j][1],
+                                          tbands[j][0]))
 
-    if(scale == []):
-        if(param == 'velocity'): scale = [-200, 200]
-        elif(param == 'power'): scale = [0, 30]
-        elif(param == 'width'): scale = [0, 150]
-        elif(param == 'elevation'): scale = [0, 50]
-        elif(param == 'phi0'): scale = [-numpy.pi, numpy.pi]
+    if scale == []:
+        if param == 'velocity': scale = [-200, 200]
+        elif param == 'power': scale = [0, 30]
+        elif param == 'width': scale = [0, 150]
+        elif param == 'elevation': scale = [0, 50]
+        elif param == 'phi0': scale = [-numpy.pi, numpy.pi]
 
     fbase = sTime.strftime("%Y%m%d")
 
@@ -201,16 +222,24 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
                                                  lowGray=lowGray)
 
     # open the data files
-    myFiles = []
+    # I feel we should not do any file fetching in this file
+    # it makes for redundant code
     myBands = []
-    for i in range(len(rad)):
-        f = radDataOpen(sTime, rad[i], sTime + dt.timedelta(seconds=interval),
-                        fileType=fileType, filtered=filtered, channel=channel)
-        if(f is not None):
-            myFiles.append(f)
+    if len(myFiles) == 0:
+        myFiles = []
+        for i in range(len(rad)):
+            f = radDataOpen(sTime, rad[i], sTime + timedelta(seconds=interval),
+                            fileType=fileType, filtered=filtered, channel=channel)
+            if(f is not None):
+                myFiles.append(f)
+                myBands.append(tbands[i])
+    else:
+        for i in range(len(rad)):
             myBands.append(tbands[i])
 
-    assert(myFiles != []), 'error, no data available for this period'
+    if myFiles == []:
+        raise DavitpyNoDataFoundError('No data availablefor {}'\
+                                      .format(sTime.strftime("%Y %m %d %H:%M")))
 
     xmin, ymin, xmax, ymax = 1e16, 1e16, -1e16, -1e16
 
@@ -233,7 +262,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
 
         # get to field of view coords in order to determine map limits
         t = allBeams[i].time
-        site = pydarn.radar.site(radId=allBeams[i].stid, dt=t)
+        site = radar.site(radId=allBeams[i].stid, dt=t)
         sites.append(site)
         # Make lists of site lats and lons.  latC and lonC are used
         # for finding the map centre.
@@ -243,7 +272,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
         lonFull.append(xlon)
         latC.append(xlat)
         lonC.append(xlon)
-        myFov = pydarn.radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,
+        myFov = radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,
                                         ngates=allBeams[i].prm.nrang + 1,
                                         nbeams=site.maxbeam, coords=coords,
                                         date_time=t)
@@ -278,7 +307,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
 
     # Now do some stuff in map projection coords to get necessary width and
     # height of map and also figure out the corners of the map
-    t1 = dt.datetime.now()
+    t1 = datetime.now()
     lonFull, latFull = (numpy.array(lonFull) + 360.) % 360.0, \
         numpy.array(latFull)
 
@@ -314,13 +343,13 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
     # overlay fields of view, if desired
     if(fov == 1):
         for i, r in enumerate(rad):
-            pydarn.plotting.overlayRadar(myMap, codes=r, dateTime=sTime)
+            overlayRadar(myMap, codes=r, dateTime=sTime)
             # this was missing fovObj! We need to plot the fov for this
             # particular sTime.
-            pydarn.plotting.overlayFov(myMap, codes=r, dateTime=sTime,
+            overlayFov(myMap, codes=r, dateTime=sTime,
                                        fovObj=fovs[i])
 
-    logging.debug(dt.datetime.now() - t1)
+    #logging.debug(datetime.now() - t1)
     # manually draw the legend
     if((not fill) and legend):
         # draw the box
@@ -355,9 +384,9 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
     bbox = myFig.gca().get_position()
     # now, loop through desired time interval
 
-    tz = dt.datetime.now()
+    tz = datetime.now()
     cols = []
-    bndTime = sTime + dt.timedelta(seconds=interval)
+    bndTime = sTime + timedelta(seconds=interval)
 
     ft = 'None'
     # go though all files
@@ -454,17 +483,13 @@ def plotFan(sTime, rad, interval=60, fileType='fitacf', param='velocity',
         gme.sat.poes.overlayPoesBnd(myMap, myFig.gca(), cTime)
 
     # handle the outputs
-    if png is True:
-        # if not show:
-        #   canvas = FigureCanvasAgg(myFig)
-        myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) +
-                      '.fan.png', dpi=dpi)
-    if pdf:
-        # if not show:
-        #   canvas = FigureCanvasAgg(myFig)
-        logging.info('Saving as pdf...this may take a moment...')
-        myFig.savefig(sTime.strftime("%Y%m%d.%H%M.") + str(interval) +
-                      '.fan.pdf')
+    if not fileName:
+        fileName = "{date}.{interval}.fan.{ext}"\
+                   "".format(date=sTime.strftime("%Y%m%d.%H%M"),
+                             interval=interval,
+                             ext=extension)
+    myFig.savefig(fileName)
+
     if show:
         myFig.show()
 
@@ -528,14 +553,12 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
                    verts=verts,intensities=intensities,gs_flg=gs_flg)
 
     """
-    from davitpy import pydarn
-
-    if(isinstance(myData, pydarn.sdio.beamData)): myData = [myData]
+    if(isinstance(myData, beamData)): myData = [myData]
 
     if(site is None):
-        site = pydarn.radar.site(radId=myData[0].stid, dt=myData[0].time)
+        site = radar.site(radId=myData[0].stid, dt=myData[0].time)
     if(fov is None):
-        fov = pydarn.radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
+        fov = radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
                                       ngates=myData[0].prm.nrang + 1,
                                       nbeams=site.maxbeam, coords=coords,
                                       date_time=myData[0].time)

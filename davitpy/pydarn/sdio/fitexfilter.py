@@ -39,6 +39,8 @@ the sdio function radDataRead.radDataOpen
 
 import numpy as np
 import datetime as dt
+import os
+
 from davitpy import utils
 import logging
 

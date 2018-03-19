@@ -13,7 +13,7 @@ rbspFp  FPs reading (or calculating) and plotting
 
 """
 import logging
-
+import os
 
 ############################################################################
 # Foot Points (FPs) calculation and plotting

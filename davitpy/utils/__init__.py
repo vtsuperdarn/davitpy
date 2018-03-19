@@ -29,6 +29,14 @@ ReEqu : float
 import logging
 
 try:
+    from davitpy_exceptions import *
+except Exception as e:
+    logging.exception(__file__ + ' -> utils.davitpy_exceptions: ' + str(e))
+try:
+    from davitpy_warnings import *
+except Exception as e:
+    logging.exception(__file__ + ' -> utils.davitpy_warnings: ' + str(e))
+try:
     from plotUtils import *
 except Exception as e:
     logging.exception(__file__ + ' -> utils.plotUtils: ' + str(e))

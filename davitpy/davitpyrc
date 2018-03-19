@@ -58,8 +58,8 @@ DAVIT_TMPDIR		: /tmp/sd/
 ####
 DAVIT_REMOTE_DIRFORMAT	: data/{year}/{ftype}/{radar}/
 DAVIT_REMOTE_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
-DAVIT_LOCAL_DIRFORMAT	: /sd-data/{year}/{ftype}/{radar}/
-DAVIT_LOCAL_FNAMEFMT	: {date}.{hour}......{radar}.{ftype},{date}.{hour}......{radar}.{channel}.{ftype}
+DAVIT_LOCAL_DIRFORMAT	: /home/marina/fitacf_files/
+DAVIT_LOCAL_FNAMEFMT	: {date}.C0.{radar}.{ftype},{date}.C0.{radar}.{channel}.{ftype}
 
 ####
 # MAP DATA FILE FETCHING

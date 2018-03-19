@@ -35,6 +35,8 @@ rawData
 iqData
 """
 
+import os
+
 import davitpy
 import logging
 from davitpy.utils import twoWayDict
@@ -172,7 +174,7 @@ class radDataPtr():
         arr = [fileType]
 
         if try_file_types:
-            all_file_types = ['fitacf']
+            all_file_types = ['fitex','fitacf','lmfit']
             try:
                 all_file_types.pop(all_file_types.index(fileType))
                 arr.extend(all_file_types)

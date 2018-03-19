@@ -13,6 +13,7 @@ MapConv
 import logging
 import datetime as dt
 import numpy as np
+import os
 
 class MapConv(object):
     """Plot/retrieve data from map(ex) and grd(ex) files

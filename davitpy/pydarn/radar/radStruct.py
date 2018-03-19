@@ -264,17 +264,17 @@ class network(object):
                     if self.radars[irad].code[ic].lower() == radN.lower():
                         found = True
                         return self.radars[irad]
-                        break
+                        break  # you do know this is pointless with the return statement?
             elif by.lower() == 'name':
                 if self.radars[irad].name.lower() == radN.lower():
                     found = True
                     return self.radars[irad]
-                    break
+                    break  # pointless
             elif by.lower() == 'id':
                 if self.radars[irad].id == radN:
                     found = True
                     return self.radars[irad]
-                    break
+                    break  # pointless
             else:
                 logging.error('getRadarBy: invalid method by {}'.format(by))
                 break

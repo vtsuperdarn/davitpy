@@ -33,7 +33,7 @@ find_flares     find flares in a certain class
 """
 from davitpy import rcParams
 import logging
-
+import os
 
 def read_goes(sTime,eTime=None,sat_nr=15):
     """Download GOES X-Ray Flux data from the NOAA FTP Site and return a
@@ -70,7 +70,6 @@ def read_goes(sTime,eTime=None,sat_nr=15):
     written by N.A. Frissell, 6 Sept 2014
 
     """
-    import os
     import datetime
     import fnmatch
     import glob
@@ -524,7 +523,6 @@ def find_flares(goes_data,window_minutes=60,min_class='X1',sTime=None,eTime=None
 
 
 if __name__ == '__main__':
-    import os
     import datetime
 
     import matplotlib

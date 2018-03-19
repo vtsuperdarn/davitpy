@@ -12,7 +12,7 @@ mhoData     Millstone Hill data interaction
 
 """
 import logging
-
+import os
 # constants
 user_fullname = 'Sebastien de Larquier'
 user_email = 'sdelarquier@vt.edu'
@@ -64,17 +64,17 @@ class mhoData(object):
         user_affiliation = 'Virginia Tech'
         date = dt.datetime(2010,11,17,20)
         edate = dt.datetime(2010,11,18,13)
-        data = mhoData( date, endDate=edate, 
-             user_fullname=user_fullname, 
-             user_email=user_email, 
+        data = mhoData( date, endDate=edate,
+             user_fullname=user_fullname,
+             user_email=user_email,
              user_affiliation=user_affiliation )
 
     written by Sebastien de Larquier, 2013-03
 
     """
 
-    def __init__(self, expDate, endDate=None, 
-        dataPath=None, fileExt=None, getMad=False, 
+    def __init__(self, expDate, endDate=None,
+        dataPath=None, fileExt=None, getMad=False,
         user_fullname=None, user_email=None, user_affiliation=None):
         self.expDate = expDate
         self.endDate = endDate
@@ -83,7 +83,7 @@ class mhoData(object):
 
         self.mhoCipher = {'nel': r'N$_e$ [$\log$(m$^{-3}$)]',
                           'ti': r'T$_i$ [K]',
-                          'te': r'T$_e$ [K]', 
+                          'te': r'T$_e$ [K]',
                           'vo': r'v$_i$ [m/s]'}
 
         # Look for the file locally
@@ -151,7 +151,7 @@ class mhoData(object):
             self.time = np.array( [ dt.datetime.utcfromtimestamp(tt) for tt in data['timestamps'][:].T ] )
             self.elev = np.array( [data1D['el1'][:],
                 data1D['el2'][:]] ).T
-            self.azim = np.array( [data1D['az1'][:], 
+            self.azim = np.array( [data1D['az1'][:],
                 data1D['az2'][:]] ).T
             try:
                 self.scntyp = data1D['scntyp'][:]
@@ -181,7 +181,7 @@ class mhoData(object):
         Belongs to class mhoData
 
         """
-        import os, glob, datetime
+        import glob, datetime
         import numpy as np
 
         fileName = 'mlh{:%y%m%d}'.format( self.expDate )
@@ -211,7 +211,7 @@ class mhoData(object):
 
         """
         import madrigalWeb.madrigalWeb
-        import os, h5py, numpy, datetime
+        import h5py, numpy, datetime
         from matplotlib.dates import date2num, epoch2num, num2date
 
         madrigalUrl = 'http://cedar.openmadrigal.org'
@@ -222,10 +222,10 @@ class mhoData(object):
         fdate = self.endDate if self.endDate else sdate + datetime.timedelta(days=1)
 
         # Get experiment list
-        expList = madData.getExperiments(30, 
-            sdate.year, sdate.month, sdate.day, sdate.hour, 
-            sdate.minute, sdate.second, 
-            fdate.year, fdate.month, fdate.day, fdate.hour, 
+        expList = madData.getExperiments(30,
+            sdate.year, sdate.month, sdate.day, sdate.hour,
+            sdate.minute, sdate.second,
+            fdate.year, fdate.month, fdate.day, fdate.hour,
             fdate.minute, fdate.second)
         if not expList: return
 
@@ -239,18 +239,18 @@ class mhoData(object):
         if not thisFilename: return
 
         # Download HDF5 file
-        result = madData.downloadFile(thisFilename, 
+        result = madData.downloadFile(thisFilename,
             os.path.join( self.dataPath,"{}.hdf5"\
-            .format(os.path.split(thisFilename)[1]) ), 
-            user_fullname, user_email, user_affiliation, 
+            .format(os.path.split(thisFilename)[1]) ),
+            user_fullname, user_email, user_affiliation,
             format="hdf5")
 
         # Now add some derived data to the hdf5 file
-        res = madData.isprint(thisFilename, 
+        res = madData.isprint(thisFilename,
                 'YEAR,MONTH,DAY,HOUR,MIN,SEC,RANGE,GDALT,NE,NEL,MDTYP,GDLAT,GLON',
                 '', user_fullname, user_email, user_affiliation)
 
-        rows = res.split("\n") 
+        rows = res.split("\n")
         filePath = os.path.join( self.dataPath,
             os.path.split(thisFilename)[1]+'.hdf5' )
         self.fileExt = ( os.path.split(thisFilename)[1] )[-1]
@@ -279,7 +279,7 @@ class mhoData(object):
                 dat = r.split()
                 if not dat: continue
                 # Figure out your range/time index
-                dt = datetime.datetime( int(dat[0]), int(dat[1]), int(dat[2]), 
+                dt = datetime.datetime( int(dat[0]), int(dat[1]), int(dat[2]),
                                         int(dat[3]), int(dat[4]), int(dat[5]) )
                 tind = numpy.where(ftime[:] <= date2num(dt))[0]
                 rind = numpy.where(frange[:] <= float(dat[6]))[0]

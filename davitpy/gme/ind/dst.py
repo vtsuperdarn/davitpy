@@ -36,7 +36,7 @@ Moduleauthor:: AJ, 20130131
 """
 from davitpy.gme.base.gmeBase import gmeData
 import logging
-
+import os
 class dstRec(gmeData):
     """a class to represent a record of dst data.  Extends class
     gme.base.gmeBase.gmeData. Note that Dst data is available from

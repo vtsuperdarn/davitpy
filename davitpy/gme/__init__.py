@@ -31,7 +31,7 @@ sat         satellite data
 
 """
 import logging
-
+import os
 
 try: import base
 except Exception as e:

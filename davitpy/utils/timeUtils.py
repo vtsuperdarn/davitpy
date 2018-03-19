@@ -33,7 +33,7 @@ yyyymmddToDate  string to date
 
 """
 import logging
-
+import os
 
 def dateToYyyymmdd(my_date):
     """Takes a python datetime object and returns a string in yyyymmdd format

@@ -27,7 +27,7 @@ Module author:: AJ, 20130129
 
 """
 import logging
-
+import os
 class gmeData:
     """a class to represent a a record of gme data.  Other classes will extend this class
 
