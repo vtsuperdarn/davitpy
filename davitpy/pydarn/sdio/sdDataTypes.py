@@ -33,10 +33,24 @@ mapData
 
 import os
 import logging
-from davitpy.utils import twoWayDict
+import datetime as dt
+import glob
+import string
+import numpy as np
 
-alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',
-         'r','s','t','u','v','w','x','y','z']
+import davitpy
+from davitpy.utils.timeUtils import datetimeToEpoch
+from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
+import davitpy.pydarn.sdio.fetchUtils as futils
+import davitpy.pydarn.dmapio as dmapio
+from davitpy.pydarn.dmapio import readDmapRec
+# from davitpy.pydarn.sdio import sdDataPtr
+
+alpha = ['a', 'b', 'c', 'd', 'e', 'f',
+         'g', 'h', 'i', 'j', 'k', 'l',
+         'm', 'n', 'o', 'p', 'q', 'r',
+         's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
 
 class sdDataPtr():
     """A class which contains a pipeline to a data source
@@ -144,16 +158,6 @@ class sdDataPtr():
                  remote_fnamefmt=None, remote_dict=None, remote_site=None,
                  username=None, password=None, port=None, tmpdir=None,
                  remove=False, try_file_types=True):
-#        from davitpy.pydarn.sdio import sdDataPtr
-        from davitpy.utils.timeUtils import datetimeToEpoch
-        import datetime as dt
-        import os
-        import glob
-        import string
-        from davitpy.pydarn.radar import network
-        import davitpy.pydarn.sdio.fetchUtils as futils
-        import davitpy
-
         self.sTime = sTime
         self.eTime = eTime
         self.hemi = hemi
@@ -161,46 +165,45 @@ class sdDataPtr():
         self.dType = None
         self.recordIndex = None
         self.__filename = fileName
-        self.__nocache  = noCache
+        self.__nocache = noCache
         self.__src = src
         self.__fd = None
         self.__ptr = None
 
         # check inputs
-        assert isinstance(self.sTime, dt.datetime), \
+        if not isinstance(self.sTime, dt.datetime):
             logging.error('sTime must be datetime object')
-        assert hemi is not None, \
+        if hemi is  None:
             logging.error("hemi must not be None")
-        assert self.eTime == None or isinstance(self.eTime, dt.datetime), \
+        if self.eTime is not None or not isinstance(self.eTime, dt.datetime):
             logging.error('eTime must be datetime object or None')
-        assert(fileType == 'grd' or fileType == 'grdex' or
-               fileType == 'map' or fileType == 'mapex'), \
+        if fileType not in ['grd','grdex','map','mapex']:
             logging.error("fileType must be one of: grd, grdex, map, or mapex")
-        assert fileName == None or isinstance(fileName, str), \
+        if fileName is not None or not isinstance(fileName, str):
             logging.error('fileName must be None or a string')
-        assert src == None or src == 'local' or src == 'sftp', \
+        if src is not None or src != 'local' or src != 'sftp':
             logging.error('src must be one of: None, local, or sftp')
 
-        if self.eTime == None:
+        if self.eTime is None:
             self.eTime = self.sTime + dt.timedelta(days=1)
 
         filelist = []
         arr = [fileType]
         if try_file_types:
-            file_array = {'grd':['grd', 'grdex'], 'map':['map', 'mapex']}
+            file_array = {'grd': ['grd', 'grdex'], 'map': ['map', 'mapex']}
 
             try:
                 file_key = fileType[0:3]
                 file_array[file_key].pop(file_array[file_key].index(fileType))
                 arr.extend(file_array[file_key])
-            except:
+            except Exception as err:
                 pass
 
         # a temporary directory to store a temporary file
         if tmpdir is None:
             try:
                 tmpdir = davitpy.rcParams['DAVIT_TMPDIR']
-            except:
+            except Exception as err:
                 logging.warning("Unable to set temporary directory with "
                                 "rcParams. Using extra default of /tmp/sd/")
                 tmpdir = '/tmp/sd/'
@@ -211,11 +214,12 @@ class sdDataPtr():
         cached = False
 
         # First, check if a specific filename was given
-        if fileName != None:
+        if fileName is not None:
             try:
                 if not os.path.isfile(fileName):
-                    estr = 'problem reading [{:}]: file does '.format(fileName)
-                    logging.error('{:s}not exist'.format(estr))
+                    estr = 'problem reading [{}]: file does not exist'\
+                           ''.format(fileName)
+                    logging.error(estr)
                     return None
 
                 epoch = int(datetimeToEpoch(dt.datetime.now()))
@@ -223,23 +227,25 @@ class sdDataPtr():
                 if(string.find(fileName, '.bz2') != -1):
                     outname = string.replace(fileName, '.bz2', '')
                     command = 'bunzip2 -c {:s} > {:s}'.format(fileName, outname)
-                elif(string.find(fileName,'.gz') != -1):
+                elif(string.find(fileName, '.gz') != -1):
                     outname = string.replace(fileName, '.gz', '')
                     command = 'gunzip -c {:s} > {:s}'.format(fileName, outname)
                 else:
                     command = 'cp {:s} {:s}'.format(fileName, outname)
 
-                logging.info('performing: {:s}'.format(command))
+                message = 'performing: {}'.format(command)
+                logging.info(message)
                 os.system(command)
                 filelist.append(outname)
 
             except Exception as e:
                 logging.error(e)
-                logging.error('problem reading file [{:s}]'.format(fileName))
+                message = 'problem reading file [{}]'.format(fileName)
+                logging.error(message)
                 return None
 
         # Next, check for a cached file
-        if fileName == None and not noCache:
+        if fileName is None and not noCache:
             try:
                 if not cached:
                     command = "{:s}????????.??????.????????.????".format(tmpdir)
@@ -258,7 +264,8 @@ class sdDataPtr():
                             if t1 <= self.sTime and t2 >= self.eTime:
                                 cached = True
                                 filelist.append(f)
-                                logging.info('Found cached file {:s}'.format(f))
+                                message = 'Found cached file {}'.format(f)
+                                logging.info(message)
                                 break
                         except Exception as e:
                             logging.warning(e)
@@ -266,7 +273,7 @@ class sdDataPtr():
                 logging.warning(e)
 
         # Next, LOOK LOCALLY FOR FILES
-        if not cached and (src == None or src == 'local') and fileName == None:
+        if not cached and (src is None or src == 'local') and fileName is None:
             try:
                 for ftype in arr:
                     estr = "\nLooking locally for {:s} files ".format(ftype)
@@ -280,24 +287,25 @@ class sdDataPtr():
                         try:
                             local_dirfmt = \
                                 davitpy.rcParams['DAVIT_SD_LOCAL_DIRFORMAT']
-                        except:
+                        except Exception as err:
                             local_dirfmt = '/sd-data/{year}/{ftype}/{hemi}/'
-                            estr = "Config entry DAVIT_SD_LOCAL_DIRFORMAT not "
-                            estr = "{:s}set, using default: ".format(estr)
-                            logging.info("{:s}{:s}".format(estr, local_dirfmt))
+                            message = "Config entry DAVIT_SD_LOCAL_DIRFORMAT not "\
+                                      "set, using default: {}".format(local_dirfmt)
+                            logging.info(message)
 
                     if local_dict is None:
-                        local_dict = {'hemi':hemi, 'ftype':ftype}
+                        local_dict = {'hemi': hemi, 'ftype': ftype}
 
                     if 'ftype' in local_dict.keys():
                         local_dict['ftype'] = ftype
 
                     if local_fnamefmt is None:
                         try:
-                            local_fnamefmt = \
-                        davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT'].split(',')
-                        except:
-                            local_fnamefmt = ['{date}.{hemi}.{ftype}']
+                            local_fnamefmt = davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT'].split(',')
+                        except Exception as err:
+                            local_fnamefmt = '{date}.{hemi}.{ftype}'.format(date=date,
+                                                                            hemi=hemi,
+                                                                            ftype=ftype)
                             estr = 'Environment variable DAVIT_SD_LOCAL_'
                             estr = '{:s}FNAMEFMT not set, using '.format(estr)
                             estr = '{:s}default: {:s}'.format(estr,
@@ -323,7 +331,8 @@ class sdDataPtr():
                         for f in invalid_files:
                             estr = 'removing invalid file: {:s}'.format(f)
                             logging.info(estr)
-                            os.system('rm {:s}'.format(f))
+                            rm_command = 'rm {}'.format(f)
+                            os.system(rm_command)
 
                     # If we have valid files then continue
                     if len(filelist) > 0:
@@ -340,13 +349,14 @@ class sdDataPtr():
 
             except Exception as e:
                 logging.warning(e)
-                estr = "Unable to fetch any local data, attempting to fetch "
-                logging.warning("{:s}remote data".format(estr))
+                message = "Unable to fetch any local data, attempting to fetch "\
+                          " remote data"
+                logging.warning(message)
                 src = None
 
         # Finally, check the sftp server if we have not yet found files
-        if((src == None or src == 'sftp') and self.__ptr == None and
-           len(filelist) == 0 and fileName == None):
+        if((src is None or src == 'sftp') and self.__ptr is None and
+           len(filelist) == 0 and fileName is None):
             for ftype in arr:
                 estr = 'Looking on the remote SFTP server for '
                 logging.info('{:s}{:s} files'.format(estr, ftype))
@@ -357,15 +367,15 @@ class sdDataPtr():
                     if remote_site is None:
                         try:
                             remote_site = davitpy.rcParams['DB']
-                        except:
-                            remote_site = 'sd-data.ece.vt.edu'
-                            estr = 'Config entry DB not set, using default: '
-                            logging.info("{:s}{:s}".format(estr, remote_site))
+                        except Exception as err:
+                            estr = 'Config entry DB not set, using default: '\
+                                    'sd-data.ece.vt.edu'
+                            logging.info(estr)
 
                     if username is None:
                         try:
                             username = davitpy.rcParams['DBREADUSER']
-                        except:
+                        except Exception as err:
                             username = 'sd_dbread'
                             estr = 'Config entry DBREADUSER not set, using '
                             estr = '{:s}default: {:s}'.format(estr, username)
@@ -374,7 +384,7 @@ class sdDataPtr():
                     if password is None:
                         try:
                             password = davitpy.rcParams['DBREADPASS']
-                        except:
+                        except Exception as err:
                             password = '5d'
                             estr = 'Config entry DBREADPASS not set, using '
                             estr = '{:s}default: {:s}'.format(estr, password)
@@ -383,8 +393,8 @@ class sdDataPtr():
                     if remote_dirfmt is None:
                         try:
                             remote_dirfmt = \
-                            davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
-                        except:
+                                    davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
+                        except Exception as err:
                             remote_dirfmt = 'data/{year}/{ftype}/{hemi}/'
                             estr = 'Config entry DAVIT_SD_REMOTE_DIRFORMAT not'
                             estr = '{:s} set, using default: '.format(estr)
@@ -392,7 +402,7 @@ class sdDataPtr():
                             logging.info(estr)
 
                     if remote_dict is None:
-                        remote_dict = {'ftype':ftype, 'hemi':hemi}
+                        remote_dict = {'ftype': ftype, 'hemi': hemi}
 
                     if 'ftype' in remote_dict.keys():
                         remote_dict['ftype'] = ftype
@@ -400,8 +410,8 @@ class sdDataPtr():
                     if remote_fnamefmt is None:
                         try:
                             remote_fnamefmt = \
-                    davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
-                        except:
+                                    davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT'].split(',')
+                        except Exception as err:
                             remote_fnamefmt = ['{date}.{hemi}.{ftype}']
                             estr = 'Config entry DAVIT_SD_REMOTE_FNAMEFMT not '
                             estr = '{:s}set, using default: '.format(estr)
@@ -411,10 +421,10 @@ class sdDataPtr():
                     if port is None:
                         try:
                             port = davitpy.rcParams['DB_PORT']
-                        except:
-                            port = '22'
-                            estr = 'Config entry DB_PORT not set, using default'
-                            logging.info('{:s}: {:s}'.format(estr, port))
+                        except Exception as err:
+                            estr = 'Config entry DB_PORT not set, using default'\
+                                    ' 22'
+                            logging.info(estr)
 
                     outdir = tmpdir
 
@@ -438,10 +448,11 @@ class sdDataPtr():
                         for f in invalid_files:
                             estr = "removing invalid file: {:s}".format(f)
                             logging.info(estr)
-                            os.system("rm {:s}".format(f))
+                            rm_command ="rm {}".format(f)
+                            os.system()
 
                     # If we have valid files then continue
-                    if len(filelist) > 0 :
+                    if len(filelist) > 0:
                         estr = 'found {:s} data on sftp server'.format(ftype)
                         logging.info(estr)
                         self.fType = ftype
@@ -449,8 +460,9 @@ class sdDataPtr():
                         fileType = ftype
                         break
                     else:
-                        estr = "couldn't find {:s} data on sftp ".format(ftype)
-                        logging.info("{:s}server".format(estr))
+                        estr = "couldn't find {:s} data on sftp"\
+                                " server ".format(ftype)
+                        logging.info(estr)
 
                 except Exception as e:
                     logging.warning(e)
@@ -471,11 +483,13 @@ class sdDataPtr():
                 tmpname = '{:s}.{:s}.{:s}'.format(tmpname, hemi, fileType)
                 command = "cat {:s} > {:s}".format(string.join(filelist),
                                                    tmpname)
-                logging.info("performing: {:s}".format(command))
+                message = "performing: {}".format(command)
+                logging.info(message)
                 os.system(command)
                 for filename in filelist:
                     command = "rm {:s}".format(filename)
-                    logging.info("performing: {:s}".format(command))
+                    message = "performing: {}".format(command)
+                    logging.info()
                     os.system(command)
             else:
                 tmpname = filelist[0]
@@ -485,15 +499,15 @@ class sdDataPtr():
             self.__filename = tmpname
             self.open()
 
-        if self.__ptr != None:
-            if self.dType == None:
+        if self.__ptr is not None:
+            if self.dType is None:
                 self.dType = 'dmap'
         else:
             logging.info('Sorry, we could not find any data for you :(')
 
     def __repr__(self):
         my_str = 'sdDataPtr\n'
-        for key,var in self.__dict__.iteritems():
+        for key, var in self.__dict__.iteritems():
             my_str = "{:s}{:s} = {:s}\n".format(my_str, key, str(var))
         return my_str
 
@@ -512,14 +526,10 @@ class sdDataPtr():
 
     def open(self):
         """open the associated dmap filename."""
-        import os
         self.__fd = os.open(self.__filename, os.O_RDONLY)
         self.__ptr = os.fdopen(self.__fd)
 
     def createIndex(self):
-        import datetime as dt
-        import davitpy.pydarn.dmapio as dmapio
-
         recordDict = {}
         starting_offset = self.offsetTell()
 
@@ -562,7 +572,6 @@ class sdDataPtr():
         """jump to dmap record at supplied byte offset.
            Require offset to be in record index list unless forced.
         """
-        from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
 
         if force:
             return dmapio.setDmapOffset(self.__fd, offset)
@@ -578,12 +587,10 @@ class sdDataPtr():
     def offsetTell(self):
         """jump to dmap record at supplied byte offset.
         """
-        from davitpy.pydarn.dmapio import getDmapOffset
         return getDmapOffset(self.__fd)
 
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset
         return setDmapOffset(self.__fd, 0)
 
     def readRec(self):
@@ -596,11 +603,8 @@ class sdDataPtr():
             An object filled with the specified type of data.  Will return None
             when there is no more data in the pointer to read.
         """
-        import davitpy.pydarn.dmapio as dmapio
-        import datetime as dt
-
         # check input
-        if self.__ptr == None:
+        if self.__ptr is None:
             logging.error('the pointer does not point to any data')
             return None
 
@@ -627,7 +631,7 @@ class sdDataPtr():
                 logging.warning('problem reading time from file')
                 break
 
-            if(dfile == None or
+            if (dfile is None or
                dt.datetime.utcfromtimestamp(dfile['time']) > self.eTime):
                 # if we dont have valid data, clean up, get out
                 logging.info('reached end of data')
@@ -655,7 +659,6 @@ class sdDataPtr():
 
     def close(self):
         """close associated dmap file."""
-        import os
 
         if self.__ptr is not None:
             self.__ptr.close()
@@ -683,15 +686,11 @@ class sdDataPtr():
         # This method will need some modification for it to work with
         # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
         # specific code will need to be modified (readDmapRec).
-
-        import datetime as dt
-        import numpy as np
-        from davitpy.pydarn.dmapio import readDmapRec
-
         valid = []
 
         for f in filelist:
-            logging.info('Checking file: {:s}'.format(f))
+            message = 'Checking file: {}'.format(f)
+            logging.info(message)
             stimes = []
             etimes = []
 
@@ -734,9 +733,10 @@ class sdDataPtr():
             if np.size(inds) > 0 or np.size(inde) > 0:
                 valid.append(True)
             else:
-                valid.append(False) # ISSUE 217: FASTER TO NOT USE APPEND
+                valid.append(False)  # ISSUE 217: FASTER TO NOT USE APPEND
 
         return valid
+
 
 class sdBaseData():
     """A base class for the processed SD data types.  This allows for single
@@ -768,8 +768,6 @@ class sdBaseData():
 
         Written by AJ 20121130
         """
-        import datetime as dt
-
         syr = 1
         smo = 1
         sdy = 1
@@ -783,7 +781,7 @@ class sdBaseData():
         emt = 1
         esc = 1
 
-        for key,val in adict.iteritems():
+        for key, val in adict.iteritems():
             if key == 'start.year':
                 syr = adict['start.year']
             elif key == 'start.month':
@@ -835,9 +833,10 @@ class sdBaseData():
 
     def __repr__(self):
         mystr = ''
-        for key,val in self.__dict__.iteritems():
+        for key, val in self.__dict__.iteritems():
             mystr = "{:s}{:s} = {:s}\n".format(mystr, str(key), str(val))
         return mystr
+
 
 class gridData(sdBaseData):
     """ a class to contain a record of gridded data, extends sdBaseData
@@ -906,10 +905,10 @@ class gridData(sdBaseData):
         self.vemax = None
         self.vector = sdVector(dataDict=dataDict)
 
-        if dataDict != None:
+        if dataDict is not None:
             self.updateValsFromDict(dataDict)
 
-# HERE
+
 class mapData(sdBaseData):
     """ a class to contain a record of map potential data, extends sdBaseData
 
@@ -1013,8 +1012,9 @@ class mapData(sdBaseData):
         self.Np3 = None
         self.model = sdModel(dataDict=dataDict)
 
-        if(dataDict != None):
+        if(dataDict is not None):
             self.updateValsFromDict(dataDict)
+
 
 class sdVector(sdBaseData):
     """ a class to contain vector records of gridded data, extends sdBaseData
@@ -1064,8 +1064,9 @@ class sdVector(sdBaseData):
         self.wdtmedian = None
         self.wdtsd = None
 
-        if(dataDict != None):
+        if(dataDict is not None):
             self.updateValsFromDict(dataDict)
+
 
 class sdModel(sdBaseData):
     """ a class to contain model records of map poential data, extends
@@ -1095,19 +1096,17 @@ class sdModel(sdBaseData):
         self.boundarymlat = None
         self.boundarymlon = None
 
-        if(dataDict != None):
+        if(dataDict is not None):
             self.updateValsFromDict(dataDict)
 
-# TESTING CODE
-if __name__=="__main__":
-    import os
-    import datetime as dt
+
+# TESTING CODE # TODO: should look into unit tests instead of main test code?
+if __name__ == "__main__":
     import hashlib
-    import davitpy
 
     try:
         tmpdir = davitpy.rcParams['DAVIT_TMPDIR']
-    except:
+    except Exception as err:
         tmpdir = '/tmp/sd/'
 
     hemi = 'north'
@@ -1126,12 +1125,12 @@ if __name__=="__main__":
     print("  DB_PORT:", davitpy.rcParams['DB_PORT'])
     print("  DBREADUSER:", davitpy.rcParams['DBREADUSER'])
     print("  DBREADPASS:", davitpy.rcParams['DBREADPASS'])
-    print("  DAVIT_SD_REMOTE_DIRFORMAT:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT'])
-    print("  DAVIT_SD_REMOTE_FNAMEFMT:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT'])
-    print("  DAVIT_SD_REMOTE_TIMEINC:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC'])
+    print("  DAVIT_SD_REMOTE_DIRFORMAT:",
+          davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT'])
+    print("  DAVIT_SD_REMOTE_FNAMEFMT:",
+          davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT'])
+    print("  DAVIT_SD_REMOTE_TIMEINC:",
+          davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC'])
     print("  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR'])
 
     src = 'sftp'
@@ -1142,7 +1141,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print("Actual File Size:  ", statinfo.st_size)
-        print("Expected File Size:", expected_filesize )
+        print("Expected File Size:", expected_filesize)
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
         print("Actual Md5sum:  ", md5sum)
         print("Expected Md5sum:", expected_md5sum)
@@ -1170,7 +1169,7 @@ if __name__=="__main__":
         print(ptr.offsetSeek(4))
         print("What is the current offset:")
         print(ptr.offsetTell())
-    except:
+    except Exception as err:
         print("record read failed for some reason")
 
     ptr.close()
@@ -1178,12 +1177,12 @@ if __name__=="__main__":
 
     print("\nRunning local grab example for sdDataPtr.")
     print("Environment variables used:")
-    print("  DAVIT_SD_LOCAL_DIRFORMAT:", \
-        davitpy.rcParams['DAVIT_SD_LOCAL_DIRFORMAT'])
-    print("  DAVIT_SD_LOCAL_FNAMEFMT:", \
-        davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT'])
-    print("  DAVIT_SD_LOCAL_TIMEINC:", \
-        davitpy.rcParams['DAVIT_SD_LOCAL_TIMEINC'])
+    print("  DAVIT_SD_LOCAL_DIRFORMAT:",
+          davitpy.rcParams['DAVIT_SD_LOCAL_DIRFORMAT'])
+    print("  DAVIT_SD_LOCAL_FNAMEFMT:",
+          davitpy.rcParams['DAVIT_SD_LOCAL_FNAMEFMT'])
+    print("  DAVIT_SD_LOCAL_TIMEINC:",
+          davitpy.rcParams['DAVIT_SD_LOCAL_TIMEINC'])
     print("  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR'])
 
     src = 'local'
@@ -1194,7 +1193,7 @@ if __name__=="__main__":
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
         print("Actual File Size:  ", statinfo.st_size)
-        print("Expected File Size:", expected_filesize )
+        print("Expected File Size:", expected_filesize)
         md5sum = hashlib.md5(open(expected_path).read()).hexdigest()
         print("Actual Md5sum:  ", md5sum)
         print("Expected Md5sum:", expected_md5sum)
@@ -1216,7 +1215,7 @@ if __name__=="__main__":
         print("Should now be back at beginning:")
         mydata = ptr.readRec()
         print(mydata.recordDict['time'])
-    except:
+    except Exception as err:
         print("record read failed for some reason")
     ptr.close()
 

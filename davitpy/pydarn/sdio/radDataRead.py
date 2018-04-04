@@ -33,6 +33,10 @@ Functions
   :func:`pydarn.sdio.radDataRead.radDataCreateIndex`
 """
 import logging
+from davitpy.pydarn.sdio import radDataPtr
+from davitpy.pydarn.radar import network
+from davitpy.pydarn.sdio import radDataTypes
+
 
 def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
                 fileType='fitex', filtered=False, src=None, fileName=None,
@@ -160,9 +164,6 @@ def radDataOpen(sTime, radcode, eTime=None, channel=None, bmnum=None, cp=None,
 
     Written by AJ 20130110
     """
-    from davitpy.pydarn.sdio import radDataPtr
-    from davitpy.pydarn.radar import network
-
     myPtr = radDataPtr(sTime=sTime, radcode=radcode, eTime=eTime,
                        channel=channel, bmnum=bmnum, cp=cp, fileType=fileType,
                        filtered=filtered, src=src, fileName=fileName,
@@ -209,8 +210,6 @@ def radDataReadRec(my_ptr):
 
     Written by AJ 20130110
     """
-    from davitpy.pydarn.sdio import radDataPtr
-
     assert isinstance(my_ptr, radDataPtr), \
       logging.error('input must be of type radDataPtr')
 
@@ -252,8 +251,6 @@ def radDataReadScan(my_ptr):
 
     Written by AJ 20130110
     """
-    from davitpy.pydarn.sdio import radDataPtr
-
     # check input
     assert isinstance(my_ptr, radDataPtr), \
       logging.error('input must be of type radDataPtr')
@@ -293,9 +290,7 @@ def radDataCreateIndex(my_ptr):
 
     Written by JDS 20140606
     """
-    from davitpy.pydarn.sdio.radDataTypes import radDataPtr
-
-    assert isinstance(my_ptr, radDataPtr), \
+    assert isinstance(my_ptr, radDataTypes.radDataPtr), \
       logging.error('input must be of type radDataPtr')
 
     return my_ptr.createIndex()
@@ -332,9 +327,7 @@ def radDataReadAll(my_ptr):
 
     Written by AJ 20130606
     """
-    from davitpy.pydarn.sdio import radDataPtr
-
-    # check input
+   # check input
     assert isinstance(my_ptr, radDataPtr), \
       logging.error('input must be of type radDataPtr')
 

@@ -285,7 +285,8 @@ def parseDate(date):
         tdate = [date[0] / 10000, date[0] / 100 - date[0] /
                  10000 * 100, date[0] - date[0] / 100 * 100]
     else:
-        logging.error('Invalid date format: ', date)
+        message = 'Invalid date format: {}'.format(date)
+        logging.error(message)
         return
 
     return tdate
@@ -332,7 +333,8 @@ def parseTime(time):
     elif len(time) == 1 and len(str(time[0])) >= 1 and len(str(time[0])) <= 4:
         ttime = [time[0] / 100, time[0] - time[0] / 100 * 100]
     else:
-        logging.error('Invalid time format: ', time)
+        message =  'Invalid time format: {}'.format(time)
+        logging.error(message)
         return
 
     return ttime

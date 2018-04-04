@@ -22,6 +22,14 @@ Sebastien
 
 """
 import logging
+import sqlite3 as lite
+import os
+import numpy as np
+import pickle
+from datetime import datetime
+
+import davitpy
+from davitpy.utils import geoPack as geo
 
 
 class network(object):
@@ -58,18 +66,15 @@ class network(object):
 
     """
     def __init__(self):
-        import sqlite3 as lite
-        import os
-        import davitpy
 
         self.radars = []
         # Get DB name
         try:
             rad_path = davitpy.rcParams['DAVIT_TMPDIR']
-        except:
+        except Exception as err:
             try:
                 rad_path = os.environ['HOME']
-            except:
+            except Exception as err:
                 rad_path = os.path.dirname(os.path.abspath(__file__))
         dbname = os.path.join(rad_path, '.radars.sqlite')
 
@@ -258,9 +263,9 @@ class network(object):
 
         """
         found = False
-        for irad in xrange(self.nradar):
+        for irad in range(self.nradar):
             if by.lower() == 'code':
-                for ic in xrange(self.radars[irad].cnum):
+                for ic in range(self.radars[irad].cnum):
                     if self.radars[irad].code[ic].lower() == radN.lower():
                         found = True
                         return self.radars[irad]
@@ -318,17 +323,13 @@ class network(object):
         written by Sebastien, 2012-08
 
         """
-        from datetime import datetime as dt
-        from davitpy.utils import geoPack as geo
-        import numpy as np
-
         if not datetime:
-            datetime = dt.utcnow()
+            datetime = datetime.utcnow()
 
         found = False
         out = {'radars': [], 'dist': [], 'beam': []}
 
-        for irad in xrange(self.nradar):
+        for irad in range(self.nradar):
             site = self.radars[irad].getSiteByDate(datetime)
             # Skip if radar inactive at date
             if (not site) and (self.radars[irad].status != 1):
@@ -392,13 +393,11 @@ class network(object):
         written by Sebastien, 2012-08
 
         """
-        from datetime import datetime as dt
-
         if not datetime:
-            datetime = dt.utcnow()
+            datetime = datetime.utcnow()
 
         codes = []
-        for irad in xrange(self.nradar):
+        for irad in range(self.nradar):
             tcod = self.radars[irad].getSiteByDate(datetime)
             if((tcod) and (self.radars[irad].status == 1) and
                (self.radars[irad].stTime <= datetime <=
@@ -469,10 +468,6 @@ class radar(object):
     #              'hdwfname', 'stTime', 'edTime', 'snum', 'site')
 
     def __init__(self, code=None, radId=None):
-        import sqlite3 as lite
-        import pickle
-        import os
-        import davitpy
 
         self.id = 0
         self.status = 0
@@ -490,10 +485,10 @@ class radar(object):
         if code or radId:
             try:
                 rad_path = davitpy.rcParams['DAVIT_TMPDIR']
-            except:
+            except Exception as err:
                 try:
                     rad_path = os.environ['HOME']
-                except:
+                except Exception as err:
                     rad_path = os.path.dirname(os.path.abspath(__file__))
             dbname = os.path.join(rad_path, '.radars.sqlite')
 
@@ -534,10 +529,6 @@ class radar(object):
         written by Sebastien, 2013-02
 
         """
-        import sqlite3 as lite
-        import pickle
-        import os
-
         if not os.path.isfile(dbname):
             logging.error("%s not found", dbname)
             return
@@ -717,12 +708,6 @@ class site(object):
     """
 
     def __init__(self, radId=None, code=None, dt=None):
-        import sqlite3 as lite
-        import pickle
-        import os
-        import davitpy
-        import datetime
-
         # Lets do some type checks on the input
         if not isinstance(radId, int) and radId is not None:
             vtype = type(radId)
@@ -739,7 +724,7 @@ class site(object):
                             ' one should be set.')
             logging.warning('Using code %s', code)
 
-        if dt is not None and not isinstance(dt, datetime.datetime):
+        if dt is not None and not isinstance(dt, datetime):
             vtype = type(dt)
             logging.error('dt must be a datetime object, type found'
                           ' is %s', vtype)
@@ -763,10 +748,10 @@ class site(object):
         if radId or code:
             try:
                 rad_path = davitpy.rcParams['DAVIT_TMPDIR']
-            except:
+            except Exception as err:
                 try:
                     rad_path = os.environ['HOME']
-                except:
+                except Exception as err:
                     rad_path = os.path.dirname(os.path.abspath(__file__))
             dbname = os.path.join(rad_path, '.radars.sqlite')
 
@@ -810,10 +795,6 @@ class site(object):
         written by Sebastien, 2013-02
 
         """
-        import sqlite3 as lite
-        import pickle
-        import os
-
         if not os.path.isfile(dbname):
             logging.error("%s not found", dbname)
             return
@@ -914,7 +895,6 @@ class site(object):
             beam number
 
         '''
-        import numpy as np
 
         # Assume the azimuth comes from the front lobe
         phi = np.radians(azim - self.boresite)

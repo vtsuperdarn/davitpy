@@ -1,4 +1,6 @@
-class DavitpyNoFoundError(Exception):
+
+
+class DavitpyNoDataFoundError(Exception):
     """
     Davitpy Exception for when there is not data found in the database or given.
 
@@ -9,9 +11,10 @@ class DavitpyNoFoundError(Exception):
 
     Author: Marina Schmidt 20180312
     """
-    def __init__(self,msg):
-        self.message=msg
+    def __init__(self, msg):
+        self.message = msg
         Exception.__init__(self, self.message)
+
 
 class DavitpyTimeRangeError(Exception):
     """
@@ -24,6 +27,36 @@ class DavitpyTimeRangeError(Exception):
 
     Author: Marina Schmidt 20180313
     """
-    def __init__(self,msg):
-        self.message=msg
+    def __init__(self, msg):
+        self.message = msg
+        Exception.__init__(self, self.message)
+
+
+class DavitpyModelRequirementsError(Exception):
+    """
+    Davitpy excpetion when specific parameters for a given model is not provided by the user.
+
+     Parameters
+    ----------
+    msg: message of the error [string]
+
+    Author: Marina Schmidt 20180320
+    """
+    def __init__(self, msg):
+        self.message = msg
+        Exception.__init__(self, self.message)
+
+
+class DavitpyModelError(Exception):
+    """
+    Davitpy exception when there is an error in the given model.
+
+    Parameters
+    ----------
+    msg: message of the error [string]
+
+    Author: Marina Schmidt 20180320
+    """
+    def __init__(self, msg):
+        self.message = msg
         Exception.__init__(self, self.message)

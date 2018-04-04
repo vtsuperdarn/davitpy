@@ -26,9 +26,21 @@ References
 Based on Mike Ruohoniemi's GEOPACK
 Based on R.J. Barnes radar.pro
 
+Modifications
+-------------
+March 19th, 2018 - Marina Schmidt
+
 """
+# external imports
 import numpy as np
 import logging
+
+# local imports
+import davitpy.utils.model_vheight as vhm
+from davitpy.utils.davitpy_exceptions import (DavitpyModelRequirementsError,
+                                              DavitpyModelError)
+from davitpy.utils.coordUtils import coord_conv
+from davitpy.utils import geoPack
 
 
 class fov(object):
@@ -98,20 +110,16 @@ class fov(object):
                  siteLon=None, siteBore=None, siteAlt=None, siteYear=None,
                  elevation=None, altitude=300., hop=None, model='IS',
                  coords='geo', date_time=None, coord_alt=0., fov_dir='front'):
-        # Import neccessary functions and classes
-        from davitpy.utils.coordUtils import coord_conv
-
-        # Define class constants
-        rn = 'fov'
+        # Import neccessary functions and classes at the top please, try to avoid circular dependencies
 
         # Test that we have enough input arguments to work with
-        if(not site and None in [nbeams, ngates, bmsep, recrise, siteLat,
-                                 siteLon, siteBore, siteAlt, siteYear]):
-            estr = '{:s}: must provide either a site object or '.format(rn)
-            estr = '{:s}[nbeams, ngates, bmsep, recrise, siteLat,'.format(estr)
-            estr = '{:s} siteLon, siteBore, siteAlt, siteYear].'.format(estr)
-            logging.error(estr)
-            return
+        if not site and None in [nbeams, ngates, bmsep, recrise, siteLat,
+                                 siteLon, siteBore, siteAlt, siteYear]:
+            # If you use format please include {value_name}, this is a good practice and is more descriptive of what is being used
+            err_msg = 'Must provide either a site object or '\
+                      '[nbeams, ngates, bmsep, recrise, siteLat,'\
+                      ' siteLon, siteBore, siteAlt, siteYear].'
+            raise ValueError(err_msg)  # raise errors, if the user wants to ignore them then they should try/except them.
 
         # date_time checking is handled by coord_conv, and it already
         # knows all of the possible coord systems, so no need to do it
@@ -147,10 +155,12 @@ class fov(object):
             # Array is adjusted to add on extra beam edge by copying the last
             # element
             if len(frang) != nbeams:
-                estr = "{:s}: frang must be a scalar or numpy ".format(rn)
-                estr = "{:s}ndarray of size (nbeams). Using first".format(estr)
-                estr = "{:s} element: {}".format(estr, frang[0])
-                logging.error(estr)
+                err_msg = " length of frang {lfrang} is not the same size"\
+                          " as the number of beams"\
+                          "{nbeams}".format(lfrang=len(frang),
+                                            nbeams=nbeams)
+                # TODO: do we not want to exit if this is a problem?
+                logging.error(err_msg)
                 frang = frang[0] * np.ones(nbeams + 1)
             else:
                 frang = np.append(frang, frang[-1])
@@ -161,12 +171,10 @@ class fov(object):
             # Array is adjusted to add on extra beam edge by copying the last
             # element
             if len(rsep) != nbeams:
-                estr = "{:s}: rsep must be a scalar or numpy ndarray".format(
-                    rn)
-                estr = "{:s} of size (nbeams). Using first element".format(
-                    estr)
-                estr = "{:s}: {}".format(estr, rsep[0])
-                logging.error(estr)
+                err_msg = "length of rsep {lresp} must be the same size as"\
+                          " nbeams {nbeams}".format(lresp=len(rsep),
+                                                    nbeams=nbeams)
+                logging.error(err_msg)
                 rsep = rsep[0] * np.ones(nbeams + 1)
             else:
                 rsep = np.append(rsep, rsep[-1])
@@ -177,11 +185,10 @@ class fov(object):
             # Array is adjusted to add on extra beam edge by copying the last
             # element
             if len(recrise) != nbeams:
-                estr = "{:s}: recrise must be a scalar or numpy ".format(rn)
-                estr = "{:s}ndarray of size (nbeams). Using first ".format(
-                    estr)
-                estr = "{:s}element: {}".format(estr, recrise[0])
-                logging.error(estr)
+                err_msg = "length of recrise {lrecrise} must be the same size as"\
+                          " nbeams {nbeams}".format(lrecris=len(recrise),
+                                                    nbeams=nbeams)
+                logging.error(err_msg)
                 recrise = recrise[0] * np.ones(nbeams + 1)
             else:
                 recrise = np.append(recrise, recrise[-1])
@@ -196,12 +203,10 @@ class fov(object):
                 # the last element and replicating the whole array as many
                 # times as beams
                 if altitude.size != ngates:
-                    estr = '{:s}: altitude must be of a scalar or '.format(rn)
-                    estr = '{:s}numpy ndarray of size (ngates) or '.format(
-                        estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(estr, altitude[0])
-                    logging.error(estr)
+                    err_msg = "Altitude size {altsize} is the same number of "\
+                              " ngates {ngates}".format(altsize=altitude.size,
+                                                        ngates=ngates)
+                    logging.error(err_msg)
                     altitude = altitude[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     altitude = np.resize(np.append(altitude, altitude[-1]),
@@ -210,12 +215,12 @@ class fov(object):
                 # Array is adjusted to add on extra beam/gate edge by copying
                 # the last row and column
                 if altitude.shape != (nbeams, ngates):
-                    estr = '{:s}: altitude must be of a scalar or '.format(rn)
-                    estr = '{:s}numpy ndarray of size (ngates) or '.format(
-                        estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(altitude[0])
-                    logging.error(estr)
+                    err_msg = "Altitude shape {altshape} is the same number of "\
+                              " (nbeams,ngates) "\
+                              "({nbeams},{ngates})".format(altshape=altitude.shape,
+                                                           nbeams=nbeams,
+                                                           ngates=ngates)
+                    logging.error(err_msg)
                     altitude = altitude[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     altitude = np.append(altitude,
@@ -225,12 +230,10 @@ class fov(object):
                                          altitude[:, -1].reshape(nbeams, 1),
                                          axis=1)
             else:
-                estr = '{:s}: altitude must be of a scalar or '.format(rn)
-                estr = '{:s}numpy ndarray of size (ngates) or '.format(estr)
-                estr = '{:s}(nbeans,ngates). Using first element: '.format(
-                    estr)
-                estr = '{:s}{}'.format(estr, altitude[0])
-                logging.error(estr)
+                err_msg = "Altitude ndim {altndim} is not equals to 2 "\
+                          " or ngates {ngates}".format(altndim=altitude.ndim,
+                                                       ngates=ngates)
+                logging.error(err_msg)
                 altitude = altitude[0] * np.ones((nbeams + 1, ngates + 1))
         if isinstance(elevation, np.ndarray):
             if elevation.ndim == 1:
@@ -238,14 +241,12 @@ class fov(object):
                 # the last element and replicating the whole array as many
                 # times as beams
                 if elevation.size != ngates:
-                    estr = '{:s}: elevation must be of a scalar or '.format(rn)
-                    estr = '{:s}numpy ndarray of size (ngates) or '.format(
-                        estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(estr, elevation[0])
-                    logging.error(estr)
-                    elevation = elevation[0] * \
-                        np.ones((nbeams + 1, ngates + 1))
+                    err_msg = "Elavation size {elvsize} is not equal to the "\
+                              "number of ngates {ngates}"\
+                              "".format(elvsize=elevation.size,
+                                        ngates=ngates)
+                    logging.error(err_msg)
+                    elevation = elevation[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     elevation = np.resize(np.append(elevation, elevation[-1]),
                                           (nbeams + 1, ngates + 1))
@@ -253,14 +254,13 @@ class fov(object):
                 # Array is adjusted to add on extra beam/gate edge by copying
                 # the last row and column
                 if elevation.shape != (nbeams, ngates):
-                    estr = '{:s}: elevation must be of a scalar or '.format(rn)
-                    estr = '{:s}numpy ndarray of size (ngates) or '.format(
-                        estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(estr, elevation[0])
-                    logging.error(estr)
-                    elevation = elevation[0] * \
-                        np.ones((nbeams + 1, ngates + 1))
+                    err_msg = "Elavation size {elvshape} is not equal "\
+                              "(nbeams,ngates) ({nbeams},{ngates})"\
+                              "".format(elvshape=elevation.shape,
+                                        nbeams=nbeams,
+                                        ngates=ngates)
+                    logging.error(err_msg)
+                    elevation = elevation[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     elevation = np.append(elevation,
                                           elevation[-1, :].reshape(1, ngates),
@@ -269,11 +269,9 @@ class fov(object):
                                           elevation[:, -1].reshape(nbeams, 1),
                                           axis=1)
             else:
-                estr = '{:s}: elevation must be a scalar or '.format(rn)
-                estr = '{:s}numpy ndarray of size (ngates) or '.format(estr)
-                estr = '{:s}(nbeans,ngates). Using first element'.format(estr)
-                estr = '{:s}: {}'.format(estr, elevation[0])
-                logging.error(estr)
+                err_msg = "Elavation dimension {elvndim} is greater than 2"\
+                          "".format(elvndim=elevation.ndim)
+                logging.error(err_msg)
                 elevation = elevation[0] * np.ones((nbeams + 1, ngates + 1))
 
         if isinstance(hop, np.ndarray):
@@ -282,11 +280,11 @@ class fov(object):
                 # the last element and replicating the whole array as many
                 # times as beams
                 if hop.size != ngates:
-                    estr = '{:s}: hop must be of a scalar or numpy '.format(rn)
-                    estr = '{:s}ndarray of size (ngates) or '.format(estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(estr, hop[0])
-                    logging.error(estr)
+                    err_msg = "Hop size {hopsize} is not equal to the "\
+                              "number of ngates {ngates}"\
+                              "".format(hopsize=hop.size,
+                                        ngates=ngates)
+                    logging.error(err_msg)
                     hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     hop = np.resize(np.append(hop, hop[-1]),
@@ -295,20 +293,20 @@ class fov(object):
                 # Array is adjusted to add on extra beam/gate edge by copying
                 # the last row and column
                 if hop.shape != (nbeams, ngates):
-                    estr = '{:s}: hop must be of a scalar or numpy '.format(rn)
-                    estr = '{:s}ndarray of size (ngates) or '.format(estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(hop[0])
-                    logging.error(estr)
+                    err_msg = "Hop size {hopshape} is not equal "\
+                              "(nbeams,ngates) ({nbeams},{ngates})"\
+                              "".format(hopshape=hop.shape,
+                                        nbeams=nbeams,
+                                        ngates=ngates)
+                    logging.error(err_msg)
                     hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     hop = np.append(hop, hop[-1, :].reshape(1, ngates), axis=0)
                     hop = np.append(hop, hop[:, -1].reshape(nbeams, 1), axis=1)
             else:
-                estr = '{:s}: hop must be a scalar or numpy ndarray'.format(rn)
-                estr = '{:s} of size (ngates) or (nbeams,ngates).'.format(estr)
-                estr = '{:s} Using first element: {}'.format(estr, hop[0])
-                logging.error(estr)
+                err_msg = "Hop dimension {hopndim} is greater than 2"\
+                          "".format(elvndim=elevation.ndim)
+                logging.error(err_msg)
                 hop = hop[0] * np.ones((nbeams + 1, ngates + 1))
 
         # Do for coord_alt what we just did for altitude.
@@ -318,14 +316,12 @@ class fov(object):
                 # the last element and replicating the whole array as many
                 # times as beams
                 if coord_alt.size != ngates:
-                    estr = '{:s}: coord_alt must be a scalar or '.format(rn)
-                    estr = '{:s}numpy ndarray of size (ngates) or '.format(
-                        estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(estr, coord_alt[0])
-                    logging.error(estr)
-                    coord_alt = coord_alt[0] * \
-                        np.ones((nbeams + 1, ngates + 1))
+                    err_msg = "Coordinate altitude size {coordsize} is not "\
+                              "equal to the number of ngates {ngates}"\
+                              "".format(coordsize=coord_alt.size,
+                                        ngates=ngates)
+                    logging.error(err_msg)
+                    coord_alt = coord_alt[0] * np.ones((nbeams + 1, ngates + 1))
                 else:
                     coord_alt = np.resize(np.append(coord_alt, coord_alt[-1]),
                                           (nbeams + 1, ngates + 1))
@@ -333,12 +329,13 @@ class fov(object):
                 # Array is adjusted to add on extra beam/gate edge by copying
                 # the last row and column
                 if coord_alt.shape != (nbeams, ngates):
-                    estr = '{:s}: coord_alt must be a scalar or '.format(estr)
-                    estr = '{:s}numpy ndarray of size (ngates) or '.format(
-                        estr)
-                    estr = '{:s}(nbeans,ngates). Using first '.format(estr)
-                    estr = '{:s}element: {}'.format(estr, coord_alt[0])
-                    logging.error(estr)
+                    err_msg = "Coordinate altitude size {coordshape} is not "\
+                              "equal (nbeams,ngates) ({nbeams},{ngates})"\
+                              "".format(coordshape=coord_alt.shape,
+                                        nbeams=nbeams,
+                                        ngates=ngates)
+                    logging.error(err_msg)
+
                     coord_alt = coord_alt[0] * \
                         np.ones((nbeams + 1, ngates + 1))
                 else:
@@ -349,11 +346,10 @@ class fov(object):
                                           coord_alt[:, -1].reshape(nbeams, 1),
                                           axis=1)
             else:
-                estr = '{:s}: coord_alt must be a scalar or '.format(rn)
-                estr = '{:s}numpy ndarray of size (ngates) or '.format(estr)
-                estr = '{:s}(nbeans,ngates). Using first element'.format(estr)
-                estr = '{:s}: {}'.format(estr, coord_alt[0])
-                logging.error(estr)
+                err_msg = "Coordinate Altitude dimension {coordndim} is "\
+                          "greater than 2"\
+                          "".format(coordndim=coord_alt.ndim)
+                logging.error(err_msg)
                 coord_alt = coord_alt[0] * np.ones((nbeams + 1, ngates + 1))
 
         # Generate beam/gate arrays
@@ -377,7 +373,8 @@ class fov(object):
         for ib in beams:
             # if none of frang, rsep or recrise are arrays, then only execute
             # this for the first loop, otherwise, repeat for every beam
-            if (~is_param_array and ib == 0) or is_param_array:
+            # Warning!!!! ~ inverts the operation in other words ~x => -x - 1 and because True = 1 and False = 0 therefore ~True = -2 and ~False = -1. Please use not
+            if (not is_param_array and ib == 0) or is_param_array:
                 # Calculate center slant range
                 srang_center = slantRange(frang[ib], rsep[ib], recrise[ib],
                                           gates, center=True)
@@ -400,7 +397,7 @@ class fov(object):
                 thop = hop[ib, ig] if isinstance(hop, np.ndarray) else hop
 
                 if model == 'GS':
-                    if (~is_param_array and ib == 0) or is_param_array:
+                    if (not is_param_array and ib == 0) or is_param_array:
                         slant_range_center[ib, ig] = \
                             gsMapSlantRange(srang_center[ig], altitude=None,
                                             elevation=None)
@@ -430,7 +427,7 @@ class fov(object):
                                                 altitude=t_c_alt,
                                                 date_time=date_time)
                 else:
-                    latc, lonc = np.nan, np.nan
+                    latc, lonc = np.nan, np.nan  # TODO: do we want to return Nan? this may segfault other code that uses it. Maybe throw an exception?
                     late, lone = np.nan, np.nan
 
                 # Save into output arrays
@@ -473,8 +470,8 @@ class fov(object):
 # *************************************************************
 def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
                  adjusted_sr=True, elevation=None, altitude=None, hop=None,
-                 model=None, coords='geo', gs_loc="G", max_vh=400.0,
-                 fov_dir='front'):
+                 model='IS', coords='geo', gs_loc="G", max_vh=400.0,
+                 fov_dir='front', eval_loc=False):
     """Calculate coordinates of field point given the radar coordinates and
     boresight, the pointing direction deviation from boresight and elevation
     angle, and the field point slant range and altitude. Either the elevation
@@ -514,7 +511,8 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
         F3 : for Chisham F-region 1-1/2-hop ionospheric projection model
         C : for Chisham projection model (ionospheric only, ignores hop,
             requires total measured slant range)
-        None : if you trust your elevation or altitude values. more to come
+        None : if you trust your elevation or altitude values.
+        more to come
     coords
         'geo' (more to come)
     gs_loc : (str)
@@ -522,8 +520,13 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
         location 'I' for groundscatter (default='G')
     max_vh : (float)
         Maximum height for longer slant ranges in Standard model (default=400)
-    fov_dir
+    fov_dir: (str)
         'front' (default) or 'back'.  Specifies fov direction
+    eval_loc: (bool)
+        Evaluate the calculated location based on reasonable tolerance (True)
+        or accept the first calculation (False). Using True gives better
+        locations, but restricts data at the furthest range gates.
+        (default=Flase)
 
     Returns
     ---------
@@ -532,23 +535,21 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
     geo_dict['geoLon'] : (float or np.ndarray)
         Field point longitude(s) in degrees or np.nan if error
     """
-    from davitpy.utils import Re, geoPack
-    import davitpy.utils.model_vheight as vhm
-
+    # TODO: look int a method to deter 2.5 hop data such that the user does not need to set eval_loc
     # Only geo is implemented.
-    if coords != "geo":
-        logging.error("Only geographic (geo) is implemented in calcFieldPnt.")
-        return np.nan, np.nan
+    if coords != "geo":  # TODO: raise an exception?
+        err_msg = "Only geographic (geo) is implemented in calcFieldPnt."
+        logging.error(err_msg)
+        raise DavitpyModelRequirementsError(err_msg)
 
     # Use model to get altitude if desired
     xalt = np.nan
     calt = None
-    if model is not None:
-        if model in ['IS', 'GS', 'S']:
+    if model in ['IS', 'GS', 'S']:
             # The standard model can be used with or without an input altitude
             # or elevation.  Returns an altitude that has been adjusted to
             # comply with common scatter distributions
-            if hop is None:
+            if not hop:
                 if model == "S":
                     # Default to ionospheric backscatter if hop not specified
                     hop = 0.5
@@ -558,14 +559,17 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             xalt = vhm.standard_vhm(slant_range, adjusted_sr=adjusted_sr,
                                     max_vh=max_vh, hop=hop, alt=altitude,
                                     elv=elevation)
-        else:
+    elif model in ['E1', 'F1', 'F3', 'C']:
             # The Chisham model uses only the total slant range to determine
             # altitude based on years of backscatter data at SAS.  Performs
             # significantly better than the standard model for ionospheric
             # backscatter, not tested on groundscatter
-            if adjusted_sr:
-                logging.error("Chisham model needs total slant range")
-                return np.nan, np.nan
+            if adjusted_sr:  # TODO: Maybe we want to look into a better way of checking for this? This doesn't seem obvious
+                err_msg = "Adjusted slat range is True, Chisham needs a total"\
+                          " measured slant range. If you wish to use the "\
+                          " Chisham model set adjusted_sr = False"
+                logging.error(err_msg)
+                raise DavitpyModelRequirementsError(err_msg)
 
             # Use Chisham model to calculate virtual height
             cmodel = None if model == "C" else model
@@ -580,13 +584,25 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             if hop > 0.5:
                 calt = float(xalt)
 
-    elif elevation is None or np.isnan(elevation):
-        if hop is None or adjusted_sr:
-            logging.error("Total slant range and hop needed with measurements")
-            return np.nan, np.nan
-        if altitude is None or np.isnan(altitude):
-            logging.error("No observations supplied")
-            return np.nan, np.nan
+    # TODO: Document what we are doing or which model we are using here?
+    elif not elevation or np.isnan(elevation):
+        # Checking model requirements... which model is this?
+        if not hop:
+            err_msg = "Hop is not given. It is needed for the "\
+                      "elevation calculation."
+            logging.error(err_msg)
+            raise DavitpyModelRequirementsError(err_msg)
+
+        if adjusted_sr:  # TODO: raise an exception?
+            err_msg = "Adjusted Slant Range set to True. Total slant range is"\
+                      " required for this elevation calculation"
+            logging.error(err_msg)
+            raise DavitpyModelRequirementsError(err_msg)
+        # TODO: will it ever get nan altitudes?
+        if not altitude or np.isnan(altitude):
+            err_msg = "Please supply a altitude observation"
+            logging.error(err_msg)
+            raise DavitpyModelRequirementsError(err_msg)
 
         # Adjust slant range if there is groundscatter and the location
         # desired is the ionospheric reflection point
@@ -619,15 +635,15 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
             shop = hop - 0.5
 
         # Set safty counter and iteratively determine location
-        maxn = 30
+        maxn = 30  # TODO: explanation on these numbers would be nice
         hdel = 100.0
         htol = 0.5
         if (slant_range >= 800.0 and model != 'GS') or shop > 1.0:
-            htol = 5.0
+            htol = 5.0  # TODO: why 5?
         n = 0
-        while n < maxn:
+        while n < maxn:  # TODO: we should really review the naming conventions
             tr_dist = tr_rad + tr_alt
-            if calt is not None:
+            if calt:
                 # Adjust elevation angle for any hop > 1 (Chisham et al. 2008)
                 pos_dist = rad_pos + calt
                 phi = np.arccos((tr_dist**2 + pos_dist**2 - asr**2) /
@@ -660,36 +676,54 @@ def calcFieldPnt(tr_glat, tr_glon, tr_alt, boresight, beam_off, slant_range,
 
             # stop if the altitude is what we want it to be (or close enough)
             new_hdel = abs(xalt - geo_dict['distAlt'])
-            if new_hdel <= htol:
+            if new_hdel <= htol or not eval_loc:
                 break
 
             # stop unsuccessfully if the altitude difference hasn't improved
             if abs(new_hdel - hdel) < 1.0e-3:
-                n = maxn
+                err_msg = " Tolerance of {htol} was not reached after {n} iterations"\
+                      " when calculaging the elavation height".format(htol=htol,
+                                                                      n=n)
+                logging.error(err_msg)
+                raise DavitpyModelError(err_msg)
 
             # Prepare the next iteration
             hdel = new_hdel
             n += 1
 
         if n >= maxn:
-            estr = 'Accuracy on height calculation ({}) not '.format(htol)
-            estr = '{:s}reached quick enough. Returning nan, nan.'.format(estr)
-            logging.warning(estr)
-            return np.nan, np.nan
+            err_msg = " Tolerance of {htol} was not reached after {n} iterations"\
+                      " when calculaging the elavation height".format(htol=htol,
+                                                                      n=n)
+            logging.error(err_msg)
+            raise DavitpyModelError(err_msg)
         else:
             return geo_dict['distLat'], geo_dict['distLon']
+
     elif elevation is not None:
         # No projection model (i.e., the elevation or altitude is so good that
         # it gives you the proper projection by simple geometric
         # considerations). Using no models simply means tracing based on
         # trustworthy elevation or altitude
-        if hop is None or adjusted_sr:
-            logging.error("Hop and total slant range needed with measurements")
-            return np.nan, np.nan
-
-        if np.isnan(elevation):
-            logging.error("No observations provided")
-            return np.nan, np.nan
+        # Checking model requirements... which model is this?
+        # TODO: write a function to check for model requirements to reduce code copying
+        if not hop:
+            err_msg = "Hop is not given. It is needed for the "\
+                      " no projection model in the elevation calculation."
+            logging.error(err_msg)
+            raise DavitpyModelRequirementsError(err_msg)
+        if adjusted_sr:  # TODO: raise an exception?
+            err_msg = "Adjusted Slant Range set to True. Total slant range is"\
+                      " required for the no projection model "\
+                      "elevation calculation"
+            logging.error(err_msg)
+            raise DavitpyModelRequirementsError(err_msg)
+        # TODO: will it ever get nan altitudes?
+        if np.isnan(altitude):
+            err_msg = "Please supply a altitude observation for the "\
+                      "no projection model"
+            logging.error(err_msg)
+            raise DavitpyModelRequirementsError(err_msg)
 
         shop = hop - 0.5 if hop == np.floor(hop) and gs_loc == "I" else hop
         asr = slant_range
@@ -835,6 +869,7 @@ def gsMapSlantRange(slant_range, altitude=None, elevation=None):
         gsSlantRange = -1
 
     return gsSlantRange
+
 
 if __name__ == "__main__":
     from davitpy.pydarn.radar import radStruct

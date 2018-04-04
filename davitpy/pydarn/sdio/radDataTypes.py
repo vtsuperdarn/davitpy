@@ -35,13 +35,26 @@ rawData
 iqData
 """
 
-import os
-
+import itertools
+import numpy as np
 import davitpy
 import logging
-from davitpy.utils import twoWayDict
-alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',
-         'r','s','t','u','v','w','x','y','z']
+import datetime as dt
+import os
+import glob
+import string
+from davitpy import utils
+from davitpy.pydarn.sdio import fetchUtils as futils
+from davitpy.pydarn.dmapio import getDmapOffset, readDmapRec, setDmapOffset
+from davitpy.pydarn.sdio import scanData
+from davitpy import pydarn
+from davitpy.pydarn.sdio.radDataTypes import (radDataPtr, beamData,
+                                              fitData, prmData, rawData,
+                                              iqData, alpha)
+
+
+#alpha = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',
+#         'r','s','t','u','v','w','x','y','z']
 
 class radDataPtr():
     """A class which contains a pipeline to a data source
@@ -115,11 +128,6 @@ class radDataPtr():
                  remote_dirfmt=None, remote_fnamefmt=None, remote_dict=None,
                  remote_site=None, username=None, port=None, password=None,
                  tmpdir=None, remove=False, try_file_types=True):
-        import datetime as dt
-        import os,glob,string
-        from davitpy.pydarn.radar import network
-        from davitpy import utils
-        from davitpy.pydarn.sdio import fetchUtils as futils
 
         self.sTime = sTime
         self.eTime = eTime
@@ -199,8 +207,9 @@ class radDataPtr():
         if fileName != None:
             try:
                 if(not os.path.isfile(fileName)):
-                    estr = 'problem reading {:s} :file does '.format(fileName)
-                    logging.error("{:s}not exist".format(estr))
+                    estr = 'problem reading {:s} :file does '\
+                           'not exist'.format(fileName)
+                    logging.error(estr)
                     return None
                 outname = tmpdir + \
                           str(int(utils.datetimeToEpoch(dt.datetime.now())))
@@ -219,7 +228,8 @@ class radDataPtr():
                 self.dType = 'dmap'
             except Exception as e:
                 logging.exception(e)
-                logging.exception('problem reading file', fileName)
+                message = 'problem reading file: {}'.format(fileName)
+                logging.exception()
                 return None
 
         # Next, check for a cached file
@@ -242,7 +252,8 @@ class radDataPtr():
                             if t1 <= self.sTime and t2 >= self.eTime:
                                 cached = True
                                 filelist.append(f)
-                                logging.info('Found cached file: %s' % f)
+                                message = 'Found cached file: {}'.format(f)
+                                logging.info()
                                 break
                         except Exception as e:
                             logging.exception(e)
@@ -263,7 +274,8 @@ class radDataPtr():
                             if t1 <= self.sTime and t2 >= self.eTime:
                                 cached = True
                                 filelist.append(f)
-                                logging.info('Found cached file: %s' % f)
+                                message = 'Found cached file: {}'.format(f)
+                                logging.info(message)
                                 break
                         except Exception as e:
                             logging.exception(e)
@@ -290,8 +302,8 @@ class radDataPtr():
                             local_dirfmt = '/sd-data/{year}/{ftype}/{radar}/'
                             estr = 'Config entry DAVIT_LOCAL_DIRFORMAT not set,'
                             estr = '{:s} using default: '.format(estr)
-                            logging.exception("{:s}{:}".format(estr,
-                                                               local_dirfmt))
+                            message = "{}{}".format(estr,local_dirfmt)
+                            logging.exception(message)
 
                     if local_dict is None:
                         local_dict = {'radar':radcode, 'ftype':ftype,
@@ -309,8 +321,8 @@ class radDataPtr():
                                '{date}.{hour}......{radar}.{channel}.{ftype}']
                             estr = 'Config entry DAVIT_LOCAL_FNAMEFMT not set, '
                             estr = '{:s} using default: '.format(estr)
-                            logging.exception("{:s}{:}".format(estr,
-                                                               local_fnamefmt))
+                            message = "{}{}".format(estr, local_fnamefmt)
+                            logging.exception(message)
 
                     outdir = tmpdir
 
@@ -377,7 +389,8 @@ class radDataPtr():
                         except:
                             remote_site = 'sd-data.ece.vt.edu'
                             estr = 'Config entry DB not set, using default: '
-                            logging.warning("{:s}{:}".format(estr, remote_site))
+                            message = "{:s}{:}".format(estr, remote_site)
+                            logging.warning(message)
                     if username is None:
                         try:
                             username = davitpy.rcParams['DBREADUSER']
@@ -402,8 +415,9 @@ class radDataPtr():
                             remote_dirfmt = 'data/{year}/{ftype}/{radar}/'
                             estr = 'Config entry DAVIT_REMOTE_DIRFORMAT not '
                             estr = '{:s}set, using default: '.format(estr)
-                            logging.warning('{:s}{:}'.format(estr,
-                                                             remote_dirfmt))
+                            message = '{:s}{:}'.format(estr,
+                                                             remote_dirfmt)
+                            logging.warning(message)
                     if remote_dict is None:
                         remote_dict = {'ftype':ftype, 'channel':channel,
                                        'radar':radcode}
@@ -474,7 +488,8 @@ class radDataPtr():
                         break
                     else:
                         estr = "couldn't find remote [{}]".format(ftype)
-                        logging.info("{:s} data on".format(estr))
+                        message = "{:s} data on".format(estr)
+                        logging.info(message)
                 except Exception as e:
                     logging.exception(e)
                     logging.exception('problem reading from sftp server')
@@ -517,7 +532,8 @@ class radDataPtr():
                     try:
                         fTmpName = tmpName + 'f'
                         command = 'fitexfilter ' + tmpName + ' > ' + fTmpName
-                        logging.debug("performing: {:s}".format(command))
+                        message = "performing: {:s}".format(command)
+                        logging.debug(message)
                         os.system(command)
                     except Exception as e:
                         estr = 'problem filtering file, using unfiltered'
@@ -562,15 +578,10 @@ class radDataPtr():
 
     def open(self):
         """open the associated dmap filename."""
-        import os
         self.__fd = os.open(self.__filename,os.O_RDONLY)
         self.__ptr = os.fdopen(self.__fd)
 
     def createIndex(self):
-        import datetime as dt
-        from davitpy.pydarn.dmapio import getDmapOffset, readDmapRec
-        from davitpy.pydarn.dmapio import setDmapOffset
-
         recordDict = {}
         scanStartDict = {}
         starting_offset = self.offsetTell()
@@ -601,7 +612,6 @@ class radDataPtr():
         """jump to dmap record at supplied byte offset.
         Require offset to be in record index list unless forced.
         """
-        from davitpy.pydarn.dmapio import setDmapOffset, getDmapOffset
         if force:
             return setDmapOffset(self.__fd, offset)
         else:
@@ -615,12 +625,10 @@ class radDataPtr():
     def offsetTell(self):
         """jump to dmap record at supplied byte offset.
         """
-        from davitpy.pydarn.dmapio import getDmapOffset
         return getDmapOffset(self.__fd)
 
     def rewind(self):
         """jump to beginning of dmap file."""
-        from davitpy.pydarn.dmapio import setDmapOffset
         return setDmapOffset(self.__fd,0)
 
     def readScan(self, firstBeam=None, useEvery=None, warnNonStandard=True,
@@ -666,9 +674,6 @@ class radDataPtr():
         :func:`~pydarn.sdio.radDataRead.radDataOpen`.
         Also, if no channel was specified, it will only read channel 'a'.
         """
-        from davitpy.pydarn.sdio import scanData
-        from davitpy import pydarn
-
         if None in [firstBeam, useEvery] and firstBeam is not useEvery:
             estr = 'firstBeam and useEvery must both either be None or '
             raise ValueError('{:s}specified'.format(estr))
@@ -679,7 +684,8 @@ class radDataPtr():
 
         if self.__ptr is None:
             estr = 'Self.__ptr is None.  There is probably no data available '
-            logging.error('{:s}for your selected time.'.format(estr))
+            message = '{:s}for your selected time.'.format(estr)
+            logging.error(message)
             self.bmnum = orig_beam
             return None
 
@@ -746,8 +752,7 @@ class radDataPtr():
             return myScan[firstBeam::useEvery] or None
 
         # try to find the scan pattern automatically
-        import itertools
-        import numpy as np
+
         for firstBeam, useEvery in itertools.product(range(24), range(1, 24)):
             scan = myScan[firstBeam::useEvery]
             bmnums = [beam.bmnum for beam in scan]
@@ -779,11 +784,6 @@ class radDataPtr():
         an object filled with the data we are after.  Will return None when
         finished reading.
         """
-        from davitpy.pydarn.sdio.radDataTypes import radDataPtr, beamData, \
-            fitData, prmData, rawData, iqData, alpha
-        from davitpy import pydarn
-        import datetime as dt
-
         # check input
         if(self.__ptr == None):
             logging.error('Your pointer does not point to any data')
@@ -837,7 +837,6 @@ class radDataPtr():
 
     def close(self):
         """close associated dmap file."""
-        import os
 
         if self.__ptr is not None:
             self.__ptr.close()
@@ -863,11 +862,6 @@ class radDataPtr():
         # This method will need some modification for it to work with
         # file formats that are NOT DMAP (i.e. HDF5). Namely, the dmapio
         # specific code will need to be modified (readDmapRec).
-        import os
-        import datetime as dt
-        import numpy as np
-        from davitpy.pydarn.dmapio import readDmapRec
-
         valid = []
 
         for f in filelist:
@@ -977,7 +971,6 @@ class radBaseData():
 
         Written by AJ 20121130
         """
-        import datetime as dt
 
         # iterate through prmData's attributes
         # REMOVED BY ASR on 11 SEP 2014
@@ -1184,7 +1177,6 @@ class beamData(radBaseData):
             self.updateValsFromDict(beamDict)
 
     def __repr__(self):
-        import datetime as dt
         myStr = 'Beam record FROM: ' + str(self.time) + '\n'
         for key,var in self.__dict__.iteritems():
             if(isinstance(var, radBaseData) or isinstance(var, radDataPtr) or
@@ -1286,7 +1278,6 @@ class prmData(radBaseData):
             self.updateValsFromDict(prmDict)
 
     def __repr__(self):
-        import datetime as dt
         myStr = 'Prm data: \n'
         for key,var in self.__dict__.iteritems():
             myStr += '%s  = %s \n' % (key, var)
@@ -1371,7 +1362,6 @@ class fitData(radBaseData):
             self.updateValsFromDict(fitDict)
 
     def __repr__(self):
-        import datetime as dt
         myStr = 'Fit data: \n'
         for key,var in self.__dict__.iteritems():
             myStr += '%s = %s \n' % (key, var)
@@ -1409,7 +1399,6 @@ class rawData(radBaseData):
             self.updateValsFromDict(rawDict)
 
     def __repr__(self):
-        import datetime as dt
         myStr = 'Raw data: \n'
         for key,var in self.__dict__.iteritems():
             myStr += '%s = %s \n' % (key, var)
@@ -1484,15 +1473,12 @@ class iqData(radBaseData):
             self.updateValsFromDict(iqDict)
 
     def __repr__(self):
-        import datetime as dt
         myStr = 'IQ data: \n'
         for key,var in self.__dict__.iteritems():
             myStr += '%s = %s \n' % (key, var)
         return myStr
 
 if __name__=="__main__":
-    import os
-    import datetime
     import hashlib
     import davitpy
 

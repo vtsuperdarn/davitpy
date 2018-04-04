@@ -13,6 +13,13 @@ overlayFov     Overlay field(s)-of-view on a map
 
 """
 import logging
+from numpy import transpose, concatenate, vstack
+import numpy as np
+from matplotlib.patches import Polygon
+
+from davitpy.pydarn.radar import network
+from davitpy.pydarn.radar.radFov import fov
+from davitpy.utils.plotUtils import textHighlighted
 
 
 def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
@@ -68,11 +75,6 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     written by Sebastien, 2012-08
 
     """
-    from davitpy.pydarn.radar import network
-    from datetime import datetime as dt
-    from datetime import timedelta
-    from davitpy.utils.plotUtils import textHighlighted
-
     # List paired radars.  Each member of a pair is placed in a different
     # sublist, with the more westward member in the first sublist
     nearby_rad = [['adw', 'kod', 'cve', 'fhe', 'wal', 'gbr', 'pyk', 'aze',
@@ -123,10 +125,6 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     else:
         rad_input['mcolor'] = [markerColor for i in rad_input['vals']]
 
-    # Map width and height
-    width = mapObj.urcrnrx - mapObj.llcrnrx
-    height = mapObj.urcrnry - mapObj.llcrnry
-
     if hemi is None:
         hemiInt = 0
     else:
@@ -135,18 +133,23 @@ def overlayRadar(mapObj, codes=None, ids=None, names=None, dateTime=None,
     # iterates through radars to be plotted
     for ir, radN in enumerate(rad_input['vals']):
         rad = NetworkObj.getRadarBy(radN, rad_input['meth'])
-        if not rad: continue
+        if not rad:
+            continue
         site = rad.getSiteByDate(dateTime)
-        if not site: continue
+        if not site:
+            continue
         # Check for hemisphere specification
-        if site.geolat * hemiInt < 0: continue
+        if site.geolat * hemiInt < 0:
+            continue
         # Get radar coordinates in map projection
         if not hasattr(mapObj, 'coords'):
             x, y = mapObj(site.geolon, site.geolat)
         else:
             x, y = mapObj(site.geolon, site.geolat, coords='geo')
-        if not mapObj.xmin <= x <= mapObj.xmax: continue
-        if not mapObj.ymin <= y <= mapObj.ymax: continue
+        if not mapObj.xmin <= x <= mapObj.xmax:
+            continue
+        if not mapObj.ymin <= y <= mapObj.ymax:
+            continue
 
         # Plot radar position
         mapObj.scatter(x, y, s=markerSize, marker='o',
@@ -251,15 +254,6 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     written by Sebastien, 2012-09
 
     """
-    from davitpy.pydarn.radar import network
-    from davitpy.pydarn.radar.radFov import fov
-    from datetime import datetime as dt
-    from datetime import timedelta
-    import matplotlib.cm as cm
-    from numpy import transpose, ones, concatenate, vstack, shape
-    import numpy as np
-    from matplotlib.patches import Polygon
-    from pylab import gca
 
     # Set dateTime.
     if dateTime is not None:
@@ -273,7 +267,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     network_obj = network()
 
     # If all radars are to be plotted, create the list
-    if plot_all: codes = network_obj.getAllCodes(datetime=dateTime, hemi=hemi)
+    if plot_all:
+        codes = network_obj.getAllCodes(datetime=dateTime, hemi=hemi)
 
     # Define how the radars to be plotted are identified (code, id or name)
     if codes:
@@ -296,7 +291,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
     lcolor = lineColor
 
     # iterates through radars to be plotted
-    for ir in xrange(nradars):
+    for ir in range(nradars):
         # Get field of view coordinates
         if fovObj is None:
             rad = network_obj.getRadarBy(rad_input['vals'][ir],
@@ -346,7 +341,8 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                            (rad_fov.lonFull.shape[0], 1))
             grid[not_finite] = 999999
             tmp_sGate = (np.min(grid, axis=1)).max()
-            if tmp_sGate > sgate: sgate = tmp_sGate
+            if tmp_sGate > sgate:
+                sgate = tmp_sGate
 
         # Get radar coordinates in map projection
         if hasattr(mapObj, 'coords'):
@@ -380,10 +376,11 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
         if beams:
             try:
                 [b for b in beams]
-            except:
+            except Exception as err:  # TODO: what exceptions do we expect here?
                 beams = [beams]
             for ib in beams:
-                if not (0 <= ib <= x.shape[0]): continue
+                if not (0 <= ib <= x.shape[0]):
+                    continue
                 if not beamsColors:
                     bcol_rgb = ib / float(x.shape[0])
                     bcol = (bcol_rgb / 2., bcol_rgb, 1)
@@ -403,6 +400,7 @@ def overlayFov(mapObj, codes=None, ids=None, names=None, dateTime=None,
                 mapObj.ax.add_patch(patch)
 
     return
+
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt

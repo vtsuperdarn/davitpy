@@ -27,38 +27,25 @@ overlayFan  plot a scan of data on a map
 """
 
 # standard libraries
-import logging  # TODO: this either needs to be removed or handled better
 import numpy
 import math
 import matplotlib.pyplot as plot
-import calendar
-import pylab
-import pickle
-import os
 from datetime import datetime, timedelta
-from matplotlib.ticker import MultipleLocator
-from matplotlib import patches, cm, pyplot, lines
 from matplotlib.collections import PolyCollection, LineCollection
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.backends.backend_pdf import PdfPages
-
-# Third party libraries
-from mpl_toolkits.basemap import Basemap, pyproj
+import matplotlib.patches as patches
 
 # local libraries
 from davitpy import utils, gme
-from davitpy.pydarn import radar
+from davitpy.pydarn.radar import site, radFov
 from davitpy.pydarn.plotting.mapOverlay import overlayFov, overlayRadar
-from davitpy.utils.timeUtils import *  # This is not a good practice because it is too ambigous
 from davitpy.pydarn.sdio.radDataRead import radDataOpen, radDataReadRec
 from davitpy.pydarn.sdio import beamData
 from davitpy.utils.coordUtils import coord_conv
-from davitpy.utils.davitpy_exceptions import DavitpyNoFoundError
+from davitpy.utils.davitpy_exceptions import DavitpyNoDataFoundError
 
 
 def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
-            filtered=False,fileName='', myFiles=[], scale=[], channel=None,
+            filtered=False, fileName='', myFiles=[], scale=[], channel=None,
             coords='geo', colors='lasse', gsct=False, fov=True,
             edgeColors='face', lowGray=False, fill=True, velscl=1000.,
             legend=True, overlayPoes=False, poesparam='ted', poesMin=-3.,
@@ -163,12 +150,12 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
 
     Modified by Marina Schmidt 20180312
     """
-
-    tt = datetime.now()
-    possible_params = ["velocity","power","width","elevation","phi0"]
-    color_options = ["lasse","aj"]
-    # Do not use asserts! this is bad practice!
-    # raise exceptions and make new exception classes for betteer descriptions
+    # Plese avoid import libraries in the function this leads to circular dependencies which should not exist in the first place.
+    # Very bad practice. If you do need to import in a function try to use conditionals as the library may not exist.
+    possible_params = ["velocity", "power", "width", "elevation", "phi0"]
+    color_options = ["lasse", "aj"]
+    # Do not use asserts to throw exceptions, this is bad practice because it is unclear what the exception is about.
+    # Also raising built in exceptions is the beauty of python :)
     if not isinstance(sTime, datetime):
         raise TypeError('sTime must be a datetime object')
     if not isinstance(rad, list):
@@ -176,108 +163,110 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
 
     for r in rad:
         if not isinstance(r, str) and len(r) == 3:
-            raise TypeError('error, elements of rad '\
+            raise TypeError('error, elements of rad '
                             'list must be 3 letter strings')
     if param not in possible_params:
-        raise ValueError(" {} is not an allowable param. The possible params"\
-                         "are 'velocity','power','width','elevation',"\
+        raise ValueError(" {} is not an allowable param. The possible params"
+                         "are 'velocity','power','width','elevation',"
                          "'phi0'".format(param))
+    # For non clear error messages please include the value of the parameter
+    # or more information on which condition was not met, this helps the user to understand the expectations of the code
     if scale != [] and len(scale) != 2:
-        raise ValueError('The length of scale is {}.\
-                         Scale must have 2 elements'.format(len(scale)))
+        raise ValueError("The length of scale is {}."
+                         " Scale must have 2 elements".format(len(scale)))
     if colors not in color_options:
-        raise ValueError("{} is not a valid color option. Possible colors are \
-                         are 'lasse' and 'aj'".format(color))
+        raise ValueError("{} is not a valid color option. Possible colors are"
+                         " 'lasse' and 'aj'".format(colors))
 
     # check freq band and set to default if needed
     if tFreqBands != [] and len(tFreqBands) != len(rad):
-        raise ValueError('tFreeBands: {lfreqbands} and rad: {lrad} are '\
-                         'not the same length.tFreqBands must have '\
-                         'same number of elements '\
-                         'as rad'.format(lfreqbands=len(tFreqBands),
-                                        lrad=len(rad)))
+        raise ValueError("tFreeBands: {lfreqbands} and rad: {lrad} are "
+                         "not the same length.tFreqBands must have "
+                         "same number of elements "
+                         "as rad".format(lfreqbands=len(tFreqBands),
+                                         lrad=len(rad)))
     tbands = []
     for i in range(len(rad)):
         if tFreqBands == [] or tFreqBands[i] == []:
             tbands.append([8000, 20000])
         else:
             tbands.append(tFreqBands[i])
-
-    for i in range(len(tbands)):
         if tbands[i][1] < tbands[i][0]:
-            raise TypeError('Frequency upper bound {ub} must \
-            be > lower bound {lb}'.format(tbands[j][1],
-                                          tbands[j][0]))
+            raise TypeError("Frequency upper bound {ub} must "
+                            " be > lower bound {lb}".format(tbands[i][1],
+                                                            tbands[i][0]))
 
+    # Best practice is to indent if statements clauses instead of having them
+    # on one line. It is less error prone if someone wants to add something to
+    # this statement and matches PEP8 style.
     if scale == []:
-        if param == 'velocity': scale = [-200, 200]
-        elif param == 'power': scale = [0, 30]
-        elif param == 'width': scale = [0, 150]
-        elif param == 'elevation': scale = [0, 50]
-        elif param == 'phi0': scale = [-numpy.pi, numpy.pi]
-
-    fbase = sTime.strftime("%Y%m%d")
+        if param == 'velocity':
+            scale = [-200, 200]
+        elif param == 'power':
+            scale = [0, 30]
+        elif param == 'width':
+            scale = [0, 150]
+        elif param == 'elevation':
+            scale = [0, 50]
+        elif param == 'phi0':
+            scale = [-numpy.pi, numpy.pi]
 
     cmap, norm, bounds = utils.plotUtils.genCmap(param, scale, colors=colors,
                                                  lowGray=lowGray)
 
-    # open the data files
-    # I feel we should not do any file fetching in this file
-    # it makes for redundant code
+    # TODO: remove file fetching. File fetching should be its own class, plotting should only have to worry about plotting. This will help with flexibility and bugs.
     myBands = []
-    if len(myFiles) == 0:
-        myFiles = []
-        for i in range(len(rad)):
-            f = radDataOpen(sTime, rad[i], sTime + timedelta(seconds=interval),
-                            fileType=fileType, filtered=filtered, channel=channel)
-            if(f is not None):
-                myFiles.append(f)
-                myBands.append(tbands[i])
-    else:
-        for i in range(len(rad)):
+    for i in range(len(rad)):
+        if len(myFiles)-1 < i:  # TODO: Do we want to continue if there is no data for 1 of the radars? Is the order kept including when reading in files?
+            myFiles.append(radDataOpen(sTime, rad[i],
+                                       sTime + timedelta(seconds=interval),
+                                       fileType=fileType,
+                                       filtered=filtered,
+                                       channel=channel))
+        if myFiles[i]:
             myBands.append(tbands[i])
 
-    if myFiles == []:
-        raise DavitpyNoDataFoundError('No data availablefor {}'\
-                                      .format(sTime.strftime("%Y %m %d %H:%M")))
+    if len(myFiles) == 0:
+        pass
+        #raise DavitpyNoDataFoundError("No data available for {}"
+        #                              .format(sTime.strftime("%Y %m %d %H:%M")))
 
-    xmin, ymin, xmax, ymax = 1e16, 1e16, -1e16, -1e16
-
-    allBeams = [''] * len(myFiles)
+    # allBeams = [''] * len(myFiles)
+    allBeams = []
     sites, fovs, oldCpids, lonFull, latFull = [], [], [], [], []
     lonC, latC = [], []
 
     # go through all open files
     for i in range(len(myFiles)):
         # read until we reach start time
-        allBeams[i] = radDataReadRec(myFiles[i])
-        while (allBeams[i].time < sTime and allBeams[i] is not None):
-            allBeams[i] = radDataReadRec(myFiles[i])
-
-        # check that the file has data in the target interval
-        if(allBeams[i] is None):
-            myFiles[i].close()
+        # allBeams[i] = radDataReadRec(myFiles[i])
+        allBeams.append(radDataReadRec(myFiles[i]))
+        if not allBeams[i]:
+            myFiles[i].close()  # TODO: turn this into a pythonic method?
             myFiles[i] = None
             continue
 
+        while allBeams[i].time < sTime:
+            allBeams[i] = radDataReadRec(myFiles[i])
+
         # get to field of view coords in order to determine map limits
         t = allBeams[i].time
-        site = radar.site(radId=allBeams[i].stid, dt=t)
-        sites.append(site)
+        radarSite = site(radId=allBeams[i].stid, dt=t)
+        sites.append(radarSite)
         # Make lists of site lats and lons.  latC and lonC are used
         # for finding the map centre.
-        xlon, xlat = coord_conv(site.geolon, site.geolat, "geo", coords,
+        xlon, xlat = coord_conv(radarSite.geolon, radarSite.geolat, "geo", coords,
                                 altitude=0., date_time=t)
         latFull.append(xlat)
         lonFull.append(xlon)
         latC.append(xlat)
         lonC.append(xlon)
-        myFov = radar.radFov.fov(site=site, rsep=allBeams[i].prm.rsep,
-                                        ngates=allBeams[i].prm.nrang + 1,
-                                        nbeams=site.maxbeam, coords=coords,
-                                        date_time=t)
+        myFov = radFov.fov(site=radarSite, rsep=allBeams[i].prm.rsep,
+                                 ngates=allBeams[i].prm.nrang + 1,
+                                 nbeams=radarSite.maxbeam, coords=coords,
+                                 date_time=t)
         fovs.append(myFov)
-        for b in range(0, site.maxbeam + 1):
+        for b in range(0, radarSite.maxbeam + 1):
             for k in range(0, allBeams[i].prm.nrang + 1):
                 lonFull.append(myFov.lonFull[b][k])
                 latFull.append(myFov.latFull[b][k])
@@ -287,7 +276,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         b = 0
         latC.append(myFov.latFull[b][k])
         lonC.append(myFov.lonFull[b][k])
-        b = site.maxbeam
+        b = radarSite.maxbeam
         latC.append(myFov.latFull[b][k])
         lonC.append(myFov.lonFull[b][k])
 
@@ -307,9 +296,8 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
 
     # Now do some stuff in map projection coords to get necessary width and
     # height of map and also figure out the corners of the map
-    t1 = datetime.now()
-    lonFull, latFull = (numpy.array(lonFull) + 360.) % 360.0, \
-        numpy.array(latFull)
+    lonFull = (numpy.array(lonFull) + 360.) % 360.0
+    latFull = numpy.array(latFull)  # Try to avoid multiple assignments in one line when the input values are not the same. It becomes very hard to read.
 
     tmpmap = utils.mapObj(coords=coords, projection='stere', width=10.0**3,
                           height=10.0**3, lat_0=lat_0, lon_0=lon_0,
@@ -320,7 +308,6 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     maxx = x.max() * 1.05     # extrema a bit.
     maxy = y.max() * 1.05
     width = (maxx - minx)
-    height = (maxy - miny)
     llcrnrlon, llcrnrlat = tmpmap(minx, miny, inverse=True)
     urcrnrlon, urcrnrlat = tmpmap(maxx, maxy, inverse=True)
 
@@ -346,12 +333,9 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             overlayRadar(myMap, codes=r, dateTime=sTime)
             # this was missing fovObj! We need to plot the fov for this
             # particular sTime.
-            overlayFov(myMap, codes=r, dateTime=sTime,
-                                       fovObj=fovs[i])
-
-    #logging.debug(datetime.now() - t1)
+            overlayFov(myMap, codes=r, dateTime=sTime, fovObj=fovs[i])
     # manually draw the legend
-    if((not fill) and legend):
+    if not fill and legend:
         # draw the box
         y = [myMap.urcrnry * .82, myMap.urcrnry * .99]
         x = [myMap.urcrnrx * .86, myMap.urcrnrx * .99]
@@ -367,37 +351,39 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
                              va='center')
             xctr = x[0] + .175 * (x[1] - x[0])
             if(w < 4):
-                myFig.gca().scatter(xctr, y[1] * (.98 - w * .025), s=.1 * pts[w],
-                              zorder=15, marker='o', linewidths=.5,
-                              edgecolor='face', facecolor='k')
+                myFig.gca().scatter(xctr, y[1] * (.98 - w * .025),
+                                    s=.1 * pts[w],
+                                    zorder=15, marker='o', linewidths=.5,
+                                    edgecolor='face', facecolor='k')
             elif(w == 4):
-                myFig.gca().scatter(xctr, y[1] * (.98 - w * .025), s=.1 * 35.,
-                              zorder=15, marker='o', linewidths=.5,
-                              edgecolor='k', facecolor='w')
+                myFig.gca().scatter(xctr, y[1] * (.98 - w * .025),
+                                    s=.1 * 35.,
+                                    zorder=15, marker='o', linewidths=.5,
+                                    edgecolor='k', facecolor='w')
             elif(w == 5):
-                y = LineCollection(numpy.array([((xctr - dist / 2., y[1] *
-                                   (.98 - w * .025)), (xctr + dist / 2., y[1] *
-                                                       (.98 - w * .025)))]),
+                # This is a really messy line, I am not sure what is going on here
+                y = LineCollection(numpy.array([((xctr - dist / 2.,
+                                                 y[1] * (.98 - w * .025)),
+                                                 (xctr + dist / 2., y[1] *
+                                                 (.98 - w * .025)))]),
                                    linewidths=.5, zorder=15, color='k')
                 myFig.gca().add_collection(y)
-
     bbox = myFig.gca().get_position()
     # now, loop through desired time interval
 
-    tz = datetime.now()
     cols = []
     bndTime = sTime + timedelta(seconds=interval)
 
-    ft = 'None'
     # go though all files
     pcoll = None
     for i in range(len(myFiles)):
         scans = []
         # check that we have good data at this time
-        if(myFiles[i] is None or allBeams[i] is None): continue
-        ft = allBeams[i].fType
+        if not myFiles[i]:  # we check if allbeams[i] is not None earlier is this still necessary?
+            continue
+
         # until we reach the end of the time window
-        while(allBeams[i] is not None and allBeams[i].time < bndTime):
+        while allBeams[i].time < bndTime:
             # filter on frequency
             if (allBeams[i].prm.tfreq >= myBands[i][0] and
                     allBeams[i].prm.tfreq <= myBands[i][1]):
@@ -405,9 +391,10 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
             # read the next record
             allBeams[i] = radDataReadRec(myFiles[i])
         # if there is no data in scans, overlayFan will object
-        if scans == []: continue
+        if scans == []:
+            continue
         intensities, pcoll = overlayFan(scans, myMap, myFig, param, coords,
-                                        gsct=gsct, site=sites[i], fov=fovs[i],
+                                        gsct=gsct, radarSite=sites[i], fov=fovs[i],
                                         fill=fill, velscl=velscl, dist=dist,
                                         cmap=cmap, norm=norm)
 
@@ -417,47 +404,41 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         cbar = myFig.colorbar(pcoll, orientation='vertical', shrink=.65,
                               fraction=.1, drawedges=True)
 
-        l = []
+        y_labels = []  # Bad name for a variable
         # define the colorbar labels
-        for i in range(0, len(bounds)):
-            if(param == 'phi0'):
-                ln = 4
-                if(bounds[i] == 0): ln = 3
-                elif(bounds[i] < 0): ln = 5
-                l.append(str(bounds[i])[:ln])
+        for i in range(len(bounds)):
+            if param == 'phi0':
+                num_labels = 4  # TODO: really bad name since ln typically mean natural log
+                if bounds[i] == 0:
+                    num_labels = 3
+                elif bounds[i] < 0:
+                    num_labels = 5
+                y_labels.append(str(bounds[i])[:num_labels])
                 continue
-            if((i == 0 and param == 'velocity') or i == len(bounds) - 1):
-                l.append(' ')
+            if (i == 0 and param == 'velocity') or i == len(bounds) - 1:
+                y_labels.append(' ')
                 continue
-            l.append(str(int(bounds[i])))
-        cbar.ax.set_yticklabels(l)
+            y_labels.append(str(int(bounds[i])))
+        cbar.ax.set_yticklabels(y_labels)
         cbar.ax.tick_params(axis='y', direction='out')
         # set colorbar ticklabel size
         for ti in cbar.ax.get_yticklabels():
             ti.set_fontsize(12)
-        if(param == 'velocity'):
+        if param == 'velocity':
             cbar.set_label('Velocity [m/s]', size=14)
             cbar.extend = 'max'
 
-        if(param == 'grid'): cbar.set_label('Velocity [m/s]', size=14)
-        if(param == 'power'): cbar.set_label('Power [dB]', size=14)
-        if(param == 'width'): cbar.set_label('Spec Wid [m/s]', size=14)
-        if(param == 'elevation'): cbar.set_label('Elev [deg]', size=14)
-        if(param == 'phi0'): cbar.set_label('Phi0 [rad]', size=14)
+        if param == 'grid':  # TODO: Delete? There is no option for grid? Is this a mistake?
+            cbar.set_label('Velocity [m/s]', size=14)
+        if param == 'power':
+            cbar.set_label('Power [dB]', size=14)
+        if param == 'width':
+            cbar.set_label('Spec Wid [m/s]', size=14)
+        if param == 'elevation':
+            cbar.set_label('Elev [deg]', size=14)
+        if param == 'phi0':
+            cbar.set_label('Phi0 [rad]', size=14)
 
-    # myFig.gca().set_rasterized(True)
-    # label the plot
-    tx1 = myFig.text((bbox.x0 + bbox.x1) / 2.,
-                     bbox.y1 + .02, cTime.strftime('%Y/%m/%d'), ha='center',
-                     size=14, weight=550)
-    tx2 = myFig.text(bbox.x1 + .02, bbox.y1 + .02, cTime.strftime('%H:%M - ') +
-                     bndTime.strftime('%H:%M      '), ha='right', size=13,
-                     weight=550)
-    tx3 = myFig.text(bbox.x0, bbox.y1 + .02, '[' + ft + ']', ha='left',
-                     size=13, weight=550)
-    # label with frequency bands
-    tx4 = myFig.text(bbox.x1 + .02, bbox.y1, 'Frequency filters:', ha='right',
-                     size=8, weight=550)
     for i in range(len(rad)):
         myFig.text(bbox.x1 + .02, bbox.y1 - ((i + 1) * .015), rad[i] + ': ' +
                    str(tbands[i][0] / 1e3) + ' - ' + str(tbands[i][1] / 1e3) +
@@ -467,7 +448,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         pcols = gme.sat.poes.overlayPoesTed(myMap, myFig.gca(), cTime,
                                             param=poesparam, scMin=poesMin,
                                             scMax=poesMax)
-        if(pcols is not None):
+        if pcols:
             cols.append(pcols)
             pTicks = numpy.linspace(poesMin, poesMax, 8)
             cbar = myFig.colorbar(pcols, ticks=pTicks, orientation='vertical',
@@ -494,10 +475,11 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
         myFig.show()
 
 
-def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
+def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, radarSite=None,
                fov=None, gs_flg=[], fill=True, velscl=1000., dist=1000.,
                cmap=None, norm=None, alpha=1):
 
+    # TODO: go over this list again, they do not match up
     """A function of overlay radar scan data on a map
 
     Parameters
@@ -553,24 +535,27 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
                    verts=verts,intensities=intensities,gs_flg=gs_flg)
 
     """
-    if(isinstance(myData, beamData)): myData = [myData]
-
-    if(site is None):
-        site = radar.site(radId=myData[0].stid, dt=myData[0].time)
-    if(fov is None):
-        fov = radar.radFov.fov(site=site, rsep=myData[0].prm.rsep,
-                                      ngates=myData[0].prm.nrang + 1,
-                                      nbeams=site.maxbeam, coords=coords,
-                                      date_time=myData[0].time)
+    if isinstance(myData, beamData):
+        myData = [myData]
+    if not radarSite:
+        radarSite = site(radId=myData[0].stid, dt=myData[0].time)
+    if not fov:
+        fov = radFov.fov(site=radarSite, rsep=myData[0].prm.rsep,
+                         ngates=myData[0].prm.nrang + 1,
+                         nbeams=site.maxbeam, coords=coords,
+                         date_time=myData[0].time)
 
     gs_flg, lines = [], []
-    if fill: verts, intensities = [], []
-    else: verts, intensities = [[], []], [[], []]
+    if fill:
+        verts, intensities = [], []
+    else:
+        verts, intensities = [[], []], [[], []]
 
     # loop through gates with scatter
     for myBeam in myData:
         for k in range(0, len(myBeam.fit.slist)):
-            if myBeam.fit.slist[k] not in fov.gates: continue
+            if myBeam.fit.slist[k] not in fov.gates:
+                continue
             r = myBeam.fit.slist[k]
 
             if fill:
@@ -588,15 +573,15 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
                               (x1, y1)))
 
                 # save the param to use as a color scale
-                if(param == 'velocity'):
+                if param == 'velocity':
                     intensities.append(myBeam.fit.v[k])
-                elif(param == 'power'):
+                elif param == 'power':
                     intensities.append(myBeam.fit.p_l[k])
-                elif(param == 'width'):
+                elif param == 'width':
                     intensities.append(myBeam.fit.w_l[k])
-                elif(param == 'elevation' and myBeam.prm.xcf):
+                elif param == 'elevation' and myBeam.prm.xcf:
                     intensities.append(myBeam.fit.elv[k])
-                elif(param == 'phi0' and myBeam.prm.xcf):
+                elif param == 'phi0' and myBeam.prm.xcf:
                     intensities.append(myBeam.fit.phi0[k])
 
             else:
@@ -609,36 +594,38 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
                                fov.latCenter[myBeam.bmnum, r + 1])
 
                 theta = math.atan2(y2 - y1, x2 - x1)
-
-                x2, y2 = x1 + myBeam.fit.v[k] / velscl * (-1.0) * \
-                    math.cos(theta) * dist, y1 + myBeam.fit.v[k] / velscl * \
+                # Avoid assinging multiple variables in one line. Harder to debug
+                x2 = x1 + myBeam.fit.v[k] / velscl * (-1.0) * \
+                    math.cos(theta) * dist,
+                y2 = y1 + myBeam.fit.v[k] / velscl * \
                     (-1.0) * math.sin(theta) * dist
 
                 lines.append(((x1, y1), (x2, y2)))
                 # save the param to use as a color scale
-                if(param == 'velocity'):
+                if param == 'velocity':
                     intensities[0].append(myBeam.fit.v[k])
-                elif(param == 'power'):
+                elif param == 'power':
                     intensities[0].append(myBeam.fit.p_l[k])
-                elif(param == 'width'):
+                elif param == 'width':
                     intensities[0].append(myBeam.fit.w_l[k])
-                elif(param == 'elevation' and myBeam.prm.xcf):
+                elif param == 'elevation' and myBeam.prm.xcf:
                     intensities[0].append(myBeam.fit.elv[k])
-                elif(param == 'phi0' and myBeam.prm.xcf):
+                elif param == 'phi0' and myBeam.prm.xcf:
                     intensities[0].append(myBeam.fit.phi0[k])
 
-                if(myBeam.fit.p_l[k] > 0):
+                if myBeam.fit.p_l[k] > 0:
                     intensities[1].append(myBeam.fit.p_l[k])
                 else:
                     intensities[1].append(0.)
-            if(gsct):
+            if gsct:
                 gs_flg.append(myBeam.fit.gflg[k])
 
     # do the actual overlay
-    if(fill):
+    # TODO: can we add this to the above if fill clause?
+    if fill:
         # if we have data
-        if(verts != []):
-            if(gsct == 0):
+        if verts != []:
+            if gsct == 0:
                 inx = numpy.arange(len(verts))
             else:
                 inx = numpy.where(numpy.array(gs_flg) == 0)
@@ -657,8 +644,8 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
             return intensities, pcoll
     else:
         # if we have data
-        if(verts != [[], []]):
-            if(gsct == 0):
+        if verts != [[], []]:
+            if gsct == 0:
                 inx = numpy.arange(len(verts[0]))
             else:
                 inx = numpy.where(numpy.array(gs_flg) == 0)
@@ -693,9 +680,12 @@ def overlayFan(myData, myMap, myFig, param, coords='geo', gsct=0, site=None,
 
             return intensities, lcoll
 
-if __name__ == "__main__":
-    from datetime import datetime
 
+# PEP8 standard have 2 blank spaces between functions that are not in the same class
+if __name__ == "__main__":
+    # you do not need to import libraries that are used in the functions as well.
+    # If you need the library only in the main portion (testing purposes) then
+    # import the library.
     time = datetime(2014, 8, 7, 18, 30)
 
     print("Testing some of the plotFan stuff.  Time used is:")

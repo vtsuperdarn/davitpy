@@ -39,7 +39,11 @@ _error_details_fmt = 'line #%d\n\t"%s"\n\tin file "%s"'
 
 default_rc_not_found_message = 'Could not find the defaul davitpyrc file that should have been installed when DaViTpy was installed!'
 
-message_dict = {'type':'','path':''}
+message_dict = {'type': '', 'path': ''}
+
+# We need this so that when people use their own logging configurations it doesn't get trumpted by ours
+# We trump theirs because we are tynically root
+logging = logging.getLogger(__name__)
 
 # TO DO
 # Add some try: except: statements for python packages that davitpy requires
@@ -70,10 +74,11 @@ def _is_writable_dir(p):
             t.write(b'1')
         finally:
             t.close()
-    except:
-        return False
+    except Exception as err:
+        return False  # TODO: just raise the error?
 
     return True
+
 
 URL_REGEX = re.compile(r'http://|https://|ftp://|file://|file:\\')
 
@@ -399,10 +404,10 @@ class RcParams(dict):
                                   }
 
                     # Set up the logger using a basic config
-                    logging.basicConfig()
-                    # Update the logging level (do it this way so init_logging can be
-                    # called to update the logging level of a root logger).
-                    logging.getLogger().setLevel(level_dict[val])
+                #    logging.basicConfig()
+                #    # Update the logging level (do it this way so init_logging can be
+                #    # called to update the logging level of a root logger).
+                #    logging.getLogger().setLevel(level_dict[val])
 
             except ValueError as ve:
                 raise ValueError("Key %s: %s" % (key, str(ve)))
@@ -601,7 +606,8 @@ def rc_params_from_file(fname, fail_on_error=False, use_default_template=True):
     #    config['datapath'] = get_data_path()
 
     if os.path.exists(fname):
-        logging.debug('Loaded davitpyrc file from {type}. Path: {path}'.format(**message_dict))
+        message = 'Loaded davitpyrc file from {type}. Path: {path}'.format(**message_dict)
+        logging.debug(message)
 
     return config
 
@@ -615,19 +621,23 @@ rcParams = rc_params()
 try:
     from davitpy import pydarn
 except Exception as e:
-    logging.exception('problem importing pydarn: ' + str(e))
+    message = 'problem importing pydarn: ' + str(e)
+    logging.exception(message)
 
 try:
     from davitpy import gme
 except Exception as e:
-    logging.exception('problem importing gme: ' + str(e))
+    message = 'problem importing gme: ' + str(e)
+    logging.exception()
 
 try:
     from davitpy import utils
 except Exception as e:
-    logging.exception('problem importing utils: ' + str(e))
+    message = 'problem importing utils: ' + str(e)
+    logging.exception()
 
 try:
     from davitpy import models
 except Exception as e:
-    logging.exception('problem importing models: ' + str(e))
+    message = 'problem importing models: ' + str(e)
+    logging.exception()

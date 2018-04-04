@@ -23,7 +23,7 @@ mapObj          Create empty map
 """
 from mpl_toolkits import basemap
 import logging
-
+import os
 
 class mapObj(basemap.Basemap):
     """Create empty map
@@ -189,8 +189,9 @@ class mapObj(basemap.Basemap):
 
         # Still a good idea to check whether coords are possible, because
         # there may be no call to coord_conv within this init.
-        assert(coords in self._coordsDict),\
-                logging.error("coords set to " + coords + ",\n" + self.coords_string)
+        if coords not in self._coordsDict:
+                message = "coords set to " + coords + ",\n" + self.coords_string
+                logging.error(message)
 
         # Add an extra member to the Basemap class.
         self.coords = coords

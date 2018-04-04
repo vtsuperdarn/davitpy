@@ -38,7 +38,20 @@ daynight_terminator calculate day/night terminator
 
 """
 import logging
+import numpy as np
+import matplotlib.cm as cm
+import calendar
+import matplotlib
 
+from datetime import datetime, timedelta
+from matplotlib import pyplot
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+from matplotlib.dates import SecondLocator, DateFormatter, date2num, num2date
+from matplotlib.lines import Line2D
+
+from davitpy.pydarn.radar import network, radFov, radUtils
+from davitpy import utils
+from davitpy.pydarn.sdio import radDataOpen
 
 def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
              params=['power', 'velocity', 'width'], scales=[], channel=None,
@@ -148,16 +161,6 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     Modified by ASR 20150917 (refactored)
 
     """
-
-    import os
-    from davitpy import pydarn
-    from davitpy import utils
-    import numpy as np
-    from datetime import datetime, timedelta
-    from matplotlib import pyplot
-    from matplotlib.dates import DateFormatter
-    import matplotlib.cm as cm
-
     # Time how long this is going to take
     timing_start = datetime.now()
 
@@ -175,6 +178,7 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     available_text = available_text[:-2]
 
     # Check the inputs
+    # TODO: change asserts to raise exceptions, maybe we should consider a varibale checking function?
     assert(isinstance(sTime, datetime)), logging.error(
         'sTime must be a datetime object')
     assert(isinstance(rad, str) and len(rad) == 3), logging.error(
@@ -227,7 +231,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
             if(params[i] in available_params):
                 ind = available_params.index(params[i])
                 tscales.append(default_scales[ind])
-        else: tscales.append(scales[i])
+        else:
+            tscales.append(scales[i])
     scales = tscales
 
     # Assign default frequency band.
@@ -242,7 +247,6 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     # Open the file if a pointer was not given to us
     # if fileName is specified then it will be read.
     if not myFile:
-        from davitpy.pydarn.sdio import radDataOpen
         myFile = radDataOpen(sTime, rad, eTime, channel=channel, bmnum=bmnum,
                              fileType=fileType, filtered=filtered,
                              fileName=fileName)
@@ -340,14 +344,20 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
                        ytick_size=ytick_size, xticks=xticks,
                        axvlines=axvlines)
 
-        if(params[p] == 'velocity'): pArr = data_dict['vel']
-        elif(params[p] == 'power'): pArr = data_dict['pow']
-        elif(params[p] == 'width'): pArr = data_dict['wid']
-        elif(params[p] == 'elevation'): pArr = data_dict['elev']
-        elif(params[p] == 'phi0'): pArr = data_dict['phi0']
+        if(params[p] == 'velocity'):
+            pArr = data_dict['vel']
+        elif(params[p] == 'power'):
+            pArr = data_dict['pow']
+        elif(params[p] == 'width'):
+            pArr = data_dict['wid']
+        elif(params[p] == 'elevation'):
+            pArr = data_dict['elev']
+        elif(params[p] == 'phi0'):
+            pArr = data_dict['phi0']
         elif(params[p] == 'velocity_error'):
             pArr = data_dict['velocity_error']
-        if(pArr == []): continue
+        if(pArr == []):
+            continue
 
         # Generate the color map.
 
@@ -380,22 +390,24 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
 
         if colors in ['aj', 'lasse']:
             # Label the colorbar.
-            l = []
+            y_labels = []
             # Define the colorbar labels.
             for i in range(0, len(bounds)):
                 if(params[p] == 'phi0'):
                     ln = 4
-                    if(bounds[i] == 0): ln = 3
-                    elif(bounds[i] < 0): ln = 5
-                    l.append(str(bounds[i])[:ln])
+                    if(bounds[i] == 0):
+                        ln = 3
+                    elif(bounds[i] < 0):
+                        ln = 5
+                    y_labels.append(str(bounds[i])[:ln])
                     continue
                 if((i == 0 and
                     (params[p] == 'velocity' or
                      params[p] == 'velocity_error')) or i == len(bounds) - 1):
-                    l.append(' ')
+                    y_labels.append(' ')
                     continue
-                l.append(str(int(bounds[i])))
-            cb.ax.set_yticklabels(l)
+                y_labels.append(str(int(bounds[i])))
+            cb.ax.set_yticklabels(y_labels)
         else:
             # Turn off the edges that are drawn by drawCB unless we are
             # doing 'aj' or 'lasse' colors
@@ -408,11 +420,16 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
         # Set colorbar label.
         if(params[p] == 'velocity'):
             cb.set_label('Velocity [m/s]', size=10)
-        if(params[p] == 'grid'): cb.set_label('Velocity [m/s]', size=10)
-        if(params[p] == 'power'): cb.set_label('SNR [dB]', size=10)
-        if(params[p] == 'width'): cb.set_label('Spec Wid [m/s]', size=10)
-        if(params[p] == 'elevation'): cb.set_label('Elev [deg]', size=10)
-        if(params[p] == 'phi0'): cb.set_label('Phi0 [rad]', size=10)
+        if(params[p] == 'grid'):
+            cb.set_label('Velocity [m/s]', size=10)
+        if(params[p] == 'power'):
+            cb.set_label('SNR [dB]', size=10)
+        if(params[p] == 'width'):
+            cb.set_label('Spec Wid [m/s]', size=10)
+        if(params[p] == 'elevation'):
+            cb.set_label('Elev [deg]', size=10)
+        if(params[p] == 'phi0'):
+            cb.set_label('Phi0 [rad]', size=10)
         if(params[p] == 'velocity_error'):
             cb.set_label('Velocity Error [m/s]', size=10)
 
@@ -479,14 +496,6 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
     Modified by ASR 20150917 (refactored)
 
     """
-
-    from davitpy import pydarn
-    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-    from matplotlib.dates import SecondLocator, DateFormatter, date2num
-    from matplotlib.lines import Line2D
-    import numpy as np
-
-    nrecs = len(times)
     # Add an axes object to the figure.
     ax = myFig.add_axes(pos)
     ax.yaxis.set_tick_params(direction='out')
@@ -504,17 +513,18 @@ def draw_axes(myFig, times, rad, cpid, bmnum, nrang, frang, rsep, bottom,
         if(coords != 'gate'):
             oldCpid = -99999999
             for i in range(len(cpid)):
-                if(cpid[i] == oldCpid): continue
+                if(cpid[i] == oldCpid):
+                    continue
                 oldCpid = cpid[i]
                 if(coords == 'geo' or coords == 'mag'):
                     # HACK NOT SURE IF YOU CAN DO THIS(Formatting)!
-                    site = pydarn.radar.network().getRadarByCode(rad) \
+                    site = network().getRadarByCode(rad) \
                         .getSiteByDate(times[i])
-                    myFov = pydarn.radar.radFov.fov(site=site, ngates=nrang[i],
-                                                    nbeams=site.maxbeam,
-                                                    rsep=rsep[i],
-                                                    coords=coords,
-                                                    date_time=times[i])
+                    myFov = radFov.fov(site=site, ngates=nrang[i],
+                                       nbeams=site.maxbeam,
+                                       rsep=rsep[i],
+                                       coords=coords,
+                                       date_time=times[i])
                     if(myFov.latFull[bmnum].max() > ymax):
                         ymax = myFov.latFull[bmnum].max()
                     if(myFov.latFull[bmnum].min() < ymin):
@@ -616,12 +626,8 @@ def rti_title(fig, sTime, rad, fileType, beam, eTime=None, xmin=.1, xmax=.86):
     Modified by ASR 20150916
 
     """
-    from davitpy import pydarn
-    from datetime import timedelta
-    import calendar
-
     # Obtain the davitpy.pydarn.radar.radStruct.radar object for rad.
-    r = pydarn.radar.network().getRadarByCode(rad)
+    r = network().getRadarByCode(rad)
 
     # Plot the main title
     fig.text(xmin, .95, r.name + '  (' + fileType + ')', ha='left', weight=550)
@@ -676,12 +682,6 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
     Modified by ASR 20150916
 
     """
-    from davitpy import pydarn
-    from matplotlib.ticker import MultipleLocator
-    from matplotlib.dates import SecondLocator
-    from matplotlib.dates import date2num
-    from datetime import timedelta
-    import numpy as np
     oldCpid = -9999999
 
     # Format the yaxis.
@@ -720,10 +720,12 @@ def plot_cpid(ax, times, cpid, mode, cpidchange_lims):
             ax.plot_date([date2num(times[i]), date2num(times[i])],
                          [0, 1], fmt='k-', tz=None, xdate=True, ydate=False)
             oldCpid = cpid[i]
-            s = ' ' + pydarn.radar.radUtils.getCpName(oldCpid)
+            s = ' ' + radUtils.getCpName(oldCpid)
             istr = ' '
-            if(mode[i] == 1): istr = ' IF'
-            if(mode == 0): istr = ' RF'
+            if(mode[i] == 1):
+                istr = ' IF'
+            if(mode == 0):
+                istr = ' RF'
             ax.text(times[i], .5, ' ' + str(oldCpid) + s + istr, ha='left',
                     va='center', size=10)
 
@@ -784,11 +786,6 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
 
     """
 
-    from matplotlib.ticker import MultipleLocator
-    from matplotlib.dates import date2num
-    from matplotlib.lines import Line2D
-    import numpy as np
-
     # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -801,8 +798,10 @@ def plot_skynoise(ax, times, sky, xlim=None, xticks=None):
                  tz=None, xdate=True, ydate=False)
 
     # Format the xaxis.
-    if xlim is not None: ax.set_xlim(xlim)
-    if xticks is not None: ax.set_xticks(xticks)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if xticks is not None:
+        ax.set_xticks(xticks)
 
     # Add labels to identify the noise axis.
     fig = ax.get_figure()
@@ -880,8 +879,10 @@ def plot_searchnoise(ax, times, search, xlim=None, xticks=None,
                  fmt='k:', tz=None, xdate=True, ydate=False, lw=1.5)
 
     # Format the xaxis.
-    if xlim is not None: ax.set_xlim(xlim)
-    if xticks is not None: ax.set_xticks(xticks)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if xticks is not None:
+        ax.set_xticks(xticks)
 
     # Add labels to identify the noise axis.
     fig = ax.get_figure()
@@ -943,10 +944,6 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
 
     """
 
-    from matplotlib.ticker import MultipleLocator
-    from matplotlib.dates import date2num
-    from matplotlib.lines import Line2D
-
     # Format the yaxis.
     ax.yaxis.tick_left()
     ax.yaxis.set_tick_params(direction='out')
@@ -959,8 +956,10 @@ def plot_freq(ax, times, freq, xlim=None, xticks=None):
                  tz=None, xdate=True, ydate=False, markersize=2)
 
     # Format the xaxis.
-    if xlim is not None: ax.set_xlim(xlim)
-    if xticks is not None: ax.set_xticks(xticks)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if xticks is not None:
+        ax.set_xticks(xticks)
 
     # Add labels to identify the frequency axis.
     fig = ax.get_figure()
@@ -1036,8 +1035,10 @@ def plot_nave(ax, times, nave, xlim=None, xticks=None, ytickside='right'):
                  tz=None, xdate=True, ydate=False, markersize=2)
 
     # Format the xaxis.
-    if xlim is not None: ax.set_xlim(xlim)
-    if xticks is not None: ax.set_xticks(xticks)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if xticks is not None:
+        ax.set_xticks(xticks)
 
     # Add labels to identify the nave axis.
     fig = ax.get_figure()
@@ -1097,9 +1098,6 @@ def read_data(myPtr, bmnum, params, tbands):
     Written by ASR 20150914
 
     """
-
-    import numpy as np
-
     # Initialize some things.
     data = dict()
     data_keys = ['vel', 'pow', 'wid', 'elev', 'phi0', 'times', 'freq', 'cpid',
@@ -1112,10 +1110,11 @@ def read_data(myPtr, bmnum, params, tbands):
     myPtr.rewind()
     myBeam = myPtr.readRec()
     while(myBeam is not None):
-        if(myBeam.time > myPtr.eTime): break
+        if(myBeam.time > myPtr.eTime):
+            break
         if(myBeam.bmnum == bmnum and (myPtr.sTime <= myBeam.time)):
             if (myBeam.prm.tfreq >= tbands[0] and
-                    myBeam.prm.tfreq <= tbands[1]):
+                myBeam.prm.tfreq <= tbands[1]):
                 data['times'].append(myBeam.time)
                 data['cpid'].append(myBeam.cp)
                 data['nave'].append(myBeam.prm.nave)
@@ -1186,11 +1185,6 @@ def rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
     Written by ASR 20150916
 
     """
-    from davitpy import pydarn
-    import matplotlib
-    from matplotlib.dates import date2num, num2date
-    import numpy as np
-
     # Initialize things.
     rmax = max(data_dict['nrang'])
     tmax = (len(data_dict['times'])) * 2
@@ -1213,7 +1207,8 @@ def rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
                 dt_list.append(num2date(x[tcnt]))
         tcnt += 1
 
-        if(pArr[i] == [] or pArr[i] is None): continue
+        if(pArr[i] == [] or pArr[i] is None):
+            continue
 
         if data_dict['slist'][i] is not None:
             for j in range(len(data_dict['slist'][i])):
@@ -1224,13 +1219,13 @@ def rti_panel(ax, data_dict, pArr, gsct, rad, bmnum, coords, cmap,
 
     # For geo or mag coords, get radar FOV lats/lons.
     if (coords != 'gate' and coords != 'rng') or plot_terminator is True:
-        site = pydarn.radar.network().getRadarByCode(rad) \
+        site = network().getRadarByCode(rad) \
             .getSiteByDate(data_dict['times'][0])
-        myFov = pydarn.radar.radFov.fov(site=site, ngates=rmax,
-                                        nbeams=site.maxbeam,
-                                        rsep=data_dict['rsep'][0],
-                                        coords=coords,
-                                        date_time=data_dict['times'][0])
+        myFov = radFov.fov(site=site, ngates=rmax,
+                           nbeams=site.maxbeam,
+                           rsep=data_dict['rsep'][0],
+                           coords=coords,
+                           date_time=data_dict['times'][0])
         myLat = myFov.latCenter[bmnum]
         myLon = myFov.lonCenter[bmnum]
 

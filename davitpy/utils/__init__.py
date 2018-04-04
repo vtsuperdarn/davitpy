@@ -31,40 +31,48 @@ import logging
 try:
     from davitpy_exceptions import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.davitpy_exceptions: ' + str(e))
+    message = __file__ + ' -> utils.davitpy_exceptions: ' + str(e)
+    logging.exception(message)
 try:
     from davitpy_warnings import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.davitpy_warnings: ' + str(e))
+    message = __file__ + ' -> utils.davitpy_warnings: ' + str(e)
+    logging.exception(message)
 try:
     from plotUtils import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.plotUtils: ' + str(e))
+    message = __file__ + ' -> utils.plotUtils: ' + str(e)
+    logging.exception(message)
 
 try:
     from geoPack import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.geoPack: ' + str(e))
+    message = __file__ + ' -> utils.geoPack: ' + str(e)
+    logging.exception(message)
 
 try:
     from timeUtils import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.timeUtils: ' + str(e))
+    message = __file__ + ' -> utils.timeUtils: ' + str(e)
+    logging.exception(message)
 
 try:
     from calcSun import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.calcSun: ' + str(e))
+    message = __file__ + ' -> utils.calcSun: ' + str(e)
+    logging.exception(message)
 
 try:
     from coordUtils import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.coordUtils: ' + str(e))
+    message = __file__ + ' -> utils.coordUtils: ' + str(e)
+    logging.exception(message)
 
 try:
     from model_vheight import *
 except Exception as e:
-    logging.exception(__file__ + ' -> utils.model_vheight: ' + str(e))
+    message = __file__ + ' -> utils.model_vheight: ' + str(e)
+    logging.exception(message)
 
 # Define a few general-use constants
 
