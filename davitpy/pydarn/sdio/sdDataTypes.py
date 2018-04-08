@@ -1253,22 +1253,25 @@ if __name__ == "__main__":
 
     print "\nRunning sftp grab example for sdDataPtr."
     print "Environment variables used:"
-    print "  DB:", davitpy.rcParams['DB']
-    print "  DB_PORT:", davitpy.rcParams['DB_PORT']
-    print "  DBREADUSER:", davitpy.rcParams['DBREADUSER']
-    print "  DBREADPASS:", davitpy.rcParams['DBREADPASS']
-    print "  DAVIT_SD_REMOTE_DIRFORMAT:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_DIRFORMAT']
-    print "  DAVIT_SD_REMOTE_FNAMEFMT:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_FNAMEFMT']
-    print "  DAVIT_SD_REMOTE_TIMEINC:", \
-        davitpy.rcParams['DAVIT_SD_REMOTE_TIMEINC']
+    print "  DB: sd-data.ece.vt.edu"
+    print "  DB_PORT: 22"
+    print "  DBREADUSER: sd_dbread"
+    print "  DBREADPASS: 5d"
+    print "  DAVIT_SD_REMOTE_DIRFORMAT: " +
+        "data/{year}/{ftype}/{hemi}/"
+    print "  DAVIT_SD_REMOTE_FNAMEFMT:", +
+        "{date}.{hemi}.{ftype}"
+    print "  DAVIT_SD_REMOTE_TIMEINC: 24",
     print "  DAVIT_TMPDIR:", davitpy.rcParams['DAVIT_TMPDIR']
 
     src = 'sftp'
     if os.path.isfile(expected_path):
         os.remove(expected_path)
     vtptr = sdDataPtr(stime, hemi, eTime=etime, fileType='map2', src=src,
+                      remote_dirfmt="data/{year}/{ftype}/{radar}/",
+                      remote_fnamefmt="{date}.{hemi}.{ftype}",
+                      remote_site="sd-data.ece.vt.edu",
+                      username="sd_dbread", password="5d", port=22,
                       noCache=True)
     if os.path.isfile(expected_path):
         statinfo = os.stat(expected_path)
