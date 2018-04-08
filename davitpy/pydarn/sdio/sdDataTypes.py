@@ -74,6 +74,10 @@ class sdDataPtr():
     remote_dict : Optional[dict]
         dictionary of the hemisphere and file type. Default: use
         the values given for hemi and fileType.
+    remote_site : Optional[str]
+        remote sftp server to use. Default: use value given in
+        rcParams' 'DB' value or 'sd-data.ece.vt.edu' if not set in
+        rcParams.
     username : Optional[str]
         username to use for an sftp connection.  Default: rcParams'
         'DBREADUSER' value.
