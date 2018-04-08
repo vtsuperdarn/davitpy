@@ -84,7 +84,7 @@ class sdDataPtr():
     password : Optional[str]
         password to use for an sftp connection.  Default: rcParams'
         'DBREADPASS' value.
-    port : Optional[int]
+    port : Optional[str]
         port to use for an sftp connection.  Deafult: rcParams'
         'DB_PORT' value.
     tmpdir : Optional[str]
