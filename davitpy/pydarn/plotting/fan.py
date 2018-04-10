@@ -65,6 +65,10 @@ def plotFan(sTime, rad, interval=60, myFiles=None, fileType='fitex', param='velo
         A list of 3 letter radar codes, e.g. ['bks'], e.g. ['bks','wal','gbr']
     interval : Optional[int]
         The the time period to be plotted, in seconds.  default = 60
+    myFiles: Optional[list of pydarn.sdio.radDataTypes.radDataPtr]
+        contains the pipeline to the data we want to plot. If specified,
+        data will be plotted from the file(s) pointed to by myFiles.
+        default: None
     fileType : Optional[str]
         The file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.
         default = 'fitex'
