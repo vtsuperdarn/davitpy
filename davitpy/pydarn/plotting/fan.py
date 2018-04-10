@@ -47,7 +47,7 @@ from davitpy.pydarn.sdio.radDataRead import *
 import logging
 
 
-def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
+def plotFan(sTime, rad, interval=60, myFiles=None, fileType='fitex', param='velocity',
             filtered=False, scale=[], channel=None, coords='geo',
             colors='lasse', gsct=False, fov=True, edgeColors='face',
             lowGray=False, fill=True, velscl=1000., legend=True,
@@ -200,14 +200,33 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
                                                  lowGray=lowGray)
 
     # open the data files
-    myFiles = []
     myBands = []
-    for i in range(len(rad)):
-        f = radDataOpen(sTime, rad[i], sTime + dt.timedelta(seconds=interval),
-                        fileType=fileType, filtered=filtered, channel=channel)
-        if(f is not None):
-            myFiles.append(f)
-            myBands.append(tbands[i])
+    if myFiles is None:
+        myFiles = []
+
+        for i,r in enumerate(rad):
+        #TODO: this can condenced to a try except block if radDataOpen throws exceptions
+            # TODO: there seems to be an infinite loop when it cannot find a file, we should look into that
+            f = radDataOpen(sTime, rad[i],
+                            sTime + dt.timedelta(seconds=interval),
+                            fileType=fileType,
+                            filtered=filtered,
+                            channel=channel)
+            if(f is not None):
+                myFiles.append(f)
+                myBands.append(tbands[i])
+            else:  # We need to remove the radar name or else fov length will not == rad length and this will raise an index exception
+                rad.remove(r)
+    else:
+        # TODO: this needs to be done better
+        for i,r in enumerate(rad):
+            if myFiles[i] is not None:
+                myBands.append(tbands[i])
+            else:
+                rad.remove(r)
+        # Sanity check, make sure the user did not pass in None objects into
+        # the list, if they did remove them all
+        myFiles = [myFile for myFile in myFiles if myFile is not None]
 
     assert(myFiles != []), 'error, no data available for this period'
 
@@ -351,7 +370,7 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
                                    linewidths=.5, zorder=15, color='k')
                 myFig.gca().add_collection(y)
 
-    bbox = myFig.gca().get_axes().get_position()
+    bbox = myFig.gca().get_position()
     # now, loop through desired time interval
 
     tz = dt.datetime.now()

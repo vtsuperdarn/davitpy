@@ -62,7 +62,7 @@ pip install --upgrade pyparsing
 #apt-get install -y ipython-notebook
 pip install --upgrade ipython
 pip install --upgrade jupyter
-pip install --upgrade matplotlib
+pip install --upgrade matplotlib==2.0.2
 #pip install --upgrade basemap
 pip install --upgrade pyproj
 pip install --upgrade cryptography
@@ -71,7 +71,7 @@ dir=$(pwd)
 
 #Now install basemap!
 cd /tmp
-git clone --branch v1.0.7rel https://github.com/matplotlib/basemap.git
+git clone --branch v1.1.0 https://github.com/matplotlib/basemap.git
 cd basemap/geos-3.3.3
 export GEOS_DIR=/usr/local
 ./configure --prefix=$GEOS_DIR
