@@ -1355,7 +1355,7 @@ def _getTitle(time, beam, header, name):
     beam :
         beam shown in plot
     header : dict
-        header of fortran uotput file
+        header of fortran output file
     name : str
         radar name
 
