@@ -58,8 +58,8 @@ It is easiest to have either homebrew (http://brew.sh/) or MacPorts (http://www.
 
 Next, follow the instructions for Ubuntu, but for the dependencies script, choose one of the following:
 
-    sudo ./python_install_mac_brew.sh
-    sudo ./python_install_mac_port.sh
+    sudo ./install/python_install_mac_brew.sh
+    sudo ./install/python_install_mac_port.sh
 
 preferably after checking the dependicies to see if you already have them installed.
 
