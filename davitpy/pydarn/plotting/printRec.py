@@ -135,7 +135,7 @@ def fitPrintRec(sTime, eTime, rad, outfile, fileType='fitex', summ=0):
     outfile : str
         the txt file we are outputting to
     fileType : Optional[str]
-        the filetype to read, 'fitex','fitacf','lmfit';
+        the filetype to read, 'fitex','fitacf','lmfit', 'fitacf3';
         default = 'fitex'
     summ : Optional[int]
         option to output a beam summary instead of all data

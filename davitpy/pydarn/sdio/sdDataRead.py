@@ -1,16 +1,16 @@
 # Copyright (C) 2012  VT SuperDARN Lab
 # Full license can be found in LICENSE.txt
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -32,7 +32,7 @@ sdDataReadAll
 import logging
 
 def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
-               fileType='grdex', noCache=False, local_dirfmt=None,
+               fileType='grid2', noCache=False, local_dirfmt=None,
                local_fnamefmt=None, local_dict=None, remote_dirfmt=None,
                remote_fnamefmt=None, remote_dict=None, remote_site=None,
                username=None, password=None, port=None, tmpdir=None,
@@ -59,9 +59,9 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
         the name of a specific file which you want to open.  (default=None)
     fileType : (str)
         The type of data you want to read.  Valid inputs are 'grd', 'grdex',
-        'map', and 'mapex'.  If you choose a file format and the specified one
-        isn't found, we will search for one of the others (eg mapex instead of
-        map). (default='grdex')
+        'grid2', 'map', 'mapex' and 'map2'.  If you choose a file format and
+        the specified one isn't found, we will search for one of the others
+        (eg mapex instead of map). (default='grid2')
     noCache : (boolean)
         flag to indicate that you do not want to check first for cached files.
         (default=False)
@@ -120,13 +120,13 @@ def sdDataOpen(stime, hemi='north', eTime=None, src=None, fileName=None,
     -------
     The evironment variables are python dictionary capable formatted strings
     appended encode radar name, channel, and/or date information. Currently
-    supported dictionary keys which can be used are: 
+    supported dictionary keys which can be used are:
 
     'date'    : datetime.datetime.strftime("%Y%m%d")
-    'year'    : 0 padded 4 digit year 
-    'month'   : 0 padded 2 digit month 
-    'day'     : 0 padded 2 digit day 
-    'hour'    : 0 padded 2 digit day 
+    'year'    : 0 padded 4 digit year
+    'month'   : 0 padded 2 digit month
+    'day'     : 0 padded 2 digit day
+    'hour'    : 0 padded 2 digit day
     'ftype'   : filetype string
     'hemi'    : hemisphere
 
@@ -162,7 +162,7 @@ def sdDataReadRec(my_ptr):
     Example
     --------
     ::
-    
+
     import datetime as dt
     my_ptr = sdDataOpen(dt.datetime(2011,1,1), 'south')
     my_data = sdDataReadRec(my_ptr)
@@ -178,7 +178,7 @@ def sdDataReadRec(my_ptr):
     assert isinstance(my_ptr, sdDataPtr), \
         logging.error('input must be of type sdDataPtr')
 
-    return my_ptr.readRec() 
+    return my_ptr.readRec()
 
 def sdDataCreateIndex(my_ptr):
     """A function to index radar data into dict from a sdDataPtr object
@@ -192,7 +192,7 @@ def sdDataCreateIndex(my_ptr):
     ----------
     my_index : (dict)
         Keys are record timedate objects and values are byte offsets into the
-        file. 
+        file.
 
     Example
     --------
@@ -231,7 +231,7 @@ def sdDataReadAll(my_ptr):
     my_list : (list or NoneType)
         A list filled with gridData or mapData objects holding the data we are
         after.  Vill return None if nothing is found.
- 
+
     Examples
     ---------
     ::
