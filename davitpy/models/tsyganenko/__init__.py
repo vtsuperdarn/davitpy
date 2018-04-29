@@ -128,9 +128,9 @@ class tsygTrace(object):
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
         from datetime import datetime as pydt
 
-        assert (None not in [lat, lon, rho]) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
+        assert (lat and lon and rho) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
 
-        if None not in [lat, lon, rho]: 
+        if not filename: 
             self.lat = lat
             self.lon = lon
             self.rho = rho
