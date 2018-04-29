@@ -128,9 +128,12 @@ class tsygTrace(object):
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
         from datetime import datetime as pydt
 
-        assert (None not in [lat, lon, rho]) or filename, 'You must provide either (lat, lon, rho) or a filename to read from'
+        advice = 'You must provide either (lat, lon, rho) or a ' +
+                 'filename to read from'
+        assert (not (lat is None) and not (lon is None) and not (rho is None) 
+                or not (filename is None), advice
 
-        if None not in [lat, lon, rho]: 
+        if filename is None: 
             self.lat = lat
             self.lon = lon
             self.rho = rho
@@ -149,7 +152,7 @@ class tsygTrace(object):
 
             self.trace()
 
-        elif filename:
+        else:
             self.load(filename)
 
 
@@ -352,15 +355,17 @@ class tsygTrace(object):
                     self.yTrace[ip,0:l] = yarr[l-1::-1]
                     self.zTrace[ip,0:l] = zarr[l-1::-1]
                 elif mapto == 1:
-                    self.xTrace[ip,self.l[ip]:self.l[ip]+l] = xarr[0:l]
-                    self.yTrace[ip,self.l[ip]:self.l[ip]+l] = yarr[0:l]
-                    self.zTrace[ip,self.l[ip]:self.l[ip]+l] = zarr[0:l]
+                    ind = int(self.l[ip])
+                    self.xTrace[ip,ind:ind+l] = xarr[0:l]
+                    self.yTrace[ip,ind:ind+l] = yarr[0:l]
+                    self.zTrace[ip,ind:ind+l] = zarr[0:l]
                 self.l[ip] += l
 
         # Resize trace output to more minimum possible length
-        self.xTrace = self.xTrace[:,0:self.l.max()]
-        self.yTrace = self.yTrace[:,0:self.l.max()]
-        self.zTrace = self.zTrace[:,0:self.l.max()]
+        ind = int(self.l.max())
+        self.xTrace = self.xTrace[:,0:ind]
+        self.yTrace = self.yTrace[:,0:ind]
+        self.zTrace = self.zTrace[:,0:ind]
 
 
     def __str__(self):
