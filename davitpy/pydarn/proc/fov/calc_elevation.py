@@ -129,11 +129,17 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     bm_az = np.radians(hard.beamToAzim(beam.bmnum) - hard.boresite)
     cos_az = np.cos(bm_az)
     sin_az = np.sin(bm_az)
-    az_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
+
+    # The interferometer cables may have been hooked up backwards, so correct
+    # for that here
+    interfer = np.array(hard.interfer)
+    if hard.phidiff < 0:
+        interfer *= -1.0
+    az_sign = 1.0 if interfer[1] > 0.0 else -1.0
 
     # Find the elevation angle with the maximum phase lag
-    el_max = np.arcsin(az_sign * hard.interfer[2] * cos_az /
-                       np.sqrt(hard.interfer[1]**2 + hard.interfer[2]**2))
+    el_max = np.arcsin(az_sign * interfer[2] * cos_az /
+                       np.sqrt(interfer[1]**2 + interfer[2]**2))
     if el_max < 0.0:
         el_max = 0.0
 
@@ -147,8 +153,8 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     del_chi = -np.pi * beam.prm.tfreq * tdiff * 2.0e-3
 
     # Find the maximum possible phase shift
-    chimax = k * (hard.interfer[0] * sin_az + hard.interfer[1] *
-                  np.sqrt(cos_max**2- sin_az**2) + hard.interfer[2] * sin_max)
+    chimax = k * (interfer[0] * sin_az + interfer[1] *
+                  np.sqrt(cos_max**2- sin_az**2) + interfer[2] * sin_max)
     chimin = chimax - (alias + 1.0) * az_sign * 2.0 * np.pi
     
     #-------------------------------------------------------------------------
@@ -193,13 +199,12 @@ def calc_elv(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
                 logging.critical(estr)
             else:
                 # Calcualte the elevation angle and set if realistic
-                cos_theta = phi_temp / k - hard.interfer[0] * sin_az
-                yz_sum2 = hard.interfer[1]**2 + hard.interfer[2]**2
-                sin_delta = (cos_theta * hard.interfer[2] +
-                             np.sqrt((cos_theta * hard.interfer[2])**2 -
-                                     yz_sum2 * (cos_theta**2 -
-                                                (hard.interfer[1] *
-                                                 cos_az)**2))) / yz_sum2
+                cos_theta = phi_temp / k - interfer[0] * sin_az
+                yz_sum2 = interfer[1]**2 + interfer[2]**2
+                sin_delta = (cos_theta * interfer[2] +
+                             np.sqrt((cos_theta * interfer[2])**2 - yz_sum2 *
+                                     (cos_theta**2 -
+                                      (interfer[1] * cos_az)**2))) / yz_sum2
 
                 if sin_delta <= 1.0:
                     elv[i] = np.degrees(np.arcsin(sin_delta))
@@ -360,12 +365,19 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     bm_az = np.radians(hard.beamToAzim(beam.bmnum) - hard.boresite)
     cos_az = np.cos(bm_az)
     sin_az = np.sin(bm_az)
-    az_sign = 1.0 if hard.interfer[1] > 0.0 else -1.0
+
+    # The interferometer cables may have been hooked up backwards, so correct
+    # for that here
+    interfer = np.array(hard.interfer)
+    if hard.phidiff < 0:
+        interfer *= -1.0
+
+    az_sign = 1.0 if interfer[1] > 0.0 else -1.0
     sig2_az = bmaz_e**2 + boresite_e**2 
     
     # Find the elevation angle with the maximum phase lag
-    el_max = np.arcsin(az_sign * hard.interfer[2] * cos_az /
-                       np.sqrt(hard.interfer[1]**2 + hard.interfer[2]**2))
+    el_max = np.arcsin(az_sign * interfer[2] * cos_az /
+                       np.sqrt(interfer[1]**2 + interfer[2]**2))
     if el_max < 0.0:
         el_max = 0.0
 
@@ -376,7 +388,7 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     k = 2.0 * np.pi * beam.prm.tfreq * 1.0e3 / scicon.c
 
     # Calculate the phase-lag independent portion of the theta error
-    theta2_base = sig2_az * (hard.interfer[0] * cos_az)**2
+    theta2_base = sig2_az * (interfer[0] * cos_az)**2
 
     if ix_e > 0.0:
         theta2_base += (ix_e * sin_az)**2
@@ -388,8 +400,8 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
     del_chi = -np.pi * beam.prm.tfreq * tdiff * 2.0e-3
 
     # Find the maximum possible phase shift
-    chimax = k * (hard.interfer[0] * sin_az + hard.interfer[1] *
-                  np.sqrt(cos_max**2- sin_az**2) + hard.interfer[2] * sin_max)
+    chimax = k * (interfer[0] * sin_az + interfer[1] *
+                  np.sqrt(cos_max**2- sin_az**2) + interfer[2] * sin_max)
     chimin = chimax - (alias + 1.0) * az_sign * 2.0 * np.pi
     
     #-------------------------------------------------------------------------
@@ -433,12 +445,12 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
                 logging.critical(estr)
             else:
                 # Calculate the elevation angle and set if realistic
-                cos_theta = phi_temp / k - hard.interfer[0] * sin_az
-                yz_sum2 = hard.interfer[1]**2 + hard.interfer[2]**2
-                yscale2 = ((cos_theta * hard.interfer[2])**2 -
+                cos_theta = phi_temp / k - interfer[0] * sin_az
+                yz_sum2 = interfer[1]**2 + interfer[2]**2
+                yscale2 = ((cos_theta * interfer[2])**2 -
                            yz_sum2 * (cos_theta**2 -
-                                      (hard.interfer[1] * cos_az)**2))
-                sin_delta = (cos_theta * hard.interfer[2] +
+                                      (interfer[1] * cos_az)**2))
+                sin_delta = (cos_theta * interfer[2] +
                              np.sqrt(yscale2)) / yz_sum2
 
                 if sin_delta <= 1.0:
@@ -454,7 +466,7 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
                     # If the azimuthal error is not zero, calculate derivative
                     if sig2_az > 0.0:
                         az_term2 = (cos_az * sin_az)**2 / yscale2
-                        az_term2 *= np.power(hard.interfer[1], 4) * sig2_az
+                        az_term2 *= np.power(interfer[1], 4) * sig2_az
 
                     else:
                         az_term2 = 0.0
@@ -467,16 +479,16 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
                         theta_term2 = theta2_base
 
                     if theta_term2 > 0.0:
-                        theta_term2 *= ((hard.interfer[2] - hard.interfer[1]**2
+                        theta_term2 *= ((interfer[2] - interfer[1]**2
                                         * cos_theta / np.sqrt(yscale2))
                                        / yz_sum2)**2
 
                     # If the interferometer Y error is not zero, get derivative
                     if iy_e > 0.0:
                         iy_term2 = (yz_sum2 - 2.0 * cos_theta *
-                                    hard.interfer[1] * hard.interfer[2] - 2.0 *
-                                    hard.interfer[1] * np.sqrt(yscale2) +
-                                    hard.interfer[1]**2 * yz_sum2 *
+                                    interfer[1] * interfer[2] - 2.0 *
+                                    interfer[1] * np.sqrt(yscale2) +
+                                    interfer[1]**2 * yz_sum2 *
                                     (yz_sum2 * cos_az**2 - cos_theta**2) /
                                     np.sqrt(yscale2))**2 / np.power(yz_sum2, 4)
                         iy_term2 *= iy_e**2
@@ -485,10 +497,10 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 
                     # If the interferometer Z error is not zero, get derivative
                     if iz_e > 0.0:
-                        iz_term2 = ((yz_sum2 * (cos_theta + hard.interfer[2] *
-                                                (hard.interfer[1] * cos_az)**2 /
+                        iz_term2 = ((yz_sum2 * (cos_theta + interfer[2] *
+                                                (interfer[1] * cos_az)**2 /
                                                 np.sqrt(yscale2)) - 2.0 *
-                                     hard.interfer[2] * np.sqrt(yscale2))
+                                     interfer[2] * np.sqrt(yscale2))
                                     * iz_e)**2 / np.power(yz_sum2, 4)
                     else:
                         iz_term2 = 0.0                        
@@ -506,7 +518,7 @@ def calc_elv_w_err(beam, phi0_attr="phi0", phi0_e_attr="phi0_e", hard=None,
 #---------------------------------------------------------------------------
 def calc_elv_list(phi0, phi0_e, fovflg, bm_az, tfreq, interfer_offset,
                   tdiff, alias=0.0):
-    '''Calculate the elevation angle in radians for a single radar
+    """Calculate the elevation angle in radians for a single radar
 
     Parameters
     -----------
@@ -523,7 +535,8 @@ def calc_elv_list(phi0, phi0_e, fovflg, bm_az, tfreq, interfer_offset,
         Transmission frequency (kHz)
     interfer_offset : (list or numpy.ndarray of floats)
         Offset of the midpoints of the interferometer and main array (meters),
-        where [0] is X, [1] is Y, and [2] is Z.
+        where [0] is X, [1] is Y, and [2] is Z.  If phidiff indicates that
+        the cables were hooked up backwards, be sure to correct that beforehand
     tdiff : (float)
         The relative time delay of the signal paths from the interferometer
         array to the receiver and the main array to the reciver (microsec)
@@ -537,7 +550,7 @@ def calc_elv_list(phi0, phi0_e, fovflg, bm_az, tfreq, interfer_offset,
     elv : (list)
         A list of floats containing the new elevation angles for each phi0 in
         radians or NaN if an elevation angle could not be calculated
-    '''
+    """
     #-------------------------------------------------------------------------
     # Initialize output
     elv = list()
