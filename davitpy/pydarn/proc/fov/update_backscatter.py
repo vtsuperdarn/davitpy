@@ -1020,7 +1020,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         rgsi = list()
         rgrg = list()
         ilim = 0
-        while ilim < len(rg_max) and r >= rg_max[ilim]:
+        while ilim < len(rg_max)-1 and r >= rg_max[ilim]:
             ilim += 1
 
         if ilim >= len(rg_max):
@@ -1235,7 +1235,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                     # Differentiate by hop
                     ilim = 0
 
-                    while(ilim < len(rg_max) and rg >= rg_max[ilim]):
+                    while(ilim < len(rg_max)-1 and rg >= rg_max[ilim]):
                         ilim += 1
 
                     if ilim >= len(rg_max):
@@ -1247,8 +1247,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
                     irg_half = int(np.floor(rg_half))
                     min_si = si - irg_half if si >= irg_half else 0
                     max_si = (si + irg_half if si + irg_half < hard.maxgate
-                              else (hard.maxgate - 1
-                                    if hard.maxgate < max(rg_max)
+                              else (hard.maxgate if hard.maxgate < max(rg_max)
                                     else max(rg_max) - 1))
 
                     # Load the front and back elevations for this range gate
@@ -1344,7 +1343,7 @@ def update_bs_w_scan(scan, hard, min_pnts=3,
         ilim = 0
 
         # Calculate the range gate limits
-        while ilim < len(rg_max) and r >= rg_max[ilim]:
+        while ilim < len(rg_max)-1 and r >= rg_max[ilim]:
             ilim += 1
 
         width = np.floor(0.5 * (rg_box[ilim] + inc_rg_box))
@@ -1831,8 +1830,9 @@ def update_beam_fit(beam, hard=None,
 def update_backscatter(rad_bms, min_pnts=3,
                        region_hmax={"D":115.0,"E":150.0,"F":900.0},
                        region_hmin={"D":75.0,"E":115.0,"F":150.0},
-                       rg_box=[2,5,10,20], vh_box=[50.0,50.0,50.0,150.0],
-                       max_rg=[5,25,40,76], max_hop=3.0,
+                       rg_box=[2,5,10,20,25],
+                       vh_box=[50.0,50.0,50.0,150.0,150.0],
+                       max_rg=[5,25,40,76,226], max_hop=3.0,
                        ut_box=dt.timedelta(minutes=20.0), tdiff=None,
                        tdiff_args=list(), tdiff_e=None, tdiff_e_args=list(),
                        ptest=True, strict_gs=False, bmaz_e=0.0, boresite_e=0.0,
@@ -2326,7 +2326,7 @@ def beam_ut_struct_test(rad_bms, min_frac=.10, frg_box=[5,8,13,23],
                     for r in np.arange(range_min, range_max + 1):
                         # Select the indexes for this range gate box
                         ilim = 0
-                        while ilim < len(max_rg) and r >= max_rg[ilim]:
+                        while ilim < len(max_rg)-1 and r >= max_rg[ilim]:
                             ilim += 1
 
                         rmin = r - rhalf[ilim]
