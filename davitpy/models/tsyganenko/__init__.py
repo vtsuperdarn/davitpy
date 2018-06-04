@@ -279,19 +279,19 @@ class tsygTrace(object):
         Re = 6371.2
         
         # Initialize trace array
-        self.l = zeros(len(lat))
+        self.l = zeros(len(lat), dtype = int)
         self.xTrace = zeros((len(lat),2*lmax))
         self.yTrace = self.xTrace.copy()
         self.zTrace = self.xTrace.copy()
-        self.xGsw = self.l.copy()
-        self.yGsw = self.l.copy()
-        self.zGsw = self.l.copy()
-        self.latNH = self.l.copy()
-        self.lonNH = self.l.copy()
-        self.rhoNH = self.l.copy()
-        self.latSH = self.l.copy()
-        self.lonSH = self.l.copy()
-        self.rhoSH = self.l.copy()
+        self.xGsw = zeros(len(lat))
+        self.yGsw = self.xGsw.copy()
+        self.zGsw = self.xGsw.copy()
+        self.latNH = self.xGsw.copy()
+        self.lonNH = self.xGsw.copy()
+        self.rhoNH = self.xGsw.copy()
+        self.latSH = self.xGsw.copy()
+        self.lonSH = self.xGsw.copy()
+        self.rhoSH = self.xGsw.copy()
 
         # And now iterate through the desired points
         for ip in xrange(len(lat)):
