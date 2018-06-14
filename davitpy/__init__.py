@@ -33,7 +33,7 @@ from itertools import chain
 import logging
 from davitpy.rcsetup import defaultParams
 
-__version__ = str('0.5')
+__version__ = str('0.9')
 
 _error_details_fmt = 'line #%d\n\t"%s"\n\tin file "%s"'
 
