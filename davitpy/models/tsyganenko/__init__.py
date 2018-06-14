@@ -129,9 +129,9 @@ class tsygTrace(object):
         from datetime import datetime as pydt
 
         advice = ('You must provide either (lat, lon, rho) or a ' +
-                 'filename to read from')
+                  'filename to read from')
         assert (not (lat is None) and not (lon is None) and not (rho is None) 
-                or not (filename is None), advice
+                or not (filename is None)), advice
 
         if filename is None: 
             self.lat = lat
