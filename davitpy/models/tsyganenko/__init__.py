@@ -128,8 +128,8 @@ class tsygTrace(object):
         lmax=5000, rmax=60., rmin=1., dsmax=0.01, err=0.000001):
         from datetime import datetime as pydt
 
-        advice = 'You must provide either (lat, lon, rho) or a ' +
-                 'filename to read from'
+        advice = ('You must provide either (lat, lon, rho) or a ' +
+                 'filename to read from')1
         assert (not (lat is None) and not (lon is None) and not (rho is None) 
                 or not (filename is None), advice
 
