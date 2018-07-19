@@ -1291,7 +1291,7 @@ C-----------------------------------------------------------------------
      $ IYR,DAY,DF,DFA,APD,APDF,APT(4),LONG
       COMMON/CSW/SW(25),ISW,SWC(25)
 C      DIMENSION P(1),T(14)
-      DIMENSION P(150),T(14)
+      DIMENSION P(*),T(14)
       SAVE
       DATA DR/1.72142E-2/,DGTR/1.74533E-2/,PSET/2./
       DATA DAYL/-1./,P32,P18,P14,P39/4*-1000./

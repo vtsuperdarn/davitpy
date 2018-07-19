@@ -1716,7 +1716,7 @@ C CALCULATES THE COEFFICIENTS OF THE SPHERICAL HARMONIC
 C FROM IRI 95 MODEL
 C NOTE: COEFFICIENTS CORRESPONDING TO COS, SIN SWAPPED!!!
 C------------------------------------------------------------------------------------
-      DIMENSION C(82)
+      DIMENSION C(*)
       C(1)=1.
       K=2
       X=COS(COLAT)
