@@ -28,12 +28,12 @@ python module tsygFort ! in
             common /geopack2/ g,h,rec
         end subroutine igrf_geo_08
         subroutine dip_08(xgsw,ygsw,zgsw,bxgsw,bygsw,bzgsw) ! in :tsygFort:geopack08.for
-            real :: xgsw
-            real :: ygsw
-            real :: zgsw
-            real :: bxgsw
-            real :: bygsw
-            real :: bzgsw
+            real intent(in) :: xgsw
+            real intent(in) :: ygsw
+            real intent(in) :: zgsw
+            real intent(out):: bxgsw
+            real intent(out):: bygsw
+            real intent(out):: bzgsw
             real dimension(10) :: aa
             real :: sps
             real :: cps
