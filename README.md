@@ -1,3 +1,8 @@
+# THIS REPO IS NOW DEPRECATED WITH THE RELEASE OF [PYDARN](https://github.com/SuperDARN/pydarn).  PLEASE USE PYDARN AS THERE IS NO LONGER SUPPORT FOR THIS CODE.
+
+
+
+
 ## DaViT-py
 
 Welcome to the Data and Visualization Toolkit-Python.  This code base is designed to allow you to access and visualize SuperDARN (Super Dual Auroral Radar Network) data, as well as other relevant space phyics/space weather data sets and models. As such, DaViT-py includes code for reading and plotting SuperDARN data (iqdata, rawacf, fitacf, and convection maps) and python wrappers for various fortran based models (AACGM, HWM14, IGRF11, IRI11, NRLMSISE00, IGRF2008, and RayDARN HF raytracing).  This code is an international collaboration of many institutions and contributors.
