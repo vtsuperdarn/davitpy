@@ -1,7 +1,6 @@
 # THIS REPO IS NOW DEPRECATED WITH THE RELEASE OF [PYDARN](https://github.com/SuperDARN/pydarn).  PLEASE USE PYDARN AS THERE IS NO LONGER SUPPORT FOR THIS CODE.
 
-
-
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
 ## DaViT-py
 
