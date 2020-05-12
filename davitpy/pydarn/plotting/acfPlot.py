@@ -193,19 +193,21 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
             if (png is False) and (pdf is False):
                 png = True
             fig = mpl_fig()
-        ax1 = fig.add_axes([0.1, 0.55, 0.35, 0.35])
-        ax2 = fig.add_axes([0.1, 0.1, 0.35, 0.35])
-        ax3 = fig.add_axes([0.5, 0.1, 0.35, 0.35])
-        ax4 = fig.add_axes([0.5, 0.55, 0.35, 0.35])
+        ax1 = fig.add_axes([0.12, 0.55, 0.35, 0.35])
+        ax2 = fig.add_axes([0.12, 0.1, 0.35, 0.35])
+        ax3 = fig.add_axes([0.52, 0.1, 0.35, 0.35])
+        ax4 = fig.add_axes([0.52, 0.55, 0.35, 0.35])
 
         rad_name = pydarn.radar.network().getRadarById(myBeam.stid).name
         if xcf:
-            title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
-                ' ' + 'XCF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
+            title = myBeam.time.strftime('%d %b %Y %H:%M:%S UT') + \
+                ' XCF ' + rad_name + '\nBeam: ' + str(myBeam.bmnum) + \
+                ' Gate: ' + str(gate)
         else:
-            title = myBeam.time.strftime('%d %b, %Y %H:%M:%S UT') + \
-                ' ' + 'ACF ' + rad_name + ' Beam: ' + str(myBeam.bmnum)
-        fig.suptitle(title, y=0.94)
+            title = myBeam.time.strftime('%d %b %Y %H:%M:%S UT') + \
+                ' ACF ' + rad_name + '\nBeam: ' + str(myBeam.bmnum) + \
+                ' Gate: ' + str(gate)
+        fig.suptitle(title)
     else:
         ax1 = None
         ax2 = None
@@ -226,12 +228,17 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
                     ax1.plot(lags[ind], im[ind], marker='x',
                              color='red', mew=3, ms=8, zorder=10)
 
-        ax1.plot(lags, re, marker='o', color='blue', lw=2)
-        ax1.plot(lags, im, marker='o', color='green', lw=2)
+        ax1.plot(lags, re, marker='o', color='blue', lw=2, label='Real')
+        ax1.plot(lags, im, marker='o', color='green', lw=2, label='Imag')
         ax1.plot([lags[0], lags[-1] + 1], [0, 0], 'k--', lw=2)
+
+        ax1.legend(loc='lower right', fontsize='medium', ncol=2)
 
         ax1.set_xlim([-0.5, lag_numbers[-1]])
         ax1.set_xlabel('Lag Number')
+        # Since dealing with lag numbers, force the tick marks
+        # To integer numbers as there isn't a lag 2.5
+        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
         if normalized:
             ax1.set_ylim([-1.5, 1.5])
             ax1.set_yticks(np.linspace(-1, 1, num=5))
@@ -260,6 +267,9 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
         ax2.set_xlim([-0.5, lag_numbers[-1]])
         ax2.set_xlabel('Lag Number')
+        # Since dealing with lag numbers, force the tick marks
+        # To integer numbers as there isn't a lag 2.5
+        ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax2.set_ylim([0, 1.05 * np.max(amplitude)])
         if normalized:
             ax2.set_ylabel('Normalized Lag Power')
@@ -284,6 +294,9 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         ax3.plot([lags[0], lags[-1] + 1], [0, 0], 'k--', lw=2)
 
         ax3.set_xlim([-0.50, lag_numbers[-1]])
+        # Since dealing with lag numbers, force the tick marks
+        # To integer numbers as there isn't a lag 2.5
+        ax3.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax3.set_xlabel('Lag Number')
         ax3.set_ylabel('Phase')
         ax3.set_ylim([-np.pi - 0.5, np.pi + 0.5])
@@ -301,7 +314,7 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
 
     if (ax4 is not None):
         ax4.plot(vels, acfFFT, marker='o', lw=2)
-        ax4.set_xlabel(r'Velocity (m/s)')
+        ax4.set_xlabel(r'Velocity (m s$^{-1}$)')
         ax4.set_ylabel('Power Spectrum')
         if ax is None:
             ax4.yaxis.set_ticks_position('right')
@@ -317,22 +330,22 @@ def plot_acf(myBeam, gate, normalized=True, mark_blanked=True,
         if xcf:
             fig.savefig('XCF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.png')
+                        '_' + rad + '_gate' + str(gate).zfill(3) + '.png')
         else:
             fig.savefig('ACF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.png')
+                        '_' + rad + '_gate' + str(gate).zfill(3) + '.png')
     if pdf and (ax is None):
         if not show:
             canvas = FigureCanvasAgg(fig)
         if xcf:
             fig.savefig('XCF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.pdf')
+                        '_' + rad + '_gate' + str(gate).zfill(3) + '.pdf')
         else:
             fig.savefig('ACF_' +
                         myBeam.time.strftime("%Y%m%d_%H%M%S_UT") +
-                        '_' + rad + '_gate' + str(gate) + '.pdf')
+                        '_' + rad + '_gate' + str(gate).zfill(3) + '.pdf')
     if show and (ax is None):
         fig.show()
 

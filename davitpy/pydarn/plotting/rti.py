@@ -64,8 +64,8 @@ def plot_rti(sTime, rad, eTime=None, bmnum=7, fileType='fitacf',
     bmnum : Optional[int]
         The beam to plot.  default: 7
     fileType : Optional[str]
-        The file type to be plotted, one of ['fitex', 'fitacf', 'lmfit'].
-        default = 'fitex'.
+        The file type to be plotted, one of ['fitex', 'fitacf', 'lmfit',
+        'fitacf3'].  default = 'fitacf'.
     params : Optional[list]
         a list of the fit parameters to plot, allowable values are:
         ['velocity', 'power', 'width', 'elevation', 'phi0'].  default:

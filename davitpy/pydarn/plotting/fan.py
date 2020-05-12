@@ -66,8 +66,8 @@ def plotFan(sTime, rad, interval=60, fileType='fitex', param='velocity',
     interval : Optional[int]
         The the time period to be plotted, in seconds.  default = 60
     fileType : Optional[str]
-        The file type to plot, valid inputs are 'fitex','fitacf', 'lmfit'.
-        default = 'fitex'
+        The file type to plot, valid inputs are 'fitex','fitacf', 'lmfit',
+        'fitacf3'.  default = 'fitex'
     param : Optional[str]
         The parameter to be plotted, valid inputs are 'velocity', 'power',
         'width', 'elevation', 'phi0'.  default = 'velocity'
